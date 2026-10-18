@@ -12,11 +12,15 @@ Orca 原 automation run 6 `6f1eca37-6071-43e3-bd1b-de22dca78993`（计划10-18�
 
 `Get-FileHash docs/EXPERIMENT.md -Algorithm SHA256`、`codex --version`、`Test-Path`、`orca automations show/runs --json` 及运行源码差异检查已执行；实验命令因锁门禁未执行。本次仅更新 HANDOFF/STATUS，使用普通 `[skip ci]` 提交和 push。automation 仍 enabled，Asia/Shanghai `20 0 14-23 10 *`，下一次10-20处理昨日；最后 D9 处理或任何窗口外唤醒须禁用。机器或 Orca 未实际执行的日程不记成功，终局门禁保持未满足。
 
-## 新版前端接入（2026-10-18）
+## 新版前端已提 Draft PR 并完成代码 review（2026-10-19）
 
-用户提供新版前端 ZIP，要求真实媒体/Agent logo、Agent 在线生成协作 DAG、OpenViking 可选。主控已检查包与当前生产基线，维护 [本轮计划](tasks/frontend-observatory-pr-20261018.md)；压缩包属于旧基线独立沙盒示例，正式接入采用新版界面并消费现有真实 API。DAG 主动规划或现有事件投影的生成方式已异步询问，等待答复，其他独立开发继续。
+用户提供 ZIP 的新版布局已接入现有生产页面与真实 API，包含焦点画布、侧栏、页头搜索、资料及 Agent 入口；26件官方媒体/Agent 品牌资源与别名已接入。可选 OpenViking 的服务端配置、DDD 用例/适配器、SQLite、HTTP 契约及人工固定资料外发界面已实现，未配置时核心功能可用。[Draft PR #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2) 已普通 push，分支 `songconmaisaix31-design/frontend-observatory-20261018`，最终源码 HEAD `657ca1464517a171ed50ddc8fcc787b237c44ad9`，工作树干净。产品基线与 PR 目标仍为 `f17a491cdd6392829094c95a3e5efb6011362bc0` / `songconmaisaix31-design/works-relay-integration`。
 
-唯一开发 Agent 的 Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`，工作树 `C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018`，实际分支 `songconmaisaix31-design/frontend-observatory-20261018`，准确基线 `f17a491cdd6392829094c95a3e5efb6011362bc0`；Codex 0.162.0 / GPT-6.1-Sol xhigh fast。Run 与当前主控保持，后端新增写域先交 Handoff；原生工具、S3 等待答条件与资源守卫保持。前轮 PR #1 独立保留，当前未创建新版前端 PR。
+主控已发布准确 HEAD 的 [最终 review](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5563954154)。同一开发 Agent 已修复资源刷新可改绑或扩大范围的 P1，以及内容 level 缺失/null 未立即拒绝的 P2；当前没有追加业务代码修改要求。前端 typecheck/lint/build、53项显示与参数规则、两视口10项实际 HTTP/DOM/键盘检查、返修后四个 Go 测试函数、全仓 go vet/build、契约生成一致性与43包架构检查通过；无测试函数的包只计编译。资源守卫、单 worker、BelowNormal、Go 单并发及 Node 堆限制持续执行。命令、原件和实际剩余范围见开发树 `docs/standards/frontend-observatory-20261018.md` 与 [本轮计划](tasks/frontend-observatory-pr-20261018.md)。
+
+Agent 在线 DAG 的主动规划/现有事件投影选择仍待用户答复，尚未实施，现有拓扑入口保持明确禁用。真实 OpenViking 正向入库、任务完成、未知外部副作用、检索及分层读取未验收，尚无实际实例配置；完整默认 CI 未执行、未通过，提交保持 `[skip ci]`。构建保留717.36kB JS分块提示及契约13项既有警告。PR #1/#2 均未合并，没有共享部署、重新打包或发布；原生工具、S3 等待答条件保持。
+
+唯一开发 Agent：Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`，工作树 `C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018`；实际客户端 Codex 0.162.0 / 模型 GPT-6.1-Sol xhigh fast。Run `run_73578b70c449`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。正式 worker_done `msg_224a0d0c68be` 已收到，自有验证 server/Go/Playwright 进程已停止；主控已立即官方释放准确 Dispatch，回执 `released / closed_agent_terminal / transcript captured`，未关闭其他应用。历史旧 Dispatch 的 `release_unknown` 继续保持原记录。
 
 ## 单开发 Agent 提 PR，主控 review（2026-10-18）
 

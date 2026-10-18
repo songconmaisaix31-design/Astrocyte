@@ -10,9 +10,13 @@
 
 已执行协议 SHA、CLI 版本、路径存在性、automation 状态/运行历史及运行源码差异检查；实验验证因锁门禁未执行。本次只更新 root HANDOFF/STATUS，普通 `[skip ci]` 提交并 push。automation 保持 enabled、Asia/Shanghai `20 0 14-23 10 *`，下一次10-20处理昨日；最后 D9 处理或窗口外唤醒须禁用。当前没有可报告的实际可用用户评分表路径。详情见 [HANDOFF](HANDOFF.md)。
 
-## 新版前端正在接入（2026-10-18）
+## 新版前端已提 PR 并完成代码 review（2026-10-19）
 
-用户确认使用提交 ZIP 的新版界面、真实品牌图标、Agent 在线 DAG 和可选 OpenViking。[当前计划](tasks/frontend-observatory-pr-20261018.md) 已建立；唯一开发 Agent 在 `songconmaisaix31-design/frontend-observatory-20261018` 分支从产品 `f17a491c` 开发，Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`。正式状态使用现有生产 API，包内沙盒状态不迁入。DAG 主动规划或现有事件投影的生成方式等待用户答复，页面和图标等独立开发继续。原生权限、未答业务选择与资源限制保持，前轮 PR #1 未合并。
+新版布局、26件官方品牌资源，以及可选 OpenViking 的前端和 Go/SQLite/HTTP 接入已提交 [Draft PR #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2)。分支 `songconmaisaix31-design/frontend-observatory-20261018`，最终 HEAD `657ca1464517a171ed50ddc8fcc787b237c44ad9` 已普通 push，工作树干净。主控 [最终 review](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5563954154) 已发布，原开发 Agent 修复了资源绑定范围 P1 与必填内容层级 P2，当前无追加代码修改要求。
+
+前端 typecheck/lint/build、53项显示与参数规则、两视口10项真实页面检查、返修后四个 Go 测试函数、全仓 vet/build、契约一致性与43包架构检查通过；编译、测试和服务按既定资源限制串行运行。原件和完整命令见开发树 `docs/standards/frontend-observatory-20261018.md`，交接见 [本轮计划](tasks/frontend-observatory-pr-20261018.md)。同一开发 Agent 已正式 worker_done，自有验证服务已停止；准确 Dispatch `ctx_06a3baf3e8db` 已官方释放，回执 `released / closed_agent_terminal / transcript captured`。
+
+Agent 在线 DAG 生成方式待用户答复，尚未实施；真实 OpenViking 正向链路未验收，完整默认 CI 未执行、未通过。PR 保持 Draft；产品集成分支仍为 `f17a491c`，PR #1/#2 未合并，没有共享部署、打包或发布。原生权限及其他未答业务选择保持。
 
 ## Swarm 发送前租约校验已提 PR 并完成代码 review（2026-10-18）
 
