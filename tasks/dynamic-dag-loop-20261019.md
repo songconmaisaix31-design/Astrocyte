@@ -10,7 +10,7 @@ Morphogenesis 只读基线 `ddd2849afe330bf221d405dc2b91948c2416bd47`，未追�
 
 ## 所有权与循环
 
-用户追加确认：各模块 Agent 均可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；每次 Reviewer 决策后以 hook 唤起主控继续方案，持续至规划内容验收完成。当前动态 DAG 模块仍由同一 Worker 长期负责；需要子 Agent 时使用互斥 write_paths，逐项登记生命周期，重操作全局串行。Reviewer 的 hook 由 Worker 在 `scripts/review-decision-hook.ps1` 实现，调用现有 `orca orchestration send` 持久投递和原生唤醒，不新增调度器；主控收到并回复才确认实际唤起。
+用户追加确认：各模块 Agent 均可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；每次 Reviewer 决策后以 hook 唤起主控继续方案，持续至规划内容验收完成。当前动态 DAG 模块仍由同一 Worker 长期负责；需要子 Agent 时使用互斥 write_paths，逐项登记生命周期，重操作全局串行。Reviewer 的 hook 由 Worker 在 `scripts/review-decision-hook.mjs` 实现，使用项目现有 Node.js 调用 `orca orchestration send` 持久投递和原生唤醒，不新增调度器；主控收到并回复才确认实际唤起。
 
 - Worker 继续使用原产品工作树和分支，同一 PR #2。首先读取本文件、两份交接、SPEC §10/16/17 和前轮报告，提交设计及准确写域 Handoff。最初允许产品 `AGENTS.md` 同步最新规范、`docs/standards/dynamic-dag-20261019.md`；代码写域经设计核查后追加。实现、测试、文档、普通 push 和全部返修由此唯一 Worker 负责。
 - Reviewer 为独立 Codex 会话、独立工作树和分支，基于准确657源码建立基线；只写 `docs/reviews/dynamic-dag-20261019.md` 与本树忽略的 `.verification/`，读取全仓及 Worker 的准确提交。先静态核查设计、已有真实接口和适用验收，再按主控分配的串行窗口实际验证候选。不得修改业务、默认 CI、断言或替 Worker 修复。
@@ -32,8 +32,12 @@ Reviewer 比较基线与候选在相同实际来源下的可用能力：从禁�
 
 Worker Handoff `msg_3c0b2fa427bc` 的完整设计位于产品树 `docs/standards/dynamic-dag-20261019.md`，主控已完整读取。Reviewer 初查发现 `ReadMission` 当前只核项目访问，不能直接宣称已核 `read_swarm`；新 DAG 对 Agent 须核当前项目、动作和 Grant，人类有权限的历史读取保留。该问题交原 Worker 实施并复验。
 
-主控通过准确问题 `msg_450db3c253c5` 批准以下代码写域：`internal/swarm/domain/{dag.go,dag_test.go,mission.go}`；`internal/swarm/app/{dag.go,dag_test.go,contracts.go,commands.go,lifecycle.go}`；`internal/adapters/sqlite/{swarm_history.go,swarm_native.go,swarm_dag_test.go}`；`internal/adapters/httpapi/{swarm_missions.go,swarm_dag_test.go,relay_scoped_workspace.go}`；`cmd/server/{relay_swarm_assembly.go,swarm_lifecycle.go,swarm_lifecycle_test.go,main.go}`；`contracts/openapi.yaml` 与必要 `contracts/examples/swarm-*.json`；`web/src/api/{schema.d.ts,swarm.ts}`、`web/src/hooks/useReadApi.ts`、`web/src/pages/swarm/dag/**`、`web/src/pages/swarm/SwarmPage.tsx`、`web/package.json`、`pnpm-lock.yaml`、必要 `dependencies.lock.json`；`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`；`scripts/review-decision-hook.ps1`；产品 `AGENTS.md`、`docs/SPEC.md` §18.2、`docs/TASKS.md` 入口、上述标准报告。不得修改其他业务文件；新增依赖先核官方资料。
+主控通过准确问题 `msg_450db3c253c5` 批准以下代码写域：`internal/swarm/domain/{dag.go,dag_test.go,mission.go}`；`internal/swarm/app/{dag.go,dag_test.go,contracts.go,commands.go,lifecycle.go}`；`internal/adapters/sqlite/{swarm_history.go,swarm_native.go,swarm_dag_test.go}`；`internal/adapters/httpapi/{swarm_missions.go,swarm_dag_test.go,relay_scoped_workspace.go}`；`cmd/server/{relay_swarm_assembly.go,swarm_lifecycle.go,swarm_lifecycle_test.go,main.go}`；`contracts/openapi.yaml` 与必要 `contracts/examples/swarm-*.json`；`web/src/api/{schema.d.ts,swarm.ts}`、`web/src/hooks/useReadApi.ts`、`web/src/pages/swarm/dag/**`、`web/src/pages/swarm/SwarmPage.tsx`、`web/package.json`、`pnpm-lock.yaml`、必要 `dependencies.lock.json`；`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`；`scripts/review-decision-hook.mjs`；产品 `AGENTS.md`、`docs/SPEC.md` §18.2、`docs/TASKS.md` 入口、上述标准报告。不得修改其他业务文件；新增依赖先核官方资料。
 
 停止触发批准为既有 workerCtx 内启动时及每5秒的单一有界核查，仅针对已有 ready/running Mission 原已批准、可准确判定的截止时间和无进展等条件。内部系统来源，无假 human；事务固定停止意图和 CAS，事务外原 Stop/Reconcile，精确原 tuple/fence 后结算。未知结果固定 blocked，保留租约与预留，显式 Recover 前不自动重发；数据库/身份错误立即上抛，关闭与重启保留原记录。不增加 energy、调用预算单位、认领、规划调度、后端切换或新原生权限。
 
-首个重操作窗口已授予实现 Worker，Reviewer 保持静态；Worker 结束须停止自有服务并明确交出窗口，主控再分配 Reviewer。完整模型生成/执行/退出仍受原门禁约束，图和拒绝路径验证不替代真实链路。
+追加批准 `internal/adapters/sqlite/swarm_approvals.go`，新 DAG 读取由当前实际 Project/Settings/ProjectGrant 核查动作，保留 human 已授权历史读取。Reviewer 可在自己的准确源码工作树使用现有忽略的 node_modules、web/dist、tsbuildinfo 与 pnpm 缓存，不另导出源码副本；业务及锁文件保持只读，实际数据库和日志放自身 `.verification/`。
+
+Worker `msg_47e067af6328` 确认当前没有重操作或自有验证服务，明确交出窗口。主控已通过 `msg_c42cfdde9971` 将准确657基线的独占检查窗口授予 Reviewer；Worker 继续静态实现，安装/生成/编译/测试/服务须等窗口明确回交。完整模型生成/执行/退出仍受原门禁约束，图和拒绝路径验证不替代真实链路。
+
+Worker 已普通 push hook/规范/设计提交 `9097404a1e751a5dfd60eb042005efb2071e5704`。首次 Reviewer 实际执行被 Windows 签名策略拒绝，未进入 Orca 发送；主控已将入口改用现有 Node.js 的返修交回原 Worker，授权以文件编辑工具移除该 Worker 本轮的 PowerShell 入口，保留实际失败原件，不改变执行策略。Node 入口使用标准参数/文件/进程库及参数数组，无 shell 或 eval；收到真实决策并回复前不登记唤起完成。Reviewer 的基线安装首采样 CPU86%，在 pnpm 前拒绝，未提高门槛。当前没有产品业务接受结论。
