@@ -8,7 +8,9 @@
 
 通信hook的Node源码 `16dd0ed8` 已由Reviewer以真实决定投递、主控读取报告/回复并继续改进验证，Reviewer仅接受该构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，原生会话/租约0，未证明真实生成退出；基线自有服务和浏览器已停止。
 
-动态DAG准确候选已交独立验收：SOURCE `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`，报告HEAD `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d`，普通push且PR #2远端已核。作者九个定向Go函数、全仓vet/build、类型/lint/build、契约/43包架构、双视口2项动态DAG及8项既有回归通过；人工节点增长、无Worker自动停止和真实模型退出分别登记。Worker已停服、清树并明确交窗；当前Reviewer独占重操作，原Worker业务冻结等待返修，两Task仍在进行。完整原生正向门禁与默认CI保持未通过，未合并或部署。
+动态DAG候选：SOURCE `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`，报告HEAD `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d`，普通push且PR #2远端已核。作者九个定向Go函数、全仓vet/build、类型/lint/build、契约/43包架构、双视口2项动态DAG及8项既有回归通过；人工节点增长、无Worker自动停止和真实模型退出分别登记。完整原生正向门禁与默认CI保持未通过，未合并或部署。
+
+Reviewer已对准确b0发布 [CR 5564261919](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564261919)，独立9个Go函数与17项真实场景通过，6事件逐项SQL核查；接受人工依赖图、增长/来源/权限、双视口交互、断线重连/撤权清图和无Worker停止，完整Agent/Worker正向链路证据不足。接受与不足两个hook均已入队，主控实际读报告及CR后继续方案。Reviewer已停服交窗，当前下一项方案为按需加载DAG，针对717.36→774.32kB的实测首屏增长；同Worker PR、Reviewer CR，范围及停止条件见当前计划。
 
 ## V4 日运行交接（2026-10-19 00:25）
 

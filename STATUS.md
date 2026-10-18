@@ -4,9 +4,9 @@
 
 用户确认动态DAG与Worker逐渐退出机制，参考Morphogenesis。规范为主控提出方案、Worker负责实现及PR、独立Reviewer负责CR并实际验证效果和决定接受范围；当前 [任务计划](tasks/dynamic-dag-loop-20261019.md) 沿Draft PR #2 / `657ca146` 基线继续。此前DAG二选一提问已结束。
 
-模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent；Reviewer决策后通过hook唤起主控继续方案。Node hook `16dd0ed8` 已完成真实决定投递、主控读取/回复并继续改进，Reviewer仅接受通信构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，服务及浏览器已停止；动态DAG候选正由Reviewer独立验收。
+模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent；Reviewer决策后通过hook唤起主控继续方案。Node hook `16dd0ed8` 已独立接受，真实决定投递、主控读取/回复并继续改进已发生。准确657基线九项独立HTTP/SQLite/双视口检查通过，基线服务及浏览器已停止。
 
-当前候选：业务 `e369537b` / 报告 `b0a21a2c` 已普通push至同一Draft PR #2，作者适用Go、前端、契约/架构及2项动态DAG、8项既有页面检查通过，工作树干净。Worker已停服交窗，Reviewer现在对准确b0候选独立验收，原Worker冻结业务等待返修，尚无候选接受决定。真实模型生成、Worker退出及租约并发等仍未验；没有合并、部署或打包。
+当前候选：业务 `e369537b` / 报告 `b0a21a2c` 已普通push至同一Draft PR #2。Reviewer本人已发布准确b0的 [CR 5564261919](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564261919)，独立9个Go函数与17项真实场景通过；接受人工依赖图、增量/来源/权限、双视口交互、断线重连/撤权清图及无Worker停止。完整Agent生成/Worker退出结算释放证据不足。Reviewer已通过两个hook通知主控，实际停服交窗；主控据717.36→774.32kB构建增长提出最后一项DAG按需加载优化，同Worker PR/Reviewer CR。真实模型/租约并发及OpenViking正向仍未验，完整默认CI未通过，没有合并、部署或打包。
 
 ## V4 日运行（2026-10-19 00:25）：原外部证据根不可用，锁门禁阻塞
 

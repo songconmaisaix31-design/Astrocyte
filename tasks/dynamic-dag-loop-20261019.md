@@ -61,3 +61,17 @@ Worker 业务源码 `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`、报告候选 `b
 Worker `msg_9742b780d55c` 明确自有server存活0、无安装/编译/测试/浏览器/服务，交出窗口；主控通过 `msg_2535a4210e10` 将准确b0候选的独占重操作窗口授予Reviewer。原Worker保持业务和锁文件冻结，不worker_done，接收同一Reviewer返修。Reviewer按同一657公开README来源独立复验，决定后执行hook并交回窗口；当前尚无该候选接受结论。
 
 用户再次明确“worker pr，reviewer cr”。主控以 `msg_9c8366c516b6` 要求原Reviewer本人发布准确b0的 GitHub CR，核对实际验证与接受范围，再用既有hook唤起主控；Worker继续负责PR #2与全部返修。该提醒不改变当前独占窗口及原生未验边界。
+
+## Reviewer 的 b0 决定与后续加载优化
+
+Reviewer本人已发布准确b0的 [CR 5564261919](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564261919)，状态COMMENTED；独立7阶段EXIT0，包括四包9个Go函数及生产HTTP/SQLite/双视口17项实际场景，6个event_id逐项真实SQL核查。同源657基线9项已通过。接受依赖图、人工增量和来源、当前read_swarm、方向/缩放/键盘、断线重连/撤权清图及无Worker无进展停止；完整模型生成/真实Claim/Send/带Worker停止退出/用量结算和释放仍证据不足。准确报告为Reviewer树 `.verification/dynamic-dag/decision-b0a21a2c.md`。
+
+接受hook `msg_994d0edd71ab` 与完整链路不足hook `msg_e351e28845ca` 均已实际入队；主控已完整读取同一报告和实际GitHub review，回复后继续本项有测量依据的优化。Reviewer通过 `msg_81bcefb7cdd8` 明确停服、关闭浏览器、50281无监听并交还独占窗口，tracked干净，尚未提交报告或worker_done。
+
+本项问题：独立构建确认JS从657的717.36kB/gzip198.33kB增至b0的774.32kB/gzip218.13kB；`SwarmPage` 静态导入 `MissionDAGView` 及Dagre，非Swarm页面也承担新增代码。建议在现有SwarmPage的DAG区域使用React按需导入与加载状态，进入该区域后才加载图和布局依赖；局部加载失败立即显示实际错误和人工重新加载入口，禁止显示成功空图、自动无限重试或切换布局实现。保留当前API、DDD、轮询、权限和全部已接受行为，保持React/CSS和既有依赖，不改默认CI、warning阈值或其他页面路由。
+
+写域仅为产品 `web/src/pages/swarm/SwarmPage.tsx`、`web/src/pages/swarm/dag/**`、`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`、产品AGENTS职责同步与标准报告。本项不修改Go、OpenAPI、依赖或锁文件，超域先Handoff；继续同Worker、同PR #2和同Reviewer。Worker先读取本方案、提交完整局部加载和错误处理设计，再在原资源守卫下串行实现和检查。Reviewer先静态，等Worker实际交窗和准确候选后独立运行与发布CR，随后hook唤起主控。
+
+验收：同公开固定来源、相同条件的全新浏览器context分别记录b0与候选非Swarm首屏实际请求的全部JS字节和文件清单，记录生产构建分块总量，不能仅选最大分块或改变压缩口径。首屏实际JS总量减少、进入Swarm确实请求DAG分块、实际图增长/原选择/权限/断线和既有页面回归通过才能接受。第一次加载与直接进入Swarm均可用；真实静态文件缺失时页面明确报错，其余页面继续可用；如临时移动验证树自身已忽略构建资源，必须核准确路径并在finally恢复，不能伪造响应或改业务记录。截图/视频/trace仍关闭，服务与浏览器最多各一个。
+
+停止条件：本项独立CR接受后完成可验证的前端/DAG优化规划，不继续增加无依据的优化。完整Agent生成/Worker退出及OpenViking正向链路保持各自真实阻塞，未取得来源和权限条件前不冒充完成、不重复模型调用或伪造测试。最终由原Worker更新PR、原Reviewer提交自身报告并普通push、分别正式交付及官方清理。
