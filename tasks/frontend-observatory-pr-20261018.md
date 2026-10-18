@@ -30,3 +30,11 @@ OpenViking 为可选集成，未配置时主程序与核心页面正常运行，
 验收包括前端 typecheck/lint/build、适用无替身测试、真实 HTTP/SQLite 空与拒绝路径、1920×1080及1280×720 DOM/键盘交互、真实品牌资源响应和图来源追溯；DAG 与 OpenViking 按最终批准设计做适用实际验证。只运行必要检查，完整旧替身集合不计通过。编译或核心路径失败由同一开发 Agent 迭代修复。用户未答或原生来源不足只停止依赖该前提的实施/验收，独立部分继续。
 
 每阶段清晰 Commit，普通 push，同一 PR。提交保持 `[skip ci]`，完整默认 CI 单列未通过，不改 workflow/断言/Skip；主控发布当前准确 HEAD 的 review。禁止 force push、合并、共享部署、打包或正式发布。最终提供文件清单、Commit SHA、PR、实际命令/结果/原件及剩余限制；交付后正式 worker_done，由主控明确复用或官方释放。
+
+## 2026-10-19 设计 review 与追加写域
+
+开发 Agent 已普通 push 设计提交 `99b48e53b9fb3a02b419177715e3df4fce906064`，Handoff `msg_bb4fad1f9456`。主控完整读取报告、页面映射和六条候选 HTTP 接口，批准按该设计实施页面及可选 OpenViking；DAG 主动规划/事件投影的提问仍待答。本次资料外发沿 SPEC §17.1 的显式授权：配置仅提供连接能力，每次上传由真实人类会话明确提交指定项目、固定资料 revision 和当前目的地，并持久化该操作的主体、来源、版本与目的地。该确认仅覆盖本次 OpenViking 外发，不授予 Agent、原生控制、S2 执行或自动同步权限；不使用 ExternalModelCLI 许可替代。验证继续限定 Agent 创建的公开 Git 项目和获准公开来源。
+
+追加允许写入：`cmd/server/openviking*.go`、`cmd/server/main.go` 的必要装配；`internal/attention/domain/openviking*.go`、`internal/attention/app/openviking*.go`；`internal/adapters/openviking/**`；`internal/adapters/sqlite/openviking*.go`；`migrations/027_openviking.sql`；`internal/adapters/httpapi/openviking*.go`、`internal/adapters/httpapi/server.go` 与 `internal/adapters/httpapi/session.go` 的必要注册/分类；`contracts/openapi.yaml` 与 `contracts/examples/openviking*`；前述范围内相邻真实测试。若还需修改已有 app Contracts/Options/构造器或其他源文件，先交准确路径 Handoff。现有 SQL embed 自动包含新迁移，保持已有迁移文件。
+
+六条候选契约按设计报告实施：状态、项目提交列表/创建、既有提交刷新、项目检索、项目分层读取；复用 `/api/v1` 客户端与权限防护。状态与身份缺失不可显示已连接；任务查询仅使用已持久化关联的真实 task_id；URI 解析后核规范路径与项目根，重定向和越界结果立即失败。上传与资源提交分别保留阶段，同 request_id 只允许一次副作用；响应丢失、持久化失败、重启在途与未知状态不能自动重发或登记完成。外部请求不持有 SQL 事务，发送前核当前资料、引用、权限与目的地，配置变化不改写原记录。普通核心页面不依赖可选状态成功。无真实上游来源的正向验收单列未验，契约示例不得伪造完成事实。
