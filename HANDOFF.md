@@ -2,15 +2,17 @@
 
 ## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
 
-用户已确认 DAG 动态变化、部分 Worker 依机制逐渐消亡，参考本机 Morphogenesis；此前生成方式提问结束。开发规范为主控提出建议和优化方案、Worker负责PR、独立Reviewer负责CR及可用性和效果决定；原Worker负责全部返修，重操作串行。当前任务见 [计划](tasks/dynamic-dag-loop-20261019.md)，沿前端 Draft PR #2 的准确 `657ca146` 基线继续，产品集成、原生权限及其他待答边界保持。
+用户确认动态DAG与Worker退出机制参考本机Morphogenesis；开发流程为主控提出方案、Worker负责实现/返修及PR、独立Reviewer负责CR与效果决定，再通过hook唤起主控。模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent。当前 [计划](tasks/dynamic-dag-loop-20261019.md) 的可验证DAG投影及前端加载优化已分范围验收，完整原生链路保持阻塞。
 
-模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer每次决策后以hook唤起主控继续改进，持续至规划内容验收。Worker `ctx_e5e98fad4345` 与Reviewer `ctx_5a4a6eff08a2` 使用Codex0.162.0 / GPT-6.1-Sol xhigh fast，沿原Run。Reviewer已将授权、退出事件幂等、来源与错误分类问题交原Worker修复；hook复用Orca持久邮件与唤醒，实际读取并回复才计唤起确认。
+产品 [Draft PR #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2) 由原Worker维护，分支 `songconmaisaix31-design/frontend-observatory-20261018`，最终HEAD `7ce3a5efe312f4cdac3491293e002f5559f076b0` 已普通push、远端一致、tracked干净。业务源码 `982333b871520e606c74d553e448c5049f81abde`，后继仅修标准报告CI事实；初轮DAG业务为e369/报告b0。产品集成仍为 `f17a491c`，没有合并、共享部署、打包或发布。
 
-通信hook的Node源码 `16dd0ed8` 已由Reviewer以真实决定投递、主控读取报告/回复并继续改进验证，Reviewer仅接受该构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，原生会话/租约0，未证明真实生成退出；基线自有服务和浏览器已停止。
+独立Reviewer本人已发布准确最终HEAD的 [CR 5564387472](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564387472)，COMMENTED，接受人工任务依赖图/增量/来源、当前read_swarm、双视口交互、断线重连/撤权清图、无Worker停止，以及按需加载和真实缺文件同context人工恢复。最终业务独立17场景与加载4组通过，9唯一event_id逐项真实SQL核查；初轮b0的四包9函数、264契约及43包架构另按准确来源记录。首屏全部JS从774329减至719784bytes，进入Swarm追加57129，完整JS增加2584bytes；不宣称运行期性能或全站总量下降。
 
-动态DAG候选：SOURCE `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`，报告HEAD `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d`，普通push且PR #2远端已核。作者九个定向Go函数、全仓vet/build、类型/lint/build、契约/43包架构、双视口2项动态DAG及8项既有回归通过；人工节点增长、无Worker自动停止和真实模型退出分别登记。完整原生正向门禁与默认CI保持未通过，未合并或部署。
+最终接受hook `msg_fcc2af9debd9` 与不足hook `msg_819601d74f38` 均由Reviewer实际执行，主控完整读报告及CR，分别以 `msg_744d85cce321` / `msg_76d5bff6b2fd` 回复确认，继续保存停止条件与剩余规划。Worker `ctx_e5e98fad4345`、Reviewer `ctx_5a4a6eff08a2` 使用Codex0.162.0 / GPT-6.1-Sol xhigh fast，沿Run `run_73578b70c449`。全部验证重操作串行，CPU双采样<70%、可用≥4GiB、BelowNormal、Go单并发/256MiB软限制、Node512MiB、单浏览器/单服务；自有服务浏览器均已停止，临时分块还原。两Task已正式worker_done，准确Dispatch均官方released/closed_agent_terminal/transcript captured；原历史清理与用户保留终端不变。
 
-Reviewer已对准确b0发布 [CR 5564261919](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564261919)，独立9个Go函数与17项真实场景通过，6事件逐项SQL核查；接受人工依赖图、增长/来源/权限、双视口交互、断线重连/撤权清图和无Worker停止，完整Agent/Worker正向链路证据不足。接受与不足两个hook均已入队，主控实际读报告及CR后继续方案。Reviewer已停服交窗，当前下一项方案为按需加载DAG，针对717.36→774.32kB的实测首屏增长；同Worker PR、Reviewer CR，范围及停止条件见当前计划。
+Reviewer最终独立报告为其树 `docs/reviews/dynamic-dag-20261019.md`，分支 `songconmaisaix31-design/dynamic-dag-review-20261019` / Commit `7f781deea143c74bed5303f90d8130c82bb54bca` 普通push、远端一致、tracked干净，仅新增该报告。产品与Reviewer的准确分支/SHA、实际命令、hook和清理记录均在当前计划；下一步须先解决已有原生门禁和具体待答，完整CI另保留实际失败项。
+
+真实模型生成、Claim/Send、带Worker停止/退出/未知用量结算和资源释放仍缺合法正向证据；原生文件/命令工具关闭及S3两项待答保持。OpenViking未配置远端，作品真实完成/采用/经验复用未计通过。982自动CI两run最终cancelled，但两个Ubuntu job取消前的全仓Go测试已经失败；真实前置缺失及旧fixture/迁移断言等归属仅部分核查，完整CI未通过，不能写从未执行。原日志及具体限制在独立报告与当前计划，默认workflow和原断言未修改。
 
 ## V4 日运行交接（2026-10-19 00:25）
 

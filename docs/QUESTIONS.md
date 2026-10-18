@@ -4,7 +4,7 @@
 
 用户提供 `C:/Users/DW/Downloads/astrocyte-frontend-submission (2).zip`，确认使用新版前端、媒体和 Agent 使用真实 logo、协作网络由 Agent 在线生成 DAG，OpenViking 为可选配置。执行见 [当前计划](../tasks/frontend-observatory-pr-20261018.md)。页面接入现有生产 API 与真实持久化，沿当前 React/TypeScript/Go 技术和权限边界；压缩包中的沙盒业务不作为正式状态。
 
-用户进一步确认 DAG 动态变化，部分 Worker 在机制下逐渐消亡，参考本机 `Morphogenesis` 仓库。按该已确认方向继续设计动态任务依赖与 Worker 生命周期，不再保留此前二选一问题。主 Agent 提出建议与优化方案，唯一 Worker 实现，独立 Reviewer 验证能否使用、比较优化效果并决定接受、退回或证据不足，原 Worker 持续返修。
+用户进一步确认 DAG 动态变化，部分 Worker 在机制下逐渐消亡，参考本机 `Morphogenesis` 仓库。按该已确认方向继续设计动态任务依赖与 Worker 生命周期，不再保留此前二选一问题。主 Agent 提出建议与优化方案，唯一 Worker 实现并负责 PR，独立 Reviewer 负责 CR、验证能否使用、比较优化效果并决定接受、退回或证据不足，原 Worker 持续返修。
 
 用户随后确认每个模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer 每次决策后通过 hook 唤起主 Agent，继续改进方案及开发循环，直至规划内容完成。各模块保持长期负责的 Worker，子 Agent 写域互斥、全局重操作串行；hook 复用原 Orca Run 的真实投递及唤醒，主控实际读取并回复才确认唤起。
 

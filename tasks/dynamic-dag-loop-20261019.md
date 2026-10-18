@@ -77,3 +77,23 @@ Reviewer本人已发布准确b0的 [CR 5564261919](https://github.com/songconmai
 停止条件：本项独立CR接受后完成可验证的前端/DAG优化规划，不继续增加无依据的优化。完整Agent生成/Worker退出及OpenViking正向链路保持各自真实阻塞，未取得来源和权限条件前不冒充完成、不重复模型调用或伪造测试。最终由原Worker更新PR、原Reviewer提交自身报告并普通push、分别正式交付及官方清理。
 
 实际恢复检查要求的必要修复：作者首轮两视口增长检查通过，真实缺分块两视口均在还原文件、人工reload后仍取到200/text-html。原件 `dag-browser-20261019-023120-033.log` 与实际服务8vcdz2/m0kJ6J保留；首次缺分块HTML562bytes，reload后没有再次GET分块，未声称观察到304。Worker Handoff `msg_16c7a9401050` 已提交完整因果及修复方案。追加批准仅 `internal/adapters/httpapi/server.go` 的 `spaHandler` 和相邻说明：`os.ErrNotExist` 且 `/assets/` 前缀的缺失构建资源返回真实404和 `Cache-Control:no-store`，已有资源仍由标准FileServer处理、API优先、实际存在目录及页面深层路由继续原处理。Reviewer核查原 `TestStaticServing_NoDirectoryListing` 断言存在目录返回index，原断言保持；该修复不改变目录分支。该必要修复解决浏览器缓存错误内容导致的实际恢复失败；不得通过清cache、换context、修改mtime或删除恢复断言绕过。沿同Worker实施和验证，新增Go修改需格式检查、HTTP适用vet及生产build；原双视口真实移走/还原/人工reload和现有路由复验，保留原失败证据。
+
+## 按需加载准确候选与自动CI事实
+
+Worker最终业务候选 `982333b871520e606c74d553e448c5049f81abde` 已普通push，同PR #2远端HEAD已核、tracked干净。作者最终两视口缺分块/同context恢复/真实目录及深层路由/合法human身份API检查2/2通过，格式/HTTP vet/生产构建/类型/lint通过；中间源码4/4与既有页面8/8按实际源码分列，完整命令在产品报告。最终同一Go服务依次提供准确b0和候选静态资源：四个新context首屏全部JS从774329降至719784bytes，进入Swarm追加57129bytes；完整JS从774329增至776913bytes，同参数gzip从216760增至217799bytes，不宣称全站总量或运行期性能下降。
+
+Worker `msg_ba28e4623265` 明确服务存活0、无重操作并交窗；主控 `msg_8f11826a3b30` 将唯一窗口交原Reviewer对准确982独立复验和CR，Worker冻结。最终报告后继与接受决定见下节，业务源码保持982。
+
+982提交自动触发GitHub托管Ubuntu/Windows默认 `S0 checks` 的push `39155403418` 和PR `39155406045`。主控实际读取 `check.yml` 与 `scripts/check.mjs` 后，仅停止这两次会调用历史fixture/全仓旧测试的运行；官方取消请求均成功，最终API均为completed/cancelled。Reviewer进一步读原日志确认Ubuntu job `117757474469` / `117757483047` 取消前的 `pnpm check` 已failure，gofmt/全仓vet后实际执行了 `go test -mod=readonly ./...`；另外两job cancelled，后续race/build/Playwright skipped，完整CI未通过。旧fixture缺reconcile动作、计数stub前置拒绝、26/27迁移断言不一致及真实资料/目录/CLI缺失分别保留；相关文件在657至当前范围未变，不将所有失败归环境或新回归，全部失败归属仍未完成审计。没有更改workflow、原断言或公共历史；本机仍只运行已记录的真实来源检查。
+
+为保证最终tracked报告正确，主控已批准原Worker仅修正 `docs/standards/dynamic-dag-20261019.md` 的上述CI事实，以单个 `[skip ci]` 文档Commit普通push；业务/测试/锁保持982。Reviewer继续982业务实测，收到后继时只核确为报告差异并快进，对最终准确HEAD发布CR，不机械重复未变业务检查。重操作窗口仍独占归Reviewer，正式交付和释放等待其决定。
+
+## 最终CR、hook与剩余规划
+
+最终产品HEAD `7ce3a5efe312f4cdac3491293e002f5559f076b0` 已普通push至原Draft PR #2，982至7ce差异仅标准报告。Reviewer本人已发布准确7ce的 [CR 5564387472](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564387472)，COMMENTED；同一账号未使用原生APPROVE。Reviewer最终982业务独立build/lint/HTTP vet、17实际HTTP/SQLite/双视口场景和加载四组全部EXIT0，9个唯一事件逐项SQL回查，实际全量字节收益及完整JS增加分别记录；已核报告后继只含CI事实，未重复未变业务。
+
+接受hook `msg_fcc2af9debd9` 与完整链路不足hook `msg_819601d74f38` 分别真实投递；主控已完整读最终报告/实际GitHub CR与CI原日志，分别回复 `msg_744d85cce321` / `msg_76d5bff6b2fd`，确认真实唤起并继续保存下一步条件。Reviewer通过 `msg_c7d8419baa09` 明确服务浏览器关闭、三个验证端口无监听、临时DAG分块还原并交窗。
+
+本轮可验证的人工动态图、授权/恢复/历史、无Worker停止及按需加载规划已接受。完整Agent生成、Claim/Send、带Worker机制停止/退出、并发/未知用量和资源释放仍受原生文件/命令工具关闭及S3计数单位/权限证据待答约束；不放宽门禁或伪造正向来源。OpenViking远端及作品真实完成/采用/复用另未验，完整CI有实际失败。没有合并、部署、打包或发布；继续保留PR Draft。原Worker只更新最终PR说明，原Reviewer仅提交自身报告，随后正式worker_done和官方释放，不增加无依据优化或重复检查。
+
+最终报告与清理：Reviewer只新增 `docs/reviews/dynamic-dag-20261019.md`，分支 `songconmaisaix31-design/dynamic-dag-review-20261019` / Commit `7f781deea143c74bed5303f90d8130c82bb54bca` 已普通push，主控核远端一致、tracked干净。Worker正式交付 `msg_66cb23e328d8` 后主控立即官方释放 `ctx_e5e98fad4345`；Reviewer正式交付 `msg_a08cb382448f` 后立即官方释放 `ctx_5a4a6eff08a2`。两次均实际回执released/closed_agent_terminal/transcript captured，原验证服务浏览器均停止、分块还原；最后Delivery已实际确认。历史release_unknown与user_owned终端保持原记录，没有关闭其他应用。产品PR正文由原Worker记录最终CR和全部真实限制，HEAD保持7ce3。
