@@ -2,9 +2,13 @@
 
 ## 单开发 Agent 提 PR，主控 review（2026-10-18）
 
-用户已确认后续功能开发由一个开发 Agent 提交 PR，主 Agent 进行 review；开发、测试和返修持续由同一开发 Agent 完成。当前任务为 [Swarm 发送前租约校验](tasks/swarm-send-lease-pr-20261018.md)，产品基线 `f17a491c`。资源限制与原 QUESTIONS 未答项保持，开发方案先交主控 review，随后实施和提 PR，不再安排独立集成 Agent。
+用户已确认后续功能开发由一个开发 Agent 提交 PR，主 Agent 进行 review；开发、测试和返修持续由同一开发 Agent 完成。[Swarm 发送前租约校验](tasks/swarm-send-lease-pr-20261018.md) 已提交 [Draft PR #1](https://github.com/songconmaisaix31-design/Astrocyte/pull/1)。开发分支 `swarm-send-lease-20261018`，业务源码 `0642efdf7748a64c36e07e466b5f507b9c04a004`，最终报告 HEAD `75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee`；普通 push 与远端 SHA 已核，工作树干净。产品集成分支保持 `f17a491cdd6392829094c95a3e5efb6011362bc0`，未合并、部署或重新打包。
 
-20:39 在 Orca 重启后接续，同 Run generation3，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。原开发进程明确退出，14 件未提交修改保留，尚无 PR 或已完成测试；同 Task/树/分支恢复为 Dispatch `ctx_3bdd3825f01c`，继续已批准方案及适用验证。旧终端无法解析，官方 release 仍为 `release_unknown`，不扩大关闭范围。
+主控独立 review 发现的 S2 绑定先于准备时可绕过 Swarm 租约检查的问题，已由同一开发 Agent 修复；当前没有追加业务修改要求。[最终 GitHub review](https://github.com/songconmaisaix31-design/Astrocyte/pull/1#pullrequestreview-5563152542) 已发布为 COMMENTED，准确指向最终 HEAD。参数规则四项、SQLite 定向四项、Registry 缺来源一项、实际 HTTP 一项通过；最终业务源码全仓 Go vet/build 与42包 DDD 架构检查通过。原件与完整命令见开发树 `docs/standards/swarm-send-lease-20261018.md`。检查按原资源守卫串行运行，CPU 72% /100% 的尝试在调用 Go 前拒绝，后续资源满足时通过。
+
+Agent 注册、能力探测及本地启动/恢复/发送/观察/停止适配已存在，真实 CLI/进程探测有记录；生产准备/发送依赖仍未启用。真实正向 Prepare → Claim → Send、已有真实 S2 绑定用途分流、租约和授权变化与发送的竞态、未知交付对账及完整默认 CI 仍未验收。Codex 文件/命令工具关闭条件、S3 两项未答、archive 和具体经验批准继续保持；PR 保持 Draft。
+
+Orca 重启后，同 Run generation3、同 Task/树/分支恢复为 Dispatch `ctx_3bdd3825f01c`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。当前开发 Agent 已正式 worker_done，官方 release 为 `released / closed_agent_terminal / transcript captured`。原 Dispatch `ctx_7e6f00eb7fdb` 的进程明确退出，旧终端无法解析，官方清理回执仍为 `release_unknown`，不扩大关闭范围。实际客户端 Codex 0.162.0，模型 GPT-6.1-Sol xhigh fast，沿已有启动配置。
 
 ## DDD 开发与审查整改（2026-10-18）
 
