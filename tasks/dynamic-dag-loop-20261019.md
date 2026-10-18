@@ -10,6 +10,8 @@ Morphogenesis 只读基线 `ddd2849afe330bf221d405dc2b91948c2416bd47`，未追�
 
 ## 所有权与循环
 
+用户追加确认：各模块 Agent 均可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；每次 Reviewer 决策后以 hook 唤起主控继续方案，持续至规划内容验收完成。当前动态 DAG 模块仍由同一 Worker 长期负责；需要子 Agent 时使用互斥 write_paths，逐项登记生命周期，重操作全局串行。Reviewer 的 hook 由 Worker 在 `scripts/review-decision-hook.ps1` 实现，调用现有 `orca orchestration send` 持久投递和原生唤醒，不新增调度器；主控收到并回复才确认实际唤起。
+
 - Worker 继续使用原产品工作树和分支，同一 PR #2。首先读取本文件、两份交接、SPEC §10/16/17 和前轮报告，提交设计及准确写域 Handoff。最初允许产品 `AGENTS.md` 同步最新规范、`docs/standards/dynamic-dag-20261019.md`；代码写域经设计核查后追加。实现、测试、文档、普通 push 和全部返修由此唯一 Worker 负责。
 - Reviewer 为独立 Codex 会话、独立工作树和分支，基于准确657源码建立基线；只写 `docs/reviews/dynamic-dag-20261019.md` 与本树忽略的 `.verification/`，读取全仓及 Worker 的准确提交。先静态核查设计、已有真实接口和适用验收，再按主控分配的串行窗口实际验证候选。不得修改业务、默认 CI、断言或替 Worker 修复。
 - 主控维护本文件、AGENTS、QUESTIONS、HANDOFF、STATUS，提出下一项有实际依据的改进，决定资源窗口；Reviewer 对可用性、效果及接受与否负责。未接受时原 Worker 返修，Reviewer 复验；存在真实阻塞时继续独立工作并明确未验范围，不以重复自评证明优化。
@@ -25,3 +27,13 @@ Reviewer 比较基线与候选在相同实际来源下的可用能力：从禁�
 ## 实际派发
 
 沿 Run `run_73578b70c449` / generation3 / 主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。Worker：Task `task_50ff3b1212c2`、Dispatch `ctx_e5e98fad4345`、终端 `term_fbfa5b1f-a75a-4f4f-a164-e41a0d0450c2`，复用原产品树/分支。Reviewer：Task `task_40fbc675246c`、Dispatch `ctx_5a4a6eff08a2`、终端 `term_df8b920b-ed76-480f-8fe6-b995a71a0652`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/dynamic-dag-review-20261019`、分支 `songconmaisaix31-design/dynamic-dag-review-20261019`。两者实际 Codex0.162.0 / GPT-6.1-Sol xhigh fast，继承已有设置，无模型覆盖。启动回执仅观察到 input_accepted；文本检查逐一确认任务停留 composer 后，各补一次裸 Enter，随后逐一观察到 Working 和实际读取，没有重复任务或进程。
+
+## 设计核查与代码写域批准
+
+Worker Handoff `msg_3c0b2fa427bc` 的完整设计位于产品树 `docs/standards/dynamic-dag-20261019.md`，主控已完整读取。Reviewer 初查发现 `ReadMission` 当前只核项目访问，不能直接宣称已核 `read_swarm`；新 DAG 对 Agent 须核当前项目、动作和 Grant，人类有权限的历史读取保留。该问题交原 Worker 实施并复验。
+
+主控通过准确问题 `msg_450db3c253c5` 批准以下代码写域：`internal/swarm/domain/{dag.go,dag_test.go,mission.go}`；`internal/swarm/app/{dag.go,dag_test.go,contracts.go,commands.go,lifecycle.go}`；`internal/adapters/sqlite/{swarm_history.go,swarm_native.go,swarm_dag_test.go}`；`internal/adapters/httpapi/{swarm_missions.go,swarm_dag_test.go,relay_scoped_workspace.go}`；`cmd/server/{relay_swarm_assembly.go,swarm_lifecycle.go,swarm_lifecycle_test.go,main.go}`；`contracts/openapi.yaml` 与必要 `contracts/examples/swarm-*.json`；`web/src/api/{schema.d.ts,swarm.ts}`、`web/src/hooks/useReadApi.ts`、`web/src/pages/swarm/dag/**`、`web/src/pages/swarm/SwarmPage.tsx`、`web/package.json`、`pnpm-lock.yaml`、必要 `dependencies.lock.json`；`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`；`scripts/review-decision-hook.ps1`；产品 `AGENTS.md`、`docs/SPEC.md` §18.2、`docs/TASKS.md` 入口、上述标准报告。不得修改其他业务文件；新增依赖先核官方资料。
+
+停止触发批准为既有 workerCtx 内启动时及每5秒的单一有界核查，仅针对已有 ready/running Mission 原已批准、可准确判定的截止时间和无进展等条件。内部系统来源，无假 human；事务固定停止意图和 CAS，事务外原 Stop/Reconcile，精确原 tuple/fence 后结算。未知结果固定 blocked，保留租约与预留，显式 Recover 前不自动重发；数据库/身份错误立即上抛，关闭与重启保留原记录。不增加 energy、调用预算单位、认领、规划调度、后端切换或新原生权限。
+
+首个重操作窗口已授予实现 Worker，Reviewer 保持静态；Worker 结束须停止自有服务并明确交出窗口，主控再分配 Reviewer。完整模型生成/执行/退出仍受原门禁约束，图和拒绝路径验证不替代真实链路。

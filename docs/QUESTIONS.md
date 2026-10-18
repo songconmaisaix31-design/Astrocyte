@@ -6,6 +6,8 @@
 
 用户进一步确认 DAG 动态变化，部分 Worker 在机制下逐渐消亡，参考本机 `Morphogenesis` 仓库。按该已确认方向继续设计动态任务依赖与 Worker 生命周期，不再保留此前二选一问题。主 Agent 提出建议与优化方案，唯一 Worker 实现，独立 Reviewer 验证能否使用、比较优化效果并决定接受、退回或证据不足，原 Worker 持续返修。
 
+用户随后确认每个模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer 每次决策后通过 hook 唤起主 Agent，继续改进方案及开发循环，直至规划内容完成。各模块保持长期负责的 Worker，子 Agent 写域互斥、全局重操作串行；hook 复用原 Orca Run 的真实投递及唤醒，主控实际读取并回复才确认唤起。
+
 Morphogenesis 当前源码 `ddd2849afe330bf221d405dc2b91948c2416bd47` 的任务账本、Worker 有限循环与拓扑裁剪作为只读参考；其旧 mock/fixture、Python 运行环境和中心调度不迁入 Astrocyte。任务/事件事实保留，低活动连接和 Worker 退出需由真实规则及证据说明。具体实现先核现有 Mission/WorkItem/租约和执行后端接口，保持单一后端执行权威；该方向不改变原生文件/命令工具关闭、S3 预算和能力证据、资料外发及具体批准等既有条件。当前任务见 [动态 DAG 开发计划](../tasks/dynamic-dag-loop-20261019.md)。
 
 ## 经验检索结果写入交接上下文的方式（2026-10-17，待答）
