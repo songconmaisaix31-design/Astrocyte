@@ -29,6 +29,11 @@ type storedNativeMessage struct {
 	PreparedAt         time.Time            `json:"prepared_at"`
 	ObjectRef          string               `json:"object_ref"`
 	Phase              string               `json:"phase"`
+	ScopeKind          string               `json:"scope_kind"`
+	BindingID          string               `json:"binding_id"`
+	LeaseWorkItemID    string               `json:"lease_work_item_id"`
+	LeaseMissionID     string               `json:"lease_mission_id"`
+	LeaseFence         int64                `json:"lease_fence"`
 }
 
 func storeNativeMessage(record workspace.NativeMessagePreparation) storedNativeMessage {
@@ -36,7 +41,8 @@ func storeNativeMessage(record workspace.NativeMessagePreparation) storedNativeM
 	return storedNativeMessage{Session: localNativeSessionForStorage(i.Session), OperationID: i.OperationID,
 		ActorID: i.ActorID, ActorKind: i.ActorKind, ActorProjectID: i.ActorProjectID, ControllerID: i.ControllerID,
 		StartupOperationID: i.StartupOperationID, WorkspaceRoot: i.WorkspaceRoot, PreparedAt: i.PreparedAt,
-		ObjectRef: record.ObjectRef, Phase: record.Phase}
+		ObjectRef: record.ObjectRef, Phase: record.Phase, ScopeKind: record.Scope.Kind, BindingID: record.Scope.BindingID,
+		LeaseWorkItemID: record.Lease.WorkItemID, LeaseMissionID: record.Lease.MissionID, LeaseFence: record.Lease.Fence}
 }
 
 func (record storedNativeMessage) preparation() workspace.NativeMessagePreparation {
@@ -44,7 +50,9 @@ func (record storedNativeMessage) preparation() workspace.NativeMessagePreparati
 		Session: record.Session, OperationID: record.OperationID, ActorID: record.ActorID, ActorKind: record.ActorKind,
 		ActorProjectID: record.ActorProjectID, ControllerID: record.ControllerID, StartupOperationID: record.StartupOperationID,
 		WorkspaceRoot: record.WorkspaceRoot, PreparedAt: record.PreparedAt,
-	}, ObjectRef: record.ObjectRef, Phase: record.Phase}
+	}, ObjectRef: record.ObjectRef, Phase: record.Phase,
+		Scope: workspace.NativeMessageScope{Kind: record.ScopeKind, BindingID: record.BindingID},
+		Lease: workspace.NativeMessageLease{WorkItemID: record.LeaseWorkItemID, MissionID: record.LeaseMissionID, Fence: record.LeaseFence}}
 }
 
 func (db *DB) RequireNativeMessageOutsideTx(ctx context.Context) error {
@@ -105,6 +113,9 @@ func (db *DB) LoadNativeMessagePreparation(ctx context.Context, sessionID, opera
 	if !exists {
 		return workspace.NativeMessagePreparation{}, apierrors.NewNotFound("prepared native input", operationID)
 	}
+	if err := workspace.ValidateNativeMessageScope(record.preparation().Scope); err != nil {
+		return workspace.NativeMessagePreparation{}, err
+	}
 	if record.OperationID != operationID || record.Session.ID != sessionID || record.ControllerID == "" || record.StartupOperationID == "" || record.ActorID == "" || (record.ActorKind != "human" && record.ActorKind != "agent") || record.ObjectRef == "" || record.PreparedAt.IsZero() || (record.Phase != "prepared" && record.Phase != "send_attempted") {
 		return workspace.NativeMessagePreparation{}, errors.New("stored native input lacks its original fixed identity or delivery phase")
 	}
@@ -133,6 +144,9 @@ func (db *DB) SaveNativeMessagePreparation(ctx context.Context, session domain.N
 		return err
 	}
 	record := storeNativeMessage(prepared)
+	if err := workspace.ValidateNativeMessageScope(prepared.Scope); err != nil {
+		return err
+	}
 	op := record.OperationID
 	if op == "" || record.Session.ID != session.ID || record.Session.ProjectID != session.ProjectID || record.Session.NativeID != session.NativeID || record.ActorID == "" || (record.ActorKind != "human" && record.ActorKind != "agent") || record.ControllerID == "" || record.StartupOperationID == "" || record.WorkspaceRoot == "" || record.PreparedAt.IsZero() || record.ObjectRef == "" {
 		return errors.New("native input preparation requires complete original private metadata")
@@ -144,6 +158,9 @@ func (db *DB) SaveNativeMessagePreparation(ctx context.Context, session domain.N
 	previous, exists := records[op]
 	switch expectedPhase {
 	case "":
+		if prepared.Lease != (workspace.NativeMessageLease{}) {
+			return errors.New("new input cannot already carry an execution lease")
+		}
 		if exists || record.Phase != "prepared" || previousSession.PendingOperation != "" || previousSession.StopConfirmed || previousSession.Ownership != "owned" || previousSession.NativeID != session.NativeID || len(records) >= 64 {
 			return conflict("native input cannot replace a prior operation or unsettled session")
 		}
@@ -166,6 +183,14 @@ func (db *DB) SaveNativeMessagePreparation(ctx context.Context, session domain.N
 		previous.Phase = "send_attempted"
 		if !reflect.DeepEqual(previous, record) || !reflect.DeepEqual(previousSession, session) {
 			return conflict("original prepared native input or session changed before sending")
+		}
+	case "lease_bound":
+		if !exists || previous.Phase != "prepared" || record.Phase != "prepared" || previous.ScopeKind != "swarm" || previous.BindingID == "" || previous.LeaseFence != 0 || previous.LeaseWorkItemID != "" || previous.LeaseMissionID != "" || record.LeaseFence < 1 || record.LeaseWorkItemID == "" || record.LeaseMissionID == "" {
+			return conflict("original Swarm preparation cannot replace its first lease")
+		}
+		previous.LeaseFence, previous.LeaseWorkItemID, previous.LeaseMissionID = record.LeaseFence, record.LeaseWorkItemID, record.LeaseMissionID
+		if !reflect.DeepEqual(previous, record) || !reflect.DeepEqual(previousSession, session) {
+			return conflict("lease binding changed the original native preparation")
 		}
 	default:
 		return errors.New("unsupported native preparation transition")

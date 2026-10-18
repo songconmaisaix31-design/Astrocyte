@@ -7,6 +7,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
+	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
@@ -45,6 +46,17 @@ func (s *RelayPreparedMemberEvidenceSource) ReadPreparedMemberInput(ctx context.
 	input, err := s.ReadPreparedNativeSession(ctx, sessionID, operationID)
 	if err != nil {
 		return swarm.PreparedMemberInput{}, err
+	}
+	reader, ok := s.prepared.(workspace.SwarmNativeMessagePreparationStore)
+	if !ok {
+		return swarm.PreparedMemberInput{}, nativeError(apierrors.UnsupportedCapability, "actual explicit Swarm preparation reader is required")
+	}
+	prepared, err := reader.ReadSwarmNativeMessagePreparation(ctx, sessionID, operationID)
+	if err != nil {
+		return swarm.PreparedMemberInput{}, err
+	}
+	if !reflect.DeepEqual(input, prepared.Input) || prepared.Scope.Kind != "swarm" || prepared.Scope.BindingID == "" || prepared.Lease != (workspace.NativeMessageLease{}) {
+		return swarm.PreparedMemberInput{}, nativeError(apierrors.ScopeDenied, "claim requires the original explicit Swarm input before its first lease")
 	}
 	return swarm.PreparedMemberInput{
 		OperationID: input.OperationID, SessionID: input.Session.ID, NativeSessionID: input.Session.NativeID,

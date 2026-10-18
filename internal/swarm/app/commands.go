@@ -377,6 +377,10 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 	if s.members == nil || s.evidence == nil || s.ownership == nil {
 		return out, domain.Failure(apierrors.UnsupportedCapability, "real native binding, evidence and ownership are not configured")
 	}
+	binder, ok := s.members.(PreparedMemberLeaseBinder)
+	if !ok {
+		return out, domain.Failure(apierrors.UnsupportedCapability, "actual original Swarm preparation lease binder is required")
+	}
 	if _, err := uuid.Parse(c.OperationID); err != nil {
 		return out, domain.Failure(apierrors.ValidationFailed, "stable UUID operation identity required")
 	}
@@ -545,6 +549,9 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 				return err
 			}
 			if err = tx.SaveLease(out); err != nil {
+				return err
+			}
+			if err = binder.BindPreparedMemberLease(ctx, out); err != nil {
 				return err
 			}
 			return finish(tx, p, "claim_work_item", c.Meta, d, out, "work_item_claimed", w.ID, w.Version)

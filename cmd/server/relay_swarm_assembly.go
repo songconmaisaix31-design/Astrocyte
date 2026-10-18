@@ -44,6 +44,19 @@ func assembleSwarmLedger(services *httpapi.Services, db *sqlite.DB, registry *ag
 	if err != nil {
 		return err
 	}
+	configurator, ok := services.LocalProjects.(interface {
+		ConfigureNativeMessageAuthorizer(workspace.NativeMessageAuthorizer) error
+	})
+	if !ok {
+		return errors.New("Swarm requires the actual Workspace native send authorization configurator")
+	}
+	authorizer, err := sqlite.NewSwarmNativeMessageAuthorizer(db, grants, service)
+	if err != nil {
+		return err
+	}
+	if err := configurator.ConfigureNativeMessageAuthorizer(authorizer); err != nil {
+		return err
+	}
 	services.SwarmS3 = service
 	return nil
 }
