@@ -22,7 +22,7 @@ Orca 原 automation run 6 `6f1eca37-6071-43e3-bd1b-de22dca78993`（计划10-18�
 
 主控已发布准确 HEAD 的 [最终 review](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5563954154)。同一开发 Agent 已修复资源刷新可改绑或扩大范围的 P1，以及内容 level 缺失/null 未立即拒绝的 P2；当前没有追加业务代码修改要求。前端 typecheck/lint/build、53项显示与参数规则、两视口10项实际 HTTP/DOM/键盘检查、返修后四个 Go 测试函数、全仓 go vet/build、契约生成一致性与43包架构检查通过；无测试函数的包只计编译。资源守卫、单 worker、BelowNormal、Go 单并发及 Node 堆限制持续执行。命令、原件和实际剩余范围见开发树 `docs/standards/frontend-observatory-20261018.md` 与 [本轮计划](tasks/frontend-observatory-pr-20261018.md)。
 
-Agent 在线 DAG 的主动规划/现有事件投影选择仍待用户答复，尚未实施，现有拓扑入口保持明确禁用。真实 OpenViking 正向入库、任务完成、未知外部副作用、检索及分层读取未验收，尚无实际实例配置；完整默认 CI 未执行、未通过，提交保持 `[skip ci]`。构建保留717.36kB JS分块提示及契约13项既有警告。PR #1/#2 均未合并，没有共享部署、重新打包或发布；原生工具、S3 等待答条件保持。
+Agent 在线动态 DAG 已按2026-10-19用户确认进入上节独立开发循环，657基线的拓扑入口保持明确禁用，候选尚未验收。真实 OpenViking 正向入库、任务完成、未知外部副作用、检索及分层读取未验收，尚无实际实例配置；完整默认 CI 未执行、未通过，提交保持 `[skip ci]`。构建保留717.36kB JS分块提示及契约13项既有警告。PR #1/#2 均未合并，没有共享部署、重新打包或发布；原生工具、S3 等待答条件保持。
 
 唯一开发 Agent：Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`，工作树 `C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018`；实际客户端 Codex 0.162.0 / 模型 GPT-6.1-Sol xhigh fast。Run `run_73578b70c449`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。正式 worker_done `msg_224a0d0c68be` 已收到，自有验证 server/Go/Playwright 进程已停止；主控已立即官方释放准确 Dispatch，回执 `released / closed_agent_terminal / transcript captured`，未关闭其他应用。历史旧 Dispatch 的 `release_unknown` 继续保持原记录。
 

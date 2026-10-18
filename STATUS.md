@@ -20,7 +20,7 @@
 
 前端 typecheck/lint/build、53项显示与参数规则、两视口10项真实页面检查、返修后四个 Go 测试函数、全仓 vet/build、契约一致性与43包架构检查通过；编译、测试和服务按既定资源限制串行运行。原件和完整命令见开发树 `docs/standards/frontend-observatory-20261018.md`，交接见 [本轮计划](tasks/frontend-observatory-pr-20261018.md)。同一开发 Agent 已正式 worker_done，自有验证服务已停止；准确 Dispatch `ctx_06a3baf3e8db` 已官方释放，回执 `released / closed_agent_terminal / transcript captured`。
 
-Agent 在线 DAG 生成方式待用户答复，尚未实施；真实 OpenViking 正向链路未验收，完整默认 CI 未执行、未通过。PR 保持 Draft；产品集成分支仍为 `f17a491c`，PR #1/#2 未合并，没有共享部署、打包或发布。原生权限及其他未答业务选择保持。
+Agent 在线动态 DAG 已按2026-10-19用户确认进入上节开发循环，候选尚未验收；真实 OpenViking 正向链路未验收，完整默认 CI 未执行、未通过。PR 保持 Draft；产品集成分支仍为 `f17a491c`，PR #1/#2 未合并，没有共享部署、打包或发布。原生权限及其他未答业务选择保持。
 
 ## Swarm 发送前租约校验已提 PR 并完成代码 review（2026-10-18）
 

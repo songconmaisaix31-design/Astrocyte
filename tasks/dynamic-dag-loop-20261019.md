@@ -21,3 +21,7 @@ Reviewer 比较基线与候选在相同实际来源下的可用能力：从禁�
 重操作只有一个串行窗口：CPU<70%、可用内存≥4GiB，间隔2–5秒两次采样；BelowNormal；Go GOMAXPROCS=1 / GOFLAGS=-p=1 / GOMEMLIMIT=256MiB；Node max-old-space-size=512、浏览器单 worker、最多一个验证服务。不足时只做静态检查；不关闭用户应用。所有编辑使用文件编辑工具，无 mock/伪 API/伪 CLI/伪原生/新增 Skip；不使用视觉功能或 `/tmp`。临时产物在各自已忽略 `.verification/`，依赖复用现有缓存。
 
 原生文件/命令工具关闭、同 Mission 后端独占、S3 未答、实际作品和自由工具边界保持；没有可验证的真实来源时记录证据不足，不伪造生命周期。提交普通 push、保留清晰阶段、同一产品 PR，完整默认 CI 仍单列未通过。正式 worker_done 后主控立即安排原终端下一任务或官方释放，保留 transcript；不自动合并、部署、打包或发布。
+
+## 实际派发
+
+沿 Run `run_73578b70c449` / generation3 / 主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。Worker：Task `task_50ff3b1212c2`、Dispatch `ctx_e5e98fad4345`、终端 `term_fbfa5b1f-a75a-4f4f-a164-e41a0d0450c2`，复用原产品树/分支。Reviewer：Task `task_40fbc675246c`、Dispatch `ctx_5a4a6eff08a2`、终端 `term_df8b920b-ed76-480f-8fe6-b995a71a0652`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/dynamic-dag-review-20261019`、分支 `songconmaisaix31-design/dynamic-dag-review-20261019`。两者实际 Codex0.162.0 / GPT-6.1-Sol xhigh fast，继承已有设置，无模型覆盖。启动回执仅观察到 input_accepted；文本检查逐一确认任务停留 composer 后，各补一次裸 Enter，随后逐一观察到 Working 和实际读取，没有重复任务或进程。

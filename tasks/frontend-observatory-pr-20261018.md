@@ -2,6 +2,8 @@
 
 用户 2026-10-18 提供 `C:/Users/DW/Downloads/astrocyte-frontend-submission (2).zip`，要求使用新版前端、媒体与 Agent 使用真实 logo、协作网络由 Agent 在线生成 DAG、OpenViking 可选配置。当前采用一个开发 Agent 提 PR、主 Agent review；代码、测试、文档及返修由同一开发 Agent 完成，主 Agent 不修改产品业务代码。
 
+2026-10-19 后续开发按 [动态 DAG 与独立 Reviewer 循环](dynamic-dag-loop-20261019.md) 继续：用户已确认动态 DAG 与 Worker 消亡机制，主控建议、Worker 实现、独立 Reviewer 验证并决定是否接受。本文件以下保留前轮657基线的交付和验证记录。
+
 ## 基线与目标
 
 管理分支 `validation/v1-20261012` 接管基线 `9d63adee51d6d938e682947adf2833ac27b51052`；产品基线 `f17a491cdd6392829094c95a3e5efb6011362bc0`。前轮发送租约 Draft PR #1 为独立任务，不合并或覆盖。工作树固定为 `frontend-observatory-20261018`，实际分支为 `songconmaisaix31-design/frontend-observatory-20261018`，从准确产品基线创建，PR 目标为 `songconmaisaix31-design/works-relay-integration`。主控交接期间另有已提交的 V4 日运行记录 `8c3a45fd`，保持其原有内容，不改变正式实验。
