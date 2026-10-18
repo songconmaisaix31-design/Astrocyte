@@ -4,6 +4,8 @@
 
 17:06 用户要求继续开发并避免占满电脑资源。当前 32 个逻辑处理器，CPU 约 11%，总内存 31.3 GiB、可用 16.2 GiB。Orca 重启后原三个 Dispatch 已记为 failed / terminal_missing；D 留下五件未提交修改，T、P 尚无修改。保留原工作树和 Task，逐个恢复，同一时间只运行一个开发 Worker；Go 设置 `GOMAXPROCS=2`、`-p=1`，编译、测试、架构检查串行，使用 BelowNormal 优先级，临时 HTTP 服务最多一个。可用内存低于 8 GiB 或 CPU 持续超过 60% 时停止启动新的重操作并重新检查；不重做完整包和模型推理，不并行安装依赖。
 
+17:17 为在资源守卫生效期间继续实施，将尚无修改的 T/P 写域合并到当前 D Worker、`ddd-domain-20261018` 工作树和同名分支；D 成为本轮唯一开发写入者，同一 Worker 继续代码、测试、报告和返修。新增互斥写域仅为原 T/P 表中已授权路径：`.github/workflows/**`、`scripts/check*.mjs`、`release/**`、`docs/standards/ddd-validation-20261018.md`、`docs/release/windows.md`、`docs/release/ddd-release-20261018.md`。原 T/P Task 记录为已合并处理，不启动其他开发 Agent，原空工作树保留。资源不足时可继续静态代码和文档修改，全部编译、真实服务与验证等待资源恢复；完成后仍由唯一集成 Agent 合并并由主控复验。当前 D Dispatch 为 `ctx_5242bb05a538`，终端 `term_e0771644-b770-46ef-b28a-89cfc660acd1`。
+
 本轮使用三个互斥开发轨道。历史开发树和未接受提交保留；为避免历史未结算责任与分支差异影响本次源码，在准确产品基线上创建三个独立工作树。每轨固定同一 Agent 完成实现、真实验证、报告与返修。主 Agent 只维护本计划、状态、决定及验收；开发完成后由唯一集成 Agent 在原产品集成树普通合并，主 Agent 最终检查、提交与普通 push。
 
 | 轨道 | 固定工作树 / 分支 | write_paths 与结果 |
