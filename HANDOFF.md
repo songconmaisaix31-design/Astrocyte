@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## V4 日运行交接（2026-10-19 00:25）
+
+本次 automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发，仅处理 Asia/Shanghai 刚结束的昨日 2026-10-18。基线分支 `validation/v1-20261012` / HEAD `6042593e`，接管时工作区干净；当前 Codex `0.162.0`，EXPERIMENT 全文 SHA256 仍为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，运行路径相对已验 `d749ecb` 没有源码差异。
+
+本次锁门禁阻塞：`Test-Path` 确认原 `C:/Users/DW/AppData/Local/astrocyte-validation/` 根不存在，其下 `v1-20261012/v4-w2/locked-protocol-20261013-first.json`、正式 `v4-w1/formal-20261013-first/state.sqlite` 和此前两份 `user-sheet.json` 均不存在。仓库 SHA 与历史登记相同，真实 root/reviewed 锁及其 day0、路由和授权无法重新核验；原根不可用原因与是否已有搬迁记录未确认。未启动采集、Sleep、select-native、三臂、judge、预测评分或 import-user；本次新增事件、Sleep、回答、judge、人评和模型请求均0，没有生成评分表或终局报告。历史登记的25/84回答、2/7 judge、0/7人评本次无法从原件复核，不增加计数。
+
+Orca 原 automation run 6 `6f1eca37-6071-43e3-bd1b-de22dca78993`（计划10-18处理10-17）实际状态为 `skipped_missed`，没有派发；10-17保持未采集，不补写。固定 `gpt-6.1-sol/872000/4096/5094907/model_context_split` 和 B-only 边界保持，未重建锁、库或替代根，未重发 unknown，未修改业务、协议、题库或评分。
+
+阻塞 Handoff `msg_4254040ef904` 已持久排入原 W1 所属 Run `run_d09ff3f95ebc`，关联原 Task `task_e538790026ad`（仍 completed），请原 owner 只交接原根可用性、已有搬迁记录或恢复所需事实；未确认 owner 已读或修复。没有创建或重启 Agent、Task、Run、工作树或开发轨。本次没有可报告的实际可用评分表路径，原根恢复后仍须核验原锁及完整证据，漏日和未知送达保持原状。
+
+`Get-FileHash docs/EXPERIMENT.md -Algorithm SHA256`、`codex --version`、`Test-Path`、`orca automations show/runs --json` 及运行源码差异检查已执行；实验命令因锁门禁未执行。本次仅更新 HANDOFF/STATUS，使用普通 `[skip ci]` 提交和 push。automation 仍 enabled，Asia/Shanghai `20 0 14-23 10 *`，下一次10-20处理昨日；最后 D9 处理或任何窗口外唤醒须禁用。机器或 Orca 未实际执行的日程不记成功，终局门禁保持未满足。
+
 ## 新版前端接入（2026-10-18）
 
 用户提供新版前端 ZIP，要求真实媒体/Agent logo、Agent 在线生成协作 DAG、OpenViking 可选。主控已检查包与当前生产基线，维护 [本轮计划](tasks/frontend-observatory-pr-20261018.md)；压缩包属于旧基线独立沙盒示例，正式接入采用新版界面并消费现有真实 API。DAG 主动规划或现有事件投影的生成方式已异步询问，等待答复，其他独立开发继续。

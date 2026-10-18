@@ -1,5 +1,15 @@
 # Astrocyte 当前状态
 
+## V4 日运行（2026-10-19 00:25）：原外部证据根不可用，锁门禁阻塞
+
+本次仅处理刚结束的昨日 2026-10-18，automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发。仓库 EXPERIMENT 全文 SHA256 保持 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，Codex `0.162.0`，运行源码相对 `d749ecb` 无差异。
+
+原 `C:/Users/DW/AppData/Local/astrocyte-validation/` 根及其中权威锁、正式 SQLite、此前两份评分表的 `Test-Path` 均为 false；原根不可用原因、已有搬迁记录未确认。无法读取真实 root/reviewed 锁及 day0、路由和授权，本次未启动采集、Sleep、三臂、judge、成熟预测或人评导入，新增事件/回答/评分/模型请求均0，没有生成评分表。上次登记25/84回答、2/7 judge、0/7实际人评本次无法从原件复核；终局门禁未满足。
+
+10-18 的上一轮 run 6 `6f1eca37-6071-43e3-bd1b-de22dca78993` 实际 `skipped_missed`、未派发，10-17保持未采集。阻塞 Handoff `msg_4254040ef904` 已排入原 W1 所属 Run，原 Task 仍 completed，owner 已读与恢复未确认。未补写漏日、重发 unknown、重建锁或正式库；业务、协议、预算、题库、评分及原开发轨保持。
+
+已执行协议 SHA、CLI 版本、路径存在性、automation 状态/运行历史及运行源码差异检查；实验验证因锁门禁未执行。本次只更新 root HANDOFF/STATUS，普通 `[skip ci]` 提交并 push。automation 保持 enabled、Asia/Shanghai `20 0 14-23 10 *`，下一次10-20处理昨日；最后 D9 处理或窗口外唤醒须禁用。当前没有可报告的实际可用用户评分表路径。详情见 [HANDOFF](HANDOFF.md)。
+
 ## 新版前端正在接入（2026-10-18）
 
 用户确认使用提交 ZIP 的新版界面、真实品牌图标、Agent 在线 DAG 和可选 OpenViking。[当前计划](tasks/frontend-observatory-pr-20261018.md) 已建立；唯一开发 Agent 在 `songconmaisaix31-design/frontend-observatory-20261018` 分支从产品 `f17a491c` 开发，Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`。正式状态使用现有生产 API，包内沙盒状态不迁入。DAG 主动规划或现有事件投影的生成方式等待用户答复，页面和图标等独立开发继续。原生权限、未答业务选择与资源限制保持，前轮 PR #1 未合并。
