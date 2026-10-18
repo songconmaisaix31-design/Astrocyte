@@ -186,6 +186,14 @@ func run(logger *slog.Logger) (runErr error) {
 		ScholarSearcher:    importers.NewScholar(),
 	})
 	projectReferences.attention = attention
+	vikingGateway, err := resolveOpenViking()
+	if err != nil {
+		return fmt.Errorf("configure OpenViking: %w", err)
+	}
+	vikingService, err := attentionapp.NewOpenVikingService(ctx, attention, db, vikingGateway)
+	if err != nil {
+		return fmt.Errorf("initialize OpenViking: %w", err)
+	}
 	// This defer also covers a later startup error. It runs before the existing
 	// db.Close defer; absence on a later restart never counts as a confirmed exit.
 	nativeShutdownDone := false
@@ -223,6 +231,7 @@ func run(logger *slog.Logger) (runErr error) {
 	}
 	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
+		OpenViking:           vikingService,
 		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
 		Workbench:            sqlite.NewWorkbenchReader(readerRoot, protectedSources...),

@@ -1,5 +1,100 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/openviking/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read optional OpenViking configuration and verified identity */
+        get: operations["getOpenVikingStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}/openviking/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read actual persistent submissions in one project space */
+        get: operations["listOpenVikingSubmissions"];
+        put?: never;
+        /**
+         * Human approves sending one included fixed revision to the current destination
+         * @description Credentials do not authorize sending. Existing in-flight or unknown submissions prevent a second upstream action, including with a new request_id. No automatic replay.
+         */
+        post: operations["submitOpenVikingSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/openviking/submissions/{id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Observe the upstream task linked to one local submission
+         * @description Reads the persisted task_id and saves its actual observation. Never resubmits upload or resource creation.
+         */
+        post: operations["refreshOpenVikingSubmission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}/openviking/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Human searches the current project destination */
+        post: operations["searchOpenVikingProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}/openviking/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read one authorized resource tier using its actual URI
+         * @description L0 and L1 read directory abstract or overview; L2 reads file text. URI and current fixed project permission are checked before and after reading.
+         */
+        post: operations["readOpenVikingProjectContent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/experiences/completions": {
         parameters: {
             query?: never;
@@ -3066,6 +3161,85 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        OpenVikingStatusV1: {
+            /** @constant */
+            schema_version: 1;
+            configured: boolean;
+            connected: boolean;
+            base_url: string;
+            root_uri: string;
+            version: string;
+            user: string;
+            account: string;
+            message: string;
+        };
+        OpenVikingSubmissionV1: {
+            id: string;
+            version: number;
+            request_id: string;
+            space_id: string;
+            space_version: number;
+            material_id: string;
+            revision: number;
+            locator: string;
+            title: string;
+            destination: string;
+            base_url: string;
+            account: string;
+            user: string;
+            actor_id: string;
+            /** Format: date-time */
+            approved_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** @enum {string} */
+            status: "submitting" | "submitted" | "pending" | "running" | "cancelling" | "completed" | "failed" | "cancelled" | "unknown";
+            stage: string;
+            temp_file_id: string;
+            task_id: string;
+            root_uri: string;
+            error: string;
+            task_snapshot: {
+                [key: string]: unknown;
+            } | null;
+        };
+        OpenVikingSubmissionListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["OpenVikingSubmissionV1"][];
+        };
+        OpenVikingSubmissionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            submission: components["schemas"]["OpenVikingSubmissionV1"];
+            task?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        OpenVikingSubmitRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            /** @constant */
+            expected_version: 0;
+            expected_space_version: number;
+            material_id: string;
+            revision: number;
+            destination: string;
+            base_url: string;
+            account: string;
+            user: string;
+        };
+        OpenVikingHitV1: {
+            uri: string;
+            abstract: string;
+            overview: string | null;
+            /** @enum {integer} */
+            level: 0 | 1 | 2;
+            score: number;
+            /** @constant */
+            context_type: "resource";
+        };
         CaptureCompletionExperienceRequestV1: {
             /** @constant */
             schema_version: 1;
@@ -7501,6 +7675,203 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getOpenVikingStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unconfigured or verified connected state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenVikingStatusV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    listOpenVikingSubmissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual local records including unknown outcomes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenVikingSubmissionListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    submitOpenVikingSource: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenVikingSubmitRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Submission recorded; completed requires actual task observation */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenVikingSubmissionResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    refreshOpenVikingSubmission: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual task observation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpenVikingSubmissionResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    searchOpenVikingProject: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    query: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Verified project resources; out-of-scope results fail the whole response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        schema_version: 1;
+                        items: components["schemas"]["OpenVikingHitV1"][];
+                    };
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readOpenVikingProjectContent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    uri: string;
+                    /** @enum {integer} */
+                    level: 0 | 1 | 2;
+                };
+            };
+        };
+        responses: {
+            /** @description Actual string content from the selected tier */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        schema_version: 1;
+                        content: string;
+                    };
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
     captureCompletionExperience: {
         parameters: {
             query?: never;

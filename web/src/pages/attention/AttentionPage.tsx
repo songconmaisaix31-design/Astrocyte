@@ -14,6 +14,7 @@ import { MaterialCover } from '../../components/MaterialCover';
 import { BrandIcon } from '../../components/BrandIcon';
 import { Icon } from '../../components/DesignIcons';
 import { ImportForm } from './ImportForm';
+import { OpenVikingPanel } from './OpenVikingPanel';
 import { useImportDraft } from './useImportDraft';
 import { JobsPanel } from './JobsPanel';
 import { AccountsPanel } from './AccountsPanel';
@@ -90,6 +91,7 @@ export function AttentionPage({ query }: { query: string }) {
           <SpacesPanel materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
         </div></details>
       </div></SectionCard>
+      <OpenVikingPanel />
       <JudgmentDelegationWorkspace />
     </div>
     {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm draft={importDraft} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
@@ -101,7 +103,7 @@ export function AttentionPage({ query }: { query: string }) {
 export function MaterialList({ items, onSelect }: { items: Material[]; onSelect: (m: Material) => void }) {
   if (!items.length) return <EmptyState title="没有匹配的素材" description="尝试其他搜索词或资料类型" />;
   return <ul className={`${styles.list} ac-material-grid`} role="list">{items.map(m => <li key={m.id} className={`${styles.listItem} ac-material-card`} tabIndex={0} role="button" onClick={() => onSelect(m)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(m); } }}>
-    <MaterialCover kind={m.kind} /><div className="ac-material-body"><div className={styles.itemHeader}><span className={`${styles.itemTitle} line-clamp-2`}>{m.title || m.source_locator}</span><div className={styles.actions}><StatusBadge value={m.lifecycle} label={lifecycleLabel(m.lifecycle)} />{m.import_status && <StatusBadge value={m.import_status} label={importStatusLabel(m.import_status)} />}</div></div>
+    <MaterialCover kind={m.kind} sourceLocator={m.source_locator} /><div className="ac-material-body"><div className={styles.itemHeader}><span className={`${styles.itemTitle} line-clamp-2`}>{m.title || m.source_locator}</span><div className={styles.actions}><StatusBadge value={m.lifecycle} label={lifecycleLabel(m.lifecycle)} />{m.import_status && <StatusBadge value={m.import_status} label={importStatusLabel(m.import_status)} />}</div></div>
     <div className={styles.itemMeta}><span>{materialKindLabel(m.kind)}</span><span>{m.source_locator}</span><span>v{m.current_revision}</span></div><p>收藏理由 · {m.collection_reason?.trim() || '未提供'}</p><p className={styles.note}>人类关注 {m.human_usage_count ?? '未知'} · 机器使用 {m.agent_usage_count ?? '未知'}</p>{m.ranking_reason && <p className={styles.note}>排序依据 · {m.ranking_reason}</p>}</div>
   </li>)}</ul>;
 }

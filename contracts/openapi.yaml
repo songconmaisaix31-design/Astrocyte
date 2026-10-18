@@ -51,6 +51,115 @@ tags:
   - name: relay
     description: Human confirmed Works Relay access layer
 paths:
+  /openviking/status:
+    get:
+      operationId: getOpenVikingStatus
+      summary: Read optional OpenViking configuration and verified identity
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      responses:
+        '200': {description: Unconfigured or verified connected state, content: {application/json: {schema: {$ref: '#/components/schemas/OpenVikingStatusV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /project-spaces/{id}/openviking/submissions:
+    get:
+      operationId: listOpenVikingSubmissions
+      summary: Read actual persistent submissions in one project space
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, minLength: 1}}]
+      responses:
+        '200': {description: Actual local records including unknown outcomes, content: {application/json: {schema: {$ref: '#/components/schemas/OpenVikingSubmissionListV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+    post:
+      operationId: submitOpenVikingSource
+      summary: Human approves sending one included fixed revision to the current destination
+      description: Credentials do not authorize sending. Existing in-flight or unknown submissions prevent a second upstream action, including with a new request_id. No automatic replay.
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, minLength: 1}}, {$ref: '#/components/parameters/S2Idempotency'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/OpenVikingSubmitRequestV1'}}}
+      responses:
+        '202': {description: Submission recorded; completed requires actual task observation, content: {application/json: {schema: {$ref: '#/components/schemas/OpenVikingSubmissionResultV1'}}}}
+        '400': {$ref: '#/components/responses/S2CommandError'}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '409': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /openviking/submissions/{id}/refresh:
+    post:
+      operationId: refreshOpenVikingSubmission
+      summary: Observe the upstream task linked to one local submission
+      description: Reads the persisted task_id and saves its actual observation. Never resubmits upload or resource creation.
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, minLength: 1}}, {$ref: '#/components/parameters/ProductCSRF'}]
+      responses:
+        '200': {description: Actual task observation, content: {application/json: {schema: {$ref: '#/components/schemas/OpenVikingSubmissionResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '409': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /project-spaces/{id}/openviking/search:
+    post:
+      operationId: searchOpenVikingProject
+      summary: Human searches the current project destination
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, minLength: 1}}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [query], properties: {query: {type: string, minLength: 1, maxLength: 8000}}}
+      responses:
+        '200':
+          description: Verified project resources; out-of-scope results fail the whole response
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: false, required: [schema_version, items], properties: {schema_version: {const: 1}, items: {type: array, items: {$ref: '#/components/schemas/OpenVikingHitV1'}}}}
+        '400': {$ref: '#/components/responses/S2CommandError'}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /project-spaces/{id}/openviking/content:
+    post:
+      operationId: readOpenVikingProjectContent
+      summary: Read one authorized resource tier using its actual URI
+      description: L0 and L1 read directory abstract or overview; L2 reads file text. URI and current fixed project permission are checked before and after reading.
+      tags: [materials]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, minLength: 1}}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [uri, level], properties: {uri: {type: string, minLength: 1}, level: {type: integer, enum: [0, 1, 2]}}}
+      responses:
+        '200':
+          description: Actual string content from the selected tier
+          content:
+            application/json:
+              schema: {type: object, additionalProperties: false, required: [schema_version, content], properties: {schema_version: {const: 1}, content: {type: string}}}
+        '400': {$ref: '#/components/responses/S2CommandError'}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
   /experiences/completions:
     post:
       operationId: captureCompletionExperience
@@ -9187,6 +9296,91 @@ components:
   responses:
     S2CommandError: {description: 'Invalid command, current permission denial, version conflict or unavailable dependency. No execution retry.', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
   schemas:
+    OpenVikingStatusV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, configured, connected, base_url, root_uri, version, user, account, message]
+      properties:
+        schema_version: {const: 1}
+        configured: {type: boolean}
+        connected: {type: boolean}
+        base_url: {type: string}
+        root_uri: {type: string}
+        version: {type: string}
+        user: {type: string}
+        account: {type: string}
+        message: {type: string}
+    OpenVikingSubmissionV1:
+      type: object
+      additionalProperties: false
+      required: [id, version, request_id, space_id, space_version, material_id, revision, locator, title, destination, base_url, account, user, actor_id, approved_at, updated_at, status, stage, temp_file_id, task_id, root_uri, error, task_snapshot]
+      properties:
+        id: {type: string, minLength: 1}
+        version: {type: integer, minimum: 1}
+        request_id: {type: string, minLength: 1}
+        space_id: {type: string, minLength: 1}
+        space_version: {type: integer, minimum: 1}
+        material_id: {type: string, minLength: 1}
+        revision: {type: integer, minimum: 1}
+        locator: {type: string}
+        title: {type: string}
+        destination: {type: string}
+        base_url: {type: string}
+        account: {type: string}
+        user: {type: string}
+        actor_id: {type: string}
+        approved_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+        status: {type: string, enum: [submitting, submitted, pending, running, cancelling, completed, failed, cancelled, unknown]}
+        stage: {type: string}
+        temp_file_id: {type: string}
+        task_id: {type: string}
+        root_uri: {type: string}
+        error: {type: string}
+        task_snapshot: {type: [object, 'null'], additionalProperties: true}
+    OpenVikingSubmissionListV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, items]
+      properties:
+        schema_version: {const: 1}
+        items: {type: array, items: {$ref: '#/components/schemas/OpenVikingSubmissionV1'}}
+    OpenVikingSubmissionResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, submission]
+      properties:
+        schema_version: {const: 1}
+        submission: {$ref: '#/components/schemas/OpenVikingSubmissionV1'}
+        task:
+          type: [object, 'null']
+          additionalProperties: true
+    OpenVikingSubmitRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, expected_space_version, material_id, revision, destination, base_url, account, user]
+      properties:
+        schema_version: {const: 1}
+        request_id: {type: string, minLength: 1}
+        expected_version: {type: integer, const: 0}
+        expected_space_version: {type: integer, minimum: 1}
+        material_id: {type: string, minLength: 1}
+        revision: {type: integer, minimum: 1}
+        destination: {type: string, minLength: 1}
+        base_url: {type: string, minLength: 1}
+        account: {type: string, minLength: 1}
+        user: {type: string, minLength: 1}
+    OpenVikingHitV1:
+      type: object
+      additionalProperties: false
+      required: [uri, abstract, overview, level, score, context_type]
+      properties:
+        uri: {type: string, minLength: 1}
+        abstract: {type: string}
+        overview: {type: [string, 'null']}
+        level: {type: integer, enum: [0, 1, 2]}
+        score: {type: number}
+        context_type: {const: resource}
     CaptureCompletionExperienceRequestV1:
       type: object
       additionalProperties: false

@@ -11,6 +11,7 @@ import type { components } from '../../api/schema';
 import { PageFrame, RailSummary } from '../../components/PageFrame';
 import { matchesQuery } from '../../utils/search';
 import { Icon } from '../../components/DesignIcons';
+import { BrandIcon } from '../../components/BrandIcon';
 import styles from './WorkspacePage.module.css';
 import { LocalAgentsPanel } from './LocalAgentsPanel';
 import { ManagedProjectsPanel } from './ManagedProjectsPanel';
@@ -153,7 +154,7 @@ export function SessionList({ items, onSelect }: { items: Session[]; onSelect: (
         <li key={s.id} className={`${styles.listItem} ac-session-card`} tabIndex={0} role="button"
           onClick={() => onSelect(s)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(s); }}}>
-          <span className="ac-avatar green">{s.adapter.slice(0, 1).toUpperCase()}</span><div className={styles.itemHeader}>
+          <span className="ac-avatar green"><BrandIcon name={s.adapter} /></span><div className={styles.itemHeader}>
             <span className={styles.itemTitle}>{s.adapter} · {s.id}</span>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
               <StatusBadge value={s.binding_status} label={bindingStatusLabel(s.binding_status)} />
