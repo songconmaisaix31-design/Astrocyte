@@ -92,13 +92,13 @@ Worker 身份使用真实 session 与 binding，operation 为参与记录的执�
 
 ## Reviewer 决策通知 hook
 
-主控在 `msg_580f42fd9146` 追加授权 `scripts/review-decision-hook.ps1`。Reviewer 每次实际形成静态或运行决策后，使用自身当前 Run/Task/Dispatch/发信终端、准确40位候选 SHA、`accept` / `revise` / `insufficient_evidence`、实际非空报告绝对路径和简短依据调用脚本。
+主控追加授权的唯一入口为 `scripts/review-decision-hook.mjs`，使用项目现有Node.js。Reviewer 每次实际形成静态或运行决策后，使用自身当前 Run/Task/Dispatch/发信终端、准确40位候选 SHA、`accept` / `revise` / `insufficient_evidence`、实际非空报告绝对路径和简短依据调用脚本。
 
-脚本先验证必填参数与报告文件，再通过本机已安装 `orca.exe orchestration send` 单次发送 `type=handoff`、`subject=ReviewDecision` 到指定 `run:` 主控邮箱，使用 typed Task/Dispatch/report-path 参数。正文保留候选、决策、审查身份、报告与依据；原生 JSON 回执直接输出。失败立即返回，未知发送不自动重试。没有守护进程、定时任务或另一份调度状态。
+脚本通过标准 `parseArgs` 验证必填参数，通过真实文件状态核非空报告，再用 `spawnSync(shell:false, windowsHide:true)` 和参数数组调用本机已安装 `orca.exe orchestration send`。单次发送 `type=handoff`、`subject=ReviewDecision` 到指定 `run:` 主控邮箱，使用 typed Task/Dispatch/report-path 参数。正文保留候选、决策、审查身份、报告与依据；原生JSON回执直接输出并用标准JSON.parse核查。调用最多等待60秒，失败或未知发送立即返回且不自动重试。Windows默认使用本轮已核实的安装路径；显式 `--orca-path` 必须为当前会话已选可执行文件的绝对路径，其他平台必须明确传入。没有守护进程、定时任务或另一份调度状态。
 
 发送成功只表示持久入队及原生唤醒请求；主控收到并回复后才记录实际唤起。Worker 不替 Reviewer 发送接受或退回决定。本轮 hook 的正向通知由独立 Reviewer 使用真实决定执行。
 
-已执行 PowerShell AST语法检查及两次实际脚本拒绝检查：未提供参数立即以非零退出；使用本轮真实身份和候选但缺少报告文件时在调用Orca前非零退出。两项原件分别为本树 `.verification/hook-missing-parameter.log` 和 `hook-missing-report.log`。`git diff --check` 通过。没有发送审查决定，也没有将参数检查计为实际唤起。
+历史验证证据：原PowerShell入口的AST语法与缺参数/缺报告拒绝检查通过，原件为本树 `.verification/hook-missing-parameter.log` 和 `hook-missing-report.log`；Reviewer真实调用被本机签名策略以UnauthorizedAccess拒绝，未调用Orca。当前Node入口由主控在 `msg_33fccc4f5eed` 明确批准，正向通知待Reviewer使用真实决定执行，不修改执行策略、不代发审查决定。`git diff --check` 通过；参数检查不计为实际唤起。
 
 ## 可运行验收与阻塞
 
