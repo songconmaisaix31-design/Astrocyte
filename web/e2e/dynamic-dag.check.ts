@@ -1,14 +1,21 @@
 import { expect, test } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
-import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { readFile, readdir, realpath, rename, writeFile } from 'node:fs/promises';
+import { join, sep } from 'node:path';
 import { startS1Server } from '../../tests/s1/server.mjs';
-import { humanAPI } from '../../tests/s1/api.mjs';
-import { importTrackedDocument, registerCurrentProject, writeWorks } from './realService';
+import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
+import { registerCurrentProject, repositoryRoot, writeWorks } from './realService';
 import type { components } from '../src/api/schema';
 
 type S = components['schemas'];
 type API = Awaited<ReturnType<typeof humanAPI>>;
+
+async function importFixedREADME(api: API) {
+  const sourceCommit = '657ca1464517a171ed50ddc8fcc787b237c44ad9';
+  const text = execFileSync('git', ['show', `${sourceCommit}:README.md`], { cwd: repositoryRoot, encoding: 'utf8' });
+  return importMaterial(api, { kind: 'text', adapter: 'manual', source_key: '', content_digest: '', source_locator: `https://github.com/songconmaisaix31-design/Astrocyte/blob/${sourceCommit}/README.md`, export_text: text, title: 'README.md', collection_reason: null, source_spans: ['whole document'] });
+}
 
 async function actualMission(api: API, project: S['LocalProjectV1'], idleSeconds: number) {
   const { goal } = await api.write('/goals', { expected_version: 0, goal: { project_id: project.id, title: '核查公开项目动态任务DAG', success_criteria: ['任务与来源、真实停止记录可回查'], priority: 1, status: 'active' } }) as S['S2GoalResultV1'];
@@ -32,7 +39,7 @@ test('真实依赖增长、事件回查、键盘、断线重连、停止历史�
     let api = await humanAPI(server.apiURL);
     const project = await registerCurrentProject(api);
     const { project: permitted } = await api.write(`/local-projects/${project.id}/settings`, { expected_revision: project.settings.revision, settings: { allow_directory: true, allowed_subdirs: ['.'], allowed_actions: ['create_mission', 'manage_work_items', 'read_swarm', 'recover_mission'], allowed_tools: [], external_model_cli: '', allow_agent_control: false } }, { method: 'PUT' }) as S['LocalProjectResultV1'];
-    await importTrackedDocument(api, 'README.md');
+    await importFixedREADME(api);
     const mission = await actualMission(api, permitted, 3600);
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -109,4 +116,95 @@ test('真实依赖增长、事件回查、键盘、断线重连、停止历史�
     expect(subsequentDAGRequests).toBe(countAfterNavigation);
     expect(errors).toEqual([]);
   } finally { await server.close({ preserveData: true }); }
+});
+
+test('任务依赖按需加载，真实分块缺失时局部报错并由人工重新加载恢复', async ({ page }) => {
+  test.setTimeout(120_000);
+  const dist = await realpath(fileURLToPath(new URL('../dist/', import.meta.url)));
+  expect(dist).toBe(join(await realpath(repositoryRoot), 'web', 'dist'));
+  const assets = await realpath(join(dist, 'assets'));
+  expect(assets.startsWith(`${dist}${sep}`)).toBe(true);
+  const entries = await readdir(assets);
+  const chunks = entries.filter(name => name.startsWith('MissionDAGView-') && name.endsWith('.js'));
+  expect(chunks).toHaveLength(1);
+  const chunk = await realpath(join(assets, chunks[0]));
+  const held = join(assets, `${chunks[0]}.verification-held`);
+  expect(chunk.startsWith(`${assets}${sep}`)).toBe(true);
+  expect(held.startsWith(`${assets}${sep}`)).toBe(true);
+  expect(entries).not.toContain(`${chunks[0]}.verification-held`);
+  const server = await startS1Server({ env: { ASTROCYTE_WEB_DIR: dist, OPENVIKING_BASE_URL: '', OPENVIKING_API_KEY: '', OPENVIKING_ACCOUNT: '', OPENVIKING_USER: '', OPENVIKING_ROOT_URI: '' } });
+  let moved = false;
+  try {
+    const api = await humanAPI(server.apiURL);
+    await importFixedREADME(api);
+    const index = await readFile(join(dist, 'index.html'));
+    const routes: { path: string; status: number; content_type: string }[] = [];
+    for (const path of ['/assets', '/assets/', '/cognition/evidence']) {
+      const route = await page.request.get(`${server.apiURL}${path}`);
+      expect(route.status()).toBe(200);
+      expect(route.headers()['content-type']).toMatch(/^text\/html/);
+      expect(await route.body()).toEqual(index);
+      routes.push({ path, status: route.status(), content_type: route.headers()['content-type'] });
+    }
+    const health = await page.request.get(`${server.apiURL}/api/v1/health`);
+    expect(health.status()).toBe(200);
+    expect(health.headers()['content-type']).toMatch(/^application\/json/);
+    expect(await health.json()).toMatchObject({ status: 'ok' });
+    const unknownAPI = await page.request.get(`${server.apiURL}/api/v1/dag-loading-missing`, { headers: { Cookie: api.cookie } });
+    expect(unknownAPI.status()).toBe(404);
+    expect(unknownAPI.headers()['content-type']).toMatch(/^application\/json/);
+    await writeFile(join(server.temporary, 'actual-static-routes.json'), JSON.stringify({ routes, api: [{ path: '/api/v1/health', status: health.status() }, { path: '/api/v1/dag-loading-missing', status: unknownAPI.status() }] }, null, 2), { flag: 'wx' });
+    const requests: string[] = [];
+    const failedRequests: { path: string; error: string | null }[] = [];
+    page.on('request', request => { if (new URL(request.url()).pathname.endsWith('.js')) requests.push(new URL(request.url()).pathname); });
+    page.on('requestfailed', request => failedRequests.push({ path: new URL(request.url()).pathname, error: request.failure()?.errorText ?? null }));
+    await rename(chunk, held);
+    moved = true;
+    try {
+      await page.goto(`${server.apiURL}/attention`);
+      await expect(page.locator('h1')).toHaveText('资料沉淀');
+      await expect(page.locator('main li[role="button"]').filter({ hasText: 'README.md' })).toBeVisible();
+      await page.waitForLoadState('networkidle');
+      expect(requests.some(path => path.endsWith(chunks[0]))).toBe(false);
+      const missingResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/assets/${chunks[0]}`);
+      await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群空间', exact: true }).click();
+      const response = await missingResponse;
+      expect(response.status()).toBe(404);
+      expect(response.headers()['cache-control']).toBe('no-store');
+      expect(response.headers()['content-type']).toMatch(/^text\/plain/);
+      const failure = page.getByRole('region', { name: '任务依赖加载错误', exact: true });
+      await expect(failure.getByRole('alert')).toContainText('任务依赖视图无法显示：');
+      await expect(failure.getByRole('alert')).toContainText(chunks[0]);
+      await expect(failure.getByRole('button', { name: '重新加载页面', exact: true })).toBeVisible();
+      await expect(page.getByRole('region', { name: '动态任务依赖', exact: true })).toHaveCount(0);
+      await expect(page.locator('h1')).toHaveText('蜂群空间');
+      await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '共同工作区', exact: true }).click();
+      await expect(page.locator('h1')).toHaveText('共同工作区');
+      await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群空间', exact: true }).click();
+      await expect(failure).toBeVisible();
+      const countBeforeWait = requests.filter(path => path.endsWith(chunks[0])).length;
+      await page.waitForTimeout(5500);
+      expect(requests.filter(path => path.endsWith(chunks[0]))).toHaveLength(countBeforeWait);
+      await writeFile(join(server.temporary, 'actual-missing-dag-chunk.json'), JSON.stringify({ chunk, requests, failedRequests, response: { status: response.status(), content_type: response.headers()['content-type'], cache_control: response.headers()['cache-control'], body_bytes: (await response.body()).length }, actual_error: await failure.getByRole('alert').textContent() }, null, 2), { flag: 'wx' });
+    } finally {
+      await rename(held, chunk);
+      moved = false;
+    }
+    const reload = page.getByRole('button', { name: '重新加载页面', exact: true });
+    await reload.focus();
+    const recoveredResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/assets/${chunks[0]}`);
+    await Promise.all([page.waitForEvent('load'), page.keyboard.press('Enter')]);
+    const recovered = await recoveredResponse;
+    expect(recovered.status()).toBe(200);
+    expect(recovered.headers()['content-type']).toMatch(/javascript/);
+    const recoveredBytes = (await recovered.body()).length;
+    expect(recoveredBytes).toBeGreaterThan(0);
+    await expect(page.getByRole('region', { name: '动态任务依赖', exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: '任务依赖加载错误', exact: true })).toHaveCount(0);
+    await writeFile(join(server.temporary, 'actual-recovered-dag-chunk.json'), JSON.stringify({ chunk, status: recovered.status(), content_type: recovered.headers()['content-type'], body_bytes: recoveredBytes }, null, 2), { flag: 'wx' });
+    expect(await realpath(chunk)).toBe(chunk);
+  } finally {
+    try { if (moved) await rename(held, chunk); }
+    finally { await server.close({ preserveData: true }); }
+  }
 });

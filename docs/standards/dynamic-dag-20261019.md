@@ -6,7 +6,7 @@
 
 本轮继续 Draft PR #2，不合并、部署、打包或发布。独立 Reviewer 使用 `dynamic-dag-review-20261019` 工作树，只审查业务并记录自己的验收结果。主控管理任务和资源窗口，同一实现 Worker 负责全部返修。
 
-实现源码提交为 `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`；后续报告提交只补充交付记录。该源码的实际检查见本文，独立Reviewer对准确候选的最终决定保持待验。
+动态DAG源码提交为 `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`，报告候选为 `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d`。独立Reviewer已接受该候选的人工依赖图、增长、来源、权限、恢复和无Worker停止构件，完整原生链路仍为证据不足；对应[CR 5564261919](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5564261919)由Reviewer本人发布。主控随后批准同一PR中的局部按需加载优化，实际范围与结果见下文。
 
 ## 起始基线的生产构件
 
@@ -168,3 +168,42 @@ Worker退出确认固定关联首个真实 `swarm.execution_exit_observed` 或 `
 - 确认字段编码属于参数规则测试；没有构造旧会话、claim、lease、退出或outbox。真实带Worker的过期租约、暂时失联、Stop/Recover并发、未知用量和首个退出来源的系统正向验收缺少合法原生来源，保留未验。
 - OpenViking未配置正向服务，真实远端提交/任务完成/未知副作用/检索/分层读取保持首轮未验；本轮通过其未配置回归。完整默认CI未执行、未通过。
 - 同一Draft PR继续普通push；没有合并、共享部署、打包或发布。独立Reviewer对准确候选的接受、退回或证据不足另行记录。
+
+## 局部按需加载优化
+
+主控在 `msg_d6a7d9dc26a5` 和 `msg_f3601a2c3d99` 批准按需加载，依据是b0单一JS资源774329bytes，全部页面静态导入DAG/Dagre。前端写域限定SwarmPage、dag目录、现有动态浏览器检查、AGENTS与本报告；必要静态资源修复另在 `msg_c962e8c17fc0` 精确批准 `internal/adapters/httpapi/server.go` 的spaHandler和相邻说明。契约、依赖、锁文件和其他Go保持。Worker维护PR，独立Reviewer发布针对准确Commit的CR。
+
+轻量 `MissionDAGRegion` 在模块顶层声明React.lazy，动态导入原 `MissionDAGView`，仅Swarm挂载该区域时加载；Suspense显示加载状态。外层局部ErrorBoundary保存并显示真实错误，人工“重新加载页面”调用浏览器整页reload，清除已缓存的失败模块Promise。没有自动重试或替代图。lazy身份及区域保持稳定，父组件刷新不会反复重挂载原图，原轮询、选择、权限和离页清理继续由原组件实现。设计已读取[React lazy文档](https://react.dev/reference/react/lazy)及[Error Boundary文档](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)。
+
+准确b0构建复用实际构建日志 `dag-build-20261019-015756-863.log` 和本树 `web/dist`，在源码修改前复制至已忽略 `.verification/dag-loading-b0-dist`，保留完整产物。比较固定使用657提交的公开README原文与精确locator；两个视口分别为attention和workspace创建全新context，收集全部实际JS响应body的bytes、编码、文件清单，再记录进入Swarm后的新增JS。全构建未压缩与gzip总量分别计算。候选使用同一测量脚本、来源及服务配置，原件在 `.verification/dag-loading-*/actual-js-measurement.json`。
+
+真实缺失分块验收仅移动本树已忽略dist中精确核查的DAG文件，finally原样恢复；不劫持响应。静态服务仅对 `os.ErrNotExist` 且 `/assets/` 前缀的缺失文件返回404和 `Cache-Control:no-store`，已有文件仍由标准FileServer处理，实际目录、其他页面路径与API行为保持。局部区域显示实际导入错误，恢复后由用户在同一context键盘触发普通整页reload，核真实200/JavaScript响应与依赖视图。验收同时检查实际 `/assets`、`/assets/` 和深层页面返回准确构建index正文、API继续返回JSON、非Swarm首次页面、其他导航及无自动重试。直接进入Swarm的原动态增长/选择/权限/断线检查继续执行。
+
+两次最初测量因h1的CSS伪元素影响完整可访问名称而超时，实际JS200、pageErrors为0。失败原件及实际DOM文本保留；后续使用可见h1及准确textContent同时核验。早期HEAD来源样本单列保留；首组固定657来源的b0比较目录为 `.verification/dag-loading-b0a21a2c-1792348172803`，四个全新context均实际加载774329bytes、进入Swarm追加0bytes。
+
+首次真实恢复验收原件 `dag-browser-20261019-023120-033.log` 中，两视口原动态功能均通过，分块缺失检查在恢复后均取得text/html而失败。实际8vcdz2/m0kJ6J目录保存首次缺失200/HTML562bytes和完整服务日志；恢复后的reload没有再次请求该分块，浏览器继续使用HTTP缓存。该实测触发上述经批准的no-store/404修复。没有清除缓存、更换context、修改mtime或删除恢复断言。
+
+最终测量前后均使用最终收窄的Go服务源码，串行提供准确b0静态产物和候选静态产物。固定来源、视口、全新context和资源守卫一致；实际HTTP编码均为identity。以下gzip使用同一 `node:zlib.gzipSync` 默认参数单独计算，Vite构建输出的gzip提示原样保留，两种口径不交叉比较。
+
+| 全量资源测量 | b0静态产物 | 按需加载产物 |
+|---|---:|---:|
+| 非Swarm首屏全部JS body bytes，每个视口的attention/workspace均一致 | 774329 | 719784 |
+| 进入Swarm追加JS body bytes | 0 | 57129 |
+| 完整构建全部JS body bytes | 774329 | 776913 |
+| 完整构建全部JS gzip bytes，同参数 | 216760 | 217799 |
+
+b0文件为 `assets/index-DpvBzN0-.js`；候选为 `assets/index-DyOZ-u9Q.js` 和 `assets/MissionDAGView-DJuVNnnW.js`。非Swarm首屏减少54545bytes，完整构建增加2584bytes，gzip总量增加1039bytes；没有全站总量下降或运行期性能结论。每个context的全部实际JS响应清单、HTTP状态、编码、长度及构建文件清单均在最终原件 `.verification/dag-loading-b0a21a2c-1792348856045/actual-js-measurement.json` 与 `.verification/dag-loading-lazy-candidate-1792348879495/actual-js-measurement.json`。
+
+| 本项实际检查 | 结果及对应源码 | 原件 |
+|---|---|---|
+| `pnpm --dir web build` | PASS，业务前端最终源码；719.78kB入口及57.12kB按需分块；原500kB提示保留 | `dag-build-20261019-023028-475.log` |
+| `pnpm --dir web typecheck`、`pnpm --dir web lint` | 最终PASS，零诊断 | `dag-typecheck-20261019-024016-677.log`、`dag-lint-20261019-024031-015.log` |
+| `gofmt -d internal/adapters/httpapi/server.go`、`go vet -mod=readonly ./internal/adapters/httpapi` | 最终收窄源码PASS，无差异/诊断 | `dag-static-format-20261019-023825-160.log`、`dag-http-vet-20261019-023831-294.log` |
+| `pnpm --dir web exec playwright test --config dynamic-dag.config.ts --workers=1` | 中间源码4/4 PASS，两个视口各实际增长与缺失恢复；随后仅收窄目录条件并增加原行为覆盖 | `dag-browser-20261019-023603-868.log` |
+| 同上增加 `--grep '任务依赖按需加载'` | 最终收窄源码2/2 PASS，33.8秒；同context真实移走/还原/普通人工reload、目录/深层原index和真实授权API404 JSON；内含实际生产 `go build -mod=readonly -o … ./cmd/server` | `dag-browser-loading-20261019-023932-219.log` |
+| `pnpm --dir web exec playwright test --config observatory.config.ts --workers=1 e2e/observatory.check.ts` | 按需前端8/8 PASS，25.9秒；后续只修改缺失assets条件，已受影响路径由上述最终真实检查覆盖 | `dag-regression-20261019-023427-915.log` |
+| `.verification/measure-dag-loading.mjs`，`--dist .verification/dag-loading-b0-dist` / `--dist web/dist` | 最终Go服务、相同固定来源；四个新context前后全量比较PASS | `dag-measure-baseline-20261019-024050-953.log`、`dag-measure-candidate-20261019-024114-443.log` |
+
+最终缺失/恢复原件在 `.verification/astrocyte-s1-N9LTJS` 与 `.verification/astrocyte-s1-1FvXPx`，分别含 `actual-static-routes.json`、`actual-missing-dag-chunk.json`、`actual-recovered-dag-chunk.json`、真实SQLite与进程日志。恢复实际响应为200 / text/javascript / 57129bytes，目录和深层路由与真实构建index正文逐字节相等。所有临时分块已原样恢复，结束时OS检查本树验证server存活0；累计112个启动采样最高CPU39%、最低可用内存约7.23GiB。
+
+既有 `TestStaticServing_*` 使用手写静态fixture，未执行、未改动；最终生产HTTP覆盖了实际静态文件、目录、深层页面和API。窄化后的第一轮额外API检查缺少真实human会话而实际403，原件 `dag-browser-loading-20261019-023844-139.log` 保留；随后使用实际签发的同一human cookie，保留404/JSON断言并通过。最终候选的独立CR尚待Reviewer发布，完整原生与OpenViking范围、默认CI未验状态保持。

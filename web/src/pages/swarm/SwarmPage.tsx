@@ -6,7 +6,7 @@ import { QueryState } from '../../components/QueryState';
 import { EmptyState } from '../../components/EmptyState';
 import { DetailPanel } from '../../components/DetailPanel';
 import { PageFrame, RailSummary } from '../../components/PageFrame';
-import { MissionDAGView } from './dag/MissionDAGView';
+import { MissionDAGRegion } from './dag/MissionDAGRegion';
 import type { SwarmMission } from '../../api/swarm';
 import { matchesQuery } from '../../utils/search';
 import { MissionList } from './missions/MissionRecords';
@@ -40,7 +40,7 @@ export function SwarmPage({ query }: { query: string }) {
         <WorkItemCollection missions={missions} records={records} query={query} onSelect={(work, missionId) => setSelected({ kind: 'mission', id: missionId, workItemID: work.id })} />
       </SectionCard>
       </details>
-      <SectionCard title="任务依赖 DAG" tabs={['overview', 'timeline']}><MissionDAGView missions={missions} onOpenWorkItem={(id, workItemID) => setSelected({ kind: 'mission', id, workItemID })} /></SectionCard>
+      <SectionCard title="任务依赖 DAG" tabs={['overview', 'timeline']}><MissionDAGRegion missions={missions} onOpenWorkItem={(id, workItemID) => setSelected({ kind: 'mission', id, workItemID })} /></SectionCard>
       <SectionCard title="任务时间线" tabs={['timeline']}><MissionEventCollection missions={missions} records={records} /></SectionCard>
       <SectionCard title="产物引用" tabs={['artifacts']} count={records.data?.reduce((count, detail) => count + (detail.artifacts?.length ?? 0), 0)}>
         <ArtifactCollection missions={missions} records={records} query={query} onSelect={(artifactID, missionId) => setSelected({ kind: 'mission', id: missionId, artifactID })} />

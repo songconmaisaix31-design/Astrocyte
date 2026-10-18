@@ -237,11 +237,9 @@ func (s *Server) Addr() string {
 	return s.httpServer.Addr
 }
 
-// spaHandler serves static files from webDir with SPA fallback.
-// - /api/* routes always go to the API mux (never static)
-// - Existing files in webDir are served directly
-// - Non-existent files get index.html (SPA fallback)
-// - No directory listing
+// spaHandler 读取实际静态文件，页面路径使用 index.html。
+// API 请求优先交给 API mux；已有文件由标准 FileServer 处理。
+// 缺失的构建资源返回不可缓存的404；实际目录使用页面正文，不提供目录列表。
 func spaHandler(webDir string, apiHandler http.Handler) http.Handler {
 	fileServer := http.FileServer(http.Dir(webDir))
 
@@ -265,6 +263,11 @@ func spaHandler(webDir string, apiHandler http.Handler) http.Handler {
 		info, err := os.Stat(fullPath)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			http.Error(w, "Static content unavailable", http.StatusInternalServerError)
+			return
+		}
+		if errors.Is(err, os.ErrNotExist) && strings.HasPrefix(path, "/assets/") {
+			w.Header().Set("Cache-Control", "no-store")
+			http.NotFound(w, r)
 			return
 		}
 		if errors.Is(err, os.ErrNotExist) || info.IsDir() {
