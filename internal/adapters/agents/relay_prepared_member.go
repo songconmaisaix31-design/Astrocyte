@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
@@ -17,6 +18,7 @@ type RelayPreparedMemberEvidenceSource struct {
 
 var _ domain.RelayMemberEvidenceSource = (*RelayPreparedMemberEvidenceSource)(nil)
 var _ domain.RelayPreparedInputReader = (*RelayPreparedMemberEvidenceSource)(nil)
+var _ swarm.PreparedMemberInputReader = (*RelayPreparedMemberEvidenceSource)(nil)
 
 func NewRelayPreparedMemberEvidenceSource(registry *Registry, prepared domain.RelayPreparedInputReader) (*RelayPreparedMemberEvidenceSource, error) {
 	if registry == nil || prepared == nil {
@@ -37,6 +39,20 @@ func (s *RelayPreparedMemberEvidenceSource) StopRelayMemberEvidence(ctx context.
 		return domain.RelayMemberEvidence{}, nativeError(apierrors.UnsupportedCapability, "original member evidence source is not connected")
 	}
 	return s.registry.StopRelayMemberEvidence(ctx, sessionID, operationID)
+}
+
+func (s *RelayPreparedMemberEvidenceSource) ReadPreparedMemberInput(ctx context.Context, sessionID, operationID string) (swarm.PreparedMemberInput, error) {
+	input, err := s.ReadPreparedNativeSession(ctx, sessionID, operationID)
+	if err != nil {
+		return swarm.PreparedMemberInput{}, err
+	}
+	return swarm.PreparedMemberInput{
+		OperationID: input.OperationID, SessionID: input.Session.ID, NativeSessionID: input.Session.NativeID,
+		AdapterID: input.Session.CLI, AdapterVersion: input.Session.Version,
+		ControllerID: input.ControllerID, StartupOperationID: input.StartupOperationID,
+		ProjectID: input.Session.ProjectID, Root: input.WorkspaceRoot,
+		ActorID: input.ActorID, ActorKind: input.ActorKind, ActorProjectID: input.ActorProjectID, PreparedAt: input.PreparedAt,
+	}, nil
 }
 
 // 在原事务 context 内只读 B 元数据和原 Registry；不读取输入对象或执行外部操作。

@@ -8,6 +8,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
+	workspacedomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 // 使用同一数据库、批准服务、Registry和原件存储；未知执行事实由领域拒绝。
@@ -23,7 +24,15 @@ func assembleSwarmLedger(services *httpapi.Services, db *sqlite.DB, registry *ag
 	if err != nil {
 		return err
 	}
-	native, err := sqlite.NewSwarmNativeBridge(repository, registry)
+	prepared, ok := services.LocalProjects.(workspacedomain.RelayPreparedInputReader)
+	if !ok {
+		return errors.New("Swarm requires the actual Workspace prepared input reader")
+	}
+	members, err := agents.NewRelayPreparedMemberEvidenceSource(registry, prepared)
+	if err != nil {
+		return err
+	}
+	native, err := sqlite.NewSwarmNativeBridge(repository, members, members)
 	if err != nil {
 		return err
 	}
