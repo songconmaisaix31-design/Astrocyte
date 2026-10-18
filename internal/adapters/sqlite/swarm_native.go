@@ -12,8 +12,9 @@ import (
 )
 
 type SwarmNativeBridge struct {
-	repo   *SwarmRepository
-	source workspace.RelayMemberEvidenceSource
+	repo     *SwarmRepository
+	source   workspace.RelayMemberEvidenceSource
+	prepared swarm.PreparedMemberInputReader
 }
 
 var _ swarm.MemberAuthorizer = (*SwarmNativeBridge)(nil)
@@ -25,11 +26,11 @@ func missingSwarmLease(err error) bool {
 	return errors.As(err, &missing) && missing.Code == apierrors.NotFound
 }
 
-func NewSwarmNativeBridge(repo *SwarmRepository, source workspace.RelayMemberEvidenceSource) (*SwarmNativeBridge, error) {
-	if repo == nil || source == nil {
-		return nil, domain.Failure(apierrors.UnsupportedCapability, "actual Swarm ledger and original Registry evidence source are required")
+func NewSwarmNativeBridge(repo *SwarmRepository, source workspace.RelayMemberEvidenceSource, prepared swarm.PreparedMemberInputReader) (*SwarmNativeBridge, error) {
+	if repo == nil || source == nil || prepared == nil {
+		return nil, domain.Failure(apierrors.UnsupportedCapability, "actual Swarm ledger, original Registry and prepared input sources are required")
 	}
-	return &SwarmNativeBridge{repo: repo, source: source}, nil
+	return &SwarmNativeBridge{repo: repo, source: source, prepared: prepared}, nil
 }
 
 func swarmMatchNativeTuple(e workspace.RelayMemberEvidence, purpose, session, native, adapter, controller, startup, operation, project, root string) error {
@@ -78,7 +79,17 @@ func (b *SwarmNativeBridge) memberEvidence(ctx context.Context, p domain.Princip
 	if m.Purpose == "claim_work_item" {
 		l, err := b.repo.LeaseForOperation(ctx, m.OperationID, m.SessionID)
 		if missingSwarmLease(err) {
-			return e, domain.Failure(apierrors.UnsupportedCapability, "original Registry contract does not verify prepared input identity for a new lease")
+			input, err := b.prepared.ReadPreparedMemberInput(ctx, m.SessionID, m.OperationID)
+			if err != nil {
+				return e, err
+			}
+			if err := swarm.ValidatePreparedMemberInput(ctx, p, m, input); err != nil {
+				return e, err
+			}
+			if input.AdapterVersion != e.CLIVersion {
+				return e, domain.Failure(apierrors.ContextStale, "prepared input adapter version differs from the original Registry")
+			}
+			return e, nil
 		}
 		if err != nil {
 			return e, err

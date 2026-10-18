@@ -14,6 +14,11 @@
     [string]$RelaySessionSource = 'archive',
     [ValidateRange(1, 86400)]
     [Nullable[int]]$RelayLiveSeconds = $null,
+    [ValidateRange(1, 1800)]
+    [Nullable[int]]$RelaySessionDeadlineSeconds = $null,
+    [string]$RelayPublicGitRoot = '',
+    [string]$RelayPublicGitCommit = '',
+    [string]$RelayPublicContextFiles = '',
     # S4 CodeGraph/Repository 上下文 — 三个路径必须同时提供，或都不提供。
     [string]$CodeGraphNode = '',
     [string]$CodeGraphSDK = '',
@@ -42,6 +47,26 @@ if (-not (Test-Path -LiteralPath $binary -PathType Leaf) -or -not (Test-Path -Li
 }
 if ([Environment]::OSVersion.Platform -ne 'Win32NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
 if (($SummarizeCli -eq '') -ne ($NodeExecutable -eq '')) { throw 'SummarizeCli and NodeExecutable must be supplied together.' }
+# Interpreter 使用同一组显式 deadline 和公开固定上下文，权限仍由应用校验。
+$relayContextAny = $null -ne $RelaySessionDeadlineSeconds -or $RelayPublicGitRoot -ne '' -or $RelayPublicGitCommit -ne '' -or $RelayPublicContextFiles -ne ''
+if ($relayContextAny) {
+    if ($null -eq $RelaySessionDeadlineSeconds -or $RelayPublicGitRoot -eq '' -or $RelayPublicGitCommit -eq '' -or $RelayPublicContextFiles -eq '') {
+        throw 'RelaySessionDeadlineSeconds, RelayPublicGitRoot, RelayPublicGitCommit and RelayPublicContextFiles must be supplied together.'
+    }
+    if (-not [IO.Path]::IsPathRooted($RelayPublicGitRoot) -or -not (Test-Path -LiteralPath $RelayPublicGitRoot -PathType Container)) {
+        throw 'RelayPublicGitRoot must be an existing absolute directory.'
+    }
+    if ($RelayPublicGitCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'RelayPublicGitCommit must be an exact lowercase 40-character Git commit.' }
+    # 先解析完整 JSON，再保留数组属性，兼容 PowerShell 5.1 的单元素数组展开行为。
+    $null = ConvertFrom-Json -InputObject $RelayPublicContextFiles
+    $relayContext = ConvertFrom-Json -InputObject ('{"files":' + $RelayPublicContextFiles + '}')
+    if ($relayContext.files -isnot [Array] -or $relayContext.files.Count -lt 1 -or $relayContext.files.Count -gt 32) {
+        throw 'RelayPublicContextFiles must be a JSON array containing 1 to 32 relative file paths.'
+    }
+    foreach ($file in $relayContext.files) {
+        if ($file -isnot [string] -or $file -eq '') { throw 'RelayPublicContextFiles must contain nonempty strings.' }
+    }
+}
 # S4 CodeGraph/Repository — 不完整组直接失败。
 $codeGraphAny = $CodeGraphNode -ne '' -or $CodeGraphSDK -ne '' -or $CodeGraphScript -ne ''
 if ($codeGraphAny -and ($CodeGraphNode -eq '' -or $CodeGraphSDK -eq '' -or $CodeGraphScript -eq '')) { throw 'CodeGraphNode, CodeGraphSDK and CodeGraphScript must be supplied together.' }
@@ -88,6 +113,12 @@ try {
     $env:ASTROCYTE_RELAY = '1'
     $env:ASTROCYTE_RELAY_SESSION_SOURCE = $RelaySessionSource
     if ($null -ne $RelayLiveSeconds) { $env:ASTROCYTE_RELAY_LIVE_SECONDS = [string]$RelayLiveSeconds }
+    if ($relayContextAny) {
+        $env:ASTROCYTE_RELAY_SESSION_DEADLINE_SECONDS = [string]$RelaySessionDeadlineSeconds
+        $env:ASTROCYTE_RELAY_PUBLIC_GIT_ROOT = $RelayPublicGitRoot
+        $env:ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT = $RelayPublicGitCommit
+        $env:ASTROCYTE_RELAY_PUBLIC_CONTEXT_FILES = $RelayPublicContextFiles
+    }
     $env:ASTROCYTE_ENABLE_SUMMARIZE = 'false'
     $env:ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false'
     if ($SummarizeCli -ne '') {

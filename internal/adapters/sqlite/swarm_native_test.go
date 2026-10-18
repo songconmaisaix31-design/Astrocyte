@@ -92,7 +92,7 @@ func TestSwarmNativeMappingPreservesUnknownInputOutcomeAndBudgetUsage(t *testing
 	if f.OperationID != e.InputOperationID || f.SessionID != e.SessionID || !f.StopConfirmed || f.Outcome != "" || f.FailureCode != "" || f.Usage != nil || f.CallsKnown || f.TokensKnown {
 		t.Fatal("controller exit or response observations changed unknown input outcome or budget usage")
 	}
-	if _, err := NewSwarmNativeBridge(nil, nil); err == nil {
+	if _, err := NewSwarmNativeBridge(nil, nil, nil); err == nil {
 		t.Fatal("native bridge without its actual dependencies was accepted")
 	}
 }
