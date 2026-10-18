@@ -1,6 +1,6 @@
 # Astrocyte
 
-当前产品集成分支为 `songconmaisaix31-design/works-relay-integration`，提交 `8c8510426b828359f4c161f93c1edf1083fd5e88`。当前 `validation/v1-20261012` 分支保存管理与实验记录，产品开发和后续集成继续使用产品集成分支。
+当前产品集成分支为 `songconmaisaix31-design/works-relay-integration`，提交 `f17a491cdd6392829094c95a3e5efb6011362bc0`。本轮 DDD prepared 身份端口、架构检查和 Windows Interpreter 显式配置已合入并普通 push；作者适用检查与主控全仓 Go vet 通过，主控其余组合检查因整机 CPU 持续超过资源守卫而尚未执行，详见 [DDD 记录](tasks/ddd-review-remediation-20261018.md)。当前 `validation/v1-20261012` 分支保存管理与实验记录，产品开发和后续集成继续使用产品集成分支。
 
 2026-10-18 检查时本机64505服务已停止。Windows x64 候选包位于 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，大小1,949,217,657 bytes，构建来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，打开 <http://127.0.0.1:8787/>；保持控制台打开，按 Ctrl+C 停止应用。详细参数见包内 README。
 

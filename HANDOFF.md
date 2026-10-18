@@ -2,11 +2,13 @@
 
 ## DDD 开发与审查整改（2026-10-18）
 
-17:06 用户要求继续开发并限制本机资源。Orca 重启后原三个开发 Dispatch 已由运行时记录为 failed / terminal_missing；源码保留，D 有五件未提交修改，T/P 无修改。主控以 `term_66e5a559-ee45-4d6f-8a1a-8bffa7996608` 接续同 Run generation2，原终端资源均已官方 release。当前 D Dispatch `ctx_5242bb05a538` 是唯一开发 Worker，Go `GOMAXPROCS=2` / `-p=1` / BelowNormal，编译与测试串行；17:17 将无修改的 T/P 既有写域并入 D 同树同分支，不启动其他开发 Agent。资源不足时继续静态修改；详细资源阈值及恢复情况登记在当前计划。
+当前 D/T/P 已由同一 Worker 完成，分支 `ddd-domain-20261018` / 报告 `f7007d2d132d3b0585ebe9777b2a377174e78d7c` 已普通 push，开发树干净。D 新增 Swarm 消费方 prepared 身份端口，T 扩展 DDD 检查到 Workbench 与共享 judgment，P 增加 Windows 启动入口的四项成组 Interpreter 参数。准确 SOURCE、报告、集成与验收记录见 [当前计划](tasks/ddd-review-remediation-20261018.md)。
 
-用户要求按开发规范和 DDD 继续代码开发。本轮计划为 [ddd-review-remediation-20261018](tasks/ddd-review-remediation-20261018.md)，管理基线734c9b0d、产品基线8c851042，两树接管时干净。原125项候选包结果保持；本轮独立 Go vet/build、42包架构与三项真实 SQLite/HTTP 检查已通过，完整默认 CI、L1/L2和正式发布仍未通过。
+产品当前 HEAD 为 `f17a491cdd6392829094c95a3e5efb6011362bc0`，普通 push 成功且工作树干净，后继只更新集成验收报告。主控最后一次续行采样 CPU 99%、可用内存约 7.07 GiB，资源守卫在构建前拒绝；本轮不再启动重操作，未执行检查继续待资源恢复。
 
-16:22实际64505无监听、旧PID40804不存在，系统最近启动时间13:56:01；原服务运行状态属于前次记录。此次以三个互斥开发树处理领域与接入、DDD检查与真实测试准备、发布配置，Orca Run为 `run_73578b70c449`，主控句柄 `term_da998c5c-582c-42f7-b880-13ac04520e33`。原开发树、未接受提交与正式实验数据保留。原生工具关闭、S3预算与能力语义、经验批准及其他未答项不变；当前未恢复共享服务、启动原生或发布新包。
+用户要求继续开发并避免占满电脑资源。本轮只有一个开发 Worker；当前 Go 使用 `GOMAXPROCS=1`、`GOFLAGS=-p=1`、`GOMEMLIMIT=256MiB`、BelowNormal，编译、测试和实际服务串行。每项重操作前两次核 CPU 低于 70%、可用内存至少 4 GiB；不满足时不启动。内存目标属于软限制。开发 Worker 已交付，官方 release 记录为用户接管保留；唯一集成 Agent 已普通合并、交付并官方释放。
+
+作者全 Go vet/build、42 包架构检查、两项实际 SQLite/HTTP 与缺来源检查通过；Windows 入口 18 项参数及路径拒绝、三种实际启动通过，全部验证服务已关闭。产品普通合并 `1674075a` / 集成报告 `11326d98` 已 push；主控在准确 `11326d98` 全 Go vet 通过，随后整机 CPU 多次达到 70%–94%，资源守卫在调用构建前拒绝。主控 build、架构和八项组合检查仍未执行，资源恢复后续行三个独立 phase，无须重复 vet。真实首次 Claim、Prepare → Claim → Send、archive 可信完整性、完整默认 CI 和 L1/L2 仍未通过；具体限制见产品报告。共享 64505 服务未恢复，原 41ce 候选包及 125 项结果保持，新源码未打包或正式发布。Orca Run 为 `run_73578b70c449`，当前主控句柄 `term_66e5a559-ee45-4d6f-8a1a-8bffa7996608`；原开发树、历史提交和正式实验数据保留，原 QUESTIONS 未答项继续保持。
 
 ## Windows 候选包125项验收通过（2026-10-17）
 
