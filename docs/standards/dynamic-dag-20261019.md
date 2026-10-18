@@ -166,7 +166,7 @@ Worker退出确认固定关联首个真实 `swarm.execution_exit_observed` 或 `
 
 - 原生文件/命令工具关闭和S3调用预算/能力证据门禁保持。没有调用新模型、启动实际Worker或选择另一执行后端；真实Agent规划、Claim/Send、进程退出及资源释放的完整正向链路未验。authenticated Agent主体与模型生成继续分开。
 - 确认字段编码属于参数规则测试；没有构造旧会话、claim、lease、退出或outbox。真实带Worker的过期租约、暂时失联、Stop/Recover并发、未知用量和首个退出来源的系统正向验收缺少合法原生来源，保留未验。
-- OpenViking未配置正向服务，真实远端提交/任务完成/未知副作用/检索/分层读取保持首轮未验；本轮通过其未配置回归。完整默认CI未执行、未通过。
+- OpenViking未配置正向服务，真实远端提交/任务完成/未知副作用/检索/分层读取保持首轮未验；本轮通过其未配置回归。本机未运行完整默认CI；GitHub自动运行的实际停止结果见下文，完整CI未通过。
 - 同一Draft PR继续普通push；没有合并、共享部署、打包或发布。独立Reviewer对准确候选的接受、退回或证据不足另行记录。
 
 ## 局部按需加载优化
@@ -206,4 +206,6 @@ b0文件为 `assets/index-DpvBzN0-.js`；候选为 `assets/index-DyOZ-u9Q.js` �
 
 最终缺失/恢复原件在 `.verification/astrocyte-s1-N9LTJS` 与 `.verification/astrocyte-s1-1FvXPx`，分别含 `actual-static-routes.json`、`actual-missing-dag-chunk.json`、`actual-recovered-dag-chunk.json`、真实SQLite与进程日志。恢复实际响应为200 / text/javascript / 57129bytes，目录和深层路由与真实构建index正文逐字节相等。所有临时分块已原样恢复，结束时OS检查本树验证server存活0；累计112个启动采样最高CPU39%、最低可用内存约7.23GiB。
 
-既有 `TestStaticServing_*` 使用手写静态fixture，未执行、未改动；最终生产HTTP覆盖了实际静态文件、目录、深层页面和API。窄化后的第一轮额外API检查缺少真实human会话而实际403，原件 `dag-browser-loading-20261019-023844-139.log` 保留；随后使用实际签发的同一human cookie，保留404/JSON断言并通过。最终候选的独立CR尚待Reviewer发布，完整原生与OpenViking范围、默认CI未验状态保持。
+既有 `TestStaticServing_*` 使用手写静态fixture，本机未执行、未改动；最终生产HTTP覆盖了实际静态文件、目录、深层页面和API。窄化后的第一轮额外API检查缺少真实human会话而实际403，原件 `dag-browser-loading-20261019-023844-139.log` 保留；随后使用实际签发的同一human cookie，保留404/JSON断言并通过。最终候选的独立CR尚待Reviewer发布，完整原生与OpenViking正向范围保持未验。
+
+按需加载与缓存修复的业务源码提交为 `982333b871520e606c74d553e448c5049f81abde`。该次普通推送自动触发GitHub S0 checks：[push run39155403418](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/39155403418)与[pull_request run39155406045](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/39155406045)。两次均实际开始安装及 `pnpm check`；主控读取默认流程包含全仓go test及历史手写fixture后，通过官方取消命令停止这两个准确run，已核最终均为completed/cancelled。保留完整运行记录，旧测试具体执行范围未逐项核明，不能宣称均未触发。完整CI未通过；workflow、业务源码和原断言均未因此修改。本次后继文档提交仅修正上述实际CI事实，沿主控明确要求的 `[skip ci]` 提交标记，不再次启动默认检查。
