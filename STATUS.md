@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 新版前端正在接入（2026-10-18）
+
+用户确认使用提交 ZIP 的新版界面、真实品牌图标、Agent 在线 DAG 和可选 OpenViking。[当前计划](tasks/frontend-observatory-pr-20261018.md) 已建立；唯一开发 Agent 在 `songconmaisaix31-design/frontend-observatory-20261018` 分支从产品 `f17a491c` 开发，Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`。正式状态使用现有生产 API，包内沙盒状态不迁入。DAG 主动规划或现有事件投影的生成方式等待用户答复，页面和图标等独立开发继续。原生权限、未答业务选择与资源限制保持，前轮 PR #1 未合并。
+
 ## Swarm 发送前租约校验已提 PR 并完成代码 review（2026-10-18）
 
 一个开发 Agent 已完成实现、验证、返修和 [Draft PR #1](https://github.com/songconmaisaix31-design/Astrocyte/pull/1)，主控已发布 [最终 review](https://github.com/songconmaisaix31-design/Astrocyte/pull/1#pullrequestreview-5563152542)。分支 `swarm-send-lease-20261018`，业务源码 `0642efdf7748a64c36e07e466b5f507b9c04a004`，最终报告 HEAD `75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee` 已普通 push，远端一致且工作树干净。发送前当前租约、fence、成员绑定、批准和 operation 校验，以及 review 发现的 S2 绑定先于准备时的绕过问题均已实现。

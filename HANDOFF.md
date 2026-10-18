@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 新版前端接入（2026-10-18）
+
+用户提供新版前端 ZIP，要求真实媒体/Agent logo、Agent 在线生成协作 DAG、OpenViking 可选。主控已检查包与当前生产基线，维护 [本轮计划](tasks/frontend-observatory-pr-20261018.md)；压缩包属于旧基线独立沙盒示例，正式接入采用新版界面并消费现有真实 API。DAG 主动规划或现有事件投影的生成方式已异步询问，等待答复，其他独立开发继续。
+
+唯一开发 Agent 的 Task `task_006c2800099b` / Dispatch `ctx_06a3baf3e8db`，工作树 `C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018`，实际分支 `songconmaisaix31-design/frontend-observatory-20261018`，准确基线 `f17a491cdd6392829094c95a3e5efb6011362bc0`；Codex 0.162.0 / GPT-6.1-Sol xhigh fast。Run 与当前主控保持，后端新增写域先交 Handoff；原生工具、S3 等待答条件与资源守卫保持。前轮 PR #1 独立保留，当前未创建新版前端 PR。
+
 ## 单开发 Agent 提 PR，主控 review（2026-10-18）
 
 用户已确认后续功能开发由一个开发 Agent 提交 PR，主 Agent 进行 review；开发、测试和返修持续由同一开发 Agent 完成。[Swarm 发送前租约校验](tasks/swarm-send-lease-pr-20261018.md) 已提交 [Draft PR #1](https://github.com/songconmaisaix31-design/Astrocyte/pull/1)。开发分支 `swarm-send-lease-20261018`，业务源码 `0642efdf7748a64c36e07e466b5f507b9c04a004`，最终报告 HEAD `75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee`；普通 push 与远端 SHA 已核，工作树干净。产品集成分支保持 `f17a491cdd6392829094c95a3e5efb6011362bc0`，未合并、部署或重新打包。
