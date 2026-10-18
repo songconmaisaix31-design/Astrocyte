@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
+
+用户已确认 DAG 动态变化、部分 Worker 依机制逐渐消亡，参考本机 Morphogenesis；此前生成方式提问结束。开发规范已更新为主控提出建议和优化方案、唯一 Worker 实现、独立 Reviewer 验证可用性与效果并决定接受/退回/证据不足。原 Worker 负责全部返修，重操作串行。当前任务见 [计划](tasks/dynamic-dag-loop-20261019.md)，沿前端 Draft PR #2 的准确 `657ca146` 继续，产品集成、原生权限及其他待答边界保持。
+
 ## V4 日运行交接（2026-10-19 00:25）
 
 本次 automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发，仅处理 Asia/Shanghai 刚结束的昨日 2026-10-18。基线分支 `validation/v1-20261012` / HEAD `6042593e`，接管时工作区干净；当前 Codex `0.162.0`，EXPERIMENT 全文 SHA256 仍为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，运行路径相对已验 `d749ecb` 没有源码差异。

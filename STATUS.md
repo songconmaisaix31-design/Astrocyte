@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 动态 DAG 开发循环（2026-10-19）
+
+用户确认动态 DAG 与 Worker 逐渐退出机制，参考 Morphogenesis。规范已改为主控建议、唯一 Worker 实现、独立 Reviewer 实际验证效果并决定接受；当前 [任务计划](tasks/dynamic-dag-loop-20261019.md) 沿 Draft PR #2 / `657ca146` 继续。此前 DAG 二选一提问已结束，具体设计正在核现有任务依赖和执行权威，真实功能与效果尚未验收。
+
 ## V4 日运行（2026-10-19 00:25）：原外部证据根不可用，锁门禁阻塞
 
 本次仅处理刚结束的昨日 2026-10-18，automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发。仓库 EXPERIMENT 全文 SHA256 保持 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，Codex `0.162.0`，运行源码相对 `d749ecb` 无差异。
