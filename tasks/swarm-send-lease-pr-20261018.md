@@ -28,3 +28,9 @@
 开发 Agent 提交并普通 push，使用结构化正文或 `gh pr create --body-file` 创建目标为 `songconmaisaix31-design/works-relay-integration` 的 PR；标题与说明描述最终功能和实际验证，保留未验项。主 Agent 在 PR 创建后独立 review，有问题交回同一开发 Agent，必要复验仅覆盖变更及未解决问题。PR review 与实际验收完成情况分别记录；没有通过的检查不计通过。当前任务不授权正式 Release、共享产品部署或正式 V4。
 
 Orca Run 沿用 `run_73578b70c449`，主控 `term_66e5a559-ee45-4d6f-8a1a-8bffa7996608`。新 Task / Dispatch、客户端实际模型、工作树和 PR 地址在启动后登记。
+
+当前 Task `task_1795bc720ae3` / Dispatch `ctx_7e6f00eb7fdb`；工作树 `C:/Users/DW/orca/workspaces/Astrocyte/swarm-send-lease-20261018`、同名分支；终端 `term_8eb15cea-cc6b-4b7f-8c33-ddf81cf3fcb1`。Orca 1.4.220 / Codex 0.162.0，终端显示实际 `GPT-6.1-Sol xhigh fast`，沿用户已有配置启动，无模型覆盖。启动回执为 turn_start_unobserved，已实际读取到任务停在 composer，随后只补发一次 Enter，没有重复任务。PR 尚未创建。
+
+18:16 开发 Agent 交付方案 `msg_c3b02ba4e1f7`，主控 review 后同意在原写域实施：明确 project/swarm 准备入口并持久化用途；Claim 仅消费 Swarm 准备，同事务首次固定原 fence；发送在当前 Grant/绑定/Mission/WorkItem/Lease 授权事务中 CAS `send_attempted`，所有外部观察和 Send 位于事务外。用途未知不默认、历史 Swarm 标记不因租约消失而删除或降为 project，私有字段不公开。发送占用提交作为动作开始点，提交后撤销属于在途，不声称跨 SQLite/原生控制器的原子提交；发送前传递最早绝对截止时间与取消，失败仍保留单次占用，未知不重发。完整方案保存在开发树 `docs/standards/swarm-send-lease-20261018.md`；生产依赖不启用，原生正向未验时创建 draft PR，主控 review 后由同一开发 Agent 返修。
+
+20:39 接续时 Orca runtime 已变为 `335b14a9-75ca-4611-83f6-27a2ac91dbcd`，当前主控为 `term_d7578194-fd20-42b4-9668-b0b0e8683571`，同 Run generation3。原 Dispatch 由 execution_host 明确记录 failed / process_exited，14 件未提交修改与原验证脚本保留，没有 PR 或已完成测试日志。相同 Task 在同一工作树、分支恢复为 `ctx_3bdd3825f01c` / `term_6b6909b0-97b7-4e35-a45a-601f887c15d3`，继续已批准方案，不重复设计决定。旧终端官方 release 两次返回 `release_unknown`，记录终端已无法解析；保留该不确定清理状态，不扩大关闭范围。

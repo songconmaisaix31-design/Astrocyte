@@ -4,6 +4,8 @@
 
 用户已确认后续功能开发由一个开发 Agent 提交 PR，主 Agent 进行 review；开发、测试和返修持续由同一开发 Agent 完成。当前任务为 [Swarm 发送前租约校验](tasks/swarm-send-lease-pr-20261018.md)，产品基线 `f17a491c`。资源限制与原 QUESTIONS 未答项保持，开发方案先交主控 review，随后实施和提 PR，不再安排独立集成 Agent。
 
+20:39 在 Orca 重启后接续，同 Run generation3，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。原开发进程明确退出，14 件未提交修改保留，尚无 PR 或已完成测试；同 Task/树/分支恢复为 Dispatch `ctx_3bdd3825f01c`，继续已批准方案及适用验证。旧终端无法解析，官方 release 仍为 `release_unknown`，不扩大关闭范围。
+
 ## DDD 开发与审查整改（2026-10-18）
 
 当前 D/T/P 已由同一 Worker 完成，分支 `ddd-domain-20261018` / 报告 `f7007d2d132d3b0585ebe9777b2a377174e78d7c` 已普通 push，开发树干净。D 新增 Swarm 消费方 prepared 身份端口，T 扩展 DDD 检查到 Workbench 与共享 judgment，P 增加 Windows 启动入口的四项成组 Interpreter 参数。准确 SOURCE、报告、集成与验收记录见 [当前计划](tasks/ddd-review-remediation-20261018.md)。
