@@ -47,3 +47,9 @@ Worker 已普通 push hook/规范/设计提交 `9097404a1e751a5dfd60eb042005efb2
 Reviewer 准确657基线独立验证已完成，install/build/实际HTTP SQLite和顺序双视口九项通过，人工公开README固定来源，两工作项一条依赖，三个event_id逐项查真实outbox；同库重启历史一致，CSRF/Origin/不存在依赖拒绝无部分写入。基线 DAG GET404、拓扑入口禁用；原生会话和租约均0，不证明Agent生成或退出。原件为Reviewer树 `.verification/dynamic-dag/actual-657ca1464517-1792344688827/result.json` 及 `review-notes.md`，服务和浏览器已停止、49941无监听、tracked树干净。主控通过 `msg_fff1bc28094a` 将窗口回交Worker，Reviewer继续静态。
 
 Node hook 的准确源码为 `16dd0ed82f64f82d1b7e66cbfb6731db002846fb`。Reviewer实际657不足决定以 `msg_5e5595bbaf68` 入队，主控实际读取报告并以 `msg_0a59dd232fa7` 回复，同时交原Worker继续权限、停止事件时间和慢轮询改进。Reviewer随后通过hook给出仅通信构件的接受决定 `msg_da0b5fae07e9`，主控已核收；不再为回执重复生成新的证明决定。动态DAG与真实生成/退出尚未接受，继续原规划。
+
+Reviewer 的WIP发现 `msg_bfee437a23f6` 与 `msg_b56f4c77f3b7` 已交原Worker：旧execution_reconciled缺少新字段时保留其原有退出确认语义，新显式false/null异常拒绝；明确缺失观察与controller/startup/退出矛盾分开。主控批准追加 `internal/workspace/domain/relay_member_evidence.go`、`internal/adapters/agents/relay_facts.go`、`relay_input_operation.go`，只为真实controller未持有/原input未受理包装明确 `RelayObservationUnavailable`，Unwrap原错误，外部错误码和权限不变。身份与矛盾不得吞成普通未知，不解析错误文字，不打开原生工具。当前仍Worker独占重操作、Reviewer静态检查，WIP不作正式接受判断。
+
+交付文档追加允许产品 `docs/standards/frontend-observatory-20261018.md` 同步当前DAG已确认方向与新报告入口，保持657基线记录。Worker发现退出确认不能因用量未知而只留blocked；主控在原lifecycle/history范围批准 `swarm.execution_exit_observed` 保存真实原tuple的独立退出观察，实际退出时间无来源保持null，再按原Outcome/用量/预留规则结算，未释放保持false。新增观察必须维持原Recover版本/CAS/fence和幂等，不能重发Stop、伪造事件或绕过门禁。Reviewer已要求DAG读取和Source同时接受准确退出观察事件，正向真实退出仍未验。
+
+Reviewer后续WIP发现已回原Worker：首次退出确认用真实原claim event_id及现有Consume在同事务去重，后续观察不能改写首次来源；原StopReason和后续ReconciliationReason按真实事件分开，无法追溯时未知；停止检查只能识别已成功持久保留的专用结果，不按通用EvidenceMissing/DeliveryUnknown吞结构或身份错误。Worker已采用消费方明确缺失类型及私有retainedExecutionStop，外部原错误Unwrap保持，受影响检查与最终页面正在串行复验，尚无动态DAG接受决定。
