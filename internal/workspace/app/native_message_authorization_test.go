@@ -24,3 +24,27 @@ func TestNativeMessageExplicitScopeAndAuthorizationJSON(t *testing.T) {
 		}
 	}
 }
+
+func TestNativeMessageExplicitApprovedActionClassification(t *testing.T) {
+	// 仅分类动作参数，不构造会话绑定或已批准来源。
+	for _, actions := range [][]string{nil, {}, {""}, {"unrecognized-action"}, {"claim_work_item", "unrecognized-action"}} {
+		if _, err := NativeMessageRequiresSwarmLease(actions); err == nil {
+			t.Fatal("无法确定用途的动作参数产生了 project 用途", actions)
+		}
+	}
+	for _, test := range []struct {
+		actions []string
+		swarm   bool
+	}{
+		{[]string{"send"}, false},
+		{[]string{"read_swarm"}, false},
+		{[]string{"claim_work_item"}, true},
+		{[]string{"submit_artifact"}, true},
+		{[]string{"send", "claim_work_item"}, true},
+	} {
+		actual, err := NativeMessageRequiresSwarmLease(test.actions)
+		if err != nil || actual != test.swarm {
+			t.Fatal("动作参数分类与明确用途不同", test.actions, actual, err)
+		}
+	}
+}

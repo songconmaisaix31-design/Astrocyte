@@ -107,11 +107,20 @@ func TestSwarmNativeMessageActualAuthorizationLifecycle(t *testing.T) {
 	}
 	// UUID 只作为不存在的查询键，不保存会话、准备或租约。
 	sessionID, operationID := uuid.NewString(), uuid.NewString()
+	if err := db.requireProjectNativeMessageBindings(ctx, uuid.NewString(), sessionID); err == nil {
+		t.Fatal("事务外读取了原成员绑定的用途")
+	}
 	if err := db.BindSwarmNativeMessageLease(ctx, sessionID, operationID, workspace.NativeMessageLease{}); err == nil {
 		t.Fatal("事务外绑定了准备租约")
 	}
 	if err := db.WithNativeMessageTx(ctx, func(txContext context.Context) error {
 		before := db.Conn().Stats().WaitCount
+		if err := db.requireProjectNativeMessageBindings(txContext, uuid.NewString(), sessionID); err != nil {
+			t.Fatal("真实空绑定查询失败", err)
+		}
+		if err := other.requireProjectNativeMessageBindings(txContext, uuid.NewString(), sessionID); err == nil {
+			t.Fatal("原绑定用途读取接受了其他数据库事务")
+		}
 		if err := db.BindSwarmNativeMessageLease(txContext, sessionID, operationID, workspace.NativeMessageLease{}); err == nil {
 			t.Fatal("缺失原准备时绑定了租约")
 		}

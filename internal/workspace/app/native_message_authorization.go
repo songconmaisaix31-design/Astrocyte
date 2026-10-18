@@ -56,6 +56,22 @@ func ValidateNativeMessageScope(scope NativeMessageScope) error {
 	return projectError(apierrors.EvidenceMissing, "native preparation requires its explicit original purpose")
 }
 
+func NativeMessageRequiresSwarmLease(actions []string) (bool, error) {
+	if len(actions) == 0 {
+		return false, projectError(apierrors.EvidenceMissing, "original approved actions are required to determine input purpose")
+	}
+	swarm := false
+	for _, action := range actions {
+		if !projectActionKnown(action) {
+			return false, projectError(apierrors.EvidenceMissing, "original approval contains an unknown protected action")
+		}
+		if action == "claim_work_item" || action == "submit_artifact" {
+			swarm = true
+		}
+	}
+	return swarm, nil
+}
+
 func (s *localProjectService) PrepareSwarmNativeMessage(ctx context.Context, caller domain.Caller, projectID, sessionID, bindingID, message string) (domain.NativeSession, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

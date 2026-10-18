@@ -17,7 +17,8 @@ func (db *DB) requireProjectNativeMessageScope(ctx context.Context, sessionID st
 		return errors.New("project input purpose must be checked in its final transaction")
 	}
 	var data []byte
-	if err := conn.QueryRowContext(ctx, "SELECT data FROM local_agent_sessions WHERE id=?", sessionID).Scan(&data); err != nil {
+	var projectID string
+	if err := conn.QueryRowContext(ctx, "SELECT project_id,data FROM local_agent_sessions WHERE id=?", sessionID).Scan(&projectID, &data); err != nil {
 		return err
 	}
 	_, records, err := nativeMessageRecords(data)
@@ -31,6 +32,9 @@ func (db *DB) requireProjectNativeMessageScope(ctx context.Context, sessionID st
 		if record.ScopeKind == "swarm" {
 			return &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "original Swarm session cannot become a project send"}
 		}
+	}
+	if err := db.requireProjectNativeMessageBindings(ctx, projectID, sessionID); err != nil {
+		return err
 	}
 	var leased bool
 	if err := conn.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM swarm_leases WHERE json_extract(data,'$.session_id')=?)", sessionID).Scan(&leased); err != nil {
