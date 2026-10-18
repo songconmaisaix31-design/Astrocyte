@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -28,6 +29,45 @@ type swarmProposalReader interface {
 
 type swarmPacketReader interface {
 	ReadContextPacket(context.Context, workspace.Caller, string) (workspace.ImmutableContextPacket, error)
+}
+
+func (b *SwarmApprovalBridge) WithMissionDAGRead(ctx context.Context, p swarm.Principal, id string, fn func(context.Context) error) error {
+	reader, ok := b.grants.(swarmApprovalReader)
+	if !ok {
+		return swarm.Failure(apierrors.UnsupportedCapability, "actual Workspace approval reader is unavailable")
+	}
+	return NewWorkspaceRepository(b.db).WithWorkspaceTx(ctx, func(wtx workspaceapp.WorkspaceTx) error {
+		ctx := wtx.Context()
+		caller := workspace.Caller{ID: p.ID, Kind: p.Kind, ProjectID: p.ProjectID}
+		approval, err := reader.ReadApproval(ctx, caller, id)
+		if err != nil {
+			return err
+		}
+		project, err := wtx.LoadProject(approval.Scope.ProjectID)
+		if err != nil {
+			return err
+		}
+		if err = workspaceapp.ValidateProjectActionScope(project, workspaceapp.ProjectActionScope{ProjectID: project.ID, SettingsRevision: project.Settings.Revision, Action: "read_swarm"}); err != nil {
+			return err
+		}
+		var member *workspace.ProjectGrant
+		if p.Kind == "agent" {
+			grant, err := wtx.LoadProjectGrant(project.ID, p.ID)
+			if err != nil {
+				return err
+			}
+			member = &grant
+		}
+		if err = workspaceapp.AuthorizeProjectActionCaller(project, caller, member, "read_swarm", time.Now().UTC()); err != nil {
+			return err
+		}
+		conn, err := WorkspaceTransaction(ctx, b.db)
+		if err != nil {
+			return err
+		}
+		tx := &swarmTransaction{ctx: ctx, exec: conn, db: b.db}
+		return fn(context.WithValue(ctx, swarmTransactionKey{}, tx))
+	})
 }
 
 func (b *SwarmApprovalBridge) WithMissionRead(ctx context.Context, p swarm.Principal, id string, fn func(context.Context) error) error {

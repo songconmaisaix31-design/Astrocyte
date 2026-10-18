@@ -1,11 +1,13 @@
 import { parseArgs } from 'node:util';
 import { statSync } from 'node:fs';
-import { isAbsolute, join } from 'node:path';
+import { basename, isAbsolute, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const { values } = parseArgs({ options: Object.fromEntries([
   'run-id', 'task-id', 'dispatch-id', 'from-handle', 'candidate-sha', 'decision', 'report-path', 'reason', 'orca-path',
 ].map(name => [name, { type: 'string' }])) });
+
+if (!['win32', 'darwin', 'linux'].includes(process.platform)) throw new Error('当前平台没有已核实的 Orca CLI 入口');
 
 for (const name of ['run-id', 'task-id', 'dispatch-id', 'from-handle', 'candidate-sha', 'decision', 'report-path', 'reason']) {
   if (!values[name]?.trim()) throw new Error(`缺少必填参数 --${name}`);
@@ -28,6 +30,8 @@ if (!executable) {
   executable = join(process.env.LOCALAPPDATA, 'Programs', 'orca', 'resources', 'bin', 'orca.exe');
 }
 if (!isAbsolute(executable) || !statSync(executable).isFile()) throw new Error('Orca CLI 必须是已安装的实际可执行文件');
+if (process.platform === 'win32' && basename(executable).toLowerCase() !== 'orca.exe') throw new Error('Windows 必须使用已核实的 orca.exe');
+if (process.platform === 'linux' && basename(executable) === 'orca') throw new Error('Linux 必须明确使用已选的 orca-ide 或 orca-dev 入口');
 
 const body = [
   `Decision: ${values.decision}`, `Candidate SHA: ${values['candidate-sha']}`, `Run: ${values['run-id']}`,

@@ -100,6 +100,10 @@ func (h *handler) registerSwarmS3(mux *http.ServeMux, s *swarm.Service) {
 		detail, err := s.ReadMission(r.Context(), swarmCaller(r), r.PathValue("id"))
 		h.swarmResult(w, r, swarmDetailEnvelope{SchemaVersion: 1, MissionDetail: detail}, err)
 	})
+	mux.HandleFunc("GET /api/v1/missions/{id}/dag", func(w http.ResponseWriter, r *http.Request) {
+		dag, err := s.ReadMissionDAG(r.Context(), swarmCaller(r), r.PathValue("id"))
+		h.swarmResult(w, r, dag, err)
+	})
 	mux.HandleFunc("GET /api/v1/missions/{id}/work-items", func(w http.ResponseWriter, r *http.Request) {
 		detail, err := s.ReadMission(r.Context(), swarmCaller(r), r.PathValue("id"))
 		h.swarmResult(w, r, localList(detail.WorkItems), err)

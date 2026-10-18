@@ -51,7 +51,7 @@ func relayScopedWorkspaceRoute(r *http.Request, projectID string) bool {
 	if len(parts) == 5 && parts[3] != "" {
 		switch parts[2] {
 		case "missions":
-			return parts[4] == "work-items" && (r.Method == http.MethodGet || r.Method == http.MethodPost) || parts[4] == "timeline" && r.Method == http.MethodGet
+			return parts[4] == "work-items" && (r.Method == http.MethodGet || r.Method == http.MethodPost) || (parts[4] == "timeline" || parts[4] == "dag") && r.Method == http.MethodGet
 		case "work-items":
 			return (parts[4] == "claims" || parts[4] == "artifacts") && r.Method == http.MethodPost
 		case "artifacts":

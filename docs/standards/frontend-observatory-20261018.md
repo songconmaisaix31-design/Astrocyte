@@ -1,5 +1,7 @@
 # 新版前端与可选 OpenViking 接入
 
+本文保留截至 `657ca1464517a171ed50ddc8fcc787b237c44ad9` 的首轮交付与实际验证。用户已于2026-10-19确认动态DAG与Worker退出机制，后继实现及独立验收见[动态DAG报告](dynamic-dag-20261019.md)。
+
 ## 身份与基线
 
 - 日期：2026-10-18 接管，2026-10-19 继续；实际客户端：Orca Codex 0.162.0；实际模型：GPT-6.1-Sol xhigh fast（由主控按终端和 Worker 元数据核实）。
@@ -19,7 +21,7 @@
 | 注意力流的指标、深色画布、分布、右侧详情、活动列表 | `pages/cognition/FocusView.tsx` 与现有认知子页面 | 继续读取 `cognitionApi.focus` 的 A/M/C 与历史点，真实时间与证据入口保留，不将其换成演示百分比 |
 | 资料来源的分类、列表、详情与仓库状态 | `pages/attention/AttentionPage.tsx` 和既有导入、媒体、论文组件 | `/attention` 与 `/attention/sources` 保留资料、收藏、研究机会、分类、正文、附件与授权操作 |
 | Agent 卡片与交接面板 | `pages/workspace`、认知来源页面 | 本地清点、发现、注册、项目许可、原生会话、进度、提案与人类批准全部可达；卡片显示服务端观察 |
-| SVG DAG 的方向切换、缩放、键盘节点、详情与导出 | `pages/swarm` 内独立显示组件 | 只展示可追溯的真实记录；新规划契约及调用后端待用户决定，不迁入 `buildAgentDag` 的固定流程 |
+| SVG DAG 的方向切换、缩放、键盘节点与详情 | `pages/swarm/dag` 内独立显示组件 | 任务依赖随真实工作项变化，执行事实与Worker参与独立显示；来源和实际验证见后继动态DAG报告 |
 | 事件筛选、表格与证据详情 | 现有 `cognition/EvidenceView.tsx`、Mission 事件面板 | 保留事件 ID、来源、任务、执行者和原始证据入口，显示读取失败和过期状态 |
 | 作品列表 | 保留 `/workspace/works` 及其现有子页面 | Works Relay 的登记、完成通道、许可、租约与交付能力继续使用原实现 |
 
@@ -98,9 +100,9 @@
 
 `cmd/server/openviking*.go`、必要的 `cmd/server/main.go` 装配；`internal/attention/domain/openviking*.go`；`internal/attention/app/openviking*.go`；`internal/adapters/openviking/**`；`internal/adapters/sqlite/openviking*.go`、`migrations/027_openviking.sql`；`internal/adapters/httpapi/openviking*.go`、`server.go` 和必要 session guard 路由分类；`contracts/openapi.yaml` 与必要新契约示例。现有 app Service/Options/Contracts 构造入口未修改；独立用例复用原 Attention 的固定引用校验。
 
-## DAG 的决定边界
+## 动态 DAG 的后继开发
 
-用户尚未决定在线生成代表主动规划，还是实时组织已有真实任务/事件。现阶段保留现有真实任务读取和明确禁用的拓扑入口，SVG DAG 迁入及在线生成保持待定，不定义新规划端点或选择模型后端。
+用户已确认DAG动态变化、Worker依真实机制逐渐退出，参考Morphogenesis。后继实现复用现有Mission/WorkItem依赖、manage_work_items授权、租约、原Registry及实际停止机制；新报告记录精确范围、来源、命令和真实剩余。原生文件/命令工具关闭和S3待答门禁继续保持，真实模型规划及退出链路分别验收。
 
 无论最终方式如何，节点与边都需指向真实任务、执行者和事件。已批准事实、执行观察及 Agent 草稿必须分开显示；无数据返回空图。重复 ID、缺端点、环在数据进入布局前拒绝。方向、缩放、过滤、导出与键盘选择为显示行为，不改变执行状态。Dagre 只负责图布局，新增版本在实际安装前核官方包信息。
 
@@ -108,7 +110,7 @@
 
 构建、测试与服务串行；重操作前两次采样 CPU<70% 且可用内存≥4GiB，间隔2–5秒。Go 使用 GOMAXPROCS=1 / GOFLAGS=-p=1 / GOMEMLIMIT=256MiB，Node 与浏览器单 worker、适度堆限制和 BelowNormal；本树 `.verification/` 保存原件并复用既有 D 缓存。
 
-必要验收为前端 typecheck/lint/build、适用无替身测试、独立真实 HTTP/SQLite 空与拒绝路径、1920×1080 和1280×720 DOM/键盘、官方品牌响应与 decode，以及实际来源与事件追溯。OpenViking 未配置路径独立验收；真实远端成功需合法实例与外发范围，未取得时保持未验。DAG 按用户最终决定及获准原生来源验收。
+必要验收为前端 typecheck/lint/build、适用无替身测试、独立真实 HTTP/SQLite 空与拒绝路径、1920×1080 和1280×720 DOM/键盘、官方品牌响应与 decode，以及实际来源与事件追溯。OpenViking 未配置路径独立验收；真实远端成功需合法实例与外发范围，未取得时保持未验。后继DAG按已确认的动态方向和原生权限门禁独立验收。
 
 阶段原件位于本树 `.verification/`。资源采样与完整命令由 `run-check.ps1` 记录；每次检查独立时间戳文件，首个 typecheck 原件保留为 `typecheck.log`。
 

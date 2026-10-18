@@ -80,7 +80,7 @@ func (r *Registry) ReadOwnedInputOperation(ctx context.Context, sessionID, opera
 		result.InputAccepted = true
 	}
 	if purpose == "submit_artifact" && !result.InputAccepted {
-		return RelayOwnedInputOperation{}, nativeError(apierrors.DeliveryUnknown, "artifact submission has no accepted original input operation")
+		return RelayOwnedInputOperation{}, &domain.RelayObservationUnavailable{Reason: "input_not_accepted", Cause: nativeError(apierrors.DeliveryUnknown, "artifact submission has no accepted original input operation")}
 	}
 	// 原生回合受理和启动策略不证明有效工具、外部目标或本次完整 usage。
 	return result, nil

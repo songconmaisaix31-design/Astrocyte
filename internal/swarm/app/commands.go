@@ -312,7 +312,7 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 			if m.WorkItemCount >= g.Limits.MaxWorkItems {
 				return domain.Failure(apierrors.BudgetExhausted, "mission work item limit reached")
 			}
-			out = domain.WorkItem{ID: uuid.NewString(), MissionID: m.ID, Version: 1, State: "open", Title: c.Title, Inputs: c.Inputs, Dependencies: c.Dependencies, WritePaths: c.WritePaths, RequiredCapabilities: c.RequiredCapabilities}
+			out = domain.WorkItem{ID: uuid.NewString(), MissionID: m.ID, Version: 1, State: "open", Title: c.Title, Inputs: c.Inputs, Dependencies: c.Dependencies, WritePaths: c.WritePaths, RequiredCapabilities: c.RequiredCapabilities, CreatedBy: p.ID, CreatorKind: p.Kind}
 			for _, input := range c.Inputs {
 				if !slices.Contains(g.Inputs, input) {
 					return domain.Failure(apierrors.ScopeDenied, "work item input is not a fixed approved proposal source")
@@ -350,6 +350,13 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 				if v.MissionID != m.ID {
 					return domain.Failure(apierrors.ScopeDenied, "dependencies must belong to this mission")
 				}
+			}
+			items, err := tx.WorkItems(m.ID)
+			if err != nil {
+				return err
+			}
+			if err = domain.ValidateDAG(m.ID, append(items, out)); err != nil {
+				return err
 			}
 			old := m.Version
 			m.Version++

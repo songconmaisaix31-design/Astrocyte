@@ -4,6 +4,7 @@ import type { components, operations } from './schema';
 type S = components['schemas'];
 export type SwarmMission = S['SwarmMissionV1'];
 export type SwarmMissionDetail = S['SwarmMissionDetailV1'];
+export type SwarmMissionDAG = S['SwarmMissionDAGV1'];
 export type SwarmWorkItem = S['SwarmWorkItemV1'];
 export type SwarmArtifact = S['SwarmArtifactV1'];
 export type SwarmLease = S['SwarmLeaseV1'];
@@ -33,6 +34,7 @@ export function createSwarmApi(client = api) {
   return {
     missions: (signal?: AbortSignal) => unwrap(client.GET('/missions', { signal })),
     mission: (id: string, signal?: AbortSignal) => unwrap(client.GET('/missions/{id}', { params: { path: { id } }, signal })),
+    dag: (id: string, signal?: AbortSignal) => unwrap(client.GET('/missions/{id}/dag', { params: { path: { id } }, signal })),
     createMission: async (body: SwarmCreateRequest, key: string, signal?: AbortSignal) => unwrap(client.POST('/missions', { body, params: { header: await headers(key, body.request_id, signal) }, signal })),
     workItems: (id: string, signal?: AbortSignal) => unwrap(client.GET('/missions/{id}/work-items', { params: { path: { id } }, signal })),
     addWorkItem: async (id: string, body: SwarmWorkItemRequest, key: string, signal?: AbortSignal) => unwrap(client.POST('/missions/{id}/work-items', { body, params: { path: { id }, header: await headers(key, body.request_id, signal) }, signal })),

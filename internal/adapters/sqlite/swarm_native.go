@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"slices"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -20,6 +21,35 @@ type SwarmNativeBridge struct {
 var _ swarm.MemberAuthorizer = (*SwarmNativeBridge)(nil)
 var _ swarm.ExecutionDescriptorReader = (*SwarmNativeBridge)(nil)
 var _ swarm.ExecutionOwnership = (*SwarmNativeBridge)(nil)
+
+func (b *SwarmNativeBridge) ReadWorkerParticipation(ctx context.Context, m domain.Mission, execution swarm.ExecutionReference) (swarm.WorkerObservation, error) {
+	out := swarm.WorkerObservation{State: "unverifiable", Reason: "native_observation_unavailable", Source: "original_registry", ObservedAt: time.Now().UTC()}
+	e, err := b.source.ReadRelayMemberEvidence(ctx, execution.SessionID, execution.OperationID, "submit_artifact")
+	if err != nil {
+		var unavailable *workspace.RelayObservationUnavailable
+		if errors.As(err, &unavailable) && slices.Contains([]string{"controller_not_held", "input_not_accepted"}, unavailable.Reason) {
+			out.Reason = unavailable.Reason
+			return out, nil
+		}
+		var service *apierrors.ServiceError
+		if errors.As(err, &service) && service.Code == apierrors.UnsupportedCapability {
+			out.Reason = string(service.Code)
+			return out, nil
+		}
+		return out, err
+	}
+	if e.ProjectID != m.Grant.ProjectID || e.SessionID != execution.SessionID || e.InputOperationID != execution.OperationID || !e.ControllerHeld {
+		return out, domain.Failure(apierrors.ContextStale, "observed worker differs from its authorized mission execution")
+	}
+	out.State, out.Reason = "observed", "original_controller_retained"
+	currentInput := e.CurrentInput
+	out.CurrentInput = &currentInput
+	if e.ExitConfirmed {
+		out.State, out.Reason, out.ExitConfirmed = "exited", "original_process_exit_confirmed", true
+		out.ExitObservedAt = e.ExitObservedAt
+	}
+	return out, nil
+}
 
 func missingSwarmLease(err error) bool {
 	var missing *apierrors.ServiceError
@@ -151,7 +181,7 @@ func (b *SwarmNativeBridge) Reconcile(ctx context.Context, operationID, sessionI
 	}
 	e, err := b.source.ReadRelayMemberEvidence(ctx, sessionID, operationID, "submit_artifact")
 	if err != nil {
-		return swarm.ExecutionFact{}, err
+		return swarm.ExecutionFact{}, swarmExecutionObservationError(err)
 	}
 	if err = swarmMatchLeasedNative(e, l); err != nil {
 		return swarm.ExecutionFact{}, err
@@ -166,7 +196,7 @@ func (b *SwarmNativeBridge) Stop(ctx context.Context, operationID, sessionID str
 	}
 	e, err := b.source.ReadRelayMemberEvidence(ctx, sessionID, operationID, "submit_artifact")
 	if err != nil {
-		return swarm.ExecutionFact{}, err
+		return swarm.ExecutionFact{}, swarmExecutionObservationError(err)
 	}
 	if err = swarmMatchLeasedNative(e, l); err != nil {
 		return swarm.ExecutionFact{}, err
@@ -177,11 +207,19 @@ func (b *SwarmNativeBridge) Stop(ctx context.Context, operationID, sessionID str
 	if !e.ExitConfirmed {
 		e, err = b.source.StopRelayMemberEvidence(ctx, sessionID, operationID)
 		if err != nil {
-			return swarm.ExecutionFact{}, err
+			return swarm.ExecutionFact{}, swarmExecutionObservationError(err)
 		}
 		if err = swarmMatchLeasedNative(e, l); err != nil {
 			return swarm.ExecutionFact{}, err
 		}
 	}
 	return swarmNativeExecutionFact(e)
+}
+
+func swarmExecutionObservationError(err error) error {
+	var unavailable *workspace.RelayObservationUnavailable
+	if errors.As(err, &unavailable) && slices.Contains([]string{"controller_not_held", "input_not_accepted"}, unavailable.Reason) {
+		return &swarm.ExecutionObservationUnavailable{Reason: unavailable.Reason, Cause: err}
+	}
+	return err
 }

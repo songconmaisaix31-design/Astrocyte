@@ -20,7 +20,7 @@ export function formatError(err: unknown): string {
 
 export function useReadApi<T>(
   fetcher: (signal?: AbortSignal) => Promise<T>,
-  options: { enabled?: boolean; key?: string; refreshMs?: number } = {},
+  options: { enabled?: boolean; key?: string; refreshMs?: number; retainDataOnError?: (error: unknown) => boolean } = {},
 ): ReadApiState<T> {
   const { enabled = true, key = '', refreshMs } = options;
   const [state, setState] = useState<{
@@ -34,10 +34,13 @@ export function useReadApi<T>(
   // 保存最新 fetcher，避免函数引用变化触发重复请求。
   const fetcherRef = useRef(fetcher);
   useEffect(() => { fetcherRef.current = fetcher; });
+  const retainDataOnErrorRef = useRef(options.retainDataOnError);
+  useEffect(() => { retainDataOnErrorRef.current = options.retainDataOnError; });
 
   const fetchIdRef = useRef(0);
   const mountedRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const pendingRef = useRef(false);
 
   // 状态更新在 await 后执行，避免在 effect 内同步更新。
   const execute = useCallback(async () => {
@@ -45,6 +48,7 @@ export function useReadApi<T>(
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
+    pendingRef.current = true;
     // 后续代码进入微任务队列。
     await Promise.resolve();
     if (!mountedRef.current || !enabled || id !== fetchIdRef.current) return;
@@ -57,8 +61,13 @@ export function useReadApi<T>(
       }
     } catch (err: unknown) {
       if (mountedRef.current && id === fetchIdRef.current) {
-        setState(prev => ({ ...prev, loading: false, error: formatError(err), stale: !!prev.data }));
+        setState(prev => {
+          const data = retainDataOnErrorRef.current?.(err) === false ? null : prev.data;
+          return { ...prev, data, loading: false, error: formatError(err), stale: !!data };
+        });
       }
+    } finally {
+      if (id === fetchIdRef.current) pendingRef.current = false;
     }
   }, [enabled, key]);
 
@@ -83,7 +92,7 @@ export function useReadApi<T>(
 
   useEffect(() => {
     if (!enabled || !refreshMs) return;
-    const timer = window.setInterval(() => { void execute(); }, refreshMs);
+    const timer = window.setInterval(() => { if (!pendingRef.current) void execute(); }, refreshMs);
     return () => window.clearInterval(timer);
   }, [enabled, refreshMs, execute]);
 

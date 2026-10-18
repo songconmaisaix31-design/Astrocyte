@@ -56,7 +56,7 @@ func (n *Native) ReadOwnedNativeSession(ctx context.Context, id string) (domain.
 	p := n.processes[id]
 	n.mu.Unlock()
 	if p == nil {
-		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original native session is not held by this controller")
+		return domain.RelayOwnedNativeSession{}, &domain.RelayObservationUnavailable{Reason: "controller_not_held", Cause: nativeError(apierrors.DeliveryUnknown, "original native session is not held by this controller")}
 	}
 	p.mu.Lock()
 	if p.originalSession == nil {
@@ -106,7 +106,7 @@ func (r *Registry) ReadOwnedNativeSession(ctx context.Context, id string) (domai
 		found = true
 	}
 	if !found {
-		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original native session is not held in this Registry")
+		return domain.RelayOwnedNativeSession{}, &domain.RelayObservationUnavailable{Reason: "controller_not_held", Cause: nativeError(apierrors.DeliveryUnknown, "original native session is not held in this Registry")}
 	}
 	return result, nil
 }

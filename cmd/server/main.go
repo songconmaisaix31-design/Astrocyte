@@ -343,6 +343,8 @@ func run(logger *slog.Logger) (runErr error) {
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
+	swarmLifecycleErrors, stopSwarmLifecycle := startSwarmLifecycle(workerCtx, services.SwarmS3)
+	defer stopSwarmLifecycle()
 	var repositoryCleanupErrors <-chan error
 	if repositoryProvider != nil {
 		var stopRepositoryCleanup func() error
@@ -396,6 +398,8 @@ func run(logger *slog.Logger) (runErr error) {
 		} else {
 			runError = errors.New("repository cleanup stopped unexpectedly")
 		}
+	case err := <-swarmLifecycleErrors:
+		runError = fmt.Errorf("swarm lifecycle: %w", err)
 	case <-ctx.Done():
 		logger.Info("shutdown signal received")
 	}
@@ -404,6 +408,7 @@ func run(logger *slog.Logger) (runErr error) {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	stopSwarmLifecycle()
 	shutdownErr := srv.Shutdown(shutdownCtx)
 	cancelWorkers()
 	// The discovery adapter honors cancellation. Do not close SQLite while its

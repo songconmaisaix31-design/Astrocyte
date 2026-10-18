@@ -35,6 +35,10 @@ type MissionReadAuthorizer interface {
 	WithMissionRead(context.Context, domain.Principal, string, func(context.Context) error) error
 }
 
+type MissionDAGReadAuthorizer interface {
+	WithMissionDAGRead(context.Context, domain.Principal, string, func(context.Context) error) error
+}
+
 type TimelineReader interface {
 	Timeline(context.Context, string) ([]TimelineEvent, error)
 }
@@ -44,16 +48,25 @@ type ExecutionHistoryReader interface {
 }
 
 type ExecutionReference struct {
-	OperationID      string               `json:"operation_id"`
-	SessionID        string               `json:"session_id"`
-	WorkItemID       string               `json:"work_item_id"`
-	BindingID        string               `json:"binding_id"`
-	Fence            int64                `json:"fence"`
-	ContextPacketID  string               `json:"context_packet_id"`
-	PolicyVersion    string               `json:"policy_version"`
-	Events           []TimelineEvent      `json:"events"`
-	ToolEventsStatus string               `json:"tool_events_status"`
-	ToolEvents       []ToolEventReference `json:"tool_events"`
+	StopReason           string               `json:"stop_reason,omitempty"`
+	StopEvent            *TimelineEvent       `json:"stop_event,omitempty"`
+	ReconciliationReason string               `json:"reconciliation_reason,omitempty"`
+	HolderID             string               `json:"holder_id,omitempty"`
+	ExitConfirmed        bool                 `json:"exit_confirmed,omitempty"`
+	ReleaseConfirmed     bool                 `json:"release_confirmed,omitempty"`
+	Outcome              string               `json:"outcome,omitempty"`
+	Reason               string               `json:"reason,omitempty"`
+	ExitEvent            *TimelineEvent       `json:"exit_event,omitempty"`
+	OperationID          string               `json:"operation_id"`
+	SessionID            string               `json:"session_id"`
+	WorkItemID           string               `json:"work_item_id"`
+	BindingID            string               `json:"binding_id"`
+	Fence                int64                `json:"fence"`
+	ContextPacketID      string               `json:"context_packet_id"`
+	PolicyVersion        string               `json:"policy_version"`
+	Events               []TimelineEvent      `json:"events"`
+	ToolEventsStatus     string               `json:"tool_events_status"`
+	ToolEvents           []ToolEventReference `json:"tool_events"`
 }
 
 type ToolEventReference struct {
@@ -182,6 +195,14 @@ type ExecutionFact struct {
 	Outcome       string
 	Usage         *domain.Usage
 }
+
+type ExecutionObservationUnavailable struct {
+	Reason string
+	Cause  error
+}
+
+func (e *ExecutionObservationUnavailable) Error() string { return e.Cause.Error() }
+func (e *ExecutionObservationUnavailable) Unwrap() error { return e.Cause }
 
 type Event struct {
 	ID          string

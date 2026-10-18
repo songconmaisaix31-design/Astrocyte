@@ -536,6 +536,25 @@ paths:
         '404': {$ref: '#/components/responses/S2CommandError'}
         '409': {$ref: '#/components/responses/S2CommandError'}
         '500': {$ref: '#/components/responses/S2CommandError'}
+  /missions/{id}/dag:
+    get:
+      operationId: readSwarmMissionDAG
+      summary: Read current authorized task dependencies and original Worker participation
+      tags: [missions]
+      x-s1-supported: true
+      parameters: [{$ref: '#/components/parameters/S2ID'}]
+      responses:
+        '200':
+          description: Actual mission task DAG and separate execution facts
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SwarmMissionDAGV1'}
+        '400': {$ref: '#/components/responses/S2CommandError'}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '409': {$ref: '#/components/responses/S2CommandError'}
+        '501': {$ref: '#/components/responses/S2CommandError'}
+        '500': {$ref: '#/components/responses/S2CommandError'}
   /missions/{id}/timeline:
     get:
       operationId: readSwarmTimeline
@@ -9983,6 +10002,8 @@ components:
       additionalProperties: false
       required: [artifact_inputs, required_capabilities, id, mission_id, version, state, title, inputs, dependencies, write_paths, attempts, fence, artifact_id, reason]
       properties:
+        created_by: {type: string}
+        creator_kind: {type: string, enum: [human, agent, consumer]}
         artifact_inputs: {type: [array, 'null'], items: {$ref: '#/components/schemas/SwarmArtifactReferenceV1'}}
         required_capabilities: {type: [array, 'null'], items: {type: string}}
         id: {type: string}
@@ -10140,6 +10161,15 @@ components:
       additionalProperties: false
       required: [operation_id, session_id, work_item_id, binding_id, fence, context_packet_id, policy_version, events, tool_events_status, tool_events]
       properties:
+        stop_reason: {type: string}
+        stop_event: {$ref: '#/components/schemas/SwarmTimelineEventV1'}
+        reconciliation_reason: {type: string}
+        holder_id: {type: string}
+        exit_confirmed: {type: boolean}
+        release_confirmed: {type: boolean}
+        exit_event: {$ref: '#/components/schemas/SwarmTimelineEventV1'}
+        outcome: {type: string}
+        reason: {type: string}
         operation_id: {type: string}
         session_id: {type: string}
         work_item_id: {type: string}
@@ -10150,6 +10180,57 @@ components:
         events: {type: [array, 'null'], items: {$ref: '#/components/schemas/SwarmTimelineEventV1'}}
         tool_events_status: {type: string}
         tool_events: {type: [array, 'null'], items: {$ref: '#/components/schemas/SwarmToolEventV1'}}
+    SwarmDAGNodeV1:
+      type: object
+      additionalProperties: false
+      required: [work_item, creation_event]
+      properties:
+        work_item: {$ref: '#/components/schemas/SwarmWorkItemV1'}
+        creation_event: {anyOf: [{$ref: '#/components/schemas/SwarmTimelineEventV1'}, {type: 'null'}]}
+    SwarmDAGEdgeV1:
+      type: object
+      additionalProperties: false
+      required: [from, to, required, event_id]
+      properties:
+        from: {type: string}
+        to: {type: string}
+        required: {type: boolean, const: true}
+        event_id: {type: string}
+    SwarmWorkerObservationV1:
+      type: object
+      additionalProperties: false
+      required: [state, reason, source, observed_at, exit_confirmed, exit_observed_at, current_input]
+      properties:
+        state: {type: string, enum: [observed, exited, unverifiable]}
+        reason: {type: string}
+        source: {type: string}
+        observed_at: {type: string, format: date-time}
+        exit_confirmed: {type: boolean}
+        exit_observed_at: {type: [string, 'null'], format: date-time}
+        current_input: {type: [boolean, 'null']}
+    SwarmDAGWorkerV1:
+      type: object
+      additionalProperties: false
+      required: [execution, lease_state, observation]
+      properties:
+        execution: {$ref: '#/components/schemas/SwarmExecutionV1'}
+        lease_state: {type: string, enum: [current, expired, retained, absent]}
+        observation: {$ref: '#/components/schemas/SwarmWorkerObservationV1'}
+    SwarmMissionDAGV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, mission_id, mission_version, mission_state, reason, observed_at, nodes, edges, workers, events]
+      properties:
+        schema_version: {type: integer, const: 1}
+        mission_id: {type: string}
+        mission_version: {type: integer, minimum: 1}
+        mission_state: {type: string}
+        reason: {type: string}
+        observed_at: {type: string, format: date-time}
+        nodes: {type: array, items: {$ref: '#/components/schemas/SwarmDAGNodeV1'}}
+        edges: {type: array, items: {$ref: '#/components/schemas/SwarmDAGEdgeV1'}}
+        workers: {type: array, items: {$ref: '#/components/schemas/SwarmDAGWorkerV1'}}
+        events: {type: array, items: {$ref: '#/components/schemas/SwarmTimelineEventV1'}}
     SwarmMissionDetailV1:
       type: object
       additionalProperties: false

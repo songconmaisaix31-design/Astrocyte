@@ -3,7 +3,7 @@
 版本：v0.1　日期：2026-10-09　对应规格：Workbench_DDD_Spec_v0.1
 用途：把规格第 19 节的切片 S0–S6 展开为可交给多个 Agent 并行执行的任务清单。
 
-当前执行方式以 [AGENTS.md](../AGENTS.md) 为准；本文件中的阶段日期、fixture 和轨道人数是历史规划。当前任务入口见 [STATUS.md](../STATUS.md) 与 [新标准整合任务](../tasks/AGENTS-standard-integration.md)。新开发和整改采用实际接口与获准来源验收，不沿用历史 mock 或虚假数据要求。
+当前执行方式以 [AGENTS.md](../AGENTS.md) 为准：主控提出建议和优化方案，唯一 Worker 实现，独立 Reviewer 验证可用性与效果并决定接受、退回或证据不足，返修交回原 Worker。本文件中的阶段日期、fixture 和轨道人数是历史规划。当前任务入口见 [STATUS.md](../STATUS.md) 与 [动态 DAG 标准与验证](standards/dynamic-dag-20261019.md)。新开发和整改采用实际接口与获准来源验收，不沿用历史 mock 或虚假数据要求。
 
 ---
 

@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+// 只标记来源明确缺失；身份冲突和矛盾观察继续使用原错误。
+type RelayObservationUnavailable struct {
+	Reason string
+	Cause  error
+}
+
+func (e *RelayObservationUnavailable) Error() string { return e.Cause.Error() }
+func (e *RelayObservationUnavailable) Unwrap() error { return e.Cause }
+
 // 独立私有契约只使用标准库类型；不依赖完整 Relay 状态或 NativeSession。
 type RelayMemberEvidence struct {
 	Purpose                    string     `json:"-"`

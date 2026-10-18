@@ -281,6 +281,8 @@ type SourceVersion struct {
 }
 
 type WorkItem struct {
+	CreatedBy            string              `json:"created_by,omitempty"`
+	CreatorKind          string              `json:"creator_kind,omitempty"`
 	ArtifactInputs       []ArtifactReference `json:"artifact_inputs"`
 	RequiredCapabilities []string            `json:"required_capabilities"`
 	ID                   string              `json:"id"`

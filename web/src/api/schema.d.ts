@@ -458,6 +458,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/missions/{id}/dag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current authorized task dependencies and original Worker participation */
+        get: operations["readSwarmMissionDAG"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/missions/{id}/timeline": {
         parameters: {
             query?: never;
@@ -3751,6 +3768,9 @@ export interface components {
             artifact_inputs?: components["schemas"]["SwarmArtifactReferenceV1"][];
         };
         SwarmWorkItemV1: {
+            created_by?: string;
+            /** @enum {string} */
+            creator_kind?: "human" | "agent" | "consumer";
             artifact_inputs: components["schemas"]["SwarmArtifactReferenceV1"][] | null;
             required_capabilities: string[] | null;
             id: string;
@@ -3872,6 +3892,15 @@ export interface components {
             occurred_at: string;
         };
         SwarmExecutionV1: {
+            stop_reason?: string;
+            stop_event?: components["schemas"]["SwarmTimelineEventV1"];
+            reconciliation_reason?: string;
+            holder_id?: string;
+            exit_confirmed?: boolean;
+            release_confirmed?: boolean;
+            exit_event?: components["schemas"]["SwarmTimelineEventV1"];
+            outcome?: string;
+            reason?: string;
             operation_id: string;
             session_id: string;
             work_item_id: string;
@@ -3882,6 +3911,49 @@ export interface components {
             events: components["schemas"]["SwarmTimelineEventV1"][] | null;
             tool_events_status: string;
             tool_events: components["schemas"]["SwarmToolEventV1"][] | null;
+        };
+        SwarmDAGNodeV1: {
+            work_item: components["schemas"]["SwarmWorkItemV1"];
+            creation_event: components["schemas"]["SwarmTimelineEventV1"] | null;
+        };
+        SwarmDAGEdgeV1: {
+            from: string;
+            to: string;
+            /** @constant */
+            required: true;
+            event_id: string;
+        };
+        SwarmWorkerObservationV1: {
+            /** @enum {string} */
+            state: "observed" | "exited" | "unverifiable";
+            reason: string;
+            source: string;
+            /** Format: date-time */
+            observed_at: string;
+            exit_confirmed: boolean;
+            /** Format: date-time */
+            exit_observed_at: string | null;
+            current_input: boolean | null;
+        };
+        SwarmDAGWorkerV1: {
+            execution: components["schemas"]["SwarmExecutionV1"];
+            /** @enum {string} */
+            lease_state: "current" | "expired" | "retained" | "absent";
+            observation: components["schemas"]["SwarmWorkerObservationV1"];
+        };
+        SwarmMissionDAGV1: {
+            /** @constant */
+            schema_version: 1;
+            mission_id: string;
+            mission_version: number;
+            mission_state: string;
+            reason: string;
+            /** Format: date-time */
+            observed_at: string;
+            nodes: components["schemas"]["SwarmDAGNodeV1"][];
+            edges: components["schemas"]["SwarmDAGEdgeV1"][];
+            workers: components["schemas"]["SwarmDAGWorkerV1"][];
+            events: components["schemas"]["SwarmTimelineEventV1"][];
         };
         SwarmMissionDetailV1: {
             /** @constant */
@@ -8628,6 +8700,34 @@ export interface operations {
             404: components["responses"]["S2CommandError"];
             409: components["responses"]["S2CommandError"];
             500: components["responses"]["S2CommandError"];
+        };
+    };
+    readSwarmMissionDAG: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual mission task DAG and separate execution facts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmMissionDAGV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
         };
     };
     readSwarmTimeline: {
