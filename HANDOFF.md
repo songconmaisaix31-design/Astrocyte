@@ -2,11 +2,13 @@
 
 ## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
 
-用户已确认 DAG 动态变化、部分 Worker 依机制逐渐消亡，参考本机 Morphogenesis；此前生成方式提问结束。开发规范已更新为主控提出建议和优化方案、唯一 Worker 实现、独立 Reviewer 验证可用性与效果并决定接受/退回/证据不足。原 Worker 负责全部返修，重操作串行。当前任务见 [计划](tasks/dynamic-dag-loop-20261019.md)，沿前端 Draft PR #2 的准确 `657ca146` 继续，产品集成、原生权限及其他待答边界保持。
+用户已确认 DAG 动态变化、部分 Worker 依机制逐渐消亡，参考本机 Morphogenesis；此前生成方式提问结束。开发规范为主控提出建议和优化方案、Worker负责PR、独立Reviewer负责CR及可用性和效果决定；原Worker负责全部返修，重操作串行。当前任务见 [计划](tasks/dynamic-dag-loop-20261019.md)，沿前端 Draft PR #2 的准确 `657ca146` 基线继续，产品集成、原生权限及其他待答边界保持。
 
-追加用户确认：模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer 每次决策后以 hook 唤起主控继续改进，持续至规划内容验收。Worker `ctx_e5e98fad4345` 与 Reviewer `ctx_5a4a6eff08a2` 已实际工作，客户端 Codex0.162.0 / GPT-6.1-Sol xhigh fast，沿原 Run。Worker 已获准设计写域和首个串行重操作窗口；Reviewer 先静态核查，已将新 DAG 的 Agent `read_swarm` 授权缺口退回原 Worker。hook 使用原 Orca 持久邮件与唤醒，实际读取并回复才计唤起确认。
+模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer每次决策后以hook唤起主控继续改进，持续至规划内容验收。Worker `ctx_e5e98fad4345` 与Reviewer `ctx_5a4a6eff08a2` 使用Codex0.162.0 / GPT-6.1-Sol xhigh fast，沿原Run。Reviewer已将授权、退出事件幂等、来源与错误分类问题交原Worker修复；hook复用Orca持久邮件与唤醒，实际读取并回复才计唤起确认。
 
-通信hook的Node源码 `16dd0ed8` 已由Reviewer以真实决定投递、主控读取报告/回复并继续改进验证，Reviewer仅接受该构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，原生会话/租约0，未证明真实生成退出。基线自有服务和浏览器已停止，窗口已明确回交Worker继续动态DAG业务实现及验证；Reviewer静态等待准确候选，完整功能尚未接受。
+通信hook的Node源码 `16dd0ed8` 已由Reviewer以真实决定投递、主控读取报告/回复并继续改进验证，Reviewer仅接受该构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，原生会话/租约0，未证明真实生成退出；基线自有服务和浏览器已停止。
+
+动态DAG准确候选已交独立验收：SOURCE `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`，报告HEAD `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d`，普通push且PR #2远端已核。作者九个定向Go函数、全仓vet/build、类型/lint/build、契约/43包架构、双视口2项动态DAG及8项既有回归通过；人工节点增长、无Worker自动停止和真实模型退出分别登记。Worker已停服、清树并明确交窗；当前Reviewer独占重操作，原Worker业务冻结等待返修，两Task仍在进行。完整原生正向门禁与默认CI保持未通过，未合并或部署。
 
 ## V4 日运行交接（2026-10-19 00:25）
 

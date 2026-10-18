@@ -12,8 +12,8 @@ Morphogenesis 只读基线 `ddd2849afe330bf221d405dc2b91948c2416bd47`，未追�
 
 用户追加确认：各模块 Agent 均可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；每次 Reviewer 决策后以 hook 唤起主控继续方案，持续至规划内容验收完成。当前动态 DAG 模块仍由同一 Worker 长期负责；需要子 Agent 时使用互斥 write_paths，逐项登记生命周期，重操作全局串行。Reviewer 的 hook 由 Worker 在 `scripts/review-decision-hook.mjs` 实现，使用项目现有 Node.js 调用 `orca orchestration send` 持久投递和原生唤醒，不新增调度器；主控收到并回复才确认实际唤起。
 
-- Worker 继续使用原产品工作树和分支，同一 PR #2。首先读取本文件、两份交接、SPEC §10/16/17 和前轮报告，提交设计及准确写域 Handoff。最初允许产品 `AGENTS.md` 同步最新规范、`docs/standards/dynamic-dag-20261019.md`；代码写域经设计核查后追加。实现、测试、文档、普通 push 和全部返修由此唯一 Worker 负责。
-- Reviewer 为独立 Codex 会话、独立工作树和分支，基于准确657源码建立基线；只写 `docs/reviews/dynamic-dag-20261019.md` 与本树忽略的 `.verification/`，读取全仓及 Worker 的准确提交。先静态核查设计、已有真实接口和适用验收，再按主控分配的串行窗口实际验证候选。不得修改业务、默认 CI、断言或替 Worker 修复。
+- Worker 负责 PR，继续使用原产品工作树和分支，同一 PR #2。首先读取本文件、两份交接、SPEC §10/16/17 和前轮报告，提交设计及准确写域 Handoff。最初允许产品 `AGENTS.md` 同步最新规范、`docs/standards/dynamic-dag-20261019.md`；代码写域经设计核查后追加。实现、测试、文档、普通 push、创建及更新 PR 和全部返修由此唯一 Worker 负责。
+- Reviewer 负责 CR，为独立 Codex 会话、独立工作树和分支，基于准确657源码建立基线；只写 `docs/reviews/dynamic-dag-20261019.md` 与本树忽略的 `.verification/`，读取全仓及 Worker 的准确提交。先静态核查设计、已有真实接口和适用验收，再按主控分配的串行窗口实际验证候选，在 PR #2 发布针对准确 Commit 的 code review。同一 GitHub 账号不能原生 APPROVE 时发布 COMMENT review，明确实际结论和接受范围。不得修改业务、默认 CI、断言或替 Worker 修复。
 - 主控维护本文件、AGENTS、QUESTIONS、HANDOFF、STATUS，提出下一项有实际依据的改进，决定资源窗口；Reviewer 对可用性、效果及接受与否负责。未接受时原 Worker 返修，Reviewer 复验；存在真实阻塞时继续独立工作并明确未验范围，不以重复自评证明优化。
 
 ## 验收、资源与停止条件
@@ -53,3 +53,11 @@ Reviewer 的WIP发现 `msg_bfee437a23f6` 与 `msg_b56f4c77f3b7` 已交原Worker�
 交付文档追加允许产品 `docs/standards/frontend-observatory-20261018.md` 同步当前DAG已确认方向与新报告入口，保持657基线记录。Worker发现退出确认不能因用量未知而只留blocked；主控在原lifecycle/history范围批准 `swarm.execution_exit_observed` 保存真实原tuple的独立退出观察，实际退出时间无来源保持null，再按原Outcome/用量/预留规则结算，未释放保持false。新增观察必须维持原Recover版本/CAS/fence和幂等，不能重发Stop、伪造事件或绕过门禁。Reviewer已要求DAG读取和Source同时接受准确退出观察事件，正向真实退出仍未验。
 
 Reviewer后续WIP发现已回原Worker：首次退出确认用真实原claim event_id及现有Consume在同事务去重，后续观察不能改写首次来源；原StopReason和后续ReconciliationReason按真实事件分开，无法追溯时未知；停止检查只能识别已成功持久保留的专用结果，不按通用EvidenceMissing/DeliveryUnknown吞结构或身份错误。Worker已采用消费方明确缺失类型及私有retainedExecutionStop，外部原错误Unwrap保持，受影响检查与最终页面正在串行复验，尚无动态DAG接受决定。
+
+## 准确候选与独立验收窗口
+
+Worker 业务源码 `e369537bfcf3e3dad8c6ee76cfc5778055ab1f08`、报告候选 `b0a21a2cd03c074ba4097012be8f7e7748bb1f3d` 已普通 push，主控核对PR #2远端HEAD及干净工作树。作者九个定向Go函数、全仓vet/build、格式/契约/43包架构、前端类型/lint/build、动态DAG双视口2/2及既有页面回归8/8通过；实际数据、原件和完整命令在产品标准报告。人工实际创建的任务增长与模型生成分开，真实模型/Worker退出正向及并发仍未验。
+
+Worker `msg_9742b780d55c` 明确自有server存活0、无安装/编译/测试/浏览器/服务，交出窗口；主控通过 `msg_2535a4210e10` 将准确b0候选的独占重操作窗口授予Reviewer。原Worker保持业务和锁文件冻结，不worker_done，接收同一Reviewer返修。Reviewer按同一657公开README来源独立复验，决定后执行hook并交回窗口；当前尚无该候选接受结论。
+
+用户再次明确“worker pr，reviewer cr”。主控以 `msg_9c8366c516b6` 要求原Reviewer本人发布准确b0的 GitHub CR，核对实际验证与接受范围，再用既有hook唤起主控；Worker继续负责PR #2与全部返修。该提醒不改变当前独占窗口及原生未验边界。

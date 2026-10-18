@@ -2,9 +2,11 @@
 
 ## 动态 DAG 开发循环（2026-10-19）
 
-用户确认动态 DAG 与 Worker 逐渐退出机制，参考 Morphogenesis。规范已改为主控建议、唯一 Worker 实现、独立 Reviewer 实际验证效果并决定接受；当前 [任务计划](tasks/dynamic-dag-loop-20261019.md) 沿 Draft PR #2 / `657ca146` 继续。此前 DAG 二选一提问已结束，具体设计正在核现有任务依赖和执行权威，真实功能与效果尚未验收。
+用户确认动态DAG与Worker逐渐退出机制，参考Morphogenesis。规范为主控提出方案、Worker负责实现及PR、独立Reviewer负责CR并实际验证效果和决定接受范围；当前 [任务计划](tasks/dynamic-dag-loop-20261019.md) 沿Draft PR #2 / `657ca146` 基线继续。此前DAG二选一提问已结束。
 
-模块 Agent 已获准通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer 决策后通过 hook 唤起主控继续方案。Node hook `16dd0ed8` 已完成真实决定投递、主控读取/回复并继续改进，Reviewer仅接受通信构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，服务及浏览器已停止，窗口已回交Worker；动态DAG实现和真实生成/退出尚未接受，原Worker持续实施及返修，Reviewer静态等待候选。
+模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent；Reviewer决策后通过hook唤起主控继续方案。Node hook `16dd0ed8` 已完成真实决定投递、主控读取/回复并继续改进，Reviewer仅接受通信构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，服务及浏览器已停止；动态DAG候选正由Reviewer独立验收。
+
+当前候选：业务 `e369537b` / 报告 `b0a21a2c` 已普通push至同一Draft PR #2，作者适用Go、前端、契约/架构及2项动态DAG、8项既有页面检查通过，工作树干净。Worker已停服交窗，Reviewer现在对准确b0候选独立验收，原Worker冻结业务等待返修，尚无候选接受决定。真实模型生成、Worker退出及租约并发等仍未验；没有合并、部署或打包。
 
 ## V4 日运行（2026-10-19 00:25）：原外部证据根不可用，锁门禁阻塞
 

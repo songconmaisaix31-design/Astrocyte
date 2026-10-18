@@ -33,8 +33,8 @@
 - 每个模块的 Agent 都可以通过 Orca CLI 调用 subAgent，按互斥写域安排并报告归属、Task/Dispatch 和资源使用；子 Agent 沿用本协议。禁止调用 Aliyun Agent 或经百炼等入口代理执行 Agent 任务。使用所需的最少 Agent，不因允许嵌套协作增加编译、测试和服务并发。
 - 主 Agent 先维护一页任务计划，记录问题、建议、基线、预期效果、写入范围、验收和停止条件，再通过 Orca CLI 安排 Worker 与 Reviewer。主 Agent 管理范围、优先级和资源，不替 Reviewer 宣布优化有效。
 - 开发 Agent 固定使用一个 Worktree、一个 Branch 和明确的 `write_paths`。可读取全仓，只修改获准路径；超出范围的修改先提交 Handoff。
-- 代码、测试、文档及 review 返修由同一个开发 Agent 持续完成；提交 Commit、普通 push 并创建 PR，提供实际验证结果和真实剩余限制。
-- Reviewer 使用独立会话核对准确 Commit，检查真实功能、权限与失败路径，并用相同来源和条件比较改动前后的结果、资源及回归。明确记录“接受、退回、证据不足”及依据；编译成功、代码生成或 Worker 自评不代表接受。
+- Worker 负责 PR。代码、测试、文档及 review 返修由同一个开发 Agent 持续完成；提交 Commit、普通 push、创建并更新 PR，提供实际验证结果和真实剩余限制。
+- Reviewer 负责 CR，使用独立会话核对准确 Commit，检查真实功能、权限与失败路径，并用相同来源和条件比较改动前后的结果、资源及回归。在对应 PR 发布针对准确 Commit 的 code review，明确记录“接受、退回、证据不足”及依据；编译成功、代码生成或 Worker 自评不代表接受。同一账号不能原生批准时使用 COMMENT review，说明实际结论和接受范围。
 - Reviewer 的问题交回原 Worker，返修后由 Reviewer 复验；接受后才能进入下一项优化。证据不足时保留未验范围，主 Agent 可继续不依赖该条件的工作。接受优化不等于合并 PR、部署或发布授权。
 - Reviewer 每次决策后执行仓库的 review-decision hook，将准确源码、实际报告、接受/退回/证据不足和依据送入原 Orca Run，触发主 Agent 继续改进方案。复用 Orca 原生持久邮件及唤醒，不建设额外调度器、定时任务或守护进程；发送回执仅证明排队，主 Agent 实际读取并回复后才确认本次唤起。hook 不代替正式 worker_done 或资源释放。
 - 编译、测试和实际服务串行执行，使用已确认的资源限制；资源不足时继续静态开发或审查，检查保持未执行。
