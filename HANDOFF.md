@@ -6,6 +6,8 @@
 
 追加用户确认：模块 Agent 可通过 Orca CLI 调用 subAgent，禁止 Aliyun Agent；Reviewer 每次决策后以 hook 唤起主控继续改进，持续至规划内容验收。Worker `ctx_e5e98fad4345` 与 Reviewer `ctx_5a4a6eff08a2` 已实际工作，客户端 Codex0.162.0 / GPT-6.1-Sol xhigh fast，沿原 Run。Worker 已获准设计写域和首个串行重操作窗口；Reviewer 先静态核查，已将新 DAG 的 Agent `read_swarm` 授权缺口退回原 Worker。hook 使用原 Orca 持久邮件与唤醒，实际读取并回复才计唤起确认。
 
+通信hook的Node源码 `16dd0ed8` 已由Reviewer以真实决定投递、主控读取报告/回复并继续改进验证，Reviewer仅接受该构件。准确657基线九项独立HTTP/SQLite/双视口检查通过，原生会话/租约0，未证明真实生成退出。基线自有服务和浏览器已停止，窗口已明确回交Worker继续动态DAG业务实现及验证；Reviewer静态等待准确候选，完整功能尚未接受。
+
 ## V4 日运行交接（2026-10-19 00:25）
 
 本次 automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发，仅处理 Asia/Shanghai 刚结束的昨日 2026-10-18。基线分支 `validation/v1-20261012` / HEAD `6042593e`，接管时工作区干净；当前 Codex `0.162.0`，EXPERIMENT 全文 SHA256 仍为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，运行路径相对已验 `d749ecb` 没有源码差异。

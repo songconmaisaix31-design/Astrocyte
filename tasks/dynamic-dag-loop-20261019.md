@@ -41,3 +41,9 @@ Worker Handoff `msg_3c0b2fa427bc` 的完整设计位于产品树 `docs/standards
 Worker `msg_47e067af6328` 确认当前没有重操作或自有验证服务，明确交出窗口。主控已通过 `msg_c42cfdde9971` 将准确657基线的独占检查窗口授予 Reviewer；Worker 继续静态实现，安装/生成/编译/测试/服务须等窗口明确回交。完整模型生成/执行/退出仍受原门禁约束，图和拒绝路径验证不替代真实链路。
 
 Worker 已普通 push hook/规范/设计提交 `9097404a1e751a5dfd60eb042005efb2071e5704`。首次 Reviewer 实际执行被 Windows 签名策略拒绝，未进入 Orca 发送；主控已将入口改用现有 Node.js 的返修交回原 Worker，授权以文件编辑工具移除该 Worker 本轮的 PowerShell 入口，保留实际失败原件，不改变执行策略。Node 入口使用标准参数/文件/进程库及参数数组，无 shell 或 eval；收到真实决策并回复前不登记唤起完成。Reviewer 的基线安装首采样 CPU86%，在 pnpm 前拒绝，未提高门槛。当前没有产品业务接受结论。
+
+## 独立基线与首个接受决定
+
+Reviewer 准确657基线独立验证已完成，install/build/实际HTTP SQLite和顺序双视口九项通过，人工公开README固定来源，两工作项一条依赖，三个event_id逐项查真实outbox；同库重启历史一致，CSRF/Origin/不存在依赖拒绝无部分写入。基线 DAG GET404、拓扑入口禁用；原生会话和租约均0，不证明Agent生成或退出。原件为Reviewer树 `.verification/dynamic-dag/actual-657ca1464517-1792344688827/result.json` 及 `review-notes.md`，服务和浏览器已停止、49941无监听、tracked树干净。主控通过 `msg_fff1bc28094a` 将窗口回交Worker，Reviewer继续静态。
+
+Node hook 的准确源码为 `16dd0ed82f64f82d1b7e66cbfb6731db002846fb`。Reviewer实际657不足决定以 `msg_5e5595bbaf68` 入队，主控实际读取报告并以 `msg_0a59dd232fa7` 回复，同时交原Worker继续权限、停止事件时间和慢轮询改进。Reviewer随后通过hook给出仅通信构件的接受决定 `msg_da0b5fae07e9`，主控已核收；不再为回执重复生成新的证明决定。动态DAG与真实生成/退出尚未接受，继续原规划。
