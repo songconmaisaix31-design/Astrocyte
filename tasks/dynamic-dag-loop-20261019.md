@@ -70,8 +70,10 @@ Reviewer本人已发布准确b0的 [CR 5564261919](https://github.com/songconmai
 
 本项问题：独立构建确认JS从657的717.36kB/gzip198.33kB增至b0的774.32kB/gzip218.13kB；`SwarmPage` 静态导入 `MissionDAGView` 及Dagre，非Swarm页面也承担新增代码。建议在现有SwarmPage的DAG区域使用React按需导入与加载状态，进入该区域后才加载图和布局依赖；局部加载失败立即显示实际错误和人工重新加载入口，禁止显示成功空图、自动无限重试或切换布局实现。保留当前API、DDD、轮询、权限和全部已接受行为，保持React/CSS和既有依赖，不改默认CI、warning阈值或其他页面路由。
 
-写域仅为产品 `web/src/pages/swarm/SwarmPage.tsx`、`web/src/pages/swarm/dag/**`、`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`、产品AGENTS职责同步与标准报告。本项不修改Go、OpenAPI、依赖或锁文件，超域先Handoff；继续同Worker、同PR #2和同Reviewer。Worker先读取本方案、提交完整局部加载和错误处理设计，再在原资源守卫下串行实现和检查。Reviewer先静态，等Worker实际交窗和准确候选后独立运行与发布CR，随后hook唤起主控。
+写域为产品 `web/src/pages/swarm/SwarmPage.tsx`、`web/src/pages/swarm/dag/**`、`web/e2e/dynamic-dag.check.ts`、`web/dynamic-dag.config.ts`、产品AGENTS职责同步与标准报告；Go仅含下文因真实恢复失败批准的 `internal/adapters/httpapi/server.go` 静态资源处理。不修改OpenAPI、依赖或锁文件，超域先Handoff；继续同Worker、同PR #2和同Reviewer。Worker先读取本方案、提交完整局部加载和错误处理设计，再在原资源守卫下串行实现和检查。Reviewer先静态，等Worker实际交窗和准确候选后独立运行与发布CR，随后hook唤起主控。
 
 验收：同公开固定来源、相同条件的全新浏览器context分别记录b0与候选非Swarm首屏实际请求的全部JS字节和文件清单，记录生产构建分块总量，不能仅选最大分块或改变压缩口径。首屏实际JS总量减少、进入Swarm确实请求DAG分块、实际图增长/原选择/权限/断线和既有页面回归通过才能接受。第一次加载与直接进入Swarm均可用；真实静态文件缺失时页面明确报错，其余页面继续可用；如临时移动验证树自身已忽略构建资源，必须核准确路径并在finally恢复，不能伪造响应或改业务记录。截图/视频/trace仍关闭，服务与浏览器最多各一个。
 
 停止条件：本项独立CR接受后完成可验证的前端/DAG优化规划，不继续增加无依据的优化。完整Agent生成/Worker退出及OpenViking正向链路保持各自真实阻塞，未取得来源和权限条件前不冒充完成、不重复模型调用或伪造测试。最终由原Worker更新PR、原Reviewer提交自身报告并普通push、分别正式交付及官方清理。
+
+实际恢复检查要求的必要修复：作者首轮两视口增长检查通过，真实缺分块两视口均在还原文件、人工reload后仍取到200/text-html。原件 `dag-browser-20261019-023120-033.log` 与实际服务8vcdz2/m0kJ6J保留；首次缺分块HTML562bytes，reload后没有再次GET分块。Worker Handoff `msg_16c7a9401050` 已提交完整因果及修复方案。追加批准仅 `internal/adapters/httpapi/server.go` 的 `spaHandler` 和相邻说明：缺失或目录形式的构建资源 `/assets`、`/assets/` 返回真实404和 `Cache-Control:no-store`，已有资源仍由标准FileServer处理、API优先、页面深层路由继续原处理。该必要修复解决浏览器缓存错误内容导致的实际恢复失败；不得通过清cache、换context、修改mtime或删除恢复断言绕过。沿同Worker实施和验证，新增Go修改需格式检查、HTTP适用vet及生产build；原双视口真实移走/还原/人工reload复验，保留原失败证据。
