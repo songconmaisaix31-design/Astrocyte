@@ -2,7 +2,9 @@
 
 ## 当前工作
 
-用户于 2026-10-20 要求检查全部文档与新规范的冲突，并归档已被覆盖的旧文档。本次范围与结果见 [全仓检查任务](tasks/documentation-conflicts-20261020.md)，逐份处置见 [检查报告](docs/documentation-audit-20261020.md)，旧执行正文见 [归档目录](docs/archive/superseded-20261020/README.md)。新版协议和四份角色原文保持，资源与代码规范分别由 RESOURCES、CODING 统一维护。
+用户于 2026-10-20 要求明确一个当前交付候选，使集成代码、验证记录和实际运行版本对应，沿真实产品开发主线收敛已有成果。当前执行见 [交付候选任务](tasks/delivery-candidate-20261020.md)，产品仍沿原 PR #2 和工作树接续，原 `works-relay-integration` 为产品开发主线。
+
+[全仓文档检查](tasks/documentation-conflicts-20261020.md) 已完成，逐份处置见 [检查报告](docs/documentation-audit-20261020.md)，旧执行正文见 [归档目录](docs/archive/superseded-20261020/README.md)。新版协议和四份角色原文保持，资源与代码规范分别由 RESOURCES、CODING 统一维护。
 
 当前版本与验收状态统一见 [STATUS](STATUS.md)，用户决定与待答项见 [QUESTIONS](docs/QUESTIONS.md)。文档用途和任务入口见 [文档目录](docs/README.md)。本文件仅保留后续执行所需信息，历史原文见 [归档](docs/archive/20261020/README.md)。
 
@@ -32,7 +34,7 @@ V4 与产品任务分别管理。依据 [V4 日运行任务](tasks/M6-V4-daily-o
 
 ## 原任务与停止条件
 
-最近核查的产品、科研和 Reviewer 属于 Run `run_29c7e66b4136`，三个 Task 均为 failed、对应 Dispatch 已 released；没有可据此视为正在工作的 Worker。准确 Task/Dispatch、独立审查与旧未结记录见集成清单，恢复前重新查询运行时，不据历史标签启动并行工作。
+上一轮产品、科研和 Reviewer 属于 Run `run_29c7e66b4136`，三个 Task 均为 failed、对应 Dispatch 已 released。当前产品收敛使用 Run `run_1187287582ea`，原产品工作树 Worker 与独立 Reviewer 已通过 Orca 启动，准确 Task/Dispatch 及验收顺序见 [交付候选任务](tasks/delivery-candidate-20261020.md)。本轮没有接续科研和正式实验模型调用。旧未结记录继续见集成清单，不据历史标签判断当前活性。
 
 完整默认 CI、原生/S3、两 Agent 闭环、实际采用和正式 Release 未通过；十轮仍为 01/02/03/04/06/08 限定接受，05/07/09/10 未通过。S3 预算单位、权限证据范围、受限 Codex、经验准入与采用、首发范围、安装与服务共存、Laya 语言及作者许可等事项的待答状态按 QUESTIONS 保留。
 

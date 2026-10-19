@@ -4,12 +4,12 @@
 
 ## 当前顺序
 
-1. 完成本轮 [全仓文档冲突检查与归档](../tasks/documentation-conflicts-20261020.md)。
-2. 沿原产品 Worker、分支和 PR #2 执行 [集成收敛计划](../tasks/integration-convergence-20261020.md)，先核当前准确来源和实际 CI 失败，再对未完成范围安排返修与独立复验。
+1. 完成 [当前交付候选与实际运行收敛](../tasks/delivery-candidate-20261020.md)：沿原产品 Worker、分支和 PR #2 审核验证计划，核准确源码、实际检查和同来源运行；原 `works-relay-integration` 作为产品开发主线。既有分支与独有成果清单见 [集成收敛计划](../tasks/integration-convergence-20261020.md)。
+2. [全仓文档冲突检查与归档](../tasks/documentation-conflicts-20261020.md) 已完成，后续只维护当前任务、状态及必要引用。
 3. 科研沿 [原预印本任务](../tasks/research-preprint-20261019.md)、[重启续行任务](../tasks/restart-product-research-20261019.md) 及 [十轮计划](../tasks/s3-paper-ten-cycles-20261019.md) 继续。完整安装、论文构建和现有服务共用资源窗口，待答并发例外保持未决定。
 4. 正式实验沿 [V4 日运行](../tasks/M6-V4-daily-operation.md) 单独处理原根、权威锁与真实原件缺失；没有恢复事实前不启动依赖这些条件的操作。
 
-产品集成目标、候选、实际运行程序和验包来源分别见 [集成清单](integration-audit-20261020.md)。本轮文档检查不改变既有版本、Task 状态或任何功能验收。
+产品集成目标、候选、实际运行程序和验包来源分别见 [STATUS](../STATUS.md) 与 [当前收敛任务](../tasks/delivery-candidate-20261020.md)。接管前的全量分支与 Task 清单保留在 [集成清单](integration-audit-20261020.md)。
 
 ## S0–S6 范围
 
