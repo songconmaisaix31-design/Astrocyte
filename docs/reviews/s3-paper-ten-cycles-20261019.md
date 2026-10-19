@@ -468,3 +468,11 @@ PowerShell transcript仅记录宿主开始/结束，未捕获原生PTY交互。�
 自身入口已按此明确配置修改，未更改原工具或断言。实际首次`-Phase inspect`于UTC`06:54:02.4384556Z`首采样CPU65%、可用3.536022GiB、Stopwatch16.139831秒，低于4GiB内存门限，立即EXIT1；尚未取得第二样本。原件`release15/resources-inspect-c-output-rejected-20261019-145402-*.json`保留。C新Q目录实际不存在，原exe、移交、Verify、解压/HTTP及DOM均未执行，未据此判定C输出或产品失败。以`msg_3b38e35a30ee`立即交还窗口，没有自动重试；本节不增加十轮计数或发布决定。
 
 主控`msg_f62ef84e86bc`实际读取原件并收回上述窗口，随后明确再授一次同方案重新采样。新调用于UTC`07:02:00.7483262Z`首样本CPU76%、可用3.728474GiB、Stopwatch11.114066秒，内存仍低于4GiB，原守卫立即EXIT1且未取得第二样本；新时间戳资源原件保留，没有覆盖前次拒绝。原exe未启动，C新Q目录实际仍不存在，后续移交/Verify/DOM均未执行。全部调用退出后以`msg_3784183a8ab4`立即交回窗口，继续保持原门限与未决结论。
+
+### 固定只读inspect专用额度的实际拒绝
+
+主控`msg_acb3054f77f7`在当前AGENTS及十轮任务明确记录并授一次固定只读inspect专用额度：CPU<85%、可用≥3GiB、BelowNormal、Go1/`-p=1`/256MiB、Node≤512MiB。此额度不适用完整Verify、DOM、编译、安装或文稿构建；这些操作仍保持原85%/4GiB额度。已重新读取主控更新文件，没有把新额度表述为原4GiB守卫通过。
+
+自身助手`release15/sample-inspect-resources.py`直接import真实已安装psutil7.2.2，AST静态解析通过后实际执行；每样本使用`cpu_percent(interval=1)`的阻塞CPU、`virtual_memory().available`、UTC及perf_counter，不使用首次非阻塞零值或缓存。实际UTC`07:10:24.331346+00:00`CPU69.3%/可用3.338150GiB，第二次`07:10:26.600876+00:00`CPU95.1%/可用3.277313GiB，结束采样点单调间隔2.2695458秒。第二CPU超过85%即EXIT1，独立入口停止；两样本原件`resources-inspect-3GiB-*.json`与旧4GiB拒绝分列保存。
+
+准确Source15工具、C新q15-03、移交及完整Verify/DOM仍未运行或创建。全部调用实际退出后以`msg_cfd434ddbb41`立即归还唯一窗口，未自动重采样或改变源码/原参数/来源与Reader/SQL断言。本项没有改变发布、科研或十轮接受状态。
