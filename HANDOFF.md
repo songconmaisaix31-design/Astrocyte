@@ -2,13 +2,13 @@
 
 ## S3与论文十轮改进（2026-10-19）
 
-用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受4/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案与原始依据。四轮均有准确CR、真实hook及root实际读取回复，详细来源和失败历史保留在任务记录；提交、静态预读及重复检查不计轮次。
+用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受5/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案、06条件/义务/时间/实际视图与五项限定证明。均有准确CR、真实hook及root实际读取回复，详细来源和失败历史保留在任务记录；提交、静态预读及重复检查不计轮次。
 
-当前唯一重操作窗口授科研06，消息msg_41cf65ed3bd9。原Worker已按主控及Reviewer预读修订M细化的投影前提、每决策实际视图V/H与父链/时钟/撤销语义，六文件再次冻结后运行现有Pandoc/Tectonic完整构建和成熟验证；尚无06接受。全部调用退出即交回，下一窗口为产品q/Verify/DOM续验。06不得启动08、TeXLive安装或产品实验。
+当前唯一重操作窗口授产品msg_475b6d983b19：原旧q15 inspect实际失败且无安全输出，旧exe元数据为6ad1+dirty；从准确Source15既有工具重新构建并只读诊断，全部原来源/SQL10/历史等断言通过才继续完整Verify/DOM。任何失败停报，不自动改基本范围。06原Worker/Reviewer独立完整构建均退出，准确f27289c9/CR5567321949/报告c1ffa8e7经root读取/API核对后回复真实hook msg_fa885052b983，回执msg_9d3e3d5bcb39，限定接受23页/14引用方法稿。科研08按msg_274a0ed955fd完整方案仅静态，不安装TeXLive或启动产品/正式研究。
 
 产品准确Source `15d74da3edcee26550a71120370fda9c86230e04` 的新ZIP已Build EXIT0：`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822bytes。原Worker以msg_a481f570c6b0交回窗口、root回复msg_80bb71a45604并实际核日志/文件。固定依赖恢复/完整扫描、lint/类型、四个Go程序/前端生产构建和包1442文件隐私0匹配通过；13阶段启动样本最高CPU27%、最低4.595GiB，不代表峰值。原3e52解码失败和原p15缺SDK失败保留，修复来源/新r15输入与旧只读依赖分别记录。该ZIP尚未实际解压运行、独立验包、发布或创建tag，q/Verify/DOM未运行。
 
-Run `run_29c7e66b4136`，root终端 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task/Dispatch `task_51276f272ff3` / `ctx_e49721d7ac8d`，终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，原frontend-observatory树/分支/PR2，当前仅release/**、docs/release/**、本轨记录和获准today输出。科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`，终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，原research-preprint树/分支/PR3；已接受04为afe471ed，06构建中。Reviewer `task_2923223271be` / `ctx_568047699698`，终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，原research-preprint-review树/分支，最新报告f437700fec058a9b246a8f43f838848a03a617f9，报告/自身忽略目录及today/reviewer-release新目录写域；现在仅静态，未获独立验包窗口。三者均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent或worker_done。
+Run `run_29c7e66b4136`，root终端 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task/Dispatch `task_51276f272ff3` / `ctx_e49721d7ac8d`，终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，原frontend-observatory树/分支/PR2，包Source15d74da3、报告后继b022d0e3，当前仅release/**、docs/release/**、本轨记录和获准today输出。科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`，终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，原research-preprint树/分支/PR3；已接受06为f27289c9，08仅静态。Reviewer `task_2923223271be` / `ctx_568047699698`，终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，原research-preprint-review树/分支，准确06报告c1ffa8e7a3f1fc657725f31cee780bdfe33934fb，报告/自身忽略目录及today/reviewer-release新目录写域；无当前重操作窗口。三者均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent或worker_done。
 
 04报告3b6883dd及准确CR5567098640限定接受afe471ed的17页/14引用文稿与分析提案，真实hook msg_d8dbadf2a00a经root读取/API核对后回复msg_3b165bee72a4。默认浏览器矩阵f437为新增只读核查：trace、多服务、真实输入和原生执行前置尚未满足，未运行或作决定hook。03的19函数/7包vet/43包DDD/16文件格式及7个真实事件定位限定接受保持；完整默认CI、原生正向、AT08/09/13、Worker退出/释放和用户采用仍未通过。
 
