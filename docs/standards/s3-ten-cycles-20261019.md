@@ -201,3 +201,24 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 所有浏览器/Node/Python检查/PS与自有服务实际退出，17887监听0后，以 `msg_d5bb645587e2` 立即交回窗口，随后仅报告、普通push与PR更新。先前两个检查工具超时及CPU拒绝原件保持；本次限定DOM通过不替代完整默认浏览器或独立包CR。
 
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建、限定130项解压运行与上述DOM通过；完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
+
+## 2026-10-19 原应用恢复：依赖准备
+
+本次接续主控 `tasks/restart-product-research-20261019.md`，沿原 Task `task_51276f272ff3`，当前 Dispatch `ctx_013843bce872`、终端 `term_78b3371d-5de3-4a8b-8213-85f280c81054`。实际客户端 Codex CLI0.162.0，Orca 原生终端显示 `GPT-6.1-Sol xhigh fast`，没有模型覆盖或子 Agent。接管 HEAD 为 `57a91f4601b4292df4f55ba6cac541bad5caab3f`，tracked 干净；01/03 已接受，不重复实施或计数。
+
+原应用稳定程序仍为 `c5b3b5715f2e93b82365720914be24c73642bd1e`、modified=false、26187264 bytes，Web 为原 `172bb445597193d55f1563ee5d21ac2ec881798d` 的30文件/1058897 bytes。原运行根为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413`，SQLite 位于其 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`，接管时1277952 bytes；历史40804进程不存在，64505/17887没有监听。原 Q current 为 `snapshot-1711995690` / `2026-10-14T18:48:42.2097174Z`。接管核查只读文件元数据，未查询原应用 SQLite、请求应用 HTTP 或执行原恢复正文。
+
+原媒体配置引用的 standards-backend/node_modules 已缺失，原 runtime-sanitized-third/runtime/sdk/node_modules 亦缺失。原 H `dist/product-recovery-20261016/restore-38fb.ps1` 保留缺媒体依赖立即拒绝，未在缺失状态运行。主控完整读取自身恢复方案后，通过 `msg_9b016eeda64c` 明确允许恢复两个原路径，四份原应用配置、SDK package/lock、H脚本和历史日志只读。实际唯一依赖窗口为 `msg_95f72d12cd7b`，应用服务启动另行等待窗口。
+
+以下命令使用本树忽略入口 `.verification/restart-product-20261019/restore-dependencies.ps1`，输出均在同目录的独立子目录。两个 PowerShell 入口通过5.1/7标准 Parser；资源入口通过 Python 标准 AST。原 H 脚本未编辑。
+
+| 实际命令与范围 | 结果与原件 |
+| --- | --- |
+| `pwsh -NoProfile -File .verification/restart-product-20261019/restore-dependencies.ps1 -Phase summarize -Output <本树忽略目录/summarize-01>` | EXIT0。原 standards-backend 的 pnpm11.27.0 执行 `install --filter astrocyte --fail-if-no-match --frozen-lockfile --child-concurrency=1 --network-concurrency=1 --store-dir <本次输出/pnpm-store>`；378项锁文件供应链政策检查和187依赖安装通过，耗时3m52.9s。原 package.json/pnpm-lock.yaml/pnpm-workspace.yaml/.npmrc 完整字节相同，web/node_modules 仍不存在。原精确媒体配置路径的实际 CLI `--version` 为0.25.1。`summarize-01/restore.log`、`pnpm.log`、两组资源JSON。 |
+| `pwsh -NoProfile -File .verification/restart-product-20261019/restore-dependencies.ps1 -Phase sdk -Output <本树忽略目录/sdk-01>` | EXIT0。成熟 .NET ZipArchive 读取准确 Source15 ZIP，先逐字节核原 SDK package/lock，再完整恢复其 node_modules 的1368文件/377193096 bytes；全部目标先验证包含关系、重复与未占用，不覆盖已有文件。原 `release/Check-Runtime.mjs` 实际通过 Node/native ONNX binding/Laya/CodeGraph/RPC/SQLite、十二固定资产及两个来源 descriptor；没有执行推理。`sdk-01/restore.log`、两组资源JSON及实际终端退出记录。 |
+
+安装使用实际原有 registry.npmmirror.com，慢请求及包管理器原生 ETIMEDOUT 重试保留；安装进程最终成功，没有脚本级重试或换源。Corepack/pnpm store、npm cache、XDG cache/state、TEMP/TMP 和 Node 编译缓存均显式位于本次自身忽略输出，没有改写宿主设置。SDK来自原准确 Source15 ZIP，包内程序和 Web 未用于更新原应用。
+
+四个阶段的八次启动样本最高 CPU19.8%、最低可用12.798637390136719GiB；实际阻塞CPU采样，结束点单调间隔约3.002秒，均满足原85%/4GiB条件，父子进程 BelowNormal。Go4/`-p=4`/512MiB、Node1024MiB；没有运行 Go 编译，未测量运行期峰值。
+
+全部依赖安装和检查调用实际退出后，以 `msg_5dce3320d058` 立即交回唯一窗口。当前原应用尚未启动；原库逐表计数前后比较、实际服务PID/唯一监听/health/首页及独立恢复审查保持未执行。产品 Source15、ZIP与此前130项/DOM结果保持，新的独立包审查由 Reviewer 分别记录。原生/S3三项待答与Claim拒绝保持，完整默认CI、S3、发布和正式实验没有新增通过结论。
