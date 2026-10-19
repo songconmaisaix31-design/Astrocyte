@@ -412,10 +412,32 @@ UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconma
 
 ## Release 准确15新包的独立验包记录
 
-包源码为`15d74da3edcee26550a71120370fda9c86230e04`；当前报告后继为`2efeb16ee1e0e9fce8d92fe8e132d679371f779e`，两者差异仅`docs/standards/s3-ten-cycles-20261019.md`。实际完整读取其中当日Release全部记录，包为`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，报告1949417822bytes。旧41ce仅用于已核固定runtime恢复；本包应用程序和web来自准确15的真实构建。Worker的130项和失败DOM分别按其实际范围记录，当前尚未独立移用为通过。
+包源码为`15d74da3edcee26550a71120370fda9c86230e04`；主控最终冻结的报告候选为`57a91f4601b4292df4f55ba6cac541bad5caab3f`，此前阶段报告为`2efeb16ee1e0e9fce8d92fe8e132d679371f779e`。准确15→57差异仅`docs/standards/s3-ten-cycles-20261019.md`，实际读取最终当日Release记录，包括两次DOM工具超时、资源拒绝及其后限定DOM成功。包为`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，报告1949417822bytes。旧41ce仅用于已核固定runtime恢复；本包应用程序和web来自准确15的真实构建。Worker的130项、DOM与其历史失败分别按实际范围记录，当前尚未独立移用为通过。
 
 主控`msg_4f44fdf95f3e`仅授独立准确Git clone、原工具构建、公开原Q只读inspect及原完整Verify窗口，明确暂不浏览器或最终决定/hook。自身入口`.verification/ten-cycles/review-release15.ps1`使用获准C树源码/工具和D盘`reviewer-release`全新输出，原Go缓存复用`D:/Astrocyte-agent-assets/20261015/go-build/backend`。既有工具实际编译来源应记准确15，历史Q组件40880b67另列；原库/history/固定b789公开Git保持只读，不执行collect/Sleep或调整日期。
 
 首次`-Phase snapshot`实际EXIT1，发生于Git clone之前：UTC`06:16:40.2184593Z`与`06:16:44.3701197Z`，CPU33%/86%，可用5.630306/5.392838GiB，Stopwatch间隔4.163945秒。第二CPU达到85%门限，守卫立即拒绝；原件`.verification/ten-cycles/release15/resources-snapshot-rejected-20261019-141644-381.json`。只创建自身忽略证据/temp/Node缓存目录；未克隆、编译、inspect、解压/Verify或创建D盘验证输出，服务/浏览器/模型均未启动。上述功能阶段均为`NOT_RUN`，没有从资源拒绝推断产品失败或通过。
 
 全部自有调用实际退出后，以`msg_5323cb05df8f`立即交回唯一窗口并报告首失败；没有自行重试、关闭其他进程、发布新CR或执行决定hook。当前继续等待主控安排，本节不增加十轮计数。
+
+### 新授权的准确克隆、工具构建与实际inspect失败
+
+主控`msg_b1140a613b87`确认收回首次窗口；`msg_3bce1a98132c`在产品实际调用退出后明确再授一次窗口，保留旧86%拒绝。自身入口的标准PowerShell Parser在5.1.26100.9711与7.6.6分别EXIT0、完整UTF-8源码一致，仅静态解析，未执行主体。以下新阶段按实际退出串行执行，依旧BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB，原缓存与原输入保持。
+
+| 实际阶段 | 两次UTC/资源与结果 |
+| --- | --- |
+| `review-release15.ps1 -Phase snapshot` | `06:23:48.181/06:23:50.701`，CPU10%/18%，最低5.412GiB，Stopwatch2.534秒；EXIT0。自身真实Git clone固定完整15，clean；当前工具Source15与历史Q40880的ancestor检查通过，`release15/source-identity.json`保留。 |
+| `-Phase build-inspector -GoCachePath D:/Astrocyte-agent-assets/20261015/go-build/backend` | `06:24:00.561/06:24:03.106`，CPU22%/20%，最低5.423GiB，Stopwatch2.559秒；准确源码`go build -mod=readonly -trimpath -o <自身exe> ./cmd/workbench-snapshot/verify`实际EXIT0，未冷编译或使用旧exe。 |
+| `-Phase inspect` | `06:24:16.699/06:24:19.192`，CPU17%/9%，最低5.643GiB，Stopwatch2.506秒；采样通过后，独立新exe实际输出`PUBLIC_SOURCE_VERIFICATION_FAILED`并EXIT1。输出为获准新目录`reviewer-release/q15-01`，使用原app-state/root/public-source.git和固定b789 ref，仅inspect。 |
+
+新Q目录没有生成SQL期望、六字段、admission或`verification-error.txt`，没有拷贝Worker预期或根据原结果补写。完整Verify、解压/HTTP/服务/浏览器继续未执行。原件为自身`release15/{inspect.log,build-inspector.log,source-identity.json,resources-snapshot.json,resources-build-inspector.json,resources-inspect.json}`及新Q目录。全部调用实际退出后，以`msg_e898899e3aa9`立即交回窗口并停下，未自行重试。
+
+主控`msg_183432c97fa2`确认收回并只授元数据诊断。实际`Get-Command go`指向已安装的`C:/Users/DW/AppData/Local/Programs/go/bin/go.exe`；标准`go version -m`读取独立exe成功：Go1.27.2、正确verify模块、`vcs.revision=15d74da3edcee26550a71120370fda9c86230e04`、`vcs.modified=false`、trimpath、CGO0、Windows/amd64。失败调用宿主为PS7.6.6、NativeCommandArgumentPassing=`Windows`。没有记录该已退出进程实际收到的argv；没有错误文件也不足以定位失败阶段。当前原因未确定，不将源码、参数或环境猜测写成结论。下一项只读诊断建议已用`msg_e56f8253544a`交主控，当前未执行新的入口或inspect。
+
+### 显式ArgumentList的独立inspect证据
+
+主控`msg_9252c0a43e90`批准仅在自身入口使用标准`ProcessStartInfo.ArgumentList`，新输出`q15-02`；`msg_17a41e656d16`和`msg_711a113b4868`明确授一次实际窗口，原公开输入、全部来源/Reader/SQL断言不变。自身PS入口在5.1/7语法与完整解码均通过；该诊断调用显式要求PS7，原程序内部15分钟context保持，外层16分钟只用于自有进程超时收尾。没有修改Go源码或创建替身CLI。
+
+实际资源UTC`06:32:26.1524698Z`/`06:32:28.6907241Z`，CPU8%/3%、可用5.155182/5.232811GiB、Stopwatch2.551818秒，守卫通过。实际进程PID47748于`06:32:28.7867126Z`以EXIT1退出，完整stderr34bytes为`PUBLIC_SOURCE_VERIFICATION_FAILED`，stdout0bytes。新Q目录只有`configured-process.json`、`process-result.json`与完整stdout/stderr，没有安全SQL/六字段/admission或`verification-error.txt`。
+
+`configured-process.json`保留标准API实际配置的逐项参数、准确exe、原工作目录、必要环境名称及既有资源设置；原source/root/repository和固定b789完整，输出为新q15-02。它记录启动配置，没有把它称为Go内部实际argv观测。当前仍不能据结果认定前次PS7参数传递或其他原因。调用退出/Dispose后，以`msg_d298ae1cb682`立即归还窗口，首失败停止；完整Verify、解压、HTTP与独立DOM均未运行，没有最终包决定/CR/hook。
