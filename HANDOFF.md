@@ -2,7 +2,7 @@
 
 ## 当前工作
 
-用户于 2026-10-20 要求明确一个当前交付候选，使集成代码、验证记录和实际运行版本对应，沿真实产品开发主线收敛已有成果。当前执行见 [交付候选任务](tasks/delivery-candidate-20261020.md)，产品仍沿原 PR #2 和工作树接续，原 `works-relay-integration` 为产品开发主线。
+用户于2026-10-20要求明确一个当前交付候选，使集成代码、验证记录和实际运行版本对应。当前候选为 `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`，已普通push，原PR #2实际状态为MERGED。运行源码S为ed543c12，S至候选仅治理/报告文档；完整对应关系见 [交付候选任务](tasks/delivery-candidate-20261020.md)。
 
 [全仓文档检查](tasks/documentation-conflicts-20261020.md) 已完成，逐份处置见 [检查报告](docs/documentation-audit-20261020.md)，旧执行正文见 [归档目录](docs/archive/superseded-20261020/README.md)。新版协议和四份角色原文保持，资源与代码规范分别由 RESOURCES、CODING 统一维护。
 
@@ -10,15 +10,16 @@
 
 ## 产品接续
 
-按 [集成收敛计划](tasks/integration-convergence-20261020.md) 优先处理原产品候选：
+产品开发入口固定为 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration`：
 
-- 原分支 `songconmaisaix31-design/frontend-observatory-20261018@5725c1840a760105518d273eaaa28d7367f369ed`。
-- 原集成目标 `songconmaisaix31-design/works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`。
-- 保留原 Worker 的树、分支、PR 及写入范围；先核准确 CI 失败与 Source22 已修检查前置，业务修改交原 Worker，独立 Reviewer 按准确 Commit 复验。
+- 唯一产品主线为上述32ab，原来源分支 `songconmaisaix31-design/frontend-observatory-20261018` 同为32ab，保留原Worker的树和模块写入范围。
+- 下一项真实产品任务为修复Windows契约检查进程崩溃，使原 `pnpm check:contracts` 完成；依据本次run-contracts/run-redocly真实失败，先交根因方案、具体写域和测试计划独立审核。本次只登记后续任务，没有开始新实现。
+- 生产构建与功能检查实际在原产品树的S执行；集成树没有另行安装依赖或重复构建。后续依赖安装、编译与功能检查按RESOURCES安排单一服务窗口。
+- Orca后续新树默认基准为 `origin/songconmaisaix31-design/works-relay-integration`，既有树及分支归属保留。
 - 发送租约校验已移入产品候选，后续接续前查 [集成清单](docs/integration-audit-20261020.md)，避免重复引入。
-- 当前主控分支 `validation/v1-20261012` 保留管理与正式实验记录，产品开发沿原产品分支进行。
+- `validation/v1-20261012` 保留主控和正式实验记录，原分支与独有成果见 [接管清单](docs/integration-audit-20261020.md)。
 
-本次冻结构建源码为 `ed543c12106c2dbb3e181cb9bc1647b626455179`，同源程序与Web已构建并获独立可部署范围接受。主控已将其部署到原运行根 `versions/ed543c12` 并使用原真实库启动64505：PID45956，创建UTC `2026-10-19T19:47:04.6572166Z`，BelowNormal、唯一监听、health正常。原业务记录保全，准确027迁移及唯一启动观察时间增量已核；原库备份及c5/172旧产物保留。当前独立Reviewer正在唯一服务内只读核真实ID、权限与静态资源，随后Worker提交最终治理文档及报告。准确节点、Task/Dispatch与证据入口见 [当前任务](tasks/delivery-candidate-20261020.md)。
+实际服务为 `http://127.0.0.1:64505/`：S程序与Web同在原运行根 `versions/ed543c12`，PID45956，创建UTC `2026-10-19T19:47:04.6572166Z`，BelowNormal及唯一监听。独立Reviewer已核真实HTTP/SQLite ID、权限拒绝、全部Web字节、原业务/027/Q指针，并对准确32ab发布 [限定接受CR](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5577111605)。原库备份和c5/172旧产物保留；独立普通服务终端保持，开发Worker结算不关闭服务。
 
 ## 科研接续
 
@@ -34,8 +35,8 @@ V4 与产品任务分别管理。依据 [V4 日运行任务](tasks/M6-V4-daily-o
 
 ## 原任务与停止条件
 
-上一轮产品、科研和 Reviewer 属于 Run `run_29c7e66b4136`，三个 Task 均为 failed、对应 Dispatch 已 released。当前产品收敛使用 Run `run_1187287582ea`，原产品工作树 Worker 与独立 Reviewer 已通过 Orca 启动，准确 Task/Dispatch 及验收顺序见 [交付候选任务](tasks/delivery-candidate-20261020.md)。本轮没有接续科研和正式实验模型调用。旧未结记录继续见集成清单，不据历史标签判断当前活性。
+上一轮Run `run_29c7e66b4136` 的failed/released记录保留。本次Run `run_1187287582ea` 已完成候选交付、独立CR及普通集成，Task/Dispatch正式结算见当前交付任务；本轮没有接续科研或正式实验模型调用。旧未结记录继续见接管清单，不据历史标签判断当前活性。
 
 完整默认 CI、原生/S3、两 Agent 闭环、实际采用和正式 Release 未通过；十轮仍为 01/02/03/04/06/08 限定接受，05/07/09/10 未通过。S3 预算单位、权限证据范围、受限 Codex、经验准入与采用、首发范围、安装与服务共存、Laya 语言及作者许可等事项的待答状态按 QUESTIONS 保留。
 
-已接受的结果在原条件内复用。未满足资源、授权或真实证据的路径保持未执行或阻塞；等待期间继续完全不依赖这些条件的工作。产品合并、部署、发布和 arXiv 上传分别遵守已有授权与验收，不由本次文档清理触发。
+已接受的结果在原条件内复用。当前候选普通集成与运行已完成，完整CI/S3及发布门禁继续保持；契约工具失败和lint/vet串行偏差均保留。新任务按当前实际源码、资源、授权与证据安排，正式Release和arXiv上传分别遵守原条件。

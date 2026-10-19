@@ -2,7 +2,7 @@
 
 个人研究与创造工作台，使用 Go、React、TypeScript、Vite 和 SQLite。产品流程为资料沉淀、项目筹划、人工批准、Agent 执行与经验回流。完整功能及发布状态见 [STATUS](STATUS.md)，开发接续见 [HANDOFF](HANDOFF.md)，文档用途见 [文档目录](docs/README.md)。
 
-当前交付候选的构建源码为 `ed543c12106c2dbb3e181cb9bc1647b626455179`，程序与 Web 已同源部署到 [64505 应用](http://127.0.0.1:64505/)，使用原真实 SQLite。产品开发主线为 `songconmaisaix31-design/works-relay-integration`，最终报告与独立审查后普通推进。源码、验证、运行及限制见 [当前收敛任务](tasks/delivery-candidate-20261020.md) 和 [STATUS](STATUS.md)。
+当前交付候选为 `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`，已普通推送，原PR #2已合入。构建及运行源码为 `ed543c12106c2dbb3e181cb9bc1647b626455179`；至候选HEAD仅治理和验证文档后继，生产输入一致。程序与Web已同源部署到 [64505 应用](http://127.0.0.1:64505/)，使用原真实SQLite，独立运行与最终文档审查获限定接受。准确来源和限制见 [当前交付任务](tasks/delivery-candidate-20261020.md) 及 [STATUS](STATUS.md)。
 
 Source15 历史 Windows x64 包完成构建、独立 130 项运行检查和双视口人工 DOM 核查，来源为 `15d74da3edcee26550a71120370fda9c86230e04`，位置为 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`。当前候选为产品工作树内的普通交付目录 `dist/delivery-candidate-20261020/`。完整默认 CI、原生/S3、成果实际采用及正式 Release 仍未通过；本次契约工具崩溃和资源执行偏差按真实结果保留，详见当前任务。
 
@@ -102,7 +102,7 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 `pnpm start` 在 API 端口同时提供构建后的网页，默认打开 `http://127.0.0.1:8787/attention`；修改 `ASTROCYTE_PORT` 时使用对应端口。`ASTROCYTE_WEB_DIR` 可覆盖静态资源目录，`/api` 路径始终交给 API。
 
-`pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败；只有契约/客户端先到位的工作树，仍需合入对应 S0 实现后才能验收完整程序。
+`pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败。
 
 ## HTTP v1 与权限边界
 

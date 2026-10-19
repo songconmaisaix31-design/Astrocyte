@@ -4,7 +4,7 @@
 
 ## 当前顺序
 
-1. 完成 [当前交付候选与实际运行收敛](../tasks/delivery-candidate-20261020.md)：沿原产品 Worker、分支和 PR #2 审核验证计划，核准确源码、实际检查和同来源运行；原 `works-relay-integration` 作为产品开发主线。既有分支与独有成果清单见 [集成收敛计划](../tasks/integration-convergence-20261020.md)。
+1. [当前交付候选与实际运行收敛](../tasks/delivery-candidate-20261020.md) 已完成：产品主线32ab、构建/运行S、真实原库和独立审查对应，原PR #2已合入。下一项产品任务为修复Windows契约检查进程崩溃，使原 `pnpm check:contracts` 完成；由原Worker先交根因方案、写域和测试计划独立审核，再开始实现。完整CI、S3及发布门禁保持。
 2. [全仓文档冲突检查与归档](../tasks/documentation-conflicts-20261020.md) 已完成，后续只维护当前任务、状态及必要引用。
 3. 科研沿 [原预印本任务](../tasks/research-preprint-20261019.md)、[重启续行任务](../tasks/restart-product-research-20261019.md) 及 [十轮计划](../tasks/s3-paper-ten-cycles-20261019.md) 继续。完整安装、论文构建和现有服务共用资源窗口，待答并发例外保持未决定。
 4. 正式实验沿 [V4 日运行](../tasks/M6-V4-daily-operation.md) 单独处理原根、权威锁与真实原件缺失；没有恢复事实前不启动依赖这些条件的操作。

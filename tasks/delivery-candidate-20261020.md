@@ -1,5 +1,7 @@
 # 当前交付候选与实际运行收敛（2026-10-20）
 
+当前交付候选为 **`songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`**，已普通push，原PR #2已合入。构建、功能验证和实际运行源码均为 `ed543c12106c2dbb3e181cb9bc1647b626455179`（S）；S至候选仅15份治理/报告Markdown，生产输入相同。实际应用为 `http://127.0.0.1:64505/`，原真实库业务保全，独立审查限定接受；完整CI/S3等真实限制保留。
+
 | 项目 | 执行定义 |
 | --- | --- |
 | 用户目标 | 总控接手，明确一个当前交付候选，使集成代码、验证记录和实际运行版本对应，收敛已有成果，建立真实产品开发主线 |
@@ -29,8 +31,8 @@ Run `run_1187287582ea`，主控 `term_136af66c-7d90-4921-9568-520883163990`。
 
 | 角色 | Task / Dispatch | 原工作树与当前状态 |
 | --- | --- | --- |
-| 产品 Worker | `task_6f09f37378a8` / `ctx_1e0467a3f24a` | `frontend-observatory-20261018`，静态编写验证计划 |
-| 独立 Reviewer | `task_8149678f3fac` / `ctx_3406e529baa6` | `research-preprint-review-20261019`，静态推导验收条件；首次启动未观察到提交，读取终端确认任务留在输入区后仅补一次 Enter，随后 projection 确认 live，没有重复派发 |
+| 产品 Worker | `task_6f09f37378a8` / `ctx_1e0467a3f24a` | `frontend-observatory-20261018`；succeeded / completed / released，实际转录已保存 |
+| 独立 Reviewer | `task_8149678f3fac` / `ctx_3406e529baa6` | `research-preprint-review-20261019`；succeeded / completed / released，实际转录已保存。首次输入留在输入区时仅补一次Enter，没有重复派发 |
 
 已核原 c5 与候选差异包含新增 `027_openviking.sql`。服务切换须通过成熟 SQLite backup API 保存原库，并分别核查既有业务表保全、准确迁移增量及新增表；旧恢复脚本的全部表计数相等条件无法直接用于该迁移。
 
@@ -58,7 +60,7 @@ Run `run_1187287582ea`，主控 `term_136af66c-7d90-4921-9568-520883163990`。
 | 原库一致备份 | SQLite backup API 与全列 / 类型 / 重复数比较通过，68表、26迁移；原库尚未写入候选迁移 |
 | 副本迁移预演 | 同源实际程序及44次 HTTP / 全静态字节核查完成，进程已退出；首次全值比较因既有启动刷新更新 `local_project_discovery.data.observed_at` 而 FAIL。仅该字段和准确027记录变化，其他原数据一致 |
 
-副本观察时间的补充计划已由独立 Reviewer 以 `msg_80e2d54c6380` 接受，主控实际读取并回复 `msg_03ff818849eb`，以 `msg_d44def0f154a` 通知原 Worker。仅允许持真实 launch 核唯一 registered 行时间的实际区间及其余字段完全保全，只读复核原副本并另存结果，首次 FAIL 保留，不重启服务或重跑 HTTP。实际迁移及主控原库启动尚待复验。
+副本观察时间的补充计划已由独立Reviewer以 `msg_80e2d54c6380` 接受，主控实际读取并回复 `msg_03ff818849eb`，以 `msg_d44def0f154a` 通知原Worker。仅允许持真实launch核唯一registered行时间的实际区间及其余字段完全保全，只读复核原副本另存结果通过，首次FAIL保留；独立可部署及实际原库运行随后通过，均未重跑原副本服务或HTTP。
 
 ## 主控实际运行
 
@@ -68,4 +70,28 @@ Run `run_1187287582ea`，主控 `term_136af66c-7d90-4921-9568-520883163990`。
 - 服务：`http://127.0.0.1:64505/`，PID45956，创建UTC `2026-10-19T19:47:04.6572166Z`，BelowNormal；唯一loopback监听及启动工具退出后health正常已核。
 - 原数据库路径保持，69表、27迁移；原业务值 / 类型 / 重复数保全，新增OpenViking表为空，唯一registered观察时间为实际启动观察；Q完整指针及全部静态资源字节一致。
 - 独立普通服务终端：`term_c043b5a9-d4f4-41d0-b387-866ed544ca6d`；该终端与Worker释放分开管理，保留实际服务运行。
-- 主控以 `msg_fa5e8f215495` 将唯一服务内只读复验窗口交Reviewer，Worker保持tracked干净；独立运行、最终治理文档与准确CR尚待结算。
+- 主控以 `msg_fa5e8f215495` 将唯一服务内只读复验窗口交Reviewer；独立live-01实际49项GET含5项403、materials2与local-projects1的真实ID逐项对应原库、程序/33件Web与原业务/Q保全通过。运行接受hook `msg_1ec86dc76c63` 已实际读取回复 `msg_5940a7a41e55`。
+
+## 最终集成与交接
+
+| 项目 | 最终实际记录 |
+| --- | --- |
+| 产品交付报告 | [准确32ab报告](https://github.com/songconmaisaix31-design/Astrocyte/blob/32ab1eec808a5848aabad40f11133735a1214e55/docs/standards/delivery-candidate-20261020.md)，含全部真实命令、退出、原件与限制 |
+| 独立最终报告 | [43d4f132](https://github.com/songconmaisaix31-design/Astrocyte/blob/43d4f132c67d115cc0fabb27dd180a38447c80f9/docs/standards/delivery-candidate-review-20261020.md) |
+| 准确CR | [COMMENT review 5577111605](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5577111605)，`state=COMMENTED`、`commit_id=32ab1eec808a5848aabad40f11133735a1214e55`；限定接受来源/运行/治理文档，无本范围待返修项 |
+| 最终hook及实际读取 | `msg_e8b96e8f55eb`，主控实际核GitHub原件及报告，回复 `msg_a7158bacbd43` |
+| 普通集成 | `git merge --ff-only 32ab1eec808a5848aabad40f11133735a1214e55`、`git push origin HEAD:refs/heads/songconmaisaix31-design/works-relay-integration`均EXIT0；f17普通快进为32ab，无历史覆盖 |
+| 远端及原PR | 两个产品分支远端均32ab；PR #2实际MERGED，mergeCommit为32ab，UTC合入时间 `2026-10-19T20:10:21Z` |
+| 后续开发基准 | Orca `worktreeBaseRef=origin/songconmaisaix31-design/works-relay-integration`，原集成工作树保留，分支归属不变 |
+| 产品结算 | `worker_done msg_8f08442921d1`，准确本次Task/Dispatch，succeeded；释放回执released/closed_agent_terminal/transcript captured |
+| Reviewer结算 | `worker_done msg_6f4445902002`，准确本次Task/Dispatch，succeeded；释放回执released/closed_agent_terminal/transcript captured |
+
+原普通服务独立保持，两个本次开发终端均正式释放。主控与正式实验记录仍在 `validation/v1-20261012`；旧分支、原件和历史Task按原接管清单保留。
+
+UTC `2026-10-19T20:15:07.0323665Z` 的主控收尾核查确认，两个开发终端释放后PID45956、原创建时间、S程序路径、BelowNormal及唯一64505监听保持，实际health仍为ok；原件为主控 `.verification/delivery-candidate-20261020/post-release-runtime.json`。产品主线、原产品树和审查树均tracked干净，两个远端准确来源为32ab与43d4；本次Run的reclaimable列表为空。
+
+主控文档收尾命令为 `node .verification/delivery-candidate-20261020/check-links.mjs` 与 `git diff --check`，均EXIT0；已安装marked解析7份当前入口、141个本地文件引用，Node实际heap上限496MiB，BelowNormal，未触发业务编译、测试、安装或新服务。
+
+下一项为定位并修复Windows契约检查进程崩溃，使原 `pnpm check:contracts` 完成。入口为根package命令、实际Redocly、两个既有契约脚本及本次失败原件；原Worker先提交根因方案、具体写域和测试计划，经独立审核后实施。当前未预选依赖版本或开始新实现，未在集成工作树另行安装依赖或重复构建。
+
+完整默认CI/默认浏览器、Redocly正常退出、lint/vet串行合规、原生/S3、两Agent闭环、成果实际采用、OpenViking真实远端、完整新便携模型包与正式发布继续未通过或未验。原未答权限/预算、资料准入和人工采用保持；本次未创建tag/Release、投稿或执行恢复。既有资源拒绝、原失败与偏差均按实际保留。

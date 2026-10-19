@@ -1,5 +1,7 @@
 # 集成版本、任务与独有成果（2026-10-20）
 
+本页保存接管时的完整快照。当前交付候选已推进为 `works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`，实际程序与Web同为S `ed543c12`；当前结果见 [交付任务](../tasks/delivery-candidate-20261020.md) 和 [STATUS](../STATUS.md)。以下版本、Task和服务字段按原核查时间阅读。
+
 本次选定 **PR #2的 `5725c1840a760105518d273eaaa28d7367f369ed` 为优先收敛的产品候选**，继续使用原 `works-relay-integration` 作为产品集成目标。该候选已经汇集现有产品基线、新版界面、动态DAG、发送租约校验及发布检查改进，具备继续集中收尾的源码、Windows包和独立验证记录。完整产品、S3和正式发布仍按原验收判断。
 
 本次计划见 [任务文件](../tasks/integration-convergence-20261020.md)。接管根HEAD为 `9e07d3c69f4f183b7c5bd73cf2568de13c7abc22`，本次只提交主控文档。时间为2026-10-20 Asia/Shanghai；完整fleet采样完成于UTC `2026-10-19T17:45:35.4051955Z`，Git核查确认各来源保持。
