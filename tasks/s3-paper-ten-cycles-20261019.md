@@ -158,3 +158,21 @@ Reviewer06独立窗口msg_5b3bb209525d实际重建/比较EXIT0，msg_17ab6182b85
 先静态审查全部修改、PS5.1/7标准Parser，再在新today输出验证实际OS socket持有者正向及另一个真实进程树拒绝，HTTP为0；通过后运行原完整DOM断言、两视口/26品牌/人工DAG/可选OpenViking未配置及逐event_id真实SQL。重操作独占同一窗口，保留CPU<85%/可用≥4GiB启动双采样、Stopwatch2–5秒、BelowNormal、Go4/512MiB和Node1024MiB，一服务一浏览器。工具或业务首失败立即停止并归还窗口；实际调用全部退出后立即通知，不等报告。成功也须同Worker普通push报告/PR，随后独立Reviewer另验，不自行计为轮次或发布通过。
 
 完整默认浏览器矩阵和三项未答门禁保持，无新tag/Release或投稿。
+
+14:15，复用PS检查的真实socket首项仍在10000ms截止处失败，0检查/0 HTTP，尚不能定位等待在stdin或具体CIM调用。guard15d74da3-2失败原件保留，msg_b4a39692ae71确认全部自有进程退出/17887释放，root回复msg_4c88159f1e11收回窗口。产品仅静态核已安装psutil7.2.2成熟Windows API的等价方案，不安装/重试/加超时。此失败没有改变Source15/成功ZIP/130项。
+
+14:19，主控完整读取产品psutil-listener-plan.md，批准只改自身忽略工具：采用真实已安装C:/Python313/python.exe -I -B -u及psutil7.2.2，直接import；标准JSON/readline的本次检查进程、异步串行/每次10000ms/首失败退出。每请求重新取系统IPv4/IPv6 TCP表并要求唯一AF_INET/127.0.0.1监听、真实owner PID；fresh Process核root原ISO创建时间（原严格<1ms容差）、首次真实身份锚点、各节点存活/父链创建顺序/循环，再取表复核并核listener创建时间和root身份。禁止process_iter/oneshot缓存、手写Windows API或ISO解析、fallback/后台服务。真实UTC/perf_counter及逐阶段日志保留。静态通过后新guard真实socket正向与异树拒绝0HTTP，通过才新DOM原断言；Source15/ZIP/130保持。窗口由原拒绝后已退出的独立Reviewer转产品，资源门限保持，结束立即归还。
+
+等待DOM工具方案期间，唯一重操作窗口转独立Reviewer，准确候选Source15及报告2efeb16e不变：真实准确Git clone、核HEAD，复用原缓存构建既有只读inspect，独立读取同一获准公共Git/SQLite/历史并生成自身Q预期，向today/reviewer-release新目录解压同一准确ZIP，执行原完整Verify。不得拷贝Worker安全预期充当独立结果，不修改原始数据/历史/日期/Clock/脚本或断言。保持双采样85%/4GiB、BelowNormal、Go4/512MiB、Node1024MiB和单服务；首失败停下，全部调用退出即归还。浏览器、模型、原生入口及正式实验不在本窗口；DOM待原Worker修复通过后另核。接受仍为6/10，包审查不自动另计轮次。
+
+### 受支持引擎与来源包技术准备
+
+08准确a664经CR5567552099/报告c36f8990/真实hook msg_814e1b18d6a8及root msg_7cac54d820d1已限定接受。科研原Worker继续完成当日必要技术交付，不计额外轮次，也不进入依赖09的10。主控已全文读取自身忽略目录texlive2025-plan-20261019.md的一套完整方案。
+
+写域：papers/astrocyte/build-texlive.ps1、verify.py的显式PDF路径参数、README.md、validation.md、preprint/arxiv-source.zip；安装器、官方完整TeX Live2025/windows portable发行、缓存、临时、实际XeLaTeX PDF和全部日志只在本树.verification/texlive2025。08科学正文、14条文献及原TeX/PDF冻结。先静态实施，安装/下载/编译另授唯一窗口。
+
+采用官方2025 tlnet-final固定库、scheme-full及文档/源码，不改宿主PATH/文件关联/菜单/注册表，不管理员运行。官方ZIP与SHA512/GPG资料由成熟工具验证，成熟安装器启用包验证、最终失败即停止，外层不重试或缩减发行。最多12GiB下载/预留30GiB为估算；实际total_size、空间或资源不满足即Handoff。CPU<85%/可用≥4GiB启动双采样、Stopwatch2–5秒、BelowNormal和串行保持。
+
+同一a664完整TeX由成熟ZIP工具形成仅含必要来源的根目录ZIP，不含PDF/log/aux/缓存。全新解包后用实际XeLaTeX2025两遍逐次核EXIT，no-shell-escape/recorder/完整诊断；失败立即停止。既有检查保留，仅显式选择实际新PDF，核完整正文/公式/14参考/8配置/字体/文字边界并全文阅读。不要求跨引擎PDF字节一致，不覆盖旧08制品。实际调用退出即归还窗口，再报告/普通push/更新PR3和独立CR/hook。
+
+TeX Live2025 final与arXiv2025-08-03快照不同，本站处理/真人检查、实质研究贡献、真实研究证据、作者/许可/同意均未完成。禁止上传/注册、虚构署名/数据、修改正式实验/参数，技术成功不宣称投稿就绪。
