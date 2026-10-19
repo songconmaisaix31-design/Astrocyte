@@ -7,7 +7,7 @@
 - 固定分支：`songconmaisaix31-design/research-preprint-review-20261019`；接管 HEAD：`13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，接管时工作树干净。
 - 写入范围仅本报告及本树已忽略的 `.verification/**`。本树未包含根规则及产品源码，当前规则从主仓库 `C:/Users/DW/orca/Astrocyte/` 读取，产品计划及源码从指定产品树只读核查。
 - 实际使用 Orca 中的 Codex 会话；本次 `orca terminal show` 的终端预览为 `GPT-6.1-Sol xhigh fast`，没有覆盖模型参数。CLI 为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。
-- 当前阶段为静态计划审查，初始计划退回原Worker调整执行前置；尚无源码接受决定，没有编译、测试、服务、浏览器、安装或模型业务调用。
+- 当前阶段为静态计划审查，已接受准确 `ed543c12106c2dbb3e181cb9bc1647b626455179` 的普通构建与同来源服务计划；尚无源码接受决定，没有编译、测试、服务、浏览器、安装或模型业务调用。
 
 ## 依据与接管事实
 
@@ -70,9 +70,31 @@
 
 返修要求：由原Worker更新同一计划，列出普通生产构建与可部署路径、保全/副本预演/实际切换的执行归属及准确最小验证范围。计划接受不代替后续实际结果，也不授权当前停止服务或新增远端运行。
 
+### 修订计划决定：接受
+
+完整核对准确 `2e528cf4d904643a4a810cf917d3b78358b8c933` 的计划及5725至该Commit的全部差异，仅新增本次计划，业务、检查入口及权限未变，产品工作树干净。接受范围为计划中的普通 Go/Web 构建、必要专项、迁移副本预演与主控同来源服务切换安排；接受仅限计划。
+
+- C04/C05：改为现有 `pnpm build`，明确三个Go程序与完整 `web/dist`，要求实际 `vcs.revision`、`vcs.modified=false`、构建前后状态、产物复制来源及部署内容核对。普通候选目录在原树 `dist/delivery-candidate-20261020/`，不增加外部发布写域。
+- C06/C07/C08：保留成熟一致性备份、原业务schema与内容比较、027合法增量、原件保全、失败停机及显式恢复。主控停止原服务与生成获准副本，Worker只操作获准副本及验证产物，主控负责实际部署与原库核查；脚本仍需静态核查后执行。
+- C03/C10/C11/C12/C14/C15：默认结果、权限、未知不重发、原未验门禁、独占资源、原PR与准确源码独立CR保持。没有新性能优化，不重跑历史四组比较；Source22已接受同条件事实可以复用。
+- 初审列出的完整便携包、模型复制和130项重复Verify已移出本次前置；Source15历史结果与新完整包未验分别保留。`pnpm build` 已包含同次TypeScript检查，重复单独typecheck不提供新增结论，不要求额外执行。
+
+计划中“保留archive来源”和“新包验证”两处措辞仍需在后续实际报告中准确写为本次Git构建来源与普通候选核查，实际执行按已明确的 `pnpm build` 和原树产物安排，不据这两处措辞启动archive/便携包流程。该文档措辞不改变本次计划接受范围。
+
+剩余证据：准确构建源码S及报告后继、实际命令与资源记录、产物来源、迁移与实际运行、集成分支结果均待后续执行。原64505仍占用服务窗口，本次没有独立运行授权。
+
+主控随后指定准确计划 `ed543c12106c2dbb3e181cb9bc1647b626455179`。完整读取2e528至ed543的差异，只有同一计划：去掉重复typecheck、补充程序/Web逐文件完整字节比较与真实HTTP内容比较、补充NULL/BLOB/类型/重复行保全、已有外键错误停止及后台任务基线。产品工作树干净，业务源码及构建入口保持。决定：接受该准确计划，沿上列计划接受范围；这些新增约束能直接支持C05/C07/C12，未发现新增多余用例。仍须主控安排窗口，最终源码与运行结果尚未接受。
+
+| 计划决定 | hook实际结果 | 主控实际读取回复 |
+| --- | --- | --- |
+| 2e528限定接受 | UTC `2026-10-19T19:24:17Z`，`msg_5355eed88563`，EXIT0 | UTC `19:24:25Z`，`msg_5a1807583503`，确认读报告及hook，并要求核ed543后继 |
+| ed543限定接受 | UTC `2026-10-19T19:24:40Z`，`msg_4c93b946d1de`，EXIT0 | UTC `19:25:04Z`，`msg_5320964d4f66`，确认读准确接受，随后安排停止原服务并仅给Worker窗口 |
+
+两次均使用现有Node hook、本次准确Run/Task/Dispatch/handle，BelowNormal与Node heap512MiB。该表登记实际唤起，不视为源码、运行验收或窗口授权。
+
 ## 实际核查与后续条件
 
-已执行只读 Git 身份/状态、原生消息读取和文件内容读取；审查接管 HEAD 为 `13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，产品当前 HEAD 为 `5725c1840a760105518d273eaaa28d7367f369ed`。已完整读取现有 `scripts/review-decision-hook.mjs` 的真实参数与投递行为。初始计划退回决定通过该hook于 UTC `2026-10-19T19:22:47Z` 入队 `msg_e2af493f46e1`，参数使用本次准确 Run/Task/Dispatch/handle 和候选5725，进程 BelowNormal、Node heap512MiB，EXIT0；尚未收到主控读取回复，不登记唤起。计划阶段没有业务改动 CR。
+已执行只读 Git 身份/状态、原生消息读取和文件内容读取；审查接管 HEAD 为 `13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，初始产品 HEAD 为 `5725c1840a760105518d273eaaa28d7367f369ed`。已完整读取现有 `scripts/review-decision-hook.mjs` 的真实参数与投递行为。初始计划退回决定通过该hook于 UTC `2026-10-19T19:22:47Z` 入队 `msg_e2af493f46e1`，参数使用本次准确 Run/Task/Dispatch/handle 和候选5725，进程 BelowNormal、Node heap512MiB，EXIT0。主控 UTC `2026-10-19T19:23:17Z` 回复 `msg_fb6117274142`，确认实际读取hook与报告、交回原Worker，登记本次实际唤起。计划阶段没有业务改动 CR。初审报告已以普通Commit `f38857155be13ee09c1c71d10bdefdb1dc9b0e5d` push；差异空白检查通过。
 
 已静态读取候选的 `package.json`、`.github/workflows/check.yml`、`scripts/check.mjs`、`scripts/build.mjs`、`scripts/start.mjs`、`scripts/process.mjs` 及 `027_openviking.sql`：
 
@@ -81,5 +103,7 @@
 - Source22 在 `scripts/check.mjs` 中建立独立绝对输出目录，不能据此推断 workflow 中另行运行的 race 命令也取得该输出前置。
 - 默认构建为三个生产 Go 程序及 Web 的 TypeScript/Vite；默认启动将程序与静态目录分别解析。构建成功本身不足以证明实际服务采用本次产物。
 - `027_openviking.sql` 新建 `attention_openviking_submissions` 和部分唯一索引，含项目空间外键与 JSON 字段一致性约束；因此升级后须验证该增量及原有记录，不沿用全表数量完全不变的旧恢复条件。
+
+完整静态比较 Source15 `15d74da3edcee26550a71120370fda9c86230e04` 至准确计划ed543，仅 README、两份报告、`scripts/check.mjs`、`scripts/process.mjs` 有差异；其中两份脚本的全部差异为已获独立限定接受的Source22输出目录前置。Go业务、Web、数据库迁移、契约和生产构建脚本保持。后续Reviewer复验集中于准确构建来源与复制内容、新迁移数据保全、实际服务身份及真实HTTP/权限结果，已接受同条件业务事实按原范围复用，不独立重跑全包或所有未变单元检查。
 
 源码复验和实际运行核查必须在计划接受、主控交付准确 Commit/报告及专属资源窗口后开始。业务问题交原 Worker 返修。
