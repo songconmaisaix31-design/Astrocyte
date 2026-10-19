@@ -1,10 +1,10 @@
 # Astrocyte
 
-个人研究与创造工作台。Go 模块化单体、React + TypeScript + Vite、SQLite；开发入口见 [AGENTS.md](AGENTS.md)，当前范围见 [STATUS.md](STATUS.md)、[界面替换计划](tasks/UI-preview-plan.md) 与 [S0 计划](tasks/S0-plan.md)。
+个人研究与创造工作台。使用 Go、React、TypeScript、Vite 和 SQLite；开发规则见 [AGENTS](AGENTS.md)，当前来源与接续见 [STATUS](STATUS.md)、[TASKS](docs/TASKS.md) 和[交付报告](docs/standards/delivery-candidate-20261020.md)。
 
-2026-10-19 本机已恢复 [应用入口](http://127.0.0.1:64505/)。运行程序来源为 `c5b3b5715f2e93b82365720914be24c73642bd1e`，使用原 SQLite 和配置，由独立服务终端保持；健康检查、首页及68表93行的重启前后逐表计数检查通过。开发检查入口源码、Windows候选包及完整验收范围见 [产品记录](docs/standards/s3-ten-cycles-20261019.md)。
+当前[应用入口](http://127.0.0.1:64505/)的程序与 Web 均来自 `ed543c12106c2dbb3e181cb9bc1647b626455179`（S），PID45956，使用原 SQLite、Q 和媒体配置。主控已完成原库保全与准确027迁移；独立 Reviewer 核实了真实资料/项目ID、33件Web内容、49项GET及权限拒绝。Windows普通交付目录为 `dist/delivery-candidate-20261020/`。产品开发主线为 `songconmaisaix31-design/works-relay-integration`，原 PR #2 按独立审查由主控普通推进。
 
-三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
+新版页面连接现有资料、项目、批准、作品与认知接口，使用26件官方品牌资源。蜂群页按真实WorkItem依赖显示人工任务增长、来源、授权和停止历史，支持键盘与双视口；DAG按需加载，实际缺分块时显示错误并由人工重新加载恢复。OpenViking可选，未配置时核心页面可用。完整默认CI当前NOT_RUN，契约检查进程仍有真实崩溃FAIL；原生/S3、实际采用及正式Release未通过，具体结果与限制见交付报告。
 
 ## Attention Engine 与作品册
 
@@ -27,7 +27,7 @@ Workspace 的作品册读取真实持久化缓存，提供平台/分组/时间�
 
 Sleep 命令每次执行一个明确日期，无任务调度器或模型调用。必须提供 `--day YYYY-MM-DD`、`--timezone`、`--decay`、`--initial-confidence` 和 `--fact-projection none|facts-map-v1`；另可提供 `--data-dir` 及成功/冲突策略参数。`none` 保持关键事实召回不可计算；`facts-map-v1` 只解析明确已知格式的字面 `raw.facts` 字符串。当天回执、图、fluid、候选与指标一起提交；相同日周期返回原结果。字节缩减指标计量工作表示，原始事件保留，不表示 SQLite 文件缩小。迟到且早于已有图时间的新 Signal 显式拒绝，不能通过修改时间静默回放。
 
-工程参数、原生会话读取范围、知识新增固化版本再确认与检索时间基准仍见 [待决定项](docs/QUESTIONS.md)。sqlite-vec 已按任务红线 CUT，检索实际使用 topic/keyword 与已观察关联的显式可复算相关度。M2 三十日和 M6 七日均为合成验收；真实 CC/Codex 回放及真实连续七日用户对比不能从这些结果推断，当前进展见 [STATUS](STATUS.md) 和 [独立验收记录](docs/acceptance/AttentionEngine-baseline.md)。
+工程参数、原生会话读取范围及具体资料权限按[当前决定](docs/QUESTIONS.md)处理。检索使用 topic/keyword 与已观察关联的相关度；工程检查、真实原生回放和正式用户对照分别验收。产品状态见 [STATUS](STATUS.md)，正式研究与实验由[主控状态](https://github.com/songconmaisaix31-design/Astrocyte/blob/validation/v1-20261012/STATUS.md)维护，早期独立原件见[历史验收记录](docs/acceptance/AttentionEngine-baseline.md)。
 
 ## 环境
 
@@ -94,7 +94,7 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 `pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败；只有契约/客户端先到位的工作树，仍需合入对应 S0 实现后才能验收完整程序。
 
-## HTTP v1 与 fixture 边界
+## HTTP v1 与权限
 
 项目总览使用 `/local-projects/registered` 的持久化观察缓存，汇总同项目目录和有来源的客户端关联；历史活动、贡献者和Git提交不表示当前运行、进度或完成。人类通过 `/local-projects/registered/{project_id}/metadata` 保存备注、复盘、分组、意图与归档，刷新不覆盖人工字段。修改必须带人类会话、CSRF及当前人工 `revision`（初始0）；并发修改冲突后先重新读取。发现、备注和归档均不改变项目空间、模型许可或Agent授权。未决定的进度推断、论文搜索和插件读取保持待定。
 
@@ -138,23 +138,13 @@ summarize 0.25.1 保留上游网络保护：所选公开来源应解析为实际
 
 队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。作业期限和视频提取器共享 `ASTROCYTE_JOB_TIMEOUT_SECONDS`，正式入口默认 **1800 秒**，可显式配置 1–86400 秒。所选视频的真实本地转写已超过原 300 秒默认值，因此调整这一既有共享默认；它同时影响导入和自动整理作业的期限，原有 Codex 执行配置默认同为下述 1800 秒。上游音轨下载另有自身时限，作业期限不覆盖上游限制；取消沿用现有机制。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
 
-原有自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围；没有任何内置来源白名单。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认 1800 秒。项目选择的 CLI 蒸馏和清单推荐通过同一原生文本处理端口执行，每次检查项目外部模型许可，期限取现有作业期限并最多 30 分钟。普通浏览器临时服务关闭模型和外部提取。当前 native 政策验证的是 **Windows Codex 0.162.0**，使用已授权的纯文本推理模式，运行时拒绝工具执行；不是成功的操作系统文件读取隔离。模型推理会向其提供商发送选中原文，只配置用户授权的来源，本次仅授权所给公开论文与视频；私有库未授权。CLI 自己使用既有登录，不复制或显示凭据；代码不修改全局 CLI 权限配置。
+原有自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认1800秒。项目选择的CLI蒸馏和清单推荐通过同一原生文本处理端口执行，每次检查项目外部模型许可，期限取现有作业期限并最多30分钟。当前应用保持自动Codex沉淀关闭；受限Codex原生文件/命令工具关闭要求及S3预算/权限门禁保持，相关正向执行未验。模型输入和具体资料范围必须按当前任务批准，未知调用不重发；CLI沿既有登录，不复制或显示凭据，不修改全局CLI权限配置。
 
 `GET /api/v1/distillations/processor` 只核实原生版本与当前配置，返回实际配置模型、schema 身份及授权来源；不会调用模型，available 不代表提供商当前可连接。自动请求使用固定原文版本、显式前轮记录、问题与真实处理配置复用，完成后保留适配器来源和可空候选建议。人工确认再创建或修订候选。响应丢失的 operation 不自动或人工盲重发；已收到输出但本地保存失败的重试复用原输出。域分类和项目空间 @ 引用保留原件且不授予 Agent 访问。人工重读、提及与项目复用形成关注信号，刷新和机器读取不冒充人工行为；候选排序须先设置完整的版本化四维权重，未知维度不填零。
 
 [contracts/openapi.yaml](contracts/openapi.yaml) 是唯一 HTTP 源。全部规格 §13 路径、版本化请求/响应/错误及示例在此维护；[web/src/api/schema.d.ts](web/src/api/schema.d.ts) 自动生成，typed fetch 使用 `openapi-fetch` 的生成路径类型。业务组件调用 [client.ts](web/src/api/client.ts) 的 `createReadApi`、读取助手或 `createApiClient`。
 
-S0 实现健康、基座与集合只读查询；真实空数据库返回空集合。导入、准入、批准、原生接续、交接、认领、成果提交/采用和 SSE 在 S0 返回 **501 `unsupported_capability`**；请求不产生这些未来副作用。错误携带 `code/message/retryable/request_id/required_action`。客户端不会自动重试外部动作，也不会把连接失败转换为成功数据。
-
-UI fixture 必须显式进入；默认页面使用真实 API。协议中的 `fixture-*` 示例用于验证显示与数据结构，不能证明真实导入、模型能力、任务执行或成果采用。S1–S6 与 AT01–AT16 的实际验收由后续切片完成。
-
-开发服务下的三个 fixture 入口为：
-
-- 资料沉淀：`http://127.0.0.1:5173/attention?fixture=1`
-- 共同工作区：`http://127.0.0.1:5173/workspace?fixture=1`
-- 蜂群执行：`http://127.0.0.1:5173/swarm?fixture=1`
-
-构建后的服务使用同一路径和查询参数，默认端口为 `8787`。页面显示 fixture 标记；点击退出 fixture 或删除 `?fixture=1` 返回真实 API。后端数据库仍保持独立，示例不会写入业务数据。
+页面使用生产API与真实SQLite；空集合、未知费用、权限拒绝和能力缺失按实际状态显示。资料导入、人工批准和任务依赖继续沿各自公开契约与当前权限处理，原生执行及成果采用分别验收。错误携带 `code/message/retryable/request_id/required_action`。客户端不会自动重发未知外部动作；当前完整验收范围见[交付报告](docs/standards/delivery-candidate-20261020.md)。
 
 ## 数据与升级备份
 
