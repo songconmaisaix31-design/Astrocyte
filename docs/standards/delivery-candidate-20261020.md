@@ -62,7 +62,7 @@ Source22 原件根为本树 `.verification/restart-product-20261019/`。已读�
 | 集成：可选 OpenViking、SPEC §17.1 | `go test -mod=readonly ./internal/attention/domain ./internal/adapters/openviking ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server -run '^TestOpenViking' -count=1 -timeout=2m -v` | URI与绑定 / 配置参数，实际未配置200、远端动作503、真实连接拒绝、空集合、Origin / CSRF、缺失 / null level 拒绝；零远端提交。无匹配函数的包只计编译 |
 | 单元：界面显示与错误状态，SPEC §16.4 | `pnpm --dir web exec vitest run --maxWorkers=1 src/components/displayContract.test.tsx src/utils/__tests__/format.test.ts src/utils/__tests__/commandError.test.ts` | 现有参数与显示规则，不计 API / Native 正向 |
 | 生产端到端：原前端和 DAG 验收，SPEC §16.5 / §17.3 | `pnpm --dir web exec playwright test --config dynamic-dag.config.ts --workers=1`；随后 `pnpm --dir web exec playwright test --config observatory.config.ts --workers=1 e2e/observatory.check.ts` | 真实 HTTP / SQLite，1920×1080及1280×720，人工增长和逐事件SQL、方向 / 缩放 / 键盘、长标题、断线stale / 同库重启恢复、撤权清图和离页停止；真实移走自身dist分块、原context普通reload恢复；其他生产页面、批准 / 作品入口、搜索与26品牌HTTP / decode。截图 / 视频 / trace关闭 |
-| 静态和契约：现有公开接口与依赖边界 | `pnpm check:contracts`、`node scripts/check-architecture.mjs`、`node scripts/check-dependencies.mjs`、`pnpm --dir web typecheck`、`pnpm --dir web lint`、`git diff --check` | 保留真实错误与既有警告；不生成新模块或新接口，不为本任务扩充架构规则 |
+| 静态和契约：现有公开接口与依赖边界 | `pnpm check:contracts`、`node scripts/check-architecture.mjs`、`node scripts/check-dependencies.mjs`、`pnpm --dir web lint`、`git diff --check` | 保留真实错误与既有警告；完整TypeScript检查由普通构建内tsc执行，不重复运行；不生成新模块或新接口，不为本任务扩充架构规则 |
 | 编译检查：当前整体装配 | `go vet -mod=readonly ./...`；下节同来源生产构建 | 当前源码诊断和构建成功；不把编译计为真实原生可用 |
 
 Playwright helper 会编译并启动实际 Go 服务；其编译、服务及浏览器均占用唯一窗口，每次串行，绝不与64505共存运行。若旧入口内额度小于当前上限，保存实际额度，不为提高额度重跑。`observatory-focus.check.ts` 的既有历史 Q 检查依赖原只读来源；没有变化的 Reader、历史与性能结果继续沿原准确来源和限定条件复用，不能当作今天在线活动。切换时核原Q指针及实际接口历史，不重复采集、Sleep或完整认知验包。
@@ -75,7 +75,7 @@ Playwright helper 会编译并启动实际 Go 服务；其编译、服务及浏�
 
 1. 从本树准确 S 执行现有 `pnpm build`，由 `scripts/build.mjs` 串行编译 `dist/astrocyte.exe`、`astrocyte-mcp.exe`、`astrocyte-sleep.exe`，再以 tsc / Vite 构建完整 `web/dist`。复用已有真实依赖缓存；缺少依赖时立即报告，安装另经窗口安排。旧 Source15 程序和 Web 不作为当前构建产物。
 2. `go version -m` 必须记录实际 `vcs.revision=S`、`vcs.modified=false` 与 Go 版本；记录构建前后Git状态。构建日志、资源原件和工具版本保存在 `.verification/delivery-candidate-20261020/`。既有普通构建具有 Git 版本来源，不使用 archive 代替本次构建。
-3. 创建本树全新 `dist/delivery-candidate-20261020/` Windows 交付目录，完整复制本次三程序、Web、现有启动脚本和使用说明。保存实际目录及全部复制来源，保留原始 `dist` 与 `web/dist`；启动和专项核查使用同一批产物。原已有固定模型 / SDK / 媒体依赖继续按原可信配置使用，不复制完整模型runtime或打包用户SQLite / 配置。该目录是普通产品候选，完整便携模型包尚未构建或验收。
+3. 创建本树全新 `dist/delivery-candidate-20261020/` Windows 交付目录，完整复制本次三程序、Web、现有启动脚本并编写本候选的使用说明。逐文件比较复制来源与目标的完整字节，实际HTTP静态响应与本次Web完整文件比较；不以文件名或大小相等代替内容比较。保存实际目录及全部复制来源，保留原始 `dist` 与 `web/dist`；启动和专项核查使用同一批产物。原已有固定模型 / SDK / 媒体依赖继续按原可信配置使用，不复制完整模型runtime或打包用户SQLite / 配置。该目录是普通产品候选，完整便携模型包尚未构建或验收。
 4. 新交付目录实际端到端通过后，独立 Reviewer 核准确 S、对应产物和本报告，决定接受范围；主控普通推进原集成分支。原PR #2正文通过 `.verification/delivery-candidate-20261020/pr-body.md` 和 `gh pr edit --body-file` 更新，列明实际命令、范围和限制；不自动合并、创建 Release / tag。
 
 Source15 完整 Windows ZIP、130项解压运行和独立验包保持原准确来源的历史结果。本次没有新完整便携包；Build-Windows / Verify-Windows / 模型复制 / 全量认知验包均不作为本次必要前置，发布状态保持。新增本树验证入口只编排实际工具、参数与日志，不制造来源、响应、CLI或原生结果。若普通构建暴露超出已授权范围的缺陷，先交具体文件与补充测试计划。
@@ -95,7 +95,7 @@ Source15 完整 Windows ZIP、130项解压运行和独立验包保持原准确�
 | 阶段 / 执行归属 | 计划与失败边界 |
 | --- | --- |
 | 切换前 / 主控 | 重新核PID、创建时间、程序路径、唯一监听与原SQLite实际路径；任何身份不同立即停止，不结束未知进程。主控停止已确认旧服务，确认退出及64505无监听后才交出重操作窗口 |
-| 保全 / 主控审批脚本 | Python标准 `sqlite3.Connection.backup` 从 `mode=ro` 原库创建一致备份，明确 `query_only`；保留原对象目录及配置 / running.json / Q指针。记录 integrity_check、foreign_key_check、sqlite_schema、准确 `_migrations.id` 和所有既有业务表行数；完整数据仅保存在私有忽略目录。备份和源库逐表内容通过SQLite双向EXCEPT比较，不能只有行数。禁止单独复制活跃WAL主文件冒充一致备份 |
+| 保全 / 主控审批脚本 | Python标准 `sqlite3.Connection.backup` 从 `mode=ro` 原库创建一致备份，明确 `query_only`；保留原对象目录及配置 / running.json / Q指针。记录 integrity_check、foreign_key_check、sqlite_schema、准确 `_migrations.id` 和所有既有业务表行数；完整数据仅保存在私有忽略目录。备份和源库逐表全列比较，保持NULL / BLOB / SQLite值类型和重复行数量；双向EXCEPT须配合重复数检查，不能只有行数或集合相等。已有外键 / 完整性错误立即停止并交主控，禁止自动修复。备份前核持久任务 / Mission是否会在启动后自动写入，存在活动 / 未知状态时先报告实际基线与具体影响，不放宽数据相等要求。禁止单独复制活跃WAL主文件冒充一致备份 |
 | 迁移预演 / Worker获准副本 | 对主控提供的自有副本使用候选实际程序启动迁移；独立端口和隔离原生配置，禁止扫描用户会话。核027准确新增表 `attention_openviking_submissions` / 唯一索引与 `_migrations` 新记录；原迁移ID保持、原业务表schema及内容保持、完整性与外键检查通过。除准确预期新增外出现变化立即停止。原对象保持只读；不把副本预演计为原服务已切换 |
 | 切换 / 主控 | 审核本树脚本与独立结果后，部署同一候选程序和Web到新版本目录；64505、原数据库、原公开项目 / import roots、Q、媒体配置保持明确参数。Go4 / -p=4 / 512MiB、Node1024MiB、BelowNormal；关闭CodeX沉淀、保留archive来源，Laya / Jev / OpenViking不凭空配置。新启动只一次，失败不自动重试或恢复 |
 | 同库核查 / 主控 | 每次HTTP前后核本次持有进程、实际PID / 创建时间和唯一监听；health、首页及全部本地assets与本次构建内容对应，human session、只读核心列表 / DAG / 可选状态。SQLite原业务数据与备份逐表比较，027新表应为空，迁移记录预期增加；若已有待运行任务可能触发生命周期修改，先核条件并交主控，不忽略数据差异。核Q与媒体参数保持，不触发原生 / 模型 |
