@@ -4,7 +4,7 @@
 
 用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受5/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案、06条件/义务/时间/实际视图与五项限定证明。均有准确CR、真实hook及root实际读取回复，详细来源和失败历史保留在任务记录；提交、静态预读及重复检查不计轮次。
 
-当前唯一重操作窗口授产品msg_475b6d983b19：原旧q15 inspect实际失败且无安全输出，旧exe元数据为6ad1+dirty；从准确Source15既有工具重新构建并只读诊断，全部原来源/SQL10/历史等断言通过才继续完整Verify/DOM。任何失败停报，不自动改基本范围。06原Worker/Reviewer独立完整构建均退出，准确f27289c9/CR5567321949/报告c1ffa8e7经root读取/API核对后回复真实hook msg_fa885052b983，回执msg_9d3e3d5bcb39，限定接受23页/14引用方法稿。科研08按msg_274a0ed955fd完整方案仅静态，不安装TeXLive或启动产品/正式研究。
+当前唯一重操作窗口授产品msg_53137a57405c，执行同一Source15解压包的单浏览器DOM/26品牌/人工DAG/可选OpenViking及逐ID SQL；若仍静态且无在途运行，按msg_d97ba0fe1fa4先实际交回可插08复验。Source15准确只读工具和v15完整Verify已实际EXIT0，130 PASS/nonpass0，root已读结果/日志并回复归还；旧q15 generic失败保留。科研08按完整方案及三项WIP修订已构建27页/14引用、验证EXIT0，准确a664233a1276003a69f3d6850e4ecc04c08f4370普通push且PR3/远端一致；root已完整读validation及实际差异并冻结。Reviewer准确静态审查无新返修，独立重建/CR/hook未做，08不计接受。无TeXLive安装/模型/正式实验或arXiv上传。
 
 产品准确Source `15d74da3edcee26550a71120370fda9c86230e04` 的新ZIP已Build EXIT0：`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822bytes。原Worker以msg_a481f570c6b0交回窗口、root回复msg_80bb71a45604并实际核日志/文件。固定依赖恢复/完整扫描、lint/类型、四个Go程序/前端生产构建和包1442文件隐私0匹配通过；13阶段启动样本最高CPU27%、最低4.595GiB，不代表峰值。原3e52解码失败和原p15缺SDK失败保留，修复来源/新r15输入与旧只读依赖分别记录。该ZIP尚未实际解压运行、独立验包、发布或创建tag，q/Verify/DOM未运行。
 
