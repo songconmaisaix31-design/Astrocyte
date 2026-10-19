@@ -107,11 +107,11 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 主控 `msg_962269134dd8` 授权从准确 `3267249922082cb1808b6529a2f04084d40c1f92` 静态修改 `release/**`、`docs/release/**` 和本记录；同一 Worker、工作树、分支与 PR #2 继续负责，正式发布由主控执行。产品 05/07/09 门禁保持，包构建和重复验证不自动计为十轮改进。
 
-当前修改给既有 Build/Verify 增加重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。新源码固定及唯一窗口获准后才执行安装、构建、新 ZIP、解压与真实运行检查；当前这些检查尚未运行。
+当前 Build/Verify 具备重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。准确源码 `15d74da3edcee26550a71120370fda9c86230e04` 已完成下述新包构建；解压与真实运行验收仍待执行。
 
 主控 `msg_351fa9bca129` 明确要求包验证按实际监听归属保护隔离数据。当前 Verify 每次启动前重新确认端口空闲，使用 Windows `MSFT_NetTCPConnection`、`Win32_Process` 和持有的 `Diagnostics.Process` 核对监听 PID、父子进程及创建时间；根进程和监听均须仍存在。首个 health 与所有后续 HTTP 请求前后复查，无法确认或异主直接失败，不探测其他服务、不自动换端口。成功启动只记录本次 PID/归属；原重启与数据断言保持。未构建的源码 `21a92dc6b97fa5635cb12bb9eb93cd3f643e966b` 保留历史，新包以该修复后的准确源码为准。
 
-按主控 `msg_d3afdea3cd29` 的静态检查授权，PowerShell `5.1.26100.9711` 和 `7.6.6` 分别运行 `.verification/check-release-syntax.ps1`。两者对 Build、Common、Verify、Start 和 Publish 五个实际脚本的 `Language.Parser.ParseFile` 全部 EXIT0；原件位于本日资产根 `syntax-release-ps51/syntax.log` 与 `syntax-release-ps7/syntax.log`。`git diff --check` 无输出。解析通过不代表资源守卫、端口归属或包运行已经通过；重操作窗口尚未授予。
+按主控 `msg_d3afdea3cd29` 的静态检查授权，PowerShell `5.1.26100.9711` 和 `7.6.6` 分别运行 `.verification/check-release-syntax.ps1`。两者对 Build、Common、Verify、Start 和 Publish 五个实际脚本的 `Language.Parser.ParseFile` 全部 EXIT0；原件位于本日资产根 `syntax-release-ps51/syntax.log` 与 `syntax-release-ps7/syntax.log`。`git diff --check` 无输出。静态解析与实际运行分别记录，后续实际失败和修复范围见下文。
 
 监听归属记录使用标准 `List<int>.ToArray()` 保存实际父子 PID 数组。最终脚本在两个 PowerShell 版本分别再次解析 EXIT0，原件为本日 `syntax-listener-ps51/syntax.log` 与 `syntax-listener-ps7/syntax.log`；没有执行待验脚本正文。
 
@@ -119,6 +119,22 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 实际标准 PowerShell AST 核查定位到 Common 的文件解码：5.1 的 `ParseFile` 将中文注释与下一行 listeners 赋值一起读取为 Comment，而显式 UTF-8 的 `ParseInput` 保留赋值；两者均没有语法错误。Common 补充 UTF-8 BOM，与其他四个原脚本的既有编码一致，StrictMode、实际监听与全部业务断言保持。静态语法检查同时比较实际 `ParseFile` 与标准 UTF-8 `ParseInput` 的完整源码，避免仅凭零语法错误判断源码被完整读取。
 
-修复后 PowerShell 5.1 的两个标准解析入口均识别第 39 行 listeners 赋值，中文注释仅占第 38 行。两个 PowerShell 版本的五文件语法与完整解码比较全部 EXIT0，原件为 `syntax-utf8-ps51/syntax.log` 与 `syntax-utf8-ps7/syntax.log`；实际 socket 和后续包检查尚未复验。
+修复后 PowerShell 5.1 的两个标准解析入口均识别第 39 行 listeners 赋值，中文注释仅占第 38 行。两个 PowerShell 版本的五文件语法与完整解码比较全部 EXIT0，原件为 `syntax-utf8-ps51/syntax.log` 与 `syntax-utf8-ps7/syntax.log`。以下实际复验使用包含该修复的准确源码。
 
-三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。
+### 实际依赖恢复与新包构建
+
+本节全部原件相对于 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/`。主控 `msg_ae3f52e051cd` 授予准确 `15d74da3edcee26550a71120370fda9c86230e04` 的实际检查窗口；依赖缺失后的恢复窗口由 `msg_b81911d2b818` 明确授权。没有改变源码、固定版本、断言、内存配置或资源门限。
+
+| 实际命令/阶段 | 结果与原件 |
+| --- | --- |
+| `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .verification/check-release-listener.ps1 -Output .../l15d74da3 -Port 17887` | EXIT0；真实持有 OS socket 被接受，另一个实际 PS 进程树被拒绝，HTTP 请求 0。`l15d74da3/listener-result.json`、`listener.log` 与资源 JSON。两个持有进程均退出；此项不替代真实 Go 子进程的包启动验收。 |
+| 首次 Build，Runtime=`.../runtime-sanitized-third`、Output=`.../p15d74da3` | EXIT1，真实 `runtime-check` 发现 `runtime/sdk/node_modules/laya-ts/package.json` 缺失；Node24.16.0。资源 31%/15%、4.8321/4.9361GiB 允许后，校验直接失败。尚未源码归档、安装、编译或生成 ZIP。`p15d74da3/build.log`、`resources-runtime-check.json` 保留，未移用历史 runtime 通过结果。 |
+| 只读旧 ZIP 元数据和固定锁核对 | 标准 `.NET ZipArchive` 读取旧 `b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，SDK1370文件/377214131B；实际 package309B、lock20726B 与保留 runtime 相同。五项 SDK 版本、Node、十二项模型及两个 descriptor、许可和 NOTICE 原件均存在。首次 PS5.1 读取 npm lock 空键的 JSON 失败保留；固定 lock 改为完整原文比较，仅普通 package 元数据交标准 JSON 解析，实际 EXIT0。 |
+| `.verification/restore-release-runtime.ps1 -Output .../r15d74da3` | EXIT0；成熟 `.NET ZIP` 仅恢复旧包的 runtime/legal/NOTICE，共1400文件/3484759644B，逐项允许项与新目标包含性检查，不覆盖旧输入。实际 package/lock 全等；固定 Node/ONNX binding/Laya/CodeGraph/RPC/SQLite、十二项模型身份与 descriptor 检查通过，没有执行推理。runtime 全扫描1388文件/3484313396B，private_matches=0。`r15d74da3/restore.log` 与三阶段资源 JSON。 |
+| `powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Build-Windows.ps1 -Source 15d74da3edcee26550a71120370fda9c86230e04 -Label first -Runtime .../r15d74da3 -Output .../p15d74da3-2` | EXIT0；准确源码归档，官方 registry 冻结安装、前端 lint、三 Go 程序、tsc/Vite、snapshot 第四 Go 程序编译通过。准确源码 web、两个 adapter、启动与快照脚本、LICENSE/NOTICE/说明进入新包，旧二进制和旧 web 未复用。全包扫描1442文件/3548860672B，private_matches=0；全部 ZIP 成员与空间检查通过。`p15d74da3-2/build.log` 及13阶段资源 JSON。Vite 大分块提示保留。 |
+
+构建使用实际 Go1.27.2、Node24.16.0、pnpm11.27.0。13 个构建阶段的26次启动采样最高 CPU27%、最低可用4.5950927734375GiB；各阶段 CPU<85%、可用≥4GiB、Stopwatch间隔2–5秒、BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB。没有测量运行期峰值或宣称速度收益。
+
+准确新 ZIP 为 `p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822 bytes；源码保持 `15d74da3edcee26550a71120370fda9c86230e04`，本记录属于后继报告，不改变包来源。主控 `msg_6d5dd47e93cc` 安排 Build 后插入科研06，Worker 在所有构建/扫描/压缩调用退出后以 `msg_a481f570c6b0` 立即交回窗口；主控实际读取 Build 日志、独立核 ZIP 字节后以 `msg_80bb71a45604` 确认。17887监听为0，没有服务、浏览器、原生或模型进程。q只读inspect、实际解压/HTTP/SQLite重启/DOM及独立 Reviewer 尚未执行，不重跑已通过阶段，等待主控续验窗口。
+
+三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包已完成构建；解压运行、完整默认浏览器、原生控制器、完整 S3、独立包审查和正式发布尚未通过，旧125项结果没有移作本轮证据。
