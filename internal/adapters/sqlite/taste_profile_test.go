@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -307,6 +308,9 @@ func TestTasteProfileActualMigrationUpgrade(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(names) != 27 || names[25] != "026_taste_profiles.sql" || names[26] != "027_openviking.sql" {
+		t.Fatalf("actual upgrade requires the current 27 migration sources: %v", names)
+	}
 	for _, name := range names {
 		if name >= "026_taste_profiles.sql" {
 			continue
@@ -345,8 +349,33 @@ func TestTasteProfileActualMigrationUpgrade(t *testing.T) {
 	if err := db.RunMigrations(ctx, migrations.FS); err != nil {
 		t.Fatal(err)
 	}
-	if err := db.Conn().QueryRow("SELECT COUNT(*) FROM _migrations").Scan(&count); err != nil || count != 26 {
+	if err := db.Conn().QueryRow("SELECT COUNT(*) FROM _migrations").Scan(&count); err != nil || count != len(names) {
 		t.Fatal("migration idempotence or existing migrations changed", count, err)
+	}
+	rows, err := db.Conn().QueryContext(ctx, "SELECT id FROM _migrations ORDER BY id")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var applied []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		applied = append(applied, id)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if err := rows.Close(); err != nil {
+		t.Fatal(err)
+	}
+	expected := make([]string, len(names))
+	for index, name := range names {
+		expected[index] = strings.TrimSuffix(name, ".sql")
+	}
+	if !reflect.DeepEqual(applied, expected) {
+		t.Fatalf("actual applied migration IDs differ: got=%v want=%v", applied, expected)
 	}
 	if err := db.Conn().QueryRow("SELECT COUNT(*) FROM attention_taste_profiles").Scan(&count); err != nil || count != 0 {
 		t.Fatal("upgrade invented a human profile", count, err)
