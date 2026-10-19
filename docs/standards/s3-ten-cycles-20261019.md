@@ -163,4 +163,14 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 
 本次root为58796、实际开始时间 `2026-10-19T05:55:24.8092192Z`。launcher的finally关闭本次服务树，随后实际查询无本次root、Node、Playwright Chromium且17887监听为0，以 `msg_2ac2442ea32c` 立即交回窗口供08独立复验。原件为 `dom15d74da3/dom.log`、包stdout/stderr、三阶段资源JSON及统一终端session7527实际错误摘录 `failure-observed.md`。没有覆盖失败目录或重试。静态修复建议通过 `msg_35a4ba98c87d` 交主控：只调整自身忽略检查工具的同步执行方式、可观测截止时间和异常传递，保持每HTTP真实归属及全部业务断言；产品Source、成功ZIP及130项结果不变。
 
+主控 `msg_de9cede26a3b` 确认先以一个本次专用PowerShell检查子进程、标准JSON/readline异步串行调用原Common，每次10000ms和原断言保持。两个PowerShell版本的四个相关工具Parser/完整UTF8解码，以及三个Node文件语法检查实际EXIT0，原件为 `dom-syntax-ps51-2` 和 `dom-syntax-ps7-2`。新 `guard15d74da3-2` 真实socket调用EXIT1：检查PS52580在3220.2142ms返回ready，但首个正向请求从 `06:12:48.188Z` 到 `06:12:58.195Z` 耗时10007.6809ms仍超时，检查通过数0。实际 `positive-observations.jsonl` 与stderr均0B，现有证据尚不能定位stdin、Common入口或具体CIM等待，不能认定复用已解决原因。CPU63%/47%、可用6.0552/6.0925GiB、Stopwatch间隔3933.2792ms、BelowNormal的启动采样允许该调用；不代表运行期峰值。
+
+该次没有HTTP或DOM，两个socket根、检查PS和Node全部退出，实际17887监听0后以 `msg_b4a39692ae71` 立即归还窗口。完整客户端时序、实际timeout错误和退出SIGTERM记录保留，不覆盖首次DOM失败。主控随后要求先静态核已装psutil7.2.2与官方对应API及源码；具体等价条件、ISO精度与每次新Process/系统监听方案在本树忽略的 `.verification/psutil-listener-plan.md`，以 `msg_f0b81d7240a0` 提交。第二次失败不提供产品页面、人工DAG或逐事件SQL通过结论。
+
+主控 `msg_f4844bdbfcfc` 全文读取方案后批准实施及唯一窗口，仅修改自身忽略工具。一个本次Python子进程直接import已装7.2.2，每次使用fresh Process与系统TCP表，保留root原ISO小于1ms、首次实际创建时间身份、完整父链时间顺序/循环拒绝和二次监听；没有缓存OS结果或增加超时。正式产品Common及Source15没有更改。Python标准AST、三个Node语法、PS5.1/7四脚本完整解码/Parser均实际EXIT0，原件 `dom-syntax-node-python-3`、`dom-syntax-ps51-3`、`dom-syntax-ps7-3`。
+
+新 `guard15d74da3-3` 实际EXIT0：同一个真实socket的两次正向检查与实际异进程树拒绝通过，HTTP=0。正向checker11448、root58544，真实创建时间ISO差0.00095367431640625ms；客户端每次实测30.6593/26.8913ms，checker正常退出0。异树checker58688返回原时间顺序拒绝并退出1，检查工具按准确异常断言接受该拒绝，没有继续放行；所有socket/检查对象均退出。`guard-result.json`、每次OS阶段/创建时间/父链/完整异常和客户端时序记录保留。该观测仅说明该环境下实际调用通过，不推断旧超时的具体原因或产品性能。
+
+随后 `dom15d74da3-2` 在首项 `public-git-clone` 资源守卫EXIT1：CPU100%/37%、可用5.8228/5.1281GiB、Stopwatch间隔3399.2431ms、BelowNormal。真实CPU样本触发原85%门限，尚未Git clone、包启动、HTTP、浏览器或SQL；没有自动重试。全部调用退出且实际17887监听0，以 `msg_18f497450acd` 立即交回窗口。原资源JSON和transcript保留，等待主控明确续验；成功包和130项结果不变。
+
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建与上述限定130项解压运行通过；首次DOM检查失败，完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
