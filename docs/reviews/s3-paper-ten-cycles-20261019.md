@@ -432,7 +432,7 @@ UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconma
 
 新Q目录没有生成SQL期望、六字段、admission或`verification-error.txt`，没有拷贝Worker预期或根据原结果补写。完整Verify、解压/HTTP/服务/浏览器继续未执行。原件为自身`release15/{inspect.log,build-inspector.log,source-identity.json,resources-snapshot.json,resources-build-inspector.json,resources-inspect.json}`及新Q目录。全部调用实际退出后，以`msg_e898899e3aa9`立即交回窗口并停下，未自行重试。
 
-主控`msg_183432c97fa2`确认收回并只授元数据诊断。实际`Get-Command go`指向已安装的`C:/Users/DW/AppData/Local/Programs/go/bin/go.exe`；标准`go version -m`读取独立exe成功：Go1.27.2、正确verify模块、`vcs.revision=15d74da3edcee26550a71120370fda9c86230e04`、`vcs.modified=false`、trimpath、CGO0、Windows/amd64。失败调用宿主为PS7.6.6、NativeCommandArgumentPassing=`Windows`。没有记录该已退出进程实际收到的argv；没有错误文件也不足以定位失败阶段。当前原因未确定，不将源码、参数或环境猜测写成结论。下一项只读诊断建议已用`msg_e56f8253544a`交主控，当前未执行新的入口或inspect。
+主控`msg_183432c97fa2`确认收回并只授元数据诊断。实际`Get-Command go`指向已安装的`C:/Users/DW/AppData/Local/Programs/go/bin/go.exe`；标准`go version -m`读取独立exe成功：Go1.27.2、正确verify模块、`vcs.revision=15d74da3edcee26550a71120370fda9c86230e04`、`vcs.modified=false`、trimpath、CGO0、Windows/amd64。失败调用宿主为PS7.6.6、NativeCommandArgumentPassing=`Windows`。没有记录该已退出进程实际收到的argv；没有错误文件也不足以定位失败阶段。当时原因未确定，只读诊断建议已用`msg_e56f8253544a`交主控。
 
 ### 显式ArgumentList的独立inspect证据
 
@@ -441,3 +441,22 @@ UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconma
 实际资源UTC`06:32:26.1524698Z`/`06:32:28.6907241Z`，CPU8%/3%、可用5.155182/5.232811GiB、Stopwatch2.551818秒，守卫通过。实际进程PID47748于`06:32:28.7867126Z`以EXIT1退出，完整stderr34bytes为`PUBLIC_SOURCE_VERIFICATION_FAILED`，stdout0bytes。新Q目录只有`configured-process.json`、`process-result.json`与完整stdout/stderr，没有安全SQL/六字段/admission或`verification-error.txt`。
 
 `configured-process.json`保留标准API实际配置的逐项参数、准确exe、原工作目录、必要环境名称及既有资源设置；原source/root/repository和固定b789完整，输出为新q15-02。它记录启动配置，没有把它称为Go内部实际argv观测。当前仍不能据结果认定前次PS7参数传递或其他原因。调用退出/Dispose后，以`msg_d298ae1cb682`立即归还窗口，首失败停止；完整Verify、解压、HTTP与独立DOM均未运行，没有最终包决定/CR/hook。
+
+### 官方Delve单次观察：新Q文件创建被拒绝
+
+主控`msg_3eb5ad73cda8`明确授官方下载及一次观察窗口，`msg_0be50cd7e307`指定成熟交互CLI逐步检查。实际读取[官方v1.27.2发布页](https://github.com/go-delve/delve/releases/tag/v1.27.2)、[CLI命令规范](https://raw.githubusercontent.com/go-delve/delve/v1.27.2/Documentation/cli/README.md)、[exec文档](https://raw.githubusercontent.com/go-delve/delve/v1.27.2/Documentation/usage/dlv_exec.md)及[版本检查源码](https://raw.githubusercontent.com/go-delve/delve/v1.27.2/pkg/goversion/compat.go)；当前Go1.27在支持区间。使用现有优化exe，保持默认版本检查，未重编或关闭优化。
+
+自身忽略目录`release15/delve/`保存入口`observe-release.ps1`、官方ZIP/checksums、配置/cache/temp、版本/校验/资源/退出原件。实际官方WindowsZIP为12410128bytes、SHA256 `630b5b9b14c89becb1123790563111c70f7e0cf90820a666582ad1caba05dbd6`；checksums为673bytes、SHA256 `5a81e4c5ab2bf01370f78ea0f0cf6dc8b7fa29051dbdfb581d4e59ac99afee95`，均与实际官方Release API一致。GNU `sha256sum --check --ignore-missing checksums.txt`实际EXIT0并确认WindowsZIP `OK`，其余平台资产未下载。标准.NET ZIP解析/解压至自身全新目录，`dlv version`实际EXIT0：1.27.2，Build `d116177dd925e085ba5dd340f8c644f4a1501a3b`。未宣称验证发布签名。
+
+| 阶段 | 两次UTC、资源及实际结果 |
+| --- | --- |
+| 下载/校验/解压 | `06:47:26.532/06:47:29.117`，CPU8%/16%，最低4.774GiB，Stopwatch2.597秒；入口Prepare EXIT0。 |
+| 唯一调试调用 | `06:47:47.909/06:47:50.420`，CPU5%/7%，最低4.690GiB，Stopwatch2.523秒；资源通过，真实PTY会话15680。 |
+
+BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB及隔离XDG配置/历史/临时目录保持。实际执行`dlv exec <现有准确15优化exe> --wd <本审查树> -- <原inspect参数及新q15-debug-01>`。`break main.run.func1`与准确源码29行断点均成立；唯一`continue`实际命中defer75行。`print os.Args`读到真实13项，原SQLite、publication root、公开bare Git和固定b789 ref一致，输出为新`reviewer-release/q15-debug-01`。
+
+`locals -v`实际读得`finalErr = error(*io/fs.PathError)`，`Op="open"`、`Path="D:\\Astrocyte-agent-assets\\20261015\\release-package\\today-20261019\\reviewer-release\\q15-debug-01\\safe-2827393842.json"`、`Err=ERROR_ACCESS_DENIED (5)`。`args -v`为`(no args)`；`stack 12`保留defer75、runtime.deferreturn、run199、main28及runtime调用。该新调用已定位新Q安全JSON文件创建时的系统拒绝，ACL、安全软件或其他拒绝来源未确定，旧两次inspect失败没有可追溯同一错误值。
+
+随后`print *out`实际返回`could not find symbol value for out`，立即按首个变量不可读停止，仅执行plain `exit`，没有继续目标、修改变量、调用方法、附加其他进程或再次启动。调试器EXIT0仅表示正常退出。目标停在defer入口，错误文件写入未继续执行；新Q目录为空，不能用本次无错误文件解释旧调用。UTC`06:49:04.979Z`标准CIM按自身Delve与目标两个完整路径核得剩余进程0，`exit-check.json`保留；`msg_77df100aa684`立即归还独占窗口。
+
+PowerShell transcript仅记录宿主开始/结束，未捕获原生PTY交互。实际工具会话与各次返回作为原始观察，另在`interactive-observation.txt`明确标记人工转录摘录，未冒称原始控制台日志。未增加正式inspect/Verify通过、最终包CR/hook或十轮计数；独立完整Verify、解压/HTTP及DOM仍为未执行。
