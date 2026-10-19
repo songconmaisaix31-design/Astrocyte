@@ -4,9 +4,11 @@
 
 用户要求继续开发Astrocyte、重启并保持科研产品并进。当前任务为[重启与双轨任务](tasks/restart-product-research-20261019.md)，原十轮已接受6/10及权限门禁保持。接管管理HEAD28a4b5c4、产品57a91f46/Source15、科研50e51fb6/科学正文a664、审查54627b06，四树tracked干净。64505/17887无监听；原三个Dispatch已由运行时记failed/abandoned，正式release返回released/processAction none/archive unavailable。原Task按已核实际中断记failed，再沿原Task/树retry-of启动，没有新Run/Task/开发轨。
 
-Run仍run_29c7e66b4136，正式run-use已绑定主控term_2495c17e-98de-4b86-8393-a3992c369aba/generation2。产品task_51276f272ff3/ctx_013843bce872/term_78b3371d-5de3-4a8b-8213-85f280c81054；科研task_f824c0088743/ctx_1fe65b3eaadd/term_87a9c8c3-4457-4f0c-8b5b-5416bff7f447；Reviewer task_2923223271be/ctx_a8916e612c35/term_45b72208-38a3-4f83-8b76-d43f5684de7d。均Codex默认启动配置、ready/input_accepted/turn_started，实际模型待Handoff，不代报验证成功。
+Run仍run_29c7e66b4136，正式run-use已绑定主控term_2495c17e-98de-4b86-8393-a3992c369aba/generation2。产品task_51276f272ff3/ctx_013843bce872/term_78b3371d-5de3-4a8b-8213-85f280c81054；科研task_f824c0088743/ctx_1fe65b3eaadd/term_87a9c8c3-4457-4f0c-8b5b-5416bff7f447；Reviewer task_2923223271be/ctx_a8916e612c35/term_45b72208-38a3-4f83-8b76-d43f5684de7d。三者实际Codex CLI0.162.0 / GPT-6.1-Sol xhigh fast，沿原写域继续，无新增子Agent。
 
-唯一重操作窗口先Reviewer准确Source15独立inspect→条件成功后Verify/DOM，随后科研原TeX Live Install→Build→Validate，最后产品恢复同一64505程序/数据并保持服务。原H的restore-38fb.ps1与D shared-product-ad8413稳定根只读核现状；允许原配置启动所需日志与真实running.json，不修改H源码或用空库替代原数据。基线psutil阻塞样本UTC11:10:06/09，CPU11.3%/6.6%、可用14.022/14.035GiB；实际各phase仍原守卫。当前没有新增验收/Release/arXiv上传，S3三项、首发范围和作者许可未答，正式V4及其他用户应用不操作。
+产品报告2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65已普通push，原summarize0.25.1及SDK缺失依赖已按原锁/准确Source15 ZIP恢复，原完整Check-Runtime通过，未推理。独立Reviewer实际inspect通过1316来源逐ID SQL，在文档Windows PowerShell5.1完成同一Source15包130 PASS及双视口人工DOM；本次3个DAG事件/4个outbox逐ID SQL、425次监听归属检查，全部自有进程退出。准确CR5571008196为COMMENTED/2a05/限定accept，报告647828d8普通push；主控完整读报告并实际API核SHA，回复原hook msg_e0c2d47d66dc为msg_e986c7d42f32，确认唤起。原Core7.6日期属性失败单列，仍6/10。
+
+科研Install首次遇官方语言检测HKCU拒绝，真实失败保留，Build/Validate未运行。已静态核官方支持的-lang en与直接Perl入口修订，Parser/diff通过；msg_9081449b8e8e重新授唯一Install→Build→Validate窗口，成功阶段才继续，科学正文/原制品冻结。随后独立Reviewer另目录重建，最后产品恢复同一64505程序/数据并保持服务。原H restore-38fb.ps1及原配置不改，运行根D shared-product-ad8413，原SQLite不替换；当前共享应用仍未启动。完整默认CI、原生/S3、今日新增、实际采用、正式发布及arXiv就绪未通过；S3三项、首发范围和作者许可未答，正式V4及其他用户应用不操作。
 
 ## S3与论文十轮改进（2026-10-19）
 

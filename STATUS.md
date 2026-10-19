@@ -4,7 +4,9 @@
 
 用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35，均实际ready/turn_started；尚未把排队指令视为Worker已读。
 
-CPU双采样11.3%/6.6%、可用约14GiB，C可用54,818,508,800bytes；各实际重操作仍重新采样。Reviewer先独立验Source15包，科研静态准备TeX Live安装，产品静态核原同库64505恢复入口，最后启动并保持服务。当前应用尚未恢复，无新验收、发布或投稿；原S3/原生、预览范围与作者许可待定项保持。
+产品原summarize与SDK依赖已按原锁及准确Source15 ZIP恢复，原Check-Runtime通过且未推理，报告2a05bd0d已普通push。独立Reviewer的真实inspect、Windows PowerShell5.1完整130项及双视口人工DOM均通过，CR5571008196准确2a05、限定accept；报告647828d8普通push，主控读报告/实际API核SHA并回复真实hook，仍6/10。Core7.6失败保留，完整默认CI、原生/S3、今日新增与实际采用仍未通过。
+
+科研已定位官方安装器语言检测HKCU拒绝，真实失败日志保留。自身入口改为官方Perl及-lang en，静态检查通过后获新唯一Install→Build→Validate窗口；科学正文与原PDF冻结。独立科研重建之后再恢复原同库64505服务，当前尚未启动。各重操作仍85%/4GiB双采样、BelowNormal及串行；无Release或投稿，原S3/原生、预览范围与作者许可待定项保持。
 
 ## S3与论文十轮循环已开始（2026-10-19）
 

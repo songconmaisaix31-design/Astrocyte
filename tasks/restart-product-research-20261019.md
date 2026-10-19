@@ -38,18 +38,30 @@
 | 科研 | ctx_1fe65b3eaadd | term_87a9c8c3-4457-4f0c-8b5b-5416bff7f447 | ready/input_accepted/turn_started |
 | Reviewer | ctx_a8916e612c35 | term_45b72208-38a3-4f83-8b76-d43f5684de7d | ready/input_accepted/turn_started |
 
-三者均使用Codex默认启动配置，未覆盖模型。实际模型/客户端待各自Handoff核实。正式新指令分别msg_d5ec8bbfc581、msg_c0d2f7541542、msg_b5a2896a5ff7；排队回执不作为已读证明。
+三者实际使用Codex CLI 0.162.0 / GPT-6.1-Sol xhigh fast，未覆盖模型或新增子Agent。正式新指令分别msg_d5ec8bbfc581、msg_c0d2f7541542、msg_b5a2896a5ff7；均已实际读取并执行，排队回执本身不作为已读证明。
 
 共享服务恢复只读定位到原H树 `dist/product-recovery-20261016/restore-38fb.ps1`，运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413`。追加允许产品Worker在该既有运行根生成本次日志并由原恢复入口更新真实running.json；原程序、H脚本、配置与历史日志不改，原SQLite仅按既有服务使用，不重建或替换。先核实际文件和配置再启动，原记录40804仅为历史PID。
 
-实际Handoff核原c5程序、SQLite和Q均存在，summarize CLI及CodeGraph SDK原依赖目录缺失。主控完整读取产品自身plan.md后接受原路径恢复：原standards-backend四份配置/锁不变，pnpm11.27.0冻结安装并核summarize0.25.1；原runtime/sdk package与lock逐字节核等于准确Source15 ZIP后，成熟ZipArchive只恢复完整node_modules，原Check-Runtime实际import/资产核查，不执行推理。追加产品写域仅 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/node_modules`及必要忽略缓存、`D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/sdk/node_modules`、原H `process-20261016`缓存。原配置/锁/脚本不改，目标包含检查、原目录不存在、不覆盖既有文件、原完整性与失败立即停止保持。依赖恢复尚未运行。
+实际Handoff核原c5程序、SQLite和Q均存在，summarize CLI及CodeGraph SDK原依赖目录缺失。主控完整读取产品自身plan.md后接受原路径恢复：原standards-backend四份配置/锁不变，pnpm11.27.0冻结安装并核summarize0.25.1；原runtime/sdk package与lock逐字节核等于准确Source15 ZIP后，成熟ZipArchive只恢复完整node_modules，原Check-Runtime实际import/资产核查，不执行推理。追加产品写域仅 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/node_modules`及必要忽略缓存、`D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/sdk/node_modules`、原H `process-20261016`缓存。原配置/锁/脚本不改，目标包含检查、原目录不存在、不覆盖既有文件、原完整性与失败立即停止保持。依赖恢复已实际完成，结果见下文。
 
-Reviewer实际HEAD为ffbc5762f578ab39fdacd9a9cc31b970d5beead6，相对54627b06仅追加主控收到原hook的两行记录，已只读核实。新C q15-03的真实inspect于UTC11:17:48 EXIT0，origin-safe逐项匹配1316个真实Git来源与event_id、可达Commit SQL通过；三份自身实际安全JSON已移交D新q15-03。完整验包与DOM尚待Reviewer最终结果，不提前接受。
+Reviewer接管HEAD为ffbc5762f578ab39fdacd9a9cc31b970d5beead6，相对54627b06仅追加主控收到原hook的两行记录，已只读核实。新C q15-03的真实inspect于UTC11:17:48 EXIT0，origin-safe逐项匹配1316个真实Git来源与event_id、可达Commit SQL通过；三份自身实际安全JSON已移交D新q15-03。
 
-首次独立完整Verify使用PowerShell7.6.6，在解压/隐私/runtime/初始HTTP/真实快照发布与health通过后因JSON日期成为DateTime、原snapshot_at.Length访问失败而EXIT1，原新v15-01保留，服务正常退出且17889无监听。主控核发布文档第3/78行明确基本条件与命令为Windows PowerShell5.1，下一次独立比较采用相同5.1环境及原Source15/ZIP/参数，新v15-02，成功后新DOM。保留7.6失败，不新增Core兼容或修改原断言/ZIP；不是产品功能失败的判定。阶段审查报告511cdce8f3bbea03f72d293668c334e9d92dff41已普通push，最终CR/hook待实际结果。
+首次独立完整Verify使用PowerShell7.6.6，在解压/隐私/runtime/初始HTTP/真实快照发布与health通过后因JSON日期成为DateTime、原snapshot_at.Length访问失败而EXIT1，原新v15-01保留，服务正常退出且17889无监听。主控核发布文档第3/78行明确基本条件与命令为Windows PowerShell5.1，独立比较采用相同5.1环境及原Source15/ZIP/参数、新v15-02及新DOM。7.6失败单列，原断言/ZIP保持；本次通过范围限于文档指定的5.1环境。
 
 产品原冻结依赖安装实际pnpm11.27.0完成187项/378锁政策，原精确CLI0.25.1、四配置完整字节相同。SDK仅从原Source15 ZIP恢复1368文件/377193096bytes，package/lock一致，原完整Check-Runtime EXIT0且未推理；保留原镜像超时与成熟工具原生重试日志，未执行外层重试或改源。四阶段八样本最高CPU19.8%、最低可用12.798GiB、间隔约3.002秒。全部调用退出后msg_5dce3320d058交回，root读原日志确认。准确报告2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65普通push/远端一致/clean，相对57仅本轨报告21行，Source15/ZIP不变。
 
-独立Reviewer在Windows PowerShell5.1实际完成新v15-02原完整Verify EXIT0，准确Source15/candidate-package-cognition-runtime，130 PASS/0 nonpass，root实际标准JSON逐项结果分组核计数。原SQL/六字段、历史、HTTP与真实进程重启/持久状态通过；随后新dom15-01原完整工具EXIT0，两视口/26品牌/人工DAG增量/撤权清图，3个DAG事件逐项SQL核查。root读原result/DOM/log并核17889无监听，msg_6e503bdda22e实际交回窗口后回复msg_771e61e58629；最终准确报告候选2a05的综合CR/hook仍待Reviewer，不增加轮数或宣布完整S3/发布。
+独立Reviewer在Windows PowerShell5.1实际完成新v15-02原完整Verify EXIT0，准确Source15/candidate-package-cognition-runtime，130 PASS/0 nonpass，root实际标准JSON逐项结果分组核计数。原SQL/六字段、历史、HTTP与真实进程重启/持久状态通过；随后新dom15-01原完整工具EXIT0，两视口/26品牌/人工DAG增量/撤权清图，3个DAG事件及本次4个outbox逐项SQL核查、425次OS监听归属检查。root读原result/DOM/log并核17889无监听，msg_6e503bdda22e实际交回窗口后回复msg_771e61e58629。
 
-科研已获msg_0b8bc1f9dc5a唯一窗口，直接既有Install→成功才Build→成功才Validate，科学正文/Bib/原制品冻结，实际结果待交接。研究技术结果由独立Reviewer另用自身输出重建核查，之后才产品同库应用启动。
+最终报告647828d803d22dac6909af60f71dd9f4fa63487f普通push，CR5571008196为COMMENTED、准确候选2a05、限定accept。主控实际完整读报告并通过GitHub API核CR/SHA，读取原hook msg_e0c2d47d66dc后回复msg_e986c7d42f32，确认唤起。本次接受限于候选包来源、完整运行与人工DOM，仍6/10；完整默认CI、原生/S3、今日新增、用户采用及正式发布保持未通过。共享64505恢复另验。
+
+科研首次实际Install在原官方wrapper内部语言检测时出现HKCU访问拒绝，未创建安装目标；wrapper返回0，未据此登记成功，Build/Validate未执行。原始console和UTC11:40:41/43双样本保留，调用退出后msg_c876bd889bde交回窗口。Worker完整读原生源码，定位trans.pl无opt_lang时调用reg_country，以及wrapper尾部未传递Perl非零退出。自身build-texlive.ps1仅改为同一已验发行内Perl直接执行原install-tl、官方-lang en、原wrapper进程环境清单和新时间戳日志；原完整profile/验签/资源条件不变，未修改安装器或系统设置。主控实际读diff及原源码，Parser与diff检查通过后，以msg_9081449b8e8e重新授一次Install→成功才Build→成功才Validate窗口。原始科学正文/Bib/TeX-PDF冻结，实际结果待交接。
+
+第二次Install越过语言检测，强制验签发现GPG失败，真实Perl与入口均EXIT1，窗口立即归还；Build/Validate未运行。主控与Worker实读原TLCrypto/TLUtils：Windows原生which将参数作为PATH中的程序名，直接配置绝对路径无法发现。自身入口仅将同一真实Git GPG目录放入进程PATH、TL_GNUPG设原leaf，保留Perl在首位及遮蔽拒绝，原keyring/验签不变。实际diff及静态检查后msg_38ab9d9abc2f授新单次窗口。新原console显示官方2025 final仓库verified，正在完整发行安装；尚未登记安装或编译成功。
+
+科研退出后，独立Reviewer使用相同官方引擎只读重建，全部输出及缓存写自身忽略目录；最后产品启动共享同库应用。产品同时静态定位原完整默认CI的具体失败，先提交可独立修复建议，不改变权限待定项或默认断言。
+
+## 检查入口的真实输出目录前置
+
+产品Worker提出具体建议，主控已读原失败日志定位、check.mjs、process.mjs及两个原真实测试文件。原检查入口直接go test，未设置实际HTTP/SQLite测试要求的ASTROCYTE_TEST_OUTPUT_ROOT，因而在功能断言前失败。沿原产品写域仅修改scripts/process.mjs、scripts/check.mjs和本轨记录：复用verificationOutputRoot的绝对路径校验，Node标准mkdir/mkdtemp在选定父根新建check-*目录，明确传递至原子进程。原检查项目、顺序、Go命令、业务断言与workflow保持。
+
+基线准确2a05/Source15，预期使已有完整其余前置的真实检查进入功能断言。验收为同源before重现缺输出目录的实际失败、after通过原OpenViking实际HTTP/SQLite一项和ProgressPreflight两项，核相对根与真实普通文件根在启动Go前拒绝，保留实际原件；普通push、独立Reviewer对准确Commit以相同来源及条件复验、CR/hook及主控读取回复。没有改测试或新增替身，不能将三项通过扩大为完整CI/原生/S3通过；固定ZIP仍来自Source15。实施期间科研保留重操作优先，产品先静态，实际测试另授窗口；之后才启动长期服务。
