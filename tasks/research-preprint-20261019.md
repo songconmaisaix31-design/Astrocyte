@@ -38,4 +38,16 @@ Run `run_d59e41c6d2f1` / 主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`；�
 
 独立审查按 `tasks/research-preprint-review-20261019.md`，Reviewer只写自身 `docs/reviews/research-preprint-20261019.md`、必要 `.gitignore` 的 `.verification/` 条目及忽略输出；论文只读，构建只在自身准确候选副本执行。Reviewer取得唯一重操作窗口前仍须资源双采样。原科研Worker不进行并行检查或修改，待准确CR后承接返修。
 
-Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，实际Codex0.162.0 / gpt-6.1-sol默认配置。主控已通过真实会话记录确认其开始读取审查依据；候选、审查写域、资源窗口和hook规则见审查任务。当前尚未有独立CR结论。
+Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，实际Codex0.162.0 / gpt-6.1-sol默认配置。主控已通过真实会话记录确认其读取审查依据；候选、审查写域、资源窗口和hook规则见审查任务。最终独立CR接受首轮稿件，范围与未验事项如下。
+
+## 首轮验收与后续入口
+
+科研分支最终为 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`。Reviewer独立下载18个真实原始响应，检查准确候选副本，Pandoc3.9生成HTML、完整LaTeX和AST通过，`verify.py`的9引用/9条目、8配置、52MathML及10本地链接检查通过。首份报告为68288c4f，最终补充实际通知记录的报告为 `cab4233829b5caa1d66f8b05ce458d8596ef5289`，分支 `songconmaisaix31-design/research-preprint-review-20261019`，普通push与干净状态已核。
+
+真实 [CR 5566157313](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566157313) 为COMMENTED、准确指向cf867ce6，决定accept，仅覆盖完整方法/协议初稿、来源、证据分级和科研反馈，没有本轮返修要求。同一GitHub账号不能原生APPROVE，未把COMMENTED改称平台批准。Reviewer实际hook `msg_3de99dd43db5` 已到达；主控完整读报告并经GitHub API核commit_id后，实际回复 `msg_7de6cb67c399`，确认唤起和接受范围。
+
+科研Task正式成功worker_done `msg_91bda7a8d6ab`、Reviewer Task正式成功worker_done `msg_9b6807907c29` 均已核当前准确Dispatch。主控在确认后、ack前分别官方释放 `ctx_d72d923f0117` 和 `ctx_8bc7f5be8bbe`，回执均为released / closed_agent_terminal / transcript captured。自有下载/构建/验证调用已退出，未启动产品服务、浏览器或本地模型，没有关闭其他用户终端。
+
+首轮科研写作及独立审查已完成；PR保持Draft，没有合并、部署、注册或投稿。PDF/模板/arXiv兼容性未验证，作者/机构/ORCID待填，MAAGL索引差异原因、统计技术依据及正式分析细节未齐；正式模型、任务、预算、阈值和重复次数未冻结。共用策略、配置隔离、条件与归因、盲评和完整计量需要产品实现及真实验收；原生/S3、完整CI、实际采用复用与正式V4证据根限制保持。
+
+后续科研反馈复用现有研究树、分支及 `.agents/skills/astrocyte-research/SKILL.md`，由主控明确下一轮Task和写域后通过Orca CLI安排。主控按 `docs/research/research-product-decisions.md` 管理科研与产品先后，不让论文提案直接成为产品接口或执行授权。Reviewer提醒：`8rT`包含预算耗尽后的计划任务位置，真实尝试数、重试和实际消耗须分别记录；该要求纳入后续计量。

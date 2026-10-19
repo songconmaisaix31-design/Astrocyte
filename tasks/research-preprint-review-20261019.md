@@ -28,3 +28,11 @@ Reviewer使用独立Worktree/Branch，按仓库默认Git基线建立，只修改
 候选为 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`，Draft PR [#3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3)，研究Branch `songconmaisaix31-design/research-preprint-20261019`，目标main，派发前主控实际核对远端HEAD。Run `run_d59e41c6d2f1`；Reviewer Task `task_a0c647db8962`，Dispatch `ctx_8bc7f5be8bbe`，终端 `term_a494186b-4a9c-467d-a366-0f0184ef4e80`。
 
 Reviewer Worktree为 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，Branch `songconmaisaix31-design/research-preprint-review-20261019`，独立默认基线。启动回执turn_start_unobserved后，主控读取实际终端，确认任务仍在Codex输入框，使用原生Enter提交既有内容，没有重发任务或重建Agent；真实Codex会话随后产生assistant与工具记录，provider为gpt-6.1-sol、activity为working。科研Worker已交还唯一重操作窗口并冻结候选等待CR。
+
+## 实际结论与结算
+
+决定accept，仅覆盖首轮完整方法/协议稿、来源、主张证据分级及中文反馈，没有本轮返修缺陷。独立报告分支最终Commit为 `cab4233829b5caa1d66f8b05ce458d8596ef5289`，仅新增报告和必要忽略条目；首份报告68288c4f之后的提交只补实际CR/hook/主控回复，主控已读取全部差异。准确研究候选始终为cf867ce6。
+
+Reviewer实际发布 [CR 5566157313](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566157313)，COMMENTED、commit_id准确；独立18原始响应、准确Git归档副本、实际Pandoc构建和文稿引用/八配置检查通过。启动样本最高CPU22%、最低可用5.961GiB，串行BelowNormal；这些是启动采样，未声称运行峰值。没有TeX引擎，未编译PDF，正式统计/实验与产品链路不在接受范围。
+
+实际hook消息 `msg_3de99dd43db5` 已由主控完整读取，主控核GitHub API后真实回复 `msg_7de6cb67c399`。Reviewer按明确结算指令发送成功worker_done `msg_9b6807907c29`，主控接受后、ack前对准确Dispatch官方release，回执released / closed_agent_terminal / transcript captured。审查Task已完成，报告与Worktree保留，自有验证调用均退出，没有后台服务或本地模型。

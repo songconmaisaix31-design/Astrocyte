@@ -8,9 +8,11 @@
 
 实际Pandoc3.9通过fail-if-warnings生成HTML、完整LaTeX来源与JSON AST；真实文稿检查9引用/9条目、八配置、52个MathML节点和本地链接通过。仅在本树忽略目录安装构建依赖、保存下载全文与输出；启动资源双采样通过且BelowNormal串行。PDF没有编译，作者/机构/ORCID待填，MAAGL作者索引差异和统计程序细节保持待核，正式实验及arXiv兼容性没有因此通过。
 
-Run `run_d59e41c6d2f1`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。科研Task `task_2b1b744c0b74` / Dispatch `ctx_d72d923f0117` 冻结候选并交还重操作窗口，等待原Task返修；首次启动退出及官方处理详见科研任务。独立Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe` 位于独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，已实际完整读取输入、审查依据和skill，核候选并开始原文与构建检查，当前独占重操作窗口。两者实际Codex0.162.0 / gpt-6.1-sol，继承配置。当前独立CR和hook尚未交付，不能宣布稿件已验收；具体写域和真实通知要求见 [审查任务](tasks/research-preprint-review-20261019.md)。
+独立Reviewer对准确cf867ce6发布 [CR 5566157313](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566157313)，COMMENTED，接受完整首轮方法/协议稿、来源、证据分级及研究反馈，无本轮返修要求。Reviewer独立18个原始响应与准确Git归档副本，实际Pandoc构建和文稿检查通过；其最终报告Commit `cab4233829b5caa1d66f8b05ce458d8596ef5289`，分支 `songconmaisaix31-design/research-preprint-review-20261019` 普通push，远端一致且tracked干净。同一GitHub账号不能原生APPROVE，未据此改称平台批准。实际hook `msg_3de99dd43db5` 已到达，主控完整读取报告及CR、经真实API核SHA后回复 `msg_7de6cb67c399`，确认唤起及限定接受范围。
 
-主控已实际读取中文科研反馈并记录产品安排：真实调用/权限、CI和采用复用优先，R1–R7为正式研究前置，OpenViking保持可选，扰动及A/B/C后于主路径。研究反馈不自动冻结接口或参数，不直接改产品。语言选择未答，当前英文正文/中文反馈；署名继续待填。产品及正式V4只读，八配置正式实验、注册和arXiv提交未执行。
+Run `run_d59e41c6d2f1`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。科研Task `task_2b1b744c0b74` / Dispatch `ctx_d72d923f0117` 和Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe` 已正式成功worker_done，主控分别在ack前官方release准确Dispatch，均released / closed_agent_terminal / transcript captured；自有验证调用退出，没有后台产品服务、浏览器或本地模型，没有关闭其他用户终端。两者实际Codex0.162.0 / gpt-6.1-sol，继承配置。研究树、审查树和项目skill保留；后续科研反馈按同轨写域另行派发明确Task，主控继续决定产品安排。完整验证、限制及结算见 [审查任务](tasks/research-preprint-review-20261019.md)。
+
+主控已实际读取中文科研反馈并记录产品安排：真实调用/权限、CI和采用复用优先，R1–R7为正式研究前置，OpenViking保持可选，扰动及A/B/C后于主路径。研究反馈不自动冻结接口或参数，不直接改产品。语言选择未答，当前英文正文/中文反馈；署名继续待填。首轮稿件接受不改变原生/S3、完整产品CI、统计程序、PDF及arXiv兼容性的未验限制；产品及正式V4只读，八配置正式实验、注册和arXiv提交未执行，PR保持Draft，没有合并或部署。
 
 ## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
 

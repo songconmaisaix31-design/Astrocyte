@@ -1,12 +1,14 @@
 # Astrocyte 当前状态
 
-## 科研初稿已提 PR，独立审查进行中（2026-10-19）
+## 科研初稿已提 PR 并完成独立审查（2026-10-19）
 
 用户两份原稿已完整读取；[科研任务](tasks/research-preprint-20261019.md)、[科研skill](.agents/skills/astrocyte-research/SKILL.md)及[研究—产品决定](docs/research/research-product-decisions.md)已建立并实际使用。唯一科研Worker已交付完整英文正文、9条引用、来源核查、证据表及中文反馈，[Draft PR #3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3) / 候选 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b` 已普通push、远端一致，目标main。
 
-Pandoc3.9 HTML/完整LaTeX来源/AST生成及引用、八配置和文稿结构检查通过；PDF未编译，署名待填，正式统计与来源索引差异有明确限制。Run `run_d59e41c6d2f1` 中科研Task `task_2b1b744c0b74` / Dispatch `ctx_d72d923f0117` 冻结候选等待返修，独立Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe` 已开始准确候选的 [独立审查](tasks/research-preprint-review-20261019.md)，独占串行重操作窗口；实际CR与hook尚未完成。
+Pandoc3.9 HTML/完整LaTeX来源/AST生成及引用、八配置和文稿结构检查通过，独立Reviewer已在自身准确候选副本重复通过。实际 [CR 5566157313](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566157313) 精确cf867ce6，COMMENTED、接受首轮完整方法/协议稿与来源/反馈，无本轮返修；报告分支最终Commit `cab4233829b5caa1d66f8b05ce458d8596ef5289` 普通push。hook已实际到达，主控完整读取报告及CR、核SHA并实际回复确认。
 
-主控已处理R1–R7/P1–P3研究反馈，产品优先真实运行/权限、CI及实际采用复用；研究有效性前置保持必要，可选后端和展示优化后置。当前科研建议没有直接启动产品修改；产品及正式V4只读，八配置正式实验、注册和arXiv提交均未执行，原生工具关闭/S3等既有边界保持。
+Run `run_d59e41c6d2f1` 中科研Task `task_2b1b744c0b74` / Dispatch `ctx_d72d923f0117` 和Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe` 均正式成功结算，主控已官方释放准确Dispatch，回执released / closed_agent_terminal / transcript captured。所有自有验证调用已退出，工作树/分支/科研skill保留作后续入口；没有关闭其他用户终端。验证及完整范围见 [独立审查任务](tasks/research-preprint-review-20261019.md)。PDF未编译，署名待填，正式统计程序、模型/任务/预算/样本量、来源索引差异及arXiv兼容性保持未完成。
+
+主控已处理R1–R7/P1–P3研究反馈，产品优先真实运行/权限、CI及实际采用复用；研究有效性前置保持必要，可选后端和展示优化后置。当前科研建议没有直接启动产品修改；产品及正式V4只读，八配置正式实验、注册和arXiv提交均未执行，原生工具关闭/S3等既有边界保持。PR保持Draft，没有合并、部署或发布。
 
 ## 动态 DAG 开发循环（2026-10-19）
 
