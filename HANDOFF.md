@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 重启应用与双轨续行（2026-10-19）
+
+用户要求继续开发Astrocyte、重启并保持科研产品并进。当前任务为[重启与双轨任务](tasks/restart-product-research-20261019.md)，原十轮已接受6/10及权限门禁保持。接管管理HEAD28a4b5c4、产品57a91f46/Source15、科研50e51fb6/科学正文a664、审查54627b06，四树tracked干净。64505/17887无监听；原三个Dispatch已由运行时记failed/abandoned，正式release返回released/processAction none/archive unavailable。原Task按已核实际中断记failed，再沿原Task/树retry-of启动，没有新Run/Task/开发轨。
+
+Run仍run_29c7e66b4136，正式run-use已绑定主控term_2495c17e-98de-4b86-8393-a3992c369aba/generation2。产品task_51276f272ff3/ctx_013843bce872/term_78b3371d-5de3-4a8b-8213-85f280c81054；科研task_f824c0088743/ctx_1fe65b3eaadd/term_87a9c8c3-4457-4f0c-8b5b-5416bff7f447；Reviewer task_2923223271be/ctx_a8916e612c35/term_45b72208-38a3-4f83-8b76-d43f5684de7d。均Codex默认启动配置、ready/input_accepted/turn_started，实际模型待Handoff，不代报验证成功。
+
+唯一重操作窗口先Reviewer准确Source15独立inspect→条件成功后Verify/DOM，随后科研原TeX Live Install→Build→Validate，最后产品恢复同一64505程序/数据并保持服务。原H的restore-38fb.ps1与D shared-product-ad8413稳定根只读核现状；允许原配置启动所需日志与真实running.json，不修改H源码或用空库替代原数据。基线psutil阻塞样本UTC11:10:06/09，CPU11.3%/6.6%、可用14.022/14.035GiB；实际各phase仍原守卫。当前没有新增验收/Release/arXiv上传，S3三项、首发范围和作者许可未答，正式V4及其他用户应用不操作。
+
 ## S3与论文十轮改进（2026-10-19）
 
 用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受6/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案、06条件/义务/时间/实际视图与五项限定证明、08封存/全成本/pilot目标对应完整提案。准确CR/真实hook/root读取回复均完成；08为a664233a/报告c36f8990/CR5567552099，hook msg_814e1b18d6a8经root真实API核对后回复msg_7cac54d820d1。限定接受不等于实质科研贡献或投稿就绪，详细失败历史保留。

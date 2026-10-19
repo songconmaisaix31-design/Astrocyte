@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 重启应用与产品科研续行（2026-10-19）
+
+用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35，均实际ready/turn_started；尚未把排队指令视为Worker已读。
+
+CPU双采样11.3%/6.6%、可用约14GiB，C可用54,818,508,800bytes；各实际重操作仍重新采样。Reviewer先独立验Source15包，科研静态准备TeX Live安装，产品静态核原同库64505恢复入口，最后启动并保持服务。当前应用尚未恢复，无新验收、发布或投稿；原S3/原生、预览范围与作者许可待定项保持。
+
 ## S3与论文十轮循环已开始（2026-10-19）
 
 当前接受6/10，08准确a664233a的27页/14引用提案、独立重建/全文TeX比较及准确CR/hook/root回复通过。产品Source15新ZIP已Build/130项Verify/双视口DOM EXIT0：26品牌、人工DAG增量/撤权、OpenViking未配置、3个DAG事件/6个outbox SQL和430次归属检查，均为Worker实际结果；准确报告57a91f46。独立clone/Go构建通过；Delve定位新Q创建文件ERROR_ACCESS_DENIED，拒绝来源未明。C输出尚未启动即遇资源拒绝，独立完整Verify/DOM未运行。完整默认/原生/S3未通过；是否允许有限范围预览首发已异步询问未答，无tag/Release。
