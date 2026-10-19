@@ -154,4 +154,43 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 
 未运行产品、原生输入、模型、模拟、pilot、正式实验、视觉或TeX Live。原生/S3三项待答、正式预算单位、模型/任务/阈值/样本量等仍未确定。没有真实隔离或成本匹配/覆盖/功效/效果结论；历史P未知没有变成虚构数值，位置零初始非空计数与权重保持冻结语义。
 
-原创实质贡献、真实研究数据、受支持TeX Live/站点兼容、作者元数据及人工科学核验/许可/批准仍未完成，没有注册或上传arXiv。最新完整S3证据待主控明确10方案。本轮候选普通push原Draft PR #3后冻结，独立准确CR/hook及主控回复尚待完成；本Task继续负责返修与后续获准工作。
+原创实质贡献、真实研究数据、受支持TeX Live/站点兼容、作者元数据及人工科学核验/许可/批准仍未完成，没有注册或上传arXiv。最新完整S3证据待主控明确10方案。准确候选 `a664233a1276003a69f3d6850e4ecc04c08f4370` 已普通push原Draft PR #3；[独立报告c36f8990](https://github.com/songconmaisaix31-design/Astrocyte/blob/c36f899007bef3d1a90599fa884ceaa48fe28ceb/docs/reviews/s3-paper-ten-cycles-20261019.md)和[真实CR5567552099](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567552099)限定接受08完整提案与同源交付，真实hook `msg_814e1b18d6a8` 经主控完整读取并以 `msg_7cac54d820d1` 回复，08计入十轮。本Task继续负责返修与后续获准工作。
+
+# TeX Live 2025技术准备
+
+主控 `msg_74297159b44d` 先授权只读官方手册与自身忽略目录具体方案；方案已实写 `.verification/texlive2025-plan-20261019.md` 并由 `msg_c54b361cf68d` 交接。08接受后，主控 `msg_c0d16ba47b6d` 明确授权build-texlive.ps1、verify.py显式PDF参数、README/validation及来源ZIP的技术实现，科学正文/十四条文献/原TeX-PDF保持冻结。该技术准备不计额外轮次，也不启动依赖09的10。
+
+技术入口与自身忽略目录完整profile已实现。官方2025 final目录和同发行install-tl的POD手册按实际范围阅读，Windows wrapper实际完整HTTP文本已读。网页工具读取TUG HTML返回403；其后直接HTTP完整读取[官方签名验证页](https://www.tug.org/texlive/verify.html)，核实官方主密钥fingerprint。完整scheme-full/windows、doc/src、七树和临时/缓存/GnuPG限定自身忽略目录，portable关闭宿主PATH/菜单/文件关联。源码ZIP仅包含实际编译需要的完整根manuscript.tex；Build干净解包并经XeLaTeX两遍及诊断通过后生成来源交付，再由Validate执行完整文稿/链接/PDF检查。
+
+启动采样逐次先写自身忽略目录的实际UTC、Stopwatch elapsed/interval及全部拒绝原因，再立即抛出不合门限的错误；文件名保留真实采样时间，后续显式调用不覆盖旧拒绝记录。没有改变85%/4GiB/2–5秒门限或增加重试。
+
+| 静态命令 | 实际结果 |
+| --- | --- |
+| `& .\.verification\check-texlive-syntax.ps1`，内部仅Language.Parser.ParseFile | PowerShell7.6.6 Parser EXIT0，没有执行目标脚本正文。技术入口要求PowerShell7.2+并带UTF-8 BOM。 |
+| `powershell.exe -NoProfile -File .verification/check-texlive-syntax.ps1` | EXIT1，当前签名策略拒绝未签名辅助脚本，解析器未运行。未修改执行策略或把此项记为通过。 |
+| Python `ast.parse`读取verify.py源码 | EXIT0，未import或运行文稿验证正文。 |
+| `git diff --check`及准确a664的科学正文/Bib/原TeX-PDF差异检查 | EXIT0；冻结制品未改变，原PDF所有检查仅新增明确输入路径，默认行为和断言保留。 |
+
+## Download首次实际结果
+
+主控 `msg_cfebfcce0e34` 授予仅Download窗口。实际ZIP36160153bytes、SHA512文件145bytes、签名488bytes、官方公钥5231bytes下载完成，GNU sha512sum返回`install-tl.zip: OK`。随后GPG公开密钥导入EXIT2，实际日志报告`can't connect to the gpg-agent: Invalid value passed to IPC`及`no gpg-agent running`；入口随即EXIT1，没有导出、签名验证、解压或安装。原GNUPGHOME、下载和signing-key-import.log全部保留。所有前台调用退出后，`msg_38a119c710ad`立即归还窗口，主控 `msg_853cd37e7ffe` 确认收回。
+
+启动样本UTC06:29:34.109/06:29:36.686，CPU18%/5%，可用5.404514/5.684055GiB，Stopwatch间隔2.5773639秒，无拒绝；完整原资源JSON保留。此后C盘准确可用55,639,179,264bytes。30GiB磁盘/12GiB网络仍为规划预留，未安装完整发行或测量其总量。
+
+## VerifyInstaller修订与实际结果
+
+主控只授元数据和官方文档静态核查。实际gpg/gpgv均2.4.5-unknown，串行version/dump-options四命令全部EXIT0；gpg支持dearmor/assert-signer/no-autostart/no-default-keyring，gpgv不支持assert-signer。已实读[GnuPG操作文档](https://www.gnupg.org/documentation/manuals/gnupg/Operational-GPG-Commands.html)及[配置文档](https://www.gnupg.org/documentation/manuals/gnupg/GPG-Configuration-Options.html)相应完整条目，静态改为GPG dearmor生成专用公钥ring，再原生assert-signer验证官方fingerprint；不导入本地钥匙库、不启agent、不手解析OpenPGP或让EXIT2继续。
+
+新VerifyInstaller只复用原四份下载，使用新的自身verify-installer目录及日志，完整SHA512/签名通过才解压；不重下ZIP或覆盖原失败GNUPGHOME。成熟ZipArchive还只读TLCrypto.pm和标准公钥ring条目，Install将从已验安装器内的标准tlpkg/gpg核仓库，全部路径仍自身忽略树。PowerShell Parser与空白检查通过。
+
+主控 `msg_5c8deff9e39d` 明确批准且只授VerifyInstaller唯一窗口。实际命令 `& .\papers\astrocyte\build-texlive.ps1 -Phase VerifyInstaller` EXIT0：GNU SHA512复核OK，GPG dearmor EXIT0，签名与原生assert-signer EXIT0，随后Expand-Archive完成。新公钥ring为3803bytes；原生VALIDSIG记录签名子密钥 `D8F2F86057A857E42A88106A4CE1877E19438C70`，ASSERT_SIGNER通过官方主密钥 `C78B82D8C79512F79CC0D7C80D5E5D9106BAB6BC`。原日志保留TRUST_UNDEFINED及未获信任签名认证的标准警告，没有使用always-trust或省略fingerprint断言。此次没有import、启动agent、联网重下或覆盖首次失败证据。
+
+实际ZIP含2610条目，条目展开长度合计119953438bytes；解压目录为自身 `installer/install-tl-20260301`，唯一Windows入口为 `install-tl-windows.bat`。此数量仅描述安装器ZIP，不表示完整TeX Live已安装。启动UTC06:37:25.661/06:37:28.200，CPU18%/6%，可用5.049244/4.992504GiB，Stopwatch间隔2.5384087秒，无拒绝；当时C盘可用55,658,147,840bytes。资源原JSON与三份核验日志完整保留。
+
+全部调用退出后，`msg_26f5055d1935`立即归还窗口，主控 `msg_12d31f37859c`确认收回，只允许静态报告与profile/参数同步。当前没有Install/Build/Validate、新引擎PDF、模型、产品或正式实验。2025 final本地兼容、arXiv2025-08-03精确快照、本站处理、研究贡献与作者许可分别核验；签名通过和安装器解压没有构成投稿就绪。
+
+## 安装前路径核查
+
+主控 `msg_35aa77d76817` 明确要求只读核查Windows路径。宿主LongPathsEnabled实际为1，当前安装前缀98字符。已验发行Config元数据为Perl5.40.1；其[官方Windows源码](https://raw.githubusercontent.com/Perl/perl5/v5.40.1/win32/win32.c)相应stat/rename/mkdir函数仍含A接口或传统路径缓冲。同发行TLUtils.pm的tl_abs_path对不存在路径明确拒绝`//?/`。已读[Microsoft完整长路径说明](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)，注册表为1不足以证明全部应用链路支持。
+
+尚未获取完整发行文件清单，没有定位真实超限条目或确认所有条目可用；同官方texlive.tlpdb.xz的只读HEAD为HTTP200、2704836bytes。完整依据及成熟TLPDB元数据核查方案已交主控，等待明确范围与窗口；未安装、合成路径测试、修改宿主、创建盘符或自行更换安装目录。

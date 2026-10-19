@@ -48,8 +48,25 @@ git diff --check
 
 The actual commands, output, retained diagnostic, and limits are in [validation.md](validation.md). No product services, model experiments, sub-agents, or visual checks were run in this round.
 
+## TeX Live technical preparation
+
+`build-texlive.ps1` is a PowerShell 7.2+ entry for the separately authorized Windows portable TeX Live 2025 final check. Download or explicitly authorized reuse through VerifyInstaller, followed by Install, Build and Validate, each require the coordinator's assigned window and run serially under the same resource guard. The full `scheme-full` distribution retains documentation and sources. An absolute-path profile must first be written in the worktree's ignored `.verification/texlive2025/` directory; portable mode and explicit profile settings disable host integration. Downloads, public keyring, installation, caches, clean extraction and new PDF/logs stay there.
+
+The entry checks the official installer checksum and uses a dearmored public keyring plus GnuPG's native signer-fingerprint assertion. It then installs from the fixed 2025 final repository, packages the unchanged full review TeX, extracts that ZIP into a fresh directory, and invokes XeLaTeX twice with shell escape disabled and immediate error termination. After both passes and diagnostic checks succeed, Build stages `preprint/arxiv-source.zip`; Validate then checks the actual PDF and complete documents together. The explicit PDF option retains all original manuscript/reference/PDF assertions and saves extracted text beside the selected PDF. A staged ZIP alone does not establish validation, and the original TeX/PDF remains intact. Invoke stages individually only as authorized:
+
+```powershell
+& .\papers\astrocyte\build-texlive.ps1 -Phase Download
+& .\papers\astrocyte\build-texlive.ps1 -Phase Install
+& .\papers\astrocyte\build-texlive.ps1 -Phase Build
+& .\papers\astrocyte\build-texlive.ps1 -Phase Validate
+```
+
+Completed original downloads are reused with `-Phase VerifyInstaller` only under explicit coordinator authorization. It preserves the earlier failure and uses new public-keyring and verification logs before any extraction.
+
+The 2025 final repository differs from arXiv's 2025-08-03 snapshot. A local check cannot establish the site's exact processing or submission readiness. Current implementation and actual execution status are recorded in `validation.md`; no TeX Live success is asserted before those phases run.
+
 ## Submission status
 
 The local PDF is compiled with Tectonic. The complete generated source has not been compiled in arXiv's supported TeX Live environment or processed by arXiv. A source upload package must contain only files needed to compile, excluding the review PDF and build logs, under the current [TeX submission requirements](https://info.arxiv.org/help/submit_tex.html). The `preprint/` directory provides review deliverables and is not an approved arXiv upload package.
 
-Substantive contribution, method approval and controlled validation, actual research evidence, author metadata, paper license, and author consent require further work or decisions under arXiv's [moderation policy](https://info.arxiv.org/help/moderation/index.html) and [submission agreement](https://info.arxiv.org/help/policies/submission_agreement.html). Actual Codex-assisted writing is disclosed in the manuscript; human scientific review and responsibility remain to be confirmed. A successful local build does not establish submission readiness. Independent reviews of rounds 04 and 06 accepted their limited scopes; review of this round remains pending, and the same research Worker handles revisions.
+Substantive contribution, method approval and controlled validation, actual research evidence, author metadata, paper license, and author consent require further work or decisions under arXiv's [moderation policy](https://info.arxiv.org/help/moderation/index.html) and [submission agreement](https://info.arxiv.org/help/policies/submission_agreement.html). Actual Codex-assisted writing is disclosed in the manuscript; human scientific review and responsibility remain to be confirmed. A successful local build does not establish submission readiness. Independent reviews accepted the limited scopes of rounds 02, 04, 06 and 08; this separate TeX Live technical preparation still requires execution and review, and the same research Worker handles revisions.

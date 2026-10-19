@@ -1,3 +1,4 @@
+import argparse
 import json
 import re
 import unicodedata
@@ -11,6 +12,11 @@ from pybtex.richtext import Text
 import pymupdf
 
 root = Path(__file__).resolve().parent
+parser = argparse.ArgumentParser()
+parser.add_argument('--pdf', type=Path, help='检查显式指定的实际PDF，保留全部文稿和引用检查')
+args = parser.parse_args()
+pdf_path = args.pdf.resolve() if args.pdf is not None else root / 'preprint/manuscript.pdf'
+text_path = pdf_path.with_suffix('.txt') if args.pdf is not None else root / 'build/manuscript-pdf.txt'
 ast = json.loads((root / 'build/manuscript.json').read_text(encoding='utf-8'))
 bibliography = parse_file(str(root / 'references.bib'))
 
@@ -81,7 +87,7 @@ def normalized(value):
     return ' '.join(re.findall(r'[a-z0-9]+', value.lower()))
 
 
-with pymupdf.open(root / 'preprint/manuscript.pdf') as pdf:
+with pymupdf.open(pdf_path) as pdf:
     assert pdf.page_count > 0 and not pdf.is_encrypted and not pdf.is_repaired
     pdf_pages = [page.get_text() for page in pdf]
     pdf_metadata = pdf.metadata
@@ -112,7 +118,7 @@ assert 'TO BE PROVIDED' in pdf_metadata['author']
 assert normalized('No main-study') in pdf_normalized
 assert not re.search(r'\[@[A-Za-z]|@[a-z]+\d{4}', pdf_text)
 assert (root / 'preprint/manuscript.tex').read_bytes() == (root / 'build/manuscript.tex').read_bytes()
-(root / 'build/manuscript-pdf.txt').write_text(pdf_text, encoding='utf-8')
+text_path.write_text(pdf_text, encoding='utf-8')
 
 markdown = MarkdownIt('default')
 documents = list(root.glob('*.md')) + [root.parent.parent / 'docs/research/astrocyte-research-feedback.md']
@@ -141,5 +147,5 @@ print(json.dumps({
     'pdf_references': len(bibliography.entries),
     'pdf_text_characters': len(pdf_text),
     'pdf_embedded_fonts': pdf_fonts,
-    'pdf_compilation': 'compiled with Tectonic; diagnostics require review',
+    'pdf_compilation': 'explicit PDF inspected; engine recorded in build log' if args.pdf is not None else 'compiled with Tectonic; diagnostics require review',
 }, indent=2))
