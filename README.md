@@ -1,16 +1,18 @@
 # Astrocyte
 
-当前产品集成分支为 `songconmaisaix31-design/works-relay-integration`，提交 `f17a491cdd6392829094c95a3e5efb6011362bc0`。本轮 DDD prepared 身份端口、架构检查和 Windows Interpreter 显式配置已合入并普通 push；作者适用检查与主控全仓 Go vet 通过，主控其余组合检查因整机 CPU 持续超过资源守卫而尚未执行，详见 [DDD 记录](tasks/ddd-review-remediation-20261018.md)。当前 `validation/v1-20261012` 分支保存管理与实验记录，产品开发和后续集成继续使用产品集成分支。
+个人研究与创造工作台，使用 Go、React、TypeScript、Vite 和 SQLite。产品流程为资料沉淀、项目筹划、人工批准、Agent 执行与经验回流。完整功能及发布状态见 [STATUS](STATUS.md)，开发接续见 [HANDOFF](HANDOFF.md)，文档用途见 [文档目录](docs/README.md)。
 
-2026-10-18 检查时本机64505服务已停止。Windows x64 候选包位于 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，大小1,949,217,657 bytes，构建来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，打开 <http://127.0.0.1:8787/>；保持控制台打开，按 Ctrl+C 停止应用。详细参数见包内 README。
+当前优先收敛候选为 `songconmaisaix31-design/frontend-observatory-20261018@5725c1840a760105518d273eaaa28d7367f369ed`，集成目标为 `songconmaisaix31-design/works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`。本工作树的 `validation/v1-20261012` 保存主控与正式实验记录；产品开发沿原产品分支进行。准确来源、PR 和原任务见 [集成清单](docs/integration-audit-20261020.md)。
 
-该包构建、解压及125项实际运行检查通过，包含真实HTTP、SQLite写读/重启与公开来源认知查询。完整默认CI、L1/L2及原生控制器验收仍未通过，正式Release未发布。交付与清理记录见 [本轮记录](tasks/integration-cleanup-20261017.md)，待决定事项见 [QUESTIONS](docs/QUESTIONS.md)。
+Source15 Windows x64 候选包已完成构建、独立 130 项运行检查和双视口人工 DOM 核查，来源为 `15d74da3edcee26550a71120370fda9c86230e04`，位置为 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`。包与源码的对应结果见 [重启续行任务](tasks/restart-product-research-20261019.md)。完整默认 CI、原生/S3、成果实际采用及正式 Release 仍未通过，待答事项见 [QUESTIONS](docs/QUESTIONS.md)。
+
+在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，按包内 README 打开服务地址；默认地址为 <http://127.0.0.1:8787/>，保持控制台打开，按 Ctrl+C 停止应用。最近已核查的共享应用使用 64505 端口，运行程序早于候选包；实际启动或切换服务按 [资源限制](docs/RESOURCES.md) 和当前任务安排。本次文档清理没有重新运行这些检查。
 
 ## 当前分支开发说明
 
-个人研究与创造工作台。Go 模块化单体、React + TypeScript + Vite、SQLite；开发入口见 [AGENTS.md](AGENTS.md)，当前范围见 [STATUS.md](STATUS.md)、[界面替换计划](tasks/UI-preview-plan.md) 与 [S0 计划](tasks/S0-plan.md)。
+开发先读 [AGENTS](AGENTS.md)、[代码规范](docs/CODING.md)、[资源限制](docs/RESOURCES.md) 和当前任务引用的规格。按角色加载 [主 Agent、Worker、Reviewer 或科研 Agent 说明](docs/agents/README.md)。S0 和早期界面计划保留为历史依据，后续开发按当前收敛计划执行。
 
-三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
+当前产品候选的新版界面、媒体与 Agent 标识、人工动态 DAG 和按需加载已有分范围独立审查，具体功能、权限和未验范围见 [动态 DAG 任务](tasks/dynamic-dag-loop-20261019.md)。本分支保留早期界面及实验实现，其示例内容不作为当前产品或正式研究结果。
 
 ## Attention Engine 与作品册
 

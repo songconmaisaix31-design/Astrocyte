@@ -3,7 +3,9 @@
 版本：v0.1　日期：2026-10-09　对应规格：Workbench_DDD_Spec_v0.1
 用途：把规格第 19 节的切片 S0–S6 展开为可交给多个 Agent 并行执行的任务清单。
 
-当前执行方式以 [AGENTS.md](../AGENTS.md) 为准：主控提出建议和优化方案，唯一 Worker 实现并维护 PR，独立 Reviewer 验证可用性与效果、发布 CR 并决定接受、退回或证据不足，返修交回原 Worker。本文件中的阶段日期、fixture 和轨道人数是历史规划。当前任务入口见 [STATUS.md](../STATUS.md)、[集成版本与收敛顺序](../tasks/integration-convergence-20261020.md)及[集成清单](integration-audit-20261020.md)；原[动态 DAG 开发循环](../tasks/dynamic-dag-loop-20261019.md)保留具体范围。新开发和整改采用实际接口与获准来源验收，不沿用历史 mock 或虚假数据要求。
+当前执行方式以 [AGENTS.md](../AGENTS.md) 为准：主控提出建议和方案，每个模块的长期 Worker 先编写测试计划，经独立 Reviewer 或用户审核后实现、自测并维护 PR；Reviewer 按准确 Commit 验证可用性与效果、发布 CR 并决定接受、退回或证据不足，返修交回原 Worker。代码和资源规则分别见 [CODING](CODING.md)、[RESOURCES](RESOURCES.md)，角色说明见 [角色目录](agents/README.md)。
+
+本文件中的阶段日期、fixture 和轨道人数是历史规划。当前管理任务为 [文档清理](../tasks/documentation-cleanup-20261020.md)，产品接续见 [集成收敛计划](../tasks/integration-convergence-20261020.md) 和 [集成清单](integration-audit-20261020.md)，当前事实见根 [STATUS](../STATUS.md)。原 [动态 DAG 开发循环](../tasks/dynamic-dag-loop-20261019.md) 保留具体范围。新开发和整改采用真实接口与获准来源验收，不沿用历史 mock 或虚假数据要求。
 
 ---
 
