@@ -476,3 +476,22 @@ PowerShell transcript仅记录宿主开始/结束，未捕获原生PTY交互。�
 自身助手`release15/sample-inspect-resources.py`直接import真实已安装psutil7.2.2，AST静态解析通过后实际执行；每样本使用`cpu_percent(interval=1)`的阻塞CPU、`virtual_memory().available`、UTC及perf_counter，不使用首次非阻塞零值或缓存。实际UTC`07:10:24.331346+00:00`CPU69.3%/可用3.338150GiB，第二次`07:10:26.600876+00:00`CPU95.1%/可用3.277313GiB，结束采样点单调间隔2.2695458秒。第二CPU超过85%即EXIT1，独立入口停止；两样本原件`resources-inspect-3GiB-*.json`与旧4GiB拒绝分列保存。
 
 准确Source15工具、C新q15-03、移交及完整Verify/DOM仍未运行或创建。全部调用实际退出后以`msg_cfd434ddbb41`立即归还唯一窗口，未自动重采样或改变源码/原参数/来源与Reader/SQL断言。本项没有改变发布、科研或十轮接受状态。
+
+### Release附加审查决定：证据不足
+
+主控`msg_d552334913b8`实际读上述双样本后收回窗口并转科研安装，明确停止同因重采样，要求准确57候选的真实最终审查决定。实际GitHub API确认PR #2仍open、Draft、HEAD=`57a91f4601b4292df4f55ba6cac541bad5caab3f`。准确15→57仅修改产品记录，326→57 `git diff --check`通过，准确ZIP实际1949417822bytes。
+
+本决定为`insufficient_evidence`，限定当日Windows Release独立验包；不增加十轮接受，不判定资源拒绝为产品失败。
+
+| 证据归属 | 实际阅读与判定 |
+| --- | --- |
+| 原Worker构建 | 完整准确57记录与`p15d74da3-2/build.log`核得Source15、真实冻结安装/构建/扫描/ZIP阶段；固定runtime与旧失败分别保留。未独立重建全包，未把构建当性能提升。 |
+| 原Worker完整Verify | 实际标准JSON读取`v15d74da3/result.json`全部130个检查名称：130 PASS、0 nonpass，`source_commit=15d74da3edcee26550a71120370fda9c86230e04`、scope为`candidate-package-cognition-runtime`。实际读verify.log的逐事件/SQL分页与停止/重启原件。属于Worker实际运行结果，独立Reviewer没有执行该完整Verify。 |
+| 原Worker历史inspect | 实际读`q15d74da3-2/admission-safe.json`、`cross-day-safe.json`及`v15d74da3/cognition-input-safe.json`：1316真实来源/六字段、SQL10、分页20/50、历史每主题3点、1次实际Sleep；真实2026-10-19今日0。历史读取范围与今日新增分列，未将这些文件拷入自身Q预期。 |
+| 原Worker限定DOM | 完整读取`dom15d74da3-3/dom-result.json`、`dom.log`及`dag-sql-after-revocation.json`。1920/1280两视口各五路由与26品牌；增量增长在1920执行，撤权清图403在1280执行；三个DAG event_id、六个outbox及430次OS归属检查记录存在。没有独立重查该SQLite或重跑浏览器。 |
+| 独立静态审查 | 准确真实clone/HEAD/clean、15源码与最终报告关系已核；原入口及复制DOM工具的PS5.1/7完整解码/Parser、Node/Python语法与每HTTP监听fresh状态/父链/失败退出实现已核。完整默认浏览器前置审计保留，无新原生/模型输入。 |
+| 独立运行 | 仅准确15原inspect工具构建通过；两次正式inspect均EXIT1，自身安全预期未生成。唯一优化二进制调试读到新D输出safe文件open拒绝，拒绝来源未知，旧两次不推断同因。后续两次4GiB与一次3GiB专用资源拒绝均在原工具启动前。完整Verify、解压/HTTP和DOM未执行。 |
+
+当前缺少自身完整inspect及随后包运行验证，不能完成独立包验收。Worker现有来源与限定成功原件没有被本次资源拒绝否定。完整默认CI/浏览器、正向原生/S3/unknown对账、今日新增、真实采用及正式发布均继续未通过；协议`local-human/creator_kind=human`为自动检查创建的主体标记，实际人类反馈未知。三项未答选择、Claim拒绝、`Known=false`和原生工具关闭保持。没有从工程结果推出科研效果或速度收益。
+
+UTC`2026-10-19T07:19:28Z`实际发布[CR5568150342](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5568150342)，回执`COMMENTED`、`commit_id=57a91f4601b4292df4f55ba6cac541bad5caab3f`。请求与原始回执为自身`release15/github-review.json`和`github-review-receipt.json`，同账号未宣称GitHub APPROVE。该附加决定不替代第05/07/09轮，不改变已接受6/10。
