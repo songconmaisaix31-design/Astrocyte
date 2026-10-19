@@ -7,7 +7,7 @@
 - 固定分支：`songconmaisaix31-design/research-preprint-review-20261019`；接管 HEAD：`13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，接管时工作树干净。
 - 写入范围仅本报告及本树已忽略的 `.verification/**`。本树未包含根规则及产品源码，当前规则从主仓库 `C:/Users/DW/orca/Astrocyte/` 读取，产品计划及源码从指定产品树只读核查。
 - 实际使用 Orca 中的 Codex 会话；本次 `orca terminal show` 的终端预览为 `GPT-6.1-Sol xhigh fast`，没有覆盖模型参数。CLI 为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。
-- 已完成准确最终候选 `32ab1eec808a5848aabad40f11133735a1214e55` 的独立审查，限定接受同来源构建/原库运行对应与治理文档同步；构建和实际运行源码仍为S。正式COMMENT和集成分支回执待登记；Reviewer没有编译或启动服务/浏览器，没有安装或模型业务调用。
+- 已完成准确最终候选 `32ab1eec808a5848aabad40f11133735a1214e55` 的独立审查，并发布准确Commit的COMMENT，限定接受同来源构建/原库运行对应与治理文档同步；构建和实际运行源码仍为S。主控已实际读取最终hook并普通推进集成分支，远端已独立核实；Reviewer没有编译或启动服务/浏览器，没有安装或模型业务调用。
 
 ## 依据与接管事实
 
@@ -188,7 +188,7 @@
 
 ## 最终准确候选与治理文档：接受
 
-主控 `msg_bd831eb33261` 指定最终HEAD **`32ab1eec808a5848aabad40f11133735a1214e55`**。本地HEAD、远端PR #2的head及PR正文均与该完整Commit一致，工作树干净；PR目标仍为原 `songconmaisaix31-design/works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`，等待主控普通推进。
+主控 `msg_bd831eb33261` 指定最终HEAD **`32ab1eec808a5848aabad40f11133735a1214e55`**。本地HEAD、远端PR #2的head及PR正文均与该完整Commit一致，工作树干净；目标为原 `songconmaisaix31-design/works-relay-integration`，已由主控从f17快进至准确32ab，集成证据见末节。
 
 完整核查S至最终HEAD，仅15件获准治理/报告Markdown发生变化；Go、Web、契约、数据库迁移、依赖/锁、CI和生产构建入口没有变化。实际程序/Web继续准确使用S，复用前两阶段已接受的同来源事实，不为本次文档重复运行功能或构建。
 
@@ -204,4 +204,24 @@ EXIT0；Node `v24.16.0`，BelowNormal，`NODE_OPTIONS=--max-old-space-size=448 -
 
 GitHub对该准确HEAD实际返回check-runs 0、Actions runs 0，完整默认CI保持NOT_RUN。历史982失败/取消、当前Redocly工具FAIL及串行执行偏差分别保留，未将空检查登记为通过。
 
-最终决定：**接受准确32ab候选的来源/集成目标/实际运行对应及本次治理文档范围**，本范围无待返修项。完整默认CI/浏览器、Redocly正常退出、lint/vet串行合规、原生/S3、模型规划与两Agent闭环、真实带Worker停止/未知用量对账释放、实际成果采用/经验复用、OpenViking远端、完整新便携模型包和正式发布继续按真实限制处理。实际集成普通push和最终COMMENT/hook回执分别登记后结算。
+最终决定：**接受准确32ab候选的来源/集成目标/实际运行对应及本次治理文档范围**，本范围无待返修项。完整默认CI/浏览器、Redocly正常退出、lint/vet串行合规、原生/S3、模型规划与两Agent闭环、真实带Worker停止/未知用量对账释放、实际成果采用/经验复用、OpenViking远端、完整新便携模型包和正式发布继续按真实限制处理。实际集成和最终COMMENT/hook回执均已登记。
+
+## 最终CR与交接回执
+
+UTC `2026-10-19T20:08:59Z`，Reviewer本人通过真实GitHub API发布 [COMMENT review 5577111605](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5577111605)，实际回执为 `state=COMMENTED`、`commit_id=32ab1eec808a5848aabad40f11133735a1214e55`。发布前重新核查PR实际HEAD一致；没有使用原生APPROVE。请求与原始回执为本树 `.verification/delivery-candidate-20261020/github-final-review{,-receipt}.json`。
+
+该CR引用已普通push的审查报告 `340a4749265837c36327e72ed0cd8201a3debb09`，正文明确准确S、最终32ab、实际独立命令与限定接受范围、契约FAIL/串行偏差及全部未验门禁。
+
+最终现有Node hook于UTC `2026-10-19T20:09:28Z` 入队 `msg_e8b96e8f55eb`，使用本次准确Run/Task/Dispatch/handle、最终32ab及实际报告，EXIT0。主控 `msg_a7158bacbd43` 于UTC `20:10:51Z` 确认实际读取报告、GitHub实际CR与准确commit_id，登记实际唤起，并明确可以完成普通Commit/push后正式结算。
+
+## 集成与最终交付
+
+主控在上述读取回复中确认将原产品集成分支从 `f17a491cdd6392829094c95a3e5efb6011362bc0` 快进至准确32ab并普通push成功，实际服务保持S/PID45956。Reviewer独立执行：
+
+- `git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`：EXIT0，远端准确为 `32ab1eec808a5848aabad40f11133735a1214e55`。
+- `git merge-base --is-ancestor f17a491cdd6392829094c95a3e5efb6011362bc0 32ab1eec808a5848aabad40f11133735a1214e55`：EXIT0。
+- `git merge-base --is-ancestor ed543c12106c2dbb3e181cb9bc1647b626455179 32ab1eec808a5848aabad40f11133735a1214e55`：EXIT0。
+
+最终对应关系：构建/运行S → 仅15份治理/报告文档的32ab候选 → 同一准确32ab的远端集成分支。原服务由主控独立服务终端保留，本Reviewer没有关闭服务或其他用户进程。
+
+本次审查不需要用户代为测试或手工操作。真实剩余限制为原契约工具退出故障、完整默认检查及既有资源/原生/S3/采用/发布未验范围；原库恢复、正式tag/Release、论文上传和正式实验均未由本任务执行。后续对应操作继续按原任务及未答决定处理。
