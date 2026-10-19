@@ -4,7 +4,7 @@
 
 用户要求完成S3与论文初稿并进行十次改进。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 已建立，当前接受0/10。产品Worker与科研Worker复用原分支/PR，独立Reviewer逐轮核准确Commit、真实CR和hook；主控实际读取回复后推进下一项，不把提交、退回或重复检查充作接受次数。
 
-Run `run_29c7e66b4136`。产品 `task_51276f272ff3` / `ctx_e49721d7ac8d`、科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`、Reviewer `task_2923223271be` / `ctx_568047699698` 均实际ready/turn_started。产品先核CI与实际前置，持唯一重操作窗口；科研准备完整PDF构建和后续论文完善，Reviewer先静态准备，未授予其他重操作。原S3预算/权限及受限Codex三项具体选择已集中询问，待答保持拒绝；正式实验、合并/部署/投稿没有由本轮默认授权。
+Run `run_29c7e66b4136`。产品 `task_51276f272ff3` / `ctx_e49721d7ac8d`、科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`、Reviewer `task_2923223271be` / `ctx_568047699698` 均实际ready/turn_started，Codex0.162.0/gpt-6.1-sol默认配置已核。01候选 `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6` 已普通push，修测试前置及精确27迁移断言，真实前后对照和相关检查通过；产品冻结候选，Reviewer现持唯一检查窗口，准确detached复验/CR未完成，仍0/10。科研02静态准备实际PDF与来源，尚无编译窗口；03拟补PR #1已审业务在PR #2的真实集成缺口，待01接受。原S3预算/权限及受限Codex三项具体选择已集中询问，待答保持拒绝；正式实验、合并/部署/投稿没有由本轮默认授权。
 
 ## 科研初稿已提 PR 并完成独立审查（2026-10-19）
 

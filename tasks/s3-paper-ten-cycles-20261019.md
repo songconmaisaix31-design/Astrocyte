@@ -14,7 +14,7 @@
 | --- | --- | --- |
 | 产品Worker | 既有frontend-observatory-20261018树 / songconmaisaix31-design/frontend-observatory-20261018 | S3所需internal/swarm、internal/workspace、internal/adapters、cmd、web、contracts、tests、scripts，必要go.mod/go.sum/package依赖；docs/standards/s3-ten-cycles-20261019.md及自身忽略.verification。修改必须服务当前轮；不改根治理、正式实验、workflow或论文。跨轮/范围扩张先Handoff |
 | 科研Worker | 既有research-preprint-20261019树 / songconmaisaix31-design/research-preprint-20261019 | papers/astrocyte/**、docs/research/astrocyte-research-feedback.md、.agents/skills/astrocyte-research/**及自身忽略.verification；不改产品、根治理、正式实验和workflow。实际应用astrocyte-research skill |
-| 独立Reviewer | 既有research-preprint-review-20261019树 / songconmaisaix31-design/research-preprint-review-20261019 | docs/reviews/s3-paper-ten-cycles-20261019.md及自身忽略.verification。产品/稿件只读，精确Git归档副本在自身忽略目录构建，不写Worker树；不代做修复 |
+| 独立Reviewer | 既有research-preprint-review-20261019树 / songconmaisaix31-design/research-preprint-review-20261019 | docs/reviews/s3-paper-ten-cycles-20261019.md及自身忽略.verification。产品/稿件只读，精确Git归档或真实Git克隆在自身忽略目录构建；依赖真实Git身份的测试使用准确候选克隆并核HEAD，不从无.git归档伪推仓库身份。不写Worker树，不代做修复 |
 
 当前无其他获准子Agent；需要时先明确互斥写域与资源，禁止Aliyun。全局编译/测试/服务/文稿构建/依赖安装串行，CPU<70%、可用内存≥4GiB双采样，相隔2–5秒，BelowNormal；Go单并发与256MiB软限制、Node512MiB、浏览器/服务各最多一个。无窗口继续静态阅读和编辑。禁止视觉、mock/虚假数据、Git回滚、force push、/tmp和自研调度/完成证明系统。
 
@@ -26,9 +26,9 @@ QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步
 
 | 轮次 | 问题与建议 | 可观察验收及依赖 | 状态 |
 | --- | --- | --- | --- |
-| 01 产品 | 定位上轮实际CI失败，修复S3相关测试与当前真实接口、迁移及初始化不一致，准备合法实际前置 | 原失败日志与准确源码对应；不削弱/删除断言或伪造依赖。当前范围定向真实测试通过，完整CI按实际结果独立登记 | 待Worker核具体方案 |
+| 01 产品 | 实际CI detached HEAD不满足发现测试的attached前置，迁移断言26与当前真实27不一致；以真实公开Git克隆设置分支，精确核当前迁移身份与幂等 | 原失败日志与准确源码对应，保留Branch非nil和拒绝断言；实际前后对照及相关回归，完整CI其余缺口独立登记 | 候选dacc742e已push，独立复验中，尚未计接受 |
 | 02 论文 | 完整初稿尚无PDF，建立单一正文到可编译预印本来源和PDF的流程 | 使用成熟TeX工具，实际编译完整正文/公式/表格/引文，文本提取核完整性，保留准确命令和资源；不作视觉验收 | 待启动 |
-| 03 产品 | 核认领到发送之间的当前权限、单后端权威、fence和预算预留的一致性 | 根据真实代码实施必要修复，AT08真实SQLite/HTTP争用与旧租约拒绝、失败无半预留；业务选项答复前不降低门禁 | 依赖01及具体决定 |
+| 03 产品 | 当前PR #2未包含已审PR #1的发送前租约/用途校验。核业务来源75cadf95/0642efdf的集成差距、当前权限、单后端权威、fence与预算预留 | 01接受后由主控给具体集成范围，不导入过期AGENTS规范；保留真实SQLite/HTTP与旧租约拒绝等原断言。业务选项答复前不降低门禁、不开受阻原生正向 | 依赖01，具体集成待主控方案 |
 | 04 论文 | 补全原始统计技术依据和分析定义，减少只有原则没有程序的缺口 | 实读原始来源；主要交互、位置差异、完整块配对、区间/等效/多重比较及样本量推断范围准确，未定正式参数保持未定 | 依赖02 |
 | 05 产品 | 原生接续与跨会话交接尚缺受控正向证据 | 合法条件下实际控制器/会话文件/HTTP/SQLite验证AT09、不可变上下文及身份/successor；没有权限不得启动或改称通过 | 依赖03及原生条件 |
 | 06 论文 | 条件、衰减时钟、延迟证据及关系归因需形成可批评的完整研究建议 | 明确决策前字段、缺失、时间和归因逻辑，验证强度与人工授权分开；建议不自动冻结产品接口与正式参数 | 依赖04及最新源码反馈 |
@@ -41,4 +41,20 @@ QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步
 
 Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。接受轮数0/10。先启动产品Worker核01的实际错误与合法修复；科研Worker可准备02，重操作须交接窗口；Reviewer逐候选审查。PR #2/#3保持原Worker维护，不另造并行业务轨道。
 
+产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`；科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`；Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`。均真实ready/turn_started，实际Codex0.162.0 / gpt-6.1-sol默认配置已由Handoff及原生worker-list核实。产品已交还首个窗口并冻结01候选，当前Reviewer持01独占检查窗口；02已静态准备官方便携Tectonic、完整preprint来源/PDF和成熟文本核查，待01独立检查后移交窗口。
+
 每轮保留问题、具体修改、准确源码、实际命令/结果、Reviewer决定、CR及hook/回复；使用本任务和现有报告，不新增自动调度或计分系统。资源不足保持检查未执行；真实前置或用户决定未满足时该轮保持阻塞，继续无依赖工作，不能补写完成。十轮接受、S3核心路径通过和初稿实际交付各自核验；署名缺失不虚构，正式八配置、注册、投稿、产品合并/部署不由本轮默认授权。
+
+## 已确认的具体方案
+
+01仅修改两处测试和当前产品记录：从当前真实公开仓库克隆后明确attached分支，精确验证HEAD/分支/clean及原拒绝分支；迁移来源精确为27并含026/027，实际_migrations逐ID及重复运行保持。准确7ce3的detached副本用于原失败对照。Go test已实际编译相关包；本轮不为未改生产代码额外要求全仓build，已资源拒绝的build保持未执行，完整产品CI不改记通过。
+
+03拟议业务集成范围已经只读核实：已审PR #1最终75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee包含0642efdf及前序发送校验，当前PR #2没有这些业务来源。01独立接受后，由原产品Worker使用文件编辑工具移入其16个业务/测试路径内的必要改动，适配当前DAG代码，不导入该分支旧AGENTS规范或旧报告，不覆盖当前贡献，不合并公开PR或主分支。保留完整来源SHA及差异依据，采用正常新Commit/push。目标为生产装配注入真实authorizer、认领绑定原prepare与租约、当前Grant/action/fence/operation/用途复查、一般发送拒绝Swarm成员用途；三项待定仍保留拒绝，不开启新原生调用。实际相关SQLite/HTTP及拒绝路径、DDD/类型和生产构建由原Worker与Reviewer分别执行。完整AT08/09/13正向仍按05/07/09及合法前置验收，不能因业务集成通过提前标记。
+
+## 第01轮候选追踪
+
+产品源 `b21f5b66852a7fa8692185ebfaa34ddaae1f2e00`，报告后继/PR #2准确候选 `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6` 已普通push，远端一致且tracked干净。Worker真实Handoff `msg_0acfc8bab432` 明确所有自有Go/HTTP调用已退出、无浏览器/原生输入，归还窗口；主控回复 `msg_2459c2795878` 要求冻结等独立CR。
+
+准确7ce3的独立detached克隆分别重现两项旧失败；两项after通过，两个真实HTTP函数、一个双SQLite连接Mission幂等/撤销/重开函数及三个原生缺来源/事务拒绝函数通过，两包vet及两文件格式/空白通过。只证明相应测试/拒绝路径，没有认领WorkItem或验证原生正向；完整CI未过。build在63%/71%启动采样拒绝，Go未调用；本轮test-only不反复补该构建。
+
+主控消息 `msg_83e4b62f0f28` 将唯一窗口授予Reviewer核准确dacc，要求真实Git clone、detached条件、原断言保留与精确迁移检查，真实CR/hook后交回。当前尚无01的独立接受决定，不计完成。
