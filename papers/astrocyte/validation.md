@@ -187,7 +187,7 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 
 实际ZIP含2610条目，条目展开长度合计119953438bytes；解压目录为自身 `installer/install-tl-20260301`，唯一Windows入口为 `install-tl-windows.bat`。此数量仅描述安装器ZIP，不表示完整TeX Live已安装。启动UTC06:37:25.661/06:37:28.200，CPU18%/6%，可用5.049244/4.992504GiB，Stopwatch间隔2.5384087秒，无拒绝；当时C盘可用55,658,147,840bytes。资源原JSON与三份核验日志完整保留。
 
-全部调用退出后，`msg_26f5055d1935`立即归还窗口，主控 `msg_12d31f37859c`确认收回，只允许静态报告与profile/参数同步。当前没有Install/Build/Validate、新引擎PDF、模型、产品或正式实验。2025 final本地兼容、arXiv2025-08-03精确快照、本站处理、研究贡献与作者许可分别核验；签名通过和安装器解压没有构成投稿就绪。
+全部调用退出后，`msg_26f5055d1935`立即归还窗口，主控 `msg_12d31f37859c`确认收回，只允许静态报告与profile/参数同步。该阶段结束时尚未调用Install/Build/Validate，没有新引擎PDF、模型、产品或正式实验。2025 final本地兼容、arXiv2025-08-03精确快照、本站处理、研究贡献与作者许可分别核验；签名通过和安装器解压没有构成投稿就绪。
 
 ## 安装前路径核查
 
@@ -196,3 +196,9 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 主控 `msg_17dadf82afd2` 明确批准轻量官方元数据例外，BelowNormal/Node512串行读取，不占Reviewer的重操作窗口。实际下载同官方texlive.tlpdb.xz2704836bytes及checksum144bytes、签名488bytes；已验发行自带xz解压20189437bytes，GNU SHA512和原生GPG签名/官方主密钥assert-signer分别EXIT0。使用发行自带Perl和TeXLive::TLPDB/TLPOBJ原生from_file、expand_dependencies及replace_reloc_prefix读取实际scheme-full/windows依赖，全过程EXIT0，没有手写TLPDB parser。
 
 全库8406包，适用依赖4978包，236376个唯一条目：run181845、doc46601、src6958、windows-bin972。98字符根下最长实际文件248字符，为ualberta包的 `texmf-dist/doc/latex/ualberta/03_References/Reference_PDFs/Aldrich2017-OSM_Classic_an_Optical_Imaging_Technique_for_Accurately_Determining_Strain.pdf`；文件长度≥260或父目录长度>248的条目为0。完整JSON和原始stderr保留自身path-metadata，Perl对继承C.UTF-8不受支持而使用系统默认locale的原生警告原样保留，没有人工重跑隐藏。此项不证明所有生成/临时路径或安装成功，未安装、合成路径测试、修改宿主、创建盘符、缩减scheme或更换原目录。
+
+## Install首次资源拒绝
+
+主控 `msg_e844510ffe79` 在Reviewer全部调用退出后，授予Install→成功后Build→成功后Validate的唯一窗口。实际执行 `& .\papers\astrocyte\build-texlive.ps1 -Phase Install`，原守卫首个样本的可用内存3.2314453125GiB低于4GiB，入口EXIT1立即停止。准确UTC为07:17:22.0752185Z，CPU70%，Stopwatch elapsed26.5546907秒；首样本拒绝，没有第二样本或可宣称通过的2–5秒间隔。
+
+原Install-resources时间戳JSON先写下真实数值及拒绝原因。安装目标和installer-console.log均不存在，安装器、仓库下载、Build和Validate未运行；已通过的安装包签名记录和已接受08原PDF保持。未放宽门限、缩减发行、切换目录或外层重试。全部自有调用退出后，`msg_d7481e3c8b94`立即归还唯一窗口，后续仅静态同步记录；实际TeX Live编译目标仍待资源可用及主控另行安排。
