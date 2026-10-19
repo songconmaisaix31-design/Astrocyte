@@ -135,6 +135,24 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 构建使用实际 Go1.27.2、Node24.16.0、pnpm11.27.0。13 个构建阶段的26次启动采样最高 CPU27%、最低可用4.5950927734375GiB；各阶段 CPU<85%、可用≥4GiB、Stopwatch间隔2–5秒、BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB。没有测量运行期峰值或宣称速度收益。
 
-准确新 ZIP 为 `p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822 bytes；源码保持 `15d74da3edcee26550a71120370fda9c86230e04`，本记录属于后继报告，不改变包来源。主控 `msg_6d5dd47e93cc` 安排 Build 后插入科研06，Worker 在所有构建/扫描/压缩调用退出后以 `msg_a481f570c6b0` 立即交回窗口；主控实际读取 Build 日志、独立核 ZIP 字节后以 `msg_80bb71a45604` 确认。17887监听为0，没有服务、浏览器、原生或模型进程。q只读inspect、实际解压/HTTP/SQLite重启/DOM及独立 Reviewer 尚未执行，不重跑已通过阶段，等待主控续验窗口。
+准确新 ZIP 为 `p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822 bytes；源码保持 `15d74da3edcee26550a71120370fda9c86230e04`，本记录属于后继报告，不改变包来源。主控 `msg_6d5dd47e93cc` 安排 Build 后插入科研06，Worker 在所有构建/扫描/压缩调用退出后以 `msg_a481f570c6b0` 立即交回窗口；主控实际读取 Build 日志、独立核 ZIP 字节后以 `msg_80bb71a45604` 确认。构建阶段报告后继 `b022d0e3bf32a224893b46a7d1d9dfe2f69a2455` 仅更新本记录。
 
-三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包已完成构建；解压运行、完整默认浏览器、原生控制器、完整 S3、独立包审查和正式发布尚未通过，旧125项结果没有移作本轮证据。
+### 实际历史认知与解压运行
+
+主控 `msg_bf4bd434ca58` 授予续验窗口，旧工具失败后通过 `msg_475b6d983b19` 明确授权准确源码的既有只读工具及后续原完整 Verify。没有修改产品、旧库、原 history/current、真实日期、Clock 或原断言。
+
+本节原输入根为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228`：CognitionSource 为其 `app-state/state.sqlite`，CognitionPublicationRoot 为其 `local/astrocyte-workbench/v0.1`，CognitionHistory 为该发布根的 `snapshots/snapshot-1711995690/history.json`。公开 Git 为输入根的 `public-source.git`，固定 ref `b789466ff62f3c9b0e08ec392729f5bbfc5cfaa1`。下表 `.../` 输出均指本日 D 盘根，工具原始命令及参数在对应 transcript 中。
+
+| 实际命令/阶段 | 结果与原件 |
+| --- | --- |
+| 原 `actual-public-cognition-final.exe --mode inspect`，输出 `q15d74da3` | EXIT1，原输出为 `PUBLIC_SOURCE_VERIFICATION_FAILED`，没有生成 SQL 预期/六字段/准入安全输入或诊断文件。`q15d74da3/inspect.log` 与资源 JSON 保留，后续立即停止并以 `msg_1dd66c4e238e` 交回窗口。只读 `go version -m` 显示该旧程序为6ad1dfa1387d、modified=true，不能从当前源码反推具体失败原因。 |
+| 原公开来源的成熟 Git/SQLite 只读元数据 | 标准 Node `DatabaseSync(readOnly:true)`、query_only=1，app-state与current指定snapshot均有1316事件/1316信号/2节点/1次Sleep。Git实际origin为获准公开URL，`rev-parse --verify b789...^{commit}`与`rev-list --count`分别得到准确固定commit与1316。此项只确认元数据，不代完整Reader/来源验收。 |
+| `.verification/build-release-inspector.ps1 -SourceRoot .../p15d74da3-2/source -Output .../q-tool15` | EXIT0；准确Source15归档中的既有 `cmd/workbench-snapshot/verify`，Go4/`-p=4`/512MiB和原缓存。`q-tool15/build-inspector.log`、资源JSON；没有源码修改或新解析器。 |
+| `.verification/run-release-inspect.ps1 -Output .../q15d74da3-2 -Inspector .../q-tool15/actual-public-cognition-inspect.exe` | EXIT0；原app-state/root/public-source.git固定ref，mode仅inspect，SQLite mode=ro/query_only。完整Git原始来源、生产Reader、SQL10、1316逐事件六字段、排名、分页和原历史断言通过，安全输入实际生成。真实day2026-10-19、today_events=0、minimum_today=0、closed_day为空，没有采集/Sleep。实际验证工具来源为Source15；历史Q组件40880b67e4a668ec0e19d00eb4f77a76fdf210ab另列，不用旧工具来源替代当前工具。 |
+| `release/Verify-Windows.ps1 -Zip .../p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip -Source 15d74da3edcee26550a71120370fda9c86230e04 -Port 17887 -RequireCombined -CognitionSource <原app-state> -CognitionHistory <原snapshot-1711995690/history.json> -CognitionPublicationRoot <原v0.1> -CognitionSafeDir .../q15d74da3-2 -CognitionSourceSha 15d74da3edcee26550a71120370fda9c86230e04 -Output .../v15d74da3` | EXIT0，130项PASS、0项未通过；`v15d74da3/result.json` scope=`candidate-package-cognition-runtime`，准确Source15。ZIP允许项、全量隐私/实际固定runtime、SPA及资产、session/CSRF/跨来源拒绝、真实SQLite写读、OpenViking未配置、空快照/非空历史的包内发布、SQL10/排名/历史、全部1316事件六字段、20/50同主题分页、实际进程停止/重启及持久读取均通过。原130断言完整执行，旧包125项未移用。 |
+
+Verify初始实际监听进程链为45788→35948，重启为47912→48736，均通过Windows实际PID/创建时间核对，每个HTTP请求前后复查。两个根进程/Go子进程及监听实际停止。八个阶段16次启动样本最高CPU48%、最低可用5.303668975830078GiB，满足原资源和单调间隔条件；运行期峰值未测。解压后的全包隐私扫描1442文件/3548860672B，private_matches=0。
+
+所有自有调用退出、17887监听0后，以 `msg_d91f5b3b1caa` 立即交回窗口，主控读取实际result/日志/q安全输入后以 `msg_82499cb58bec` 确认。按 `msg_38c22357ec0d` 插入科研08，DOM/官方品牌/人工DAG与该场景事件SQL尚未执行；独立包CR、完整默认浏览器、原生/S3及正式发布门禁仍保持未通过。无需重复已通过工具/inspect/Build/Verify，等待明确DOM续验窗口。
+
+三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建与上述限定130项解压运行通过；DOM、完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
