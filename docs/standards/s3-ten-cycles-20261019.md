@@ -68,4 +68,39 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 静态来源比较结果：16 个路径相对 0642 的差异只剩当前产品的两个既有贡献。`commands.go` 保留 `CreatedBy/CreatorKind` 和 `ValidateDAG`；`swarm_native.go` 保留 `ReadWorkerParticipation`、独立退出观察及明确缺失分类。其余 14 个路径与已审来源一致，领域、生命周期、事件与前端的既有 DAG 改动保持。没有更改 DDL、OpenAPI、原生程序或调用计量/权限的待定选择。
 
-当前仅完成静态代码和原测试移入，`git diff --check` 通过；尚未编译、运行测试或启动服务。唯一重操作窗口由主控授予科研第 02 轮。获得窗口后按 CPU<85%、可用≥4GiB、两次启动采样、BelowNormal、Go4/-p4/512MiB 和 Node1024MiB，逐包串行执行显式参数规则、实际 SQLite/HTTP/Registry 拒绝与重开检查、相关 DAG 回归、Go vet、DDD 检查及生产构建；不运行旧替身集合，不启动受阻原生。实际命令与结果完成后登记，当前不宣称第 03 轮通过。
+本轮业务源码固定为 `4c4fa1eab003c1daece0ed9e180e2f39a30f5704`，代码与原测试通过文件编辑工具移入后普通 Commit，没有执行 Git 回滚或业务分支合并。主控 `msg_747413ea9005` 明确允许以 today 下真实 Git clone/detached 副本验证；`msg_7b1d47474027` 在科研第 02 轮实际退出后授予本轮唯一窗口。验证副本为 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/s3-cycle03/source-4c4fa1eab003c1daece0ed9e180e2f39a30f5704`，每个阶段核完整 HEAD、真实 detached 和干净状态。没有为输出路径修改原测试。
+
+### 实际命令与结果
+
+执行入口为本树忽略的 `.verification/run-s3-cycle03.ps1`，新日志和资源样本统一位于 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/s3-cycle03/logs/`。主控 `msg_7578d18f5d2a` 明确允许复用此前实际使用的 `D:/Astrocyte-agent-assets/20261015/go-build/backend` 编译缓存；没有复制缓存或为了轮次冷编译。新 temp、显式数据库输出及副本内相对输出全部位于本轮 today 子目录。
+
+以下 Go 测试均实际以 `go test -mod=readonly <package> -run '<pattern>' -count=1 -timeout=2m -v` 执行，每次只运行一个 package；函数数目不含嵌套子项。
+
+| package 与 pattern | 结果 | 原件 |
+| --- | --- | --- |
+| `./internal/workspace/app`，`^TestNativeMessageExplicit` | EXIT0，4 函数，包 1.760 秒；明确用途、私有 JSON、原准备身份和调用者规则。 | `rules-20261019-114601-225.log` |
+| `./internal/adapters/sqlite`，`^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestNativeMessageExplicitJSONRules\|TestSwarmNativeMessageActualAuthorizationLifecycle)$` | EXIT0，4 函数，包 2.646 秒；实际同库/跨库/取消、缺原来源、成员授权/撤销和同库重开，未生成原生来源或输入对象。 | `sqlite-20261019-114651-443.log` |
+| `./internal/adapters/agents`，`^TestRelayPreparedMemberRejectsMissingOriginalSources$` | EXIT0，1 函数，包 1.004 秒；真实未打开 Registry 的缺来源及取消拒绝。 | `registry-20261019-114803-681.log` |
+| `./cmd/server`，`^TestRelaySwarmActualPreparedAssemblySQLiteHTTP$` | EXIT0，1 函数，包 13.464 秒；实际装配/HTTP、身份拒绝、缺原准备的发送 501 和无部分执行记录。 | `http-20261019-114857-326.log` |
+| `./internal/swarm/domain`，`^TestDynamicDAG` | EXIT0，2 函数，包 5.113 秒；依赖结构和原停止边界。 | `dag-domain-20261019-115021-106.log` |
+| `./internal/swarm/app`，`^TestDynamicDAG` | EXIT0，2 函数，包 4.715 秒；明确缺失/结构错误分类和 unknown 用量边界。 | `dag-app-20261019-115123-183.log` |
+| `./internal/adapters/sqlite`，`^TestDynamicDAG` | EXIT0，2 函数，包 13.111 秒；原编码语义及真实缺 Registry 分类。 | `dag-sqlite-20261019-115215-350.log` |
+| `./internal/adapters/httpapi`，`^TestDynamicDAG` | EXIT0，3 函数，包 18.668 秒；真实 HTTP/SQLite 增长/权限/来源、无 Worker 停止和过期后人类读取。 | `dag-http-20261019-115304-870.log` |
+
+| 其他实际命令 | 结果 | 原件 |
+| --- | --- | --- |
+| `go vet -mod=readonly ./...` | EXIT0，无诊断。 | `vet-20261019-115410-697.log` |
+| `go build -mod=readonly ./...` | EXIT0，全部 Go 生产包编译通过；没有运行模型或原生控制器。 | `build-20261019-115526-882.log` |
+| `node scripts/check-architecture.mjs` | EXIT0，43 包满足 Domain/app/context/transport 边界。 | `architecture-20261019-115621-250.log` |
+| `gofmt -d` 本轮 16 个 Go 文件 | EXIT0，无格式差异；路径由准确 dacc→本轮的 Go 差异取得。 | `format-20261019-115703-702.log` |
+| `git diff --check`、验证副本 `git status --short` | EXIT0，无输出。 | 实际命令回执 |
+
+所有 19 个定向函数通过。13 个阶段的 26 个启动样本最高 CPU80%、最低可用内存 6.5458GiB；Stopwatch 记录单调间隔，同时保存 UTC。所有启动间隔满足 2–5 秒，CPU<85%、可用≥4GiB、BelowNormal、Go GOMAXPROCS=4/-p=4/GOMEMLIMIT=512MiB、Node heap=1024MiB。采样不代表运行期峰值，内存配置为软限制；没有据包耗时宣称性能收益。
+
+实际 SQLite 拒绝/授权数据库位于本轮 `evidence/accepted-experience-actual-{1641144588,1133109175,3604946547}/`。三个 DAG HTTP 数据库位于准确副本 `.verification/dynamic-dag-http/actual-{4262388596,3397770852,211109139}/state.sqlite`。全部为真实测试服务产生的独立库，没有复制用户库或正式 V4。所有检查调用与自有 HTTP listener 已退出，副本保持干净，无浏览器或原生控制器；已用 `msg_8df78aed44b4` 明确归还唯一重操作窗口，后续只更新报告、普通 push 和 PR。
+
+### 接受范围与剩余限制
+
+本轮实现补齐已审发送租约业务在当前产品中的实际集成缺口，适用拒绝/事务/装配与 DAG 回归、Go 类型和生产编译已由 Worker 运行。独立 Reviewer 的准确候选 CR/hook 仍待进行，Worker 不判定本轮接受。真实正向 Prepare→Claim→Send、AT08 两成员争用及旧 fence 拒绝、AT09 原生接续/交接、AT13 unknown 对账、真实进程退出与释放、用户采用和经验再次使用仍缺相应合法前置，未计通过。
+
+三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。
