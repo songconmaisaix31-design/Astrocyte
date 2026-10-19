@@ -527,3 +527,30 @@ UTC`2026-10-19T07:19:28Z`实际发布[CR5568150342](https://github.com/songconma
 本阶段仍为`insufficient_evidence`：独立来源核查已通过，完整包运行在Core入口中断，DOM未运行。真实默认CI/浏览器、正向原生、完整S3/unknown对账、今日新增及真实用户采用保持未通过，三项待答、Claim拒绝、Known=false和原生工具关闭保持。实际采用必须另有用户本人针对具体成果的反馈；自动检查中的human协议主体不构成该反馈。本次Release附加验包不增加已接受6/10，不推断性能或科研效果，不授权发布、tag、merge或投稿。
 
 主控`msg_42623b69528d`实际读取并确认收回窗口；随后`msg_3eef8661adba`核文档`docs/release/windows.md`第3/78行指定Windows PowerShell5.1及显式`powershell.exe`命令，明确下一次使用同一Source15/原ZIP/原参数在该已文档化环境验证，采用全新输出。没有要求产品为未承诺的Core兼容性改断言或重建包；最终CR综合两个实际条件，本阶段不重复发送最终决定。自身静态入口`review-release15-verify51.ps1`明确约束完整Verify使用5.1及新`v15-02`；`review-release15-dom.ps1`仅在自身准确完整130项结果成功后使用新`dom15-01`。两入口实际PowerShell5.1.26100.9711及7.6.6的Parser/完整UTF-8源码检查均EXIT0，未执行入口正文。原Core inspect/transfer入口及结果保持，尚未获新窗口或执行。
+
+### 文档指定5.1环境的完整验包与DOM
+
+主控`msg_c40cb99bedcf`明确授新唯一窗口。实际执行`powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .verification/ten-cycles/review-release15-verify51.ps1`，同一Source15/原ZIP/原完整参数与自身q15-03输入，使用全新`reviewer-release/v15-02`、17889。外层启动采样UTC`11:28:33.6877786Z`/`11:28:37.1434748Z`、CPU31%/33%、可用13.040359/12.946751GiB、单调间隔3.4257557秒；Windows PowerShell5.1.26100.9711、BelowNormal、Go4/512MiB、Node1024MiB。
+
+实际EXIT0；`v15-02/result.json`为`result=PASS`、`source_commit=15d74da3edcee26550a71120370fda9c86230e04`、`scope=candidate-package-cognition-runtime`、130 PASS/0 nonpass。原完整隐私/runtime/HTTP/session/CSRF/SQLite/可选后端检查、实际快照发布、SQL10、全部1316来源六字段、分页20/50、实际历史及进程重启持久化均通过。初次真实监听为43904→33432、root启动UTC`11:32:44.5946890Z`；重启为28844→31932、UTC`11:37:20.9822230Z`，均核实际创建时间与父链。结束后17889无监听。Core7.6.6原失败保留，5.1通过没有证明Core兼容。
+
+其后执行`powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .verification/ten-cycles/review-release15-dom.ps1`，原完整DOM工具只读复用，包为自身v15-02解压结果，输出新`reviewer-release/dom15-01`。依赖辅助代码/OpenAPI/lock与自身准确Source15逐项核一致；实际公开Git checkout独立克隆并切换到准确15、核HEAD/clean，D归档仅供读取已安装依赖。实际EXIT0，一个Chromium及一个包服务，1920×1080/1280×720顺序完成五路由、键盘与溢出断言、固定README、26项品牌HTTP/资源、可选OpenViking未配置、人工DAG从空图增长至2节点/1依赖、节点交互/布局/刷新，以及撤权后的403和清图；page_errors均空。`dom-result.json`记录425次真实OS监听归属检查，检查子进程正常退出。
+
+`dag-sql-1920.json`、`dag-sql-1280.json`及`dag-sql-after-revocation.json`分别保留真实只读SQLite逐event_id回查结果：3个DAG事件和本次实际4个outbox。以下每个ID均在本次`v15-02/extracted/Astrocyte-v0.1-windows-x64/data/local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`中准确定位一行并核类型与aggregate；3个DAG事件另核payload与实际节点/边的来源。不同运行的事件数量分别记录。
+
+| 实际event_id | 类型 | aggregate_id |
+| --- | --- | --- |
+| `0796b40a-bda6-4f37-9f21-e0ee7f1eb317` | swarm.mission_created | `92883571-1981-457e-8b71-c44c617d8334` |
+| `c27eb008-f947-4738-8310-5f8452c1dd19` | swarm.work_item_created | `657aa59f-bc53-4763-a899-acf15115cb03` |
+| `a754844f-4ff7-49eb-811c-9e5c892037ab` | swarm.work_item_created | `c24b0e9b-63c2-4be7-ae30-6ab353571557` |
+| `9ff34a34-470b-45e4-9cfa-9fb13e83492f` | workspace.proposal_approved | `8bfaa195-5fcf-47b5-a39a-581935cca51b` |
+
+本次5.1完整Verify及DOM共12个启动资源阶段/24个样本均allowed/BelowNormal，最高CPU48%、最低可用12.481159GiB、结束点单调间隔2.432793–3.442314秒；inspect专用额度和Core失败的资源记录另列，不混合为同次检查或运行期峰值保证。全部服务/浏览器/Node/Python退出、实际17889无监听后以`msg_6e503bdda22e`立即交还窗口。主控`msg_771e61e58629`实际读取130项result与DOM/log、核端口并收回窗口。
+
+### 当前准确候选与限定决定
+
+主控`msg_ab6e8b99e8f4`将报告候选更新为`2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`。实际完整diff确认57→2a05仅产品报告追加21行原依赖恢复事实；Source15、包、原应用程序/Web均保持。已读原Worker`summarize-01/restore.log`的实际完成与版本/配置字节记录、`sdk-01/restore.log`及实际输出目录，依赖恢复属于另行服务恢复的准备，当前没有独立确认共享64505服务恢复。首次只读GitHub API因EOF未返回，后续实际读取成功，PR #2仍open/Draft、HEAD准确2a05；没有从缺失响应推断通过或发送重复CR。
+
+最终决定为`accept`，限定于准确Source15 Windows候选包的来源/完整130项运行与人工DOM，适用于当前准确报告候选2a05。比较采用与Worker相同的已文档化PowerShell5.1环境，原完整断言及真实输入保持，原Core中断单列。没有测量速度、CPU/内存收益或科研效果。完整默认CI/浏览器、今日实际新增、真实原生/S3/unknown对账、实际用户采用以及正式Release发布门禁均未通过；真实采用仍需用户本人对具体成果的反馈。三项未答、原权限与Known=false保持；本附加验包不替代05/07/09/10、不增加已接受6/10，不授权发布、合并、tag或arXiv上传。
+
+UTC`2026-10-19T11:43:13Z`实际发布[CR5571008196](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571008196)，回执`COMMENTED`、`commit_id=2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`；同账号未冒称APPROVE。请求及原始回执为自身`release15/github-review-restart.json`与`github-review-restart-receipt.json`。完整Verify、DOM及这次CR的原件均按当前候选与实际运行分别保留。
