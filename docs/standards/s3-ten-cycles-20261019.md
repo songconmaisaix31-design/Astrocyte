@@ -4,7 +4,7 @@
 
 主控任务为 `C:/Users/DW/orca/Astrocyte/tasks/s3-paper-ten-cycles-20261019.md`。本轨 Task `task_51276f272ff3`、Dispatch `ctx_e49721d7ac8d`，沿原工作树、分支和 Draft PR #2。精确基线 `7ce3a5efe312f4cdac3491293e002f5559f076b0`；实际客户端 Codex 0.162.0，Orca 原终端显示 `GPT-6.1-Sol xhigh fast`，继承配置，没有模型覆盖或子 Agent。
 
-第 01 轮修复实际失败的初始化与迁移检查，准备合法前置并执行适用真实检查，已获独立限定接受。当前按主控明确方案实施第 03 轮；第 05/07/09 轮等待主控逐轮明确。S3 调用单位、执行权限证据覆盖和受限 Codex 三项答复仍待定；Claim 拒绝与 Known=false 保持，未启动原生控制器或模型输入。
+第 01 轮修复实际失败的初始化与迁移检查，第 03 轮补齐发送前租约/用途的当前产品集成，两轮均已获独立限定接受。当前按主控明确方案准备当日 Windows Release；第 05/07/09 轮等待主控逐轮明确。S3 调用单位、执行权限证据覆盖和受限 Codex 三项答复仍待定；Claim 拒绝与 Known=false 保持，未启动原生控制器或模型输入。
 
 ## 实际 CI 错误与修复方案
 
@@ -101,6 +101,12 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 ### 接受范围与剩余限制
 
-本轮实现补齐已审发送租约业务在当前产品中的实际集成缺口，适用拒绝/事务/装配与 DAG 回归、Go 类型和生产编译已由 Worker 运行。独立 Reviewer 的准确候选 CR/hook 仍待进行，Worker 不判定本轮接受。真实正向 Prepare→Claim→Send、AT08 两成员争用及旧 fence 拒绝、AT09 原生接续/交接、AT13 unknown 对账、真实进程退出与释放、用户采用和经验再次使用仍缺相应合法前置，未计通过。
+本轮实现补齐已审发送租约业务在当前产品中的实际集成缺口，适用拒绝/事务/装配与 DAG 回归、Go 类型和生产编译已由 Worker 运行。独立 Reviewer 报告 `b410c9bd87349b7f13f3d913ccc48d06996c5839` 和 COMMENTED [CR 5567006632](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5567006632) 对准确候选 `3267249922082cb1808b6529a2f04084d40c1f92` 限定接受；独立 19 函数、7 包 vet、43 包架构、格式与 7 个真实 event_id 逐项 SQL 核查通过。hook `msg_d9e88ad0d21c` 已实际到达，主控读取并以 `msg_91414a0f0023` 回复，第 03 轮接受登记完成。真实正向 Prepare→Claim→Send、AT08 两成员争用及旧 fence 拒绝、AT09 原生接续/交接、AT13 unknown 对账、真实进程退出与释放、用户采用和经验再次使用仍缺相应合法前置，未计通过。
+
+## 当日 Windows Release 子任务
+
+主控 `msg_962269134dd8` 授权从准确 `3267249922082cb1808b6529a2f04084d40c1f92` 静态修改 `release/**`、`docs/release/**` 和本记录；同一 Worker、工作树、分支与 PR #2 继续负责，正式发布由主控执行。产品 05/07/09 门禁保持，包构建和重复验证不自动计为十轮改进。
+
+当前修改给既有 Build/Verify 增加重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。新源码固定及唯一窗口获准后才执行安装、构建、新 ZIP、解压与真实运行检查；当前这些检查尚未运行。
 
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。

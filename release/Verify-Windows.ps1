@@ -4,7 +4,9 @@
     [ValidateRange(1, 65535)]
     [int]$Port = 17887,
     [switch]$RequireCombined,
-    [string]$Source = '',
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{40}$')]
+    [string]$Source,
     [string]$CognitionSource = '',
     [string]$CognitionHistory = '',
     [string]$CognitionPublicationRoot = '',
@@ -18,13 +20,17 @@ Add-Type -AssemblyName System.Net.Http
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repo = Split-Path $PSScriptRoot -Parent
 if ($CognitionSource -ne '') { $RequireCombined = $true }
-if ($Output -eq '') { $Output = Join-Path 'D:\Astrocyte-agent-assets\20261015\release-package' ('verify-' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
+if ($Output -eq '') { $Output = Join-Path ('D:\Astrocyte-agent-assets\20261015\release-package\today-' + (Get-Date -Format 'yyyyMMdd')) ('verify-' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
 Assert-ReleaseAssetPath $Output
 Assert-ReleaseSpace
 $output = [IO.Path]::GetFullPath($Output)
 if (Test-Path -LiteralPath $output) { throw 'Verification directory already exists.' }
 New-Item -ItemType Directory -Path $output | Out-Null
 Start-Transcript -Path (Join-Path $output 'verify.log') | Out-Null
+$verifyProcess = [Diagnostics.Process]::GetCurrentProcess()
+$priorPriority = $verifyProcess.PriorityClass
+$priorEnvironment = @{}
+foreach ($name in @('GOMAXPROCS', 'GOFLAGS', 'GOMEMLIMIT', 'NODE_OPTIONS', 'TEMP', 'TMP', 'GOTMPDIR', 'NODE_COMPILE_CACHE')) { $priorEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 $process = $null
 $client = $null
 $archive = $null
@@ -37,9 +43,11 @@ function Assert-Release([bool]$condition, [string]$name) {
     Write-Output ('PASS: ' + $name)
 }
 function Test-PackagePrivatePaths {
+    Assert-ReleaseResources 'package-privacy' $output
     $result = & (Join-Path $package 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Inspect-Package.mjs') $package
     Assert-Release ($LASTEXITCODE -eq 0) 'streaming full production privacy scan passed'
     $result | Set-Content -LiteralPath (Join-Path $output 'private-path-scan.json') -Encoding UTF8
+    Assert-ReleaseResources 'runtime-check' $output
     & (Join-Path $package 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Check-Runtime.mjs') (Join-Path $package 'runtime')
     Assert-Release ($LASTEXITCODE -eq 0) 'fixed packaged S4 S5 runtime and existing model identities passed'
 }
@@ -94,6 +102,7 @@ function Test-CognitionInput {
 }
 function Test-ActualCognition {
     $publisher = Join-Path $package 'Publish-WorkbenchSnapshot.ps1'
+    Assert-ReleaseResources 'historical-snapshot-publish' $output
     & (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -NoProfile -ExecutionPolicy Bypass -File $publisher -Source $CognitionSource -History $CognitionHistory
     Assert-Release ($LASTEXITCODE -eq 0) 'packaged snapshot publishes explicit actual public after-Sleep source'
     $publication = Get-Content -LiteralPath (Join-Path $package 'data\local\astrocyte-workbench\v0.1\current.json') -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -181,6 +190,8 @@ function Start-Release([string]$cycle) {
         $info.EnvironmentVariables[$name] = Join-Path $homeDir $name
         New-Item -ItemType Directory -Path $info.EnvironmentVariables[$name] -Force | Out-Null
     }
+    foreach ($name in @('OPENVIKING_BASE_URL', 'OPENVIKING_API_KEY', 'OPENVIKING_ACCOUNT', 'OPENVIKING_USER', 'OPENVIKING_ROOT_URI')) { $info.EnvironmentVariables.Remove($name) }
+    Assert-ReleaseResources ($cycle + '-start') $output
     $script:process = [Diagnostics.Process]::Start($info)
     $script:stdout = $process.StandardOutput.ReadToEndAsync()
     $script:stderr = $process.StandardError.ReadToEndAsync()
@@ -212,8 +223,21 @@ function Stop-Release([string]$cycle) {
     Assert-Release (Test-PortFree) ($cycle + ' owned listener stopped')
 }
 try {
+    $verifyProcess.PriorityClass = 'BelowNormal'
+    $env:GOMAXPROCS = '4'
+    $env:GOFLAGS = '-p=4'
+    $env:GOMEMLIMIT = '512MiB'
+    $env:NODE_OPTIONS = '--max-old-space-size=1024'
+    Write-Output 'VERIFY_LIMITS=BelowNormal GOMAXPROCS=4 GOFLAGS=-p=4 GOMEMLIMIT=512MiB NODE_HEAP_MIB=1024'
+    $env:TEMP = Join-Path $output 'temp'
+    $env:TMP = $env:TEMP
+    $env:GOTMPDIR = $env:TEMP
+    $env:NODE_COMPILE_CACHE = Join-Path $output 'node-compile-cache'
+    foreach ($directory in @($env:TEMP, $env:NODE_COMPILE_CACHE)) { New-Item -ItemType Directory -Path $directory | Out-Null }
+    Assert-Release ([IO.Path]::GetFileName($Zip).EndsWith('-' + $Source.Substring(0, 12) + '.zip')) 'ZIP name matches exact package source'
     if ($CognitionSource -ne '') { Test-CognitionInput }
     Assert-Release (Test-PortFree) 'isolated port initially free'
+    Assert-ReleaseResources 'archive-read' $output
     $archive = [IO.Compression.ZipFile]::OpenRead([IO.Path]::GetFullPath($Zip))
     $count = 0
     foreach ($entry in $archive.Entries) {
@@ -225,6 +249,7 @@ try {
     Assert-Release ($count -gt 8) 'ZIP production allowlist excludes data and development dependencies'
     $archive.Dispose()
     $archive = $null
+    Assert-ReleaseResources 'archive-extract' $output
     [IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath($Zip), (Join-Path $output 'extracted'))
     Assert-ReleaseSpace
     Assert-Release (-not (Test-Path -LiteralPath (Join-Path $package 'data'))) 'fresh extraction has no database or user data'
@@ -247,6 +272,10 @@ try {
     Assert-Release ($session.status -eq 200) 'real session bootstrap'
     $identity = $session.body | ConvertFrom-Json
     Assert-Release ($identity.actor_kind -eq 'human' -and $identity.csrf_token.Length -gt 0) 'real human and CSRF binding'
+    $viking = Request-Release 'GET' '/api/v1/openviking/status'
+    Assert-Release ($viking.status -eq 200) 'optional OpenViking status is available without remote configuration'
+    $vikingState = $viking.body | ConvertFrom-Json
+    Assert-Release ($vikingState.schema_version -eq 1 -and -not $vikingState.configured -and -not $vikingState.connected) 'optional OpenViking remains explicitly unconfigured'
     $command = @{ schema_version = 1; request_id = [guid]::NewGuid().ToString(); expected_version = 1; title = 'Windows release verification'; description = 'Created through the real application API in the isolated extracted package.' } | ConvertTo-Json -Compress
     $headers = @{ Origin = $base; 'Idempotency-Key' = [guid]::NewGuid().ToString() }
     $deniedWrite = Request-Release 'POST' '/api/v1/material-domains' $command $headers
@@ -292,6 +321,7 @@ try {
     Assert-Release ((Test-Path -LiteralPath $db -PathType Leaf) -and (Get-Item -LiteralPath $db).Length -gt 0) 'real independent SQLite created in package data'
     if ($RequireCombined) {
         $publisher = Join-Path $package 'Publish-WorkbenchSnapshot.ps1'
+        Assert-ReleaseResources 'empty-snapshot-publish' $output
         & (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -NoProfile -ExecutionPolicy Bypass -File $publisher -Source $db
         Assert-Release ($LASTEXITCODE -eq 0) 'packaged manual snapshot publishes actual live SQLite without development dependencies'
         $health = Request-Release 'GET' '/api/v1/cognition/health'
@@ -333,8 +363,13 @@ try {
     $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $output 'result.json') -Encoding UTF8
     Write-Output ('VERIFICATION=' + $output)
 } finally {
-    if ($null -ne $archive) { $archive.Dispose() }
-    if ($null -ne $process) { Stop-Release 'failed' }
-    if ($null -ne $client) { $client.Dispose() }
-    Stop-Transcript | Out-Null
+    try {
+        if ($null -ne $archive) { $archive.Dispose() }
+        if ($null -ne $process) { Stop-Release 'failed' }
+        if ($null -ne $client) { $client.Dispose() }
+    } finally {
+        foreach ($name in $priorEnvironment.Keys) { [Environment]::SetEnvironmentVariable($name, $priorEnvironment[$name], 'Process') }
+        $verifyProcess.PriorityClass = $priorPriority
+        Stop-Transcript | Out-Null
+    }
 }

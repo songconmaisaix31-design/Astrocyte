@@ -1,6 +1,36 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+function Assert-ReleaseResources([string]$Phase, [string]$Directory) {
+    if ($Phase -cnotmatch '^[a-z0-9-]+$') { throw 'Resource phase must use a unique lowercase name.' }
+    $record = Join-Path $Directory ('resources-' + $Phase + '.json')
+    if (Test-Path -LiteralPath $record) { throw 'Resource sampling record already exists.' }
+    $samples = @()
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    for ($index = 0; $index -lt 2; $index++) {
+        $memory = Get-CimInstance Win32_OperatingSystem
+        $processor = Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'"
+        if ($null -eq $memory -or $null -eq $processor) { throw 'Actual CPU and memory observations are required.' }
+        $samples += [pscustomobject]@{
+            utc = [DateTimeOffset]::UtcNow.ToString('o')
+            elapsed_ms = $clock.Elapsed.TotalMilliseconds
+            cpu_percent = [double]$processor.PercentProcessorTime
+            available_gib = [double]$memory.FreePhysicalMemory / 1MB
+        }
+        if ($index -eq 0) { Start-Sleep -Seconds 2 }
+    }
+    $clock.Stop()
+    $interval = $samples[1].elapsed_ms - $samples[0].elapsed_ms
+    $priority = [Diagnostics.Process]::GetCurrentProcess().PriorityClass
+    $valid = $interval -ge 2000 -and $interval -le 5000 -and $priority -eq 'BelowNormal'
+    foreach ($sample in $samples) {
+        if ($sample.cpu_percent -lt 0 -or $sample.cpu_percent -ge 85 -or $sample.available_gib -lt 4) { $valid = $false }
+    }
+    [IO.File]::WriteAllText($record, (@{ phase = $Phase; allowed = $valid; priority = [string]$priority; samples = $samples } | ConvertTo-Json -Depth 4))
+    Write-Output ('RESOURCE_PHASE=' + $Phase + ' ALLOWED=' + $valid + ' RECORD=' + $record)
+    if (-not $valid) { throw ('CPU, memory, priority or sample interval does not permit phase: ' + $Phase) }
+}
+
 function Assert-ReleaseSpace {
     $drive = [IO.DriveInfo]::new('C:\')
     if ($drive.AvailableFreeSpace -lt 10GB) { throw 'C: requires at least 10 GiB free before and after large operations.' }

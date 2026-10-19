@@ -2,6 +2,10 @@
 
 完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web。S4/S5 运行依赖包含独立 Node 和生产 SDK；用户无需预装这些 SDK 的开发环境。启动参数支持下文列出的 S4/S5 显式配置；具体候选的准确源码、实际检查结果和剩余限制由发布记录说明。
 
+当前界面包含关注、资料、项目、作品、Swarm 和认知视图。Swarm 可在实际人工批准范围内创建 Mission、WorkItem 和依赖关系，读取动态 DAG 及其来源；原生准备、认领、发送和停止继续检查当前项目、批准与原控制器。原生工具限制、计量单位和权限证据范围仍有待定项，实际原生正向、完整 S3 和完整默认 CI 尚未通过。新包的构建、独立解压验收和正式发布分别记录，不沿用历史包的检查结果。
+
+OpenViking 为可选远端。未配置时，状态接口返回 `configured=false`、`connected=false`，本地资料和项目功能继续使用实际 SQLite。需要连接时，在启动进程的可信环境中明确提供 `OPENVIKING_BASE_URL`，按远端要求提供 `OPENVIKING_API_KEY`；`OPENVIKING_ACCOUNT` 和 `OPENVIKING_USER` 必须同时配置，可选 `OPENVIKING_ROOT_URI` 指定资源目录。启动脚本保留这组显式环境配置；凭据不进入命令参数、ZIP 或发布说明。远端连通和实际提交结果须单独验证。
+
 修改端口或数据目录：
 
 ```powershell
@@ -65,16 +69,16 @@ Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpe
 
 构建入口通过 pnpm 11 的 `--config.registry=https://registry.npmjs.org` 显式选择官方源，并在安装前核对实际 registry。`--config.cache-dir`、`--config.state-dir` 与 `--store-dir` 分别指向本次 D 盘输出目录；冻结锁、包完整性及 TLS 检查继续执行。
 
-发布人员从完整的精确合并 SOURCE 构建：
+发布人员从完整的 40 位准确 SOURCE 构建，并为本次构建和验证分别选择尚不存在的输出目录：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Build-Windows.ps1 -Source <最终I的40位SOURCE> -Label final -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared'
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows.ps1 -Zip <ZIP绝对路径> -RequireCombined
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Build-Windows.ps1 -Source <40位SOURCE> -Label final -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-sanitized-third' -Output <本次构建绝对目录>
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows.ps1 -Zip <ZIP绝对路径> -Source <相同40位SOURCE> -RequireCombined -Output <本次验证绝对目录>
 ```
 
 `-RequireCombined` 检查新目录中的空配置、真实 session/CSRF/SQLite 写读、手动快照及进程重启，结果是阶段运行检查。实际非空认知验证还需明确提供 `-Source`（包完整 SOURCE）、`-CognitionSourceSha`（已消费的认知工具源码）、`-CognitionSource`（获准的真实 SQLite）、`-CognitionHistory`、`-CognitionPublicationRoot` 和 `-CognitionSafeDir`。安全输入目录包含对应实际 Sleep 后状态的 `sql-expected.json`、`events-six-fields.json` 与 `admission-safe.json`；脚本核查当前发布代、十项 SQL 数值、全部六字段事件、排名、实际历史、分页与重启。验收数据只放在自己的验证目录，完整默认浏览器和原生控制器正向验收须分别通过才能发布。
 
-构建复用现有 `pnpm install --frozen-lockfile` 和 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。所有新下载、构建、归档、解压和验证目录都在 `D:/Astrocyte-agent-assets/20261015/release-package/`，`-Output` 可指定其中一个尚不存在的子目录；原 `.verification` 证据保留。构建前后检查 C 盘至少 10 GiB 空余。Go 父进程及子进程仅使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend` 和 `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/release-package`；pnpm store 与 npm cache 也在本次 D 盘目录，不改全局配置。
+构建复用现有 `pnpm install --frozen-lockfile`、前端 `lint` 和包含类型检查的 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。新下载、构建、归档、解压和验证目录默认在 `D:/Astrocyte-agent-assets/20261015/release-package/today-YYYYMMDD/`；本次 2026-10-19 使用 `today-20261019`，`-Output` 显式选择其下尚不存在的独立子目录，旧 runtime、ZIP 和证据只读。构建前后检查 C 盘至少 10 GiB 空余。Go 复用已授权的工具缓存 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR`、`TEMP`、`TMP`、pnpm store、npm cache 与 Node 编译缓存均在本次输出目录，不改全局配置。
 
 包允许四个 Go 程序、生产静态资源、启动与快照脚本、说明、LICENSE/NOTICE、legal 许可目录，以及 runtime 下的 Node、生产 SDK、准确适配脚本和两个固定模型目录。只有 `runtime/sdk/node_modules` 允许生产 npm 依赖；应用开发 node_modules、数据库、日志、私人配置、用户资料与正式自动任务继续拒绝。标准 .NET ZIP 支持这些大型资产；内容扫描逐块读取全部文件的 UTF8/UTF16LE 字符串，不将大型 sidecar 整体载入内存。扫描只输出相对文件名与检查范围，不输出匹配的私人字符串。最终 I 的适用 check/build、默认浏览器、原生控制器和新包实际核心路径验收仍须全部完成。
 
@@ -130,4 +134,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Test-ReleaseTo
 
 此命令核全部固定衍生模型身份、两个准确 adapter 的 Node syntax、真实 SDK/native binding/SQLite 和完整 runtime 隐私；归档实际 Node/SDK/adapter/许可并在新目录解压，逐文件检查原字节、允许项与完整 privacy 扫描。模型本体不进入此依赖 ZIP。它不构建应用候选、不运行模型推理，不替代最终 I 同源码包验收。PowerShell 5.1 与 7 的检查分别登记实际结果。包内 NOTICE 从最终 I 的准确源码复制，依赖的许可原件从已核准备目录复制。
 
-构建进程使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2` 和 `NODE_OPTIONS=--max-old-space-size=512`；退出后恢复原进程配置。这些设置仅限制构建资源，不删减适用检查。
+构建和包验证使用 BelowNormal、`GOFLAGS=-p=4`、`GOMAXPROCS=4`、`GOMEMLIMIT=512MiB` 和 `NODE_OPTIONS=--max-old-space-size=1024`；退出后恢复原进程环境和优先级。安装、构建、复制、扫描、压缩、解压、快照发布和启动的各重操作阶段先取得两次实际 CPU/可用内存观测，单调计时间隔为 2–5 秒，均须 CPU<85%、可用内存≥4GiB，缺失或超限立即失败并保留记录。全局只安排一个重操作窗口、一个服务和一个浏览器；脚本不终止其他应用或自动重试资源拒绝。启动观测不表示运行期峰值，Go/Node 内存设置为软限制。
