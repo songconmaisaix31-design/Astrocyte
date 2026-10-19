@@ -460,3 +460,9 @@ BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB及隔离XDG配置/历史/临时目
 随后`print *out`实际返回`could not find symbol value for out`，立即按首个变量不可读停止，仅执行plain `exit`，没有继续目标、修改变量、调用方法、附加其他进程或再次启动。调试器EXIT0仅表示正常退出。目标停在defer入口，错误文件写入未继续执行；新Q目录为空，不能用本次无错误文件解释旧调用。UTC`06:49:04.979Z`标准CIM按自身Delve与目标两个完整路径核得剩余进程0，`exit-check.json`保留；`msg_77df100aa684`立即归还独占窗口。
 
 PowerShell transcript仅记录宿主开始/结束，未捕获原生PTY交互。实际工具会话与各次返回作为原始观察，另在`interactive-observation.txt`明确标记人工转录摘录，未冒称原始控制台日志。未增加正式inspect/Verify通过、最终包CR/hook或十轮计数；独立完整Verify、解压/HTTP及DOM仍为未执行。
+
+### C工作区新输出的首个资源拒绝
+
+主控`msg_cf51b6d594cd`实际读上述报告、变量摘录与原生会话索引，确认调试器/目标退出并收回窗口；原两次失败仍无同因判定。主控只读比较D盘失败目录与Worker成功目录的常规ACL一致，拒绝来源未明，未修改ACL或安全策略。随后明确授新窗口及输出配置：原准确exe和全部公开只读输入/1316事件/Git/Reader/SQL检查保持，输出改自身C忽略目录全新`release15/q15-03`；仅原工具完整EXIT0，才以标准Copy-Item移交自身生成的三个安全JSON到D盘新`reviewer-release/q15-03`并逐文件逐字节核相同，再执行原Verify与DOM。
+
+自身入口已按此明确配置修改，未更改原工具或断言。实际首次`-Phase inspect`于UTC`06:54:02.4384556Z`首采样CPU65%、可用3.536022GiB、Stopwatch16.139831秒，低于4GiB内存门限，立即EXIT1；尚未取得第二样本。原件`release15/resources-inspect-c-output-rejected-20261019-145402-*.json`保留。C新Q目录实际不存在，原exe、移交、Verify、解压/HTTP及DOM均未执行，未据此判定C输出或产品失败。以`msg_3b38e35a30ee`立即交还窗口，没有自动重试；本节不增加十轮计数或发布决定。
