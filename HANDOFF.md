@@ -66,6 +66,18 @@ Reviewer最终独立报告为其树 `docs/reviews/dynamic-dag-20261019.md`，分
 
 真实模型生成、Claim/Send、带Worker停止/退出/未知用量结算和资源释放仍缺合法正向证据；原生文件/命令工具关闭及S3两项待答保持。OpenViking未配置远端，作品真实完成/采用/经验复用未计通过。982自动CI两run最终cancelled，但两个Ubuntu job取消前的全仓Go测试已经失败；真实前置缺失及旧fixture/迁移断言等归属仅部分核查，完整CI未通过，不能写从未执行。原日志及具体限制在独立报告与当前计划，默认workflow和原断言未修改。
 
+## V4 日运行交接（2026-10-20）
+
+本次 automation run 8 `d41ce228-643e-4b48-9623-c2b5c36fb59d` 已实际派发，仅核查 Asia/Shanghai 刚结束的昨日 2026-10-19。接管 HEAD `04c7a583307ce2a135ae2d84dd7e97a2f2eece6b`；原主控完成自身文档的普通提交与 push 后，明确交接共享提交窗口，本次文档基线为 `851b866a3f75f885c6dfa9b4244d55e2dddfc206`，分支 `validation/v1-20261012`，编辑前工作区与暂存区干净。当前 Codex `0.162.0`，EXPERIMENT 全文 SHA256 仍为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`；实验、生产采集及 MCP 相关运行路径相对已验 `d749ecb` 无源码差异。
+
+本次锁门禁仍阻塞：`Test-Path` 确认原 `C:/Users/DW/AppData/Local/astrocyte-validation/` 根、其中权威 `v1-20261012/v4-w2/locked-protocol-20261013-first.json`、正式 `v4-w1/formal-20261013-first/state.sqlite` 及此前两份 `user-sheet.json` 均不存在。原根不可用原因、已有搬迁记录及恢复事实未确认；真实 root/reviewed 锁、day0、路由与授权无法重新核验，仓库 SHA 相符不能替代真实锁。未启动昨日采集、Sleep、select-native、三臂、judge、预测评分或 import-user，新增事件、Sleep、回答、judge、人评及模型请求均0，没有生成用户评分表或终局报告。历史登记25/84回答、2/7 judge、0/7人评本次无法从原件复核，不增加计数，不提交终局报告 Handoff。
+
+阻塞更新 `msg_85c2c930c85b` 已沿原线程 `msg_4254040ef904` 持久排入原 W1 所属 Run `run_d09ff3f95ebc`，关联原 Task `task_e538790026ad`，实际状态仍 completed；只交接原根可用性、已有搬迁记录或恢复所需事实。消息回执仅证明排队，未确认原 owner 已读或恢复。没有创建或重启 Agent、Task、Run、工作树或开发轨，没有重建锁、正式库或替代根。10-17原 `skipped_missed`、10-18锁阻塞及其他漏日保持未采集，不补写，不重发 unknown，不代填用户原因评分；当前没有可报告的实际可用评分表路径。
+
+固定 `gpt-6.1-sol/872000/4096/5094907/model_context_split`、题库、评分和 B-only 七日授权边界保持。A derived 零 raw、C仅题目、judge仅实际匿名完成回答；本次未外发任何实验输入，也未将原始输入、响应、流或错误写入产品 DB、MCP 或 Git。只更新 root HANDOFF/STATUS，不修改业务或协议，不操作原产品服务与其他任务。
+
+已执行协议全文 SHA、CLI版本、原路径存在性、原 Task、automation show/runs、相关运行源码差异及文档差异检查；实验验证因锁门禁未执行，不登记为采集成功。automation 保持 enabled、Asia/Shanghai `20 0 14-23 10 *`，实际 next 为2026-10-21 00:20。本次仍在10-14至10-23窗口内；后续每次先核验原锁，按真实 day0 区分 D7–D9 仅采集、Sleep和成熟预测，禁止增加 B请求；最后 D9处理或任何窗口外唤醒须禁用。使用普通 `[skip ci]` 文档提交与 push，保留全部已有内容。
+
 ## V4 日运行交接（2026-10-19 00:25）
 
 本次 automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发，仅处理 Asia/Shanghai 刚结束的昨日 2026-10-18。基线分支 `validation/v1-20261012` / HEAD `6042593e`，接管时工作区干净；当前 Codex `0.162.0`，EXPERIMENT 全文 SHA256 仍为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，运行路径相对已验 `d749ecb` 没有源码差异。

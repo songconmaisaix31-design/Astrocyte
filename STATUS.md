@@ -42,6 +42,16 @@ Worker已维护 [Draft PR #2](https://github.com/songconmaisaix31-design/Astrocy
 
 接受与不足两个最终hook均已实际到达、主控读取报告/CR并回复确认。Reviewer报告Commit `7f781deea143c74bed5303f90d8130c82bb54bca` 已普通push至独立review分支，远端一致、tracked干净。两Task正式worker_done后均官方释放，终端记录已归档，验证服务浏览器停止。真实Agent生成/Claim/Send、带Worker停止退出及结算释放仍受原生工具关闭/S3条件阻塞，OpenViking远端和作品真实完成/采用未验。完整CI未通过：982两run最终cancelled，Ubuntu两job的全仓Go测试先已failure，原始失败与部分旧fixture/迁移归因保留。产品集成仍f17a491c，没有合并、部署或打包。
 
+## V4 日运行（2026-10-20）：原外部证据根仍不可用，未启动实验
+
+本次仅核查刚结束的昨日2026-10-19，原 automation run 8 `d41ce228-643e-4b48-9623-c2b5c36fb59d` 已实际派发。原主控明确交接共享提交窗口，文档基线 `851b866a3f75f885c6dfa9b4244d55e2dddfc206`，编辑前工作区与暂存区干净。EXPERIMENT 全文 SHA256 保持 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，Codex `0.162.0`，相关运行源码相对 `d749ecb` 无差异。
+
+原 `C:/Users/DW/AppData/Local/astrocyte-validation/` 根、权威锁、正式 SQLite 及此前两份评分表的 `Test-Path` 仍全部为 false。真实 root/reviewed 锁、day0、路由与授权无法重新核验；原根不可用原因及已有搬迁记录未确认。采集、Sleep、select-native、三臂、judge、成熟预测与人评导入均未启动，新增事件/回答/评分/模型请求均0，没有实际可用用户评分表。历史登记25/84回答、2/7 judge、0/7实际人评本次无法从原件复核，终局门禁未满足。
+
+阻塞 Handoff `msg_85c2c930c85b` 已沿原线程排入原 W1 所属 Run `run_d09ff3f95ebc`，原 Task `task_e538790026ad` 仍 completed；原 owner 已读及恢复未确认。没有新增或重启 Agent/Task/Run/工作树/开发轨，没有重建锁或库、补写漏日、重发 unknown 或代填人评。仅增加本次 root HANDOFF/STATUS 两段，保留原主控内容与普通产品服务。
+
+已执行协议 SHA、版本、路径、原 Task、automation 及源码/文档差异检查，实验验证因锁门禁未执行。固定模型、预算、双通道和 B-only 边界保持；普通 `[skip ci]` 提交并 push。automation 仍 enabled，实际 next=2026-10-21 00:20、Asia/Shanghai；后续先核原锁，D7–D9仅采集、Sleep和成熟预测，不新增 B请求。最后 D9处理或任何10-14至10-23窗口外唤醒须禁用。详情见 [HANDOFF](HANDOFF.md)。
+
 ## V4 日运行（2026-10-19 00:25）：原外部证据根不可用，锁门禁阻塞
 
 本次仅处理刚结束的昨日 2026-10-18，automation run 7 `35784e03-a5ba-43d1-836f-9b50c821d195` 已实际派发。仓库 EXPERIMENT 全文 SHA256 保持 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，Codex `0.162.0`，运行源码相对 `d749ecb` 无差异。
