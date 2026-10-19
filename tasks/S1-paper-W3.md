@@ -1,5 +1,7 @@
 # W3 论文流程与项目看板
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 侧栏全局添加资料返修（2026-10-10）
 
 Dispatch `ctx_b423c20821bc` / task `task_bf953532256e`；沿原 `s1-sync-ui-1010` 工作树/分支，实际 Orca Codex / 默认 GPT-6.1-Sol 继承，无模型 override、无新增 Agent。独占编辑仅 `web/src/components/Nav.tsx`、`web/e2e/navigation.spec.ts`、本文件。

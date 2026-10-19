@@ -1,5 +1,7 @@
 # 产品模块执行与验收
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 责任与事实源
 
 2026-10-14，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa` / 终端 `term_580c19de-0c3d-49db-805e-8637184b9301`，子 Run `run_dbf1a68bc692`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，接管基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`，接管时工作区无改动。

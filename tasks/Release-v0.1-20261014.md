@@ -1,8 +1,10 @@
 # Astrocyte 合并产品与 release 包
 
-## 2026-10-15 当前授权与三层执行
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
 
-用户已明确现在修改语义层、执行实际CLI、运行今日采集，并推进当前S0–S6系列功能。根只委派、协调和最终验收；模块负责人维护计划、跨模块交接与验收，业务实现、实际测试、文档和返修由唯一第三层领域owner完成，禁止第四层。既有互斥工作树、分支和未提交修改保留。
+## 2026-10-15 授权与原执行记录
+
+用户已授权语义修改、真实 CLI、当日采集和 S0–S6 的对应工作；具体原生权限、预算与正式实验门禁保持。后续协作按当前 AGENTS：模块 Worker 持续负责实现、测试、文档和返修，独立 Reviewer 负责验收决定；Orca 子 Agent 按所需最少人员及互斥写域安排。以下人员和写域表保留当时记录，恢复前核当前运行时与集成清单，不据旧 Task 标签增加并行。
 
 当前M-release为Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d` / 子Run `run_aa4e6a119547`，固定 `module-release-20261014` 与 `songconmaisaix31-design/module-release-20261014`。实际客户端Codex / gpt-6.1-sol；该模块独占本文、`docs/modules/release.md`、`docs/modules/daily-operation-20261015.md`、`docs/modules/opencode-model-20261015.md` 的管理写入，业务仍由下表原owner负责。精确SOURCE、独立REPORT和阶段实际结果见 [发布模块记录](../docs/modules/release.md)，本入口不重复所有后继结果。
 

@@ -1,5 +1,7 @@
 # W0 V2：v3.0 三主题真实库证据资产
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 依赖V1R root复核及用户终审关账；用户2026-10-13已PASS并关账，基线3e1f6dae，本单已放行。复用原W0 `C:/Users/DW/orca/workspaces/Astrocyte/validation-v1-boundary` / `songconmaisaix31-design/validation-v1-boundary`，Codex`--yolo`。本单取代旧ECharts新增UI方案，v3.0只沿用轨迹，不新增UI。
 
 ## 固定写域

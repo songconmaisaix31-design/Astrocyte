@@ -1,5 +1,7 @@
 # A 无损列式输入候选（未激活）
 
+> 适用范围：本文是未激活的历史输入表示候选，现行 A 表示以原锁定 EXPERIMENT 和正式日运行任务为准；本文件不授权切换表示、重发请求或重新锁定协议。
+
 协调方2026-10-13要求准备具体预注册选择。现行 EXPERIMENT 和 runner 仍用完整原JSON；本候选不被正式collector导入，不锁协议，不改变B/ABC模型预算、题目或任何生产工具。源代码为 scripts/experiment/lossless_candidate.py。
 
 表示为可读JSON节点：scalar保留原JSON标量（包括null、bool、整数/浮点）；object为原顺序的 `[key,node]` 对；array保留原节点顺序。同构对象行可表示为table。table有精确row_count、嵌套有序schema、columns；schema整数为叶列索引，其余为有序 `[key,schema]`，完整保留嵌套对象和字段顺序。每列name为完整键路径，例如 `["event","ts"]`。

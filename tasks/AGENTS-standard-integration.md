@@ -1,5 +1,7 @@
 # 按当前 AGENTS.md 整合仓库
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 用户要求：用新标准整合仓库。执行标准为根 [AGENTS.md](../AGENTS.md)；业务事实仍来自对应任务和最新用户决定。接管基线为 validation `c4faaab44c2a8d50423250f7c7864c294a6b6b3f`、Workbench 已验工程 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`。当前阶段：规则与进度入口整理，随后独立源码整改。
 
 ## 范围与边界

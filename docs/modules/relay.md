@@ -1,5 +1,7 @@
 # Relay 模块管理与验收
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；总负责人最新授权模块负责人只修改本文件和新增 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
 
 ## 当前执行范围与 v1.4 规格

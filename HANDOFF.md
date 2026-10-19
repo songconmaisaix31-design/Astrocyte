@@ -2,7 +2,7 @@
 
 ## 当前工作
 
-用户于 2026-10-20 要求按五份 Downloads 文件清理项目文档。本次范围、基线、检查和结果见 [文档清理任务](tasks/documentation-cleanup-20261020.md)。新版长期规则已写入 [AGENTS](AGENTS.md)，四份角色说明见 [角色目录](docs/agents/README.md)，资源和代码规则分别见 [RESOURCES](docs/RESOURCES.md)、[CODING](docs/CODING.md)。
+用户于 2026-10-20 要求检查全部文档与新规范的冲突，并归档已被覆盖的旧文档。本次范围与结果见 [全仓检查任务](tasks/documentation-conflicts-20261020.md)，逐份处置见 [检查报告](docs/documentation-audit-20261020.md)，旧执行正文见 [归档目录](docs/archive/superseded-20261020/README.md)。新版协议和四份角色原文保持，资源与代码规范分别由 RESOURCES、CODING 统一维护。
 
 当前版本与验收状态统一见 [STATUS](STATUS.md)，用户决定与待答项见 [QUESTIONS](docs/QUESTIONS.md)。文档用途和任务入口见 [文档目录](docs/README.md)。本文件仅保留后续执行所需信息，历史原文见 [归档](docs/archive/20261020/README.md)。
 

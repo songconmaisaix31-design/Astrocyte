@@ -1,5 +1,7 @@
 # Attention Engine W3 · Sleep Consolidation 流水线（M3）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 最新补丁（2026-10-11 22:58 Asia/Shanghai）：显式字面事实投影 seam PASS
 
 本 Task `task_5536142bb5f5` / Dispatch `ctx_4fb5ea6b3ab5` 仅交付正式 CLI 可复用的 owner 投影函数。

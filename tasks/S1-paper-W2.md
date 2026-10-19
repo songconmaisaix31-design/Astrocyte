@@ -1,5 +1,7 @@
 # W2 项目汇总与原生输入扩容
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 2026-10-10 最新活动 Git 时间补漏（独立 follow-up）
 
 Task `task_5531618a1ae6` / Dispatch `ctx_a12876d7d525`，原工作树/分支 `s1-local-agents-1010`，客户端 Orca Codex、模型继承当前运行环境，未切换 provider。基线原 SOURCE `4201c899f5aa0285a0d19442b674327237967739` / REPORT `9e47c455ba07d83a66696b5bfeccf46ffff4f33c` 保留，本次业务 SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef`；本段随后独立提交为 REPORT，不修改原回执。

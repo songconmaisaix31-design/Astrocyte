@@ -1,5 +1,7 @@
 # 视频导入修复与公开收藏夹后续切片
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 2026-10-10；基线 b2a7bbcfff8bb43c43b18314d6d6c7cf2527ca2f，沿用 s1/attention-materials-20261009。用户要求先修好所选视频导入；随后支持链接、账号公开收藏夹更新与批量选择，Agent提供反馈，最终由人挑选入库。用户已明确允许修改所选来源的代理DNS配置。Python允许，Go/TS/SQLite与summarize0.25.1继续沿用。
 
 第一切片终点：所选 BV1PReT6EEqR 从实际页面提交，经 Service 获取真实字幕或上游本地音轨转写，SQLite/对象保存来源和正文，真实重启后可读；不创建Mission、不触发应用LLM、不读取cookies，不用网页推荐文字替代视频。先解决Clash Party/Mihomo fake-IP；仅增加B站公开来源真实DNS例外，保留其他代理规则和上游检查。若后续实际失败，退对应原Worker修复。原未知Codex调用不重放。

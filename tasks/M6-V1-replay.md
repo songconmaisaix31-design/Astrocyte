@@ -1,5 +1,7 @@
 # M6 V1：冻结人口的30天逐事件回放
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源为 `M6-validation-v2.2.md`；仅在root明确批准新V0后启动。固定W1、原worktree `validation-v1-ingest`、原分支 `songconmaisaix31-design/validation-v1-ingest`，客户端Codex `--yolo`。root维护计划、决策和独立验收；业务实现及返修仍归W1。
 
 ## 写域与冻结

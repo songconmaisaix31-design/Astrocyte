@@ -1,6 +1,6 @@
 # 新版前端、官方图标与在线协作 DAG
 
-用户 2026-10-18 提供 `C:/Users/DW/Downloads/astrocyte-frontend-submission (2).zip`，要求使用新版前端、媒体与 Agent 使用真实 logo、协作网络由 Agent 在线生成 DAG、OpenViking 可选配置。当前采用一个开发 Agent 提 PR、主 Agent review；代码、测试、文档及返修由同一开发 Agent 完成，主 Agent 不修改产品业务代码。
+用户 2026-10-18 提供 `C:/Users/DW/Downloads/astrocyte-frontend-submission (2).zip`，要求使用新版前端、媒体与 Agent 使用真实 logo、协作网络由 Agent 在线生成 DAG、OpenViking 可选配置。后续按当前 AGENTS 执行：模块 Worker 先提交测试计划，经独立 Reviewer 或用户审核后实现、自测并维护 PR，Reviewer 独立完成 CR 与效果决定；主 Agent 管理范围和资源。
 
 2026-10-19 后续开发按 [动态 DAG 与独立 Reviewer 循环](dynamic-dag-loop-20261019.md) 继续：用户已确认动态 DAG 与 Worker 消亡机制，主控建议、Worker 实现、独立 Reviewer 验证并决定是否接受。本文件以下保留前轮657基线的交付和验证记录。
 
@@ -27,11 +27,11 @@ OpenViking 为可选集成，未配置时主程序与核心页面正常运行，
 
 全程遵循当前主控仓库 `AGENTS.md`、DDD、fast-fail、文件编辑工具、无 mock/假数据/伪造原生或 CLI、无新增 Skip/移除断言。禁止视觉功能，浏览器验证使用文本/DOM/网络事实。合法真实来源不足时记录未验，不放宽原生文件/命令工具关闭、S3 预算/能力证据等原有条件。
 
-构建、测试和服务串行，最多一个验证服务；Go `GOMAXPROCS=1`、`GOFLAGS=-p=1`、`GOMEMLIMIT=256MiB`、BelowNormal；Node/浏览器使用单 worker、适度堆限制与 BelowNormal，不新增高并发。每项重操作前两次采样 CPU <70%、可用内存 >=4 GiB，间隔2–5秒；不足时不启动重操作，继续静态开发与审查。复用 D 现有缓存，临时结果放本树已忽略 `.verification/`。不关闭其他应用或用户终端。
+后续构建、测试、浏览器和服务按 [RESOURCES](../docs/RESOURCES.md) 的额度、启动采样和全局单窗口安排；资源不足继续静态工作。原已执行检查保留其实际额度，不为改变参数重复运行。复用已获准缓存，临时结果放本树已忽略 `.verification/`，不关闭其他用户进程。
 
 验收包括前端 typecheck/lint/build、适用无替身测试、真实 HTTP/SQLite 空与拒绝路径、1920×1080及1280×720 DOM/键盘交互、真实品牌资源响应和图来源追溯；DAG 与 OpenViking 按最终批准设计做适用实际验证。只运行必要检查，完整旧替身集合不计通过。编译或核心路径失败由同一开发 Agent 迭代修复。用户未答或原生来源不足只停止依赖该前提的实施/验收，独立部分继续。
 
-每阶段清晰 Commit，普通 push，同一 PR。提交保持 `[skip ci]`，完整默认 CI 单列未通过，不改 workflow/断言/Skip；主控发布当前准确 HEAD 的 review。禁止 force push、合并、共享部署、打包或正式发布。最终提供文件清单、Commit SHA、PR、实际命令/结果/原件及剩余限制；交付后正式 worker_done，由主控明确复用或官方释放。
+每阶段清晰 Commit、普通 push，原 Worker 持续维护同一 PR；独立 Reviewer 针对准确 HEAD 发布 review，并按原 hook 通知主 Agent。完整默认 CI 如实记录，不修改 workflow、断言或 Skip 来取得通过。合并、共享部署、打包与正式发布遵守对应任务的既有授权与验收。最终提供准确来源、实际命令、结果及剩余限制，按原 Task 结算并正式释放资源。
 
 ## 2026-10-19 设计 review 与追加写域
 

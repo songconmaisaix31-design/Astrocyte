@@ -1,5 +1,7 @@
 # V4 B定向豁免、完整长应答与实际边界
 
+> 阅读顺序：本文保存实际路由、预算与原始限制，开发资源使用当前 RESOURCES；锁前候选与 day0 空值是当时记录。正式调用须通过原 V4 日运行门禁，当前原根缺失状态见根 STATUS。
+
 用户2026-10-13真实批准B-only最近七日完整聊天送固定gpt-6.1-sol；唯一root记录scope精确 `V4 B full seven-day Claude/Codex chat context only`，B收集结束失效。A derived/C仅问题不借授权，产品事件库/MCP/API仍禁B原文或响应。旧ABC扩大scope、无授权和不同endpoint均拒绝；root记录未改。
 
 正式候选是既有Windows native codex-cli0.162.0，high/priority、OpenAI Responses/既有ChatGPT认证、context872000、output reserve4096、总1800秒/request-stream retries0/no compact/no tools、固定空cwd及ignore-user-config/rules。不读取凭据、不走app-server继承配置。开发终端型号与实验身份分开；native模型echo、provider wire及精确preflight tokenizer未提供，actual请求配置/完整终止/usage可独立审查。

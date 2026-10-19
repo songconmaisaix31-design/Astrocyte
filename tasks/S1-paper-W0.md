@@ -1,5 +1,7 @@
 # S1 论文与项目看板 W0
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 当前 Dispatch `ctx_b162c766fc84` / Task `task_95839accebf3`；开发客户端 Orca Codex，执行环境未暴露可核实的精确开发模型标识，未自行切换模型。实际联合蒸馏客户端/模型另记为Codex0.162.0/gpt-6.1-sol。独占共享契约、HTTP、入口、迁移012+、生成API、脚本及依赖锁；其他领域由原owner交付，最终普通合并精确已push提交。
 
 最终 W0 SOURCE `99b7e8e720c8f57a91485dcb658fd14dd77970ab` 已push，随后独立提交本报告为REPORT并通过Orca交接精确SHA。共享契约/HTTP/迁移/测试及普通集成范围已完成；Search/插件/进度产品决定仍pending，不宣称完整S1。下文历史各场结果保持各自精确源码，最终检查见末段。

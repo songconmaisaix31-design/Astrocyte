@@ -1,5 +1,7 @@
 # Works Relay 任务书 v1.2 定稿（Agent 接入层原型 · 能力板首切片）
 
+> 适用范围：本文保留 Relay 业务基线，v1.4 补充语义和真实验收；开发角色、测试计划与资源统一按当前 AGENTS、CODING 和 RESOURCES 执行。第 7 节是原排期，当前任务与状态由根 HANDOFF、STATUS 和集成计划维护。
+
 本文档为 v1.0 与 v1.1 修订的合并自包含定稿，取代此前所有版本。
 v1.1 已登记于 validation 分支（commit 421a076）作为评审记录保留。
 
@@ -70,13 +72,14 @@ v1.1 已登记于 validation 分支（commit 421a076）作为评审记录保留�
    Agent 字段——工作区先于 Agent、独立于 Agent 存在
 2. 挂接 Agent：按 intent 偏好 + 注册表可用性决定；同 worktree 换
    Agent 接力不重建工作区——"接力"的字面实现
-3. launch 管道双路径（降级即正常路径，非异常处理）：
+3. launch 管道提供两条显式路径，遵守当前 AGENTS 的 fast-fail 规则：
    - structured：原生会话驱动（send/read/resume/stop），事件流
      来自会话事件
    - terminal：worktree 内直接起 CLI；事件采集走 git 观察
      （generic watcher 既有路径），活性走三值裁决
-   - AgentSpec.drive_mode 声明默认路径；structured 不可用时降级
-     terminal，状态记 degraded_launch，不算失败
+   - AgentSpec.drive_mode 声明当前批准使用的路径；structured 不可用时
+     立即返回不支持或失败，保留真实回执。切换执行方式需要对应批准，
+     delivery_unknown 保留未知，不自动重试或启动第二写者。
 4. 首条输入 = 交接手册 + 任务描述
 
 ## 4. 工作实时视图
@@ -102,8 +105,8 @@ v1.1 已登记于 validation 分支（commit 421a076）作为评审记录保留�
   状态保留，无重建
 - 注册表扩展：注册表加一个新 CLI 条目，不改调度代码即出现在
   可选列表
-- 降级路径：一个 terminal-only Agent 完成完整接力流程，git 观察
-  事件进认知流
+- terminal 路径：获准 terminal-only Agent 完成完整接力流程，Git 观察
+  事件进认知流；structured 不可用与未知结果分别验证明确拒绝和不自动重发。
 - 互斥写域拒绝 / 权限拒绝路径 / 状态机迁移落库，各有 E2E
 - 零写审计：接入层对 V4 正式库零写（Procmon 惯例）
 - 00:30 自动快照不受影响

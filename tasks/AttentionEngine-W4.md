@@ -1,5 +1,7 @@
 # AttentionEngine W4 · Knowledge 两级存储与检索（M4）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源：用户任务书 `tabbit-code (2).md` §4.4 / §5.6 / §8 M4；分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。客户端/模型为 Codex / gpt-6.1-sol。原 M4 Dispatch `task_da85be3296c1` / `ctx_062b79f07e46`；本次限定返修 Dispatch `task_43f6f1eb9aa2` / `ctx_f9762428c69e`。
 
 ## 当前限定返修结果（2026-10-11）

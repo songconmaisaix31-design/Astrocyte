@@ -1,5 +1,7 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件（续）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 续三：检索精确 ID 路由（DOI / arXiv ID）
 
 2026-10-11。root 独立真实 `GET /api/v1/papers/search?q=10.1371%2Fjournal.pdig.0000514&provider=crossref&limit=3` 返回 3 条，但首条是 `Algorithm1:PDIG`（DOI `10.7717/peerj-cs.3663/table-101`）——原因是 `scholar.crossref` 把完整 DOI 当 `query` 关键词。UI 承诺输入 DOI/arxivID，默认 Crossref 也同样把 arXiv 编号当关键词。本续在 `internal/adapters/importers/scholar.go` 加**精确 ID 路由**，不改公开 DTO/HTTP/迁移/锁/入口，不新增框架/代理 DNS 例外，不读个人资料/不调模型；正文/PDF/paper_snapshot 提取不动。

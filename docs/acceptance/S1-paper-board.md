@@ -1,5 +1,7 @@
 # S1 论文检索、进度与前端 DTO 交接（本轮 W3，已消费 W0/W1 最终单一权威契约）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 本轮（`run_8c1696bb815a`，W3，两个新 Dispatch）消费 W0 **`e39f8f1`/`662887e`/`cc211ce`**（单一权威 paper/progress DTO、`paper_snapshot` 进 adapter 枚举、progress infer 去 body `operation_id`）与 W1 **`0b189e5`**（`paper_snapshot` 离线摄取 adapter），替换上一 Worker 对齐 `b8dfe67`/`d89daa1` 的过期假 DTO，不再 mock 自想 DTO 或旧 `id/source_type/availability` 双轨：
 
 - **论文检索**：`GET /api/v1/papers/search?q=&provider=&limit=`（W0 契约），返回 `PaperSearchHitV1`（`source_key/provider/title/authors/year/venue/arxiv_id/doi/locator/abstract/content_state/pdf_urls`），不再有 `site`/`id`/`source_type`/`availability`/`already_imported`。检索只返回公开元数据（`content_state=abstract_only`）；原文可得性在勾选入库后由作业确定。勾选纯人工、可取消、批量入库由人显式提交且不全量。

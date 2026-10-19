@@ -21,7 +21,7 @@ Reviewer使用独立Worktree/Branch，按仓库默认Git基线建立，只修改
 
 在准确候选SHA上发布真实GitHub CR；同一GitHub账户无法提交原生APPROVE时，以COMMENTED公开具体审查决定并如实说明。随后调用已有真实hook：`C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018/scripts/review-decision-hook.mjs`，传入实际Run/Task/Dispatch/终端、40位候选SHA、决定、非空报告绝对路径和原因；Windows Orca入口为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。主控真实读取、回复后才算唤起已确认。
 
-只执行本次文稿所需的检查，不启动产品服务、本地模型、正式V4或八配置实验，不修改模型和权限配置。重操作必须取得主控串行窗口、通过CPU<70%/可用内存≥4GiB双采样，BelowNormal运行，Node上限512MiB。禁止视觉、伪造数据、Git回滚和force push。报告提交、普通push后保持原Task处理复查；主控明确结束后再正式完成与释放。
+只执行文稿所需检查，不启动产品服务、本地模型、正式 V4 或八配置实验，不修改模型和权限。后续重操作取得主控串行窗口，按 [RESOURCES](../docs/RESOURCES.md) 对应额度与采样执行；原检查保留实际额度。Reviewer 依据当前科研要求独立审核验证计划与准确稿件。禁止视觉、伪造数据、Git 回滚和 force push，按原 Task 报告、结算和释放。
 
 ## 实际候选与派发
 

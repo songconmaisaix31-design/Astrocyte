@@ -19,14 +19,14 @@
 
 | 范围 | 执行文件 | 相关依据 |
 | --- | --- | --- |
-| 文档清理 | [本次任务](../tasks/documentation-cleanup-20261020.md) | [清理前原文](archive/20261020/README.md) |
+| 全仓文档检查与归档 | [当前任务](../tasks/documentation-conflicts-20261020.md) | [逐份处置报告](documentation-audit-20261020.md)、[旧执行入口归档](archive/superseded-20261020/README.md) |
 | 产品集成 | [收敛计划](../tasks/integration-convergence-20261020.md) | [准确版本、Task 与独有成果](integration-audit-20261020.md) |
 | 产品与科研续行 | [重启任务](../tasks/restart-product-research-20261019.md) | [十轮改进](../tasks/s3-paper-ten-cycles-20261019.md) |
 | 科研 | [预印本任务](../tasks/research-preprint-20261019.md) | [研究与产品决定](research/research-product-decisions.md) |
-| 正式实验 | [V4 日运行](../tasks/M6-V4-daily-operation.md) | [锁定协议](EXPERIMENT.md)、[操作要求](experiment/OPERATIONS.md) |
+| 正式实验 | [V4 日运行](../tasks/M6-V4-daily-operation.md) | [实验目录与锁说明](experiment/README.md)、[原锁定协议](EXPERIMENT.md) |
 
 ## 维护方式
 
 AGENTS 只保存长期规则；资源参数集中在 RESOURCES；代码约定集中在 CODING。HANDOFF 只保留当前执行所需内容，STATUS 只保留当前事实和实际限制。具体命令、失败记录、审查和授权依据写入对应任务或报告，再由当前入口引用。
 
-历史任务继续保留原文件与来源。已被后续决定取代的文字按其历史日期理解；决定是否仍有效先查 QUESTIONS 和当前任务。历史状态原文见 [归档说明](archive/20261020/README.md)。
+历史任务按 [逐份处置报告](documentation-audit-20261020.md) 保留独有正文或转入归档，旧路径保留可用入口。决定是否仍有效先查 QUESTIONS 和当前任务，原日期的人员、额度和操作不作为当前派发。首次规则安装记录见 [原任务](../tasks/documentation-cleanup-20261020.md)，历史状态原文见 [归档说明](archive/20261020/README.md)。

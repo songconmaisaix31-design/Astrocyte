@@ -1,5 +1,7 @@
 # S1 同步与本地 Agent 前端 W3
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 仓库、浏览器收藏与整页重设计（2026-10-10，ctx_109ed3ce3f60）
 
 最终应用/测试 SOURCE **`fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff`**，分支/worktree `s1-sync-ui-1010` 已push。实际客户端按主控屏幕回执为本机 Orca Codex / GPT-6.1-Sol high fast。先普通合入root基线 `6e84a92`，随后普通消费W0契约与最终assembled `1073e81dcd8c0b33131e411cb7bb58332b198f17`、查询路由校验修复 `c36028ae1c99eefad7f935f4453adff52918041f`；不reset/rebase/force。生产UI最后改动 `79c01d1fa00ff62d90a724260acb41f930289c87`，其后 `65910ce`/`fd78731`仅自有测试/普通集成。报告提交仅改本文件和验收文档，REPORT准确SHA随交接回执提供。

@@ -1,5 +1,7 @@
 # 2026-10-15 今日采集协调记录
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源为根当前 HANDOFF / STATUS、[原日运行计划](../../tasks/M6-V4-daily-operation.md)与原正式工作树 `docs/experiment/OPERATIONS.md`。负责人 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324`，子 Run `run_aa4e6a119547`；只修改本文与 `release.md`。实际管理客户端为 Orca CLI / Codex，终端读取模型为 GPT-6.1-Sol high fast。
 
 上海日期为 2026-10-15，刚闭合自然日为 2026-10-14，即 day0=10-13 的 D1。原V4日采集持续授权，原automation为唯一operator；本模块只读预检、明确未提交输入的单次恢复及结果验收，不执行自己的capture、Sleep、select-native、run-day、judge、import-user或score-predictions。根已转交S0–S6当前系列并行授权，科研与产品功能由各owner推进；working关键规则和额外范围仍保持待答。不补漏日、不重发unknown、不改变日程、协议、正式库结构或模型预算。

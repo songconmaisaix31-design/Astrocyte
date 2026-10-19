@@ -1,5 +1,7 @@
 # 集成发布模块执行记录
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 2026-10-15 当前发布协调
 
 本阶段 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 实际终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d`，子 Run `run_aa4e6a119547`。固定工作树与原分支保持不变，接管 HEAD 为上一阶段独立 REPORT `6d16ab2143da2a6f15d63827f17d76e9c9419314`，工作树 clean。实际终端由 Orca `terminal show` 核实为 Codex / GPT-6.1-Sol high fast。当前仅写本文及 [今日运行记录](daily-operation-20261015.md)，业务代码、正式运行树与锁定协议保留原 owner。

@@ -1,5 +1,9 @@
 # 用户决定与待定项
 
+## 全仓文档检查与旧文档归档（2026-10-20，已确认）
+
+用户要求检查目前项目全部文档与新文档的冲突，新文档已经覆盖旧文档时归档旧文档。本次授权包含文档原文归档、旧路径入口和引用整理；不改变业务实现、正式实验、发布状态或未回答的权限选择。逐份依据见 [全仓处置报告](documentation-audit-20261020.md)，原文见 [归档目录](archive/superseded-20261020/README.md)。
+
 ## 文档规则与角色说明（2026-10-20，已确认）
 
 用户要求清理项目文档，并提供 `C:/Users/DW/Downloads/agents.md` 和 `tabbit-code (1).md` 至 `tabbit-code (4).md`。协议使用用户原文，四份角色说明分别保存为 [主 Agent](agents/main.md)、[Worker](agents/worker.md)、[Reviewer](agents/reviewer.md)、[科研 Agent](agents/research.md)。长期规则、代码约定、资源参数和当前状态分别维护在 [AGENTS](../AGENTS.md)、[CODING](CODING.md)、[RESOURCES](RESOURCES.md) 及根 [STATUS](../STATUS.md)。清理前的完整记录见 [归档](archive/20261020/README.md)，本次范围见 [任务](../tasks/documentation-cleanup-20261020.md)。

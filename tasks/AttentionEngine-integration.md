@@ -1,5 +1,7 @@
 # Attention Engine 最终集成交接
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 当前交接：单 spec 规范项目目录断言返修集成（2026-10-12）
 
 Task `task_d1bc72ed20a0` / Dispatch `ctx_4744d3b64314`；原唯一 `codex --yolo` 集成 Agent、隔离工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支不变。依次普通 `git merge --no-ff` root 文档基线 `df9471ab975ba583ef2f017c8d78cdbc2e8f4900` 与 W0 REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d`，无冲突；集成 SOURCE `7f45830a4f0f807ce17f95e257174a8adf62efac` 已独立 commit+push，随后文档 REPORT 的准确 SHA 随 worker_done 交 root。

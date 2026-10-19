@@ -1,5 +1,7 @@
 # W2 V3：七天实验工具链与协议（待派发）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 用户2026-10-13已终审PASS并关账V1，基线3e1f6dae，明确V2/V3可并行；本轨实现不等待V2资产，最终锁定前验收V2/V3。新固定W2工作树`validation-v1-experiment`、分支`songconmaisaix31-design/validation-v1-experiment`，Codex`--yolo`；实际终端/Task/Dispatch待创建，不预填。root维护计划、决策、独立验收及最终Git；源码/测试/报告由W2持续完成。
 
 write_paths：`scripts/experiment/**`、`tests/validation/experiment/**`、`docs/EXPERIMENT.md`、`docs/EXPERIMENT_REPORT.md`、`docs/experiment/**`、`tasks/M6-W2.md`。未派发前EXPERIMENT草案仍归root；派发后root仅STATUS/HANDOFF/计划，不与W2共写。生产接入CLI涉及W1写域，先Handoff给W1做限定胶水；MCP边界问题退原W0。引擎/schema/参数/权重/UI不改，不新建产品表。实验问答/评分用独立本地数据文件，遵守已有JSONL格式，不建设调度/Attempt/Manifest/证明系统。

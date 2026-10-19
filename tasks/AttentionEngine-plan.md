@@ -1,6 +1,8 @@
 # Attention Engine 认知内核开发计划（v1.1）
 
-事实源：[tabbit-code (2).md](../../../Downloads/tabbit-code%20(2).md)（Astrocyte Attention Engine 开发任务书 v1.1 · 认知内核）。
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
+事实源：2026-10-11 用户《Astrocyte Attention Engine 开发任务书 v1.1 · 认知内核》。本文件保留当时登记的业务条款与验收；原 Downloads 文件名不作为当前输入来源。
 基线：`dab8fea`，集成分支 `attention-engine/v1-20261011`；s1 分支族只读不改。本轮目标 M0–M6（三条链全部），按互斥写域解耦、无并发上限并行。
 
 ## 主控接管（2026-10-11 21:41）

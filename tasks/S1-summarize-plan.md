@@ -1,5 +1,7 @@
 # S1 summarize 正式接入草案
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 2026-10-09，基线 `cad91f0f684f9bd222968ffd8e02ba34f1f921f3`。用户要求把 <https://github.com/steipete/summarize> 植入 Astrocyte，有问题先对接。随后明确允许Python，原无Python门槛不再适用；本轮优先复用summarize/yt-dlp/转写依赖，沿用 Attention、Go/TS/SQLite、现有作业/对象存储与本机 Codex CLI。本文用于后续原轨恢复，未回答的产品选择不冻结为接口或组件。
 
 接管基线：arXiv 调用全局 summarize 0.21.8 的 extract-only 路径；视频仅接收既有 JSON/Markdown。W0 在 `0b7ec9642fc3b37d1b485b0b64eec2a30a05c0ee` 发布项目依赖0.25.1、默认启动与 `summarize_url`；最终组装 `d8f29070073e6f2e71ae6fcca5fa259205208b8f` 已普通合入主控源 `81e92ae521fadf6def68b771e005bd77cc3f7ed3`。全局0.21.8未升级。MIT、Node>=24，与当前Node24环境相容；真实媒体工具可用性和所选视频成功分别验收。

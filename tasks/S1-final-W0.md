@@ -1,5 +1,7 @@
 # S1 论文、CLI、进度与记忆收尾 W0（最终集成续）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 最后集成：Crossref JATS 摘要转安全纯文本（本轮，Dispatch `ctx_edbdcad4d4a8` / Task `task_3956359ecf55`）
 
 W1 收尾续五 source+report 合一 `3cc2bc5efd73c3f2272912ae4910cc9fa7b578e7` 已由 root 验收（真实 UI 搜索 DOI `10.1371/journal.pdig.0000514` 摘要直接显示 `<jats:p>` 与 `&amp;`）。本轨普通 exact merge 该 SHA 到 `d2d5285`，最终合并提交 `7deee37b6824876b2d78f37fbaa9d9c6cd0d15e4`；未 squash/rebase/force，不改领域代码，写域仅本文件。

@@ -1,5 +1,7 @@
 # 本地 Agent 与工具清点
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../../AGENTS.md)、[RESOURCES](../RESOURCES.md) 和 [当前任务目录](../TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 2026-10-11 OpenCode 1.18.35 loopback Basic-auth 会话驱动（隔离配置，正式接入）
 
 本机 npm `opencode-ai/bin/opencode.exe` 仍为 `1.18.35`，`--version`/`--help` exit 0。按用户要求不再以「等下一版本」维持 `unsupported`，改为落地正式 loopback HTTP 会话驱动。关键纠正来自同版本官方源码：

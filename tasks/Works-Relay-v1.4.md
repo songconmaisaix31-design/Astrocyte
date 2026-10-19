@@ -1,5 +1,7 @@
 # Works Relay v1.4 语义修改与真实验收
 
+> 适用范围：本文保留 Relay 的独有语义与验收，完成通道按 QUESTIONS 已确认决定执行；旧人员与阶段状态按其日期理解。后续开发遵守当前 AGENTS 和 RESOURCES，真实原生/S3 仍按当前门禁验收。
+
 2026-10-15 当前状态：IMPLEMENTATION_AUTHORIZED_DECISIONS_PENDING。总负责人消息 `msg_0ba76f2d26c3` 转交用户最新明确要求：现在修改语义层，通过后执行真实 CLI、今日采集并推进 L/S。此前停止新 Relay 原生与 Today 的时间安排已被本次授权替代；执行顺序仍为语义修改和验证、真实 CLI 端到端、三分钟 Today、L1 最终验收。L/S 的其他模块和正式 V4 日程由总负责人协调，本模块只交真实安全派生结果。
 
 本文是本次四项语义修改的唯一具体规格。业务基线继承 [Works Relay v1.2](Works-Relay-v1.2.md)、[SPEC](../docs/SPEC.md)、[发布任务](Release-v0.1-20261014.md) 和 [REA研究报告](../docs/research/orca-rea-20261014.md)；最新用户决定通过总负责人正式消息更新本文件。模块分工、精确 SHA、运行参数和验收事实记录在 [模块管理文档](../docs/modules/relay.md)。
@@ -8,12 +10,12 @@
 
 已经授权实施：分别记录执行权、输入接受、回合开始、人工目标完成；记录真实控制器及正选原生来源的归属；区分初始化、会话确认、输入通道提交与客户端消费；保存 new / resume / fork / handoff 的真实关系，旧缺证据保持 unknown。全部沿既有 store、operation、binding、收据与事件实现。
 
-总负责人已向用户询问以下关键决定，答案未到时保留当前状态机，独立工作继续：
+完成语义按 [QUESTIONS](../docs/QUESTIONS.md) 的 2026-10-15 用户决定执行：done 使用 verified_complete 与 user_confirmed_complete 双通道；started 独立记录且不回填，资源释放单独审计。当前要求如下：
 
-| 待答项 | 当前约束 | 答案影响 |
+| 事项 | 当前约束 | 验收范围 |
 |---|---|---|
-| working 是否严格要求明确开始证据 | 不据 stdout、Git、PID、pipe 写入或完成结果产生新的开始证明；不冻结依赖该决定的接口 | 哪些真实客户端证据允许 accepted → working，以及 UI 的具体条件 |
-| 缺少独立 started 信号的客户端如何人工完成 | 保留既有 working → done → released；不自行增加 accepted → done / released | Claude、非交互 CLI 和交互终端的人工完成入口及相应验收 |
+| 开始事实 | started 只保存真实独立证据，不据 stdout、Git、PID、pipe 写入或完成结果回填 | 核实际客户端证据与 UI 显示，未知保持未知 |
+| 目标完成 | 使用真实 verified_complete 或用户明确 user_confirmed_complete，保留各自通道 | 缺少 started 不补造开始；人工完成仍进入待审核经验管道，释放另验 |
 
 接口的公共字段由原 R/H 根据已授权证据语义和用户答案在现有契约中共同维护；确定后交原 F 消费。本文中的证据含义明确，未决定的字段名称、枚举及迁移规则不作为冻结契约。
 
@@ -25,9 +27,9 @@
 
 最终动作收据不可重写。后到的开始、结束和观察结果沿既有事件和 operation 关系追加，不将第一次失败、`delivery_unknown` 或 provider 错误改为成功。旧输入不自动重发；未知交付继续占用工作区，原进程和 pending 未核实之前不得释放或由第二执行者接管。
 
-当前 task 状态机保持 ready → accepted → working → done → released。accepted 表示既有人工派发动作已被接受，不能代替模型已经开始或固定目标已完成。working 的严格证据门禁及无开始信号客户端的完成路径按上表等待用户决定。
+accepted 表示人工派发动作已被接受，不能代替模型开始或目标完成。状态迁移按既有正式契约和已确认双通道执行；独立 started、实际完成通道与资源释放分别记录，旧证据缺失继续保持 unknown。
 
-done 必须由原产品界面的人工确认执行。固定目标的实际输出先通过合法 owned 来源核查，再允许操作者确认；原生 turn 完成、进程退出、Git 活动均不产生人工目标通过。released 保留真实退出、pending 为零、对象所有权和权限校验；中性工作区仍可以 Prepared=true，但 ActiveTaskID 必须解除。
+done 保存真实完成通道。verified_complete 依赖合法 owned 来源与目标验收；user_confirmed_complete 依赖用户明确确认。原生 turn 结束、进程退出和 Git 活动不能单独代替目标完成。released 保留真实退出、pending 为零、对象所有权和权限校验；中性工作区仍可以 Prepared=true，但 ActiveTaskID 必须解除。
 
 保存 intent 时绑定真实项目 settings revision 和 permission level，确认及后续权限敏感动作重新核版本、A/B/C、操作者、对象所有权与 grant 状态。纯人工 done / released 继承已确认的 observe 授权规则；真正 publication reconciliation 继续使用 reconcile。
 
@@ -90,7 +92,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 
 原 H 的 port0 阶段先完成真实验证和 SOURCE / 独立 REPORT；既有活跃人员不中断，不安排第二 H。同 owner 连续任务或合法结算交接后的新 Task 仍保持原树、分支、终端及写域。源码接口未精确交付前，消费者不采用 WIP；领域问题交原 owner，集成人员只补必要薄组装。
 
-每阶段普通 commit / push SOURCE，随后独立 REPORT，核远端 exact SHA。各第一 RED / UNKNOWN / NOT_RUN 保留。禁止 mock、伪造 API / 原生协议 / 模型成功、新增 skip、降低原断言、程序化编辑代码、force / rebase / reset / squash；禁止第四层 Agent。
+每阶段普通 commit / push，保留准确 SOURCE、实际检查和独立 Reviewer 结论；第一 RED / UNKNOWN / NOT_RUN 保留。禁止 mock、伪造 API / 原生协议 / 模型成功、新增 Skip、降低原断言、程序化编辑代码及重写公共历史。Orca 子 Agent 使用当前 AGENTS 的最少人员、互斥写域和资源规则，不沿用旧层级数量限制。
 
 ## 7. 验收顺序与当前状态
 

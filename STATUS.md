@@ -2,7 +2,7 @@
 
 ## 状态来源
 
-本页依据 2026-10-20 [集成核查](docs/integration-audit-20261020.md) 和 [重启续行任务](tasks/restart-product-research-20261019.md) 汇总。文档清理没有重新运行产品、科研或正式实验；表中的运行状态保留原核查时间，不代表本次实时探测。当前管理任务见 [文档清理](tasks/documentation-cleanup-20261020.md)，接续步骤见 [HANDOFF](HANDOFF.md)。
+本页依据 2026-10-20 [集成核查](docs/integration-audit-20261020.md) 和 [重启续行任务](tasks/restart-product-research-20261019.md) 汇总。文档整理没有重新运行产品、科研或正式实验；表中运行状态保留原核查时间。当前管理任务见 [全仓文档检查与归档](tasks/documentation-conflicts-20261020.md)，接续步骤见 [HANDOFF](HANDOFF.md)。
 
 ## 准确版本
 
@@ -40,4 +40,4 @@ S3 预算单位、权限证据范围与受限 Codex 选择仍未回答，Claim �
 
 ## 文档维护
 
-新版 [AGENTS](AGENTS.md) 使用用户原文，四份 [角色说明](docs/agents/README.md) 分别保存；[CODING](docs/CODING.md) 和 [RESOURCES](docs/RESOURCES.md) 提供统一规范。[docs/STATUS.md](docs/STATUS.md) 只保留本页入口。全部历史状态、授权和验证原文见 [清理前归档](docs/archive/20261020/README.md)，不作为新增验收结果。
+新版 [AGENTS](AGENTS.md) 与四份 [角色说明](docs/agents/README.md) 保持用户原文，CODING、RESOURCES 提供统一规范。全仓 141 份原文档的处置见 [报告](docs/documentation-audit-20261020.md)：14 份旧执行正文归档，旧路径保留入口；17 份归档文本包含修订前 README、SPEC 和 TASKS。独有需求、冻结参数与真实证据继续保留。[docs/STATUS.md](docs/STATUS.md) 只保留本页入口；历史状态原文见 [首次归档](docs/archive/20261020/README.md)。本轮文档检查不增加功能验收结果。

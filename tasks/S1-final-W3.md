@@ -1,5 +1,7 @@
 # W3 论文快照真实浏览器闭环与最小返修
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 Branch `s1-sync-ui-1010`；Task `task_63cf1b96db88` / Dispatch `ctx_55f6713c28e7`，Run `run_8c1696bb815a`。固定工作树与分支，客户端 OpenCode（未覆盖模型参数）。独占写域 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、`docs/acceptance/S1-paper-board.md` 与本文件。
 
 ## 后续增量（Task `task_34521efa6d1e`，progress infer 文件人类输入）

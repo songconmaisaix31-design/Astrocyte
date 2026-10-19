@@ -1,5 +1,7 @@
 # Astrocyte Workbench v0.1 · 修订执行单
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源：用户2026-10-13只读工作台任务书与分支/结构修订。修订取代独立workbench/frontend工程及独立Go服务方案，旧workbench/v0.1和两轨WIP保留为历史，不合入本目标。
 
 目标分支workbench/v0.1-workbench从attention-engine/v1-20261011建立，实际起点6b2b91086d87e2173122c3c9f53a36332acffff2；该点相对CI绿基线100f00cb6945c96a7f3bd3f100f7ff65efc61197仅四份交接/验收文档变动，业务源码完全一致。既有React/Vite web、server、鉴权、构建与Playwright复用；Nav新增认知一级页，四视图子路由/cognition/today、/cognition/focus、/cognition/agents、/cognition/evidence。

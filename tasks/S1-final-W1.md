@@ -1,5 +1,7 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 续五：Crossref JATS 摘要转安全纯文本（本轮）
 
 Branch `s1-sync-attention-1010`。原论文 owner 真实 DOI 搜索 `10.1371/journal.pdig.0000514` 时，摘要直接显示 `<jats:p>…</jats:p>` 与 `&amp;` 实体，影响人类阅读。本续在 `importers/scholar.go` 的 Crossref metadata reader 把已知 JATS/XML 摘要转成安全纯文本，写域不变，仅本文件 + `scholar.go`/`scholar_test.go`。
