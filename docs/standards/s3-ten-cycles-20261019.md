@@ -221,7 +221,7 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 
 四个阶段的八次启动样本最高 CPU19.8%、最低可用12.798637390136719GiB；实际阻塞CPU采样，结束点单调间隔约3.002秒，均满足原85%/4GiB条件，父子进程 BelowNormal。Go4/`-p=4`/512MiB、Node1024MiB；没有运行 Go 编译，未测量运行期峰值。
 
-全部依赖安装和检查调用实际退出后，以 `msg_5dce3320d058` 立即交回唯一窗口。当前原应用尚未启动；原库逐表计数前后比较、实际服务PID/唯一监听/health/首页及独立恢复审查保持未执行。产品 Source15、ZIP与此前130项/DOM结果保持，新的独立包审查由 Reviewer 分别记录。原生/S3三项待答与Claim拒绝保持，完整默认CI、S3、发布和正式实验没有新增通过结论。
+全部依赖安装和检查调用实际退出后，以 `msg_5dce3320d058` 立即交回唯一窗口。依赖阶段没有启动原应用，随后原库及服务检查见下方恢复记录。产品 Source15、ZIP与此前130项/DOM结果保持，新的独立包审查由 Reviewer 分别记录。原生/S3三项待答与Claim拒绝保持，完整默认CI、S3、发布和正式实验没有新增通过结论。
 
 ## 开发检查入口的真实输出目录
 
@@ -242,4 +242,22 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 
 六个实际阶段的12次启动样本最高CPU9.4%、最低可用15.298702239990234GiB，实际阻塞CPU采样、单调结束点间隔3.0019–3.0091秒、BelowNormal；Go4/`-p=4`/512MiB软限制、Node1024MiB、真实服务串行。没有运行浏览器或Native，没有测量运行期峰值或宣称速度收益。全部调用实际退出后以 `msg_59a9a6d7962c` 立即交回窗口，随后仅报告、普通提交及push。
 
-本项修复开发检查入口的输出前置。完整默认CI仍未通过；原公开论文/视频/历史SQL和真实原生前置未补造，旧relayControlled/localNative等替身未运行，原生/S3三项选择未代答。原workflow另行直接执行的race命令没有由本项分配输出根，范围单独保留。未运行全套pnpm check，未重建原Source15 ZIP或启动共享64505服务。当前等待独立Reviewer准确复验与CR，不自行宣布接受或增加十轮次数。
+本项修复开发检查入口的输出前置。完整默认CI仍未通过；原公开论文/视频/历史SQL和真实原生前置未补造，旧relayControlled/localNative等替身未运行，原生/S3三项选择未代答。原workflow另行直接执行的race命令没有由本项分配输出根，范围单独保留。该检查阶段未运行全套pnpm check、重建原Source15 ZIP或启动共享64505服务。主控 `msg_0c85b9655bcd` 确认独立Source22六阶段实际复验通过，准确报告候选 `05def8e14c60f038ff833f8b295b4741281566e5` 的正式CR与hook由Reviewer登记；本项不增加十轮次数。
+
+## 原应用同库恢复与当前入口
+
+主控 `msg_0c85b9655bcd` 在独立检查全部调用退出后授予最终服务窗口。通过普通 Orca `pwsh -NoProfile -NoExit` 服务终端 `term_d303f609-6d36-42fd-b1ca-54f970beee1c`，运行本树 `.verification/restart-product-20261019/restore-service.ps1 -Output <本树忽略目录/service-01>`。入口先运行原psutil资源守卫，再直接调用未修改的 H `dist/product-recovery-20261016/restore-38fb.ps1`，显式 current/prior source 均为 `c5b3b5715f2e93b82365720914be24c73642bd1e`、version=`c5b3b571`、本次tag=`product-restart-20261019`。
+
+恢复脚本实际EXIT0，`service-01/service-result.json` 记录本次结果；服务和普通终端继续运行。当前应用地址为 `http://127.0.0.1:64505/`。
+
+| 实际检查 | 结果与原件 |
+| --- | --- |
+| 原稳定程序/实际进程/监听 | 准确c5、modified=false，PID45676，启动UTC `2026-10-19T12:09:30.7340265Z`，实际程序为原稳定 `versions/c5b3b571/astrocyte.exe`；唯一127.0.0.1:64505监听归该进程，Priority=BelowNormal。 |
+| 实际HTTP | `/api/v1/health` 为ok，首页HTTP200、562 bytes，含原应用入口。原Web仍为准确172的30文件目录。 |
+| 原SQLite | 本次启动前后实际68表、93行，完整逐表counts对象严格相同，native_sessions=0；原路径和数据保留。 |
+| Q和原配置 | 原 `snapshot-1711995690` / `2026-10-14T18:48:42.2097174Z` 保持；媒体12项配置、原数据根和原公开项目根保持，summarize已配置，Laya/Jev仍未配置。Native初始化及模型输入0。 |
+| 实际资源与进程环境 | CPU5.0%/6.2%、可用15.442859649658203/15.438034057617188GiB、结束点间隔3.0022634秒。原H process-env沿Go2/`-p=1`、Node512MiB，GOMEMLIMIT=512MiB，均记入service-result；未升级原额度或修改H脚本。 |
+
+本树原件为 `.verification/restart-product-20261019/service-01/{service-result.json,service.log,startup-resources.json}`。原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json` 已保存实际PID/程序/路径，并引用 `data-before-product-restart-20261019-20261019-120929.json`、同后缀的data-after、launch/recovery及原私有stdout/stderr。恢复脚本返回及普通终端保持运行分别记录，不把NoExit终端记为已退出。
+
+以 `msg_714f29ae5e93` 交主控实际入口、PID、终端和原件，后续仅本轨报告及README。独立普通服务终端与本Worker生命周期分开，Worker结算或释放后保持应用运行，不关闭该终端。当前运行程序c5、开发检查Source22和Windows候选包Source15分别记录；本次没有部署Source15包、运行原生输入、改动正式V4、创建Release或完成完整S3。

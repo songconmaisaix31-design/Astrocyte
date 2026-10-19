@@ -2,6 +2,8 @@
 
 个人研究与创造工作台。Go 模块化单体、React + TypeScript + Vite、SQLite；开发入口见 [AGENTS.md](AGENTS.md)，当前范围见 [STATUS.md](STATUS.md)、[界面替换计划](tasks/UI-preview-plan.md) 与 [S0 计划](tasks/S0-plan.md)。
 
+2026-10-19 本机已恢复 [应用入口](http://127.0.0.1:64505/)。运行程序来源为 `c5b3b5715f2e93b82365720914be24c73642bd1e`，使用原 SQLite 和配置，由独立服务终端保持；健康检查、首页及68表93行的重启前后逐表计数检查通过。开发检查入口源码、Windows候选包及完整验收范围见 [产品记录](docs/standards/s3-ten-cycles-20261019.md)。
+
 三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
 
 ## Attention Engine 与作品册
