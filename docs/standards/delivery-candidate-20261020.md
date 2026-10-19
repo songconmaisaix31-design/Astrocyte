@@ -49,7 +49,7 @@ Source22 原件根为本树 `.verification/restart-product-20261019/`。已读�
 
 `git diff 22cde9ef..5725c184` 已核只有文档。上述输出前置结果在准确未变条件内复用，不再重复 before / after 克隆及相同拒绝。最新候选的必要真实功能检查和新包验证仍须执行。
 
-本次最新候选完整默认 CI 当前为 **NOT_RUN**：默认集合包含当前禁止的替身和未满足门禁的原生路径。历史准确982的 `pnpm check` 为 **FAIL**，两场 run 最终为 **cancelled**。不会改 workflow、添加 skip、降低断言、伪造来源或把选集执行称为默认通过。发布门禁保持。普通 push 的 CI 触发处理须由主控在推进前明确，本文不授权远程重跑全套。
+本次最新候选完整默认 CI 当前为 **NOT_RUN**：默认集合包含当前禁止的替身和未满足门禁的原生路径。历史准确982的 `pnpm check` 为 **FAIL**，两场 run 最终为 **cancelled**。不会改 workflow、添加测试 skip、降低断言、伪造来源或把选集执行称为默认通过。发布门禁保持。主控已明确允许普通 push 及原 PR #2 正文更新；纯文档后继 Commit 使用已有 `[skip ci]` 约定，不 amend 既有 Commit，不触发远程禁止集合。
 
 ## 必要检查与需求对应
 
@@ -65,22 +65,20 @@ Source22 原件根为本树 `.verification/restart-product-20261019/`。已读�
 | 静态和契约：现有公开接口与依赖边界 | `pnpm check:contracts`、`node scripts/check-architecture.mjs`、`node scripts/check-dependencies.mjs`、`pnpm --dir web typecheck`、`pnpm --dir web lint`、`git diff --check` | 保留真实错误与既有警告；不生成新模块或新接口，不为本任务扩充架构规则 |
 | 编译检查：当前整体装配 | `go vet -mod=readonly ./...`；下节同来源生产构建 | 当前源码诊断和构建成功；不把编译计为真实原生可用 |
 
-Playwright helper 会编译并启动实际 Go 服务；其编译、服务及浏览器均占用唯一窗口，每次串行，绝不与64505共存运行。若旧入口内额度小于当前上限，保存实际额度，不为提高额度重跑。`observatory-focus.check.ts` 的既有历史 Q 检查依赖原只读来源，先核准确来源和日期；没有变化的历史结果继续沿原限定记录复用，不能当作今天在线活动。包内真实 Reader / 历史检查按下节运行。
+Playwright helper 会编译并启动实际 Go 服务；其编译、服务及浏览器均占用唯一窗口，每次串行，绝不与64505共存运行。若旧入口内额度小于当前上限，保存实际额度，不为提高额度重跑。`observatory-focus.check.ts` 的既有历史 Q 检查依赖原只读来源；没有变化的 Reader、历史与性能结果继续沿原准确来源和限定条件复用，不能当作今天在线活动。切换时核原Q指针及实际接口历史，不重复采集、Sleep或完整认知验包。
 
 不运行模型、Claim / Send、带 Worker 的停止退出 / 用量 / 释放、未知副作用重发、实际采用或自由工具验收。原生工具关闭、S3两项待答、OpenViking无实际配置、经验资料准入与采用的条件保持；这些范围独立登记未验。
 
 ## 同源码构建与 Windows 交付
 
-阶段 B 在准确候选 SHA 固定且 tracked 干净后构建；业务返修导致 SHA 变化时，更新来源和受影响检查，不能复用旧程序。报告后继只含本文时，以 `git diff` 明确业务与构建入口未变，并分别记录源码 SHA 和报告 SHA。
+主控已确认本次必要交付为普通 Go / Web 构建及同库服务。阶段 B 在计划接受后冻结准确源码 S，tracked 干净后构建；业务返修导致 S 变化时，更新来源和受影响检查，不能复用旧程序。后继报告 Commit 可以只追加本文，必须以 `git diff S..<报告HEAD>` 明确业务与构建输入未变，直接指向 S 和实际产物；不为报告重复构建。
 
-1. 复用现有 `release/Build-Windows.ps1 -Source <准确SHA> -Runtime <既有r15d74da3> -Output <获准新目录>`。入口会从准确 Git archive 获取源码，冻结安装、lint、`pnpm build` 依次构建 server / mcp / sleep 与 Web，再编译 workbench-snapshot，复制准确源码内 adapter 和启动入口，保留 runtime / 许可 / 全包隐私及 ZIP 检查。旧 Source15 程序和 Web 不进入新包。
-2. 现有 `Assert-ReleaseAssetPath` 强制输出在 `D:/Astrocyte-agent-assets/20261015/release-package/`。本次固定树 write_paths 未包含该外部写域：建议主控追加仅 `today-20261020/delivery-candidate/` 及新子目录；批准前不执行、不修改路径门禁。runtime / 旧包只读。若不追加，由主控指定现有构建入口的合法执行归属，不能自行换实现。
-3. 新 Windows 交付目录及 ZIP 保存在获准输出；相应二进制与完整 Web 可复制至本树 `dist/delivery-candidate-20261020/`，不覆盖旧证据。保存 archive、build.log、全部资源记录、工具版本、具体产物路径及 `go version -m` 原件。archive 构建若无 vcs 元数据，按实际报告；不伪填 vcs.revision。实际部署来源依据准确 archive 和产物完整内容对应核验。
-4. 使用现有 `release/Verify-Windows.ps1`，明确 `-Source`、新ZIP、独占端口17887、原获准 Q 的 source / history / publication / safe 输入，以及新输出目录。准确来源的 inspect 工具从候选编译，固定 `--mode inspect`，只读真实公开 Git / SQLite，使用真实日期；旧日期安全期望不直接移用。
-5. 完整保留既有130项适用断言：包成员 / 隐私 / 固定 runtime、生产静态 / session / Origin / CSRF、实际SQLite写读与同库重启、OpenViking未配置、Q空今日 / 非空历史 / 排名 / 分页与逐事件六字段。当前日期今日0可以是真实结果，不生成当天事件。依赖缺失、日期或检查入口错误立即停止并交审核，不能删减检查。
-6. 包验收后独立 Reviewer 核准确源码、对应产物和本报告，决定接受范围；主控普通推进原集成分支。不能自动合并、创建 Release / tag。当前派发要求只通过 orchestration 对外报告；原PR #2正文先形成 `.verification/delivery-candidate-20261020/pr-body.md`，主控明确允许后才发布更新。
+1. 从本树准确 S 执行现有 `pnpm build`，由 `scripts/build.mjs` 串行编译 `dist/astrocyte.exe`、`astrocyte-mcp.exe`、`astrocyte-sleep.exe`，再以 tsc / Vite 构建完整 `web/dist`。复用已有真实依赖缓存；缺少依赖时立即报告，安装另经窗口安排。旧 Source15 程序和 Web 不作为当前构建产物。
+2. `go version -m` 必须记录实际 `vcs.revision=S`、`vcs.modified=false` 与 Go 版本；记录构建前后Git状态。构建日志、资源原件和工具版本保存在 `.verification/delivery-candidate-20261020/`。既有普通构建具有 Git 版本来源，不使用 archive 代替本次构建。
+3. 创建本树全新 `dist/delivery-candidate-20261020/` Windows 交付目录，完整复制本次三程序、Web、现有启动脚本和使用说明。保存实际目录及全部复制来源，保留原始 `dist` 与 `web/dist`；启动和专项核查使用同一批产物。原已有固定模型 / SDK / 媒体依赖继续按原可信配置使用，不复制完整模型runtime或打包用户SQLite / 配置。该目录是普通产品候选，完整便携模型包尚未构建或验收。
+4. 新交付目录实际端到端通过后，独立 Reviewer 核准确 S、对应产物和本报告，决定接受范围；主控普通推进原集成分支。原PR #2正文通过 `.verification/delivery-candidate-20261020/pr-body.md` 和 `gh pr edit --body-file` 更新，列明实际命令、范围和限制；不自动合并、创建 Release / tag。
 
-以上复用现有包流程；新增本树验证入口只编排实际工具、参数与日志，不制造来源、响应、CLI或原生结果。若包装流程需要超出已授权源码修复，先交具体文件与测试计划。
+Source15 完整 Windows ZIP、130项解压运行和独立验包保持原准确来源的历史结果。本次没有新完整便携包；Build-Windows / Verify-Windows / 模型复制 / 全量认知验包均不作为本次必要前置，发布状态保持。新增本树验证入口只编排实际工具、参数与日志，不制造来源、响应、CLI或原生结果。若普通构建暴露超出已授权范围的缺陷，先交具体文件与补充测试计划。
 
 ## 原真实库与服务切换 / 恢复
 
@@ -109,4 +107,4 @@ Playwright helper 会编译并启动实际 Go 服务；其编译、服务及浏�
 
 当前停止点是等待独立计划审核及主控窗口。后续每个失败提交真实文件、错误与最小必要受影响验证范围给主控；业务选择未答时只继续无依赖工作。准确候选默认CI状态、必要检查、构建、独立结论、主控实际运行来源和数据保全全部有可核查记录后，主控决定本次收敛完成；完整CI / S3 / 原生 / 采用 / 发布的真实限制保留。
 
-阶段 B 报告需追加：准确源码与报告Commit、默认CI各阶段PASS / FAIL / NOT_RUN及原因、完整命令和原件、资源样本、Go / Web / Windows目录、实际SQLite与备份路径、运行参数 / PID / 地址 / 程序路径、主控切换结果和独立Reviewer结论。下一项真实产品任务为按本次证据与 QUESTIONS 梳理可执行的六步 / 原生前置；未决业务条件由主控确认后再形成独立任务，本次不自行开始。
+阶段 B 报告需追加：准确源码与报告Commit、默认CI各阶段PASS / FAIL / NOT_RUN及原因、完整命令和原件、资源样本、Go / Web / Windows目录、实际SQLite与备份路径、运行参数 / PID / 地址 / 程序路径、主控切换结果和独立Reviewer结论。下一项真实产品任务由主控依据本次证据与 QUESTIONS 明确可执行的六步 / 原生前置；未决业务条件由主控确认后再形成独立任务，本次不自行开始。
