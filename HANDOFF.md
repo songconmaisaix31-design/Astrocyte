@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## S3与论文十轮改进（2026-10-19）
+
+用户明确要求开始完成S3和论文初稿，完成十次循环改进。当前 [十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 按主控方案、固定模块Worker实现/PR、独立Reviewer准确CR及真实hook/回复执行；只有具体改进及适用检查获得独立接受才计轮次，上一轮已完成内容不重复计入。当前接受0/10，S3和完整稿件分别按原验收核查，原生/预算/权限待定不降要求。
+
+新Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，复用frontend-observatory树/分支和PR #2，基线7ce3，先核01的真实CI错误并合法修复；当前唯一重操作窗口归产品。科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，复用research-preprint树/分支和PR #3，基线cf867ce6，准备02实际PDF与来源构建，尚无重操作窗口。Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，复用research-preprint-review树/分支，基线cab42338，只写当前十轮报告与自身忽略输出，先静态准备。三者启动回执均ready/turn_started、默认Codex配置，无模型覆盖；实际模型待Handoff/元数据核实。
+
+预算按平台输入还是上游全部尝试、权限证据按本次约束还是完整清单、受限Codex维持全部工具关闭还是经真实只读拒写核查后执行固定任务，三项已集中异步询问，答案未到保持原拒绝。原公开项目范围、具体资料/经验批准和用户采用规则保持；不默认批准实际用户作品或自主实验。重操作全局串行、资源双采样和BelowNormal不变，禁止Aliyun、视觉、假数据及额外调度器。正式V4保持独立只读，其他用户终端和数据不操作。
+
 ## 科研 Agent 与预印本首轮（2026-10-19）
 
 用户提供论文定位稿v3及实验预注册开发草案v0.1，要求独立科研Agent开始arXiv预印本、配置科研skill、向主控提供反馈，主控统筹科研与产品。两份Downloads原件已完整读取，只读；八配置是拟议设计，正式模型/任务集/样本量/注册与结果未确定。当前 [科研任务](tasks/research-preprint-20261019.md) 与 [研究—产品决定](docs/research/research-product-decisions.md) 明确论文写域、真实文献/主张证据要求及原生/正式V4边界。
