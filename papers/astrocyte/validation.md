@@ -193,4 +193,6 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 
 主控 `msg_35aa77d76817` 明确要求只读核查Windows路径。宿主LongPathsEnabled实际为1，当前安装前缀98字符。已验发行Config元数据为Perl5.40.1；其[官方Windows源码](https://raw.githubusercontent.com/Perl/perl5/v5.40.1/win32/win32.c)相应stat/rename/mkdir函数仍含A接口或传统路径缓冲。同发行TLUtils.pm的tl_abs_path对不存在路径明确拒绝`//?/`。已读[Microsoft完整长路径说明](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)，注册表为1不足以证明全部应用链路支持。
 
-尚未获取完整发行文件清单，没有定位真实超限条目或确认所有条目可用；同官方texlive.tlpdb.xz的只读HEAD为HTTP200、2704836bytes。完整依据及成熟TLPDB元数据核查方案已交主控，等待明确范围与窗口；未安装、合成路径测试、修改宿主、创建盘符或自行更换安装目录。
+主控 `msg_17dadf82afd2` 明确批准轻量官方元数据例外，BelowNormal/Node512串行读取，不占Reviewer的重操作窗口。实际下载同官方texlive.tlpdb.xz2704836bytes及checksum144bytes、签名488bytes；已验发行自带xz解压20189437bytes，GNU SHA512和原生GPG签名/官方主密钥assert-signer分别EXIT0。使用发行自带Perl和TeXLive::TLPDB/TLPOBJ原生from_file、expand_dependencies及replace_reloc_prefix读取实际scheme-full/windows依赖，全过程EXIT0，没有手写TLPDB parser。
+
+全库8406包，适用依赖4978包，236376个唯一条目：run181845、doc46601、src6958、windows-bin972。98字符根下最长实际文件248字符，为ualberta包的 `texmf-dist/doc/latex/ualberta/03_References/Reference_PDFs/Aldrich2017-OSM_Classic_an_Optical_Imaging_Technique_for_Accurately_Determining_Strain.pdf`；文件长度≥260或父目录长度>248的条目为0。完整JSON和原始stderr保留自身path-metadata，Perl对继承C.UTF-8不受支持而使用系统默认locale的原生警告原样保留，没有人工重跑隐藏。此项不证明所有生成/临时路径或安装成功，未安装、合成路径测试、修改宿主、创建盘符、缩减scheme或更换原目录。
