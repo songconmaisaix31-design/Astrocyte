@@ -578,3 +578,27 @@ UTC`2026-10-19T11:43:13Z`实际发布[CR5571008196](https://github.com/songconma
 决定`accept`，限定为准确Source22检查入口输出前置修复、上述三项真实路径及根校验，适用于准确报告候选05。没有变更原业务/权限或降低断言，没有mock、原生初始化、模型输入或真实成果采用；API中的human记录仅为自动检查主体。保守unknown前置检查没有发生原生交付，真实在途unknown/AT13仍未通过。完整默认CI、另行race命令的输出前置、未获真实来源及旧替身用例、原生/S3/实际采用仍分别未验；未执行全套pnpm check、TeX或共享服务启动，没有重建Source15包。此附加修复不增加已接受6/10，不据此通过正式发布、合并或研究效果。
 
 UTC`2026-10-19T12:11:19Z`实际发布[CR5571335055](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571335055)，`COMMENTED`、`commit_id=05def8e14c60f038ff833f8b295b4741281566e5`；请求及原始回执为自身`.verification/output-check22/{github-review.json,github-review-receipt.json}`，没有冒称GitHub APPROVE。
+
+报告`e9032cfce407301ff88d33ff6e7ca1555cf03afd`首次普通push因`SSL_ERROR_SYSCALL`退出1；实际只读API核远端仍99a25732后，一次同入口普通push成功，未更改TLS/远端、force push或重跑测试。UTC`12:13:29Z`执行原hook入队`msg_383ac9f071c5`，当前真实生命周期及回执独立保留于`ten-cycles/output-check22/review-hook-receipt.log`。主控UTC`12:15:15Z`以`msg_b0f2f5633558`实际回复，确认已完整读报告、API核CR5571335055/COMMENTED/准确05及远端e903，登记限定接受、仍6/10；本次唤起已由实际读取回复确认，没有重复CR或hook。
+
+## 原c5同库服务恢复的只读复核
+
+恢复报告候选为`5725c1840a760105518d273eaaa28d7367f369ed`。完整05→5725 diff仅README及产品记录22行增加/2行删除；没有应用程序、配置或开发Source22变化。运行程序仍为`c5b3b5715f2e93b82365720914be24c73642bd1e`，Web仍为`172bb445597193d55f1563ee5d21ac2ec881798d`，Windows包Source15与本次恢复分别登记。
+
+主控`msg_80a79e018ba4`给定真实已恢复的同一服务窗口、PID45676/UTC`2026-10-19T12:09:30.7340265Z`及原件，并要求先完成准确05的CR/hook。该hook获得实际回复后，提出具体自身入口`review-shared-service.ps1`，经Parser/完整UTF-8检查通过，按原同服务窗口授权仅执行一次；主控后续`msg_5bf111fcae7b`再次确认同一实际入口和范围，没有触发重复执行。
+
+实际命令`pwsh.exe -NoLogo -NoProfile -File .verification/ten-cycles/review-shared-service.ps1`，UTC`12:18:56.5768520Z`实际EXIT0，新输出仅自身`.verification/service-c5-restart`。启动守卫UTC`12:18:46.5346884Z`/`12:18:48.9989610Z`，CPU8%/6%、可用15.328476/15.342678GiB、Stopwatch间隔2.4617639秒，BelowNormal、Go1/256MiB、Node512MiB。未编译、安装或另起服务/浏览器。
+
+| 实际只读检查 | 结果与原件 |
+| --- | --- |
+| 原程序与真实进程 | `go version -m`实际读原程序（stage记录26187264bytes），`vcs.revision`准确c5、`vcs.modified=false`；实际PID45676的路径、原创建时间和BelowNormal相符。`binary-buildinfo.txt`、复制的running/stage JSON。 |
+| 真实监听与GET | 原`Get-ReleaseOwnedListener`在每个GET前后核唯一127.0.0.1:64505及真实PID/创建时间；仅GET `/api/v1/health`及`/`，均200，health为ok/astrocyte，首页完整文本与原stage Web index.html一致。`listener.json`、`health.json`、`home.html`。 |
+| 原SQLite | 沿原H `read-product-counts.mjs`实际readOnly/query_only事务读取原路径，当前68表93行、native_sessions=0；每张表与本次恢复before/after记录相同。`counts-current.json`、`counts.log`。该比较对应本次真实重启，旧历史90行未改写为本次观察。 |
+| 原Q | 只读原public Q current，`snapshot-1711995690`及原`2026-10-14T18:48:42.2097174Z`保持。`q-current.json`。 |
+| 结束状态 | 当前入口与临时Go/Node/HTTP客户端均退出，原PID45676服务留存运行；0写HTTP、0新服务/浏览器、0本次模型或原生动作。`result.json`。 |
+
+已完整读原H恢复正文、原counts辅助程序、Worker`service-01/{service-result.json,service.log,startup-resources.json}`及当前running/stage、before/after原件；原服务环境沿H实际Go2/`-p=1`、GOMEMLIMIT512MiB及Node512MiB，独立观察入口的低额度不改写该服务环境或优先级。原共享数据库路径、原Web、配置和Q保持，未修改H脚本、原生权限或用户作品授权。以`msg_44551a8ead9f`交主控一次实际结果，明确原服务继续运行。
+
+决定`accept`，限定为准确5725所记录的原c5同库服务恢复及上述只读可访问性/元数据/逐表计数。没有部署Source15或Source22，未检查完整业务/原生/S3、CodeGraph/媒体正向、真实人类采用、完整CI或正式发布；此前Source15独立130项/DOM与Source22三项分别保持其准确来源和范围。本附加复核不增加已接受6/10，不停止原服务或把现有终端记为已退出。
+
+主控`msg_11b84412d6c7`实际读取独立`result.json`，确认同一PID/c5、创建时间、68表93行与Q及服务保持运行；没有重复观察。UTC`2026-10-19T12:24:30Z`发布[CR5571481043](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571481043)，回执`COMMENTED`、`commit_id=5725c1840a760105518d273eaaa28d7367f369ed`，请求及原始回执在自身`service-c5-restart/{github-review.json,github-review-receipt.json}`。同账号没有冒称APPROVE。
