@@ -2,13 +2,13 @@
 
 ## S3与论文十轮循环已开始（2026-10-19）
 
-当前执行：接受6/10，08准确a664233a的27页/14引用完整提案及独立重建/全文TeX比较通过，CR5567552099/报告c36f8990/真实hook经root读取后回复msg_7cac54d820d1。产品Source15新ZIP已Build/原完整Verify EXIT0，1949417822bytes、130 PASS/nonpass0；原公共Git1316事件/SQL10/历史只读核对通过，真实今日0。DOM工具两次真实超时均保留，未形成DOM通过；当前只静态核成熟psutil等价归属方案。独立包snapshot因CPU86%在clone前拒绝，全部调用已退出归还，尚未独立inspect/验包。完整默认/原生/S3/发布仍未通过。
+当前执行：接受6/10，08准确a664233a的27页/14引用完整提案、独立重建/全文TeX比较及准确CR/hook/root回复通过。产品Source15新ZIP已Build/130项Verify及新双视口DOM EXIT0：26品牌、人工DAG增量/撤权清图、可选OpenViking未配置、3个DAG事件/6个outbox逐ID SQL和430次真实归属检查；所有调用退出，root已读实际原件。公共Git1316事件历史只读核对通过、真实今日0。独立准确clone/Go构建通过，独立inspect实际失败且原因未明，Verify/DOM未独立运行。旧超时/资源拒绝保留；完整默认/原生/S3/发布仍未通过。
 
 用户最新目标为当日初步跑通产品并发布第一版Release包、完成真正可投稿的arXiv预印本。后续资源提高到CPU<85%、可用≥4GiB、BelowNormal、Go4/-p4/512MiB、Node1024MiB，重操作保持全局串行；静态检查按AGENTS执行。GitHub Release未发布。科研27页/14引用完整文稿及同源流程通过限定审查，原Worker按完整portable TeX Live2025/干净来源包计划静态实施；真实研究贡献、作者/许可、研究实施与本站兼容仍待完成，不能写为投稿就绪。
 
 用户要求完成S3与论文初稿并进行十次改进。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前01/02/03/04/06/08限定接受，准确CR与真实hook/root回复均已完成。默认浏览器静态矩阵未运行全套，不另计次数。三项原生/S3选择保持未答；AT08/09/13、带Worker退出/释放和用户采用仍缺正向证据，不把构建或重复检查计为S3通过。
 
-Run `run_29c7e66b4136`。产品 `task_51276f272ff3` / `ctx_e49721d7ac8d`、科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`、Reviewer `task_2923223271be` / `ctx_568047699698` 均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent。产品原树/PR2独占msg_f4844bdbfcfc工具修复/实际续验窗口；科研原树/PR3仅静态实施完整TeX Live2025技术方案，Reviewer独立包启动拒绝后已退出且无窗口。三个Task继续，尚未worker_done；正式V4及其他用户终端保持，正式实验/合并/部署/arXiv上传均未执行。
+Run `run_29c7e66b4136`。产品 `task_51276f272ff3` / `ctx_e49721d7ac8d`、科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`、Reviewer `task_2923223271be` / `ctx_568047699698` 均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent。科研原树/PR3独占msg_5c8deff9e39d的VerifyInstaller签名核查窗口；原Download SHA512通过、GPG导入EXIT2已停止，旧原件保留，尚未安装。产品原树/PR2准确报告57a91f46普通push/clean且只报告差异；Reviewer仅静态准备Delve真实错误观察及独立DOM。三个Task继续，尚未worker_done；正式V4及其他用户终端保持，正式实验/合并/部署/arXiv上传均未执行。
 
 ## 科研初稿已提 PR 并完成独立审查（2026-10-19）
 

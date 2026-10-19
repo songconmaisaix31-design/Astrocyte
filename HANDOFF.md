@@ -4,7 +4,7 @@
 
 用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受6/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案、06条件/义务/时间/实际视图与五项限定证明、08封存/全成本/pilot目标对应完整提案。准确CR/真实hook/root读取回复均完成；08为a664233a/报告c36f8990/CR5567552099，hook msg_814e1b18d6a8经root真实API核对后回复msg_7cac54d820d1。限定接受不等于实质科研贡献或投稿就绪，详细失败历史保留。
 
-当前唯一重操作窗口为产品msg_f4844bdbfcfc：仅自身忽略DOM工具采用已安装psutil7.2.2成熟Windows API，保持每次真实唯一loopback监听、root原创建时间/父链/存活及二次确认、每次10000ms截止与原业务断言；静态通过、新guard真实socket正反向通过后，续验两视口/26品牌/人工DAG/逐ID SQL。两次检查工具超时的失败原件和清理保留，Source15/ZIP/130不变；旧等待的具体位置尚不明。独立包第一次snapshot在clone前因CPU86%拒绝，全部调用退出，报告d41855fe记录NOT_RUN；等待产品退出后另授窗口。科研08已限定接受，按msg_c0d16ba47b6d仅静态实施官方完整portable TeX Live2025/Windows及干净来源包技术方案，不计额外轮次，不进入依赖09的10；尚无安装/模型/正式实验或arXiv上传。
+产品Source15在新today/dom15d74da3-3实际DOM EXIT0：两视口/26品牌/五路由、人工DAG增量与撤权403清图、可选OpenViking未配置、3个DAG事件/6个outbox真实SQL，430次每HTTP实际归属检查；自有调用退出/17887释放，root完整读JSON/SQL/log后回复msg_bc58f0da6ff1。旧两次超时/资源拒绝保留，成功ZIP/130不变。独立准确clone/clean/祖先及Go构建通过，独立inspect generic失败，未生成安全输入且原因不明；全部退出，现仅静态准备标准ArgumentList参数入口和独立DOM，Verify/DOM未独立运行。当前唯一重操作窗口msg_cfebfcce0e34为科研官方TeX Live2025 Download/校验/解压小阶段；尚不Install/Build/Validate。科研08已限定接受，技术准备不计额外轮次、不进入依赖09的10；无模型/正式实验/arXiv上传。
 
 产品准确Source `15d74da3edcee26550a71120370fda9c86230e04` 的新ZIP已Build及完整Verify EXIT0：`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822bytes。固定依赖/许可/隐私、lint/类型、四个Go程序与前端生产构建通过。准确新只读工具inspect原公共Git与SQLite1316事件/SQL10/历史通过，真实今日0；全新解压运行130 PASS/nonpass0，实际监听归属/HTTP/会话/SQLite重启/可选OpenViking未配置与历史快照通过。已实际退出并归还窗口。原缺依赖、解码、q15与首次DOM失败均保留。独立验包、完整默认浏览器/原生/S3及发布仍未通过，无tag或Release。
 

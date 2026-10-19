@@ -176,3 +176,13 @@ Reviewer06独立窗口msg_5b3bb209525d实际重建/比较EXIT0，msg_17ab6182b85
 同一a664完整TeX由成熟ZIP工具形成仅含必要来源的根目录ZIP，不含PDF/log/aux/缓存。全新解包后用实际XeLaTeX2025两遍逐次核EXIT，no-shell-escape/recorder/完整诊断；失败立即停止。既有检查保留，仅显式选择实际新PDF，核完整正文/公式/14参考/8配置/字体/文字边界并全文阅读。不要求跨引擎PDF字节一致，不覆盖旧08制品。实际调用退出即归还窗口，再报告/普通push/更新PR3和独立CR/hook。
 
 TeX Live2025 final与arXiv2025-08-03快照不同，本站处理/真人检查、实质研究贡献、真实研究证据、作者/许可/同意均未完成。禁止上传/注册、虚构署名/数据、修改正式实验/参数，技术成功不宣称投稿就绪。
+
+14:29当前进度：产品psutil真实socket正反向通过，DOM资源拒绝旧目录保留；新dom15d74da3-3实际EXIT0，两视口/五路由/26品牌、人工DAG增量和撤权403清图/可选OpenViking未配置/3个实际DAG事件及6个outbox逐ID SQL核查通过，430次真实归属检查。所有自有服务/浏览器/检查进程退出且17887无监听，root完整读取JSON/SQL/log后回复msg_bc58f0da6ff1；Source15/ZIP/130保持，等待准确报告及独立审查，不计新轮次。
+
+独立Reviewer已完成准确真实clone/clean/祖先核查及Go工具构建EXIT0；新工具inspect generic失败、q15-01没有安全输入或错误文件，所有调用退出并归还。真实元数据为Source15/clean/Go1.27.2，未确认原因；仅静态准备标准ProcessStartInfo.ArgumentList的原只读参数和新q15-02完整输出记录，不改业务或原输入/断言。真实Verify/独立DOM未运行。
+
+科研四路径技术静态实现及两项WIP已经主控全文审查，08科学正文/Bib/原制品冻结。当前唯一重操作窗口msg_cfebfcce0e34仅授Download及官方SHA512/GPG校验/解压，所有调用退出立即归还；尚未Install/Build/Validate。之后安排Reviewer准确独立inspect和条件通过后的原Verify/DOM，最终CR/hook另行完成。
+
+14:37，Download官方ZIP36160153bytes的SHA512通过，公钥导入因GPG agent IPC而EXIT2，立即停止/退出，旧下载及home/log保留。完整读取新VerifyInstaller方案后批准复用原下载：GPG2.4.5成熟dearmor生成新专用ring，主gpg实际支持assert-signer，显式home/无默认ring并固定官方主fingerprint，原签名及SHA512均EXIT0才成熟解压；不导入、不启动agent/手写解析/关闭校验/重下ZIP。该小阶段单独唯一窗口，退出即归还，尚不Install。
+
+独立inspect显式原参数q15-02仍实际EXIT1，未确认原因，所有调用退出，Verify/DOM未运行。主控已读官方Delve1.27.2发布资产、CLI与Go兼容源码，允许Reviewer先静态准备成熟调试器方案：官方Windows amd64 ZIP12410128bytes及checksums，所有下载/配置/历史/日志限自身忽略目录；以后在唯一窗口用现有准确Source15二进制、原只读输入和新输出观察原始错误，仅断点/变量/栈读取。禁止set/call/jump、禁用版本检查、改源码或变量/输入、调试其他进程、常驻调试服务或将调试结果冒充原Verify通过。准确优化二进制可能无法读变量，届时如实报告；安装/调试另授窗口。
