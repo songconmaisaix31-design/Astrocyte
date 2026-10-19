@@ -62,6 +62,7 @@ function Test-PortFree {
     return @([Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners() | Where-Object { $_.Port -eq $Port }).Count -eq 0
 }
 function Request-Release([string]$method, [string]$path, [string]$body = '', [hashtable]$headers = @{}) {
+    $null = Get-ReleaseOwnedListener $process $Port
     $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::new($method), ($base + $path))
     foreach ($key in $headers.Keys) { $request.Headers.Add($key, [string]$headers[$key]) }
     if ($body -ne '') { $request.Content = [Net.Http.StringContent]::new($body, [Text.Encoding]::UTF8, 'application/json') }
@@ -70,7 +71,9 @@ function Request-Release([string]$method, [string]$path, [string]$body = '', [ha
         try {
             $snapshotAt = ''
             if ($response.Headers.Contains('X-Snapshot-At')) { $snapshotAt = [string]::Join(',', [string[]]$response.Headers.GetValues('X-Snapshot-At')) }
-            return @{ status = [int]$response.StatusCode; body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult(); snapshot_at = $snapshotAt }
+            $result = @{ status = [int]$response.StatusCode; body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult(); snapshot_at = $snapshotAt }
+            $null = Get-ReleaseOwnedListener $process $Port
+            return $result
         }
         finally { $response.Dispose() }
     } finally { $request.Dispose() }
@@ -192,6 +195,7 @@ function Start-Release([string]$cycle) {
     }
     foreach ($name in @('OPENVIKING_BASE_URL', 'OPENVIKING_API_KEY', 'OPENVIKING_ACCOUNT', 'OPENVIKING_USER', 'OPENVIKING_ROOT_URI')) { $info.EnvironmentVariables.Remove($name) }
     Assert-ReleaseResources ($cycle + '-start') $output
+    if (-not (Test-PortFree)) { throw 'Application port is occupied before owned start.' }
     $script:process = [Diagnostics.Process]::Start($info)
     $script:stdout = $process.StandardOutput.ReadToEndAsync()
     $script:stderr = $process.StandardError.ReadToEndAsync()
@@ -199,11 +203,12 @@ function Start-Release([string]$cycle) {
     $ready = $false
     while ([DateTime]::UtcNow -lt $deadline) {
         if ($process.HasExited) { throw ('Application exited before health: ' + $process.ExitCode) }
-        # 只等待真实 HTTP 监听建立；应用错误响应立即失败。
-        $probe = $null
-        try { $probe = Request-Release 'GET' '/api/v1/health' }
-        catch [Net.Http.HttpRequestException] { Start-Sleep -Milliseconds 250; continue }
+        # 实际监听确认属于本次进程树后，才允许发出第一个 HTTP 请求。
+        $ownership = Get-ReleaseOwnedListener $process $Port -AllowPending
+        if ($null -eq $ownership) { Start-Sleep -Milliseconds 250; continue }
+        $probe = Request-Release 'GET' '/api/v1/health'
         if ($probe.status -ne 200) { throw ('Health returned ' + $probe.status) }
+        [IO.File]::WriteAllText((Join-Path $output ($cycle + '-listener.json')), ($ownership | ConvertTo-Json -Depth 3))
         $ready = $true
         break
     }

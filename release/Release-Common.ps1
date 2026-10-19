@@ -31,6 +31,36 @@ function Assert-ReleaseResources([string]$Phase, [string]$Directory) {
     if (-not $valid) { throw ('CPU, memory, priority or sample interval does not permit phase: ' + $Phase) }
 }
 
+function Get-ReleaseOwnedListener([Diagnostics.Process]$Owned, [int]$Port, [switch]$AllowPending) {
+    if ($null -eq $Owned -or $Owned.HasExited) { throw 'Owned application root is unavailable or exited.' }
+    $root = Get-CimInstance Win32_Process -Filter ('ProcessId=' + $Owned.Id) -Property ProcessId, ParentProcessId, CreationDate
+    if ($null -eq $root -or [Math]::Abs(($root.CreationDate.ToUniversalTime() - $Owned.StartTime.ToUniversalTime()).TotalMilliseconds) -ge 1) { throw 'Owned application root identity changed.' }
+    # MSFT_NetTCPConnection 的 Listen 枚举值为 2；没有监听时返回空集合。
+    $listeners = @(Get-CimInstance -Namespace 'root/StandardCimv2' -ClassName MSFT_NetTCPConnection -Filter ('LocalPort=' + $Port + ' AND State=2') -Property LocalAddress, LocalPort, OwningProcess)
+    if ($listeners.Count -eq 0 -and $AllowPending) { return $null }
+    if ($listeners.Count -ne 1 -or $listeners[0].LocalAddress -ne '127.0.0.1') { throw 'Exact owned loopback listener is unavailable.' }
+    $listenerID = [int]$listeners[0].OwningProcess
+    $cursor = $listenerID
+    $childStarted = $null
+    $chain = [Collections.Generic.List[int]]::new()
+    while ($true) {
+        if ($chain.Contains($cursor)) { throw 'Application process ancestry is cyclic.' }
+        $chain.Add($cursor)
+        $item = Get-CimInstance Win32_Process -Filter ('ProcessId=' + $cursor) -Property ProcessId, ParentProcessId, CreationDate
+        if ($null -eq $item -or $item.CreationDate -lt $root.CreationDate -or ($null -ne $childStarted -and $item.CreationDate -gt $childStarted)) { throw 'Application listener ancestry is unavailable or changed.' }
+        if ($cursor -eq $Owned.Id) {
+            if ($item.CreationDate -ne $root.CreationDate) { throw 'Application root was replaced during listener verification.' }
+            break
+        }
+        if ($item.ParentProcessId -eq 0) { throw 'Port belongs to another process tree.' }
+        $childStarted = $item.CreationDate
+        $cursor = [int]$item.ParentProcessId
+    }
+    $current = @(Get-CimInstance -Namespace 'root/StandardCimv2' -ClassName MSFT_NetTCPConnection -Filter ('LocalPort=' + $Port + ' AND State=2') -Property LocalAddress, LocalPort, OwningProcess)
+    if ($Owned.HasExited -or $current.Count -ne 1 -or $current[0].LocalAddress -ne '127.0.0.1' -or [int]$current[0].OwningProcess -ne $listenerID) { throw 'Owned application listener changed before HTTP access.' }
+    return @{ root_pid = $Owned.Id; root_started_utc = $root.CreationDate.ToUniversalTime().ToString('o'); listener_pid = $listenerID; process_chain = @($chain) }
+}
+
 function Assert-ReleaseSpace {
     $drive = [IO.DriveInfo]::new('C:\')
     if ($drive.AvailableFreeSpace -lt 10GB) { throw 'C: requires at least 10 GiB free before and after large operations.' }

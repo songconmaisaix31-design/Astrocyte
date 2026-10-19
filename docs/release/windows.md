@@ -78,6 +78,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows
 
 `-RequireCombined` 检查新目录中的空配置、真实 session/CSRF/SQLite 写读、手动快照及进程重启，结果是阶段运行检查。实际非空认知验证还需明确提供 `-Source`（包完整 SOURCE）、`-CognitionSourceSha`（已消费的认知工具源码）、`-CognitionSource`（获准的真实 SQLite）、`-CognitionHistory`、`-CognitionPublicationRoot` 和 `-CognitionSafeDir`。安全输入目录包含对应实际 Sleep 后状态的 `sql-expected.json`、`events-six-fields.json` 与 `admission-safe.json`；脚本核查当前发布代、十项 SQL 数值、全部六字段事件、排名、实际历史、分页与重启。验收数据只放在自己的验证目录，完整默认浏览器和原生控制器正向验收须分别通过才能发布。
 
+包验证每次启动前重新确认端口空闲，通过 Windows 实际监听 PID、进程创建时间及父子关系核对本次持有的进程树。第一次 health 探测与每次后续 HTTP 请求前后均复查归属；出现其他实例、进程退出或无法确认时立即失败。记录仅含本次必要的 PID 和创建时间，不发送请求到其他实例，不终止其他进程或自动改用另一端口。
+
 构建复用现有 `pnpm install --frozen-lockfile`、前端 `lint` 和包含类型检查的 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。新下载、构建、归档、解压和验证目录默认在 `D:/Astrocyte-agent-assets/20261015/release-package/today-YYYYMMDD/`；本次 2026-10-19 使用 `today-20261019`，`-Output` 显式选择其下尚不存在的独立子目录，旧 runtime、ZIP 和证据只读。构建前后检查 C 盘至少 10 GiB 空余。Go 复用已授权的工具缓存 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR`、`TEMP`、`TMP`、pnpm store、npm cache 与 Node 编译缓存均在本次输出目录，不改全局配置。
 
 包允许四个 Go 程序、生产静态资源、启动与快照脚本、说明、LICENSE/NOTICE、legal 许可目录，以及 runtime 下的 Node、生产 SDK、准确适配脚本和两个固定模型目录。只有 `runtime/sdk/node_modules` 允许生产 npm 依赖；应用开发 node_modules、数据库、日志、私人配置、用户资料与正式自动任务继续拒绝。标准 .NET ZIP 支持这些大型资产；内容扫描逐块读取全部文件的 UTF8/UTF16LE 字符串，不将大型 sidecar 整体载入内存。扫描只输出相对文件名与检查范围，不输出匹配的私人字符串。最终 I 的适用 check/build、默认浏览器、原生控制器和新包实际核心路径验收仍须全部完成。

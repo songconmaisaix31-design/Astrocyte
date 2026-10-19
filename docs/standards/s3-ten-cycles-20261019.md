@@ -109,4 +109,8 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 当前修改给既有 Build/Verify 增加重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。新源码固定及唯一窗口获准后才执行安装、构建、新 ZIP、解压与真实运行检查；当前这些检查尚未运行。
 
+主控 `msg_351fa9bca129` 明确要求包验证按实际监听归属保护隔离数据。当前 Verify 每次启动前重新确认端口空闲，使用 Windows `MSFT_NetTCPConnection`、`Win32_Process` 和持有的 `Diagnostics.Process` 核对监听 PID、父子进程及创建时间；根进程和监听均须仍存在。首个 health 与所有后续 HTTP 请求前后复查，无法确认或异主直接失败，不探测其他服务、不自动换端口。成功启动只记录本次 PID/归属；原重启与数据断言保持。未构建的源码 `21a92dc6b97fa5635cb12bb9eb93cd3f643e966b` 保留历史，新包以该修复后的准确源码为准。
+
+按主控 `msg_d3afdea3cd29` 的静态检查授权，PowerShell `5.1.26100.9711` 和 `7.6.6` 分别运行 `.verification/check-release-syntax.ps1`。两者对 Build、Common、Verify、Start 和 Publish 五个实际脚本的 `Language.Parser.ParseFile` 全部 EXIT0；原件位于本日资产根 `syntax-release-ps51/syntax.log` 与 `syntax-release-ps7/syntax.log`。`git diff --check` 无输出。解析通过不代表资源守卫、端口归属或包运行已经通过；重操作窗口尚未授予。
+
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。
