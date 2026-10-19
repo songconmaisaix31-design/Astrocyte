@@ -32,7 +32,7 @@ def cell_text(value):
 nodes = list(walk(ast))
 citations = {entry['citationId'] for node in nodes if node.get('t') == 'Cite' for entry in node['c'][0]}
 assert citations == set(bibliography.entries), f'Citation mismatch: {citations ^ set(bibliography.entries)}'
-assert len(citations) == 9
+assert citations, 'Manuscript has no resolved citations'
 
 # 通过 Pandoc 的标准 AST 检查实际八配置表，避免重新解析 Markdown。
 tables = [node for node in nodes if node.get('t') == 'Table']
@@ -50,14 +50,24 @@ assert configurations == [
 ], configurations
 
 html = BeautifulSoup((root / 'build/manuscript.html').read_text(encoding='utf-8'), 'html.parser')
-assert len(html.select('.csl-entry')) == 9
+assert len(html.select('.csl-entry')) == len(bibliography.entries)
 assert html.find('math') is not None
 assert not html.find_all('script', src=True), 'HTML requires an external script'
 for key in citations:
     assert html.find(id=f'ref-{key}') is not None, key
 
 manuscript = (root / 'manuscript.md').read_text(encoding='utf-8')
-assert not re.search(r'[A-Za-z]:[/\\]|/Users/|/home/|Bearer\s+[A-Za-z0-9_-]+', manuscript)
+# 检查解析后的正文、代码和链接，避免把数学条件中的冒号与 TeX 命令当作磁盘路径。
+privacy_pattern = r'(?<![A-Za-z0-9_])[A-Za-z]:[/\\]|/Users/|/home/|Bearer\s+[A-Za-z0-9_-]+'
+privacy_parts = []
+for node in nodes:
+    if node.get('t') == 'Str':
+        privacy_parts.append(node['c'])
+    elif node.get('t') in {'Code', 'CodeBlock', 'RawInline', 'RawBlock'}:
+        privacy_parts.append(node['c'][1])
+    elif node.get('t') in {'Link', 'Image'}:
+        privacy_parts.append(node['c'][-1][0])
+assert not re.search(privacy_pattern, ' '.join(privacy_parts)), 'Private path or credential in manuscript content'
 assert all(marker in manuscript for marker in ['TO BE PROVIDED', 'not been formally registered', 'No main-study'])
 tex = (root / 'build/manuscript.tex').read_text(encoding='utf-8')
 assert r'\begin{document}' in tex and r'\end{document}' in tex
@@ -87,6 +97,7 @@ with pymupdf.open(root / 'preprint/manuscript.pdf') as pdf:
                 for span in line['spans']:
                     assert page.rect.contains(pymupdf.Rect(span['bbox'])), f'Text outside PDF page {page.number + 1}: {span["text"]}'
 pdf_text = '\n\n'.join(pdf_pages)
+assert not re.search(privacy_pattern, pdf_text), 'Private path or credential in rendered PDF'
 assert '\ufffd' not in pdf_text, 'Unmapped characters in extracted PDF text'
 pdf_normalized = normalized(pdf_text)
 headings = [cell_text(node['c'][2]) for node in nodes if node.get('t') == 'Header']

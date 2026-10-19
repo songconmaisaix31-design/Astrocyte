@@ -1,6 +1,6 @@
-# Astrocyte research draft 0.1
+# Astrocyte method and protocol draft 0.2
 
-The complete [PDF](preprint/manuscript.pdf) and its complete [LaTeX source](preprint/manuscript.tex) are available for review. [manuscript.md](manuscript.md) remains the single editable manuscript source; [references.bib](references.bib) contains the nine cited records. Pandoc regenerates the complete LaTeX, including equations, tables, and inline resolved references, from those two inputs. There is no separately maintained abbreviated manuscript.
+The complete [PDF](preprint/manuscript.pdf) and its complete [LaTeX source](preprint/manuscript.tex) are the versioned review deliverables. [manuscript.md](manuscript.md) remains the single editable manuscript source; [references.bib](references.bib) contains the fourteen cited records, including four original statistical articles and DecentMem. Pandoc regenerates the complete LaTeX, including equations, tables, and inline resolved references, from those two inputs. There is no separately maintained abbreviated manuscript.
 
 [sources.md](sources.md) records versions, reading limits, and metadata discrepancies. [claims-evidence.md](claims-evidence.md) distinguishes proposed methods, inspected implementation, engineering checks, and uncollected results. The [Chinese research feedback](../../docs/research/astrocyte-research-feedback.md) records research requirements for coordinator decisions.
 
@@ -30,7 +30,7 @@ Use only the coordinator's assigned heavy-operation window. The script runs at B
 
 ## Verification
 
-`verify.py` uses Pandoc's JSON AST, Pybtex, BeautifulSoup, Markdown-it, and PyMuPDF. It checks resolved citations, the eight configuration rows, references/MathML, local links, manuscript privacy patterns, and the delivered PDF. PDF checks cover readable pages without repair, all manuscript section headings, all reference titles, configuration identifiers, metadata, embedded fonts without Type 3, and text spans inside page boundaries. The entire extracted PDF text is saved to `build/manuscript-pdf.txt` for reading alongside the source and TeX diagnostics. Text extraction and bounding boxes do not establish visual quality.
+`verify.py` uses Pandoc's JSON AST, Pybtex, BeautifulSoup, Markdown-it, and PyMuPDF. It checks equality of the resolved citation keys and bibliography entries, the eight configuration rows, generated references/MathML, local links, privacy patterns in parsed prose/code/link targets and rendered PDF text, and the delivered PDF. Reference counts follow the actual bibliography. PDF checks cover readable pages without repair, all manuscript section headings, all reference titles, configuration identifiers, metadata, embedded fonts without Type 3, and text spans inside page boundaries. The entire extracted PDF text is saved to `build/manuscript-pdf.txt` for reading alongside the source and TeX diagnostics. Text extraction and bounding boxes do not establish visual quality.
 
 Python dependencies are `pybtex`, `beautifulsoup4`, `markdown-it-py`, and `pymupdf`. The current worktree used existing BeautifulSoup/Markdown-it/PyMuPDF and a local Pybtex installation. Run verification under the same resource and window conditions:
 
