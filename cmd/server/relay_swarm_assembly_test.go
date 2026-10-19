@@ -182,6 +182,23 @@ func TestRelaySwarmActualPreparedAssemblySQLiteHTTP(t *testing.T) {
 	if denied.Error == nil || denied.Error.Code != apierrors.ScopeDenied || denied.Error.Message != "bound agent identity required" {
 		t.Fatal("实际 Claim 路由没有执行 Swarm 成员身份拒绝")
 	}
+	checkout, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	readme, err := os.ReadFile(filepath.Join(checkout, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sendCommand, err := json.Marshal(map[string]any{"schema_version": 1, "request_id": uuid.NewString(), "expected_version": 1, "message": string(readme)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	denied = apierrors.ErrorEnvelope{}
+	request(http.MethodPost, "/api/v1/local-projects/"+uuid.NewString()+"/sessions/"+sessionID+"/send", sendCommand, session.CSRF, http.StatusNotImplemented, &denied)
+	if denied.Error == nil || denied.Error.Code != apierrors.UnsupportedCapability {
+		t.Fatal("生产装配在缺少原准备依赖时启用了发送")
+	}
 	for _, table := range []string{"swarm_missions", "swarm_work_items", "swarm_leases", "foundation_idempotency", "foundation_outbox", "local_agent_sessions", "workspace_session_bindings"} {
 		var count int
 		if err := db.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM "+table).Scan(&count); err != nil || count != 0 {

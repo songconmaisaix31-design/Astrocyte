@@ -4,7 +4,7 @@
 
 主控任务为 `C:/Users/DW/orca/Astrocyte/tasks/s3-paper-ten-cycles-20261019.md`。本轨 Task `task_51276f272ff3`、Dispatch `ctx_e49721d7ac8d`，沿原工作树、分支和 Draft PR #2。精确基线 `7ce3a5efe312f4cdac3491293e002f5559f076b0`；实际客户端 Codex 0.162.0，Orca 原终端显示 `GPT-6.1-Sol xhigh fast`，继承配置，没有模型覆盖或子 Agent。
 
-当前只实施第 01 轮：修复实际失败的初始化与迁移检查，准备合法前置并执行适用真实检查。第 03/05/07/09 轮等待主控逐轮明确。S3 调用单位、执行权限证据覆盖和受限 Codex 三项答复仍待定；Claim 拒绝与 Known=false 保持，未启动原生控制器或模型输入。
+第 01 轮修复实际失败的初始化与迁移检查，准备合法前置并执行适用真实检查，已获独立限定接受。当前按主控明确方案实施第 03 轮；第 05/07/09 轮等待主控逐轮明确。S3 调用单位、执行权限证据覆盖和受限 Codex 三项答复仍待定；Claim 拒绝与 Known=false 保持，未启动原生控制器或模型输入。
 
 ## 实际 CI 错误与修复方案
 
@@ -46,8 +46,26 @@ CPU73%、99%、90% 的三次尝试分别在 migration、discovery、vet 的 Go �
 
 ## 后续交接边界
 
-PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是本轮基线祖先，当前 PR #2 尚未包含其发送前租约/用途检查。该实际业务缺口已交主控，并由 `msg_6ccfb3e220ab` 确认留待第 01 轮接受后明确第 03 轮方案；本轮没有自动合并旧治理或业务。
+PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮基线祖先，该基线尚未包含其发送前租约/用途检查。该实际业务缺口已交主控，并由 `msg_6ccfb3e220ab` 确认在第 01 轮接受后另行实施第 03 轮；第 01 轮没有自动合并旧治理或业务。
 
-本轮沿原 PR #2 普通 push，提交使用 `[skip ci]`，保留默认 CI 原有失败状态和全部断言。等待独立 Reviewer 的准确 CR、hook 及主控回复后再进入下一轮；本轨 Task 保持运行，尚未发送 worker_done。
+第 01 轮沿原 PR #2 普通 push，提交使用 `[skip ci]`，保留默认 CI 原有失败状态和全部断言。本轨 Task 保持运行，尚未发送 worker_done。
 
 两项测试的源码候选为 `b21f5b66852a7fa8692185ebfaa34ddaae1f2e00`，已普通 push，`git ls-remote` 核对一致；后继报告提交只补准确来源及校正验证范围措辞。该源码除本轮两项测试与记录外，没有生产变化。
+
+独立 Reviewer 报告 `0bd44e135a0b415b431433a6cbd2075e35a4d131` 接受第 01 轮两项修复；在独立真实 Git clone 的相同 detached 条件下重现 before 两项失败、after 两项通过，定向 vet/格式/空白通过。真实 [CR 5566519259](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5566519259) 为 COMMENTED，准确指向 `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6`。hook `msg_9137a34ddfd6` 已到达，主控完整读取、实际核 CR 并以 `msg_0bd7db71f620` 回复；接受轮数由主控登记为 1/10。该接受不扩展到完整 CI、原生正向或 S3 闭环。
+
+## 第 03 轮：发送租约业务集成
+
+主控 `msg_1b27066e82f6` 在第 01 轮接受后授权本轮。实施基线为 `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6`；来源为已审 PR #1 最终 `75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee`，其业务源码为 `0642efdf7748a64c36e07e466b5f507b9c04a004`，共同基线 `f17a491cdd6392829094c95a3e5efb6011362bc0`。0642 至 75cadf 的差异只有旧标准记录；本轮使用文件编辑工具移入 16 个业务/测试路径的必要差异，不导入该分支 AGENTS 或旧报告，不合并公开 PR 或主分支。
+
+| 范围 | 实际改动 |
+| --- | --- |
+| `cmd/server/relay_swarm_assembly.go`、`relay_swarm_assembly_test.go` | 在现有同库 Swarm/Workspace 装配中注入实际 authorizer，保留缺准备依赖的真实 HTTP 拒绝。 |
+| `internal/adapters/agents/relay_prepared_member.go` | 认领来源必须为原始显式 Swarm 准备，核固定 input/scope/binding，首次认领前不得已有租约。 |
+| `internal/adapters/sqlite/local_native_message_{lease,scope}.go`、`local_native_messages.go`、`swarm_native.go`、`swarm_native_message_authorization{,_test}.go` | 私有准备保存用途与首次租约引用；Claim 同事务绑定、最终发送授权复查、历史绑定/批准用途核查、同库事务/取消/缺来源/撤销重开检查。 |
+| `internal/swarm/app/{commands,native_send,prepared_member}.go`、`internal/swarm/domain/native_send.go` | 认领要求实际 binder，并在原事务绑定；发送逐次核当前 Mission/WorkItem/Grant/holder/fence/operation/预算预留/写域/截止时间。 |
+| `internal/workspace/app/native_message_authorization{,_test}.go`、`native_messages.go` | 显式 project/swarm 准备用途，当前授权和单次 send_attempted 占用同事务；外部 Send 在事务外并携带最早绝对截止时间，未知保持原 operation、不重发。 |
+
+静态来源比较结果：16 个路径相对 0642 的差异只剩当前产品的两个既有贡献。`commands.go` 保留 `CreatedBy/CreatorKind` 和 `ValidateDAG`；`swarm_native.go` 保留 `ReadWorkerParticipation`、独立退出观察及明确缺失分类。其余 14 个路径与已审来源一致，领域、生命周期、事件与前端的既有 DAG 改动保持。没有更改 DDL、OpenAPI、原生程序或调用计量/权限的待定选择。
+
+当前仅完成静态代码和原测试移入，`git diff --check` 通过；尚未编译、运行测试或启动服务。唯一重操作窗口由主控授予科研第 02 轮。获得窗口后按 CPU<85%、可用≥4GiB、两次启动采样、BelowNormal、Go4/-p4/512MiB 和 Node1024MiB，逐包串行执行显式参数规则、实际 SQLite/HTTP/Registry 拒绝与重开检查、相关 DAG 回归、Go vet、DDD 检查及生产构建；不运行旧替身集合，不启动受阻原生。实际命令与结果完成后登记，当前不宣称第 03 轮通过。
