@@ -115,4 +115,10 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 监听归属记录使用标准 `List<int>.ToArray()` 保存实际父子 PID 数组。最终脚本在两个 PowerShell 版本分别再次解析 EXIT0，原件为本日 `syntax-listener-ps51/syntax.log` 与 `syntax-listener-ps7/syntax.log`；没有执行待验脚本正文。
 
+首次真实 OS socket 检查使用源码 `3e52cc13caa934d2514e74d7ffcc83a350381531`，资源 6%/16%、5.2537/5.1360GiB、2.686 秒、BelowNormal。进入实际 socket 场景后，PowerShell 5.1 返回 `VariableIsUndefined: listeners`；原件 `l3e52cc13/listener.log` 和资源 JSON 保留，后续 HTTP/Build/inspect/Verify/浏览器均未执行。全部自有 socket/PS 对象退出，17887 无监听，已通过 `msg_67b42dcc2d3c` 归还窗口，主控 `msg_d30c1e16b804` 确认。
+
+实际标准 PowerShell AST 核查定位到 Common 的文件解码：5.1 的 `ParseFile` 将中文注释与下一行 listeners 赋值一起读取为 Comment，而显式 UTF-8 的 `ParseInput` 保留赋值；两者均没有语法错误。Common 补充 UTF-8 BOM，与其他四个原脚本的既有编码一致，StrictMode、实际监听与全部业务断言保持。静态语法检查同时比较实际 `ParseFile` 与标准 UTF-8 `ParseInput` 的完整源码，避免仅凭零语法错误判断源码被完整读取。
+
+修复后 PowerShell 5.1 的两个标准解析入口均识别第 39 行 listeners 赋值，中文注释仅占第 38 行。两个 PowerShell 版本的五文件语法与完整解码比较全部 EXIT0，原件为 `syntax-utf8-ps51/syntax.log` 与 `syntax-utf8-ps7/syntax.log`；实际 socket 和后续包检查尚未复验。
+
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。

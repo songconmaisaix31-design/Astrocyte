@@ -2,6 +2,8 @@
 
 完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web。S4/S5 运行依赖包含独立 Node 和生产 SDK；用户无需预装这些 SDK 的开发环境。启动参数支持下文列出的 S4/S5 显式配置；具体候选的准确源码、实际检查结果和剩余限制由发布记录说明。
 
+Build、Verify、Common、Start 和 Publish 的 PowerShell 文件使用带 BOM 的 UTF-8，使 Windows PowerShell 5.1 按完整源码读取中文注释及其后的实际命令；发布时保持文件编码。
+
 当前界面包含关注、资料、项目、作品、Swarm 和认知视图。Swarm 可在实际人工批准范围内创建 Mission、WorkItem 和依赖关系，读取动态 DAG 及其来源；原生准备、认领、发送和停止继续检查当前项目、批准与原控制器。原生工具限制、计量单位和权限证据范围仍有待定项，实际原生正向、完整 S3 和完整默认 CI 尚未通过。新包的构建、独立解压验收和正式发布分别记录，不沿用历史包的检查结果。
 
 OpenViking 为可选远端。未配置时，状态接口返回 `configured=false`、`connected=false`，本地资料和项目功能继续使用实际 SQLite。需要连接时，在启动进程的可信环境中明确提供 `OPENVIKING_BASE_URL`，按远端要求提供 `OPENVIKING_API_KEY`；`OPENVIKING_ACCOUNT` 和 `OPENVIKING_USER` 必须同时配置，可选 `OPENVIKING_ROOT_URI` 指定资源目录。启动脚本保留这组显式环境配置；凭据不进入命令参数、ZIP 或发布说明。远端连通和实际提交结果须单独验证。
