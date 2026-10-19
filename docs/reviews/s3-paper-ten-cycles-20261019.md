@@ -556,3 +556,25 @@ UTC`2026-10-19T07:19:28Z`实际发布[CR5568150342](https://github.com/songconma
 UTC`2026-10-19T11:43:13Z`实际发布[CR5571008196](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571008196)，回执`COMMENTED`、`commit_id=2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`；同账号未冒称APPROVE。请求及原始回执为自身`release15/github-review-restart.json`与`github-review-restart-receipt.json`。完整Verify、DOM及这次CR的原件均按当前候选与实际运行分别保留。
 
 报告`647828d803d22dac6909af60f71dd9f4fa63487f`普通push后，UTC`11:44:04Z`使用当前Dispatch/终端、准确2a05及非空报告执行原review-decision hook，实际入队`msg_e0c2d47d66dc`，原始回执独立保留于`release15-restart/review-hook-receipt.log`。主控UTC`11:45:58Z`以`msg_e986c7d42f32`实际回复，确认完整读取重启后报告、真实API核CR5571008196/COMMENTED/准确SHA、本地报告干净，登记限定接受及仍6/10。此次真实读取回复确认唤起；同Task继续，未结算worker_done。
+
+## 开发检查输出目录的独立复验
+
+主控`msg_83095ba05fb9`给定before `2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`、after Source `22cde9efc540553c433463af5b9e955790d57a99`，`msg_a802a58e8d0c`明确授独立唯一窗口。最终报告候选经`msg_d1fb79127f70`确定为`05def8e14c60f038ff833f8b295b4741281566e5`；实际完整diff核22→05仅产品记录新增21行，GitHub API核PR #2 open/Draft、HEAD准确05。之前2a05→22仅`scripts/process.mjs`、`scripts/check.mjs`，11行增加/2行删除，没有业务、测试或workflow变更。
+
+静态逐行核新`createCheckOutputDirectory`复用已有`verificationOutputRoot`绝对路径校验，以Node标准mkdir/mkdtemp创建本次`check-*`子目录；`check.mjs`在findGo及全部检查前设置当前进程`ASTROCYTE_TEST_OUTPUT_ROOT`，后续原spawn继承。调用者显式父根保留，相对根和真实普通文件在Go启动前失败，目录错误直接抛出。原检查项目、顺序、命令、Go断言及权限保持。已完整读原Worker proposal/实际验证入口、两份测试文件的三个完整真实函数与生产进程辅助代码；所引旧CI日志在当前本树未找到，本轮不以未读历史日志作原始证据，使用准确before新实测建立比较。
+
+自身`.verification/ten-cycles/review-output-check22.ps1`经PowerShell7.6.6 Parser/完整UTF-8检查通过后，按snapshot、before、openviking、progress、invalid-roots、syntax逐项实际执行，均入口EXIT0；before内部Go的预期EXIT1单列。证据根为自身新`.verification/output-check22`，两份真实Git clone/detached的HEAD逐阶段核准确before/after、tracked干净；原Node验证助手完整字节复制至自身tools，原3函数/无效根断言保持。使用实际Go `C:/Users/DW/AppData/Local/Programs/go/bin/go.exe`、原`findGo/run`、获准D缓存、BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB，临时与输出均位于自身忽略目录。
+
+| 本轮实际命令与条件 | 结果及原件 |
+| --- | --- |
+| before：清除该Go子进程输出变量，`go test -mod=readonly ./internal/adapters/httpapi -run '^TestOpenVikingActualHTTPUnconfiguredAndRefused$' -count=1 -timeout=2m -v` | 真实child EXIT1，准确`openviking_actual_test.go:33`“需要明确的本次验证输出目录”；没有进入HTTP/SQLite。包2.130秒，验证助手确认预期前置失败后EXIT0。`before/{before.stdout.log,before.stderr.log,result.json,check.log}`。 |
+| after：默认父根通过同一新增辅助函数分配目录，执行同一原OpenViking命令 | 1 PASS/0 Skip，函数0.14秒/包2.533秒。真实HTTP/SQLite、未配置/真实连接拒绝、空集合、Origin/CSRF、缺失/null层级、零提交原断言通过；没有成功远端服务。实际目录`after-source/.verification/check-QUmYjZ`，`openviking/{result.json,check.log}`。 |
+| after：显式本次父根，通过同一无参数辅助函数继承；`go test -mod=readonly ./internal/workspace/app -run '^(TestProgressPreflightActualColdConfigurationAndRestart\|TestProgressPreflightActualSQLiteReadOnlyRefusesPending)$' -count=1 -timeout=2m -v` | 原2函数PASS/0 Skip，0.16/0.11秒、包2.285秒。配置evidence_missing、生产保守unknown回执/同operation及同库重启拒绝重发、人工记录保留，实际query_only/READONLY/HTTP500/零回执与恢复写入通过；未Probe Registry、零原生会话及公开README只读原守卫保持。实际目录`progress/evidence/check-3O4Kpd`，`progress/{result.json,check.log}`。 |
+| after：invalid-roots | 相对路径和本次真实普通文件均由原校验/真实文件系统拒绝，`go_started=false`，EXIT0。`invalid-roots/{result.json,check.log}`。 |
+| after：两生产Node脚本`node --check`、准确before→after `git diff --check` | 全部EXIT0。未执行整个check.mjs或全套pnpm check。 |
+
+本轮5个重操作启动阶段/10样本均allowed/BelowNormal，最高CPU11%、最低可用15.370396GiB，结束点单调间隔2.429032–2.462353秒；syntax使用静态审查的Go1/256MiB、Node512MiB设置，没有Go子进程。采样不表示运行期峰值保证，前后测试耗时不用于速度收益比较。所有Go/Node/测试/编译调用实际退出、17887/17889/64505无监听后，以`msg_b082c532603b`立即交还窗口。主控`msg_97f53b34f0d4`实际读取三项check.log与四份result、确认退出并收回窗口，原共享服务后续由产品单独恢复。
+
+决定`accept`，限定为准确Source22检查入口输出前置修复、上述三项真实路径及根校验，适用于准确报告候选05。没有变更原业务/权限或降低断言，没有mock、原生初始化、模型输入或真实成果采用；API中的human记录仅为自动检查主体。保守unknown前置检查没有发生原生交付，真实在途unknown/AT13仍未通过。完整默认CI、另行race命令的输出前置、未获真实来源及旧替身用例、原生/S3/实际采用仍分别未验；未执行全套pnpm check、TeX或共享服务启动，没有重建Source15包。此附加修复不增加已接受6/10，不据此通过正式发布、合并或研究效果。
+
+UTC`2026-10-19T12:11:19Z`实际发布[CR5571335055](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571335055)，`COMMENTED`、`commit_id=05def8e14c60f038ff833f8b295b4741281566e5`；请求及原始回执为自身`.verification/output-check22/{github-review.json,github-review-receipt.json}`，没有冒称GitHub APPROVE。
