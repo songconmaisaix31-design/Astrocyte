@@ -2,17 +2,19 @@
 
 ## S3与论文十轮改进（2026-10-19）
 
-用户最新明确当日交付为初步跑通的产品及首版Release包，以及真正符合发布标准的arXiv预印本，并允许提高资源。后续重操作使用CPU<85%/可用≥4GiB双采样、BelowNormal、Go4/-p4/512MiB和Node1024MiB，全局仍单窗口；旧额度检查保留真实记录。01限定接受，02/03 Worker均完成适用检查并归还窗口，Reviewer现持独立02复验窗口。首次采样CPU87%拒绝，未归档或执行文稿检查，原件保留；两分钟后仅一次有守卫重试，其他轨道不重操作。
+用户最新明确当日交付为初步跑通的产品及首版Release包，以及真正符合发布标准的arXiv预印本，并允许提高资源。后续重操作使用CPU<85%/可用≥4GiB双采样、BelowNormal、Go4/-p4/512MiB和Node1024MiB，全局仍单窗口；旧额度检查保留真实记录。01/02限定接受，当前Reviewer单独检查产品03准确32672499，科研Worker从已接受618c82f2静态推进04；其他轨道不重操作。
 
 首版GitHub Release发布已获授权，当前真实release列表为空。原产品Worker新增release/**与docs/release/**写域，新输出限D:/Astrocyte-agent-assets/20261015/release-package/today-20261019的新子目录，复用成熟打包和解压验证流程，旧资产只读。须先完成具体准确源码包与独立可用性验证；原生/S3、完整CI及原发布要求未通过项保持未通过。科研由方法稿提高到投稿质量验收，PDF、真实研究贡献、内容/文献、官方arXiv要求与作者元数据逐项核查，作者问题已发出；实际arXiv上传未执行。
 
-用户明确要求开始完成S3和论文初稿，完成十次循环改进。当前 [十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 按主控方案、固定模块Worker实现/PR、独立Reviewer准确CR及真实hook/回复执行；只有具体改进及适用检查获得独立接受才计轮次，上一轮已完成内容不重复计入。当前接受1/10，S3和完整稿件分别按原验收核查，原生/预算/权限待定不降要求。
+用户明确要求开始完成S3和论文初稿，完成十次循环改进。当前 [十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 按主控方案、固定模块Worker实现/PR、独立Reviewer准确CR及真实hook/回复执行；只有具体改进及适用检查获得独立接受才计轮次，上一轮已完成内容不重复计入。当前接受2/10，S3和完整稿件分别按原验收核查，原生/预算/权限待定不降要求。
 
-Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，复用frontend-observatory树/分支和PR #2，03源码4c4fa1eab003c1daece0ed9e180e2f39a30f5704及最终报告候选3267249922082cb1808b6529a2f04084d40c1f92已普通push，远端/PR一致、tracked干净，冻结等独立CR。科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，复用research-preprint树/分支和PR #3，02准确618c82f270b4f35282dce86ef341b568a9690979已普通push，远端/PR一致、tracked干净；完整13页PDF/1018行TeX及文本/引文/字体/文字边界实际检查通过，冻结等独立CR。Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，复用research-preprint-review树/分支，只写当前十轮报告与自身忽略输出，02后再审03，当前复验尚未启动。三者实际Codex0.162.0/gpt-6.1-sol默认配置已核，无覆盖或子Agent。
+Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，复用frontend-observatory树/分支和PR #2，03源码4c4fa1eab003c1daece0ed9e180e2f39a30f5704及最终候选3267249922082cb1808b6529a2f04084d40c1f92已普通push、远端/PR一致，冻结待CR。科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，复用research-preprint树/分支和PR #3，02准确618c82f270b4f35282dce86ef341b568a9690979已限定接受；完整13页PDF/1018行TeX独立重建及提交比较通过，现静态写作04。Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，复用research-preprint-review树/分支，只写当前十轮报告与自身忽略输出，单独持03检查窗口。三者实际Codex0.162.0/gpt-6.1-sol默认配置已核，无覆盖或子Agent。
 
 01只修真实Git attached前置与精确27迁移校验，不改生产代码，不扩展全仓build；此前资源拒绝的build保持未执行。Reviewer报告0bd44e135a0b415b431433a6cbd2075e35a4d131已push，准确CR5566519259限定接受dacc，真实hook msg_9137a34ddfd6已由主控读取报告/API并回复msg_0bd7db71f620，计1/10。03保留原DAG并移入已审16路径业务，准确副本19函数、全Go vet/build、43包DDD及格式/空白实际通过，msg_8df78aed44b4归还窗口；root已完整读报告和核对最终来源，未代Reviewer接受。msg_4a38206e392f授Reviewer独立02窗口，msg_2aa918b47c69交接03候选；首次CPU87%拒绝及一次重试安排见任务最新记录。02一处Underfull及非视觉/非本站兼容/非投稿质量限制保留，署名与正式结果不填造；完整CI、S3正向及三项待答门禁不降低。
 
 预算按平台输入还是上游全部尝试、权限证据按本次约束还是完整清单、受限Codex维持全部工具关闭还是经真实只读拒写核查后执行固定任务，三项已集中异步询问，答案未到保持原拒绝。原公开项目范围、具体资料/经验批准和用户采用规则保持；不默认批准实际用户作品或自主实验。重操作全局串行、资源双采样和BelowNormal不变，禁止Aliyun、视觉、假数据及额外调度器。正式V4保持独立只读，其他用户终端和数据不操作。
+
+02独立报告e192829f0d937e70d9f72de8d2dac27c88762ca1已普通push、远端一致，实际CR5566782506为COMMENTED且准确618c82f2；hook msg_9f1c648769c3经root完整读报告、真实API及远端核对后回复msg_39ed4a532f54，限定接受完整PDF/同源构建，计2/10。首次CPU87%拒绝和单次重试48%/54%通过均保留，全部调用退出；非视觉、非本站兼容和非投稿质量验收保持。msg_abefe8c756fd授科研04静态写作统计程序/原始来源/近邻比较及真实AI披露，不冻结未知正式参数、不填造pilot、不启动实验；03 Reviewer仍独占窗口，04构建待另授。
 
 ## 科研 Agent 与预印本首轮（2026-10-19）
 
