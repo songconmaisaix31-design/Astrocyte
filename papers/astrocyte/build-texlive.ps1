@@ -92,7 +92,6 @@ $env:TMP = $env:TEMP
 $env:TMPDIR = $env:TEMP
 $env:XDG_CACHE_HOME = Get-WorkPath 'cache'
 $env:GNUPGHOME = Get-WorkPath 'gnupg'
-$env:TL_GNUPG = $Gpg
 $env:TL_GNUPGHOME = $env:GNUPGHOME
 $env:TL_GNUPGARGS = '--batch --no-autostart --no-secmem-warning --no-permission-warning'
 $installRoot = Get-WorkPath 'texlive'
@@ -142,11 +141,44 @@ switch ($Phase) {
         }
         finally { $archive.Dispose() }
         if (-not (Test-Path -LiteralPath $wrapper -PathType Leaf)) { throw 'Verified installer wrapper missing' }
-        $env:TL_GNUPGHOME = Join-Path (Split-Path -Parent $wrapper) 'tlpkg/gpg'
+        $installerDirectory = Split-Path -Parent $wrapper
+        $perlBin = Join-Path $installerDirectory 'tlpkg/tlperl/bin'
+        $perl = Join-Path $perlBin 'perl.exe'
+        $perlLibrary = Join-Path $installerDirectory 'tlpkg/tlperl/lib'
+        $installerScript = Join-Path $installerDirectory 'install-tl'
+        foreach ($inputFile in @($perl, $installerScript)) {
+            if (-not (Test-Path -LiteralPath $inputFile -PathType Leaf)) { throw "Verified installer input missing: $inputFile" }
+        }
+        if (-not (Test-Path -LiteralPath $perlLibrary -PathType Container)) { throw 'Bundled Perl library missing' }
+        foreach ($pathEntry in $env:PATH.Split(';', [StringSplitOptions]::RemoveEmptyEntries)) {
+            if (Test-Path -LiteralPath (Join-Path $pathEntry.Trim('"') 'pdftex.exe') -PathType Leaf) {
+                throw "Another TeX installation is on the process PATH: $pathEntry"
+            }
+        }
+        # 沿官方 wrapper 的环境清单使用包内 Perl，并直接保留原生退出码。
+        foreach ($variable in @(
+            'PERL5OPT', 'PERLIO', 'PERLIO_DEBUG', 'PERLLIB', 'PERL5DB',
+            'PERL5DB_THREADED', 'PERL5SHELL', 'PERL_ALLOW_NON_IFS_LSP',
+            'PERL_DEBUG_MSTATS', 'PERL_DESTRUCT_LEVEL', 'PERL_DL_NONLAZY',
+            'PERL_ENCODING', 'PERL_HASH_SEED', 'PERL_HASH_SEED_DEBUG',
+            'PERL_ROOT', 'PERL_SIGNALS', 'PERL_UNICODE'
+        )) {
+            [Environment]::SetEnvironmentVariable($variable, $null, 'Process')
+        }
+        $env:PERL5LIB = $perlLibrary
+        if (-not (Test-Path -LiteralPath $Gpg -PathType Leaf)) { throw "Selected GPG program missing: $Gpg" }
+        $gpgPath = [IO.Path]::GetFullPath($Gpg)
+        $gpgDirectory = Split-Path -Parent $gpgPath
+        $gpgName = Split-Path -Leaf $gpgPath
+        if (Test-Path -LiteralPath (Join-Path $perlBin $gpgName)) { throw 'Bundled Perl directory shadows the selected GPG program' }
+        # 官方 Windows which 只接受程序名，目录由本进程 PATH 明确提供。
+        $env:TL_GNUPG = $gpgName
+        $env:PATH = $perlBin + [IO.Path]::PathSeparator + $gpgDirectory + [IO.Path]::PathSeparator + $env:PATH
+        $env:TL_GNUPGHOME = Join-Path $installerDirectory 'tlpkg/gpg'
         if (-not (Test-Path -LiteralPath (Join-Path $env:TL_GNUPGHOME 'pubring.gpg') -PathType Leaf)) { throw 'Official installer repository keyring missing' }
         Push-Location (Get-WorkPath 'logs')
         try {
-            Invoke-Tool $wrapper @('-no-gui', '-profile', $profile, '-portable', '-non-admin', '-repository', $repository, '-no-continue', '-verify-downloads', '-logfile', (Get-WorkPath 'logs/install-tl.log')) 'installer-console.log'
+            Invoke-Tool $perl @($installerScript, '-no-gui', '-lang', 'en', '-profile', $profile, '-portable', '-non-admin', '-repository', $repository, '-no-continue', '-verify-downloads', '-logfile', (Get-WorkPath "logs/install-tl-$resourceStamp.log")) "installer-console-$resourceStamp.log"
         }
         finally { Pop-Location }
     }

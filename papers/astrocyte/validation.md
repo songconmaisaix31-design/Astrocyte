@@ -202,3 +202,47 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 主控 `msg_e844510ffe79` 在Reviewer全部调用退出后，授予Install→成功后Build→成功后Validate的唯一窗口。实际执行 `& .\papers\astrocyte\build-texlive.ps1 -Phase Install`，原守卫首个样本的可用内存3.2314453125GiB低于4GiB，入口EXIT1立即停止。准确UTC为07:17:22.0752185Z，CPU70%，Stopwatch elapsed26.5546907秒；首样本拒绝，没有第二样本或可宣称通过的2–5秒间隔。
 
 原Install-resources时间戳JSON先写下真实数值及拒绝原因。安装目标和installer-console.log均不存在，安装器/仓库下载NOT_RUN、Build NOT_RUN、Validate NOT_RUN；已通过的安装包签名记录和已接受08原PDF保持。未放宽门限、缩减发行、切换目录或外层重试。全部自有调用退出后，`msg_d7481e3c8b94`立即归还唯一窗口，主控 `msg_e52c93b2dec5` 确认收回并停止同因重试。07:22:36.0440753Z只读进程核查，在Perl/XeLaTeX/xz/GPG/sha512sum/Python/Tectonic/Pandoc/tar中匹配本工作树命令行的进程为0；实际Install前台调用EXIT1，安装器和引擎未启动。实际TeX Live编译目标仍待资源可用及主控另行安排，后续仅静态报告，同Task未结算。
+
+# 重启后的原生安装入口修订
+
+2026-10-19重启续行，准确接管HEAD为`50e51fb68d51bc1ff950fe346a7540a9e167e145`，原分支和Draft PR #3保持。实际Codex CLI0.162.0，当前Orca Dispatch provider为gpt-6.1-sol，终端xhigh fast，无覆盖或子Agent。当前Task为task_f824c0088743/ctx_1fe65b3eaadd。已重新读取主控重启任务、十轮当前方案、研究产品决定、两份Downloads原件和首轮独立报告，应用本树astrocyte-research；08科学正文/Bib/原TeX-PDF冻结，不进入依赖09的10。
+
+## 实际调用与错误传播
+
+每次实际命令均为`pwsh.exe -NoLogo -NoProfile -File papers/astrocyte/build-texlive.ps1 -Phase Install`，各自由主控单独授予唯一窗口，无外层自动重试。
+
+| 授权与实际调用 | 结果及忽略目录texlive2025/logs中的原件 |
+| --- | --- |
+| msg_0b8bc1f9dc5a；原官方Windows wrapper | 原生输出`Cannot open HKCU for writing`及翻译模块加载失败；wrapper实际返回0，入口输出完成文字，未登记安装成功。当时无安装目标，Build/Validate未执行。原件installer-console.log、Install-resources-20261019T1140400133733Z.json。 |
+| msg_9081449b8e8e；同包真实Perl与官方-lang en | 已进入profile安装，随后官方安装器拒绝未发现GPG；真实Perl EXIT1由Invoke-Tool抛出，入口EXIT1。当时无安装目标，Build/Validate未执行。原件installer-console-20261019T1146545956249Z.log、同时间戳install-tl及资源日志。 |
+| msg_38ab9d9abc2f；同一GPG发现配置修订 | 官方仓库verified、Windows64，installer revision75865/database revision78234；scheme-full/doc/src/portable设置存在。六个初始包阶段完成，用时01:56。后续4973包阶段最后输出为0029包achemso开始、time05:41/当时ETA10:27:47。开始记录不证明该包完成，波动的早期ETA不作为最终耗时。原件installer-console-20261019T1150364137986Z.log及同时间戳install-tl/资源日志。 |
+
+原wrapper末尾仅设置普通errlev变量，再到达:eoff标签，没有明确传回该变量的退出指令；Invoke-Tool得到wrapper实际退出码0，未直接得到Perl退出码。现入口使用同包perl.exe解释同一install-tl，按原wrapper清单配置进程环境并直接检查Perl退出码，未修改官方文件。
+
+install-tl在加载trans.pl前解析lang参数；未指定该参数时，trans.pl通过reg_country读取地区，TLWinGoo的cu_root使用KEY_FULL_ACCESS打开HKCU。现采用官方-lang en，未改宿主语言、注册表或权限。TLCrypto的Windows test_one_gpg调用TLUtils::which，后者按PATH目录与程序名查找。现核指定GPG真实文件，在进程PATH提供其目录，TL_GNUPG使用同一文件名；包内Perl优先并拒绝其目录遮蔽指定GPG。原生conv_to_w32_path处理空格引号。Git GPG --version实际EXIT0，为2.4.5-unknown/libgcrypt1.9.4-unknown；原公钥ring与强制下载验证保持。
+
+## 资源与受控中断
+
+| 调用 | 两次UTC | CPU | 可用GiB | Stopwatch间隔 |
+| --- | --- | --- | --- | --- |
+| 原wrapper | 11:40:41.0485304Z / 11:40:43.5123369Z | 7% / 8% | 14.5345458984 / 14.5962867737 | 2.4638347秒 |
+| 真实Perl，GPG发现拒绝 | 11:46:55.4767675Z / 11:46:57.9094857Z | 0% / 2% | 15.2564392090 / 15.2515640259 | 2.4327916秒 |
+| 完整安装开始 | 11:50:37.2605539Z / 11:50:39.7430225Z | 8% / 10% | 15.4694175720 / 15.4653167725 | 2.4821475秒 |
+
+均BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB启动守卫通过，不证明峰值。旧07:17内存拒绝保留。现场观察到本次真实Perl的curl.exe子进程，参数指向同一Utah2025 final实际归档；未运行自研下载器或并行安装。
+
+主控msg_13e65e8e8317为先恢复用户应用而授权中断，要求保留部分目录。对原生会话28383发送Ctrl+C后实际EXIT1；随后只读核本次先前PowerShell45392/Perl34956/curl43820及本树Perl/curl/wget/xz/tar/GPG/XeLaTeX匹配进程，剩余0。msg_43ccc954d91c立即交还窗口，msg_53a03cb047c3确认收回。未删除或移动部分安装及日志，未续装或执行Build/Validate。主控要求的中断不构成完整安装成功或功能失败判定。
+
+## 静态检查与同版元数据
+
+`pwsh.exe -NoLogo -NoProfile -File .verification/check-texlive-syntax.ps1`仅调用Language.Parser.ParseFile，PowerShell7.6.6 Parser EXIT0；`git diff --check` EXIT0。冻结正文、Bib、原TeX/PDF相对a664233a的差异EXIT0。未写替身测试，未运行产品、模型、正式实验、视觉或新引擎文稿检查。
+
+为主控要求的镜像提案，完整阅读[TUG历史镜像页](https://www.tug.org/historic/)、[ISO官方说明](https://www.tug.org/texlive/acquire-iso.html)、[2025实际发行目录](https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2025/)及同版原生下载/恢复代码。NJU在该历史镜像页列出。仅读取NJU同一2025 final三份元数据，未下载包/ISO或切换安装源。
+
+`pwsh.exe -NoLogo -NoProfile -File .verification/compare-nju-metadata.ps1`实际EXIT0：UTC12:03:58.7215547Z–12:03:59.1546449Z，HTTP均200；压缩数据库2704836bytes、校验文件144bytes、签名488bytes分别与先前Utah已验完整文件逐字节相同。原数据库经成熟xz提取20189437bytes全文、SHA512及指定官方签名者验证的原件保留；本次复用完全相同验证输入的身份，没有声称重新验签。NJU三文件和comparison.json仅在自身忽略nju-metadata目录。该比较不证明NJU包下载速度或安装成功。
+
+Install入口保留目标已存在即拒绝规则。当前部分安装存在，当前运行目录无installation.profile；未将原生重新安装说明解释为已经验证的跳过已装包续传。具体NJU完整重装建议只在自身忽略方案，待主控明确后实施，没有自动切源或恢复动作。
+
+## 当前交付范围
+
+本轮修复真实Perl错误传播、官方语言选项与同一GPG发现配置，实际进入强制验签的完整安装。安装未完成，XeLaTeX Build/Validate未运行，未生成新的来源ZIP或新引擎PDF；原08完整Tectonic交付保留。独立Reviewer尚须对本轮准确候选静态核验。arXiv本站处理、科学贡献/研究实现、作者/许可及正式数据继续未完成，没有注册/上传，不增加十轮接受计数。
