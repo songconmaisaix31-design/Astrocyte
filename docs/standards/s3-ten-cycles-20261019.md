@@ -222,3 +222,24 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 四个阶段的八次启动样本最高 CPU19.8%、最低可用12.798637390136719GiB；实际阻塞CPU采样，结束点单调间隔约3.002秒，均满足原85%/4GiB条件，父子进程 BelowNormal。Go4/`-p=4`/512MiB、Node1024MiB；没有运行 Go 编译，未测量运行期峰值。
 
 全部依赖安装和检查调用实际退出后，以 `msg_5dce3320d058` 立即交回唯一窗口。当前原应用尚未启动；原库逐表计数前后比较、实际服务PID/唯一监听/health/首页及独立恢复审查保持未执行。产品 Source15、ZIP与此前130项/DOM结果保持，新的独立包审查由 Reviewer 分别记录。原生/S3三项待答与Claim拒绝保持，完整默认CI、S3、发布和正式实验没有新增通过结论。
+
+## 开发检查入口的真实输出目录
+
+主控 `msg_b48869ca0bea` 批准本项静态修改，`msg_e35ee1a69e70` 批准本地固定源码，`msg_e6fb63d3ce4a` 授予实际检查窗口。before 为 `2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`，after 源码为 `22cde9efc540553c433463af5b9e955790d57a99`；两者通过真实 Git clone/detached 保留准确身份，各阶段前后 tracked 干净。当前任务、客户端、工作树与分支保持上节记录。
+
+原准确982 CI的 OpenViking HTTP 和两个 ProgressPreflight 检查在创建HTTP/SQLite前因缺 `ASTROCYTE_TEST_OUTPUT_ROOT` 失败。`scripts/check.mjs` 原先直接运行 Go 检查，没有设置这项真实输出前置。现在 `scripts/process.mjs` 的 `createCheckOutputDirectory` 复用现有 `verificationOutputRoot`，以 Node 标准 mkdir/mkdtemp 在所选根新建 `check-*`；check.mjs在寻找Go前明确设置本次进程的环境，原子进程继续使用现有继承规则。相对根立即拒绝，目录错误在Go启动前抛出。所有原检查项目、顺序、命令、测试、断言及workflow保持。
+
+实际入口为本树忽略的 `.verification/restart-product-20261019/run-output-check.ps1` 与 `verify-output-root.mjs`。下表目录均相对于该忽略根；两个源码副本分别为 `source-before-2a05` 与 `source-after-22cde9ef`。每个命令显式提供准确 `-Source`、副本 `-SourceRoot` 和新的 `-Output`。Go命令通过既有 `findGo/run` 和实际安装的Go1.27.2执行，Node使用标准模块直接调用同一新增辅助函数。
+
+| 实际阶段与命令 | 结果与原件 |
+| --- | --- |
+| `run-output-check.ps1 -Phase clone`，before/after各一次 | 两次EXIT0，实际clone后checkout准确提交、逐次核HEAD与clean。`ci-clone-before-01`、`ci-clone-after-01` 的clone.log/run.log及资源JSON。 |
+| before，`go test -mod=readonly ./internal/adapters/httpapi -run '^TestOpenVikingActualHTTPUnconfiguredAndRefused$' -count=1 -timeout=2m -v` | 原Go进程EXIT1，精确显示“需要明确的本次验证输出目录”；负向检查确认该预期前置失败，包2.069秒。没有将本项记为功能通过。`ci-before-01/before.stdout.log`、stderr、result.json与check.log。 |
+| after，清除输出变量后通过无参数辅助函数分配默认根，再执行同一原OpenViking命令 | EXIT0，原1函数通过、0 Skip，函数0.13秒/包2.415秒。实际输出为准确副本 `.verification/check-DOIgoT`。真实HTTP/SQLite、未配置、真实连接拒绝、空集合、Origin/CSRF、缺内容层级和零远端提交断言保持。`ci-openviking-01/result.json`、check.log及资源JSON。 |
+| after，明确本次父根并通过同一无参数辅助函数继承，`go test -mod=readonly ./internal/workspace/app -run '^(TestProgressPreflightActualColdConfigurationAndRestart\|TestProgressPreflightActualSQLiteReadOnlyRefusesPending)$' -count=1 -timeout=2m -v` | EXIT0，原2函数通过、0 Skip，各0.16/0.12秒，包2.342秒。实际输出为 `ci-progress-01/evidence/check-04Syyp`；真实生产配置前置拒绝、保守unknown回执、人工保存、原operation/同库重启拒绝重发，以及实际query_only/READONLY/HTTP500与零回执保持。未Probe Registry、零原生会话和来源README只读守卫通过。`ci-progress-01/result.json`、check.log及资源JSON。 |
+| after，`run-output-check.ps1 -Phase invalid-roots` | EXIT0，相对路径和本次实际创建的普通文件均由真实文件系统/原校验拒绝，Go启动0。`ci-invalid-roots-01/result.json`、check.log及资源JSON。 |
+| 两个生产Node脚本与验证Node入口 `node --check`，PS5.1/7标准Parser，`git diff --check` | 全部EXIT0；仅静态解析，没有执行待检查脚本正文。 |
+
+六个实际阶段的12次启动样本最高CPU9.4%、最低可用15.298702239990234GiB，实际阻塞CPU采样、单调结束点间隔3.0019–3.0091秒、BelowNormal；Go4/`-p=4`/512MiB软限制、Node1024MiB、真实服务串行。没有运行浏览器或Native，没有测量运行期峰值或宣称速度收益。全部调用实际退出后以 `msg_59a9a6d7962c` 立即交回窗口，随后仅报告、普通提交及push。
+
+本项修复开发检查入口的输出前置。完整默认CI仍未通过；原公开论文/视频/历史SQL和真实原生前置未补造，旧relayControlled/localNative等替身未运行，原生/S3三项选择未代答。原workflow另行直接执行的race命令没有由本项分配输出根，范围单独保留。未运行全套pnpm check，未重建原Source15 ZIP或启动共享64505服务。当前等待独立Reviewer准确复验与CR，不自行宣布接受或增加十轮次数。
