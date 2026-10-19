@@ -88,3 +88,15 @@ Markdown与BibTeX是单一可编辑正文来源；LaTeX由同一完整正文和�
 所有下载、安装、归档、构建与校验串行；每阶段启动前CPU/内存双采样，相隔3秒睡眠加查询时间。所记样本最高CPU22%、最低可用内存5.961GiB，全部符合CPU<70%、可用≥4GiB；候选构建脚本内另一次守卫也通过。PowerShell及其子进程BelowNormal，Node堆512MiB。这些是启动样本，未监测并宣称运行峰值。
 
 没有启动产品服务、浏览器、本地模型、正式八配置实验或V4；没有发送产品原生输入、开放工具权限、修改业务/工作流/正式实验，没有子Agent、Aliyun、视觉、伪数据、Git回滚或force push。下载和构建进程均已正常退出，唯一重操作窗口可交回主控。身份、正式设计、来源差异、分析、真实产品链路及PDF限制继续按上表保留。
+
+## 真实CR、hook与主控确认
+
+首份报告提交 `68288c4f72b4ec05a8d45d7e340d0aea0432962b` 已普通push，随后从GitHub实际读取和本地一致的分支SHA。`git diff --cached --check`通过，提交仅包含本报告及自身`.gitignore`。
+
+Reviewer于UTC `2026-10-19T01:48:32Z` 实际发布 [PR #3 review 5566157313](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566157313)，GitHub读取回执为 `COMMENTED`、`commit_id=cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`。当前GitHub账号是PR作者，因此使用COMMENT公开上述限定接受决定，没有原生APPROVE。
+
+随后实际执行原产品树 `scripts/review-decision-hook.mjs`，传入表中完整Run/Task/Dispatch/终端、40位候选SHA、`accept`、本报告非空绝对路径、限定原因和已安装Windows Orca入口。Node24.16.0以BelowNormal和512MiB堆配置运行，EXIT0；UTC `01:48:46Z` 回执 `ok=true`，消息 `msg_3de99dd43db5` 已持久入队，原始回执保留在自身 `.verification/review-hook-receipt.log`。
+
+主控UTC `01:49:31Z` 真实回复 `msg_7de6cb67c399`，thread_id指向该hook消息：确认已完整读取报告并通过GitHub API核对真实CR和准确源码，接受首轮完整稿件的审查结论，没有本轮返修要求，收回唯一重操作窗口，并明确指示同Task检查最终消息后发送一次成功worker_done。正式研究、统计程序、原生/S3、完整产品CI、PDF和投稿均继续未验收。该实际读取与回复确认了本次唤起，入队回执本身没有被当成确认。
+
+本次Python、Pandoc和Node调用均已完成并退出，没有未结束的验证session，也没有启动自有后台服务。最终报告补充该真实回执后按同分支普通提交与push，不修改研究候选或重新发布决定；主控按准确Dispatch负责后续正式释放。
