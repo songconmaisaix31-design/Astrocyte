@@ -186,3 +186,17 @@ TeX Live2025 final与arXiv2025-08-03快照不同，本站处理/真人检查、�
 14:37，Download官方ZIP36160153bytes的SHA512通过，公钥导入因GPG agent IPC而EXIT2，立即停止/退出，旧下载及home/log保留。完整读取新VerifyInstaller方案后批准复用原下载：GPG2.4.5成熟dearmor生成新专用ring，主gpg实际支持assert-signer，显式home/无默认ring并固定官方主fingerprint，原签名及SHA512均EXIT0才成熟解压；不导入、不启动agent/手写解析/关闭校验/重下ZIP。该小阶段单独唯一窗口，退出即归还，尚不Install。
 
 独立inspect显式原参数q15-02仍实际EXIT1，未确认原因，所有调用退出，Verify/DOM未运行。主控已读官方Delve1.27.2发布资产、CLI与Go兼容源码，允许Reviewer先静态准备成熟调试器方案：官方Windows amd64 ZIP12410128bytes及checksums，所有下载/配置/历史/日志限自身忽略目录；以后在唯一窗口用现有准确Source15二进制、原只读输入和新输出观察原始错误，仅断点/变量/栈读取。禁止set/call/jump、禁用版本检查、改源码或变量/输入、调试其他进程、常驻调试服务或将调试结果冒充原Verify通过。准确优化二进制可能无法读变量，届时如实报告；安装/调试另授窗口。
+
+科研VerifyInstaller已实际EXIT0，root读原生ASSERT_SIGNER和资源后回复msg_12d31f37859c确认调用退出，尚未安装。Reviewer现持msg_3eb5ad73cda8的成熟Delve官方下载/校验及一次只读诊断窗口，优先使用官方交互CLI逐次读取实际响应，无需为init行为继续通读调试器实现。科研补充轻量静态例外msg_17dadf82afd2：仅官方约2.7MB tlpdb.xz与校验、已验发行成熟解压/TLPDB/TLPOBJ读取，BelowNormal/Node512，调查98字符安装前缀对应的真实适用Windows路径长度；不编译/安装/运行格式，不手写parser、合成路径或证明系统。宿主LongPathsEnabled=1不自动证明全部工具支持，真实超限/适用包尚待结果；不改宿主/盘符或缩减发行。
+
+14:51，Delve实际断点观察q15-debug-01的safe文件open为ERROR_ACCESS_DENIED(5)，os.Args为原13项；out闭包变量不可读后退出，自有调试器/目标均退出。q15-01/02此前没有错误值，不推断同因。常规D目录ACL与成功Worker目录一致，拒绝来源未明，不修改安全配置或ACL。下一次独立inspect输出明确改为Reviewer自身C工作区忽略目录的新q15-03，准确二进制/原只读输入与全部Git/Reader/SQL检查保持；若完整EXIT0，成熟Copy-Item仅将自身实际生成的Verify所需安全JSON移交至获准D reviewer-release新q15-03，逐文件完整字节核一致，再原完整Verify/DOM。该移交不使用Worker期望、旧结果或改写数值；权限失败保留，不自动fallback或重试，全部调用退出即归还。若目标仍拒绝则立即报告实际错误，禁止用手工结果填充。
+
+科研真实发行清单/校验/签名与成熟TLPDB读取已EXIT0，scheme-full/windows为4978包236376文件，当前根下最长248、已知超限0；不据此保证生成/临时路径或安装通过，保持原目录。技术入口阶段1943b26b8d7adfe615001c11413a573f68a93559普通push原Draft PR3，08科学正文/Bib/原制品相对a664不变，尚未Install/Build/Validate，不计新轮次。
+
+只读inspect在新C输出尚未启动时，两次因可用内存3.536/3.728GiB低于4GiB拒绝，旧门限与拒绝结果保留。根据用户允许更多资源，主控为这一固定只读核查采用明确的轻量额度：CPU<85%、可用≥3GiB、BelowNormal、Go1/256MiB、Node≤512MiB、单独窗口。使用已安装psutil7.2.2的cpu_percent(interval=1)和virtual_memory.available逐次取得真实样本，两个结束采样点以perf_counter核2–5秒间隔、UTC另记；首次非阻塞0不使用，不缓存/重试。仅修改Reviewer自身忽略入口，原工具/参数/全部1316来源与Reader/SQL不变，C新q15-03成功后仅移交自己的真实安全JSON至D。完整Verify/DOM/编译/安装/文稿构建继续85%/4GiB，未满足保持未执行；不将新额度的通过称为旧门限通过。
+
+只读专用额度实际CPU69.3%/95.1%、可用3.338/3.277GiB、2.2695秒，第二CPU拒绝，原工具仍未启动，全部调用退出。科研随后获msg_e844510ffe79完整Install→条件成功后的Build/Validate窗口，实际首样本UTC07:17:22.0752185Z、CPU70%、可用3.231GiB低于4、elapsed26.55秒即停止；没有第二样本、安装器/仓库下载/新编译或新ZIP/PDF。msg_e52c93b2dec5确认退出收回，技术报告50e51fb68d51bc1ff950fe346a7540a9e167e145已普通push、远端/PR3一致且干净，科学正文/Bib/原制品相对a664不变。
+
+产品最终附加CR5568150342准确57a91f4601b4292df4f55ba6cac541bad5caab3f为insufficient_evidence，报告54627b067608f0c25e9212ae39b6a5882d05e102普通push/远端一致/clean；root实际完整读新增决定、API核COMMENTED/准确commit后回复真实hook msg_6edc6462e646为msg_308141658348。不否定Worker实际Build/130/DOM，不判资源拒绝为产品失败；独立完整验包未通过，不增轮，仍6/10。
+
+当前没有重操作或服务/浏览器调用。有限范围预览首发已异步询问用户未答，原完整默认浏览器/原生发布门禁保持，无tag/Release/merge；公开说明仅在原Worker忽略文件release-preview-notes.md。下一次实际检查须有满足相应额度的资源窗口；C新q15-03及原完整检查方案保留，准确工具与ZIP不因资料整理重建。原三项预算/权限/原生、作者/许可与研究实证前置仍待答或未完成，05/07/09/10不改称接受，停止同因自动重试。

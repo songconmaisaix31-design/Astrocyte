@@ -2,13 +2,13 @@
 
 ## S3与论文十轮循环已开始（2026-10-19）
 
-当前执行：接受6/10，08准确a664233a的27页/14引用完整提案、独立重建/全文TeX比较及准确CR/hook/root回复通过。产品Source15新ZIP已Build/130项Verify及新双视口DOM EXIT0：26品牌、人工DAG增量/撤权清图、可选OpenViking未配置、3个DAG事件/6个outbox逐ID SQL和430次真实归属检查；所有调用退出，root已读实际原件。公共Git1316事件历史只读核对通过、真实今日0。独立准确clone/Go构建通过，独立inspect实际失败且原因未明，Verify/DOM未独立运行。旧超时/资源拒绝保留；完整默认/原生/S3/发布仍未通过。
+当前接受6/10，08准确a664233a的27页/14引用提案、独立重建/全文TeX比较及准确CR/hook/root回复通过。产品Source15新ZIP已Build/130项Verify/双视口DOM EXIT0：26品牌、人工DAG增量/撤权、OpenViking未配置、3个DAG事件/6个outbox SQL和430次归属检查，均为Worker实际结果；准确报告57a91f46。独立clone/Go构建通过；Delve定位新Q创建文件ERROR_ACCESS_DENIED，拒绝来源未明。C输出尚未启动即遇资源拒绝，独立完整Verify/DOM未运行。完整默认/原生/S3未通过；是否允许有限范围预览首发已异步询问未答，无tag/Release。
 
-用户最新目标为当日初步跑通产品并发布第一版Release包、完成真正可投稿的arXiv预印本。后续资源提高到CPU<85%、可用≥4GiB、BelowNormal、Go4/-p4/512MiB、Node1024MiB，重操作保持全局串行；静态检查按AGENTS执行。GitHub Release未发布。科研27页/14引用完整文稿及同源流程通过限定审查，原Worker按完整portable TeX Live2025/干净来源包计划静态实施；真实研究贡献、作者/许可、研究实施与本站兼容仍待完成，不能写为投稿就绪。
+用户当日目标为初步跑通并发布首版Release，以及真正可投稿的arXiv预印本。完整检查/安装继续CPU<85%/可用≥4GiB、BelowNormal、Go4/512MiB/Node1024MiB，串行单窗口。固定只读inspect专用Go1/256MiB/Node512MiB、≥3GiB与真实psutil双采样已记录，实际第二CPU95.1%拒绝；没有因此取得原4GiB通过。科研技术阶段757bae82已普通push，官方TeX Live2025安装器/元数据SHA512与指定签名者、成熟清单读取通过；实际Install首样本3.231GiB拒绝，安装器/Build/Validate未执行。真实研究贡献/实现证据、作者/许可与本站处理仍缺，27页稿不属投稿就绪。
 
 用户要求完成S3与论文初稿并进行十次改进。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前01/02/03/04/06/08限定接受，准确CR与真实hook/root回复均已完成。默认浏览器静态矩阵未运行全套，不另计次数。三项原生/S3选择保持未答；AT08/09/13、带Worker退出/释放和用户采用仍缺正向证据，不把构建或重复检查计为S3通过。
 
-Run `run_29c7e66b4136`。产品 `task_51276f272ff3` / `ctx_e49721d7ac8d`、科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`、Reviewer `task_2923223271be` / `ctx_568047699698` 均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent。科研原树/PR3独占msg_5c8deff9e39d的VerifyInstaller签名核查窗口；原Download SHA512通过、GPG导入EXIT2已停止，旧原件保留，尚未安装。产品原树/PR2准确报告57a91f46普通push/clean且只报告差异；Reviewer仅静态准备Delve真实错误观察及独立DOM。三个Task继续，尚未worker_done；正式V4及其他用户终端保持，正式实验/合并/部署/arXiv上传均未执行。
+Run `run_29c7e66b4136`，三Task/Dispatch仍为产品task_51276f272ff3/ctx_e49721d7ac8d、科研task_f824c0088743/ctx_f71ff9bcaacb、Reviewer task_2923223271be/ctx_568047699698；实际Codex0.162.0/gpt-6.1-sol继承配置。准确产品报告57a91f46的CR5568150342为insufficient_evidence，报告54627b06普通push；原hook msg_6edc6462e646经root读报告/API核对后回复msg_308141658348，不增轮。科研报告50e51fb6普通push/远端一致/clean，正文仍a664，TeX Live安装未执行。全部实际检查调用退出，无重操作窗口；预览说明仅在产品忽略目录，三个Task未worker_done。原三项S3/原生、作者/许可及预览范围仍待答，正式V4与其他用户终端不操作，正式实验/合并/部署/arXiv上传未执行。
 
 ## 科研初稿已提 PR 并完成独立审查（2026-10-19）
 
