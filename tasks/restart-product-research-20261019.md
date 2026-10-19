@@ -18,7 +18,7 @@
 | 原科研Task task_f824c0088743 | 静态核已验TeX Live安装入口与完整来源流程，沿原方案完成Install→Build→Validate，提高可编译来源交付的实际证据；根据准确产品事实准备研究反馈 | 沿原论文写域及PR #3，实际应用astrocyte-research skill。初始没有重操作窗口，独立验包退出后再获明确授权。保留08科学正文/Bib不变，先完成技术阶段；实际PDF/引用/全文与来源检查通过后交独立Reviewer。不能自报投稿就绪，未知作者/许可/正式结果保持未知 |
 | 原Reviewer Task task_2923223271be | 先沿已有准确Source15二进制、C工作区新q15-03输出方案完成独立只读inspect，再按原条件完整Verify与DOM；关闭自有服务浏览器后交还窗口。随后审科研技术阶段及产品恢复结果 | 沿原报告和忽略输出写域，沿原PR发布准确Commit CR及review-decision hook。保持原公开Git/SQLite、真实日期、Reader/SQL全部断言；不覆盖旧输出、不写Worker源码。准确候选发生变化先核差异。每个决定明确范围，主控实际读报告和回复hook |
 
-初始唯一重操作窗口授Reviewer独立验包；产品和科研只静态阅读/编辑。Reviewer退出后授科研安装与文稿检查；最后产品启动共享服务。需要产品返修时由原Worker完成，再由Reviewer复验。服务运行期间不另起第二服务或其他重操作，必要验证先协调服务窗口，不终止其他应用。
+初始唯一重操作窗口授Reviewer独立验包；产品和科研只静态阅读/编辑。首个完整Verify退出后先完成原服务缺失依赖恢复，再由Reviewer按文档Windows PowerShell5.1完成同源Verify/DOM，随后授科研安装与文稿检查；最后产品启动共享服务。需要产品返修时由原Worker完成，再由Reviewer复验。服务运行期间不另起第二服务或其他重操作，必要验证先协调服务窗口，不终止其他应用。
 
 ## 约束与停止条件
 
@@ -41,3 +41,15 @@
 三者均使用Codex默认启动配置，未覆盖模型。实际模型/客户端待各自Handoff核实。正式新指令分别msg_d5ec8bbfc581、msg_c0d2f7541542、msg_b5a2896a5ff7；排队回执不作为已读证明。
 
 共享服务恢复只读定位到原H树 `dist/product-recovery-20261016/restore-38fb.ps1`，运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413`。追加允许产品Worker在该既有运行根生成本次日志并由原恢复入口更新真实running.json；原程序、H脚本、配置与历史日志不改，原SQLite仅按既有服务使用，不重建或替换。先核实际文件和配置再启动，原记录40804仅为历史PID。
+
+实际Handoff核原c5程序、SQLite和Q均存在，summarize CLI及CodeGraph SDK原依赖目录缺失。主控完整读取产品自身plan.md后接受原路径恢复：原standards-backend四份配置/锁不变，pnpm11.27.0冻结安装并核summarize0.25.1；原runtime/sdk package与lock逐字节核等于准确Source15 ZIP后，成熟ZipArchive只恢复完整node_modules，原Check-Runtime实际import/资产核查，不执行推理。追加产品写域仅 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/node_modules`及必要忽略缓存、`D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/sdk/node_modules`、原H `process-20261016`缓存。原配置/锁/脚本不改，目标包含检查、原目录不存在、不覆盖既有文件、原完整性与失败立即停止保持。依赖恢复尚未运行。
+
+Reviewer实际HEAD为ffbc5762f578ab39fdacd9a9cc31b970d5beead6，相对54627b06仅追加主控收到原hook的两行记录，已只读核实。新C q15-03的真实inspect于UTC11:17:48 EXIT0，origin-safe逐项匹配1316个真实Git来源与event_id、可达Commit SQL通过；三份自身实际安全JSON已移交D新q15-03。完整验包与DOM尚待Reviewer最终结果，不提前接受。
+
+首次独立完整Verify使用PowerShell7.6.6，在解压/隐私/runtime/初始HTTP/真实快照发布与health通过后因JSON日期成为DateTime、原snapshot_at.Length访问失败而EXIT1，原新v15-01保留，服务正常退出且17889无监听。主控核发布文档第3/78行明确基本条件与命令为Windows PowerShell5.1，下一次独立比较采用相同5.1环境及原Source15/ZIP/参数，新v15-02，成功后新DOM。保留7.6失败，不新增Core兼容或修改原断言/ZIP；不是产品功能失败的判定。阶段审查报告511cdce8f3bbea03f72d293668c334e9d92dff41已普通push，最终CR/hook待实际结果。
+
+产品原冻结依赖安装实际pnpm11.27.0完成187项/378锁政策，原精确CLI0.25.1、四配置完整字节相同。SDK仅从原Source15 ZIP恢复1368文件/377193096bytes，package/lock一致，原完整Check-Runtime EXIT0且未推理；保留原镜像超时与成熟工具原生重试日志，未执行外层重试或改源。四阶段八样本最高CPU19.8%、最低可用12.798GiB、间隔约3.002秒。全部调用退出后msg_5dce3320d058交回，root读原日志确认。准确报告2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65普通push/远端一致/clean，相对57仅本轨报告21行，Source15/ZIP不变。
+
+独立Reviewer在Windows PowerShell5.1实际完成新v15-02原完整Verify EXIT0，准确Source15/candidate-package-cognition-runtime，130 PASS/0 nonpass，root实际标准JSON逐项结果分组核计数。原SQL/六字段、历史、HTTP与真实进程重启/持久状态通过；随后新dom15-01原完整工具EXIT0，两视口/26品牌/人工DAG增量/撤权清图，3个DAG事件逐项SQL核查。root读原result/DOM/log并核17889无监听，msg_6e503bdda22e实际交回窗口后回复msg_771e61e58629；最终准确报告候选2a05的综合CR/hook仍待Reviewer，不增加轮数或宣布完整S3/发布。
+
+科研已获msg_0b8bc1f9dc5a唯一窗口，直接既有Install→成功才Build→成功才Validate，科学正文/Bib/原制品冻结，实际结果待交接。研究技术结果由独立Reviewer另用自身输出重建核查，之后才产品同库应用启动。
