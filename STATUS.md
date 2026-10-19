@@ -2,7 +2,7 @@
 
 ## 重启应用与产品科研续行（2026-10-19启动，10-20续行）
 
-用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35，均实际ready/turn_started；尚未把排队指令视为Worker已读。
+用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35；三者实际读取并完成本次可执行范围，原Task的未完成目标保持。
 
 产品原summarize与SDK依赖已按原锁及准确Source15 ZIP恢复，原Check-Runtime通过且未推理，报告2a05bd0d已普通push。独立Reviewer的真实inspect、Windows PowerShell5.1完整130项及双视口人工DOM均通过，CR5571008196准确2a05、限定accept；报告647828d8普通push，主控读报告/实际API核SHA并回复真实hook，仍6/10。Core7.6失败保留，完整默认CI、原生/S3、今日新增与实际采用仍未通过。
 
@@ -10,7 +10,9 @@
 
 产品Source22cde9ef修复检查入口输出目录前置，before缺目录失败及after三项真实HTTP/SQLite、无效根拒绝已获独立复验/CR5571335055限定接受，原hook已由主控实际读报告/API后回复，仍6/10。原同库应用已恢复到http://127.0.0.1:64505/，PID45676、程序c5、BelowNormal，68表93行/Q保持，主控实际HTTP/监听/计数核查通过；普通服务终端独立保留。产品报告5725c184已普通push/PR2准确；Reviewer一次同服务只读EXIT0，自身新SQL当前68表93行与before/after一致、health和原首页通过，原PID继续运行，主控实际读result并回复。
 
-原服务恢复CR5571481043为COMMENTED/准确5725/限定accept，报告c5bf81e2普通push，主控完整读报告/实际API核SHA并回复原hook，确认唤起，仍6/10。科研候选fcb1e0a7已普通push/PR3准确，原正文/Bib/TeX-PDF冻结，仅技术入口及实际说明更新；Reviewer静态审查中，不执行未完成引擎重建。各重操作仍85%/4GiB双采样、BelowNormal及串行，当前窗口保留原应用。无Release或投稿，原S3/原生、预览范围、并发例外与作者许可待定项保持。
+原服务恢复CR5571481043为COMMENTED/准确5725/限定accept，报告c5bf81e2普通push，主控完整读报告/实际API核SHA并回复原hook，确认唤起，仍6/10。科研候选fcb1e0a7已普通push/PR3准确，原正文/Bib/TeX-PDF冻结，仅技术入口及实际说明更新；独立CR5574476787/报告b4c46807为insufficient_evidence，无新增明确代码返修，完整安装、新PDF/来源ZIP及独立编译未完成。主控实际读报告/API核准确SHA并回复原hook msg_3f2eb295ce08，确认唤起。各重操作仍85%/4GiB双采样、BelowNormal及串行，当前窗口保留原应用。无Release或投稿，原S3/原生、预览范围、并发例外与作者许可待定项保持。
+
+产品/科研/Reviewer本调度均已按原Task未完成范围正式worker_done/failed，准确Dispatch逐项官方released/closed_agent_terminal/transcript captured，原Run reclaimable为空。最终审查记录13bba19f已普通push/远端一致/clean；原工作树、分支、部分安装和证据保留，普通服务继续运行，释放后实际health ok/首页200及原PID身份通过。05/07/09/10、完整CI/S3、完整TeX和投稿继续未完成，待定选择未代选，无tag/Release/合并或arXiv上传。
 
 ## S3与论文十轮循环（2026-10-19续行前记录）
 

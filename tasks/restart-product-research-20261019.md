@@ -89,3 +89,17 @@ Reviewer按同服务只读授权一次执行自身review-shared-service.ps1，UT
 用户再次要求继续。Orca运行元数据暂不可用后，按原生orca open重开，实际新runtime 46fe6e2a-8cce-4efe-b998-2829d4a75754；原Run和持久邮件保持，科研与Reviewer原Dispatch先后恢复实际live，没有根据restored_unconfirmed重建执行。原应用仍唯一64505/PID45676、原程序/创建时间/BelowNormal，主控实际GET health为ok。
 
 产品原Task以msg_c4b2a04550cc正式worker_done/outcome failed结算：本次依赖、检查入口与恢复限定范围完成，准确5725已普通push/远端一致/clean；05/07/09仍缺三项未答及真实采用条件。主控逐项核准确Task/Dispatch和原报告后正式worker-release ctx_013843bce872，实际released/closed_agent_terminal/transcript captured，仅关闭对应Worker终端，工作树、分支和普通应用进程保持。未把本次局部完成登记为完整Task或十轮通过。
+
+准确fcb的最终科研CR5574476787为COMMENTED/insufficient_evidence，独立报告b4c468073a65f98ab2465d0c448310c5e94abf33已普通push。主控完整读新增章节，实际API核准确SHA和决定，回复原hook msg_ec3a8f58aec9为msg_3f2eb295ce08，确认唤起；没有新增明确代码返修项。静态核查支持同包Perl/退出码、官方语言参数及真实GPG发现修订；完整Install→Build→Validate、新引擎PDF、来源ZIP和独立编译仍缺实测。原科学正文/14引用/TeX-PDF保持，没有正式结果或投稿就绪结论，不增加6/10。
+
+原安装与持续服务的并发例外尚未确认，当前单窗口保留原应用；未启动NJU安装或不完整引擎构建。科研以msg_9ae31d83ef02、Reviewer以msg_cd8488289027正式worker_done/outcome failed结算，原Task10及完整十轮仍缺前置；没有把局部交付当作完整成功。主控核准确Task/Dispatch及最终报告后，逐项正式释放ctx_1fe65b3eaadd和ctx_a8916e612c35，均released/closed_agent_terminal/transcript captured；全部工作树、分支、部分安装、原件和普通服务保留。
+
+最终审查报告13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8只追加真实hook回复及结算范围，主控实际读diff、核远端一致和tracked干净。原Run的reclaimable查询为空，计数6个历史及本次Dispatch均released；没有额外活跃Worker或待清理终端。UTC2026-10-19T16:25:17Z（北京时间10月20日）主控在释放后实际核唯一64505/PID45676、原程序/UTC创建时间/BelowNormal保持，health ok及首页200，EXIT0；未重跑SQL、包检查或浏览器。
+
+| 交付 | 分支 | 已普通push的Commit |
+| --- | --- | --- |
+| 产品源码与恢复报告 | songconmaisaix31-design/frontend-observatory-20261018 | 5725c1840a760105518d273eaaa28d7367f369ed；实际两脚本源码22cde9efc540553c433463af5b9e955790d57a99 |
+| 科研技术候选 | songconmaisaix31-design/research-preprint-20261019 | fcb1e0a70541e15de1f52507a43edadb9801e368 |
+| 独立审查最终记录 | songconmaisaix31-design/research-preprint-review-20261019 | 13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8 |
+
+完整默认CI/S3/原生正向与十轮05/07/09/10未通过，完整TeX安装和文稿重建未完成。S3预算单位/权限证据/受限Codex选择、安装与服务共存例外、首发范围及作者/机构/许可继续待用户确认；没有tag、Release、合并或arXiv上传。正式V4沿独立既有任务管理，本次不修改正式实验和用户作品授权。
