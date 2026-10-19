@@ -4,7 +4,7 @@
 
 这是 `tasks/research-preprint-20261019.md` 的审查任务。科研Worker完成完整初稿、普通push和Draft PR后，主控通过Orca CLI派发一个独立Reviewer。研究候选完整SHA与PR编号由主控在派发时提供；未取得候选前不开始CR，不把本文件视为已完成审查。
 
-Reviewer使用独立Worktree/Branch，只修改 `docs/reviews/research-preprint-20261019.md` 和自身已忽略 `.verification/`。允许将已推送、已指定的研究候选作为审查Git基线初始化；正文、引文、skill和研究反馈保持只读，返修交原科研Worker。读取主控AGENTS、HANDOFF、STATUS、研究任务/产品决定和两份Downloads原件；读取研究树已配置的 `.agents/skills/astrocyte-research/SKILL.md`，记录实际应用情况。禁止子Agent和Aliyun Agent。
+Reviewer使用独立Worktree/Branch，按仓库默认Git基线建立，只修改 `docs/reviews/research-preprint-20261019.md`、自身 `.gitignore` 中的 `.verification/` 条目和自身已忽略 `.verification/`。研究稿从科研树准确Commit只读；需要构建时可用成熟Git归档/复制工具把准确候选放进自身忽略目录，在该目录生成真实构建输出，不能改写科研Worker树。正文、引文、skill和研究反馈保持只读，返修交原科研Worker。读取主控AGENTS、HANDOFF、STATUS、研究任务/产品决定和两份Downloads原件；读取研究树已配置的 `.agents/skills/astrocyte-research/SKILL.md`，记录实际应用情况。禁止子Agent和Aliyun Agent。
 
 ## 必须核查的内容
 
@@ -22,3 +22,9 @@ Reviewer使用独立Worktree/Branch，只修改 `docs/reviews/research-preprint-
 在准确候选SHA上发布真实GitHub CR；同一GitHub账户无法提交原生APPROVE时，以COMMENTED公开具体审查决定并如实说明。随后调用已有真实hook：`C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018/scripts/review-decision-hook.mjs`，传入实际Run/Task/Dispatch/终端、40位候选SHA、决定、非空报告绝对路径和原因；Windows Orca入口为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。主控真实读取、回复后才算唤起已确认。
 
 只执行本次文稿所需的检查，不启动产品服务、本地模型、正式V4或八配置实验，不修改模型和权限配置。重操作必须取得主控串行窗口、通过CPU<70%/可用内存≥4GiB双采样，BelowNormal运行，Node上限512MiB。禁止视觉、伪造数据、Git回滚和force push。报告提交、普通push后保持原Task处理复查；主控明确结束后再正式完成与释放。
+
+## 实际候选与派发
+
+候选为 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`，Draft PR [#3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3)，研究Branch `songconmaisaix31-design/research-preprint-20261019`，目标main，派发前主控实际核对远端HEAD。Run `run_d59e41c6d2f1`；Reviewer Task `task_a0c647db8962`，Dispatch `ctx_8bc7f5be8bbe`，终端 `term_a494186b-4a9c-467d-a366-0f0184ef4e80`。
+
+Reviewer Worktree为 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，Branch `songconmaisaix31-design/research-preprint-review-20261019`，独立默认基线。启动回执turn_start_unobserved后，主控读取实际终端，确认任务仍在Codex输入框，使用原生Enter提交既有内容，没有重发任务或重建Agent；真实Codex会话随后产生assistant与工具记录，provider为gpt-6.1-sol、activity为working。科研Worker已交还唯一重操作窗口并冻结候选等待CR。

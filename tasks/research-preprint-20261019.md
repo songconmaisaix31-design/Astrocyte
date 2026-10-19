@@ -33,3 +33,9 @@ Run `run_d59e41c6d2f1` / 主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`；�
 首次Dispatch `ctx_71821af30379` 启动在Codex account/read workspace routing discovery超时后明确退出至PowerShell，主控只读终端核实后官方stop/release，无业务编辑。原Task/树重试为 `ctx_d72d923f0117`，终端 `term_afc3f5b3-3549-41da-b0cd-8b2aaae7aa52`；真实回执ready/turn_started，无模型参数覆盖。以科研Worker首个实际Handoff继续核实际客户端/模型、skill使用和证据范围。
 
 科研Worker首个真实Handoff `msg_84d9a392c059` 已确认完整读取两份原件、主控AGENTS/任务/决定和科研skill，并用文件编辑工具配置自身同名项目skill，开始真实文献核查及完整初稿。实际Codex0.162.0，Orca provider元数据为gpt-6.1-sol，继承默认模型，无Aliyun或子Agent。主控已回复科研重点和产品边界；本研究树缺少既有.gitignore的必要配置写域已明确追加。
+
+科研Worker提交普通push、Draft PR [#3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3)，候选 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`，PR目标main。真实Handoff `msg_9505de237e6e` 交还重操作窗口，保持原Task等独立CR和返修。主控已实际读取完整稿件、来源、主张表、中文反馈及构建脚本，核对PR仍Draft、准确远端HEAD；未将工程报告当作正式研究结果。
+
+独立审查按 `tasks/research-preprint-review-20261019.md`，Reviewer只写自身 `docs/reviews/research-preprint-20261019.md`、必要 `.gitignore` 的 `.verification/` 条目及忽略输出；论文只读，构建只在自身准确候选副本执行。Reviewer取得唯一重操作窗口前仍须资源双采样。原科研Worker不进行并行检查或修改，待准确CR后承接返修。
+
+Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，实际Codex0.162.0 / gpt-6.1-sol默认配置。主控已通过真实会话记录确认其开始读取审查依据；候选、审查写域、资源窗口和hook规则见审查任务。当前尚未有独立CR结论。

@@ -4,9 +4,13 @@
 
 用户提供论文定位稿v3及实验预注册开发草案v0.1，要求独立科研Agent开始arXiv预印本、配置科研skill、向主控提供反馈，主控统筹科研与产品。两份Downloads原件已完整读取，只读；八配置是拟议设计，正式模型/任务集/样本量/注册与结果未确定。当前 [科研任务](tasks/research-preprint-20261019.md) 与 [研究—产品决定](docs/research/research-product-decisions.md) 明确论文写域、真实文献/主张证据要求及原生/正式V4边界。
 
-项目skill `.agents/skills/astrocyte-research/SKILL.md` 已配置并普通push，来源管理Commit350f4070。新Run `run_d59e41c6d2f1`，主控仍 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。科研Task `task_2b1b744c0b74`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-20261019`、分支 `songconmaisaix31-design/research-preprint-20261019`，仓库默认基线3a02ce38，准确产品7ce3另按原产品树读取，不合并产品代码。
+项目skill `.agents/skills/astrocyte-research/SKILL.md` 已配置，科研Worker实际应用并交付完整英文正文、9条参考文献、原文记录、主张—证据表和中文R1–R7/P1–P3反馈。[Draft PR #3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3) 候选 `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b` 已普通push、远端一致，目标main；分支 `songconmaisaix31-design/research-preprint-20261019`，树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-20261019`。默认基线3a02ce38，准确产品7ce3另按原树只读，没有合并产品代码。
 
-第一次Dispatch `ctx_71821af30379` 的Codex启动明确因account/read workspace routing discovery超时退出至PowerShell提示符；主控核文本证据后官方stop/release，原件和树保留。沿同Task/树重试的 `ctx_d72d923f0117` / `term_afc3f5b3-3549-41da-b0cd-8b2aaae7aa52` 已实际观察到turn_started/ready，没有重复科研轨道。目前仅一个科研Worker，先读skill和原件、建立证据/文献核查后直接写完整初稿；暂无论文或实验结果交付。语言及作者元数据已异步询问，未答保持英文准备/署名待填。
+实际Pandoc3.9通过fail-if-warnings生成HTML、完整LaTeX来源与JSON AST；真实文稿检查9引用/9条目、八配置、52个MathML节点和本地链接通过。仅在本树忽略目录安装构建依赖、保存下载全文与输出；启动资源双采样通过且BelowNormal串行。PDF没有编译，作者/机构/ORCID待填，MAAGL作者索引差异和统计程序细节保持待核，正式实验及arXiv兼容性没有因此通过。
+
+Run `run_d59e41c6d2f1`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。科研Task `task_2b1b744c0b74` / Dispatch `ctx_d72d923f0117` 冻结候选并交还重操作窗口，等待原Task返修；首次启动退出及官方处理详见科研任务。独立Reviewer Task `task_a0c647db8962` / Dispatch `ctx_8bc7f5be8bbe` 位于独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-review-20261019`，已实际完整读取输入、审查依据和skill，核候选并开始原文与构建检查，当前独占重操作窗口。两者实际Codex0.162.0 / gpt-6.1-sol，继承配置。当前独立CR和hook尚未交付，不能宣布稿件已验收；具体写域和真实通知要求见 [审查任务](tasks/research-preprint-review-20261019.md)。
+
+主控已实际读取中文科研反馈并记录产品安排：真实调用/权限、CI和采用复用优先，R1–R7为正式研究前置，OpenViking保持可选，扰动及A/B/C后于主路径。研究反馈不自动冻结接口或参数，不直接改产品。语言选择未答，当前英文正文/中文反馈；署名继续待填。产品及正式V4只读，八配置正式实验、注册和arXiv提交未执行。
 
 ## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
 
