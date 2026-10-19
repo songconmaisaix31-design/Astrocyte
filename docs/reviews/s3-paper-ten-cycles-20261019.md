@@ -497,3 +497,33 @@ PowerShell transcript仅记录宿主开始/结束，未捕获原生PTY交互。�
 UTC`2026-10-19T07:19:28Z`实际发布[CR5568150342](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5568150342)，回执`COMMENTED`、`commit_id=57a91f4601b4292df4f55ba6cac541bad5caab3f`。请求与原始回执为自身`release15/github-review.json`和`github-review-receipt.json`，同账号未宣称GitHub APPROVE。该附加决定不替代第05/07/09轮，不改变已接受6/10。
 
 报告`54627b067608f0c25e9212ae39b6a5882d05e102`普通push后，UTC`07:20:55Z`既有原hook实际入队`msg_6edc6462e646`，完整真实生命周期、终端、准确57候选、非空报告与限定理由均保留在`release15/review-hook-receipt.log`。主控UTC`07:30:42Z`以`msg_308141658348`实际回复该hook，确认完整读取、实际API核CR/COMMENTED/准确SHA、本地远端报告一致与干净状态，登记本次`insufficient_evidence`及仍6/10。实际读取回复确认本次唤起，未重复发送CR或hook。同Task保持，等待原计划的资源与用户决定，尚未结算worker_done或执行发布/tag/merge。
+
+## 2026-10-19 重启后的独立验包
+
+按主控最新`tasks/restart-product-research-20261019.md`与`msg_b5a2896a5ff7`恢复原Task `task_2923223271be`，当前Dispatch `ctx_a8916e612c35`、终端`term_45b72208-38a3-4f83-8b76-d43f5684de7d`、Run `run_29c7e66b4136`。Orca实际终端preview显示Codex / `GPT-6.1-Sol xhigh fast`，无模型覆盖、Aliyun或子Agent。重新读取主控AGENTS/HANDOFF/STATUS、重启及十轮任务、QUESTIONS、SPEC相关章节、研究产品决定，并应用项目`astrocyte-research`技能维持研究证据与工程检查的边界。
+
+接管报告HEAD为`ffbc5762f578ab39fdacd9a9cc31b970d5beead6`，tracked干净；它相对`54627b067608f0c25e9212ae39b6a5882d05e102`仅追加上节真实hook及主控读取回复记录。最初独立审查基线`cab4233829b5caa1d66f8b05ce458d8596ef5289`及历史审查保留。产品审查候选仍为`57a91f4601b4292df4f55ba6cac541bad5caab3f`，实际包/自身准确Git clone/已构建inspect工具Source均为`15d74da3edcee26550a71120370fda9c86230e04`；实际GitHub API核PR #2 open/Draft、HEAD准确57。15→57仅产品报告变化。
+
+主控`msg_a6acead30818`明确确认唯一窗口、原C新q15-03方案与完整原断言。开始前实际检查未发现自有残留服务/浏览器/inspect/Delve，17887/17889/64505均无监听。没有覆盖旧失败输出、重建工具或调整原库/历史/Clock/日期。
+
+### 独立inspect与真实安全输入
+
+实际执行`pwsh.exe -NoLogo -NoProfile -File .verification/ten-cycles/review-release15.ps1 -Phase inspect`。原准确Source15二进制、13项argv和公开b789 ref不变，输出为自身C忽略目录`release15/q15-03`。既有psutil7.2.2阻塞CPU专用守卫取得UTC`11:16:57.101749Z`/`11:16:59.303229Z`，CPU11.8%/7.3%、可用12.915947/12.902740GiB、perf_counter间隔2.2014832秒；BelowNormal、Go1/256MiB、Node512MiB。实际PID26288于UTC`11:17:48.1876787Z`退出0。
+
+本次自身原件`q15-03/{configured-process.json,process-result.json,actual-counts.json,events-six-fields.json,production-reader-safe.json,sql-expected.json,admission-safe.json,cross-day-safe.json,origin-safe.json,privacy-safe.json}`已生成。1316真实Git来源/事件/信号逐项关联和六字段SQL通过；SQL10、分页20/50、最高主题与数值、每主题3个历史点、1次原实际Sleep及生产Reader检查通过。真实上海日期2026-10-19，今日和昨日事件均0，原publication snapshot_at仍`2026-10-14T18:48:42.2097174Z`。历史读取和真实今日新增分别登记；没有collect/Sleep/模型输入或伪造事件。
+
+其后原`-Phase transfer`实际EXIT0，仅把自身本次生成的`events-six-fields.json`287805bytes、`sql-expected.json`1492bytes、`admission-safe.json`550bytes通过Copy-Item移交至D新`reviewer-release/q15-03`，逐文件完整字节相同，原件`release15/q15-03-transfer.json`保留。没有借用Worker安全期望。
+
+### 完整Verify的实际失败与窗口交还
+
+实际命令：`pwsh.exe -NoLogo -NoProfile -File .verification/ten-cycles/review-release15.ps1 -Phase verify -Zip D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip -Port 17889`。使用原准确Source15的`release/Verify-Windows.ps1`、原完整断言及自身Q输入，输出为新`reviewer-release/v15-01`。外层UTC`11:18:13.4741661Z`/`11:18:15.8944747Z`，CPU30%/3%、可用12.779800/12.808556GiB、Stopwatch间隔2.4321913秒，通过85%/4GiB守卫；BelowNormal、Go4/512MiB、Node1024MiB，各实际阶段仍另行记录原守卫。
+
+原ZIP允许列表、新解压无用户数据库、完整隐私扫描、固定runtime身份、真实初始HTTP/SPA/静态资源、session/CSRF、SQLite写读、跨Origin拒绝、未配置OpenViking/Relay和独立数据库创建通过。包内原发布入口实际输出`generation=snapshot-1051362774`、`snapshot_at=2026-10-19T11:20:39.1768225Z`，随后真实认知health为200。此后实际EXIT1，工具输出“在此对象上找不到属性‘Length’”。`verify.log`保留55条PASS日志，包含失败清理；没有完整`result.json`，不能登记130项通过、认知组合或重启持久化通过。
+
+准确原脚本第334–335行将health正文`ConvertFrom-Json`后检查`snapshotHealth.snapshot_at.Length`。本次外层实际为PowerShell7.6.6；对本次实际生成的`data/local/astrocyte-workbench/v0.1/current.json`只读解析，snapshot_at类型为`System.DateTime`，无Length属性。该观察与当前失败位置一致，Worker原成功命令使用Windows PowerShell5.1；本次没有自动切换引擎、改源码/JSON/断言或继续DOM。独立完整Windows PowerShell运行仍待新窗口，当前不把Core检查失败归因为产品HTTP失败。
+
+失败原件为`v15-01/{verify.log,failed-stdout.log,failed-stderr.log,initial-listener.json,private-path-scan.json,resources-*.json,extracted/}`；属性错误由真实统一终端session32381/chunk66b6f5观察，transcript未包含该错误正文。原`finally`记录`failed owned listener stopped`，其后实际核17889无监听，未发现该包自有残留服务，浏览器/DOM未启动。以`msg_578890ef2c32`立即交还窗口，`msg_1f8a2a8ecf72`补交静态类型定位；未自动重试。
+
+本阶段仍为`insufficient_evidence`：独立来源核查已通过，完整包运行在Core入口中断，DOM未运行。真实默认CI/浏览器、正向原生、完整S3/unknown对账、今日新增及真实用户采用保持未通过，三项待答、Claim拒绝、Known=false和原生工具关闭保持。实际采用必须另有用户本人针对具体成果的反馈；自动检查中的human协议主体不构成该反馈。本次Release附加验包不增加已接受6/10，不推断性能或科研效果，不授权发布、tag、merge或投稿。
+
+主控`msg_42623b69528d`实际读取并确认收回窗口；随后`msg_3eef8661adba`核文档`docs/release/windows.md`第3/78行指定Windows PowerShell5.1及显式`powershell.exe`命令，明确下一次使用同一Source15/原ZIP/原参数在该已文档化环境验证，采用全新输出。没有要求产品为未承诺的Core兼容性改断言或重建包；最终CR综合两个实际条件，本阶段不重复发送最终决定。自身静态入口`review-release15-verify51.ps1`明确约束完整Verify使用5.1及新`v15-02`；`review-release15-dom.ps1`仅在自身准确完整130项结果成功后使用新`dom15-01`。两入口实际PowerShell5.1.26100.9711及7.6.6的Parser/完整UTF-8源码检查均EXIT0，未执行入口正文。原Core inspect/transfer入口及结果保持，尚未获新窗口或执行。
