@@ -1,5 +1,9 @@
 # 用户决定与待定项
 
+## 核实集成版本并优先收敛已有分支（2026-10-20）
+
+用户要求选出当前真正用于集成的版本，列清活跃任务、独有成果与阻塞；已有大分支接近完成时优先收敛。主控经实际Git/远端/Orca核查，选定原PR #2 `frontend-observatory-20261018@5725c184`为优先产品候选，继续使用`works-relay-integration@f17a491c`为集成目标，沿原Worker和独立Reviewer收尾。完整前缀、准确SHA、当前服务、旧Task状态及保留成果见[集成清单](integration-audit-20261020.md)。本次版本选择未代答原生/S3、经验准入/采用、首发范围、资源并发和作者许可等既有问题，没有合并、部署或发布。
+
 ## 动态 DAG 与开发循环（2026-10-19，已确认）
 
 用户提供 `C:/Users/DW/Downloads/astrocyte-frontend-submission (2).zip`，确认使用新版前端、媒体和 Agent 使用真实 logo、协作网络由 Agent 在线生成 DAG，OpenViking 为可选配置。执行见 [当前计划](../tasks/frontend-observatory-pr-20261018.md)。页面接入现有生产 API 与真实持久化，沿当前 React/TypeScript/Go 技术和权限边界；压缩包中的沙盒业务不作为正式状态。

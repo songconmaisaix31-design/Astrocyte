@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 集成版本已选定，优先收敛原PR #2（2026-10-20）
+
+本次按用户要求选定`frontend-observatory-20261018@5725c1840a760105518d273eaaa28d7367f369ed`为产品收敛候选，仍投向原`works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`；完整分支前缀为`songconmaisaix31-design/`。候选包含f17并增加26提交，已移入PR #1租约校验，具备Source15独立130项/人工DOM及Source22三项真实检查证据。PR #2当前MERGEABLE/CLEAN、head检查为空，完整CI/S3/原生未通过；优先沿原Worker/Reviewer收尾。本次只提交主控清单和顺序，原产品目标、服务和PR保持。
+
+[集成清单](docs/integration-audit-20261020.md)列明62树/74分支、18条独有历史、接管时3个有变化工作树、当前三项未完成目标及14项旧未结Task。实际fleet357 Dispatch（含36条无materialized resource的context记录）无live记录；最新三Task均failed/released，旧标签及资源未知单列。根`validation/v1-20261012`继续保存主控/正式实验，main仍初始提交；实际64505运行c5/PID45676，health ok/首页200。论文PR #3与独立审查、V4原证据根缺失及待答选择分别保留；无新增Agent、重操作、合并或发布。接续写域与停止条件见[本次任务](tasks/integration-convergence-20261020.md)。
+
 ## 重启应用与产品科研续行（2026-10-19启动，10-20续行）
 
 用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35；三者实际读取并完成本次可执行范围，原Task的未完成目标保持。

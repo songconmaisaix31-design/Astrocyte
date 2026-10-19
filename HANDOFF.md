@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 集成版本与优先收敛入口（2026-10-20）
+
+用户要求核实真正集成版本、活跃任务、独有成果与阻塞，已有大分支接近完成时优先收敛。本次选定原PR #2 `songconmaisaix31-design/frontend-observatory-20261018@5725c1840a760105518d273eaaa28d7367f369ed`为优先产品候选，集成目标继续为原`works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`。候选包含基线并增加26提交，PR #1租约代码已按16路径移入；当前GitHub可合并，完整CI/S3/原生仍未通过。本次没有合并或切换服务。
+
+完整[集成清单](docs/integration-audit-20261020.md)与[接续计划](tasks/integration-convergence-20261020.md)为本次入口。实际清点62工作树/74本地分支/70同SHA远端分支，18分支保留独有历史；接管时3工作树有变化，其中原F的`docs/access/frontend.md`有未提交L1文稿，保留原件。全部相关Run中184 Task有14项旧未结标签，357 Dispatch（含36条无materialized resource的context记录）无live记录，最新产品/科研/Reviewer均failed/released；旧retained/release_unknown不作为当前运行人员。原64505服务仍PID45676/c5/BelowNormal，实际health ok/首页200；正式V4原根/锁/库仍不存在，automation保持enabled。科研PR #3、研究/审查报告及Python冻结线整改独立保留；原待答选择和发布门禁保持。
+
 ## 重启应用与双轨续行（2026-10-19启动，10-20续行）
 
 用户要求继续开发Astrocyte、重启并保持科研产品并进。当前任务为[重启与双轨任务](tasks/restart-product-research-20261019.md)，原十轮已接受6/10及权限门禁保持。接管管理HEAD28a4b5c4、产品57a91f46/Source15、科研50e51fb6/科学正文a664、审查54627b06，四树tracked干净。64505/17887无监听；原三个Dispatch已由运行时记failed/abandoned，正式release返回released/processAction none/archive unavailable。原Task按已核实际中断记failed，再沿原Task/树retry-of启动，没有新Run/Task/开发轨。
