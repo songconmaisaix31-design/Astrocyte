@@ -64,3 +64,15 @@ Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。�
 主控消息 `msg_83e4b62f0f28` 将唯一窗口授予Reviewer核准确dacc。Reviewer独立真实克隆before/after，detached条件下复现两项旧失败，准确候选两项通过，定向vet/格式/空白通过。报告 `0bd44e135a0b415b431433a6cbd2075e35a4d131` 已普通push、远端一致；[CR5566519259](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5566519259) 为COMMENTED且准确dacc。实际hook `msg_9137a34ddfd6` 到达，主控完整读报告、真实API核CR并回复 `msg_0bd7db71f620`，确认01限定接受，计1/10。Reviewer全部自有检查退出，窗口已交回。
 
 主控 `msg_c7d5680e477c` 将唯一窗口授予科研02实际PDF构建，`msg_1b27066e82f6` 授权原产品Worker按03具体方案静态移入16个业务/测试路径的必要差异，保留当前DAG及治理；科研构建期间产品不编译、测试、启动服务或安装依赖。两个Task均保留，不提前worker_done。
+
+## 当日Release子任务的具体方案
+
+这是用户最新交付要求下的独立产品工作，在03接受后由原产品Worker实施；原05/07/09的S3正向门禁继续保留。包构建、审查或重复验证不自动增加十轮计数，只有具体改进和独立接受才计入。
+
+- 复用release脚本，按新额度修正构建环境和过程内资源检查，精确Source归档、冻结锁、runtime实际版本/来源、许可及完整隐私扫描保持。旧runtime-sanitized-third只读；新输出、temp与日志在today-20261019独立目录。工具Go缓存D:/Astrocyte-agent-assets/20261015/go-build/backend另已明确授权复用读写，不属于旧正式证据，不复制整缓存或为轮次创建冷缓存。
+- 对冻结的准确源码执行适用类型、lint、构建及真实核心路径检查；遇到旧测试或缺前置不删除断言、不增加Skip、不降低权限，完整默认CI保留真实结果。生成新的Windows x64 ZIP，记录准确来源与实际资产，旧ZIP及125项检查不移用为本次结果。
+- 在新目录解压并用包内启动脚本和程序运行，核实际session/CSRF、数据读写、重启持久化；通过实际浏览器DOM/HTTP核新版前端、官方品牌资源、Swarm动态DAG人工操作及可选OpenViking未配置状态。不得开启截图、视频、trace或其他视觉检查；原生受阻路径保持拒绝，每个实际event_id逐项SQL核查。
+- 非空认知来源只使用已核公开cross-day-20261015-0228目录的真实source/current/history及public-source.git固定ref b789466ff62f3c9b0e08ec392729f5bbfc5cfaa1。获窗口后沿已定位原inspect实际程序只读查询，以真实time.Now计算并写入新的today输出。不能改旧JSON日期、Clock、原始库或历史，不能运行collect/Sleep，今日0事件如实保留；历史非空查询不替代今日新增采集要求。正式V4不触碰。
+- 原Worker修复实际缺陷、记录命令和限制、普通push并维护PR2；独立Reviewer对准确源码及新ZIP另行解压运行，真实CR/hook后主控核对。具体可审包及原发布要求通过后由主控发布GitHub Release，版本、准确tag来源及资产据实际候选记录；不将未通过的完整CI、原生/S3或正式研究改称完成。
+
+03静态Handoff msg_1e41abe8803d已核：16业务/测试路径已移入，保留当前DAG两处交叉贡献，尚未运行检查。主控msg_4c0e0973037d确认下一窗口安排产品03，须科研02实际退出后另发明确交接；msg_7578d18f5d2a明确共享工具缓存许可，msg_747413ea9005允许在today下真实Git clone/detached副本验证准确普通源码Commit，既有测试输出实现不为目录而改写。
