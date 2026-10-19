@@ -107,7 +107,7 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 主控 `msg_962269134dd8` 授权从准确 `3267249922082cb1808b6529a2f04084d40c1f92` 静态修改 `release/**`、`docs/release/**` 和本记录；同一 Worker、工作树、分支与 PR #2 继续负责，正式发布由主控执行。产品 05/07/09 门禁保持，包构建和重复验证不自动计为十轮改进。
 
-当前 Build/Verify 具备重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。准确源码 `15d74da3edcee26550a71120370fda9c86230e04` 已完成下述新包构建；解压与真实运行验收仍待执行。
+当前 Build/Verify 具备重操作阶段的真实 CPU/内存双采样、BelowNormal、Go4/`-p=4`/512MiB 和 Node1024MiB，并恢复原进程设置。新 temp、下载和输出进入 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/` 下的独立目录；工具缓存复用既有获准 GOCACHE。Verify 必须接收准确 Source，保留原 ZIP/许可/完整隐私与真实 HTTP/SQLite/认知断言，另核实际未配置 OpenViking。旧 runtime-sanitized-third、公开来源及旧 ZIP 只读。准确源码 `15d74da3edcee26550a71120370fda9c86230e04` 已完成下述新包构建与130项解压运行；DOM检查结果和待验范围分别记录。
 
 主控 `msg_351fa9bca129` 明确要求包验证按实际监听归属保护隔离数据。当前 Verify 每次启动前重新确认端口空闲，使用 Windows `MSFT_NetTCPConnection`、`Win32_Process` 和持有的 `Diagnostics.Process` 核对监听 PID、父子进程及创建时间；根进程和监听均须仍存在。首个 health 与所有后续 HTTP 请求前后复查，无法确认或异主直接失败，不探测其他服务、不自动换端口。成功启动只记录本次 PID/归属；原重启与数据断言保持。未构建的源码 `21a92dc6b97fa5635cb12bb9eb93cd3f643e966b` 保留历史，新包以该修复后的准确源码为准。
 
@@ -153,6 +153,14 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 Verify初始实际监听进程链为45788→35948，重启为47912→48736，均通过Windows实际PID/创建时间核对，每个HTTP请求前后复查。两个根进程/Go子进程及监听实际停止。八个阶段16次启动样本最高CPU48%、最低可用5.303668975830078GiB，满足原资源和单调间隔条件；运行期峰值未测。解压后的全包隐私扫描1442文件/3548860672B，private_matches=0。
 
-所有自有调用退出、17887监听0后，以 `msg_d91f5b3b1caa` 立即交回窗口，主控读取实际result/日志/q安全输入后以 `msg_82499cb58bec` 确认。按 `msg_38c22357ec0d` 插入科研08，DOM/官方品牌/人工DAG与该场景事件SQL尚未执行；独立包CR、完整默认浏览器、原生/S3及正式发布门禁仍保持未通过。无需重复已通过工具/inspect/Build/Verify，等待明确DOM续验窗口。
+所有自有调用退出、17887监听0后，以 `msg_d91f5b3b1caa` 立即交回窗口，主控读取实际result/日志/q安全输入后以 `msg_82499cb58bec` 确认。按 `msg_38c22357ec0d` 插入科研08；独立包CR、完整默认浏览器、原生/S3及正式发布门禁仍保持未通过。已通过工具/inspect/Build/Verify不重复执行。
 
-三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建与上述限定130项解压运行通过；DOM、完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
+### 首次实际 DOM 检查
+
+主控 `msg_53137a57405c` 授予同一准确Source15新ZIP的DOM及逐事件SQL检查窗口。实际命令为 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .verification/run-release-dom.ps1 -PackageRoot .../v15d74da3/extracted/Astrocyte-v0.1-windows-x64 -SourceRoot .../p15d74da3-2/source -Output .../dom15d74da3 -Source 15d74da3edcee26550a71120370fda9c86230e04 -Port 17887`，输出位于本日资产根。检查使用真实公开Git clone、包内程序、HTTP与SQLite；隔离HOME和原生配置，可选OpenViking未配置；没有模型输入、替代响应、截图、trace或视频。
+
+该调用在 `2026-10-19T05:59:35Z` EXIT1。首个失败为检查工具逐HTTP请求执行的 `assertOwnedListener` 子进程 `spawnSync powershell.exe ETIMEDOUT`，实际硬截止时间10000ms；触发于 `verify-release-dom.mjs:105` 的浏览器请求处理，尚未执行该请求的 `route.continue()`。包日志记录人工项目/Mission创建和attention/workspace实际请求，未产生人工工作项、`dom-result.json`或逐事件SQL通过记录。失败没有形成业务断言结论，不能计DOM通过。
+
+本次root为58796、实际开始时间 `2026-10-19T05:55:24.8092192Z`。launcher的finally关闭本次服务树，随后实际查询无本次root、Node、Playwright Chromium且17887监听为0，以 `msg_2ac2442ea32c` 立即交回窗口供08独立复验。原件为 `dom15d74da3/dom.log`、包stdout/stderr、三阶段资源JSON及统一终端session7527实际错误摘录 `failure-observed.md`。没有覆盖失败目录或重试。静态修复建议通过 `msg_35a4ba98c87d` 交主控：只调整自身忽略检查工具的同步执行方式、可观测截止时间和异常传递，保持每HTTP真实归属及全部业务断言；产品Source、成功ZIP及130项结果不变。
+
+三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建与上述限定130项解压运行通过；首次DOM检查失败，完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
