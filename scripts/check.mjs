@@ -1,4 +1,7 @@
-import { findGo, checkGofmt, run, runTool, root } from './process.mjs';
+import { findGo, checkGofmt, createCheckOutputDirectory, run, runTool, root } from './process.mjs';
+
+process.env.ASTROCYTE_TEST_OUTPUT_ROOT = await createCheckOutputDirectory();
+console.log(`Verification output: ${process.env.ASTROCYTE_TEST_OUTPUT_ROOT}`);
 
 const go = await findGo();
 await checkGofmt(go);

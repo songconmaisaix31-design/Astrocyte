@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { access, open, readFile, readdir } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, open, readFile, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { delimiter, isAbsolute, join, relative } from 'node:path';
 import { pipeline } from 'node:stream/promises';
@@ -12,6 +12,12 @@ export const web = join(root, 'web');
 export function verificationOutputRoot(choice = process.env.ASTROCYTE_TEST_OUTPUT_ROOT ?? join(root, '.verification')) {
   if (typeof choice !== 'string' || !isAbsolute(choice)) throw new Error('Verification outputRoot must be an explicit absolute directory');
   return choice;
+}
+
+export async function createCheckOutputDirectory(choice) {
+  const parent = verificationOutputRoot(choice);
+  await mkdir(parent, { recursive: true });
+  return await mkdtemp(join(parent, 'check-'));
 }
 
 // 保留本次自有进程的完整双通道输出，退出后等待文件写入完成。
