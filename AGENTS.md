@@ -32,6 +32,7 @@
 - 2026-10-19 用户确认按“主 Agent 提出开发建议与优化方案 → Worker 实现 → 独立 Reviewer 验证可用性、优化效果并决定是否接受 → hook 唤起主 Agent 继续方案”的流程循环开发，直至规划内容通过验收。每个模块保持一个长期负责的 Worker，Reviewer 不编写业务代码。
 - 每个模块的 Agent 都可以通过 Orca CLI 调用 subAgent，按互斥写域安排并报告归属、Task/Dispatch 和资源使用；子 Agent 沿用本协议。禁止调用 Aliyun Agent 或经百炼等入口代理执行 Agent 任务。使用所需的最少 Agent，不因允许嵌套协作增加编译、测试和服务并发。
 - 主 Agent 先维护一页任务计划，记录问题、建议、基线、预期效果、写入范围、验收和停止条件，再通过 Orca CLI 安排 Worker 与 Reviewer。主 Agent 管理范围、优先级和资源，不替 Reviewer 宣布优化有效。
+- 2026-10-19 用户确认独立科研 Agent 编写 arXiv 预印本并提供研究反馈，主 Agent 统筹科研与产品。科研 Agent 只修改获准论文、文献和研究反馈，不直接修改产品或正式实验；主 Agent 将有依据的建议转为具体产品任务。论文分别说明拟议方法、已有实现、工程验证和正式实验结果，缺失证据和待定注册字段保持未知。
 - 开发 Agent 固定使用一个 Worktree、一个 Branch 和明确的 `write_paths`。可读取全仓，只修改获准路径；超出范围的修改先提交 Handoff。
 - Worker 负责 PR。代码、测试、文档及 review 返修由同一个开发 Agent 持续完成；提交 Commit、普通 push、创建并更新 PR，提供实际验证结果和真实剩余限制。
 - Reviewer 负责 CR，使用独立会话核对准确 Commit，检查真实功能、权限与失败路径，并用相同来源和条件比较改动前后的结果、资源及回归。在对应 PR 发布针对准确 Commit 的 code review，明确记录“接受、退回、证据不足”及依据；编译成功、代码生成或 Worker 自评不代表接受。同一账号不能原生批准时使用 COMMENT review，说明实际结论和接受范围。

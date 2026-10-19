@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 科研 Agent 与预印本首轮（2026-10-19）
+
+用户提供论文定位稿v3及实验预注册开发草案v0.1，要求独立科研Agent开始arXiv预印本、配置科研skill、向主控提供反馈，主控统筹科研与产品。两份Downloads原件已完整读取，只读；八配置是拟议设计，正式模型/任务集/样本量/注册与结果未确定。当前 [科研任务](tasks/research-preprint-20261019.md) 与 [研究—产品决定](docs/research/research-product-decisions.md) 明确论文写域、真实文献/主张证据要求及原生/正式V4边界。
+
+项目skill `.agents/skills/astrocyte-research/SKILL.md` 已配置并普通push，来源管理Commit350f4070。新Run `run_d59e41c6d2f1`，主控仍 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。科研Task `task_2b1b744c0b74`，独立树 `C:/Users/DW/orca/workspaces/Astrocyte/research-preprint-20261019`、分支 `songconmaisaix31-design/research-preprint-20261019`，仓库默认基线3a02ce38，准确产品7ce3另按原产品树读取，不合并产品代码。
+
+第一次Dispatch `ctx_71821af30379` 的Codex启动明确因account/read workspace routing discovery超时退出至PowerShell提示符；主控核文本证据后官方stop/release，原件和树保留。沿同Task/树重试的 `ctx_d72d923f0117` / `term_afc3f5b3-3549-41da-b0cd-8b2aaae7aa52` 已实际观察到turn_started/ready，没有重复科研轨道。目前仅一个科研Worker，先读skill和原件、建立证据/文献核查后直接写完整初稿；暂无论文或实验结果交付。语言及作者元数据已异步询问，未答保持英文准备/署名待填。
+
 ## 动态 DAG 与独立 Reviewer 循环（2026-10-19）
 
 用户确认动态DAG与Worker退出机制参考本机Morphogenesis；开发流程为主控提出方案、Worker负责实现/返修及PR、独立Reviewer负责CR与效果决定，再通过hook唤起主控。模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent。当前 [计划](tasks/dynamic-dag-loop-20261019.md) 的可验证DAG投影及前端加载优化已分范围验收，完整原生链路保持阻塞。

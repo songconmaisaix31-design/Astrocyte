@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 科研预印本轨道已启动（2026-10-19）
+
+用户论文定位稿v3和预注册开发草案v0.1已完整读取；[科研任务](tasks/research-preprint-20261019.md)、[科研skill](.agents/skills/astrocyte-research/SKILL.md)及[研究—产品决定](docs/research/research-product-decisions.md)已建立。唯一科研Worker在独立树/分支 `research-preprint-20261019` 工作，Run `run_d59e41c6d2f1`、Task `task_2b1b744c0b74`、当前Dispatch `ctx_d72d923f0117`，已观察到turn_started。首次账户路由启动退出已官方处理，保留同Task与工作树重试。
+
+当前阶段为真实文献核查、完整预印本初稿和中文科研反馈；正文先按英文准备，作者/机构/ORCID待填。科研建议由主控决定后转产品任务，产品及正式V4只读；八配置正式实验、注册和arXiv提交均未执行，原生工具关闭/S3等既有边界保持。
+
 ## 动态 DAG 开发循环（2026-10-19）
 
 开发规范为主控提出方案、Worker负责实现/返修及PR、独立Reviewer负责CR和效果决定、hook唤起主控。模块Agent可通过Orca CLI调用subAgent，禁止Aliyun Agent；当前 [任务计划](tasks/dynamic-dag-loop-20261019.md) 的人工动态DAG投影及按需加载优化已分范围接受。
