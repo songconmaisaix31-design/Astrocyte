@@ -35,7 +35,7 @@ Source22 `22cde9efc540553c433463af5b9e955790d57a99`的输出前置修复至接�
 
 本次没有改workflow、业务、依赖、原断言或添加测试Skip。纯文档后继沿主控已确认的`[skip ci]`提交约定普通push，保留当前默认状态。
 
-治理文档通过已安装`marked 18.1.0`核查：15份Markdown、56个本地文件链接PASS，当前根AGENTS/CODING与四角色原文及角色目录内容一致。实际命令为`node E/check-documents.mjs document-check-final.json`，BelowNormal，`NODE_OPTIONS=--max-old-space-size=448 --max-semi-space-size=16`，实际V8 heap上限496MiB；原件`E/document-check-final.json`。`git diff --cached --check`无空白错误。历史STATUS/HANDOFF等以准确S的Git原文保留，缺失管理引用连接主控42570f89或validation分支，不复制全仓管理历史。
+治理文档通过已安装`marked 18.1.0`核查：15份Markdown、57个本地文件链接PASS，当前根AGENTS/CODING与四角色原文及角色目录内容一致。实际命令为`node E/check-documents.mjs document-check-readme.json`，BelowNormal，`NODE_OPTIONS=--max-old-space-size=448 --max-semi-space-size=16`，实际V8 heap上限496MiB；原件`E/document-check-readme.json`。`git diff --cached --check`无空白错误。历史STATUS/HANDOFF等以准确S的Git原文保留，缺失管理引用连接主控42570f89或validation分支，不复制全仓管理历史。
 
 ## 实际命令与结果
 

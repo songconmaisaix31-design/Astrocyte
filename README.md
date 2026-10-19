@@ -92,11 +92,11 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 `pnpm start` 在 API 端口同时提供构建后的网页，默认打开 `http://127.0.0.1:8787/attention`；修改 `ASTROCYTE_PORT` 时使用对应端口。`ASTROCYTE_WEB_DIR` 可覆盖静态资源目录，`/api` 路径始终交给 API。
 
-`pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败；只有契约/客户端先到位的工作树，仍需合入对应 S0 实现后才能验收完整程序。
+构建与检查在缺少所需入口或依赖时立即失败；当前实际命令、结果和剩余限制见[交付报告](docs/standards/delivery-candidate-20261020.md)。
 
 ## HTTP v1 与权限
 
-项目总览使用 `/local-projects/registered` 的持久化观察缓存，汇总同项目目录和有来源的客户端关联；历史活动、贡献者和Git提交不表示当前运行、进度或完成。人类通过 `/local-projects/registered/{project_id}/metadata` 保存备注、复盘、分组、意图与归档，刷新不覆盖人工字段。修改必须带人类会话、CSRF及当前人工 `revision`（初始0）；并发修改冲突后先重新读取。发现、备注和归档均不改变项目空间、模型许可或Agent授权。未决定的进度推断、论文搜索和插件读取保持待定。
+项目总览使用 `/local-projects/registered` 的持久化观察缓存，汇总同项目目录和有来源的客户端关联；历史活动、贡献者和Git提交不表示当前运行、进度或完成。人类通过 `/local-projects/registered/{project_id}/metadata` 保存备注、复盘、分组、意图与归档，刷新不覆盖人工字段。修改必须带人类会话、CSRF及当前人工 `revision`（初始0）；并发修改冲突后先重新读取。发现、备注和归档均不改变项目空间、模型许可或Agent授权。进度推断、论文搜索和插件读取按docs/QUESTIONS.md中的当前决定逐项核查具体主体、资料版本和自动化权限。
 
 所选资料处理的完整模型输入上限是512KiB UTF-8字节，包含指令、版本引用和输出结构要求；超限拒绝，正文不静默截断。输出与原生历史保持原有独立上限。扩容不扩大资料根、项目根、模型许可或外发范围。
 
