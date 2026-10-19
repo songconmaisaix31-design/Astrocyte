@@ -58,7 +58,7 @@ function Get-ReleaseOwnedListener([Diagnostics.Process]$Owned, [int]$Port, [swit
     }
     $current = @(Get-CimInstance -Namespace 'root/StandardCimv2' -ClassName MSFT_NetTCPConnection -Filter ('LocalPort=' + $Port + ' AND State=2') -Property LocalAddress, LocalPort, OwningProcess)
     if ($Owned.HasExited -or $current.Count -ne 1 -or $current[0].LocalAddress -ne '127.0.0.1' -or [int]$current[0].OwningProcess -ne $listenerID) { throw 'Owned application listener changed before HTTP access.' }
-    return @{ root_pid = $Owned.Id; root_started_utc = $root.CreationDate.ToUniversalTime().ToString('o'); listener_pid = $listenerID; process_chain = @($chain) }
+    return @{ root_pid = $Owned.Id; root_started_utc = $root.CreationDate.ToUniversalTime().ToString('o'); listener_pid = $listenerID; process_chain = $chain.ToArray() }
 }
 
 function Assert-ReleaseSpace {

@@ -113,4 +113,6 @@ PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是第 01 轮�
 
 按主控 `msg_d3afdea3cd29` 的静态检查授权，PowerShell `5.1.26100.9711` 和 `7.6.6` 分别运行 `.verification/check-release-syntax.ps1`。两者对 Build、Common、Verify、Start 和 Publish 五个实际脚本的 `Language.Parser.ParseFile` 全部 EXIT0；原件位于本日资产根 `syntax-release-ps51/syntax.log` 与 `syntax-release-ps7/syntax.log`。`git diff --check` 无输出。解析通过不代表资源守卫、端口归属或包运行已经通过；重操作窗口尚未授予。
 
+监听归属记录使用标准 `List<int>.ToArray()` 保存实际父子 PID 数组。最终脚本在两个 PowerShell 版本分别再次解析 EXIT0，原件为本日 `syntax-listener-ps51/syntax.log` 与 `syntax-listener-ps7/syntax.log`；没有执行待验脚本正文。
+
 三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。Release 只读准备和原公开来源今日 inspect 范围已获主控确认；新包构建、解压验收和发布仍未执行，旧 125 项结果没有移作本轮证据。
