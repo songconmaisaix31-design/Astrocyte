@@ -2,21 +2,19 @@
 
 ## S3与论文十轮改进（2026-10-19）
 
-最新窗口安排：原产品持唯一窗口完成Source15d74da3的新p15d74da3-2 Build，当前类型/lint/生产构建已通过，包扫描/ZIP进行中；msg_6d5dd47e93cc要求实际退出后立即交回，先授已冻结科研06短构建，再授产品q/Verify/DOM续验。原3e52编码失败、原p15缺SDK失败保留，新r15固定依赖恢复/完整扫描已过；没有新包解压验收/独立CR/Release。科研06正文/证据等6文件已静态同步，历史b<=a<0边界已澄清，preprint仍04，等待窗口。接受4/10、三项原生/S3及作者未答、完整CI/默认浏览器/发布与投稿质量未验保持。
+用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受4/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案与原始依据。四轮均有准确CR、真实hook及root实际读取回复，详细来源和失败历史保留在任务记录；提交、静态预读及重复检查不计轮次。
 
-用户最新明确当日交付为初步跑通的产品及首版Release包，以及真正符合发布标准的arXiv预印本，并允许提高资源。后续重操作使用CPU<85%/可用≥4GiB双采样、BelowNormal、Go4/-p4/512MiB和Node1024MiB，全局仍单窗口；旧额度检查保留真实记录。01/02/03/04限定接受，04窗口已交回，科研原Worker按任务完整方案静态实施06。产品Worker修复Release验证的实际监听归属后固定新Source再申请打包窗口，21a92dc6未构建。只读格式/导入元数据及PowerShell Parser语法检查按AGENTS静态规则低优先级执行。
+当前唯一重操作窗口授科研06，消息msg_41cf65ed3bd9。原Worker已按主控及Reviewer预读修订M细化的投影前提、每决策实际视图V/H与父链/时钟/撤销语义，六文件再次冻结后运行现有Pandoc/Tectonic完整构建和成熟验证；尚无06接受。全部调用退出即交回，下一窗口为产品q/Verify/DOM续验。06不得启动08、TeXLive安装或产品实验。
 
-首版GitHub Release发布已获授权，当前真实release列表为空。原产品Worker新增release/**与docs/release/**写域，新输出限D:/Astrocyte-agent-assets/20261015/release-package/today-20261019的新子目录，复用成熟打包和解压验证流程，旧资产只读。须先完成具体准确源码包与独立可用性验证；原生/S3、完整CI及原发布要求未通过项保持未通过。科研由方法稿提高到投稿质量验收，PDF、真实研究贡献、内容/文献、官方arXiv要求与作者元数据逐项核查，作者问题已发出；实际arXiv上传未执行。
+产品准确Source `15d74da3edcee26550a71120370fda9c86230e04` 的新ZIP已Build EXIT0：`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，1949417822bytes。原Worker以msg_a481f570c6b0交回窗口、root回复msg_80bb71a45604并实际核日志/文件。固定依赖恢复/完整扫描、lint/类型、四个Go程序/前端生产构建和包1442文件隐私0匹配通过；13阶段启动样本最高CPU27%、最低4.595GiB，不代表峰值。原3e52解码失败和原p15缺SDK失败保留，修复来源/新r15输入与旧只读依赖分别记录。该ZIP尚未实际解压运行、独立验包、发布或创建tag，q/Verify/DOM未运行。
 
-用户明确要求开始完成S3和论文初稿，完成十次循环改进。当前 [十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 按主控方案、固定模块Worker实现/PR、独立Reviewer准确CR及真实hook/回复执行；只有具体改进及适用检查获得独立接受才计轮次，上一轮已完成内容不重复计入。当前接受4/10，S3和完整稿件分别按原验收核查，原生/预算/权限待定不降要求。
+Run `run_29c7e66b4136`，root终端 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task/Dispatch `task_51276f272ff3` / `ctx_e49721d7ac8d`，终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，原frontend-observatory树/分支/PR2，当前仅release/**、docs/release/**、本轨记录和获准today输出。科研 `task_f824c0088743` / `ctx_f71ff9bcaacb`，终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，原research-preprint树/分支/PR3；已接受04为afe471ed，06构建中。Reviewer `task_2923223271be` / `ctx_568047699698`，终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，原research-preprint-review树/分支，最新报告f437700fec058a9b246a8f43f838848a03a617f9，报告/自身忽略目录及today/reviewer-release新目录写域；现在仅静态，未获独立验包窗口。三者均实际Codex0.162.0/gpt-6.1-sol继承配置，无新增子Agent或worker_done。
 
-Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，复用frontend-observatory树/分支和PR #2，03准确3267249922082cb1808b6529a2f04084d40c1f92已限定接受，现仅写release/**、docs/release/**、本轨记录/忽略目录准备新包。科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，复用research-preprint树/分支和PR #3，04准确afe471edc25305537f11ee4453a93c7b3be790cf已push、远端/PR一致、tracked干净；17页/14引用实际构建与文字/字体等检查通过，冻结待CR。Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，复用research-preprint-review树/分支，报告最新b410c9bd，仅写当前十轮报告与自身忽略输出，现独占04复验窗口。三者实际Codex0.162.0/gpt-6.1-sol默认配置已核，无覆盖或子Agent。
+04报告3b6883dd及准确CR5567098640限定接受afe471ed的17页/14引用文稿与分析提案，真实hook msg_d8dbadf2a00a经root读取/API核对后回复msg_3b165bee72a4。默认浏览器矩阵f437为新增只读核查：trace、多服务、真实输入和原生执行前置尚未满足，未运行或作决定hook。03的19函数/7包vet/43包DDD/16文件格式及7个真实事件定位限定接受保持；完整默认CI、原生正向、AT08/09/13、Worker退出/释放和用户采用仍未通过。
 
-01只修真实Git attached前置与精确27迁移校验，不改生产代码，不扩展全仓build；此前资源拒绝的build保持未执行。Reviewer报告0bd44e135a0b415b431433a6cbd2075e35a4d131已push，准确CR5566519259限定接受dacc，真实hook msg_9137a34ddfd6已由主控读取报告/API并回复msg_0bd7db71f620，计1/10。03保留原DAG并移入已审16路径业务，准确副本19函数、全Go vet/build、43包DDD及格式/空白实际通过，msg_8df78aed44b4归还窗口；root已完整读报告和核对最终来源，未代Reviewer接受。msg_4a38206e392f授Reviewer独立02窗口，msg_2aa918b47c69交接03候选；首次CPU87%拒绝及一次重试安排见任务最新记录。02一处Underfull及非视觉/非本站兼容/非投稿质量限制保留，署名与正式结果不填造；完整CI、S3正向及三项待答门禁不降低。
+首版GitHub Release发布已获授权，须先完成具体准确源码包与独立可用性验证，原发布门禁不降低。科研须另外通过真实研究贡献、内容/文献、作者元数据与arXiv要求；PDF不等于投稿就绪，尚无正式实验或上传。预算单位、权限证据及受限Codex三项已异步询问未答，Claim拒绝/Known=false保持；作者/顺序/机构/通讯与许可亦未确认，不填造。正式V4、其他用户终端与数据只读不操作。
 
-预算按平台输入还是上游全部尝试、权限证据按本次约束还是完整清单、受限Codex维持全部工具关闭还是经真实只读拒写核查后执行固定任务，三项已集中异步询问，答案未到保持原拒绝。原公开项目范围、具体资料/经验批准和用户采用规则保持；不默认批准实际用户作品或自主实验。重操作全局串行、资源双采样和BelowNormal不变，禁止Aliyun、视觉、假数据及额外调度器。正式V4保持独立只读，其他用户终端和数据不操作。
-
-02报告e192829f和准确CR5566782506的真实hook/root回复已完成；03报告b410c9bd87349b7f13f3d913ccc48d06996c5839普通push、远端一致，准确CR5567006632限定接受32672499集成，19函数/7包vet/43包架构/16文件格式及7个真实事件定位通过。root完整读报告及真实API/远端核对后回复hook msg_d9e88ad0d21c，回执msg_91414a0f0023，计3/10。03全部调用和04 Worker构建均已退出，04以msg_0359f670ec90归还窗口；root现以msg_41296c95bd8b授Reviewer独立04。04为完整块BCa/网格反演、Holm/TOST等拟议分析与新增原文，17页/14引用/30标题/9字体检查通过，隐私数学误报按成熟AST/实际PDF修正，两处Underfull保留；真实pilot/正式结果、完整机制及投稿质量仍未完成。Release静态实现授权msg_962269134dd8，未构建新ZIP或发布，完整CI与原生待答保持。
+重操作全局单窗口，CPU<85%/可用≥4GiB启动双采样、Stopwatch2–5秒、BelowNormal、Go4/-p4/512MiB软限制、Node1024MiB；旧额度/拒绝记录不改称通过。只读格式、导入元数据和PowerShell Parser按AGENTS静态规则执行。禁止Aliyun、视觉、假数据、未知重发及额外调度/完成证明系统。
 
 ## 科研 Agent 与预印本首轮（2026-10-19）
 
