@@ -602,3 +602,38 @@ UTC`2026-10-19T12:11:19Z`实际发布[CR5571335055](https://github.com/songconma
 决定`accept`，限定为准确5725所记录的原c5同库服务恢复及上述只读可访问性/元数据/逐表计数。没有部署Source15或Source22，未检查完整业务/原生/S3、CodeGraph/媒体正向、真实人类采用、完整CI或正式发布；此前Source15独立130项/DOM与Source22三项分别保持其准确来源和范围。本附加复核不增加已接受6/10，不停止原服务或把现有终端记为已退出。
 
 主控`msg_11b84412d6c7`实际读取独立`result.json`，确认同一PID/c5、创建时间、68表93行与Q及服务保持运行；没有重复观察。UTC`2026-10-19T12:24:30Z`发布[CR5571481043](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571481043)，回执`COMMENTED`、`commit_id=5725c1840a760105518d273eaaa28d7367f369ed`，请求及原始回执在自身`service-c5-restart/{github-review.json,github-review-receipt.json}`。同账号没有冒称APPROVE。
+
+报告`c5bf81e2f34f1c44893732cd6edf826b2fa8d705`普通push后，原hook实际于UTC`2026-10-19T15:22:58Z`入队`msg_1712ad6c08bf`；原件`ten-cycles/service-c5-restart/review-hook-receipt.log`。该通知引用前述UTC12:18的一次观察，没有把历史观察改记为新的服务复验。主控UTC`15:23:25Z`以`msg_679e9f8fc570`实际回复，确认已完整读报告与result、API核CR5571481043/COMMENTED/准确5725，登记限定接受及仍6/10。2026-10-20主控续行消息`msg_4b5ce918d152`另确认原服务仍health ok、原产品Worker已failed结算并释放；本Reviewer沿原Task/Dispatch继续科研静态决定，没有重复服务检查。
+
+## fcb科研安装入口的独立静态审查（2026-10-20）
+
+准确候选`fcb1e0a70541e15de1f52507a43edadb9801e368`，PR #3 open/Draft；实际API核HEAD一致。完整50e51fb6→fcb diff仅`papers/astrocyte/{build-texlive.ps1,README.md,validation.md}`，85行增加/5行删除。实际Git比较a664233a→fcb的科学正文、references.bib、原preprint TeX/PDF均差异0；原14条文献、方法/统计提案与原Tectonic交付没有因本轮脚本变化成为新的研究结果。
+
+重新应用`astrocyte-research`技能核对技术执行、工程证据与论文主张。完整读取当前三文件差异和原入口，实际核工作文件与准确fcb一致后，执行自身Parser入口读取该脚本，PowerShell7.6.6标准Parser/完整UTF-8检查EXIT0、正文未执行；准确候选`git diff --check` EXIT0。本轮没有调用Install/Build/Validate、引擎版本、Tectonic或独立文稿重建，原独立TeX复核入口和tl25输出保持未执行。
+
+### 原始来源与入口改变
+
+只读核官方已验安装器`install-tl-20260301`的完整Windows wrapper，以及`install-tl`的lang参数解析/translation加载、`trans.pl`的语言分支、`TLWinGoo::reg_country/cu_root`、`TLCrypto::setup_gpg/test_one_gpg`和`TLUtils::which/conv_to_w32_path`相关完整函数。来源为原官方安装ZIP的实际解包文件；原`verify-installer-sha512.log`记录install-tl.zip OK，签名日志保留实际`VALIDSIG`及固定官方fingerprint `C78B82D8C79512F79CC0D7C80D5E5D9106BAB6BC`的`ASSERT_SIGNER`。本轮读取原验签记录，没有声称重新下载或独立重验签名。
+
+| 候选改变 | 独立静态核查与实际原件 |
+| --- | --- |
+| 同包Perl直接解释官方install-tl并检查其真实退出码 | 官方wrapper结尾设置errlev后到达eoff，没有明确传回该变量。当前使用原包内perl.exe/库，清除的PERL环境清单与wrapper一致，保留Invoke-Tool原生退出码检查，不修改官方文件。原wrapper失败console确有HKCU/translation错误；wrapper返回0与后续Perl返回1的退出事实来自Worker及主控运行记录，不冒称本轮独立重现。 |
+| 官方`-lang en` | 实际install-tl先解析lang再加载trans.pl；指定opt_lang避免其地区自动读取分支。原reg_country经cu_root以KEY_FULL_ACCESS打开HKCU，与原错误位置相符。当前不改宿主语言、注册表或ACL。 |
+| 固定GPG文件名与进程PATH | Windows test_one_gpg通过which查PATH目录/文件名再处理空格路径。候选先核真实指定文件，Perl优先、指定GPG目录随后，检查同名遮蔽，TL_GNUPG为该文件名；原公钥ring、`-verify-downloads`与真实失败即停止保持。原失败console明确未发现GPG而退出，最新原console已显示同一Utah2025 final仓库verified。 |
+| 日志与部分安装 | 新控制台/install-tl日志按实际resource时间戳保存，目标已存在仍立即拒绝。scheme-full/windows/doc/src/portable及禁宿主PATH/桌面/文件关联的原profile保持，没有缩减发行、自动切镜像或对现存部分目录自动续装。 |
+
+### 实际执行范围与限制
+
+完整读取三次原installer-console、相应install-tl日志、原profile及三份原资源JSON。最新console与install-tl原日志显示仓库verified、Windows64、installer revision75865/database revision78234；六个初始包阶段有完成记录、用时01:56。其后4973包阶段最后为0029包achemso开始、time05:41；这条开始记录不能证明该包完成，早期ETA不作最终耗时或速度收益。原Perl locale警告仍在完整日志中，未隐去或改成干净安装记录。
+
+原三次启动双样本分别为CPU7%/8%、0%/2%、8%/10%，最低可用14.534546GiB，单调间隔分别2.4638347、2.4327916、2.4821475秒，满足当时85%/4GiB守卫；这是原Worker执行记录，本轮未重采样或重跑。主控授权为优先恢复应用而对唯一原生安装发送Ctrl+C，Worker/主控记录原会话28383退出1及本次安装进程退出，原部分目录与日志保留。该受控中断不判为安装功能失败，也不能记完整安装成功。
+
+本轮实际静态路径检查显示新引擎`build/manuscript.pdf`不存在；准确fcb未包含`preprint/arxiv-source.zip`。完整安装、XeLaTeX两遍、完整来源新解包编译与原全部PDF/引用/字体/文本边界检查仍未运行。原08 PDF/TeX仅保持其既有准确来源，不能替代这组未完成检查。
+
+对NJU元数据，本轮直接读取两侧实际文件并完整字节比较，texlive.tlpdb.xz/sha512/asc分别2704836/144/488bytes，均等于path-metadata中的原已验输入；自身原件`.verification/texlive25-static/metadata-comparison.json`。HTTP200和原始访问时间来自Worker comparison.json，本轮未下载、切源或测量包速度；元数据相同不证明全部包传输、安装或恢复成功。TUG历史目录本轮联网读取为403，未把NJU目录成员资格写作本轮独立联网验证通过。
+
+已完整读取[arXiv TeX提交要求](https://info.arxiv.org/help/submit_tex.html)：需使用实际必要来源并检查本站生成PDF；当前本地安装/编译尚未完成，本站处理及真人检查也未完成。该规则与项目中待定作者/机构/许可/同意分别保留，不能从旧PDF、方法提案或安装入口进展推断投稿就绪。
+
+最终决定`insufficient_evidence`，对应准确fcb的完整TeX Live技术交付。静态源与真实部分安装日志支持这三项入口修订，当前没有新增明确代码返修项；完整Install→Build→Validate、可独立编译的新来源ZIP/新引擎PDF仍缺实测，Reviewer没有独立安装或编译通过证据。科学正文冻结、正式研究/八配置结果、作者许可与投稿均维持实际未完成状态，不将工程进展计作科研效果；本阶段不增加已接受6/10，不进入依赖09的10，不修改正式V4或原权限，也不申请或自行启动新的安装/构建窗口。
+
+UTC`2026-10-19T16:18:15Z`（北京时间2026-10-20）实际发布[CR5574476787](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5574476787)，回执`COMMENTED`、`commit_id=fcb1e0a70541e15de1f52507a43edadb9801e368`。请求与原始回执为自身`.verification/texlive25-static/{github-review.json,github-review-receipt.json}`，同账号没有冒称APPROVE。
