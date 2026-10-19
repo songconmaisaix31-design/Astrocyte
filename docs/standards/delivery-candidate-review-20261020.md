@@ -7,7 +7,7 @@
 - 固定分支：`songconmaisaix31-design/research-preprint-review-20261019`；接管 HEAD：`13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，接管时工作树干净。
 - 写入范围仅本报告及本树已忽略的 `.verification/**`。本树未包含根规则及产品源码，当前规则从主仓库 `C:/Users/DW/orca/Astrocyte/` 读取，产品计划及源码从指定产品树只读核查。
 - 实际使用 Orca 中的 Codex 会话；本次 `orca terminal show` 的终端预览为 `GPT-6.1-Sol xhigh fast`，没有覆盖模型参数。CLI 为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。
-- 当前阶段为静态计划审查，已接受准确 `ed543c12106c2dbb3e181cb9bc1647b626455179` 的普通构建与同来源服务计划；尚无源码接受决定，没有编译、测试、服务、浏览器、安装或模型业务调用。
+- 已对准确S完成独立产物与迁移副本复验，接受主控按既有授权执行原库stage/start的准备范围。实际64505运行、HTTP与SQL的真实ID对应、最终治理文档及准确PR审查仍待完成；Reviewer没有编译或启动服务/浏览器，没有安装或模型业务调用。
 
 ## 依据与接管事实
 
@@ -92,6 +92,44 @@
 
 两次均使用现有Node hook、本次准确Run/Task/Dispatch/handle，BelowNormal与Node heap512MiB。该表登记实际唤起，不视为源码、运行验收或窗口授权。
 
+### 契约工具补充诊断计划：接受
+
+主控 `msg_8f8e34847fab` 提交补充诊断。已读取准确S的 `run-contracts/result.json`、原始 `check.log`、两次资源样本，以及既有示例校验/客户端一致性脚本。原 `pnpm check:contracts` 于 UTC `2026-10-19T19:30:02.8460016Z` 退出 `-1073740791`；原始输出在13项警告及API描述有效后出现 `UV_HANDLE_CLOSING` 断言，结果为FAIL，后续两个 `&&` 阶段未运行。尚不能由该日志判定崩溃所属进程或根因。
+
+接受按相同S、实际Node与已安装依赖逐项诊断：
+
+1. `node node_modules/@redocly/cli/bin/cli.js lint contracts/openapi.yaml --config contracts/redocly.yaml`。
+2. `node scripts/validate-examples.mjs`。
+3. `node scripts/generate-client.mjs --check`。
+
+每条命令独立保存真实退出和资源原件，只调整忽略验证入口，不修改业务、依赖、workflow、契约、断言或生成客户端。原入口FAIL和后续未执行保留；新结果只作为单项诊断，不改记原入口或完整默认CI通过。这些操作针对本次契约检查故障和未执行的必要阶段，不构成多余重复检查。该决定仅补充诊断计划，Reviewer没有运行命令。
+
+本次诊断计划hook于 UTC `2026-10-19T19:31:02Z` 入队 `msg_a88892114d22`，EXIT0；主控 UTC `19:31:11Z` 以 `msg_7b107171b5c1` 实际读取回复。随后静态读取Worker原件：直接Redocly仍退出 `-1073740791`，出现相同断言；示例校验EXIT0，264项；客户端一致性EXIT0。因此原契约入口和直接Redocly均为FAIL，工具崩溃根因未解决，示例与客户端单项通过。
+
+### 启动观察时间补充计划：接受
+
+完整读取 `migration-observation-plan.md`、实际只读差异诊断源码与 `discovery-difference.json`。首次 `rehearsal-01.log` 在严格比较 `local_project_discovery` 时EXIT1，未生成迁移通过结果。诊断列出的既有表变化仅 `_migrations` 的026→027条数和 `local_project_discovery` 唯一registered行的 `/observed_at`；首次失败及原/新数据库保持。
+
+独立静态依据为S的 `cmd/server/main.go:366` 每次启动刷新、`registered_projects.go:90` 保存实际观察及 `local_agents_discovery.go:72` 的registered行UPSERT；发现缓存与人工metadata分开，原GET只在内存构造聚合。这些源码支持真实启动观察时间更新，不支持其他原记录变化。
+
+接受该准确S下的补充计划：备份和启动前仍全值/类型/重复数相等；迁移后仍核准确027结构及记录、全部原业务记录、完整性和新远端表为空。只有显式提供真实 `launch.json` 时，核registered行id/行数及其余标准JSON键值和数字类型全等，允许唯一 `observed_at` 为本次真实进程创建至实际复核之间、且晚于原观察的含时区时间，保存实际before/after与上下界。先只读复核原失败副本至全新结果，不重复启动或HTTP；不修改产品、不固定时间、不豁免整表、其他变化仍立即失败。该决定仅计划，尚未接受实际迁移结果。
+
+该补充计划hook `msg_80e2d54c6380` 于UTC `19:40:03Z` 入队；主控 `msg_03ff818849eb` 于 `19:40:41Z` 实际读取回复。修订比较工具已核所传launch.source为S、launch.database解析后等于实际target；其余比较及明确时间范围符合已审计划。
+
+## Worker原件静态核查
+
+本节为读取Worker真实原件的结果，Reviewer尚未独立执行功能检查。
+
+- 原服务停止由主控 `msg_90f3f843c2e9` 确认：PID45676于 UTC `19:25:06` 已退出，64505空闲；随后唯一阶段B窗口交原Worker。Reviewer未取得运行窗口。
+- `run-backup` 和 `run-build` 的结果均为准确S、EXIT0；各自原始资源样本符合两次CPU/可用内存/单调间隔及BelowNormal要求。构建原日志包含三个Go程序、TypeScript和Vite；保留719.78kB主分块警告。
+- 真实备份工具使用 `sqlite3.Connection.backup`、`mode=ro` 与 `query_only`；实际数据原件保留26项迁移、完整性ok、外键错误0及原记录类型/重复数一致。未知或活动任务基线须停止；本次原件为空Mission/租约/原生会话，3项资料作业均succeeded。
+- 动态DAG九个函数和OpenViking四个函数的实际日志均通过，其他无匹配函数的包仅计编译。显示规则三文件53项通过；这些均为Worker执行结果。
+- 已完整读取 `candidate-service.py`、`sqlite-data.py` 和 `stage-artifacts.ps1`。原source/database/binary/web以及完整Q指针守卫已经由原Worker补充并静态复核；原件备份、全列/类型/重复数比较、027结构增量、实际PID/创建时间/路径/监听及HTTP全字节比较路径保持。恢复仅在候选退出、已保存失败库、原业务内容未变时执行；合法新数据出现即拒绝覆盖。外部stage/start尚未执行。
+- `run-architecture` 的真实transcript记录Go1、`-p=1`、Node512MiB，EXIT0，43包满足现有边界；未为改变额度重跑。
+- 资源执行偏差：主控 `msg_793951c67208` 确认lint未退出时启动vet。vet记录 UTC `19:31:37–19:31:45`，lint最终UTC `19:32:03` EXIT0，两项实际重叠，不符合全局串行。保留其真实退出与偏差，不能将这两项登记为符合串行条件的独立运行；按既有规则不为删除偏差重跑。其他检查的资源与串行情况分别核实。
+- 已直接核两份原transcript：lint开始本地`03:31:26`，结束`03:32:03`；vet为`03:31:37–03:31:45`，支持上述实际重叠结论。
+- 主控 `msg_01eee6be67b1` 与更新后的主控任务追加最终产品治理文档：AGENTS、README、HANDOFF、STATUS、CODING、RESOURCES、QUESTIONS、TASKS、docs/README及docs/agents。后续核准确S至最终报告HEAD仅获准治理/报告文档，用户规则与角色原文一致、本地链接有效、运行来源及限制准确；业务与构建输入不变时不重复构建。
+
 ## 实际核查与后续条件
 
 已执行只读 Git 身份/状态、原生消息读取和文件内容读取；审查接管 HEAD 为 `13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，初始产品 HEAD 为 `5725c1840a760105518d273eaaa28d7367f369ed`。已完整读取现有 `scripts/review-decision-hook.mjs` 的真实参数与投递行为。初始计划退回决定通过该hook于 UTC `2026-10-19T19:22:47Z` 入队 `msg_e2af493f46e1`，参数使用本次准确 Run/Task/Dispatch/handle 和候选5725，进程 BelowNormal、Node heap512MiB，EXIT0。主控 UTC `2026-10-19T19:23:17Z` 回复 `msg_fb6117274142`，确认实际读取hook与报告、交回原Worker，登记本次实际唤起。计划阶段没有业务改动 CR。初审报告已以普通Commit `f38857155be13ee09c1c71d10bdefdb1dc9b0e5d` push；差异空白检查通过。
@@ -106,4 +144,20 @@
 
 完整静态比较 Source15 `15d74da3edcee26550a71120370fda9c86230e04` 至准确计划ed543，仅 README、两份报告、`scripts/check.mjs`、`scripts/process.mjs` 有差异；其中两份脚本的全部差异为已获独立限定接受的Source22输出目录前置。Go业务、Web、数据库迁移、契约和生产构建脚本保持。后续Reviewer复验集中于准确构建来源与复制内容、新迁移数据保全、实际服务身份及真实HTTP/权限结果，已接受同条件业务事实按原范围复用，不独立重跑全包或所有未变单元检查。
 
-源码复验和实际运行核查必须在计划接受、主控交付准确 Commit/报告及专属资源窗口后开始。业务问题交原 Worker 返修。
+## 独立可部署范围复验：接受
+
+主控 `msg_80701682a26d` 交付准确S、Worker原件报告与独占窗口，确认原Worker已结束全部自有运行、64505/17887空闲。实际执行：
+
+`pwsh.exe -NoLogo -NoProfile -File .verification/delivery-candidate-20261020/review-predeploy.ps1`
+
+进程EXIT0，独立结果 `.verification/delivery-candidate-20261020/predeploy-01/result.json` 于UTC `2026-10-19T19:44:14.5763849Z` 为PASS。BelowNormal、Go1/`-p=1`/512MiB、Node512MiB；资源样本UTC `19:44:04.019973Z` 与 `19:44:07.025131Z`，CPU21%/35.2%，可用10.650/10.616GiB，单调间隔3.0051854秒。未编译、启动服务/浏览器或调用模型。
+
+| 独立操作与原件 | 实际结果 |
+| --- | --- |
+| `review-source.py artifacts --report-sha ed543... --output .../artifacts.json` | 产品HEAD准确S、工作树干净。三个Go程序分别实际执行`go version -m`，均为Go1.27.2、完整S及`vcs.modified=false`；三个程序、两份启动入口、全部33个Web文件逐件完整字节一致，共38项来源比较。 |
+| 原对象与副本对象全文件比较 | 8个对象文件路径集合和完整内容一致；没有写入原件。 |
+| 原库对真实一致性备份，既有`sqlite-data.py compare` | 独立只读比较PASS；完整schema和全部68表的原值、NULL/BLOB/存储类型及重复数一致。 |
+| 原备份对真实迁移副本，既有比较工具显式`--migration .../027_openviking.sql --launch .../rehearsal-01/launch.json` | PASS：68→69表，26→27项迁移，准确027结构及唯一索引增量、新远端表为空，完整性ok、外键错误0；全部原业务值保全。 |
+| 发现缓存的独立SQL类型核查 | 两库的registered id/data均为TEXT。唯一元数据时间由`12:09:40.7714069Z`更新到真实`19:36:30.8916452Z`，在实际进程创建`19:36:22.955142Z`至复核区间内，其他字段、id、行数与数字类型相等。`all_original_values_preserved=false`准确保留该时间变化，业务保全单独为true。 |
+
+限定决定：接受准确S的同来源普通产物、原件一致性备份及上述真实迁移副本证据，主控可以按已授权守卫和重新采样执行原库stage/start。该决定没有接受当前64505已运行、最终治理文档、默认CI或正式发布；原契约工具FAIL、lint/vet串行偏差及全部既有未验范围保留。独立窗口交回主控后，实际运行和最终准确CR继续按本次任务完成。
