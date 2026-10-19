@@ -30,8 +30,8 @@
 | `go test -mod=readonly ./internal/adapters/sqlite -run '^TestTasteProfileActualMigrationUpgrade$' -count=1 -timeout=2m -v`，before | EXIT1；真实迁移 27，旧断言 26，函数 0.15 秒。`migration-20261019-103638-463.log`。 |
 | 上述发现命令，after | EXIT0；函数 1.12 秒，包 2.417 秒。真实 clone 保存原 HEAD，明确分支 `discovery-validation`，观察结果为准确 HEAD/分支及 clean。`discovery-20261019-103852-902.log`。 |
 | 上述迁移命令，after | EXIT0；函数 0.15 秒，包 1.468 秒。完整旧迁移升级、真实备份、精确 27 条 ID、重复运行、两张表及零 profile 均通过。`migration-20261019-103818-195.log`。 |
-| `go test -mod=readonly ./internal/adapters/httpapi -run '^(TestSwarmActualHTTPHumanAuthorizationTimelineAndRevocation\|TestDynamicDAGActualHTTPGrowthProvenanceAndScopedRead)$' -count=1 -timeout=2m -v` | EXIT0，2 函数，包 1.925 秒。生产路由/session guard、实际 HTTP listener/SQLite，授权/CSRF/撤销、固定输入和每个返回 event_id 真实 SQL 回查。`s3-http-20261019-103936-584.log`。 |
-| `go test -mod=readonly ./tests/s3 -run '^TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart$' -count=1 -timeout=2m -v` | EXIT0，1 函数，包 6.067 秒。双实际连接认领同一批准形成一个 Mission、幂等、重开及撤销；没有认领 WorkItem，不计 AT08。`s3-ledger-20261019-104006-759.log`。 |
+| `go test -mod=readonly ./internal/adapters/httpapi -run '^(TestSwarmActualHTTPHumanAuthorizationTimelineAndRevocation\|TestDynamicDAGActualHTTPGrowthProvenanceAndScopedRead)$' -count=1 -timeout=2m -v` | EXIT0，2 函数，包 1.925 秒。生产路由/session guard、实际 HTTP listener/SQLite，授权/CSRF/撤销、固定输入，HTTP timeline 的 event_id 和 DAG 节点的创建 event_id 逐项真实 SQL 回查。`s3-http-20261019-103936-584.log`。 |
+| `go test -mod=readonly ./tests/s3 -run '^TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart$' -count=1 -timeout=2m -v` | EXIT0，1 函数，包 6.067 秒。双实际连接按同一批准并发创建一个 Mission、幂等、重开及撤销；没有认领 WorkItem，不计 AT08。`s3-ledger-20261019-104006-759.log`。 |
 | `go test -mod=readonly ./internal/adapters/sqlite -run '^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestSwarmActualMemberPreflightRejectsEnclosingWriteTransactions)$' -count=1 -timeout=2m -v` | EXIT0，3 函数，包 12.539 秒。实际事务/跨库/取消、缺真实 reader 时拒绝准备与发送、无输入对象和原生会话；未启动控制器。`native-preconditions-20261019-104122-849.log`。 |
 | `go vet -mod=readonly ./cmd/server ./internal/adapters/sqlite` | EXIT0。`vet-20261019-104424-102.log`。 |
 | `gofmt -d cmd/server/discovery_config_test.go internal/adapters/sqlite/taste_profile_test.go`、`git diff --check` | EXIT0，无差异。`format-20261019-104325-625.log` 及实际命令回执。 |
@@ -49,3 +49,5 @@ CPU73%、99%、90% 的三次尝试分别在 migration、discovery、vet 的 Go �
 PR #1 已审业务 `0642efdf7748a64c36e07e466b5f507b9c04a004` 不是本轮基线祖先，当前 PR #2 尚未包含其发送前租约/用途检查。该实际业务缺口已交主控，并由 `msg_6ccfb3e220ab` 确认留待第 01 轮接受后明确第 03 轮方案；本轮没有自动合并旧治理或业务。
 
 本轮沿原 PR #2 普通 push，提交使用 `[skip ci]`，保留默认 CI 原有失败状态和全部断言。等待独立 Reviewer 的准确 CR、hook 及主控回复后再进入下一轮；本轨 Task 保持运行，尚未发送 worker_done。
+
+两项测试的源码候选为 `b21f5b66852a7fa8692185ebfaa34ddaae1f2e00`，已普通 push，`git ls-remote` 核对一致；后继报告提交只补准确来源及校正验证范围措辞。该源码除本轮两项测试与记录外，没有生产变化。
