@@ -145,7 +145,7 @@
 \title{Astrocyte: Experience Reuse and Collective Adaptation in
 Decentralized Agent Swarms}
 \author{Authors: TO BE PROVIDED}
-\date{19 October 2026 --- method and protocol draft 0.3}
+\date{19 October 2026 --- method and protocol draft 0.4}
 
 \begin{document}
 \maketitle
@@ -975,17 +975,139 @@ evaluation}\label{tasks-feedback-and-sealed-evaluation}
 
 Each task has a \texttt{feedback\_suite} and an
 \texttt{evaluation\_suite}. Feedback is available to execution and the
-permitted updates. Evaluation answers, item-level outcomes, and scores
-stay inaccessible to those processes until the entire task sequence
-ends. An independent evaluation process receives final artifacts and
-retains its results separately. Ordinary completion messages and
-retrieval indexes must not return sealed scores indirectly.
+permitted updates. Propose keeping formal evaluation programs, answers,
+item-level outcomes and scores sealed from those processes until
+\textbf{all planned paired blocks of the main study} have completed.
+Finishing one sequence or one block does not release its evaluation.
+This stronger release boundary prevents early blocks from influencing
+later execution, experience, task selection, or analysis settings. It
+remains a proposal requiring approval and actual enforcement.
+
+\subsubsection{Roles, fixed artifacts, and blinded
+evaluation}\label{roles-fixed-artifacts-and-blinded-evaluation}
+
+The proposed access matrix below describes information permissions
+before that release. Execution includes participating agents and their
+coordinators; updates include experience distillation, retrieval/ranking
+maintenance, and relationship adjudication. The independent evaluator
+includes any human raters. The analyst has no execution or update role.
+Permissions refer to study material, not permission to inspect unrelated
+user data.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Material
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Execution
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Updates
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evaluator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Analyst before release
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Approved task inputs and feedback checks/results & Assigned scope &
+Authorized feedback & Task/rubric context & Sanitized progress only \\
+Final fixed artifact and required environment & Submit own version &
+Feedback-authorized sources only & Read submitted version & Submission
+identity only \\
+Sealed evaluation program and target answers & No & No & Evaluate only &
+No \\
+Sealed item outcomes, scores and evaluation traces & No & No & Retain
+privately & No \\
+Configuration mapping and decision histories & Assigned execution scope
+& Assigned switches/sources & Hidden & Mapping withheld \\
+Model/tool usage, costs and operational errors & Own authorized
+operations & Own authorized operations & Own evaluation records &
+Sanitized accounting \\
+\end{longtable}
+}
+
+The evaluator receives the final immutable artifact/source version, task
+and permitted rubric context, and an evaluation label whose
+configuration mapping is retained separately. Its presentation removes
+irrelevant configuration labels and execution commentary while
+preserving the unaltered artifact and necessary execution context.
+Source/version linkage remains auditable. Human raters use a fixed
+rubric without update switches, decision location, partner histories,
+preliminary scores, or other raters' judgments. The design cannot
+guarantee blindness when the artifact itself reveals the condition;
+record unavoidable cues and any unblinding. Assigned execution agents
+may know their own switches, so this is evaluator blinding, not a claim
+that every role is blinded.
+
+Submission acknowledgment confirms receipt of the fixed version and
+returns no grade, assertion failure, evaluation exit status,
+result-dependent timing report, or diagnostic content. Evaluation writes
+neither task feedback nor shared learning state. Final artifacts cannot
+be revised after their sealed evaluation is inspected. Infrastructure
+errors and incomplete evaluation remain explicit in the evaluator's
+compartment; outcome-bearing messages cannot be used as ordinary
+operational feedback.
+
+Before formal collection, propose fixing the task/suite versions, full
+block count, analysis procedure, damaged-task rules and release rule. At
+the release boundary, all actually produced final artifacts are fixed
+and submitted, and every planned position has its sourced terminal
+disposition. A budget-exhausted or otherwise observed algorithmically
+unfinished position may have no artifact: retain that absence and its
+actual reason, with the failure outcome assigned by the predeclared
+protocol rule. Do not manufacture an artifact or claim a sealed-suite
+measurement for that position. These sourced algorithmic failures differ
+from an unknown outcome caused by missing evaluation, damaged data or an
+incomplete block; the latter remain unavailable and stop the affected
+paired analysis in Section 6. Unknown measurements are not filled with
+zero to release results. Accounting unknowns remain labeled, and
+exclusion decisions do not use sealed scores. After all planned blocks
+have completed their required collection and dispositions, the analyst
+receives the frozen outcome records, configuration mapping and
+accounting sources. An unfinished study does not automatically release
+partial scores or authorize outcome-based replacement blocks; its
+closure requires an explicit documented decision.
+
+\subsubsection{Leakage paths and required access
+checks}\label{leakage-paths-and-required-access-checks}
+
+The sealed compartment must exclude execution and update reads through
+files, repositories/attachments, database queries, HTTP responses,
+process output, ordinary logs, retrieval indexes, summaries, caches and
+model context. Error text, exit codes, test names, timing details and
+notifications can also reveal evaluation outcomes. An acknowledgment
+path must remain independent of the score. Evaluators must not share a
+writable index, conversation or learned cache with participants. The
+same restrictions apply to human coordination messages and automated
+experience proposals.
+
+Role names and separate directories alone provide no access-isolation
+evidence. A future authorized implementation must verify actual read
+denial and result-free responses across each relevant route using real
+fixed public-project artifacts and actual source events; each claimed
+event must be locatable in the real event store. It must also check that
+repeated submissions, errors, retrieval and restored state do not reveal
+a sealed item. No such tests, events or permissions are created in this
+writing round. The current native file/command-tool restriction and
+unresolved authority choices remain in force; this matrix does not
+select a product component or grant a new role.
 
 Task and suite selection are unfinished. The registration record must
-identify exact versions, permissions, overlap between suites, and the
-public-project scope. Isolating results does not guarantee independence
-when the feedback suite reveals the same assertions or target answers;
-overlap and adaptation to public tests require explicit review.
+identify exact versions, lawful source access, suite overlap, and the
+public-project scope. A content audit must check whether public feedback
+already exposes the sealed assertions or target answers. Access
+isolation cannot remedy that duplication. Independent pilot tasks and
+their development evaluation are separated from confirmatory collection;
+revealing pilot results for planning does not authorize reuse of formal
+sealed results.
 
 The primary task outcome is binary satisfaction of the fixed evaluation
 suite. Errors, timeouts, budget exhaustion, and unfinished tasks count
@@ -999,26 +1121,118 @@ erases its original execution record.
 \subsection{Budgets and accounting}\label{budgets-and-accounting}
 
 Accounting covers model calls, tools, experience extraction, retrieval,
-verification, coordination, retries, and initialization. The
-unverified-experience queue has a draft ceiling of 5\% of its
-configuration's total budget; its work is charged to that configuration.
-This ceiling and all other budgets require confirmation.
+verification, coordination, retries, initialization, and independent
+evaluation. Record these categories through existing task/operation
+identities and actual controller, provider, tool and payment sources.
+This proposes a research interpretation of those records, not a new
+Attempt entity, scheduler or accounting service. The
+unverified-experience queue retains its draft ceiling of 5\% of a
+configuration's total budget, with its work charged to that
+configuration. Neither that number nor a formal budget unit is approved.
 
-Model usage distinguishes input, cached input, output, and reasoning
-tokens when observable, by exact model version and billing period.
-Payment and resource usage are separate: a subscription-covered request
-can have no incremental payment while consuming resources. Unknown usage
-remains unknown and cannot be recorded as zero. Missing budget-relevant
-evidence blocks a formal budget-matched claim.
+\subsubsection{Observed operations, retries, and inclusion
+relationships}\label{observed-operations-retries-and-inclusion-relationships}
 
-Communication records message count, bytes, model-context tokens,
-waiting time, and elapsed time. Snapshot production is reported as an
-actual shared preparation expense and as an explicitly amortized per-run
-amount. The allocation rule must be registered; generating a snapshot
-once does not create eight independent preparation events. Conversely,
-reusing a public snapshot does not justify hiding its production cost in
-end-to-end comparisons. Paired executions remain isolated even when they
-start from the same snapshot.
+A scheduled task position is an outcome-denominator item. It may have no
+submitted request after budget exhaustion, or several genuine operations
+and retries. A platform submission, controller turn and
+provider-observable attempt are different observations; retain their
+actual links when the sources expose them. A platform request does not
+establish that the provider made exactly one internal attempt.
+Unobservable internal usage remains unknown.
+
+For each cost observation, retain the original operation/source identity
+and version, task and configuration linkage, model/tool/service version,
+observation time, raw quantity and unit, and whether it is an inclusive
+total or a component. Repeated transport of one usage record is one
+observation. A cumulative or corrected report for the same operation
+replaces the earlier reported total for accounting; it is not an extra
+call to add. Preserve the earlier source and correction history.
+Distinct actual billable attempts remain distinct costs, including
+failed, timed-out and unhelpful attempts.
+
+Nested-agent reports and coordinator summaries can already contain child
+operations. Establish the documented inclusion relation before summing:
+count a disjoint set of actual source quantities once, retaining rollups
+as cross-checks. Do not add a parent's inclusive total to its children,
+or sum an increment and the cumulative total containing it. Unknown
+overlap leaves that aggregate unresolved. The same rule applies to usage
+components: cached input or reasoning counts are added only when the
+actual interface defines them as disjoint from the reported input/output
+totals. Their names alone do not establish disjointness.
+
+Unknown delivery or missing usage never triggers a resend for
+accounting. Reconcile against the original controller/provider records
+and later legitimate receipts without reissuing the original operation.
+Missing receipts, failed execution and subscription coverage do not
+establish zero consumption. An actual zero needs source evidence, such
+as an unsubmitted operation, rather than absence of a record. Report
+known quantities and their coverage separately from unresolved
+quantities. The unresolved S3 call-count unit and tool/destination
+evidence choices still prevent a formal budget-matched claim for the
+affected path; this proposal selects no default.
+
+\subsubsection{Payments, resource quantities, and elapsed
+time}\label{payments-resource-quantities-and-elapsed-time}
+
+Model usage reports input, cached input, output and reasoning quantities
+only with their actual inclusion semantics, exact model version and
+observation/billing period. Tools, retrieval, distillation, verification
+and coordination retain their observed units separately. Do not add
+tokens across incompatible models and call that a common resource budget
+without an approved conversion. Rates and payment attribution require
+actual applicable billing evidence; subscription payments and allocation
+rules remain distinct from per-request resource consumption. Unknown
+payment is not zero payment.
+
+Record communication messages and bytes, and model-context tokens when
+actually metered; a token estimate must identify its estimator and
+remain labeled as an estimate. Report sequence makespan, waiting,
+individual operation intervals and their overlap separately. Summed
+concurrent durations are not elapsed study time, and waiting time is not
+measured CPU/GPU time. Actual CPU/GPU quantities require their own
+meters. Evaluation resources remain separately identifiable and
+outcome-bearing evaluator traces remain sealed; sanitized accounting
+does not release scores.
+
+\subsubsection{Shared preparation and per-sequence
+restoration}\label{shared-preparation-and-per-sequence-restoration}
+
+Let \(P\) be the actual preparation cost of the one common frozen
+history used for the main study, recorded by each compatible
+resource/payment unit. It includes the actual acquisition, distillation
+and verification used to produce that snapshot, not an invented
+reconstruction of unavailable history. Propose allocating \(P\) equally
+over the fixed planned \(8r\) main-study sequences. For sequence
+\(\ell\), report component-wise
+
+\[
+C_\ell^{\mathrm{report}}=
+\frac{P}{8r}+C_\ell^{\mathrm{restore}}
++C_\ell^{\mathrm{execution}}+C_\ell^{\mathrm{evaluation}}.
+\]
+
+The execution term contains its disjoint model/tool, learning,
+verification, retrieval, coordination and retry costs; restoration
+contains that sequence's actual copying/loading/isolation work.
+Evaluation is shown separately from execution. The reporting identity
+does not choose which unit or component a formal budget caps. Report raw
+\(P\), its proposed share, and each execution/restoration/evaluation
+component, with the original source inventory. Charge \(P\) only once in
+the study total. Pilot, perturbation and iteration-case costs remain
+separate; reused preparation is identified rather than charged again as
+a new acquisition.
+
+The allocation denominator is the registered planned sequence count, not
+a smaller successful/completed count chosen later. If collection ends
+early, report planned versus completed sequences and the remaining
+allocation explicitly, while the actual study total still contains the
+full \(P\) once. Additional real restoration attempts and failed
+preparation work remain observed costs. If historical \(P\) is
+unavailable, report that fact and any sourced partial quantities without
+manufacturing a total or calling history free. The corresponding
+end-to-end and budget-matched comparison remains unavailable. Formal
+\(r\), cost units, allocation approval and caps all remain undecided.
 
 Let the main study use \(r\) replications of \(T\) tasks, perturbations
 use \(r_p\) replications of \(T_p\) tasks in three configurations and
@@ -1367,6 +1581,89 @@ count exists here. More Monte Carlo resamples reduce computational error
 without adding independent experimental blocks. Replication counts,
 \(B\), maximum runs, stopping rules, and numerical diagnostics remain
 open. Formal outcomes must not determine them retrospectively.
+
+Propose the following readiness and decision order before confirmatory
+collection:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Establish lawful fixed public-project inputs, actual native-controller
+  tool restrictions, current grants, source access and externally
+  directed actions. Resolve the pending S3/native choices. A development
+  model-call allowance does not satisfy those prerequisites.
+\item
+  Implement and independently check the common research policy, eight
+  isolated states, both update projections, actual decision views and
+  source-linked verdict semantics. Verify evaluation read denial and
+  leakage paths with actual authorized records. A method specification
+  or role matrix does not complete this step.
+\item
+  Demonstrate auditable usage, retry/inclusion reconciliation,
+  preparation/restoration sources and current budget enforcement in the
+  approved units. Preserve unknowns. Before observing pilot outcomes,
+  version its models, prompts, inference settings, tools,
+  experience/relationship update policy, task distribution and sequence
+  length \(T\), initial histories, budgets, permissions, planned block
+  count and stopping/exclusion rules. Identify the intended formal
+  target population and contrast whose variance the pilot is meant to
+  inform. These are a prospective pilot specification and planning
+  target, not choices approved by this manuscript.
+\item
+  Execute independent complete eight-configuration pilot blocks with
+  separate condition requests and isolated state. Pilot development
+  feedback and evaluation are kept outside the formal outcome set.
+  Restoring one historical snapshot can support conditional pilot
+  replication, but does not independently sample historical populations.
+  Record the task/history population and any provider or cross-block
+  dependence.
+\item
+  Use the actual complete-block contrasts to assess variance
+  uncertainty, ties, distinct values, dependence, zero-variance cases,
+  BCa diagnostics and usable tail/Monte Carlo precision. A zero or
+  unstable pilot variance does not justify a zero or arbitrarily small
+  formal sample. Assess the marginal confidence curve's calibration
+  under justified assumptions and an independently specified assessment;
+  pilot resampling alone supplies no population coverage or power
+  guarantee. If applicability or calibration remains unsupported, formal
+  inference remains unready.
+\item
+  Only then confirm formal tasks/models, practical and equivalence
+  thresholds, budgets, \(r\), \(B\), \(J\), grid and tail-rank criteria,
+  numerical tolerances, randomization, maximum runs, stopping/exclusions
+  and sealed-release rules. Compare the formal target against the
+  versioned pilot specification component by component. A substantive
+  change in models, prompts, inference/tools, update policy, task
+  population/\(T\), history or budgets cannot inherit the old
+  \(\sigma_I\) without an explicit scientific applicability argument. If
+  that argument is unavailable, preplan independent complete pilot
+  blocks for the revised target before using its variance to choose
+  \(r\). Additional pilot blocks remain development data and costs,
+  outside the formal block set. Document the uncertainty and target
+  behind the chosen \(r\), freeze the analysis and obtain the required
+  decisions before collecting any formal block. The normal planning
+  illustration does not replace a justified power/precision assessment
+  for the chosen procedure.
+\end{enumerate}
+
+Disjoint pilot and formal tasks need a justified population
+relationship; different task lists do not automatically estimate the
+same conditional variance. If formal inference is conditional on a
+particular fixed list/history, variance from another list/history needs
+a corresponding applicability argument. A planning revision never
+authorizes looking at formal outcomes or moving pilot blocks into the
+confirmatory sample. None of the target versions, additional pilot runs
+or formal parameters is selected or executed here.
+
+No independent pilot or calibration assessment has been run here, and no
+numerical \(r\) is available. Extra tasks within a block, requested
+seeds, diagnostic batches and repeated analyses do not increase the
+independent block count. Formal scores cannot be inspected to adjust
+thresholds, add favorable blocks, choose a grid, or revise the
+allocation denominator. If prerequisites or required settings remain
+undecided, the study remains at preparation; it does not acquire an
+implicit default from this draft.
 
 \section{Adaptation, mechanisms, and prospective iteration
 case}\label{adaptation-mechanisms-and-prospective-iteration-case}
