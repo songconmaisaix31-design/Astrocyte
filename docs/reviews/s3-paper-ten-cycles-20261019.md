@@ -554,3 +554,5 @@ UTC`2026-10-19T07:19:28Z`实际发布[CR5568150342](https://github.com/songconma
 最终决定为`accept`，限定于准确Source15 Windows候选包的来源/完整130项运行与人工DOM，适用于当前准确报告候选2a05。比较采用与Worker相同的已文档化PowerShell5.1环境，原完整断言及真实输入保持，原Core中断单列。没有测量速度、CPU/内存收益或科研效果。完整默认CI/浏览器、今日实际新增、真实原生/S3/unknown对账、实际用户采用以及正式Release发布门禁均未通过；真实采用仍需用户本人对具体成果的反馈。三项未答、原权限与Known=false保持；本附加验包不替代05/07/09/10、不增加已接受6/10，不授权发布、合并、tag或arXiv上传。
 
 UTC`2026-10-19T11:43:13Z`实际发布[CR5571008196](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5571008196)，回执`COMMENTED`、`commit_id=2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65`；同账号未冒称APPROVE。请求及原始回执为自身`release15/github-review-restart.json`与`github-review-restart-receipt.json`。完整Verify、DOM及这次CR的原件均按当前候选与实际运行分别保留。
+
+报告`647828d803d22dac6909af60f71dd9f4fa63487f`普通push后，UTC`11:44:04Z`使用当前Dispatch/终端、准确2a05及非空报告执行原review-decision hook，实际入队`msg_e0c2d47d66dc`，原始回执独立保留于`release15-restart/review-hook-receipt.log`。主控UTC`11:45:58Z`以`msg_e986c7d42f32`实际回复，确认完整读取重启后报告、真实API核CR5571008196/COMMENTED/准确SHA、本地报告干净，登记限定接受及仍6/10。此次真实读取回复确认唤起；同Task继续，未结算worker_done。
