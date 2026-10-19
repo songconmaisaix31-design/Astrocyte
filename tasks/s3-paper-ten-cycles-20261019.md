@@ -116,3 +116,9 @@ Release静态21a92dc6已普通push，尚未构建。root实际审查发现健康
 Release准确3e52cc13caa934d2514e74d7ffcc83a350381531的首项真实OS socket检查失败：PS5.1报listeners未设置，未发HTTP或运行Build/inspect/Verify/DOM；真实资源CPU6%/16%、最低5.136GiB、间隔2.686秒通过。原件today-20261019/l3e52cc13保留，msg_67b42dcc2d3c交回窗口、root回复msg_d30c1e16b804。原Worker用标准AST及UTF-8读取确认Common缺BOM，PS5.1将赋值并入中文注释，语法零错误不能发现此解码差异；仅补Common的UTF-8 BOM，与另四个既有脚本一致，保留StrictMode及全部断言。
 
 修复源码15d74da3edcee26550a71120370fda9c86230e04已普通push，root实核差异、PR2/远端与干净状态；两版PowerShell解析/完整解码比较通过，日志syntax-utf8-ps51/ps7。msg_ae3f52e051cd现授原Worker唯一窗口，先l15d74da3真实socket正向/异主拒绝，再以该准确Source构建p15d74da3/Astrocyte-v0.1-windows-x64-15d74da3edce.zip，q15d74da3实际只读inspect、v15d74da3原完整验包和单浏览器DOM/事件定位。首失败停报，其他轨道仅静态；准确包与后继报告SHA分列，尚无新包通过或发布记录。科研06静态授权msg_56215e0da433，主控任务绝对位置已另明确，尚未授构建窗口。
+
+l15实际OS socket正向/异主拒绝EXIT0、HTTP请求0，两个持有对象正常退出。原p15实际runtime-check失败ENOENT：旧runtime-sdk缺node_modules；其后源码归档/安装/编译/ZIP均未运行，msg_a35970d47dbd交回窗口、root回复msg_5f30ec3aa702，原失败保留。只读旧41ce ZIP核有1370个真实SDK文件/377214131bytes，固定版本及完整package/lock与保留输入一致；标准JSON辅助首失败另保留，未改依赖或校验。msg_b81911d2b818授原Worker用成熟ZIP API在today新r15d74da3仅恢复runtime/legal/NOTICE，包含性/允许项/不覆盖校验保持，旧应用程序与web不进入新产品。
+
+r15恢复及Check-Runtime/完整runtime隐私实际EXIT0。准确Source15d74da3以新Runtime=r15d74da3、Output=p15d74da3-2执行Build，冻结安装、lint、三Go程序/前端类型/Vite及snapshot构建已经通过，包完整隐私/ZIP尚在执行；q/Verify/DOM未运行。msg_6d5dd47e93cc要求当前Build实际退出后交回窗口，先插入科研06已有工具短构建，再授产品续验，不重复已通过socket/恢复/Build。最新实际状态以退出回执为准，未发布tag或Release。
+
+科研06以msg_18f750372cc5交接6个静态文件，完整条件目录/单一判定/时钟/更正/初始化及五项条件证明、证据/来源/反馈已同步；主控实际读正文差异并以msg_84dee88ad5a3要求澄清0边界，正文现统一b<=a<0历史与a<t可见集合，缺真实位置不补造。msg_d9f293f266e7要求冻结等窗口，preprint仍04，06未构建/接受。当前默认浏览器静态审查另发现trace/多服务与真实来源前置，Reviewer只读矩阵进行中，不运行旧替身/受阻原生或把包核心DOM代为完整默认套。三项原生/S3及作者问题均未收到答复。
