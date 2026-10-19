@@ -58,10 +58,34 @@ Reviewer接管HEAD为ffbc5762f578ab39fdacd9a9cc31b970d5beead6，相对54627b06�
 
 第二次Install越过语言检测，强制验签发现GPG失败，真实Perl与入口均EXIT1，窗口立即归还；Build/Validate未运行。主控与Worker实读原TLCrypto/TLUtils：Windows原生which将参数作为PATH中的程序名，直接配置绝对路径无法发现。自身入口仅将同一真实Git GPG目录放入进程PATH、TL_GNUPG设原leaf，保留Perl在首位及遮蔽拒绝，原keyring/验签不变。实际diff及静态检查后msg_38ab9d9abc2f授新单次窗口。新原console显示官方2025 final仓库verified，正在完整发行安装；尚未登记安装或编译成功。
 
-科研退出后，独立Reviewer使用相同官方引擎只读重建，全部输出及缓存写自身忽略目录；最后产品启动共享同库应用。产品同时静态定位原完整默认CI的具体失败，先提交可独立修复建议，不改变权限待定项或默认断言。
+完整科研编译成功时，独立Reviewer才使用相同官方引擎另目录重建；本次该入口尚未执行。为先完成用户要求的应用重启，主控msg_13e65e8e8317调整顺序，要求仅中断本次自有安装并保留部分文件。Worker对唯一会话原生Ctrl+C，实际EXIT1，原最后记录为后续0029/4973包开始，未据此登记该包完成。实际本次PS/Perl/curl及匹配本树安装进程均0，msg_43ccc954d91c交回窗口；主控另核本树相关原生进程0。没有删除或移动安装/日志，Build/Validate未运行，科学正文和原PDF保持。
+
+当前按原串行限制先完成产品检查入口的真实验证与独立复验，再启动共享同库应用。科研继续静态核同一2025final官方NJU镜像、已签名元数据与原生恢复方式，不切源或续装；实际技术候选由Reviewer按证据决定范围。已异步询问用户是否允许仅本次完整安装与原服务共存，该例外尚未确认，未据未答扩展并发。完整发行、验签与论文验收要求保持。
 
 ## 检查入口的真实输出目录前置
 
 产品Worker提出具体建议，主控已读原失败日志定位、check.mjs、process.mjs及两个原真实测试文件。原检查入口直接go test，未设置实际HTTP/SQLite测试要求的ASTROCYTE_TEST_OUTPUT_ROOT，因而在功能断言前失败。沿原产品写域仅修改scripts/process.mjs、scripts/check.mjs和本轨记录：复用verificationOutputRoot的绝对路径校验，Node标准mkdir/mkdtemp在选定父根新建check-*目录，明确传递至原子进程。原检查项目、顺序、Go命令、业务断言与workflow保持。
 
 基线准确2a05/Source15，预期使已有完整其余前置的真实检查进入功能断言。验收为同源before重现缺输出目录的实际失败、after通过原OpenViking实际HTTP/SQLite一项和ProgressPreflight两项，核相对根与真实普通文件根在启动Go前拒绝，保留实际原件；普通push、独立Reviewer对准确Commit以相同来源及条件复验、CR/hook及主控读取回复。没有改测试或新增替身，不能将三项通过扩大为完整CI/原生/S3通过；固定ZIP仍来自Source15。实施期间科研保留重操作优先，产品先静态，实际测试另授窗口；之后才启动长期服务。
+
+产品实际源码22cde9efc540553c433463af5b9e955790d57a99，仅两脚本11新增/2删除。msg_e6fb63d3ce4a授实际窗口后，准确before2a05真实clone重现原缺目录失败；准确after clone的默认根OpenViking一项及显式父根Progress两项真实HTTP/SQLite均PASS，相对根/真实普通文件根均在Go启动前拒绝。原unknown不重发、query_only/READONLY500及零原生断言保持，六阶段12样本最高CPU9.4%、最低15.2987GiB、约3.002–3.009秒，BelowNormal/Go4-512/Node1024。全部调用退出后msg_59a9a6d7962c交回，主控读原三份check.log及拒绝result后回复msg_beda0e34db0c；msg_a802a58e8d0c授Reviewer按准确before/after独立复验窗口。完整pnpm check未执行，独立决定与恢复结果见下文。
+
+Reviewer同源独立真实双clone的三项原测试与目录拒绝全部通过，实际调用退出并msg_b082c532603b交回；主控读自身check.log/result后收回窗口。准确CR5571335055为COMMENTED、候选05def8e14c60f038ff833f8b295b4741281566e5、限定accept，报告e9032cfce407301ff88d33ff6e7ca1555cf03afd普通push。首次报告push TLS失败保留，后续一次同入口成功；主控完整读报告并实际GitHub API核CR/SHA及远端报告一致，不推断先前TLS原因。原hook msg_383ac9f071c5由主控实际回复msg_b0f2f5633558，确认唤起，仍6/10。接受限于输出前置及三项路径，原完整CI/原生/S3/真实在途unknown/发布未通过。
+
+## 当前运行与科研技术候选
+
+msg_0c85b9655bcd授原服务恢复窗口后，Worker通过独立普通服务终端term_d303f609-6d36-42fd-b1ca-54f970beee1c运行自身已审restore-service.ps1→原H入口，实际EXIT0。当前PID45676/UTC2026-10-19T12:09:30.7340265Z，原程序c5b3b5715f2e93b82365720914be24c73642bd1e/modified=false、原Web172bb445，唯一127.0.0.1:64505监听、health ok/首页200。原SQLite68表93行逐表前后相同，Q snapshot-1711995690保持，原生初始化/模型输入0。实际启动双样本CPU5%/6.2%、最低15.4380GiB/3.0022634秒，BelowNormal，沿原Go2/-p1/GOMEMLIMIT512MiB与Node512MiB。
+
+主控已实际读service-01/service-result.json、原running.json及两份计数，核监听PID/程序/创建时间后GET health/首页，再按database和counts核68表相同。普通服务终端和程序保留，释放Worker不关闭它们；当前重操作窗口保留该应用，不启动其他编译/安装。恢复最终候选5725c1840a760105518d273eaaa28d7367f369ed普通push，主控实际API核PR2 HEAD一致/OPEN/Draft；05→5725仅README/本轨记录，运行c5、开发Source22与包Source15分列。
+
+Reviewer按同服务只读授权一次执行自身review-shared-service.ps1，UTC12:18:56 EXIT0。核实际c5构建信息/modified=false、PID45676及原创建时间、唯一监听与BelowNormal，原health及首页均200且首页完整文本等于原Web。自身新query_only/readOnly SQL核当前68表93行，与本次before/after逐表相同，原生会话0/Q及14日时间戳保持；实际双样本CPU8%/6%、最低15.3285GiB/2.461764秒。自身result.json记录0写HTTP/0新服务浏览器模型原生动作、service_left_running=true，主控实际读取并回复msg_11b84412d6c7。
+
+恢复CR5571481043为COMMENTED、准确5725、限定accept，报告c5bf81e2f34f1c44893732cd6edf826b2fa8d705普通push。主控完整读新增报告并经真实API核CR/Commit，实际回复原hook msg_1712ad6c08bf为msg_679e9f8fc570，确认唤起。接受限于原c5同库恢复及只读可访问性/元数据/逐表计数，仍6/10；原服务继续运行，未部署开发Source22或包Source15，未通过完整业务/原生/S3/实际采用/正式发布。
+
+科研准确候选fcb1e0a70541e15de1f52507a43edadb9801e368已普通push，主控实际PR3 API核HEAD准确/OPEN/Draft、tracked干净，并读三文件diff与原科学四项差异0。原生入口修订实际进入同一官方仓库verified，完整安装/Build/Validate未完成；NJU三份小型元数据2704836/144/488bytes与原已验输入逐字节相同，主控读comparison及完整提案。NJU切源/新同长texlnju目标与参数为尚未实施建议，原部分树和目标存在拒绝保持。科学正文/Bib/原PDF不变，Reviewer按准确fcb静态审实际来源及原件，不执行未完成引擎重建，不增加十轮数或宣称投稿就绪。
+
+## 10月20日中断后续行
+
+用户再次要求继续。Orca运行元数据暂不可用后，按原生orca open重开，实际新runtime 46fe6e2a-8cce-4efe-b998-2829d4a75754；原Run和持久邮件保持，科研与Reviewer原Dispatch先后恢复实际live，没有根据restored_unconfirmed重建执行。原应用仍唯一64505/PID45676、原程序/创建时间/BelowNormal，主控实际GET health为ok。
+
+产品原Task以msg_c4b2a04550cc正式worker_done/outcome failed结算：本次依赖、检查入口与恢复限定范围完成，准确5725已普通push/远端一致/clean；05/07/09仍缺三项未答及真实采用条件。主控逐项核准确Task/Dispatch和原报告后正式worker-release ctx_013843bce872，实际released/closed_agent_terminal/transcript captured，仅关闭对应Worker终端，工作树、分支和普通应用进程保持。未把本次局部完成登记为完整Task或十轮通过。

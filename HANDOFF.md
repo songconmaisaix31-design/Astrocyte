@@ -1,6 +1,6 @@
 # Astrocyte 主控交接
 
-## 重启应用与双轨续行（2026-10-19）
+## 重启应用与双轨续行（2026-10-19启动，10-20续行）
 
 用户要求继续开发Astrocyte、重启并保持科研产品并进。当前任务为[重启与双轨任务](tasks/restart-product-research-20261019.md)，原十轮已接受6/10及权限门禁保持。接管管理HEAD28a4b5c4、产品57a91f46/Source15、科研50e51fb6/科学正文a664、审查54627b06，四树tracked干净。64505/17887无监听；原三个Dispatch已由运行时记failed/abandoned，正式release返回released/processAction none/archive unavailable。原Task按已核实际中断记failed，再沿原Task/树retry-of启动，没有新Run/Task/开发轨。
 
@@ -8,9 +8,17 @@ Run仍run_29c7e66b4136，正式run-use已绑定主控term_2495c17e-98de-4b86-839
 
 产品报告2a05bd0d78cbeb5e69ba09728923ea2f2d1d1b65已普通push，原summarize0.25.1及SDK缺失依赖已按原锁/准确Source15 ZIP恢复，原完整Check-Runtime通过，未推理。独立Reviewer实际inspect通过1316来源逐ID SQL，在文档Windows PowerShell5.1完成同一Source15包130 PASS及双视口人工DOM；本次3个DAG事件/4个outbox逐ID SQL、425次监听归属检查，全部自有进程退出。准确CR5571008196为COMMENTED/2a05/限定accept，报告647828d8普通push；主控完整读报告并实际API核SHA，回复原hook msg_e0c2d47d66dc为msg_e986c7d42f32，确认唤起。原Core7.6日期属性失败单列，仍6/10。
 
-科研Install首次遇官方语言检测HKCU拒绝，真实失败保留，Build/Validate未运行。已静态核官方支持的-lang en与直接Perl入口修订，Parser/diff通过；msg_9081449b8e8e重新授唯一Install→Build→Validate窗口，成功阶段才继续，科学正文/原制品冻结。随后独立Reviewer另目录重建，最后产品恢复同一64505程序/数据并保持服务。原H restore-38fb.ps1及原配置不改，运行根D shared-product-ad8413，原SQLite不替换；当前共享应用仍未启动。完整默认CI、原生/S3、今日新增、实际采用、正式发布及arXiv就绪未通过；S3三项、首发范围和作者许可未答，正式V4及其他用户应用不操作。
+科研自身入口已修正官方语言参数、Perl退出码和Windows GPG程序名发现，原生进入同一2025final verified完整安装。为先完成用户要求的重启，主控要求中断唯一安装，原生Ctrl+C/EXIT1且本次安装进程均0；部分安装和日志保留，Build/Validate未执行，正文/原PDF冻结。完整安装与长期服务共存的并发例外已异步询问未答，严格串行保持。科研静态准备同版下载改进与真实技术报告，独立Reviewer按准确候选审实际证据，不执行未完成引擎重建。
 
-## S3与论文十轮改进（2026-10-19）
+产品两脚本Source22cde9ef修复检查入口缺ASTROCYTE_TEST_OUTPUT_ROOT，准确before2a05失败已重现，after原OpenViking一项/Progress两项真实HTTP/SQLite及无效根拒绝均经Worker和Reviewer独立通过。CR5571335055准确05def8/COMMENTED/限定accept，报告e9032cfc普通push；主控完整读报告/API核SHA与远端一致，实际回复原hook msg_383ac9f071c5为msg_b0f2f5633558，确认唤起。仍6/10，完整CI及原生/S3未通过。
+
+原应用已恢复并保持：http://127.0.0.1:64505/，程序c5b3b571、Web172bb445，PID45676/UTC2026-10-19T12:09:30.7340265Z、BelowNormal；普通服务终端term_d303f609-6d36-42fd-b1ca-54f970beee1c独立于Worker，保留该终端和服务。原H restore-38fb.ps1及配置未改，运行根D shared-product-ad8413，原SQLite68表93行逐表前后相同，Q snapshot-1711995690保持，原生初始化/模型输入0。主控实际核当前监听/程序/创建时间、GET health与首页及原计数文件通过。实际额度沿Go2/-p1/512MiB、Node512MiB。产品报告5725c184普通push/PR2 HEAD一致，仅README/本轨记录后继。Reviewer一次同服务只读核查EXIT0，自身新SQL当前计数与本次before/after逐表相同、原生会话0，原程序/创建时间/唯一监听、health和原首页完整文本通过，服务继续运行；主控读原result并回复msg_11b84412d6c7。
+
+恢复CR5571481043为COMMENTED、准确5725、限定accept，报告c5bf81e2普通push；主控完整读新增报告并经实际API核SHA，回复原hook msg_1712ad6c08bf为msg_679e9f8fc570，确认唤起。仅接受原c5同库恢复及上述只读范围，仍6/10，未部署Source15/22或通过完整业务/原生/S3/实际采用/发布。
+
+科研技术候选fcb1e0a7已普通push/PR3 HEAD一致、tracked干净，仅入口/README/validation三路径；科学正文、14引用和原TeX-PDF相对a664不变。原官方2025final仓库验签及基础安装阶段实测通过，完整安装/Build/Validate未完成；NJU同版三份元数据逐字节等于原已验输入，切源与新目标参数只为未实施提案。Reviewer正在准确候选静态审查。完整默认CI、原生/S3、今日新增、实际采用、正式发布及arXiv就绪未通过；S3三项、首发范围、并发例外和作者许可未答，正式V4及其他用户应用不操作。
+
+## S3与论文十轮改进（2026-10-19续行前记录）
 
 用户当日目标为初步跑通产品并发布首版Windows Release，以及完成符合发布标准的arXiv预印本。[十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 当前限定接受6/10：01真实Git/27迁移测试、02完整PDF流程、03发送租约/用途集成、04完整块统计提案、06条件/义务/时间/实际视图与五项限定证明、08封存/全成本/pilot目标对应完整提案。准确CR/真实hook/root读取回复均完成；08为a664233a/报告c36f8990/CR5567552099，hook msg_814e1b18d6a8经root真实API核对后回复msg_7cac54d820d1。限定接受不等于实质科研贡献或投稿就绪，详细失败历史保留。
 

@@ -1,14 +1,18 @@
 # Astrocyte 当前状态
 
-## 重启应用与产品科研续行（2026-10-19）
+## 重启应用与产品科研续行（2026-10-19启动，10-20续行）
 
 用户要求继续开发、重启应用并保持科研产品并进。[本次任务](tasks/restart-product-research-20261019.md)接续原十轮，已接受仍6/10。接管时64505/17887无监听，三个工作树干净，原Dispatch由Orca恢复记failed/terminal_missing。原Run已绑定当前主控，三个中断Dispatch正式released，沿原Task/树启动产品ctx_013843bce872、科研ctx_1fe65b3eaadd、Reviewer ctx_a8916e612c35，均实际ready/turn_started；尚未把排队指令视为Worker已读。
 
 产品原summarize与SDK依赖已按原锁及准确Source15 ZIP恢复，原Check-Runtime通过且未推理，报告2a05bd0d已普通push。独立Reviewer的真实inspect、Windows PowerShell5.1完整130项及双视口人工DOM均通过，CR5571008196准确2a05、限定accept；报告647828d8普通push，主控读报告/实际API核SHA并回复真实hook，仍6/10。Core7.6失败保留，完整默认CI、原生/S3、今日新增与实际采用仍未通过。
 
-科研已定位官方安装器语言检测HKCU拒绝，真实失败日志保留。自身入口改为官方Perl及-lang en，静态检查通过后获新唯一Install→Build→Validate窗口；科学正文与原PDF冻结。独立科研重建之后再恢复原同库64505服务，当前尚未启动。各重操作仍85%/4GiB双采样、BelowNormal及串行；无Release或投稿，原S3/原生、预览范围与作者许可待定项保持。
+科研自身入口已修复官方语言参数/Perl退出码/GPG发现，实际进入官方2025final verified完整安装；为先恢复应用，唯一调用已按主控要求原生中断，进程0，部分安装及日志保留。完整安装与Build/Validate未完成，原正文/PDF冻结，科研静态准备同版下载改进；安装与长期服务并行例外已询问未答。
 
-## S3与论文十轮循环已开始（2026-10-19）
+产品Source22cde9ef修复检查入口输出目录前置，before缺目录失败及after三项真实HTTP/SQLite、无效根拒绝已获独立复验/CR5571335055限定接受，原hook已由主控实际读报告/API后回复，仍6/10。原同库应用已恢复到http://127.0.0.1:64505/，PID45676、程序c5、BelowNormal，68表93行/Q保持，主控实际HTTP/监听/计数核查通过；普通服务终端独立保留。产品报告5725c184已普通push/PR2准确；Reviewer一次同服务只读EXIT0，自身新SQL当前68表93行与before/after一致、health和原首页通过，原PID继续运行，主控实际读result并回复。
+
+原服务恢复CR5571481043为COMMENTED/准确5725/限定accept，报告c5bf81e2普通push，主控完整读报告/实际API核SHA并回复原hook，确认唤起，仍6/10。科研候选fcb1e0a7已普通push/PR3准确，原正文/Bib/TeX-PDF冻结，仅技术入口及实际说明更新；Reviewer静态审查中，不执行未完成引擎重建。各重操作仍85%/4GiB双采样、BelowNormal及串行，当前窗口保留原应用。无Release或投稿，原S3/原生、预览范围、并发例外与作者许可待定项保持。
+
+## S3与论文十轮循环（2026-10-19续行前记录）
 
 当前接受6/10，08准确a664233a的27页/14引用提案、独立重建/全文TeX比较及准确CR/hook/root回复通过。产品Source15新ZIP已Build/130项Verify/双视口DOM EXIT0：26品牌、人工DAG增量/撤权、OpenViking未配置、3个DAG事件/6个outbox SQL和430次归属检查，均为Worker实际结果；准确报告57a91f46。独立clone/Go构建通过；Delve定位新Q创建文件ERROR_ACCESS_DENIED，拒绝来源未明。C输出尚未启动即遇资源拒绝，独立完整Verify/DOM未运行。完整默认/原生/S3未通过；是否允许有限范围预览首发已异步询问未答，无tag/Release。
 
