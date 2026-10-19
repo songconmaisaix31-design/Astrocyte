@@ -186,4 +186,66 @@ SQLite授权原件在 `03/actual-output/accepted-experience-actual-{2070018965,1
 
 真实正向Prepare→Claim→Send、实际旧fence竞争、AT08/09/13、带Worker停止/释放、用户实际采用与经验再次使用仍缺合法原生前置；三项待答选择、Claim拒绝及`Known=false`保持。Release可用性及论文研究/投稿质量不在本轮接受范围，未合并、部署或发布产品。
 
-UTC `2026-10-19T04:40:14Z` 实际发布 [CR 5567006632](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5567006632)，回执为`COMMENTED`、`commit_id=3267249922082cb1808b6529a2f04084d40c1f92`，正文明确第03轮及限定接受。原件`03/github-review{,-receipt}.json`；同账号未作GitHub APPROVE。本阶段报告普通push后执行当前Run/Task/Dispatch的既有hook；主控实际读取回复后登记本轮接受，原Task继续后续轮次。
+UTC `2026-10-19T04:40:14Z` 实际发布 [CR 5567006632](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5567006632)，回执为`COMMENTED`、`commit_id=3267249922082cb1808b6529a2f04084d40c1f92`，正文明确第03轮及限定接受。原件`03/github-review{,-receipt}.json`；同账号未作GitHub APPROVE。报告`b410c9bd87349b7f13f3d913ccc48d06996c5839`普通push、远端一致，UTC `04:44:49Z`实际hook入队`msg_d9e88ad0d21c`。主控UTC `04:47:11Z`回复`msg_91414a0f0023`，thread指向该hook，确认完整读报告、真实API核CR/准确SHA与远端，登记03限定接受、累计3/10。本次唤起已由实际读取回复确认，原件`03/review-hook-receipt.log`；本Task继续。
+
+## 第 04 轮：完整块统计程序与原始依据
+
+决定：`accept`，限定接受完整块分析程序提案、五项新增原始来源、收紧的近邻定位及对应完整文稿交付。当前没有需要原Worker返修的本轮定义、引用或构建缺陷；抽样校准、研究贡献和arXiv投稿质量保持未验。
+
+| 对象 | 准确来源 |
+| --- | --- |
+| PR / 候选 | [研究PR #3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3)；`afe471edc25305537f11ee4453a93c7b3be790cf`，真实API核open、Draft及准确HEAD |
+| before | `618c82f270b4f35282dce86ef341b568a9690979`，已有完整PDF，统计方法仍缺明确区间和检验程序 |
+| 差异 | 10个获准科研文件：正文、BibTeX、来源、主张表、中文反馈、README、validation、verify及生成TeX/PDF；构建入口和产品未改变 |
+| 唯一窗口 | 主控`msg_41296c95bd8b`冻结准确候选并授予独立重建窗口；实际构建/验证退出后由`msg_1c59d7458075`立即交还 |
+
+本轮实际应用astrocyte-research skill。完整阅读17页PDF提取文本并核新增源码公式、来源和主张边界，未把上一轮PDF接受用于本轮计数。文稿目前仍固定审计产品7ce3及工程报告7f781dee；最新S3证据按第10轮处理，没有把旧来源写成新产品全面验收。
+
+### 原始来源与科学审查
+
+2026-10-19实际联网取得4份PDF、DecentMem准确v1全文HTML和v1元数据，逐文件URL/UTC/大小在`04/sources/downloads.jsonl`。用PyMuPDF1.28.2提取全部78页PDF，用BeautifulSoup读取HTML，原件和全文仅保存在自身忽略目录。网页工具最初对Holm载体返回Internal Error；实际HTTP下载同一原始载体成功，未用摘要替代细节。Project Euclid入口仅iframe，不声称从该响应读取全文。以下实际阅读支持对应的确定性陈述。
+
+| 原始来源 / 实际范围 | 核查结果与适用限制 |
+| --- | --- |
+| [Holm1979原文](https://www.ime.usp.br/~abe/lista/pdf4R8xPVzCnX.pdf)，7页载体含封面；§1–3、Theorem1/2及参考文献 | 作者、刊名6(2)、65–70及JSTOR4615733一致。逐步拒绝和三成员调整式正确；合法边际检验下允许任意依赖。名义BCa区间没有被改称Holm同时区间，Holm不修复失准边际输入。 |
+| [Hall–Wilson1991原文](https://ruc-econometrics.weebly.com/uploads/2/3/3/8/23387606/two_guidelines_for_bootstrap_hypothesis_testing.pdf)，7页载体；完整§1–3及参考文献 | 作者、Biometrics47(2)、757–762及JSTOR2532163一致。文稿准确区分估计值附近的重采样与零假设比较，未把原始正值比例作为有效P值，也未擅自假定配置标签可交换。 |
+| [DiCiccio–Efron1996原文载体](https://www.math.wustl.edu/~kuffner/AlastairYoung/LeeYoung1996b.pdf)，40页已全文提取；实际细读首页、§2–3及§5–6 | 作者、Statistical Science11(3)、原载体189–228一致；未宣称细读全部后附讨论。BCa偏差/调整端点及非参数jackknife加速度与原式一致。bootstrap-t分母和数值不稳定讨论得到原文支持；原始高阶渐近结论没有转成当前少量离散块的覆盖保证。 |
+| [Schuirmann1987原文](https://errorstatistics.com/wp-content/uploads/2014/06/schuirmann.pdf)，24页已全文提取；细读657–662及674–676，另核[出版商元数据](https://link.springer.com/article/10.1007/BF01068419) | Donald J. Schuirmann、15(6):657–680、1987-12-01及DOI一致。TOST的联合零假设、两单侧同时拒绝、P值取最大及1−2α区间关系准确；原正态交叉试验的保证未转用于当前block-bootstrap。 |
+| [DecentMem v1全文](https://arxiv.org/html/2605.22721v1)及[准确元数据](https://arxiv.org/abs/2605.22721v1)，实际读§3–5、§8及相关附录理论片段 | Guangya Hao、Yunbo Long、Zhuokai Zhao及2026-05-21首次v1一致。§3–4确有私有双池记忆、协作轨迹复用和按LLM阶段反馈更新路由；文稿据此收窄组合式新颖性。§5有搜索空间/奖励前提，未继承理论或性能数字；附录D正文未取得，没有声称已读。 |
+
+没有重新下载未变的原9项来源。PDF全文提取不等于视觉读取，原文实验没有由本任务复现。主要科学核对如下。
+
+| 程序位置 | 独立判断 |
+| --- | --- |
+| 完整块与估计量 | 八个Q保存为一行，先形成每块线性对比，再等权平均；共用整行bootstrap索引保留八配置配对。任务、seed及分析次数不增加r；固定任务和一份历史只支持相应条件推断。缺失完整块停止指定分析，预算耗尽仍保留计划分母。 |
+| BCa与常数样本 | 偏差使用严格小于原估计的比例；逐完整块删除的jackknife方向和三次/二次和加速度正确，调整端点式与文献一致。常数重采样保留均值；其概率式`sum_j(n_j/r)^r`可由各取值的独立抽样概率直接得到，没有丢弃零SE样本。 |
+| 网格反演 | 两个方向分别由严格排除假设值的下/上端点定义，未拒绝记1与诊断不可用分开。在规定嵌套分支，网格上界的拒绝关系可由单调性直接判断；该计算保守性不证明BCa曲线的总体校准。双侧乘二规则与所需半水平网格明确。 |
+| 主要、Holm与等价 | 主要95%双侧下端点超过0.03对应单侧0.025；原I_three/I_position/L11−C11差异族保留。TOST取两单侧上界最大值，每侧0.05/0.025分别对应90%/95%区间，接触边界不成立。拟议三成员等价族及二族预算均分没有被当作已确认决定；六项联合界依赖有效边际检验，未扩张到主要加全部次要声明。 |
+| 退化、精度与计划 | 零jackknife分母、无限偏差、变换奇点、尾部秩不足及MC批次诊断失败均停止相关推断。B/J、网格和容差待正式确认，不挑选有利批次或追加正式运行。独立pilot、采样假设与校准前提仍缺；增大B不能增加独立块，正态规划算式未被说成BCa功效证明。 |
+
+本轮的实际改善是把原先待定义的区间、检验、等价与多重比较关系写成可批评的完整程序，补齐对应原始技术依据，并限制近邻比较和统计保证的范围。上述代数与定义判断属于静态科学审查。没有运行数值分析、生成模拟pilot或填造正式结果；不报告经验覆盖率、功效、收益或显著性。
+
+### 准确归档的独立构建与回归
+
+执行自身`.verification/ten-cycles/review-cycle04.ps1 -Phase snapshot|build|verify`，每个阶段实际退出后再开始下一项。全部源码由准确Git archive取得；原提交TeX/PDF在构建前另存`04/submitted/`。复用自身02 Tectonic0.17.0程序/缓存、自身Pandoc3.9和成熟Python依赖，新增两个标准字体按实际Tectonic请求下载至自身缓存；没有写科研Worker树或全局配置。
+
+| 命令 / 检查 | 实际结果与原件 |
+| --- | --- |
+| `git archive --format=zip <准确afe471ed>`及解压 | EXIT0；`04/candidate.zip`、`04/candidate/`，提交文件先行保留。没有在无.git归档推断产品Git身份。 |
+| 候选`papers/astrocyte/build.ps1 -Pandoc <自身Pandoc> -Tectonic <自身Tectonic>` | EXIT0；Pandoc citeproc/`--fail-if-warnings`及实际TeX/xdvipdfmx通过。`04/build.log`及候选build内完整日志。 |
+| 候选`python -X utf8 .../verify.py` | EXIT0；14引用/BibTeX/HTML条目、8配置、125MathML、19本地链接；17页、30标题、14参考标题、49930字符、9嵌入字体，无Type3/替换字符/加密/修复或页外文字span。`04/verify.log`。 |
+| 自身`python -X utf8 .../compare-cycle04.py` | EXIT0；提交与重建PDF逐份检查字体、页面、文字边界，完整提取文本相同，提交TeX与单一来源重建字节相同。原件`04/compare.log`、`submitted-pdf.txt`、`rebuilt-pdf.txt`。 |
+| 隐私修正审查 | 旧正则在实际新正文index27450确实匹配数学定义中的`x:\`。候选通过成熟Pandoc AST扫描正文、代码、Raw与链接目标，并扫描实际PDF提取文本；驱动器边界、Unix路径与Bearer规则保留。没有删除数学正文或取消敏感内容检查。只读当前内容检查不表示对任意潜在秘密的完备检测。 |
+| 引用规则与静态差异 | 原固定9改为实际非空集合，仍要求引用键集合/BibTeX完全相等、HTML条目数量相等和逐条参考标题存在；当前新增5项实际为14，没有放弃引用一致性。准确before→after的`git diff --check` EXIT0。 |
+
+完整PDF文字已读至14条参考文献，新增向量、偏差/加速度/端点、两侧P上界、Holm、TOST与样本规划式完整。TeX最终日志只保留两处`Underfull \\hbox`：694–702行badness1708，1076–1086行badness2922；控制台因两轮TeX处理重复报告相同位置。未发现Overfull、Missing character、未定义引用或致命TeX错误；字体、页外文字及文本顺序检查不能代表视觉排版通过。
+
+所有重操作串行、BelowNormal、Node1024MiB，85%/4GiB双采样守卫实际通过。snapshot CPU40%/15%、最低5.753GiB、Stopwatch间隔2.732秒；build内层16%/19%、最低5.803GiB，UTC间隔2.546秒且实际单调守卫通过；verify12%/9%、最低5.714GiB、Stopwatch间隔2.532秒。没有把启动值当作峰值或速度收益。全部构建/验证调用退出后，UTC`04:52:11Z`以`msg_1c59d7458075`交回唯一窗口，主控`msg_8249d2a0423e`确认收回。后续仅公开文献下载、成熟全文提取和静态阅读、报告/CR/hook，无新编译/功能测试/服务/模型；主控亦明确成熟原文提取为只读静态阅读，文献读取调用已退出。
+
+### 未验项与真实 CR
+
+仍缺独立真实pilot、正式参数、采样/覆盖校准及完整可执行研究系统；目前没有八配置、扰动或自主迭代结果。方法实质原创性与真实研究贡献尚未由本轮建立。条件/时间/归因、盲评/全成本及最新S3证据等待后续明确轮次，不能因本轮程序更完整而自动冻结接口或降低验收。
+
+作者、顺序/机构/通讯信息、授权和许可未确认；真实AI工具披露已加入，未虚称真人科学核验完成。两处Underfull、无视觉、无受支持TeX Live及arXiv站点处理/作者预览的限制保留，不能宣布投稿就绪。真实原生正向、AT08/09/13、用户采用/经验复用、完整CI、Release及正式V4不由本轮验收；三项待答、Claim拒绝及`Known=false`保持。
+
+UTC`2026-10-19T04:55:27Z`实际发布[CR5567098640](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567098640)，实际回执及后续真实API核`COMMENTED`、`commit_id=afe471edc25305537f11ee4453a93c7b3be790cf`。原件`04/github-review{,-receipt}.json`，同账号未作GitHub APPROVE。当前报告普通push后执行当前Run/Task/Dispatch既有hook，主控实际读报告/CR并回复后登记本轮；本Task继续剩余轮次，尚未结算worker_done。
