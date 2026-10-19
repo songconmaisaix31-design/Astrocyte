@@ -145,7 +145,7 @@
 \title{Astrocyte: Experience Reuse and Collective Adaptation in
 Decentralized Agent Swarms}
 \author{Authors: TO BE PROVIDED}
-\date{19 October 2026 --- method and protocol draft 0.2}
+\date{19 October 2026 --- method and protocol draft 0.3}
 
 \begin{document}
 \maketitle
@@ -304,9 +304,11 @@ specified update interaction and its limits.
 
 \section{Setting and state}\label{setting-and-state}
 
-Let a task sequence contain \(T\) scheduled tasks. A member has an
-identity, a known capability version, a current availability state, and
-an authorization scope. A decision at time \(t\) uses information
+Let a task sequence contain \(T\) scheduled tasks in a fixed order. A
+member has an identity, a known capability version, a current
+availability state, and an authorization scope. A decision \(d\) is
+associated with scheduled position \(t\) and an authoritative
+within-position order. Its recorded input contains only information
 available before submission. Foundation-model versions and inference
 settings are recorded; no parameter training occurs in the main
 experiment.
@@ -317,22 +319,88 @@ progress, outstanding claims, current load, availability, and
 permissions. Separating these states is essential: disabling learning
 must preserve operational permission checks and changes in availability.
 
-Tasks have versioned condition features \(x_t\). Proposed software-task
-features include dependency structure, file overlap, available tools,
-modification type, environment compatibility, and verification
-requirements. A feature record includes its extraction time, source,
-missingness, and \texttt{context\_schema\_version}. Only information
-visible before the decision is eligible. Features derived from final
-patches, failures, or sealed evaluation cannot enter that decision's
-matching rule.
+\subsection{Conditions observable before a
+decision}\label{conditions-observable-before-a-decision}
 
-The same feature object supports experience applicability and the
-grouping rule that produces \texttt{scope\_id} for relationships.
-Permission and environment compatibility filter candidates. Structural
-and semantic similarity rank eligible evidence. The concrete extractor,
-normalization, grouping boundaries, and missing-value rules require
-development validation and registration. This manuscript specifies their
-role without claiming that the current product implements them.
+Propose a fixed, versioned function \(x_d=F_v(I_d)\) of the member's
+authorized pre-decision information \(I_d\). The record retains the
+source task/graph/environment versions, extraction position, observation
+order, and component-wise missingness. Final patches, later failures,
+and sealed evaluation never fill in an earlier \(x_d\). An approved
+task-metadata revision affects subsequent decisions and keeps its own
+source version; an earlier decision and its relationship key remain
+immutable.
+
+The following is one concrete condition catalogue for software-task
+development. It is a method proposal, not an approved product schema or
+registered set of categories. The same approved catalogue and extraction
+code would be fixed across all eight configurations.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Component
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Proposed extraction from pre-decision sources
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Proposed grouping value
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dependency structure & Count direct predecessors in the approved
+task-graph version; retain the full declared predecessor set & Zero,
+one, or multiple predecessors \\
+Potential write overlap & Apply the project's existing path
+normalization and overlap rule to declared write scopes in that graph,
+before inspecting actual patches & Declared overlap present or absent \\
+Required tools & Read the explicitly declared tool/capability families
+from the task version; retain their version requirements & Exact finite
+set of families in the approved catalogue \\
+Modification kind & Read a declared task label, rather than classify the
+completed change & Documentation, configuration, source, tests, mixed,
+or other declared kind \\
+Environment & Read the declared language/runtime family and required
+environment version & Exact approved environment class \\
+Verification obligation & Read the permitted feedback-check or
+human-rubric kind and its version, without sealed answers & Exact
+approved obligation class \\
+\end{longtable}
+}
+
+Every component also has a distinguished unavailable value \(\bot\). An
+explicitly declared empty tool set differs from an unavailable
+declaration. Missing paths do not mean disjoint paths, and unknown
+compatibility does not mean compatibility. A malformed value or a known
+value outside the approved catalogue stops extraction for the affected
+decision. A permitted missing value remains \(\bot\); it is not imputed
+from outcomes or a selected collaborator's performance. Missing
+information required for authorization, capability, or safe execution
+prevents assignment under the operational gate.
+
+Define the condition scope \(c_d=g_v(x_d)\) as the exact tuple of these
+grouping values together with the approved project/sharing scope and
+extractor version. Distinct missingness patterns remain distinct groups.
+This rule uses no learned outcome-dependent boundaries and no automatic
+pooling into a neighboring group. Scope identifiers denote this semantic
+tuple; this proposal does not require a new hashing or storage protocol.
+A different catalogue is a new method version, not an unrecorded
+within-study adjustment.
+
+The versioned \(x_d\) supports both experience-applicability checks and
+relationship grouping. Any additional structural or semantic retrieval
+score uses its declared frozen representation and is recorded
+separately. Its model, normalization, and utility coefficients remain
+registration fields. Current load, active write conflicts, availability,
+and live permissions stay in \(Z_d\) and are checked for each decision;
+the historical condition group cannot replace them. The proposed
+catalogue and grouping have not been implemented or empirically
+validated in the inspected fixed policy.
 
 \section{Proposed method}\label{proposed-method}
 
@@ -374,57 +442,218 @@ implementation cannot automatically grant the current product's approval
 or cross-project sharing permission. This separation requires an
 explicit product decision before execution.
 
-\subsection{Conditional directed
-relationships}\label{conditional-directed-relationships}
+\subsection{Directed relationships and specific
+obligations}\label{directed-relationships-and-specific-obligations}
 
-A relationship key includes requester \(i\), collaborator \(j\), their
-known capability versions, collaboration type, and condition scope
-\(c\). Its score uses discounted verified successes and failures:
+Let a persistent relationship key be \(\rho=(i,v_i,j,v_j,h,o,c)\):
+requester and collaborator identities, their known capability versions,
+collaboration type \(h\), obligation class \(o\), and condition scope
+\(c\) captured at the originating decision. Obligation classes permit
+accumulation over comparable tasks. A specific obligation instance
+additionally binds the actual task, handoff, target artifact/source
+version, required checks, and resolution rule. It is not interchangeable
+with its class.
+
+Use one outcome unit \(u\) per task and relationship key. Fix its
+aggregation and closure rule at first use; each constituent handoff
+declares its target obligation before execution. A terminal pass
+requires the declared target obligations to pass; a terminal failure
+requires an independently checkable breach under that resolution rule.
+An unresolved check, unclosed retry, or uncertain attribution leaves the
+unit unadjudicated. Several tests or retries inside the same task/unit
+do not create several complete relationship counts. Their executions and
+costs remain recorded. Different obligation classes require separate
+predeclared keys, not classes invented after observing which check
+failed.
+
+While task work for a unit remains open, each real retry or new target
+retains its own source and artifact version under the same declared
+resolution rule. At the task-resolution cutoff, that rule fixes which
+final target versions the single unit verdict assesses; an unfinished
+independent check can leave adjudication pending after this cutoff.
+Subsequent corrections reassess those same fixed targets and sources.
+New work or a new artifact after closure is not a correction that
+overwrites the earlier target, and cannot manufacture an additional
+count for the same task/key. Its treatment requires the predeclared
+task/obligation rules, with every execution retained.
+
+A verdict links the exact obligation instance, its captured \(\rho\),
+target version, actual source event, check/rubric version, result
+\(r_u\in\{0,1\}\), and evidence weight \(q_u\in[0,1]\). The development
+primary rule uses \(q_u=1\) for an admissible independent target check.
+Model opinion, executor self-report, ordinary process exit, and
+unresolved attribution supply no successful or failed count. Human
+checks identify the target and use a fixed configuration-blinded rubric.
+Task-level success does not credit every relationship in a chain, and an
+infrastructure interruption is not a breach by every collaborator.
+Attribution to a particular obligation identifies what was checked; it
+does not identify that collaborator's causal contribution to total task
+success.
+
+These are semantic research definitions to be mapped to existing task,
+operation, artifact, and event identities. This manuscript creates no
+events or replacement execution authority. Evidence strength, access to
+the source, and current human permission to reuse experience remain
+separate requirements.
+
+\subsection{Scheduled position, visibility, and
+corrections}\label{scheduled-position-visibility-and-corrections}
+
+Use the predeclared task position \(t=1,\ldots,T\) as the decay clock.
+It advances with the common scheduled sequence, including failed or
+unattempted scheduled positions, rather than the number of successful
+completions, model calls, messages, or relationship updates. Wall-clock
+time and waiting are measured separately. The index uses existing task
+order and does not introduce a scheduler or timer service.
+
+For an assessed outcome, \(b_u\) is the logical position of the
+underlying obligation outcome/target version. For verdict record \(e\),
+\(a_e\) is the first logical position at which that record and its
+required provenance are validated and available at the existing
+authoritative record source for the authorized update process. This is
+not the time at which every member has read it. Require \(b_u\leq a_e\).
+Missing or contradictory timing/provenance stops the affected update; an
+arrival time is not substituted for an unknown \(b_u\). A correction of
+the same target retains \(b_u\). A new target is not silently renamed as
+a correction of an older one.
+
+A decision at position \(t\) uses only verdicts with \(a_e<t\). Newly
+available verdicts at \(t\) wait until a later position, including when
+execution within \(t\) has several decisions. This is a necessary
+visibility gate, not a guarantee that the decision has received all
+eligible records. Record the existing authoritative within-position
+order for arrivals and decisions. For records first available at the
+same position, the authoritative order determines the correction chain;
+transport arrival order is not a replacement for it. Live availability,
+permissions, and claim state may change immediately within the position
+through \(Z_d\).
+
+For each unit, an initial adjudication and explicitly linked authorized
+corrections form one validated chain. Unverified opinions or pending
+check reports do not enter that chain and cannot replace an existing
+verified verdict. A withdrawal identifies the verdict, source and
+authorized reason it invalidates. Duplicate deliveries retain the same
+evidence identity and first-availability position. Repeated test reports
+for a unit remain evidence for its single adjudication.
+
+Let \(V_d\) describe the version and actual record collection read and
+authorized for decision \(d\) before submission. It preserves existing
+source identities/versions, snapshot production position or query scope,
+the authoritative order and parent links represented, and the actual
+observation/read time. A version label alone is insufficient: the
+retained source material must identify the collection and permit
+checking its contents. This notation describes an input view, not a new
+version service. Let \(H_d\) be its admissible verdict records:
+source/provenance and current access are valid, \(a_e<t\), and each
+included correction's required parents are present in that view or its
+provenance-preserving initial snapshot. A missing parent, known omitted
+eligible successor with \(a_e<t\), inconsistent target, contradictory
+time, or competing incomparable corrections stops the affected
+score/assignment. The process cannot silently choose an older convenient
+chain.
+
+For an enabled relationship channel, select each unit's unique latest
+verdict within this actual parent-closed collection and authoritative
+order. A latest withdrawal contributes nothing; a unit with no available
+adjudication remains pending. A known eligible withdrawal/correction
+cannot be omitted to retain an older score: incorporate its validated
+closed chain or stop the affected assignment. A later correction not
+actually read in \(V_d\) is unknown to this decision; record the
+observed source version and its real age without claiming a globally
+latest state. Later read-only audit may establish additional lag, but it
+cannot supply future knowledge to the original decision. Current
+permission revocation is checked independently even when a learned
+channel is frozen.
+
+Let \(\mathcal U_\rho(t;V_d)\) denote active units for \(\rho\) selected
+from \(H_d\). Counts below use this actual set and the current decision
+position \(t\), not the clock position at which a cached snapshot was
+produced. A stale but complete permitted snapshot can omit unknown later
+evidence; it still ages its represented units from their original
+\(b_u\) to the present \(t\) when relationship updates are enabled. An
+aggregate without the required unit decomposition cannot establish the
+specified correction/age semantics. The disabled channel instead uses
+its position-zero projection, with no such re-aging. Late verdicts and
+corrections alter later views; they never rewrite a submitted decision,
+its captured conditions, or its reported propensity. If an old condition
+record is invalidated, withdraw its contribution prospectively under the
+enabled projection; do not relabel it into a group chosen using later
+outcomes.
+
+\subsection{Discounted state and
+initialization}\label{discounted-state-and-initialization}
+
+For \(0<\lambda\leq1\), define nonnegative counts from the effective
+visible verdicts:
 
 \[
-s_{ijc}^{t+1}=\lambda^{\Delta t}s_{ijc}^{t}+q_t r_t,
-\qquad
-f_{ijc}^{t+1}=\lambda^{\Delta t}f_{ijc}^{t}+q_t(1-r_t),
+s_\rho(t;V_d)=\sum_{u\in\mathcal U_\rho(t;V_d)}
+q_u r_u\lambda^{t-b_u},\qquad
+f_\rho(t;V_d)=\sum_{u\in\mathcal U_\rho(t;V_d)}
+q_u(1-r_u)\lambda^{t-b_u}.
 \]
+
+With fixed \(\alpha_0,\beta_0>0\), set
 
 \[
-w_{ijc}^{t+1}=
-\frac{\alpha_0+s_{ijc}^{t+1}}
-{\alpha_0+\beta_0+s_{ijc}^{t+1}+f_{ijc}^{t+1}}.
+w_\rho(t)=\frac{\alpha_0+s_\rho(t)}
+{\alpha_0+\beta_0+s_\rho(t)+f_\rho(t)}.
 \]
 
-Here \(r_t\in\{0,1\}\) is the result of a check attributable to the
-specific handoff or collaboration, and \(q_t\in[0,1]\) weights
-admissible evidence. The development primary rule uses \(q_t=1\) for
-evidence satisfying a predeclared check and \(q_t=0\) for model opinion
-alone, executor self-report, ordinary process exit, or unresolved
-attribution. Human evidence must follow a fixed rubric, hide
-configuration, and identify the target event.
+Here and below, \(s_\rho(t),f_\rho(t),w_\rho(t)\) suppress \(V_d\) when
+its identity is fixed explicitly by the decision. Equal \(t\) alone does
+not imply equal views or counts.
 
-Each evidence event contributes once. Multiple tests or duplicated
-transport events for one relationship outcome within a task must not
-create multiple complete counts. Task-level success is insufficient to
-credit every relationship in a collaboration chain; unresolved events
-remain pending attribution. Scores describe discounted evidence and
-require prospective calibration. Their prior-like algebra does not
-establish calibrated Bayesian posterior probabilities, particularly with
-forgetting, selected partners, and correlated tasks.
+Each unit appears once with its effective verdict. Replacing or
+withdrawing a verdict recomputes its contribution to this finite sum; it
+does not append an extra success/failure. Delayed evidence is discounted
+from \(b_u\), not rejuvenated at \(a_e\). With the same represented
+effective units and verdicts and no new evidence, both counts multiply
+by \(\lambda^{t'-t}\) between \(t\) and \(t'\). The original one-event
+recursion is recovered by adding a newly visible unit's already-aged
+term to those decayed counts. A zero-weight record adds no evidence
+while elapsed-position decay can still occur.
 
-The development defaults use \(\alpha_0=\beta_0=1\) and a half-life of
-20 task rounds, giving \(\lambda=2^{-1/20}\). The operational round
-clock, the time at which decay becomes visible, and delayed-evidence
-ordering must be specified before registration. When updates are
-enabled, a zero-weight event can still coincide with elapsed-time decay;
-it supplies no new success or failure. When relationship updates are
-disabled, counts, weights, and decay remain frozen at the initial
-snapshot.
+At position zero, the common nonempty historical snapshot contains
+approved experience versions and historical units with source, target,
+effective verdict, and documented occurrence positions
+\(b_u\leq a_e<0\). Pre-study history uses the same registered ordinal
+clock with zero as the study boundary; its verdicts and provenance are
+available before that boundary. Snapshot counts are the same sums
+evaluated at zero. Restoring a snapshot retains unit identities and
+correction lineage, so historical events are not counted again as new
+evidence. Initial nonzero aggregates require per-unit
+provenance/decomposition for later withdrawal or correction;
+aggregate-only history is insufficient for this proposal. Historical
+positions cannot be invented to retrofit an existing store. An enabled
+view retaining the same initial units and unchanged verdicts gives their
+contribution at \(t\) as exactly \(\lambda^t s_\rho(0)\) and
+\(\lambda^t f_\rho(0)\).
 
-Unavailable members leave the eligible set immediately. An announced
-capability-version change creates the corresponding relationship key,
-with any historical transfer governed by the registered condition rule.
-An unannounced capability change initially affects the existing record
-through subsequent observable outcomes. Neither case changes permissions
-automatically.
+The development illustrations retain \(\alpha_0=\beta_0=1\) and
+\(\lambda=2^{-1/20}\), interpreted as a half-life of 20 scheduled
+positions. These are unregistered values. A newly eligible, fully
+identified capability version with no evidence has zero counts and the
+defined prior-like score \(\alpha_0/(\alpha_0+\beta_0)\). Propose no
+automatic transfer across capability versions or condition-schema
+versions. An unannounced change remains unobserved until evidence
+reveals it; earlier decisions keep the capability information they
+actually had. No version or evidence update changes current permissions.
+
+When relationship updates are off, decisions read the position-zero
+counts and weight without decay, new verdicts, or corrections entering
+the learned state. Logs remain writable. A live withdrawal of permission
+still blocks unauthorized reads/use through the operational gate;
+freezing a learned representation cannot authorize it. When experience
+updates are off, content, evidence level, historical use/ranking inputs,
+and associated adaptive caches remain frozen. Enabled experience
+revisions similarly become eligible only after their declared
+availability position and current approval checks.
+
+These scores summarize selected, discounted evidence. Unique task
+accounting does not make observations independent, and the prior-like
+ratio is not a calibrated Bayesian posterior. The complete-block
+analysis and its sampling limitations remain those in Section 6.
 
 \subsection{Common decision rule}\label{common-decision-rule}
 
@@ -450,34 +679,191 @@ and claim outcome must be observable. An empty candidate set produces an
 unassigned decision under the common waiting rule. Exploration operates
 inside capability and authorization constraints.
 
+Required but undefined condition, permission or utility inputs prevent
+the affected assignment with an explicit error. They are not replaced
+with guessed zero scores or an unrecorded alternative policy. The
+defined zero-evidence state for a known, eligible relationship key is
+separate from missing identity or unreadable mandatory state. Current
+authorization is checked again by the common claim/execution service at
+submission.
+
 Central and local decisions call the same implementation. For a decision
 assigned to member \(i\), the central service receives that member's
-information view, candidate set, retrieval allowance, and decision
-budget. Both use the same claim and conflict-handling service and the
-same total decision-concurrency allowance. The central service submits
-choices for members; local members submit their own choices.
+actual information/record view \(I_d,V_d\), candidate set, retrieval
+allowance, and decision budget; access to an authoritative source does
+not add records to that designated input. Both use the same claim and
+conflict-handling service and the same total decision-concurrency
+allowance. The central service submits choices for members; local
+members submit their own choices.
+
+\subsection{Conditional properties and
+proofs}\label{conditional-properties-and-proofs}
+
+The following properties describe the proposed definitions under stated
+assumptions. They are elementary algebra and coupling arguments, not a
+claim of original general theory, empirical benefit, calibrated
+prediction, regret control, or causal identification. The inspected
+fixed policy has not acquired these properties merely because the
+specification states them.
+
+\subsubsection{Canonical evidence and duplicate
+delivery}\label{canonical-evidence-and-duplicate-delivery}
+
+\textbf{Claim.} Fix a decision position, relation key, the actual
+admissible collection \(H_d\) from a specified \(V_d\), its
+authenticated parent-closed correction chains, and its occurrence
+positions. Assume every unit has one unambiguous effective verdict or
+withdrawal. The counts are invariant to the order in which those records
+are enumerated and to repeated delivery of a record with the same
+evidence identity.
+
+\textbf{Proof.} Each unit's effective verdict is a function of the fixed
+visible chain and authoritative order, not the enumeration order.
+Repeating an identity does not change that chain. Each active unit
+therefore supplies the same single two-component contribution. Finite
+addition is commutative and associative, so the two sums and their ratio
+agree. This compares the same visible set. Different first-availability
+positions can change an online decision and are not covered by the
+claim.
+
+\subsubsection{Sensitivity of a relationship
+score}\label{sensitivity-of-a-relationship-score}
+
+\textbf{Claim.} Compare two nonnegative states for the same relation key
+and the same positive priors. Put \(m_0=\alpha_0+\beta_0\). Then
+
+\[
+|w-w'|\leq\min\left\{1,
+\frac{|s-s'|+|f-f'|}{m_0}\right\}.
+\]
+
+The following evidence-mass refinement additionally assumes that both
+states are generated by the enabled relationship-update projection at
+the same position \(t\), with the same ordinal clock and \(\lambda\).
+For each unit in the union of their effective sets, let
+\(v_u=(q_u r_u\lambda^{t-b_u},q_u(1-r_u)\lambda^{t-b_u})\) be its actual
+contribution under that state's effective verdict, using the zero vector
+when absent; define \(v'_u\) from the other state's effective verdict.
+Thus \((s,f)=\sum_u v_u\) and \((s',f')=\sum_u v'_u\). If
+\(M=\sum_u\|v_u-v'_u\|_1\), the numerator above is at most \(M\). This
+refinement does not compare an enabled, decaying state with a
+relationship-off frozen snapshot. That comparison can use the original
+bound with each projection's actual \(s,f\); identical historical
+identities need not then have identical mass.
+
+\textbf{Proof.} Write \(D=m_0+s+f\). The derivatives of
+\(w=(\alpha_0+s)/D\) are \((\beta_0+f)/D^2\) and \(-(\alpha_0+s)/D^2\),
+whose absolute values are at most \(1/m_0\). The segment joining the two
+nonnegative states stays in that domain. Integrating the derivative
+along the segment gives the stated Lipschitz bound; \(0<w,w'<1\) gives
+the other bound. The triangle inequality applied to the contribution
+vectors gives the \(M\) bound. Missing evidence has its own discounted
+mass; a success-to-failure correction changes both components and can
+contribute twice that mass to \(M\). The bound does not treat such a
+correction as a single missing count.
+
+\subsubsection{Sensitivity of the fixed-candidate choice
+distribution}\label{sensitivity-of-the-fixed-candidate-choice-distribution}
+
+\textbf{Claim.} Let the same nonempty finite candidate set, ordering,
+\(\tau>0\), and \(0\leq\epsilon\leq1\) be used in two decisions. If all
+utilities are finite and \(\|U-U'\|_\infty\leq\eta\), their
+distributions satisfy
+
+\[
+\operatorname{TV}(p,p')\leq
+(1-\epsilon)\min\{1,\eta/\tau\}.
+\]
+
+\textbf{Proof.} Along \(U(z)=U+z(U'-U)\), let \(\sigma_j(z)\) denote the
+softmax term and \(\Delta=U'-U\). Differentiation gives
+
+\[
+\frac{d\sigma_j}{dz}=
+\frac{\sigma_j}{\tau}\left(\Delta_j-
+\sum_k\sigma_k\Delta_k\right).
+\]
+
+Because \(|\Delta_j|\leq\eta\), the sum of absolute derivatives is at
+most \(2\eta/\tau\). Integrating and dividing by two bounds total
+variation by \(\eta/\tau\); total variation is also at most one. The
+identical uniform exploration component cancels, leaving the factor
+\(1-\epsilon\).
+
+If only an affine relationship term \(c_R w_\rho\) changes and all other
+utility inputs/scales are fixed, the preceding evidence-mass refinement
+supplies \(\eta\leq |c_R|\max_\rho\min\{1,M_\rho/m_0\}\) only when both
+states meet its same-position, same-clock, enabled-projection
+assumptions. For an enabled/frozen comparison, use each projection's
+actual counts in the original score bound to obtain a utility bound
+instead. A changing normalization must be included in the utility error.
+Candidate entry/removal, changed authorization, different retrievals, or
+unequal budgets violate the fixed-input premises; the bound then
+supplies no task-quality or deployment conclusion.
+
+\subsubsection{Equal information and equal random
+draws}\label{equal-information-and-equal-random-draws}
+
+\textbf{Claim.} With the same deterministic policy implementation,
+eligible ordered candidates, identical actual information/state views
+\(I_d,V_d\) and their admissible collections/projections, finite
+utilities, and the same uniform draw, central and local decision makers
+select the same candidate.
+
+\textbf{Proof.} Their score vectors and probability vectors are
+identical. Their cumulative probabilities in the common ordering are
+identical, so inverse-CDF selection with a fixed boundary convention
+yields the same candidate for the same draw. Induction extends the
+statement over decisions only if initial states and all intervening
+exogenous inputs, evidence availability/corrections, authorization and
+claim outcomes are also coupled identically. Different provider outputs
+or request/claim timing are not made equal by a requested seed.
+Synchronous replay checks this conditional equivalence; it cannot
+establish a positive effect of location or equal realized performance
+under a different deployment.
+
+\subsubsection{History excluded by disabled
+updates}\label{history-excluded-by-disabled-updates}
+
+\textbf{Claim.} Fix task inputs, operational state, initial snapshots,
+policy/random draws, and the enabled channel's allowed state. Changing
+only the post-initialization history of a disabled channel does not
+change decision probabilities under the specified state projection.
+
+\textbf{Proof.} For a disabled relationship channel, the policy receives
+the initial counts/weight with no decay or historical corrections. For a
+disabled experience channel, it receives initial content,
+verification/use/ranking values and adaptive cache inputs. The changed
+later history enters neither projection. All remaining policy arguments
+are fixed, so the probability vector is fixed. This is conditional on
+enforcing the projection at every read, including caches and summaries.
+If another enabled channel actually changes, or current
+permissions/availability change, the premises do not hold. This
+specification is not evidence that the product already enforces those
+exclusions.
 
 \subsection{Feedback cycle and failure
 handling}\label{feedback-cycle-and-failure-handling}
 
-After an executed task, the allowed feedback suite produces evidence.
-The experience process proposes revisions and verifies candidates within
-its assigned budget. Admissible, attributable outcomes update the
-corresponding relationships. Later decisions read only the state allowed
-by their configuration. The intended cycle is specified below; it is not
-an executed algorithm trace.
+After an executed task, the allowed feedback suite produces
+obligation-specific evidence. The experience process proposes and
+verifies revisions within its assigned budget. Validated verdicts,
+withdrawals and corrections enter their recorded availability positions.
+Later decisions use the effective earlier-visible set and the projection
+allowed by their configuration. The intended cycle is specified below;
+it is not an executed algorithm trace.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{For each scheduled task in an isolated configuration:}
-\NormalTok{    obtain current authorized state and the permitted adaptive{-}state versions}
-\NormalTok{    construct the pre{-}decision conditions and eligible candidates}
+\NormalTok{    obtain current operational state and permitted earlier{-}visible adaptive state}
+\NormalTok{    capture versioned pre{-}decision conditions, obligations, and eligible candidates}
 \NormalTok{    retrieve eligible experience and compute the common decision probabilities}
 \NormalTok{    submit the selected task or partner decision through the common claim service}
 \NormalTok{    execute within the registered task and sequence budgets}
-\NormalTok{    record allowed feedback, attribution, usage, cost, and unresolved outcomes}
-\NormalTok{    if experience updates are enabled: verify and revise eligible experience}
-\NormalTok{    if relationship updates are enabled: apply admissible evidence and declared decay}
+\NormalTok{    record actual feedback sources, occurrence/availability, usage, and unresolved units}
+\NormalTok{    verify experience and adjudications under current permissions and declared budgets}
+\NormalTok{    if updates are enabled: expose valid revisions at their allowed future positions}
 \NormalTok{    submit the final artifact to the isolated evaluator}
 \end{Highlighting}
 \end{Shaded}
@@ -537,8 +923,21 @@ terms derived from those statistics. Relevance to a current task may be
 recomputed from the frozen representation. Relationship-off freezes
 counts, weights, and time decay. Immediate task state, permissions, and
 availability continue to change in every condition. Logs remain
-writable, but off-condition decisions cannot learn from those logs
-through caches, indexes, summaries, or shared services.
+writable, but a disabled channel cannot update its decision inputs from
+those logs through caches, indexes, summaries, or shared services. An
+enabled experience channel can still learn from permitted feedback while
+relationship counts are frozen; an enabled relationship channel can
+still update while the experience representation is frozen.
+
+Each isolated copy includes historical unit identities, effective
+verdicts, occurrence positions, capability/extractor versions, and
+correction lineage, not only aggregate counts. New visible
+verdicts/revisions are gated separately by the two switches. The
+disabled-channel property above is conditional on holding the other
+policy inputs fixed; the eight configurations do not assume that an
+enabled channel or operational trajectory remains unchanged. Current
+permission withdrawal blocks use without silently rewriting frozen
+historical weights.
 
 Model lists, prompts, source collections, feature extraction, task order
 within each paired block, concurrency quotas, and task/sequence budget
@@ -556,15 +955,20 @@ implementations. Matching selections test implementation consistency.
 With equal state and random draws, the common rule implies equal
 decisions; replay supplies no evidence for a positive location effect.
 
-The deployed comparison records differences in state age, request
-waiting, submission ordering, claim conflicts, and communication. A
-nonzero location effect would describe those specified deployment
-conditions. It cannot be attributed to abstract decentralization while
-central caching, extra information, different scoring, or unequal
-compute also vary. Shared storage, process placement, cache policy,
-communication path, and scheduling must therefore be declared. Whether
-the deployment introduces a meaningful location intervention remains a
-readiness question.
+The deployed comparison records each actual \(V_d\), its represented
+source collection, snapshot production position, read/submission times,
+request waiting, claim ordering/conflicts, and communication. Observed
+snapshot age and authoritative first availability are distinct; unknown
+later corrections cannot be labeled known at the decision. Different
+actual views can yield different scores even at the same \(t\), while an
+enabled projection always ages its represented evidence to that
+decision's \(t\). A nonzero location effect would describe those
+specified deployment conditions. It cannot be attributed to abstract
+decentralization while central caching, extra information, different
+scoring, or unequal compute also vary. Shared storage, process
+placement, cache policy, communication path, and scheduling must
+therefore be declared. Whether the deployment introduces a meaningful
+location intervention remains a readiness question.
 
 \subsection{Tasks, feedback, and sealed
 evaluation}\label{tasks-feedback-and-sealed-evaluation}
@@ -1134,13 +1538,16 @@ selected in advance.
 \section{Limitations, reproducibility, and research
 governance}\label{limitations-reproducibility-and-research-governance}
 
-The method is incomplete as an executable research system. Proposed
-condition features may omit relevant task differences, and partner
-selection changes which relationships are observed. Calibration among
-selected partners cannot automatically generalize to unselected pairs.
-Fixed software tasks and one initial history limit external validity.
-Provider-side randomness and model-version changes can weaken paired
-comparisons even when requested seeds match.
+The proposed semantics have not been implemented as a complete
+executable research system. The concrete condition catalogue,
+unique-verdict rule and clock are proposals for review, without formal
+parameter or interface approval. Conditions may omit relevant task
+differences, and partner selection changes which relationships are
+observed. Calibration among selected partners cannot automatically
+generalize to unselected pairs. Fixed software tasks and one initial
+history limit external validity. Provider-side randomness and
+model-version changes can weaken paired comparisons even when requested
+seeds match.
 
 The evidence-quality defaults do not guarantee broad applicability.
 Feedback tests may be exploitable or overlap with final evaluation;
