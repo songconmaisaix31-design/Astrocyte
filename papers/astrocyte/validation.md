@@ -201,4 +201,4 @@ BelowNormal、Node1024MiB、串行，CPU<85%/可用≥4GiB及Stopwatch实际2–
 
 主控 `msg_e844510ffe79` 在Reviewer全部调用退出后，授予Install→成功后Build→成功后Validate的唯一窗口。实际执行 `& .\papers\astrocyte\build-texlive.ps1 -Phase Install`，原守卫首个样本的可用内存3.2314453125GiB低于4GiB，入口EXIT1立即停止。准确UTC为07:17:22.0752185Z，CPU70%，Stopwatch elapsed26.5546907秒；首样本拒绝，没有第二样本或可宣称通过的2–5秒间隔。
 
-原Install-resources时间戳JSON先写下真实数值及拒绝原因。安装目标和installer-console.log均不存在，安装器、仓库下载、Build和Validate未运行；已通过的安装包签名记录和已接受08原PDF保持。未放宽门限、缩减发行、切换目录或外层重试。全部自有调用退出后，`msg_d7481e3c8b94`立即归还唯一窗口，后续仅静态同步记录；实际TeX Live编译目标仍待资源可用及主控另行安排。
+原Install-resources时间戳JSON先写下真实数值及拒绝原因。安装目标和installer-console.log均不存在，安装器/仓库下载NOT_RUN、Build NOT_RUN、Validate NOT_RUN；已通过的安装包签名记录和已接受08原PDF保持。未放宽门限、缩减发行、切换目录或外层重试。全部自有调用退出后，`msg_d7481e3c8b94`立即归还唯一窗口，主控 `msg_e52c93b2dec5` 确认收回并停止同因重试。07:22:36.0440753Z只读进程核查，在Perl/XeLaTeX/xz/GPG/sha512sum/Python/Tectonic/Pandoc/tar中匹配本工作树命令行的进程为0；实际Install前台调用EXIT1，安装器和引擎未启动。实际TeX Live编译目标仍待资源可用及主控另行安排，后续仅静态报告，同Task未结算。
