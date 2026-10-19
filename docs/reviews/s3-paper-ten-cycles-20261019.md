@@ -408,4 +408,14 @@ BelowNormal、Node1024MiB、85%/4GiB双采样及串行实际生效，无资源�
 
 arXiv就绪继续为`insufficient_evidence`：原创实质贡献、真实研究证据、受支持TeX Live/站点处理、作者/许可/同意和人类科学核验尚缺，原两Underfull及无视觉检查保留。未注册或上传；本轮限定接受不证明当日科研发布目标完成。
 
-UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567552099)，回执为`COMMENTED`、`commit_id=a664233a1276003a69f3d6850e4ecc04c08f4370`；原件`08/github-review{,-receipt}.json`。同账号未作GitHub APPROVE。主控`msg_697b5939bae7`已确认实际调用退出并收回窗口；本报告普通push及原hook之后，准确候选的实际读取回复仍待完成，原Task继续。
+UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567552099)，回执为`COMMENTED`、`commit_id=a664233a1276003a69f3d6850e4ecc04c08f4370`；原件`08/github-review{,-receipt}.json`。同账号未作GitHub APPROVE。主控`msg_697b5939bae7`确认实际调用退出并收回窗口。报告`c36f899007bef3d1a90599fa884ceaa48fe28ceb`普通push、远端一致；UTC`06:11:12Z`原hook实际入队`msg_814e1b18d6a8`，原件`08/review-hook-receipt.log`。主控UTC`06:12:12Z`以`msg_7cac54d820d1`回复该hook，确认完整读报告、实际API核准确CR/SHA、远端及干净状态，登记08限定接受、累计6/10（01/02/03/04/06/08）。本次唤起由实际读取回复确认，原Task继续，尚未结算worker_done。
+
+## Release 准确15新包的独立验包记录
+
+包源码为`15d74da3edcee26550a71120370fda9c86230e04`；当前报告后继为`2efeb16ee1e0e9fce8d92fe8e132d679371f779e`，两者差异仅`docs/standards/s3-ten-cycles-20261019.md`。实际完整读取其中当日Release全部记录，包为`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`，报告1949417822bytes。旧41ce仅用于已核固定runtime恢复；本包应用程序和web来自准确15的真实构建。Worker的130项和失败DOM分别按其实际范围记录，当前尚未独立移用为通过。
+
+主控`msg_4f44fdf95f3e`仅授独立准确Git clone、原工具构建、公开原Q只读inspect及原完整Verify窗口，明确暂不浏览器或最终决定/hook。自身入口`.verification/ten-cycles/review-release15.ps1`使用获准C树源码/工具和D盘`reviewer-release`全新输出，原Go缓存复用`D:/Astrocyte-agent-assets/20261015/go-build/backend`。既有工具实际编译来源应记准确15，历史Q组件40880b67另列；原库/history/固定b789公开Git保持只读，不执行collect/Sleep或调整日期。
+
+首次`-Phase snapshot`实际EXIT1，发生于Git clone之前：UTC`06:16:40.2184593Z`与`06:16:44.3701197Z`，CPU33%/86%，可用5.630306/5.392838GiB，Stopwatch间隔4.163945秒。第二CPU达到85%门限，守卫立即拒绝；原件`.verification/ten-cycles/release15/resources-snapshot-rejected-20261019-141644-381.json`。只创建自身忽略证据/temp/Node缓存目录；未克隆、编译、inspect、解压/Verify或创建D盘验证输出，服务/浏览器/模型均未启动。上述功能阶段均为`NOT_RUN`，没有从资源拒绝推断产品失败或通过。
+
+全部自有调用实际退出后，以`msg_5323cb05df8f`立即交回唯一窗口并报告首失败；没有自行重试、关闭其他进程、发布新CR或执行决定hook。当前继续等待主控安排，本节不增加十轮计数。
