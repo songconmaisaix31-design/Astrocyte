@@ -2,15 +2,17 @@
 
 个人研究与创造工作台，使用 Go、React、TypeScript、Vite 和 SQLite。产品流程为资料沉淀、项目筹划、人工批准、Agent 执行与经验回流。完整功能及发布状态见 [STATUS](STATUS.md)，开发接续见 [HANDOFF](HANDOFF.md)，文档用途见 [文档目录](docs/README.md)。
 
-当前优先收敛候选为 `songconmaisaix31-design/frontend-observatory-20261018@5725c1840a760105518d273eaaa28d7367f369ed`，集成目标为 `songconmaisaix31-design/works-relay-integration@f17a491cdd6392829094c95a3e5efb6011362bc0`。本工作树的 `validation/v1-20261012` 保存主控与正式实验记录；产品开发沿原产品分支进行。准确来源、PR 和原任务见 [集成清单](docs/integration-audit-20261020.md)。
+当前交付候选的构建源码为 `ed543c12106c2dbb3e181cb9bc1647b626455179`，程序与 Web 已同源部署到 [64505 应用](http://127.0.0.1:64505/)，使用原真实 SQLite。产品开发主线为 `songconmaisaix31-design/works-relay-integration`，最终报告与独立审查后普通推进。源码、验证、运行及限制见 [当前收敛任务](tasks/delivery-candidate-20261020.md) 和 [STATUS](STATUS.md)。
 
-Source15 Windows x64 候选包已完成构建、独立 130 项运行检查和双视口人工 DOM 核查，来源为 `15d74da3edcee26550a71120370fda9c86230e04`，位置为 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`。包与源码的对应结果见 [重启续行任务](tasks/restart-product-research-20261019.md)。完整默认 CI、原生/S3、成果实际采用及正式 Release 仍未通过，待答事项见 [QUESTIONS](docs/QUESTIONS.md)。
+Source15 历史 Windows x64 包完成构建、独立 130 项运行检查和双视口人工 DOM 核查，来源为 `15d74da3edcee26550a71120370fda9c86230e04`，位置为 `D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/p15d74da3-2/Astrocyte-v0.1-windows-x64-15d74da3edce.zip`。当前候选为产品工作树内的普通交付目录 `dist/delivery-candidate-20261020/`。完整默认 CI、原生/S3、成果实际采用及正式 Release 仍未通过；本次契约工具崩溃和资源执行偏差按真实结果保留，详见当前任务。
 
-在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，按包内 README 打开服务地址；默认地址为 <http://127.0.0.1:8787/>，保持控制台打开，按 Ctrl+C 停止应用。最近已核查的共享应用使用 64505 端口，运行程序早于候选包；实际启动或切换服务按 [资源限制](docs/RESOURCES.md) 和当前任务安排。本次文档清理没有重新运行这些检查。
+历史 ZIP 可在可写新目录完整解压，使用包内 `Start-Astrocyte.cmd` 和 README。当前实际应用使用64505端口，由独立普通服务终端保持；开发、验证和服务窗口按 [资源限制](docs/RESOURCES.md) 及当前任务安排。
 
 ## 当前分支开发说明
 
 开发先读 [AGENTS](AGENTS.md)、[代码规范](docs/CODING.md)、[资源限制](docs/RESOURCES.md) 和当前任务引用的规格。按角色加载 [主 Agent、Worker、Reviewer 或科研 Agent 说明](docs/agents/README.md)。S0 和早期界面计划保留为历史依据，后续开发按当前收敛计划执行。
+
+本工作树 `validation/v1-20261012` 保存主控与正式实验记录。产品开发命令在 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration` 的产品主线工作树执行，当前运行程序的版本目录独立保留。
 
 当前产品候选的新版界面、媒体与 Agent 标识、人工动态 DAG 和按需加载已有分范围独立审查，具体功能、权限和未验范围见 [动态 DAG 任务](tasks/dynamic-dag-loop-20261019.md)。本分支保留早期界面及实验实现，其示例内容不作为当前产品或正式研究结果。
 

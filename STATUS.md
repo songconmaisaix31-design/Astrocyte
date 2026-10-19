@@ -2,7 +2,7 @@
 
 ## 状态来源
 
-本页依据 2026-10-20 [集成核查](docs/integration-audit-20261020.md) 和 [重启续行任务](tasks/restart-product-research-20261019.md) 汇总。文档整理没有重新运行产品、科研或正式实验；表中运行状态保留原核查时间。当前管理任务见 [全仓文档检查与归档](tasks/documentation-conflicts-20261020.md)，接续步骤见 [HANDOFF](HANDOFF.md)。
+本页依据 2026-10-20 [交付候选与实际运行收敛](tasks/delivery-candidate-20261020.md) 更新。原全量分支与旧任务事实见 [集成核查](docs/integration-audit-20261020.md)。本次正在沿原产品主线执行普通构建和必要真实检查，科研与正式实验未重新启动；接续步骤见 [HANDOFF](HANDOFF.md)。
 
 ## 准确版本
 
@@ -10,10 +10,10 @@
 
 | 用途 | 分支或位置 | 记录中的准确来源 |
 | --- | --- | --- |
-| 优先产品候选 | `frontend-observatory-20261018`，原 PR #2 | `5725c1840a760105518d273eaaa28d7367f369ed`；业务检查源码 `22cde9efc540553c433463af5b9e955790d57a99`，后继为文档 |
+| 当前交付候选的构建来源 S | `frontend-observatory-20261018`，原 PR #2 | `ed543c12106c2dbb3e181cb9bc1647b626455179`；三个Go程序及Web已同源构建，独立可部署复验接受；实际运行已启动，独立运行复验进行中 |
 | 产品集成目标 | `works-relay-integration` | `f17a491cdd6392829094c95a3e5efb6011362bc0` |
 | 独立验包来源 | Source15 | `15d74da3edcee26550a71120370fda9c86230e04`；Source22 尚未重建包 |
-| 最近核查的运行应用 | `http://127.0.0.1:64505/` | 程序 `c5b3b5715f2e93b82365720914be24c73642bd1e`、Web `172bb445597193d55f1563ee5d21ac2ec881798d`；PID 45676，创建 UTC `2026-10-19T12:09:30.7340265Z` |
+| 当前实际服务 | `http://127.0.0.1:64505/` | 程序与Web均为S，版本目录`versions/ed543c12`；PID45956，创建UTC `2026-10-19T19:47:04.6572166Z`，BelowNormal、唯一loopback监听、health正常；原库业务保全及027迁移已核 |
 | 科研候选 | `research-preprint-20261019`，原 PR #3 | `fcb1e0a70541e15de1f52507a43edadb9801e368`；科学正文仍为 a664233a |
 | 最新独立审查报告 | `research-preprint-review-20261019` | `13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8` |
 | 主控与正式实验 | `validation/v1-20261012` | 文档清理基线 `a56dcbe3080404953a80b1f6fd518be8d4820508` |
@@ -34,7 +34,7 @@
 
 ## 任务和待答项
 
-最近集成核查中没有运行时报告的 live Worker；产品、科研和 Reviewer 的最新 Task 均为 failed，对应 Dispatch 已 released。原普通服务终端独立保留，旧未结 Task 与独有分支逐项见集成清单。本次没有更改 Task、Dispatch、服务、工作树或分支归属。
+当前 Run 为 `run_1187287582ea`。产品 Worker `task_6f09f37378a8 / ctx_1e0467a3f24a` 已完成自测并交还窗口，保持静态等待最终运行结果；独立 Reviewer `task_8149678f3fac / ctx_3406e529baa6` 正在唯一实际服务内只读复验。均为真实 Orca 启动的 Codex / gpt-6.1-sol。实际服务由独立普通终端 `term_c043b5a9-d4f4-41d0-b387-866ed544ca6d` 保持。上一轮failed/released及旧未结项继续按集成清单保留。
 
 S3 预算单位、权限证据范围与受限 Codex 选择仍未回答，Claim 拒绝及 Known=false 保持。具体资料准入、Agent 读取完成证据、经验写入交接的方式、Laya 语言、首发范围、安装与服务共存和作者许可继续见 [QUESTIONS](docs/QUESTIONS.md)。实际用户作品、自由工具授权和正式实验缺失字段保持未知。
 
