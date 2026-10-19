@@ -10,7 +10,7 @@
 | 独立分支 | `songconmaisaix31-design/research-preprint-review-20261019` |
 | 生命周期 | Run `run_29c7e66b4136`；Task `task_2923223271be`；Dispatch `ctx_568047699698`；终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556` |
 | 实际客户端 | Codex CLI 0.162.0；Orca 终端 `GPT-6.1-Sol xhigh fast`；继承配置，无模型覆盖 |
-| 写域 | 本报告及自身已忽略 `.verification/`；两个 Worker 树保持只读，修复交原 Worker |
+| 写域 | 本报告及自身已忽略 `.verification/`；两个Worker树只读。主控`msg_593cc6748e7c`另授`D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/reviewer-release/`下全新独立子目录，仅存新包解压/验证输出；旧资产和Worker输出只读，仍须另授重操作窗口 |
 | 权限 | 预算计数、权限证据覆盖及受限 Codex 三项未答；现有 Claim 拒绝、各 `Known=false`、原生文件/命令工具关闭要求保持 |
 
 实际读取主控 AGENTS、HANDOFF、STATUS、十轮任务、QUESTIONS、SPEC §7–8/10/12/17/19–20、TASKS P3 及研究产品决定；完整读取用户定位稿 v3 和预注册开发草案 v0.1。逐论文候选应用 `astrocyte-research` skill 的证据分级、原始来源、完整配对块、因果识别、隔离和成本审查要求。使用 orchestration/orca-cli 技能处理真实生命周期、消息、CR 通知与主控回复；第 02 轮另读取 PDF skill，按用户要求只作文本与结构核查，不实施视觉检查。
@@ -248,4 +248,46 @@ UTC `2026-10-19T04:40:14Z` 实际发布 [CR 5567006632](https://github.com/songc
 
 作者、顺序/机构/通讯信息、授权和许可未确认；真实AI工具披露已加入，未虚称真人科学核验完成。两处Underfull、无视觉、无受支持TeX Live及arXiv站点处理/作者预览的限制保留，不能宣布投稿就绪。真实原生正向、AT08/09/13、用户采用/经验复用、完整CI、Release及正式V4不由本轮验收；三项待答、Claim拒绝及`Known=false`保持。
 
-UTC`2026-10-19T04:55:27Z`实际发布[CR5567098640](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567098640)，实际回执及后续真实API核`COMMENTED`、`commit_id=afe471edc25305537f11ee4453a93c7b3be790cf`。原件`04/github-review{,-receipt}.json`，同账号未作GitHub APPROVE。当前报告普通push后执行当前Run/Task/Dispatch既有hook，主控实际读报告/CR并回复后登记本轮；本Task继续剩余轮次，尚未结算worker_done。
+UTC`2026-10-19T04:55:27Z`实际发布[CR5567098640](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567098640)，实际回执及后续真实API核`COMMENTED`、`commit_id=afe471edc25305537f11ee4453a93c7b3be790cf`。原件`04/github-review{,-receipt}.json`，同账号未作GitHub APPROVE。报告`3b6883dd32f91d471403239f0878bd5ad883e9bb`普通push、远端一致，UTC`04:57:24Z`实际hook入队`msg_d8dbadf2a00a`。主控UTC`04:59:55Z`回复`msg_3b165bee72a4`，thread指向该hook，确认完整读报告、真实API核准确CR/SHA与远端，登记04限定接受、累计4/10。本次唤起已由实际读取回复确认，原件`04/review-hook-receipt.log`；本Task继续，尚未结算worker_done。
+
+## Release 发布门禁的默认浏览器只读核查
+
+按主控`msg_2d440103a8dd`和`msg_b0c3f697b87a`，核准确产品`15d74da3edcee26550a71120370fda9c86230e04`的配置、相关spec/helper前置和实际请求分支。对应`web`、`tests/s1`、`scripts`与该SHA的工作树差异为空；本节是静态前置矩阵，不形成新候选决定、CR或hook，不增加十轮接受数。没有运行Playwright、浏览器、trace、全套测试、服务、模型或原生探针，没有修改Worker树。
+
+### 默认入口与资源限制
+
+`web/package.json`的`test:e2e`执行`playwright test`，`web/playwright.config.ts:4`采用`e2e`目录，包含1920/1280两个project。第12行实际开启`retain-on-failure` trace及`snapshots=true`；`screenshot/video=off`不能作为trace关闭的依据。第6行`fullyParallel=false`没有限制多个文件的worker并发；当前未设置`workers`。框架官方[配置说明](https://playwright.dev/docs/api/class-testconfig#test-config-workers)确认默认文件并行和半数逻辑核worker，应在获准运行前明确单worker及关闭全部trace。此处没有修改配置或启动运行。
+
+第20–28行固定启动`dev.mjs --ephemeral`的Go/Vite应用；`realService.ts:16`与`tests/s1/server.mjs:160–166`又实际编译并启动独立Go/Vite。单worker仍会同时保留默认应用和helper应用。`cognition.spec.ts:12`持有认知服务，173行又在该服务未关闭时启动缺快照服务。现有`e2e/self-service.config.ts:8–11`为部分spec关闭默认webServer并设单worker，只覆盖其列出的范围，继承的trace仍开启；不能用该子集当作默认全套通过。生命周期/配置问题须交原Worker处理，保留原业务断言和两个project覆盖。
+
+默认配置没有自定义`testMatch`；官方[默认匹配规则](https://playwright.dev/docs/api/class-testconfig#test-config-test-match)收集`.spec/.test`文件，`observatory.check.ts`、`dynamic-dag.check.ts`等独立DOM脚本不自动构成默认套件覆盖。本地两个预期依赖路径未找到Playwright实现文件，因此该默认行为另以官方文档核实；没有安装依赖或伪称实际枚举过测试清单。
+
+### 真实输入、存储与执行前置
+
+下表位置均相对于准确15d74da3。保留源码已有opt-in及缺失即失败行为，未新增Skip、删除场景或降低断言。
+
+| 文件与位置 | 当前真实前置与执行含义 |
+| --- | --- |
+| `realService.ts:38–65`、`tests/s1/public-inputs.mjs:10–39`；`s1.spec.ts:69/131`、`attention-recovery.spec.ts:38`、`plugin-snapshot.spec.ts:28/41/80/108` | 默认场景依赖明确`.verification`目录中的4份实际公开HTML：arXiv2501.12948v1/v2、PLOS、ACL；使用生产paperDOM及成熟库核来源/正文。缺`ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR`直接失败。不能用虚构HTML或替换URL补齐；这些输入尚未在本轮实际复核或交接。 |
+| `cognition.spec.ts:12`、`web/src/api/realHttpTest.ts:24–28`；`cognition-live.spec.ts:39–52` | 没有opt-in Skip。需要真实公开快照LOCALAPPDATA、实际十项SQL预期及当前输出目录，并强制预期路径处于`.verification`和固定generation=`snapshot-1711995690`。真实新快照不能只因可读就替代该绑定；没有修改JSON、日期或generation。 |
+| `progress-existing.spec.ts:12–33`、`video-existing.spec.ts:11–31` | 没有opt-in Skip。前者需既有真实HTTP、project/native ID、gpt-6.1-sol推断和README证据；后者需指定Bilibili视频真实两版、952位置及私有/公开附件。代码仅GET/页面读取，无新推断或ASR；需要合法可复核原库/对象和新独立服务，不能伪造成功记录或只复制可能含WAL的主库。 |
+| `relay-session.spec.ts:23–36`、`relay-session-readonly.spec.ts:10–16`、`relayEvidence.ts:5–13` | 没有opt-in Skip。需要真实服务URL、GetEvent公开事实、原生来源event_id/canary，以及当前树`.verification`内的证据目录和`first-visible.json`。只读显示用原件仍须逐ID真实回查，不能把手工事件当原生来源；旧原件不证明当前原生工具隔离。 |
+| `relay-runtime.spec.ts:221–224/238–397` | 没有opt-in Skip。按每个场景和视口读取真实task ID与服务URL；缺少直接失败。部分场景只是GET，structured EOF场景253行会实际发送输入，其他分支会confirm、stop、transition/reconcile。实际原生前置和三项待答满足前禁止运行这些动作，不能给全部场景填同一旧ID或用旧状态冒充当前执行。 |
+| `s4-repository-configured.spec.ts:15–49/126` | 没有opt-in Skip。要求WORKTREE_A/B、NODE、SDK、AOCI五项显式绝对路径、既有GOMODCACHE、真实公开S4仓库及固定4317d610提交；实际CodeGraph/AOCI建图和重启。模块缓存、真实工具与使用许可分别成立，原件没有在本轮核实；此路径不能靠空配置通过。 |
+| `s1-native-project.spec.ts:15/58–99`；`s1-real-acceptance.spec.ts:20/153/184`；`s1-public-selection.spec.ts:16/54–75` | 已有独立opt-in。原生项目测试会保存许可并start/resume/send/stop；综合验收会probe和提交真实模型作业；选择场景也会probe并在缺建议时调用模型。需要实际控制器、受限工具证据、明确公开Git项目、原件及模型授权。单纯README marker目录没有自动建立公开Git身份，不据固定提示词推断工具关闭。当前保持未运行。 |
+| `attention-video-import.spec.ts:17/133`；`s1-public-collection.spec.ts:16/110`；`s1-selected-browser.spec.ts:11–21`；`s1-github-placement.spec.ts:12` | 已有opt-in，分别需确认的真实网络阻断/实际提取运行环境、公开收藏夹、明确批准且不含凭据的已选浏览器配置、真实公开GitHub联网动作。后续接续需精确已批准原目录；不能读取任意宿主浏览器或扩大作品范围。 |
+| `s1-paper-snapshot.spec.ts:11–18`；`s1-project-board.spec.ts:12–21`；`s1-registered-projects.spec.ts:13–16`；`works-live.spec.ts:17/155/204` | 已有opt-in。依赖指定历史快照文件、明确项目/已批准重用目录、成功Works SQLite与对象或已批准扫描根，Works另检查pending原始观察不产生信号。旧目录、旧模型成功库及具体用户作品没有自动获本轮写入/采用授权；输入与访问范围仍需实际交接。 |
+
+`paper-search.spec.ts:16/30/57/75`还会直接请求真实公开论文检索，要求实际网络响应。`s1-real-acceptance.spec.ts:13–14`、`s1-public-selection.spec.ts:12`和`s1-paper-snapshot.spec.ts:11`带历史绝对输入/目录绑定，不能通过改写原件、虚构返回或忽略缺失来通过。真实原件复用应由原Worker按对应来源与权限处理。
+
+### fixture 名称、实际 IO 与原生行为
+
+`realService.ts:28–35/87–113`从真实Git提交读取AGENTS等已跟踪文件，使用生产手工导入和实际HTTP/SQLite；`humanAPI`直接fetch真实本地API。`contract_local`表单名称、历史`?fixture=1`参数、`s1-projects.spec.ts:36–40`创建的实际README及8.3名称检查均不能仅凭名称判成伪造API。源码所查e2e没有`route.fulfill`、HAR替代或CLI伪装；浏览器offline/Origin场景实际改变网络/请求，不伪造服务响应。8.3不可用注释仅说明该分支NOT_RUN，不能据普通登记通过宣称短名称分支已验。
+
+`tests/s1/fixtures.mjs:1–25`确实定义合成paper/video内容，但当前e2e所查导入链没有引用该文件；其调用出现在另行的`tests/s1/acceptance.test.mjs`、`live.mjs`等，不能沿用为本次真实公开输入。`plugin-snapshot.spec.ts:63–74`的example.com对象是明确无外部获取声明的纯参数映射/拒绝检查，不能作为已获取正文证据。`s1-paper-snapshot.spec.ts:80`则实际给已捕获正文追加`[Human-provided additional body paragraph...]`用于手工版本变化检查；该构造不能被记成真实外部v2或真人反馈。当前未运行，真实新版本验收须使用实际来源，修复交原Worker。
+
+`realRelay.ts:12–16`只写实际Codex注册意图，能力保持空；`relay-runtime.spec.ts:17–72`的403拒绝场景要求无原生session/terminal/worktree。`s5-delegation.spec.ts:137/260`使用生产`all_evidence_present`规则并断言provider=`rule`，不表示运行Jev/Laya模型。所查e2e/helper、dev/summarize入口和cmd/server/agents目录没有Aliyun/bailian/bl调用匹配；没有因此执行CLI探测或将任意外部工具的行为认证为安全。
+
+`tests/s1/server.mjs:113–118`只清除继承的ASTROCYTE配置，默认关闭自动Codex沉淀/summarize，relay模式另隔离HOME等；默认dev入口仍以宿主环境为基础。因此启用独立原生/资料范围前必须使用已明确的实际配置，不能把“helper默认关闭自动沉淀”扩张成所有原生API被禁用或所有宿主设置均已清除。任何`actor_kind=human`及自动点击的人工操作只验证角色/表单功能，不构成真实用户采用反馈。
+
+完整默认浏览器、完整CI及原发布门禁继续未通过。合法运行需要先由原Worker解决trace/单实例生命周期，交接各真实输入与来源，按已确认范围核原生/模型许可；当前没有用人工DOM、已有Skip或旧包125项替代这些要求。本节只读结论经普通push交主控，按其明确要求不产生决定hook，原Task保持。
