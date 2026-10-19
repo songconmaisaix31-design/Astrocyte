@@ -173,4 +173,31 @@ Verify初始实际监听进程链为45788→35948，重启为47912→48736，均
 
 随后 `dom15d74da3-2` 在首项 `public-git-clone` 资源守卫EXIT1：CPU100%/37%、可用5.8228/5.1281GiB、Stopwatch间隔3399.2431ms、BelowNormal。真实CPU样本触发原85%门限，尚未Git clone、包启动、HTTP、浏览器或SQL；没有自动重试。全部调用退出且实际17887监听0，以 `msg_18f497450acd` 立即交回窗口。原资源JSON和transcript保留，等待主控明确续验；成功包和130项结果不变。
 
-三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建与上述限定130项解压运行通过；首次DOM检查失败，完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
+### 实际双视口 DOM 与事件来源
+
+主控 `msg_a5b4eb6b6b4c` 在其他轨道全部调用退出后授予一次续验窗口。实际命令仍为 `.verification/run-release-dom.ps1`，PackageRoot=`.../v15d74da3/extracted/Astrocyte-v0.1-windows-x64`、SourceRoot=`.../p15d74da3-2/source`、Source=`15d74da3edcee26550a71120370fda9c86230e04`、Port=17887，仅Output为新 `.../dom15d74da3-3`。同一成功ZIP的包内程序/启动脚本、原完整DOM断言和每HTTP实际监听归属核查保持，没有重建包或重复130项。
+
+实际EXIT0，`dom15d74da3-3/dom-result.json`与`dom.log`记录通过。一个实际Chromium、一个实际包服务，两视口顺序执行，检查完成后全部退出。
+
+| 实际范围 | 结果 |
+| --- | --- |
+| 1920×1080与1280×720的attention/workspace/swarm/cognition/focus/cognition/evidence | 两组均通过真实标题/导航、无横向溢出、无pageerror；前两路由未加载DAG chunk，进入Swarm后实际按需加载。 |
+| 26件品牌资源与10个实际客户端清单条目 | 真实HTTP200、image MIME、非空内容及浏览器解码尺寸通过；UI原资产映射通过，cursor-agent使用cursor.svg。没有执行CLI probe或原生能力检查。 |
+| 固定公开README、本地检索键盘与可选OpenViking | 实际公开Git clone/detached/clean为准确Source15，真实人工导入及固定版本正文一致；Ctrl+K/Escape通过。OpenViking未配置且外发选项禁用，本地页面与资料读取通过。 |
+| 人工DAG逐步增长及交互 | 实际Mission空图→一个工作项→两个工作项/一条依赖，workers始终空；键盘详情、TB方向、0.8缩放、显式刷新与原API节点/边来源通过。 |
+| 当前权限撤销 | 第二视口实际收窄项目授权后旧画布清除，显示API403；实际DAG GET返回403。没有Claim或Send。 |
+| 真实SQLite逐事件 | 三次来源文件分别为`dag-sql-1920.json`、`dag-sql-1280.json`、`dag-sql-after-revocation.json`；当前DAG的每个event_id逐项查询原foundation_outbox，类型/aggregate/payload、Mission项目和工作项原id/title/mission/dependencies/created_by/creator_kind与实际API返回一致，节点创建与边事件均存在。 |
+
+本次项目 `f00349c8-9a7a-4af3-a6c3-f80b7ee42285`，Mission `8b7fa023-519f-4343-b234-bd99823cfaf8`。实际事件如下，两个工作项的创建主体均为`local-human`、`creator_kind=human`，没有Worker贡献声明。
+
+| event_id | 原事件类型 | aggregate_id |
+| --- | --- | --- |
+| `9f11b1d2-d224-4875-a7c7-efc89d376b0c` | `swarm.mission_created` | `8b7fa023-519f-4343-b234-bd99823cfaf8` |
+| `7b7e7416-286b-40d6-a3bc-2c750480c400` | `swarm.work_item_created` | `529b725e-6e26-4047-81b4-834a02be6208` |
+| `58185773-2413-420a-9b60-711bb390a347` | `swarm.work_item_created` | `2247754f-3cdb-4c67-85e9-fefe655ee4c7` |
+
+430次逐HTTP实际归属检查完成，检查Python49060正常退出0，stderr为0B。实际OS阶段、root/listener创建时间与父链记录为`dom-listener-observations.jsonl`，标准JSON客户端时序和关闭记录为`dom-listener-client.jsonl`。三阶段六次启动采样最高CPU19%、最低可用5.26092529296875GiB，原CPU<85%/可用≥4GiB/单调间隔2–5秒及BelowNormal均满足；没有测量运行期峰值或据此声称速度收益。
+
+所有浏览器/Node/Python检查/PS与自有服务实际退出，17887监听0后，以 `msg_d5bb645587e2` 立即交回窗口，随后仅报告、普通push与PR更新。先前两个检查工具超时及CPU拒绝原件保持；本次限定DOM通过不替代完整默认浏览器或独立包CR。
+
+三项 S3/原生选择仍待答，Claim 拒绝及 `Known=false` 保持；没有初始化原生控制器、发送模型输入、伪造会话/claim/lease、重发 unknown 或新增 Skip。完整默认 CI 仍未通过，未执行其含旧替身的全套测试。前端、OpenAPI、workflow、正式 V4、根治理和论文没有本轮修改。新包构建、限定130项解压运行与上述DOM通过；完整默认浏览器、今日实际新增非空、原生控制器、完整 S3、独立包审查和正式发布尚未通过。历史非空与今日新增分别记录，旧125项没有移作本轮证据。
