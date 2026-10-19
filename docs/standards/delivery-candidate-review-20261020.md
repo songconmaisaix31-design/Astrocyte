@@ -7,7 +7,7 @@
 - 固定分支：`songconmaisaix31-design/research-preprint-review-20261019`；接管 HEAD：`13bba19f5fa4c7fc2980ebc840c70ea9765bd4b8`，接管时工作树干净。
 - 写入范围仅本报告及本树已忽略的 `.verification/**`。本树未包含根规则及产品源码，当前规则从主仓库 `C:/Users/DW/orca/Astrocyte/` 读取，产品计划及源码从指定产品树只读核查。
 - 实际使用 Orca 中的 Codex 会话；本次 `orca terminal show` 的终端预览为 `GPT-6.1-Sol xhigh fast`，没有覆盖模型参数。CLI 为 `C:/Users/DW/AppData/Local/Programs/orca/resources/bin/orca.exe`。
-- 已对准确S完成独立产物与迁移副本复验，接受主控按既有授权执行原库stage/start的准备范围。实际64505运行、HTTP与SQL的真实ID对应、最终治理文档及准确PR审查仍待完成；Reviewer没有编译或启动服务/浏览器，没有安装或模型业务调用。
+- 已对准确S完成独立产物、迁移副本和实际64505服务的只读复验，限定接受同来源构建与原库运行对应。最终治理文档、准确PR审查及集成分支结果仍待完成；Reviewer没有编译或启动服务/浏览器，没有安装或模型业务调用。
 
 ## 依据与接管事实
 
@@ -118,13 +118,13 @@
 
 ## Worker原件静态核查
 
-本节为读取Worker真实原件的结果，Reviewer尚未独立执行功能检查。
+本节记录Worker执行结果，独立执行结果见后文。
 
 - 原服务停止由主控 `msg_90f3f843c2e9` 确认：PID45676于 UTC `19:25:06` 已退出，64505空闲；随后唯一阶段B窗口交原Worker。Reviewer未取得运行窗口。
 - `run-backup` 和 `run-build` 的结果均为准确S、EXIT0；各自原始资源样本符合两次CPU/可用内存/单调间隔及BelowNormal要求。构建原日志包含三个Go程序、TypeScript和Vite；保留719.78kB主分块警告。
 - 真实备份工具使用 `sqlite3.Connection.backup`、`mode=ro` 与 `query_only`；实际数据原件保留26项迁移、完整性ok、外键错误0及原记录类型/重复数一致。未知或活动任务基线须停止；本次原件为空Mission/租约/原生会话，3项资料作业均succeeded。
 - 动态DAG九个函数和OpenViking四个函数的实际日志均通过，其他无匹配函数的包仅计编译。显示规则三文件53项通过；这些均为Worker执行结果。
-- 已完整读取 `candidate-service.py`、`sqlite-data.py` 和 `stage-artifacts.ps1`。原source/database/binary/web以及完整Q指针守卫已经由原Worker补充并静态复核；原件备份、全列/类型/重复数比较、027结构增量、实际PID/创建时间/路径/监听及HTTP全字节比较路径保持。恢复仅在候选退出、已保存失败库、原业务内容未变时执行；合法新数据出现即拒绝覆盖。外部stage/start尚未执行。
+- 已完整读取 `candidate-service.py`、`sqlite-data.py` 和 `stage-artifacts.ps1`。原source/database/binary/web以及完整Q指针守卫已经由原Worker补充并静态复核；原件备份、全列/类型/重复数比较、027结构增量、实际PID/创建时间/路径/监听及HTTP全字节比较路径保持。恢复仅在候选退出、已保存失败库、原业务内容未变时执行；合法新数据出现即拒绝覆盖。主控后续stage/start及独立结果见实际运行章节。
 - `run-architecture` 的真实transcript记录Go1、`-p=1`、Node512MiB，EXIT0，43包满足现有边界；未为改变额度重跑。
 - 资源执行偏差：主控 `msg_793951c67208` 确认lint未退出时启动vet。vet记录 UTC `19:31:37–19:31:45`，lint最终UTC `19:32:03` EXIT0，两项实际重叠，不符合全局串行。保留其真实退出与偏差，不能将这两项登记为符合串行条件的独立运行；按既有规则不为删除偏差重跑。其他检查的资源与串行情况分别核实。
 - 已直接核两份原transcript：lint开始本地`03:31:26`，结束`03:32:03`；vet为`03:31:37–03:31:45`，支持上述实际重叠结论。
@@ -161,3 +161,27 @@
 | 发现缓存的独立SQL类型核查 | 两库的registered id/data均为TEXT。唯一元数据时间由`12:09:40.7714069Z`更新到真实`19:36:30.8916452Z`，在实际进程创建`19:36:22.955142Z`至复核区间内，其他字段、id、行数与数字类型相等。`all_original_values_preserved=false`准确保留该时间变化，业务保全单独为true。 |
 
 限定决定：接受准确S的同来源普通产物、原件一致性备份及上述真实迁移副本证据，主控可以按已授权守卫和重新采样执行原库stage/start。该决定没有接受当前64505已运行、最终治理文档、默认CI或正式发布；原契约工具FAIL、lint/vet串行偏差及全部既有未验范围保留。独立窗口交回主控后，实际运行和最终准确CR继续按本次任务完成。
+
+本阶段接受hook为UTC `19:45:27Z` 的 `msg_884a33f8ba50`，窗口以 `msg_533f7d4bb061` 于 `19:45:28Z` 交回；主控 `msg_4bf8a8b91c47` 于 `19:45:54Z` 实际读取报告、原件、hook及交窗消息后接收窗口。阶段报告普通Commit `5b98915511d446e396c678da97d32a3d6ff5c6e4` 已push。
+
+## 独立实际运行复验：接受
+
+主控 `msg_fa5e8f215495` 提供实际stage/start成功、准确S、批准PID45956、原库及 `original-01` 原件，并授予唯一现有服务内只读窗口。实际命令：
+
+`pwsh.exe -NoLogo -NoProfile -File .verification/delivery-candidate-20261020/review-live.ps1 -ReportSHA ed543c12106c2dbb3e181cb9bc1647b626455179 -ExpectedPID 45956 -StageEvidence C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018/.verification/delivery-candidate-20261020/original-01`
+
+实际EXIT0，独立 `live-01/result.json` 于UTC `2026-10-19T19:49:22.5433253Z` 为PASS。BelowNormal、Go1/`-p=1`/512MiB、Node512MiB；两次采样UTC `19:49:12.268205Z`/`19:49:15.278054Z`，CPU48%/42%，可用10.795/10.739GiB，单调间隔3.0098503秒。本次只有GET与只读SQLite，没有启动第二服务、浏览器、编译或模型，也未新增业务写入。
+
+| 独立核查 | 实际结果 |
+| --- | --- |
+| 实际进程与来源 | PID45956，创建UTC `2026-10-19T19:47:04.657217Z`，BelowNormal，唯一监听`127.0.0.1:64505`。每个逻辑HTTP操作前后均核实际PID/创建时间/程序路径/监听。实际Go元数据为完整S、modified=false，运行程序与S构建原件完整字节一致。 |
+| 实际部署目录 | `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/astrocyte.exe` 与同目录`web`；全部33件Web与S构建原件完整字节一致，并逐件核实际HTTP响应内容。 |
+| 真实HTTP与原库对应 | 原库仍为共享运行根`local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`。实际`materials`的2个ID、`local-projects`的1个ID与该原SQLite逐一相等，证据只保存ID和对应结果，未输出正文或私密字段。 |
+| 核心入口与拒绝 | 共49项逻辑GET结果，包括原资料/项目/提案/Mission/作品/Relay/Today、可选OpenViking未配置和全部Web。5项真实403分别覆盖无会话、非法Host、跨Origin会话、跨Origin资料和非法Agent凭据；凭据未写入报告。 |
+| 数据与Q保全 | 独立复用已审成熟比较工具，对主控fresh backup与当前原库核准确027增量及全部原业务值保全；唯一registered观察时间受实际launch/target/S绑定与时间区间约束，SQL存储类型保持TEXT。完整Q指针前后保持，完整性ok、外键错误0、新远端表为空。 |
+
+独立原件为本树 `.verification/delivery-candidate-20261020/live-01/{http-source.json,original-business-preservation.json,resources.json,result.json,run.log}`。实际进程在检查结束时保持运行；Reviewer自有读取进程均退出，以 `msg_d10ec9ed6335` 于UTC `19:49:53Z` 交回窗口。
+
+限定决定：接受准确S的程序/Web、原库保全与实际HTTP读取同一原库的对应关系，以及上述只读访问与拒绝路径。该范围不包含最终治理文档、集成分支、完整默认CI、Redocly退出故障、lint/vet串行偏差或原未验产品/发布路径；最终准确Commit的PR #2 COMMENT及hook在治理文档交付后完成。
+
+实际运行接受hook于UTC `19:50:44Z` 入队 `msg_1ec86dc76c63`；主控 `msg_5940a7a41e55` 于 `19:52:15Z` 实际读取独立结果和hook、接收交窗并核原服务持续运行，登记实际唤起。Worker随后仅处理获准治理/报告文档。
