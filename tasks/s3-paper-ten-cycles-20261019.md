@@ -16,11 +16,11 @@
 | --- | --- | --- |
 | 产品Worker | 既有frontend-observatory-20261018树 / songconmaisaix31-design/frontend-observatory-20261018 | S3所需internal/swarm、internal/workspace、internal/adapters、cmd、web、contracts、tests、scripts，必要go.mod/go.sum/package依赖；release/**、docs/release/**、docs/standards/s3-ten-cycles-20261019.md及自身忽略.verification；新包/验证输出只写D:/Astrocyte-agent-assets/20261015/release-package/today-20261019下新的独立子目录。旧资产只读，不覆盖。修改必须服务当前轮；不改根治理、正式实验、workflow或论文。跨轮/范围扩张先Handoff |
 | 科研Worker | 既有research-preprint-20261019树 / songconmaisaix31-design/research-preprint-20261019 | papers/astrocyte/**、docs/research/astrocyte-research-feedback.md、.agents/skills/astrocyte-research/**及自身忽略.verification；不改产品、根治理、正式实验和workflow。实际应用astrocyte-research skill |
-| 独立Reviewer | 既有research-preprint-review-20261019树 / songconmaisaix31-design/research-preprint-review-20261019 | docs/reviews/s3-paper-ten-cycles-20261019.md及自身忽略.verification。产品/稿件只读，精确Git归档或真实Git克隆在自身忽略目录构建；依赖真实Git身份的测试使用准确候选克隆并核HEAD，不从无.git归档伪推仓库身份。不写Worker树，不代做修复 |
+| 独立Reviewer | 既有research-preprint-review-20261019树 / songconmaisaix31-design/research-preprint-review-20261019 | docs/reviews/s3-paper-ten-cycles-20261019.md及自身忽略.verification；新包独立解压/验证输出另限D:/Astrocyte-agent-assets/20261015/release-package/today-20261019/reviewer-release的新子目录。产品/稿件/Worker包只读，精确Git归档或真实Git克隆在自身忽略目录构建；依赖真实Git身份的测试使用准确候选克隆并核HEAD，不从无.git归档伪推仓库身份。不写Worker树，不代做修复 |
 
 当前无其他获准子Agent；需要时先明确互斥写域与资源，禁止Aliyun。按用户提高资源的最新决定，后续全局编译/测试/服务/文稿构建/依赖安装串行，CPU<85%、可用内存≥4GiB双采样，相隔2–5秒，BelowNormal；Go GOMAXPROCS=4/-p=4/GOMEMLIMIT=512MiB软限制、Node1024MiB、浏览器/服务各最多一个。已经按旧70%/Go1/256MiB/Node512MiB启动的检查保留真实记录，不为改额度重新运行；启动采样不代表峰值保证。无窗口继续静态阅读和编辑。禁止视觉、mock/虚假数据、Git回滚、force push、/tmp和自研调度/完成证明系统。
 
-静态审查包括gofmt -d、git diff --check及现有check-architecture.mjs的只读go list导入元数据/边界规则；不编译或运行功能测试，按BelowNormal、Go1/-p1、Node≤512MiB单独执行，不套重操作CPU启动门限。依赖缺失即失败，不下载或改检查规则；逐项确认退出再安排下一项。Go vet与其他重操作继续原85%/4GiB守卫。
+静态审查包括gofmt -d、git diff --check、PowerShell5.1/7 Language.Parser.ParseFile及现有check-architecture.mjs的只读go list导入元数据/边界规则；不执行待检查脚本正文、不编译或运行功能测试，按BelowNormal、Go1/-p1、Node≤512MiB单独执行，不套重操作CPU启动门限。依赖缺失即失败，不下载或改检查规则；逐项确认退出再安排下一项。Go vet与其他重操作继续原85%/4GiB守卫。
 
 QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步询问。未答保持Claim拒绝及Known=false，不发送受阻原生输入，不修改原生程序或反复探查同一不支持入口；不把本次“完成S3”当作具体选项答复。现有真实公开项目范围保持，实际用户作品、具体资料/经验批准及用户采用由现有规则处理，具体可审成果形成后再请求必要用户操作。
 
@@ -33,9 +33,9 @@ QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步
 | 01 产品 | 实际CI detached HEAD不满足发现测试的attached前置，迁移断言26与当前真实27不一致；以真实公开Git克隆设置分支，精确核当前迁移身份与幂等 | 原失败日志与准确源码对应，保留Branch非nil和拒绝断言；实际前后对照及相关回归，完整CI其余缺口独立登记 | dacc742e限定接受，准确CR及hook/root回复完成，计1/10 |
 | 02 论文 | 完整初稿尚无PDF，建立单一正文到可编译预印本来源和PDF的流程 | 使用成熟TeX工具，实际编译完整正文/公式/表格/引文，文本提取核完整性，保留准确命令和资源；不作视觉验收 | 618c82f2限定接受，准确CR/真实hook及root回复完成，计2/10 |
 | 03 产品 | 当前PR #2未包含已审PR #1的发送前租约/用途校验。核业务来源75cadf95/0642efdf的集成差距、当前权限、单后端权威、fence与预算预留 | 01接受后由主控给具体集成范围，不导入过期AGENTS规范；保留真实SQLite/HTTP与旧租约拒绝等原断言。业务选项答复前不降低门禁、不开受阻原生正向 | 32672499限定接受，准确CR/hook及root回复完成，计3/10 |
-| 04 论文 | 补全原始统计技术依据和分析定义，减少只有原则没有程序的缺口 | 实读原始来源；主要交互、位置差异、完整块配对、区间/等效/多重比较及样本量推断范围准确，未定正式参数保持未定 | 准确afe471ed已push，17页/14引用实际构建及验证通过，独立复验中 |
+| 04 论文 | 补全原始统计技术依据和分析定义，减少只有原则没有程序的缺口 | 实读原始来源；主要交互、位置差异、完整块配对、区间/等效/多重比较及样本量推断范围准确，未定正式参数保持未定 | afe471ed限定接受，准确CR5567098640及hook/root回复完成，计4/10 |
 | 05 产品 | 原生接续与跨会话交接尚缺受控正向证据 | 合法条件下实际控制器/会话文件/HTTP/SQLite验证AT09、不可变上下文及身份/successor；没有权限不得启动或改称通过 | 依赖03及原生条件 |
-| 06 论文 | 条件、衰减时钟、延迟证据及关系归因需形成可批评的完整研究建议 | 明确决策前字段、缺失、时间和归因逻辑，验证强度与人工授权分开；建议不自动冻结产品接口与正式参数 | 依赖04及最新源码反馈 |
+| 06 论文 | 条件、衰减时钟、延迟证据及关系归因需形成可批评的完整研究建议 | 明确决策前字段、缺失、时间和归因逻辑，验证强度与人工授权分开；建议不自动冻结产品接口与正式参数 | 04已接受，按下列完整方案由原科研Worker静态实施，构建另授窗口 |
 | 07 产品 | 实际Worker停止、未知交付对账与释放缺少完整生命周期验收 | 合法真实任务下覆盖停止/撤销/耗尽、真实进程退出、独立释放审计、unknown不重发，AT13按原operation对账 | 依赖05 |
 | 08 论文 | 盲评隔离、全成本和试运行样本规划需与实际系统约束相容 | 反馈与封存评价的访问路径、计划位置/实际尝试/重试/未知消耗、快照成本分摊和真实方差前置准确；不造pilot数据或正式r | 依赖06及最新计量反馈 |
 | 09 产品 | 完成真实两Agent工作项、交接、提交、检查和用户采用的S3闭环 | 一个明确公开项目的真实改进，来源/产物/检查/原生会话与每个event_id逐项可查；用户采用按具体成果完成，不能由开发Agent假扮 | 依赖07及具体采用操作 |
@@ -43,9 +43,9 @@ QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步
 
 ## 当前执行与停止条件
 
-Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。接受轮数3/10。01/02/03限定接受完成。科研04准确afe471ed已push，实际构建17页/14引用，当前Reviewer独占04复验窗口；产品Worker从已接受32672499静态实施Release子任务，不构建/运行服务。原资源拒绝、单次重试和静态分类结果保留。PR #2/#3保持原Worker维护，不另造并行业务轨道。
+Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。接受轮数4/10，01/02/03/04限定接受完成。04准确afe471ed的17页/14引用独立重建、比较及科学审查通过，窗口已经交回；科研原Worker可按06方案静态实施。产品Release修复进程归属后固定准确新源码再获打包窗口；未构建21a92dc6的ZIP。原资源拒绝、单次重试和静态分类结果保留。PR #2/#3保持原Worker维护，不另造并行业务轨道。
 
-产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`；科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`；Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`。均真实ready/turn_started，实际Codex0.162.0 / gpt-6.1-sol默认配置已由Handoff及原生worker-list核实。产品仅静态实施Release，科研冻结afe471ed等CR，Reviewer单独持04复验窗口。
+产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`；科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`；Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`。均实际Codex0.162.0 / gpt-6.1-sol默认配置，无覆盖或新增子Agent。产品准备准确新Release候选，科研原轨进入06静态稿，Reviewer完成04并等待新包；重操作窗口由主控持有，具体授予以实际邮件为准。
 
 每轮保留问题、具体修改、准确源码、实际命令/结果、Reviewer决定、CR及hook/回复；使用本任务和现有报告，不新增自动调度或计分系统。资源不足保持检查未执行；真实前置或用户决定未满足时该轮保持阻塞，继续无依赖工作，不能补写完成。十轮接受、S3核心路径通过和初稿实际交付各自核验；署名缺失不虚构，正式八配置、注册、投稿、产品合并/部署不由本轮默认授权。
 
@@ -56,6 +56,10 @@ Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。�
 01仅修改两处测试和当前产品记录：从当前真实公开仓库克隆后明确attached分支，精确验证HEAD/分支/clean及原拒绝分支；迁移来源精确为27并含026/027，实际_migrations逐ID及重复运行保持。准确7ce3的detached副本用于原失败对照。Go test已实际编译相关包；本轮不为未改生产代码额外要求全仓build，已资源拒绝的build保持未执行，完整产品CI不改记通过。
 
 03拟议业务集成范围已经只读核实：已审PR #1最终75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee包含0642efdf及前序发送校验，当前PR #2没有这些业务来源。01独立接受后，由原产品Worker使用文件编辑工具移入其16个业务/测试路径内的必要改动，适配当前DAG代码，不导入该分支旧AGENTS规范或旧报告，不覆盖当前贡献，不合并公开PR或主分支。保留完整来源SHA及差异依据，采用正常新Commit/push。目标为生产装配注入真实authorizer、认领绑定原prepare与租约、当前Grant/action/fence/operation/用途复查、一般发送拒绝Swarm成员用途；三项待定仍保留拒绝，不开启新原生调用。实际相关SQLite/HTTP及拒绝路径、DDD/类型和生产构建由原Worker与Reviewer分别执行。完整AT08/09/13正向仍按05/07/09及合法前置验收，不能因业务集成通过提前标记。
+
+06为完整方法提案，基线为已接受afe471ed。原科研Worker补充决策前的版本化条件提取、缺失值语义与固定分组；以双方能力版本、交接类型和具体义务定义关系归因。提出预定任务位置时钟、结果发生位置b、首次可用位置a、a<t的可见集合和按b折扣的非负统计，明确初始化、同位置顺序、重复、撤销/更正及版本改变；未定具体字段/阈值/协议保持提案，不写成产品接口决定。有效结果集合按可见且明确来源的更正取唯一有效判定，无可用结果则保持未判定；验证等级与当前人工许可分别检查。
+
+在明确假设下给出完整证明：固定可见集合顺序无关/重复不增益、相同先验下分数对折扣证据质量差的敏感度、固定候选下共用softmax分布的敏感度、相同信息/随机数的中央与局部选择等价，以及更新关闭时包含衰减/缓存的历史不干预。一般代数不独立宣称新理论或成功率/regret保证，迟到证据不能倒改已经提交的决定，可归因到义务不等于因果贡献。同步八配置定义、近邻比较、主张—证据表、中文反馈和完整文稿；保留当前固定policy实现缺口与真实受控验证需求。仅以数学证明/静态文献审查和实际构建验证本轮，不造事件、pilot、数值结果或正式运行；构建/验证另获唯一窗口后执行。
 
 ## 第01轮候选追踪
 
@@ -104,3 +108,7 @@ Reviewer03首个rules阶段CPU100%在Go前拒绝；root msg_745fc322ecd2允许�
 旧CI只读分类已有msg_bd885b2922fd、msg_746c32fb19b6，root回复msg_f7d3e1a31de3：显式输出根/公开原件/CLI/认知快照各有独立前置；localNative固定正文、人工NativeID/计数及暂停wrapper需要真实来源迁移，native.sends=0的旧断言不证明实际重发，reconcile遗漏亦不能只补权限后声称原生通过。原不重发/并发回执等断言保留，不加Skip或运行旧替身；4096-byte进度SQLite另有WAL，不能只复制主文件；一个旧快照不代替所有状态，原始日期不改。完整CI缺口仍未解决，部分真实公开原件已定位可只读复用。
 
 04最终准确候选afe471edc25305537f11ee4453a93c7b3be790cf已普通push，root实际核对PR3/远端一致、tracked干净，并完整读取新增validation、正文/引用/来源及隐私检查差异。TeX1274行63239bytes、PDF125646bytes，Worker实际结果如前；msg_54e6b0077579冻结候选，root回复msg_b45400896652。msg_41296c95bd8b现授Reviewer唯一04复验窗口：准确归档、成熟工具/自身缓存、完整重建与文件比较、原始统计依据及方法假设/限制独立审查，调用退出即交回窗口；正文原稿及两个Worker树只读，原生/正式研究参数和投稿质量分别保持未验。产品Release只静态实现，不与其重操作并行。
+
+04独立报告3b6883dd32f91d471403239f0878bd5ad883e9bb普通push、远端一致，准确CR5567098640为COMMENTED、commit_id=afe471edc25305537f11ee4453a93c7b3be790cf。独立重建/验证/提交比较EXIT0，17页49930字符9嵌入字体及TeX/全文一致；四篇统计原文和DecentMem对应范围实际读取，未发现本轮返修缺陷。msg_1c59d7458075交回重操作窗口，root回复msg_8249d2a0423e确认。实际hook msg_d8dbadf2a00a由root读取报告/API后回复msg_3b165bee72a4，登记4/10；采样校准、原创研究贡献和投稿质量仍未验，两个Underfull及作者/TeXLive等限制保留。
+
+Release静态21a92dc6已普通push，尚未构建。root实际审查发现健康响应没有验证监听进程归属，以msg_351fa9bca129交原Worker修复每次启动的空闲端口、实际监听PID/持有进程树和每次HTTP前的归属核对，陌生进程/未知来源立即失败，不杀其他进程或切换端口；实际占端口拒绝和正常启动/重启另在包窗口验证。04窗口已返回，PowerShell Parser只读语法检查按静态规则执行。Reviewer新D盘写域已由msg_593cc6748e7c授权，尚无独立验包窗口。CI workflow实际只读核为push/pull_request，不包含release事件；tag push仍须按真实触发规则处理，未改workflow。

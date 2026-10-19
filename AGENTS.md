@@ -40,7 +40,7 @@
 - Reviewer 每次决策后执行仓库的 review-decision hook，将准确源码、实际报告、接受/退回/证据不足和依据送入原 Orca Run，触发主 Agent 继续改进方案。复用 Orca 原生持久邮件及唤醒，不建设额外调度器、定时任务或守护进程；发送回执仅证明排队，主 Agent 实际读取并回复后才确认本次唤起。hook 不代替正式 worker_done 或资源释放。
 - 编译、测试和实际服务串行执行，使用已确认的资源限制；资源不足时继续静态开发或审查，检查保持未执行。
 - 2026-10-19 用户允许提高电脑资源使用，以当日产品初步跑通、发布首版 Release 包及完成符合发布标准的 arXiv 预印本为目标。后续重操作采用 CPU<85%、可用内存≥4GiB、相隔2–5秒的两次启动采样和 BelowNormal；Go GOMAXPROCS=4、-p=4、GOMEMLIMIT=512MiB，Node heap=1024MiB。全局只保留一个重操作窗口、一个浏览器和一个服务。已启动检查保留实际额度，不为改变额度重复运行；不修改系统全局配置或终止其他用户进程。
-- 只读源码格式与导入元数据检查属于静态审查：`gofmt -d`、`git diff --check`，以及仅执行 `go list -mod=readonly` 和边界规则的现有 `check-architecture.mjs`。这些命令可在 BelowNormal、Go 单并发、Node heap≤512MiB 下执行，不套用重操作的 CPU 启动门限；仍逐项串行检查实际退出，不改检查规则、不安装或下载依赖，缺少真实依赖立即失败。编译、功能测试、Go vet、服务、文稿构建与依赖安装继续遵守重操作限制。
+- 只读源码格式与导入元数据检查属于静态审查：`gofmt -d`、`git diff --check`、PowerShell 5.1/7 的 `Language.Parser.ParseFile`，以及仅执行 `go list -mod=readonly` 和边界规则的现有 `check-architecture.mjs`。这些命令可在 BelowNormal、Go 单并发、Node heap≤512MiB 下执行，不套用重操作的 CPU 启动门限；仍逐项串行检查实际退出，不执行待检查脚本正文、不改检查规则、不安装或下载依赖，缺少真实依赖立即失败。编译、功能测试、Go vet、服务、文稿构建与依赖安装继续遵守重操作限制。
 - 每个阶段保留清晰 Commit，最终分支必须 push。不 force push，不覆盖公共历史，不删除无法解释的文件或队友贡献。
 - 执行期间收到用户的新问题，能够立即回答就直接回答；处理完后继续原任务，直至任务完成或遇到真实阻塞。
 
