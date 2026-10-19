@@ -1,11 +1,14 @@
 import json
 import re
+import unicodedata
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from bs4 import BeautifulSoup
 from markdown_it import MarkdownIt
 from pybtex.database import parse_file
+from pybtex.richtext import Text
+import pymupdf
 
 root = Path(__file__).resolve().parent
 ast = json.loads((root / 'build/manuscript.json').read_text(encoding='utf-8'))
@@ -60,6 +63,46 @@ tex = (root / 'build/manuscript.tex').read_text(encoding='utf-8')
 assert r'\begin{document}' in tex and r'\end{document}' in tex
 assert '@wang2026genes' not in tex
 
+# 使用成熟 PDF 文本库核对实际交付；文本提取不证明版式或投稿兼容性。
+def normalized(value):
+    value = unicodedata.normalize('NFKD', value)
+    value = re.sub(r'-\s*\n\s*', '', value)
+    value = value.replace('-', '').replace('\u00ad', '')
+    return ' '.join(re.findall(r'[a-z0-9]+', value.lower()))
+
+
+with pymupdf.open(root / 'preprint/manuscript.pdf') as pdf:
+    assert pdf.page_count > 0 and not pdf.is_encrypted and not pdf.is_repaired
+    pdf_pages = [page.get_text() for page in pdf]
+    pdf_metadata = pdf.metadata
+    fonts = {font[0]: font for page in pdf for font in pdf.get_page_fonts(page.number)}
+    pdf_fonts = []
+    for xref, font in fonts.items():
+        name, extension, kind, content = pdf.extract_font(xref)
+        assert kind != 'Type3' and content, f'Unembedded or Type3 PDF font: {font}'
+        pdf_fonts.append({'name': name, 'type': kind, 'bytes': len(content)})
+    for page in pdf:
+        for block in page.get_text('dict', clip=pymupdf.INFINITE_RECT())['blocks']:
+            for line in block.get('lines', []):
+                for span in line['spans']:
+                    assert page.rect.contains(pymupdf.Rect(span['bbox'])), f'Text outside PDF page {page.number + 1}: {span["text"]}'
+pdf_text = '\n\n'.join(pdf_pages)
+assert '\ufffd' not in pdf_text, 'Unmapped characters in extracted PDF text'
+pdf_normalized = normalized(pdf_text)
+headings = [cell_text(node['c'][2]) for node in nodes if node.get('t') == 'Header']
+for heading in headings:
+    assert normalized(heading) in pdf_normalized, f'Missing PDF heading: {heading}'
+for key, entry in bibliography.entries.items():
+    title = Text.from_latex(entry.fields['title']).render_as('text')
+    assert normalized(title) in pdf_normalized, f'Missing PDF reference: {key}'
+for row in configurations:
+    assert row[0] in pdf_text, f'Missing PDF configuration: {row[0]}'
+assert 'TO BE PROVIDED' in pdf_metadata['author']
+assert normalized('No main-study') in pdf_normalized
+assert not re.search(r'\[@[A-Za-z]|@[a-z]+\d{4}', pdf_text)
+assert (root / 'preprint/manuscript.tex').read_bytes() == (root / 'build/manuscript.tex').read_bytes()
+(root / 'build/manuscript-pdf.txt').write_text(pdf_text, encoding='utf-8')
+
 markdown = MarkdownIt('default')
 documents = list(root.glob('*.md')) + [root.parent.parent / 'docs/research/astrocyte-research-feedback.md']
 local_links = 0
@@ -82,5 +125,10 @@ print(json.dumps({
     'manuscript_words_approx': len(manuscript.split()),
     'private_paths_in_manuscript': False,
     'local_document_links': local_links,
-    'pdf_compilation': 'not performed',
+    'pdf_pages': len(pdf_pages),
+    'pdf_headings': len(headings),
+    'pdf_references': len(bibliography.entries),
+    'pdf_text_characters': len(pdf_text),
+    'pdf_embedded_fonts': pdf_fonts,
+    'pdf_compilation': 'compiled with Tectonic; diagnostics require review',
 }, indent=2))

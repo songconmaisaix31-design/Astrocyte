@@ -1,32 +1,38 @@
 # Astrocyte research draft 0.1
 
-[manuscript.md](manuscript.md) is the complete English draft and the single editable manuscript source. [references.bib](references.bib) contains the nine cited records: six papers, two official communications/documentation sources, and one pinned engineering report. [sources.md](sources.md) records full-text access, versions, reading limits, and metadata discrepancies. [claims-evidence.md](claims-evidence.md) separates proposed methods, inspected implementation, reported engineering checks, and uncollected formal results. The [Chinese research feedback](../../docs/research/astrocyte-research-feedback.md) gives implementation gaps and acceptance methods for coordinator decisions.
+The complete [PDF](preprint/manuscript.pdf) and its complete [LaTeX source](preprint/manuscript.tex) are available for review. [manuscript.md](manuscript.md) remains the single editable manuscript source; [references.bib](references.bib) contains the nine cited records. Pandoc regenerates the complete LaTeX, including equations, tables, and inline resolved references, from those two inputs. There is no separately maintained abbreviated manuscript.
 
-Authors, affiliations, and ORCID identifiers are unfilled. Eight-configuration experiments, formal budgets, thresholds, sample sizes, and registration remain unfinished. This package was not submitted to arXiv or a registration platform.
+[sources.md](sources.md) records versions, reading limits, and metadata discrepancies. [claims-evidence.md](claims-evidence.md) distinguishes proposed methods, inspected implementation, engineering checks, and uncollected results. The [Chinese research feedback](../../docs/research/astrocyte-research-feedback.md) records research requirements for coordinator decisions.
+
+Authors, affiliations, and ORCID identifiers remain unfilled. Formal models, tasks, budgets, thresholds, replication counts, and registration remain undecided. The PDF contains the current method/protocol draft, without formal experimental results. This package has not been submitted to arXiv or a registration platform.
 
 ## Build
 
-The build uses mature Pandoc conversion and citeproc. On Windows, with Pandoc available:
+The tested tools are Pandoc 3.9 and the official portable Windows Tectonic 0.17.0. With both executables available:
 
 ```powershell
-& .\papers\astrocyte\build.ps1 -Pandoc 'pandoc'
+& .\papers\astrocyte\build.ps1 -Pandoc 'pandoc' -Tectonic 'tectonic'
 ```
 
-The script samples whole-machine CPU and available memory twice, three seconds apart, and refuses to start if either CPU sample is at least 70% or memory is below 4 GiB. It runs at BelowNormal priority, keeps Node's heap setting at 512 MiB, and performs conversions serially. It produces `build/manuscript.html`, `build/manuscript.tex`, and `build/manuscript.json`, plus startup resource samples. The HTML embeds MathML and needs no downloaded script for its formulas. Reading that file requires a MathML-capable viewer; no browser or visual inspection was performed here.
-
-In this worktree Pandoc was installed only in the ignored verification directory with `pypandoc_binary`, and the actual build command was:
+This worktree used executables in its ignored verification directory:
 
 ```powershell
-& .\papers\astrocyte\build.ps1 -Pandoc (Resolve-Path .\.verification\python\pypandoc\files\pandoc.exe).Path
+& .\papers\astrocyte\build.ps1 `
+  -Pandoc (Resolve-Path .\.verification\python\pypandoc\files\pandoc.exe).Path `
+  -Tectonic (Resolve-Path .\.verification\tectonic\tectonic.exe).Path
 ```
 
-It completed with Pandoc 3.9, including `--fail-if-warnings` HTML and LaTeX source generation. The generated LaTeX contains the full manuscript, equations, tables, and resolved references. `manuscript.md` and `references.bib` regenerate that source; generated files and downloaded papers are ignored. There is no separately maintained abbreviated LaTeX manuscript.
+The script generates HTML with MathML, a Pandoc JSON AST, and complete LaTeX, then invokes `tectonic -X compile --untrusted --keep-logs --keep-intermediates`. Pandoc citation/conversion warnings and unsuccessful process exits terminate the build. TeX diagnostics remain in `build/manuscript.log` and `build/tectonic-console.log`; successful PDF generation still requires reviewing those diagnostics. The PDF and complete LaTeX are copied to `preprint/` for versioned delivery. Intermediate outputs, downloaded tools, and caches remain ignored.
+
+[fontconfig.conf](fontconfig.conf) supplies a project configuration for the portable Windows engine. Text and mathematics use TeX-provided Latin Modern font files, without configured system font directories. Process-level `FONTCONFIG_FILE`, `TECTONIC_CACHE_DIR`, `XDG_CACHE_HOME`, `TEMP`, and `TMP` direct configuration, caches, and temporary files to this package. No global configuration or PATH change is required. The official [Tectonic installation guide](https://tectonic-typesetting.github.io/book/latest/getting-started/install.html) and [Fontconfig configuration reference](https://www.freedesktop.org/software/fontconfig/fontconfig-user.html) describe the respective facilities. The first Tectonic build downloads the required TeX support files and needs network access.
+
+Use only the coordinator's assigned heavy-operation window. The script runs at BelowNormal priority with Node's heap setting at 1024 MiB and performs conversions serially. It samples whole-machine CPU and available memory twice, checks the measured interval is 2–5 seconds, and stops if either CPU sample is at least 85% or available memory is below 4 GiB. These are startup checks under the coordinator's updated allowance of 19 October 2026; they do not assert a peak-utilization bound.
 
 ## Verification
 
-`verify.py` uses Pandoc's JSON AST, Pybtex, BeautifulSoup, and Markdown-it. It checks actual citation resolution, the eight factorial rows, generated references/MathML, local document links, document metadata, and private-path absence in the manuscript. It checks document integrity and does not estimate scientific effects or validate product execution.
+`verify.py` uses Pandoc's JSON AST, Pybtex, BeautifulSoup, Markdown-it, and PyMuPDF. It checks resolved citations, the eight configuration rows, references/MathML, local links, manuscript privacy patterns, and the delivered PDF. PDF checks cover readable pages without repair, all manuscript section headings, all reference titles, configuration identifiers, metadata, embedded fonts without Type 3, and text spans inside page boundaries. The entire extracted PDF text is saved to `build/manuscript-pdf.txt` for reading alongside the source and TeX diagnostics. Text extraction and bounding boxes do not establish visual quality.
 
-Dependencies are `pybtex`, `beautifulsoup4`, and `markdown-it-py`. This worktree used the existing BeautifulSoup/Markdown-it and a local Pybtex installation:
+Python dependencies are `pybtex`, `beautifulsoup4`, `markdown-it-py`, and `pymupdf`. The current worktree used existing BeautifulSoup/Markdown-it/PyMuPDF and a local Pybtex installation. Run verification under the same resource and window conditions:
 
 ```powershell
 $env:PYTHONPATH = (Resolve-Path .\.verification\python).Path
@@ -34,10 +40,10 @@ python -X utf8 .\papers\astrocyte\verify.py
 git diff --check
 ```
 
-Use the same resource guard before dependency installation and verification. The exact local commands, results, and remaining limits are in [validation.md](validation.md). There were no model experiments, native product requests, product builds/services, GPU jobs, sub-agents, or visual checks during this writing task.
+The actual commands, output, retained diagnostic, and limits are in [validation.md](validation.md). No product services, model experiments, sub-agents, or visual checks were run in this round.
 
-## PDF and submission limits
+## Submission status
 
-No TeX engine (`latexmk`, `pdflatex`, `xelatex`, `lualatex`, or `tectonic`) was found on PATH. PDF compilation was not performed. Generated LaTeX is available locally, but successful conversion does not prove TeX compilation, pagination, or arXiv compatibility. A TeX-equipped reviewer can compile the generated source; that compilation and any typography/template corrections remain required before submission. This package does not claim a built or visually checked PDF.
+The local PDF is compiled with Tectonic. The complete generated source has not been compiled in arXiv's supported TeX Live environment or processed by arXiv. A source upload package must contain only files needed to compile, excluding the review PDF and build logs, under the current [TeX submission requirements](https://info.arxiv.org/help/submit_tex.html). The `preprint/` directory provides review deliverables and is not an approved arXiv upload package.
 
-Formal research execution and public submission remain separate, unperformed operations. The independent Reviewer will review the exact candidate Commit; this Worker remains responsible for revisions on the same task.
+Substantive contribution, complete method definitions, actual research evidence, author metadata, paper license, author consent, and disclosure of significant generative-AI use require further work or decisions under arXiv's [moderation policy](https://info.arxiv.org/help/moderation/index.html) and [submission agreement](https://info.arxiv.org/help/policies/submission_agreement.html). A successful local build does not establish those conditions. Independent review of this round remains pending; the same research Worker handles revisions.
