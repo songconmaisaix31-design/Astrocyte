@@ -113,4 +113,77 @@ Reviewer 于 UTC `2026-10-19T03:11:13Z` 发布 [真实 CR 5566519259](https://gi
 
 统计技术来源与完整分析程序、条件/时钟/归因、盲评/成本/样本规划及最新S3证据由后续轮次处理。正式八配置/扰动/自主迭代结果尚未采集。完整CI、原生/S3门禁、实际用户采用及正式V4边界保持，未由本轮通过。视觉检查未执行，Underfull保留；arXiv受支持环境重编译、本站处理与作者预览未执行。
 
-UTC `2026-10-19T04:07:48Z` 实际发布 [CR 5566782506](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566782506)，原始回执为 `COMMENTED`、`commit_id=618c82f270b4f35282dce86ef341b568a9690979`。同账号未作 GitHub APPROVE；实际请求/回执在 `02/github-review{,-receipt}.json`。本阶段报告普通 push 后执行当前生命周期的既有 hook，主控实际读取回复后登记本轮接受；本 Task 保持后续审查，不提前结算。
+UTC `2026-10-19T04:07:48Z` 实际发布 [CR 5566782506](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5566782506)，原始回执为 `COMMENTED`、`commit_id=618c82f270b4f35282dce86ef341b568a9690979`。同账号未作 GitHub APPROVE；实际请求/回执在 `02/github-review{,-receipt}.json`。报告 `e192829f0d937e70d9f72de8d2dac27c88762ca1` 普通 push、远端一致；UTC `04:11:12Z` hook `msg_9f1c648769c3` 实际入队。主控 UTC `04:13:54Z` 回复 `msg_39ed4a532f54`，确认完整读取报告、真实 API 核 CR/SHA 及远端，登记第 02 轮限定接受、累计 2/10。本次唤起已由实际读取回复确认，原件 `02/review-hook-receipt.log`；本 Task 继续。
+
+## 第 03 轮：发送租约与用途的当前产品集成
+
+决定：`accept`，限定接受已审发送前租约/用途业务在当前 PR #2 的集成，以及以下实际拒绝、事务、装配和 DAG 回归。本轮未确认需要原 Worker 返修的集成缺陷；真实原生正向和完整 S3 保持未验。
+
+| 对象 | 准确来源 |
+| --- | --- |
+| PR / 候选 | [产品 PR #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2)；`3267249922082cb1808b6529a2f04084d40c1f92`，实际 API 核 open、Draft、HEAD 一致 |
+| 本轮业务源码 | `4c4fa1eab003c1daece0ed9e180e2f39a30f5704`，后继仅标准记录 |
+| before | `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6`，当前产品尚缺已审的发送授权/binder集成 |
+| 业务来源 | `75cadf95073d5608fb67f0a4b5be5d65e9b1d8ee` / `0642efdf7748a64c36e07e466b5f507b9c04a004` |
+| 窗口 | 主控 `msg_2aa918b47c69`、`msg_9af8fdef8781` 明确02 hook完成后串行检查03；`msg_39ed4a532f54` 再次确认当前唯一窗口 |
+
+### 当前差异与实现核对
+
+独立比较准确 dacc→3267，只涉及16个Go业务/测试文件及本轮标准记录。相对既有75cadf/0642来源，14个业务/测试文件内容完全一致；两个交叉文件保留当前DAG贡献。没有导入旧AGENTS/报告、改变DDL/OpenAPI、workflow、正式V4或论文。
+
+| 检查位置 | 静态核查与接受边界 |
+| --- | --- |
+| [生产装配](https://github.com/songconmaisaix31-design/Astrocyte/blob/3267249922082cb1808b6529a2f04084d40c1f92/cmd/server/relay_swarm_assembly.go) | 实际同库批准桥接和Swarm服务构造authorizer，并通过实际Workspace configurator注入；缺依赖直接失败。生产准备/发送所需原件选项仍未配置，真实HTTP继续拒绝缺来源。 |
+| [Workspace准备/发送](https://github.com/songconmaisaix31-design/Astrocyte/blob/3267249922082cb1808b6529a2f04084d40c1f92/internal/workspace/app/native_messages.go)及私有记录 | 显式project/swarm用途、固定binding及首次lease只存私有记录。重复准备核原caller/operation/来源及当前授权；最终事务重读并CAS为send_attempted。外部对象/原Registry观察/Send在事务外；发送从原请求和授权截止时间重建context，保留请求取消。 |
+| [Claim](https://github.com/songconmaisaix31-design/Astrocyte/blob/3267249922082cb1808b6529a2f04084d40c1f92/internal/swarm/app/commands.go)、原准备与SQLite binder | 新认领要求原Swarm准备，保存Mission、WorkItem、Lease后在同一事务首次绑定确切租约，失败回滚该事务。已有租约的幂等重放先验证现有租约，不重新执行首次绑定。`CreatedBy/CreatorKind`、`ValidateDAG`完整保留。 |
+| [发送授权](https://github.com/songconmaisaix31-design/Astrocyte/blob/3267249922082cb1808b6529a2f04084d40c1f92/internal/swarm/app/native_send.go)及用途查询 | 最终核当前批准、binding/version、packet、Mission/WorkItem状态、holder/fence、原operation/controller/startup/native/root、预算预留、写域和最早截止。project路径仍拒绝历史Swarm标记、Swarm批准动作/Mission归属和原租约；缺失/不一致事实不推断为project用途。 |
+| 当前DAG、单后端与未知交付 | `swarm_native.go`保留`ReadWorkerParticipation`和明确缺失分类；未知事实保持未知。原生能力/调用计量和单Mission后端规则没有扩大。send_attempted提交之后仍存在跨系统在途间隔，unknown按原operation处理，不自动重发。 |
+
+现有已接受来源用于核集成语义；本轮接受依据仍为当前准确源码及独立实际检查，未沿用旧accept计数。新的实际效果是当前PR #2已连接此前缺失的发送授权和首次租约绑定，同时保留既有DAG行为。正向原生竞争与交付边界没有因此取得实测。
+
+### 独立实际检查
+
+自身 `.verification/ten-cycles/03/candidate` 为真实 Git clone、准确detached HEAD，origin与源树对应，检查前后tracked干净。复用自身01 Go缓存；所有新SQLite、对象、temp及输出仅在自身03忽略目录。命令入口为 `review-cycle03.ps1`，每次只运行一个package，无并行HTTP listener。
+
+下列测试均用 `go test -mod=readonly <package> -run '<pattern>' -count=1 -timeout=2m -v`，合计19个顶层函数通过、无Skip。参数/结构检查与实际IO按表中范围解释。
+
+| package / pattern | 真实结果及范围 |
+| --- | --- |
+| `./internal/workspace/app` / `^TestNativeMessageExplicit` | 4 PASS；用途、私有JSON、原准备身份及caller参数规则。`rules.log`。 |
+| `./internal/adapters/sqlite` / `^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestNativeMessageExplicitJSONRules\|TestSwarmNativeMessageActualAuthorizationLifecycle)$` | 4 PASS；实际同库/跨库/取消、缺来源、授权撤销和重开后拒绝，另有私有JSON规则。实际执行来源表保持零行、对象为空、原生目录不存在。`sqlite.log`。 |
+| `./internal/adapters/agents` / `^TestRelayPreparedMemberRejectsMissingOriginalSources$` | 1 PASS；真实未打开Registry的缺来源及取消拒绝。`registry.log`。 |
+| `./cmd/server` / `^TestRelaySwarmActualPreparedAssemblySQLiteHTTP$` | 1 PASS；生产装配、实际HTTP/SQLite、身份拒绝、缺原准备501和无半份执行记录。`assembly.log`。 |
+| `./internal/swarm/domain` / `^TestDynamicDAG` | 2 PASS；图结构与停止/未知/预留规则。`dag-domain.log`。 |
+| `./internal/swarm/app` / `^TestDynamicDAG` | 2 PASS；明确缺失/结构错误分类及unknown用量边界。`dag-app.log`。 |
+| `./internal/adapters/sqlite` / `^TestDynamicDAG` | 2 PASS；持久化确认编码、真实缺Registry分类。`dag-sqlite.log`。 |
+| `./internal/adapters/httpapi` / `^TestDynamicDAG` | 3 PASS；真实HTTP/SQLite创建与来源、权限、无Worker停止、过期批准历史读取。`dag-http.log`。 |
+| `go vet -mod=readonly ./cmd/server ./internal/workspace/app ./internal/swarm/app ./internal/swarm/domain ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/httpapi` | EXIT0，受影响7包，无诊断。`vet.log`。 |
+| 自身 `read-cycle03-events.py`，Python标准SQLite `mode=ro` | EXIT0；三个实际DAG库的7个Swarm事件逐个按event_id定位，payload用标准JSON库读取；`events.json`、`events.log`。 |
+| `node scripts/check-architecture.mjs` | EXIT0；43包满足现有Domain/app/context/transport规则。`static-architecture.log`。 |
+| `gofmt -d` 准确差异的16个Go文件；`git diff --check dacc...3267`；副本`git status --porcelain` | EXIT0，全部无差异/无输出，`static-format.log`。 |
+
+SQLite授权原件在 `03/actual-output/accepted-experience-actual-{2070018965,163869422,2019891533}/`。DAG原件在 `03/candidate/.verification/dynamic-dag-http/`，每个下列event_id均已在对应真实`foundation_outbox`执行独立参数化点查询；没有借用前轮事件数。
+
+| 实际库后缀 / state.sqlite | event_id | event_type |
+| --- | --- | --- |
+| `actual-299263430` | `a661be25-26fd-4389-807e-6a818768a2eb` | `swarm.mission_created` |
+| `actual-299263430` | `db4245ed-d0b6-4efb-a429-5ed21cbd6d68` | `swarm.mission_stop_requested` |
+| `actual-942793797` | `9187fb2f-d569-4e65-8eee-747b897160b4` | `swarm.mission_created` |
+| `actual-942793797` | `c158b7f3-da75-4be3-b7f6-a8662c5ac9cf` | `swarm.mission_stop_requested` |
+| `actual-960379174` | `026c0414-c17e-45b3-8cdd-b44a3e71ed7d` | `swarm.mission_created` |
+| `actual-960379174` | `07998696-7ff1-4cee-9d49-8aa189161344` | `swarm.work_item_created` |
+| `actual-960379174` | `7faae35c-7f00-4725-bd4c-7fec7748b1bd` | `swarm.work_item_created` |
+
+两个work_item创建event_id与HTTP返回节点、对应aggregate_id的关联由实际测试逐项SQL核对。上述场景为既有手工创建DAG，停止时Worker为0，不证明模型生成、真实进程退出或用户采用。没有创建假原生会话、claim/lease，未发送模型输入，没有新增Skip、放宽断言或修改测试源码。
+
+### 资源、范围与真实 CR
+
+受守卫的11个成功阶段有22个启动样本：CPU最高79%，最低可用6.483GiB，Stopwatch间隔4.114–4.519秒；BelowNormal、Go4/`-p=4`/512MiB、Node1024MiB，复用自身缓存。运行峰值和性能收益未测量，软限制未被描述为硬上限。
+
+最初rules在Go前因CPU100%拒绝，原JSON保留；主控`msg_745fc322ecd2`允许按指定时间延后一轮、只重试未运行rules，实际重试66%/69%通过。architecture、format曾分别因CPU97%/100%和8.191/8.924秒采样间隔在Node/gofmt前拒绝，原拒绝保持NOT_RUN历史。主控`msg_62fe506079b4`实际读取现有命令后，将这两项归类为只读静态检查并授予短窗口；以Go1/`-p=1`、Node512MiB、BelowNormal、现有依赖及自身缓存实际执行，不再进行重操作CPU采样。先确认architecture退出0，再单独format；未下载依赖、未再运行编译/功能测试/服务。原门限与业务断言未修改。
+
+全部自有Go/HTTP/Node/Python调用已退出，窗口已通过`msg_c486707c86c5`交回主控。当前没有后台服务、浏览器或原生控制器，两个Worker树及正式实验/用户数据均未修改。Reviewer未独立重跑全仓`go build ./...`或完整默认CI；有限检查不能把其余失败、未验前置或原生链路改记通过。
+
+真实正向Prepare→Claim→Send、实际旧fence竞争、AT08/09/13、带Worker停止/释放、用户实际采用与经验再次使用仍缺合法原生前置；三项待答选择、Claim拒绝及`Known=false`保持。Release可用性及论文研究/投稿质量不在本轮接受范围，未合并、部署或发布产品。
+
+UTC `2026-10-19T04:40:14Z` 实际发布 [CR 5567006632](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5567006632)，回执为`COMMENTED`、`commit_id=3267249922082cb1808b6529a2f04084d40c1f92`，正文明确第03轮及限定接受。原件`03/github-review{,-receipt}.json`；同账号未作GitHub APPROVE。本阶段报告普通push后执行当前Run/Task/Dispatch的既有hook；主控实际读取回复后登记本轮接受，原Task继续后续轮次。
