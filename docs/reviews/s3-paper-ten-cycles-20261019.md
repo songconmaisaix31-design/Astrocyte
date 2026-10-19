@@ -350,4 +350,62 @@ BelowNormal、Node1024MiB、85%/4GiB双采样守卫及串行执行实际生效�
 
 arXiv就绪仍为`insufficient_evidence`：实际研究贡献、受支持TeX Live/站点处理、作者/机构/ORCID/许可/同意及人类科学核验未完成；未上传或注册。两个Underfull及无视觉验收保留。普通代数证明、23页可编译PDF及限定方法接受不能代替这些要求。
 
-UTC`2026-10-19T05:34:42Z`实际发布[CR5567321949](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567321949)，回执为`COMMENTED`、`commit_id=f27289c9dbc7820e1b3bcde8330d5aa4f79b4908`，原件`06/github-review{,-receipt}.json`。同账号没有GitHub APPROVE。主控`msg_f995c94c7be7`已确认收回窗口及实际独立重建结果；本报告普通push后执行原hook，准确候选的实际读取回复尚待完成，本Task继续且未结算worker_done。
+UTC`2026-10-19T05:34:42Z`实际发布[CR5567321949](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567321949)，回执为`COMMENTED`、`commit_id=f27289c9dbc7820e1b3bcde8330d5aa4f79b4908`，原件`06/github-review{,-receipt}.json`。同账号没有GitHub APPROVE。主控`msg_f995c94c7be7`确认收回窗口及实际独立重建结果。报告`c1ffa8e7a3f1fc657725f31cee780bdfe33934fb`普通push、远端一致；UTC`05:35:19Z`原hook实际入队`msg_fa885052b983`，原件`06/review-hook-receipt.log`。主控UTC`05:36:14Z`以`msg_9d3e3d5bcb39`回复该hook，确认完整读报告、实际API核准确CR/SHA、远端及干净状态，登记06限定接受、累计5/10。本次唤起由实际读取回复确认，本Task继续且未结算worker_done。
+
+## 第 08 轮：评价封存、全成本与独立试运行规划
+
+决定：`accept`，限完整研究提案及同源文稿交付。准确候选没有尚需原Worker返修的本轮缺陷；实际隔离、全费用、pilot方差/校准、研究收益、原创实质贡献与投稿就绪均未验收。
+
+| 对象 | 准确来源 |
+| --- | --- |
+| PR | [科研PR #3](https://github.com/songconmaisaix31-design/Astrocyte/pull/3)，实际API为open、Draft，HEAD/远端与候选一致 |
+| 候选 | `a664233a1276003a69f3d6850e4ecc04c08f4370` |
+| before | 已接受06 `f27289c9dbc7820e1b3bcde8330d5aa4f79b4908` |
+| 冻结/唯一窗口 | `msg_19c9f137f6ae`冻结准确提交；`msg_1f1a5c889297`在产品DOM失败且自有调用退出、端口释放后授独立复验窗口 |
+| 差异范围 | 8科研路径，与06相同；build/verify脚本及十四条Bib不变，无产品/治理/workflow变更 |
+
+### 完整提案与证据边界
+
+实际按`astrocyte-research` skill审查当前任务08完整方案、准确候选新增§5.3/5.4/6.6、主张表P07/P18–P21、来源、README、validation与中文反馈。原文献集合和已核阅读范围未增加，继续依第04轮原始统计来源及其条件，不把本轮机制建议归为他人已证结论。
+
+| 当前具体改变 | 独立科学与可用性判定 |
+| --- | --- |
+| 四角色/六类资料矩阵、固定作品及评价者盲化 | 区分执行/协调、更新、独立评价与解封前分析者；评价只取固定版本和必要任务/量表，配置映射、历史和其他评分隐藏，作品自身暴露条件如实登记。盲化范围限定独立评价者。矩阵与目录属于建议，真实文件/HTTP/SQLite/上下文/索引/缓存/日志/错误/退出码/通知/时间泄漏检查仍未执行。 |
+| 全部计划主实验配对块完成前封存 | 接收回执不含成绩、断言或结果相关诊断，早期序列/块不解封；评价不回写学习状态。仅实际生成作品固定提交，有来源的耗尽/算法未完成可以无作品并按预声明规则计失败。未知评价/损坏/不完整块保持分析停止，不能补造作品、冒称suite测量或填零未知以解封。未完成研究仍需明确关闭决定。 |
+| 原task/operation与真实来源的非重复成本 | 区分计划位置、平台提交、控制器轮次与可观测提供者尝试；累计/订正替代原总量，父子包含和增量/累计不能重加。缓存/推理等按实际接口包含关系，未知重叠保持未决；未知不新发原请求，支付、异构模型资源、估算、并发区间与墙钟/等待分别记录。没有来源数值或预算单位决定。 |
+| 真实准备成本P一次及固定8r分摊 | 提议每序列`P/(8r)+restore+execution+evaluation`，各量按兼容单位、真实互斥来源解释；研究总量只计一次P，真实恢复/失败准备仍保留。提前结束报告剩余分摊，分母保持预定数；未知历史P不补造、不视为免费，端到端匹配继续未验。分摊与预算上限仍待批准。 |
+| pilot至正式参数的六步顺序 | 合法来源/原生权限、共用实现/隔离和计量具备后，才执行预先规划的独立完整八配置pilot；先核真实方差不确定性、依赖、离散/退化/精度与校准依据，再确认正式参数。pilot前版本化模型/提示/推理/工具/policy/任务分布/T/历史/预算及拟规划目标；正式目标实质改变需明确方差适用依据，缺依据先预规划修订目标的独立pilot。开发数据/成本不并入正式块，正式结果不反向决定r/阈值/网格。 |
+
+无作品与未知缺测的区分、pilot目标对应及中文位置零冻结均已在准确候选同步；相应WIP实际Handoff为`msg_f26b16bb6182`、`msg_498113f4196c`、`msg_a9fed419235f`，主控转原Worker修订后以`msg_c0a6c1ad2e4c`复核。中文当前明确冻结研究位置零的初始非空计数/权重且不衰减，英文06方法与证明未改。WIP没有发布CR或计数。
+
+本轮把原先简略的访问、成本和规划规则补成可检查的完整建议，未发现上述定义之间的新冲突。方差适用性需要匹配实际目标；另一任务列表/历史不自动提供固定目标的条件方差。单份经验pilot反复重采样不证明总体覆盖/功效，种子/任务/分析次数不增加独立块。当前无pilot、模拟、模型调用、正式数据或数值r，也没有以发布工程检查推断科学效果。
+
+### 准确归档、重建与回归
+
+入口`.verification/ten-cycles/review-cycle08.ps1 -Phase snapshot|build|verify -CandidateSHA a664233a1276003a69f3d6850e4ecc04c08f4370`，每阶段实际退出后再执行下一项。准确源码仅归档到自身`08/candidate/`，原交付文件先存`08/submitted/`；复用自身06字体缓存、既有Pandoc3.9/Tectonic0.17.0及成熟Python依赖，没有新安装或写Worker树。
+
+| 实际命令与原件 | 结果 |
+| --- | --- |
+| `git archive --format=zip <准确a664>`及解压，`08/candidate.zip` | EXIT0，准确交付TeX/PDF保留。 |
+| 准确候选`papers/astrocyte/build.ps1 -Pandoc <自身程序> -Tectonic <自身程序>`，`08/build.log` | EXIT0，完整HTML/AST/TeX/citeproc及真实TeX/xdvipdfmx执行。 |
+| 准确候选`python -X utf8 .../verify.py`，`08/verify.log` | EXIT0；14引用/Bib/HTML参考、8配置、233MathML、19链接；PDF27页、44标题、14参考标题、84405字符、9嵌入字体，无Type3/替换字符/加密/修复/页外文字span。 |
+| 自身`python -X utf8 .../compare-cycle08.py`，`08/compare.log` | EXIT0；提交/重建PDF全文相同，TeX逐字节相同；06英文Setting/Proposed method至§5.2、§6.1–6.5及Bib与准确f272相同。PyMuPDF1.28.2。 |
+| 准确before→after `git diff --check` | EXIT0，8科研路径及原检查语义保持。 |
+
+已实际阅读提交PDF全部1440行提取文本，覆盖摘要至十四条参考文献，包括完整角色矩阵、无作品/未知区分、封存、成本/分摊公式、pilot目标对应及原方法/统计公式。交付TeX1978行101986bytes，PDF172215bytes。日志仅原两Underfull：1312–1320行badness1708、1777–1787行badness2922；两次TeX处理重复同两处，无Overfull/Missing character/未定义引用/致命错误。未修改断言、阈值或警告，文字与页面边界检查不证明视觉排版质量。
+
+| 阶段 | 两次UTC | CPU | 最低可用GiB | 采样间隔 |
+| --- | --- | --- | --- | --- |
+| 归档 | 06:04:48.049 / 06:04:52.236 | 68% / 54% | 5.611 | Stopwatch4.370秒 |
+| build内层 | 06:05:35.576 / 06:05:39.678 | 54% / 45% | 5.644 | UTC4.103秒，单调守卫通过 |
+| verify/比较 | 06:07:04.469 / 06:07:08.471 | 62% / 52% | 5.619 | Stopwatch4.149秒 |
+
+BelowNormal、Node1024MiB、85%/4GiB双采样及串行实际生效，无资源拒绝/重试；启动样本不说明峰值或速度优化。全部自有Pandoc/Tectonic/Python实际退出后，UTC`06:08:00Z`通过`msg_6be26e141a32`立即归还唯一窗口。后续仅静态全文/诊断、报告、准确CR/hook，没有产品服务、浏览器或模型。
+
+### 当前限制与真实 CR
+
+实际访问隔离、全部成本原件/预算匹配、独立pilot方差与推断校准、八配置和S3/完整CI仍未验收；原生三项、`Known=false`、工具关闭、真实采用及正式参数保持原边界。目录/角色矩阵、成本恒等式或可编译27页稿没有取得这些实际结果。
+
+arXiv就绪继续为`insufficient_evidence`：原创实质贡献、真实研究证据、受支持TeX Live/站点处理、作者/许可/同意和人类科学核验尚缺，原两Underfull及无视觉检查保留。未注册或上传；本轮限定接受不证明当日科研发布目标完成。
+
+UTC`2026-10-19T06:10:37Z`实际发布[CR5567552099](https://github.com/songconmaisaix31-design/Astrocyte/pull/3#pullrequestreview-5567552099)，回执为`COMMENTED`、`commit_id=a664233a1276003a69f3d6850e4ecc04c08f4370`；原件`08/github-review{,-receipt}.json`。同账号未作GitHub APPROVE。主控`msg_697b5939bae7`已确认实际调用退出并收回窗口；本报告普通push及原hook之后，准确候选的实际读取回复仍待完成，原Task继续。
