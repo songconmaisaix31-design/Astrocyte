@@ -2,6 +2,10 @@
 
 ## S3与论文十轮改进（2026-10-19）
 
+用户最新明确当日交付为初步跑通的产品及首版Release包，以及真正符合发布标准的arXiv预印本，并允许提高资源。后续重操作使用CPU<85%/可用≥4GiB双采样、BelowNormal、Go4/-p4/512MiB和Node1024MiB，全局仍单窗口；正在运行的旧额度检查保留真实记录。已向三个实际Dispatch发送新决定，产品和Reviewer已确认。当前Reviewer仍持01窗口，before冷编译未结束，after/vet按新额度执行，不为改额度重跑。
+
+首版GitHub Release发布已获授权，当前真实release列表为空。原产品Worker新增release/**与docs/release/**写域，新输出限D:/Astrocyte-agent-assets/20261015/release-package/today-20261019的新子目录，复用成熟打包和解压验证流程，旧资产只读。须先完成具体准确源码包与独立可用性验证；原生/S3、完整CI及原发布要求未通过项保持未通过。科研由方法稿提高到投稿质量验收，PDF、真实研究贡献、内容/文献、官方arXiv要求与作者元数据逐项核查，作者问题已发出；实际arXiv上传未执行。
+
 用户明确要求开始完成S3和论文初稿，完成十次循环改进。当前 [十轮任务](tasks/s3-paper-ten-cycles-20261019.md) 按主控方案、固定模块Worker实现/PR、独立Reviewer准确CR及真实hook/回复执行；只有具体改进及适用检查获得独立接受才计轮次，上一轮已完成内容不重复计入。当前接受0/10，S3和完整稿件分别按原验收核查，原生/预算/权限待定不降要求。
 
 新Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`，复用frontend-observatory树/分支和PR #2，基线7ce3，01已提交准确候选 `dacc742e7ea9f0cc7ff011f0df8343caa976a8a6`，两测试源b21f5b66；真实前后对照及相关检查通过，已归还窗口并冻结等CR。科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`，复用research-preprint树/分支和PR #3，基线cf867ce6，02实际PDF构建已静态准备，仍无重操作窗口。Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`，复用research-preprint-review树/分支，基线cab42338，只写当前十轮报告与自身忽略输出，当前独占01检查窗口，在自身真实Git候选克隆的detached条件复验。三者均真实ready/turn_started、Codex0.162.0/gpt-6.1-sol默认配置已核，无覆盖或子Agent。

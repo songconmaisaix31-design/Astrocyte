@@ -4,6 +4,8 @@
 
 2026-10-19用户要求开始完成S3及论文初稿，并完成十次循环改进。S3按SPEC §7–8、§10、§12、§17、§19–20及TASKS P3验收：真实绑定、原生接续、跨会话上下文交接、原子认领、成果提交和用户采用，AT08/09/13及真实来源回查。论文交付完整、可审阅、实际编译的初稿，明确拟议方法、当前实现、工程证据和未采集正式结果。
 
+随后用户提高资源额度，并明确当日目标：产品初步跑通并发布第一版Release包，科研完成真正可以投稿、符合发布标准的arXiv预印本。十轮继续围绕这两个交付推进；论文验收提高到完整内容、真实研究贡献、准确来源、实际PDF/可编译来源、作者元数据及官方提交要求，已有方法稿的接受不代表符合投稿标准。产品发布授权已收到，先形成准确源码的新Windows x64包及独立实际验证，再由主控执行GitHub Release发布；不重复使用旧ZIP冒充当前源码。完整S3、原生权限及原发布门禁分别如实验收，不因当日目标改称通过。arXiv实际上传尚未执行。
+
 管理基线 `validation/v1-20261012` / `ff71d54a09f8ab4d3808b1a9da2eb36ef38281e0`；产品PR #2 / `7ce3a5efe312f4cdac3491293e002f5559f076b0`；研究PR #3 / `cf867ce6e9bcf156fd3e036f0ac48a4834113b6b`；上一轮研究审查cab42338。产品集成f17a491c和正式V4不随本任务改变。上轮已完成的初稿及工程检查不重复计入本次十轮。
 
 ## 轨道、权限与资源
@@ -12,11 +14,11 @@
 
 | 轨道 | 固定树与分支 | write_paths与边界 |
 | --- | --- | --- |
-| 产品Worker | 既有frontend-observatory-20261018树 / songconmaisaix31-design/frontend-observatory-20261018 | S3所需internal/swarm、internal/workspace、internal/adapters、cmd、web、contracts、tests、scripts，必要go.mod/go.sum/package依赖；docs/standards/s3-ten-cycles-20261019.md及自身忽略.verification。修改必须服务当前轮；不改根治理、正式实验、workflow或论文。跨轮/范围扩张先Handoff |
+| 产品Worker | 既有frontend-observatory-20261018树 / songconmaisaix31-design/frontend-observatory-20261018 | S3所需internal/swarm、internal/workspace、internal/adapters、cmd、web、contracts、tests、scripts，必要go.mod/go.sum/package依赖；release/**、docs/release/**、docs/standards/s3-ten-cycles-20261019.md及自身忽略.verification；新包/验证输出只写D:/Astrocyte-agent-assets/20261015/release-package/today-20261019下新的独立子目录。旧资产只读，不覆盖。修改必须服务当前轮；不改根治理、正式实验、workflow或论文。跨轮/范围扩张先Handoff |
 | 科研Worker | 既有research-preprint-20261019树 / songconmaisaix31-design/research-preprint-20261019 | papers/astrocyte/**、docs/research/astrocyte-research-feedback.md、.agents/skills/astrocyte-research/**及自身忽略.verification；不改产品、根治理、正式实验和workflow。实际应用astrocyte-research skill |
 | 独立Reviewer | 既有research-preprint-review-20261019树 / songconmaisaix31-design/research-preprint-review-20261019 | docs/reviews/s3-paper-ten-cycles-20261019.md及自身忽略.verification。产品/稿件只读，精确Git归档或真实Git克隆在自身忽略目录构建；依赖真实Git身份的测试使用准确候选克隆并核HEAD，不从无.git归档伪推仓库身份。不写Worker树，不代做修复 |
 
-当前无其他获准子Agent；需要时先明确互斥写域与资源，禁止Aliyun。全局编译/测试/服务/文稿构建/依赖安装串行，CPU<70%、可用内存≥4GiB双采样，相隔2–5秒，BelowNormal；Go单并发与256MiB软限制、Node512MiB、浏览器/服务各最多一个。无窗口继续静态阅读和编辑。禁止视觉、mock/虚假数据、Git回滚、force push、/tmp和自研调度/完成证明系统。
+当前无其他获准子Agent；需要时先明确互斥写域与资源，禁止Aliyun。按用户提高资源的最新决定，后续全局编译/测试/服务/文稿构建/依赖安装串行，CPU<85%、可用内存≥4GiB双采样，相隔2–5秒，BelowNormal；Go GOMAXPROCS=4/-p=4/GOMEMLIMIT=512MiB软限制、Node1024MiB、浏览器/服务各最多一个。已经按旧70%/Go1/256MiB/Node512MiB启动的检查保留真实记录，不为改额度重新运行；启动采样不代表峰值保证。无窗口继续静态阅读和编辑。禁止视觉、mock/虚假数据、Git回滚、force push、/tmp和自研调度/完成证明系统。
 
 QUESTIONS登记的预算单位、权限证据和受限Codex边界已集中异步询问。未答保持Claim拒绝及Known=false，不发送受阻原生输入，不修改原生程序或反复探查同一不支持入口；不把本次“完成S3”当作具体选项答复。现有真实公开项目范围保持，实际用户作品、具体资料/经验批准及用户采用由现有规则处理，具体可审成果形成后再请求必要用户操作。
 
@@ -44,6 +46,8 @@ Run `run_29c7e66b4136`，主控 `term_d7578194-fd20-42b4-9668-b0b0e8683571`。�
 产品Task `task_51276f272ff3` / Dispatch `ctx_e49721d7ac8d` / 终端 `term_2e84a1d7-5fdf-4297-88b7-f4ff6bc37f01`；科研Task `task_f824c0088743` / Dispatch `ctx_f71ff9bcaacb` / 终端 `term_866b59d6-c778-4985-908c-56a5e3ba49bb`；Reviewer Task `task_2923223271be` / Dispatch `ctx_568047699698` / 终端 `term_447ff4b9-bd02-4409-aa43-4b86f1f74556`。均真实ready/turn_started，实际Codex0.162.0 / gpt-6.1-sol默认配置已由Handoff及原生worker-list核实。产品已交还首个窗口并冻结01候选，当前Reviewer持01独占检查窗口；02已静态准备官方便携Tectonic、完整preprint来源/PDF和成熟文本核查，待01独立检查后移交窗口。
 
 每轮保留问题、具体修改、准确源码、实际命令/结果、Reviewer决定、CR及hook/回复；使用本任务和现有报告，不新增自动调度或计分系统。资源不足保持检查未执行；真实前置或用户决定未满足时该轮保持阻塞，继续无依赖工作，不能补写完成。十轮接受、S3核心路径通过和初稿实际交付各自核验；署名缺失不虚构，正式八配置、注册、投稿、产品合并/部署不由本轮默认授权。
+
+当日交付安排：03仍先补发送租约/用途的真实集成缺口；同一产品Worker随后按实际阻塞准备新包与运行验收，不另建发布开发轨。复用现有release/Build-Windows.ps1、Verify-Windows.ps1及启动脚本，准确来源构建，检查新版前端、实际会话bootstrap、真实读写和重启持久化、缺配置/可选OpenViking状态及包内隐私。独立Reviewer必须对新包另行解压验证，既有125项旧包结果不能移用到新包。完整CI及原生未验项保持明确，发布渠道/版本与资产以具体已验候选为依据记录。科研02完成实际PDF后，继续04/06/08的内容改进并据官方arXiv要求核查提交包；作者/顺序/机构/通讯信息和许可证已异步询问，未答不填造。无正式数据不得写出效果结果或显著性结论。
 
 ## 已确认的具体方案
 
