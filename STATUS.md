@@ -20,7 +20,7 @@
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar为6a9，两次限定JS分析的partial/truncated限制保持。按用户“将orca cli逆向后参考”，补当前orca.exe准确612b的PE/Rust静态证据及实际命令目录144e的20JS分析，三个入口均EXIT0；CLI图partial/222文件未选，原生函数未反编译，完整运行依赖仍未知，见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)。doctor原EXIT1/config_drift保持，无MCP/本机Orca配置修改 |
 | 独立 Go 检查结果 | 9c原四包/三函数结果保留。新增端口及消费者已在独立detached准确16ad工作树再次运行原已审入口，session49790实际EXIT0：四包test-c完成，三个CLI传输前函数逐项PASS/零SKIP，SOURCE=16ad且结束同一干净HEAD；全部实际runtime/live函数NOT_RUN、model_calls=0。原件在根swa-go-16ad-01与control/go-16ad-execution-01.log，主控检查不代替Worker自测、N07/N08返修或安装验收 |
-| 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.4实施；e549的N10/生成静态接受保持，真实检查正文未运行。449已补N11/N12投影/TTL/分证，b009保留其覆盖并退回N13：原生samplingParams可在实际请求末尾覆盖model/input/tools等，须封闭model/override/内置合成及每请求options；新字段未定稿。同Worker继续返修，默认Pi0只限定该来源。N08、输入/恢复、完整Job/成果及全部实际调用仍未通过 |
+| 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.5实施；e549的N10/生成静态接受保持。9e修后N08/N13限定技术获f5dc接受，native_launch及逐类投影/请求/私有账号与工具消费者已在§21.1.5定稿，同Worker实施；默认Pi0只限定该来源，全部实际账号/工具/调用仍未通过。五条RPC导入边局部静态接受，实际收窄未验；Windows/.NET下载及D01—D05技术接受，窄helper可实施，网络/构建另授 |
 | 契约生成 | 原Worker在准确33c5干净前置下仅一次执行generate-02，实际exec38224 EXIT0，资源/生成退出均0，Node512及私有TEMP；只有web/src/api/schema.d.ts生成变化，已纳入e549，未手改生成文件。源码生成不代Node/native构建、安装或模型验证 |
 | 首装授权流程 | 原T02/T03及USAGE须完整覆盖新DataRoot和已安装资产的首次人工入口、实际session/CSRF、项目设置、Grant/token操作；同一Worker调查复用现有入口并补具体方案。尚无新安装运行结果，不由Agent代用户批准，不新增网页重构模块 |
 

@@ -856,7 +856,7 @@ serve可显式接受`--agent-profile <既有原Orca profile绝对路径>`。省�
 
 结果在既有OrcaEnvelope.result中使用`schema:"swa.capabilities.v1"`，包含source_revision、registry的orca_version/artifact_sha256、discovery的local host/platform/observed_at及settings_source，以及agents清单。每项包含id、adapter、execution_mode、registered、enabled、installed、configured、launchable、control、requirements；状态对象使用`{status,reason,checked_at?,source}`。installed正向才返回真实executable/version，configured仅返回已证model/provider及非秘密账号来源类型。字段与生成契约按上述准确方案共同更新。
 
-现有执行端口增加只读`ResolveSelection(ctx, projectID, command)`，返回稳定`AgentSelection{agent_id,adapter,execution_mode,executable,version,model,provider,external_target,settings_source,settings_revision,configuration_version}`。App先核observe并取得实际选择，再按真实external_target、现有ProjectSettings.ExternalModelCLI单CLI批准、当前Grant、目录、工具和外发目标核动作；不继续硬编码pi，不接受HTTP声明的外发身份。实际选择进入既有原R的比较/原checkpoint，排除observed_at和凭据，不另建Hash或选择账本。spawn前再次核相同来源，变化拒绝，未知不换目标。后续输入只能从实际Dispatch的原receipt/session取得原选择，禁止用新参数更换Agent或模型。
+现有执行端口增加只读`ResolveSelection(ctx, projectID, command)`，返回稳定`AgentSelection{agent_id,adapter,execution_mode,executable,version,model,provider,external_target,settings_source,settings_revision,configuration_version,native_launch}`，原生政策按§21.1.5。App先核observe并取得实际选择，再按真实external_target、现有ProjectSettings.ExternalModelCLI单CLI批准、当前Grant、目录、工具和外发目标核动作；不继续硬编码pi，不接受HTTP声明的外发身份。实际选择进入既有原R的比较/原checkpoint，排除observed_at和凭据，不另建Hash或选择账本。spawn前再次核相同来源，变化拒绝，未知不换目标。后续输入只能从实际Dispatch的原receipt/session取得原选择，禁止用新参数更换Agent或模型。
 
 当前接受范围包括上述端口、DTO及固定pi消费者的同步调整和对应G02/G03/G04/G05/G06必要检查；实际启动、输入和所选Agent支持能力仍遵守其准确方案及当前权限。首版最终同一安装候选、至少两个真实Worker、并发、指定停止和完整成果条件保持。
 
@@ -901,6 +901,48 @@ Workspace App声明`ExternalCLIRegistry.ValidateExternalCLI(ctx context.Context,
 原OrcaEnvelope.result内的`RegisteredAgent`固定为`{schema:'swa.registered-agent.v1',id,adapter,execution_mode:'structured'|'terminal',registered:true,source:{kind:'structured-registry'|'tui-launcher'},source_revision,registry:{orca_version:'1.4.230',artifact_sha256},runtime:{runtime_id,authority_domain,data_root,install_root}}`。bridge返回`{envelope:OrcaEnvelope}`；Native读取同安装VERSION和runtime/host.cjs来源，runtime及authority来自实际运行与原SQLite，根路径为实际canonical路径。原RPC metadata和source fence保持，外层runtime_id取真实响应_meta.runtimeId。
 
 Go严格解码并逐项核ok且无error、schema/registered、Agent ID与原请求CLI一致、非空adapter、成对mode/source、同安装完整40位VERSION/host.cjs来源、内外实际runtime/authority及Config的canonical私有data/install根；任一字段缺失、不匹配或传输失败立即返回，全部通过才允许设置验证。来源摘要只核既有安装身份，不另建执行状态或Hash系统。适用真实检查包括旧四CLI之外注册ID的人工批准、未知ID/未绑定模式/不可达失败且设置不变、选择与批准不符时模型前拒绝，以及无Orca旧行为、HistoryRoots/S3、身份/工具/revision回归；全部动态结果按实际执行记录。
+
+#### 21.1.5 原生账号、关闭工具及实际请求政策
+
+准确`9e46579df4a073d1d67fc74c198274e0178e4147`的[完整方案§13](https://github.com/songconmaisaix31-design/swarm-anything/blob/9e46579df4a073d1d67fc74c198274e0178e4147/docs/standards/swa-cli-headless-20261020.md)已获独立f5dc49f7限定技术接受。本节定稿其稳定字段、逐类原生投影和直接消费者，同一Worker在原写域实施；技术接受不表示当前账号、工具、全部Agent或模型可用。发现/注册与实际控制分开，没有已审原生政策的相关动作在首次效果前明确unknown/不支持，不将全部发现加拒绝计为交付。
+
+成功执行选择的`AgentSelection.native_launch`为strict非秘密对象，Go/Node/Zod/JSON Schema/OpenAPI及直接消费者同步，公开HTTP不能提交任意政策、账号、argv、caller或批准：
+
+```typescript
+type NativeLaunchPolicy = {
+  schema: 'swa.native-launch.v1'
+  account: {
+    kind: 'pi-native-api-key'
+    provider: string
+    source_home: string
+    auth_source: { path: string; version: string }
+    models_source: { path: string; version: string } | null
+    private_home: string
+    model_target: { model_id: string; api: string; base_url: string }
+  }
+  tools: { mode: 'disabled'; native_contract: 'pi-cli-1.0.1' }
+}
+```
+
+路径为实际canonical来源，version沿原配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后继出现视为变化。政策与原settings source/revision/configuration_version、原R/checkpoint共同固定原生选择，不保存凭据或另建账号账本。model_target绑定实际合成modelId/API/baseUrl，成熟URL解析拒绝账号信息、秘密查询、动态模板和未批准目标。API只允许已核最终请求消费者的openai-responses、openai-completions、azure-openai-responses，其他API保持政策unknown，不换模型或来源。
+
+原账号目录只读。原auth只接受该provider实际支持的原生api_key条目及literal key；非空credential.env、OAuth/refresh、models apiKey/oauth、命令或环境引用拒绝。auth和models使用成熟JSON及原ModelConfig的JSONC/schema，准确方案§13.3逐类表作为本节固定字段和投影清单：只保留所选provider/model/override及原composer顺序；未知有效字段、无法唯一合成的目标、虚拟模型、候选/网关路由拒绝。key及三层headers用同版本isCommandConfigValue/getConfigValueEnvVarNames只读分类，保留原生literal与转义语义；Headers成熟解析，大小写不敏感拒绝Authorization、Proxy-Authorization、X-Api-Key、Api-Key、Cookie、Set-Cookie。不能原块复制、删除不允许字段后继续、改凭据类型或复制refresh来宣称原账号保全。
+
+原model、所选override、内置及合成model的samplingParams只允许缺省或空对象，任何自有字段使整源拒绝。产品不开放每请求options/samplingParams/provider/onPayload/headers变换或任意RPC透传，逐命令strict DTO只提供原prompt/steer/follow_up、abort、状态、准确模型/thinking及固定关闭设置；当前固定输入仅text，prompt只含message、原生streamingBehavior和原请求标识。真实RPC→session.prompt→Agent loop→sdk/ModelRuntime的生产者、空扩展/资源及私有设置共同封闭请求覆盖；不能仅以get_state或no-tools证明最终请求安全，不替换原生provider或事后重写请求。
+
+private_home固定DataRoot/pi/<实际项目UUID>，不同项目不共享。已批准controller.open只创建空目录，发现不复制账号；秘密写入前用成熟Windows API设置并读回当前用户/SYSTEM保护DACL，拒绝重定向、未知owner、其他写入主体及与原Orca/账号/安装根重叠。当前Grant/CLI/model/tools批准后才将同一已验证来源投影到独占新auth/models文件；只读源、私有原生锁与运行写入分开。已有同项目Worker仅在来源/版本/provider/政策完全相同时复用，未知副本或不同来源且原资源未释放时拒绝，不能覆盖换账号。
+
+内部`StructuredAgentLaunchAdmission.accountHome(sessionId,agent,currentHome):Promise<AgentSessionAccountHome>`从create前已登记的真实Worker identity/Dispatch及原父子R解析原选择。在prepareStructuredAgentSessionCreateForWorktree的resolve intent后、attach fingerprint前，原agentSessionAccountHome生成`{variable:'PI_CODING_AGENT_DIR',path:private_home}`并进入原record；非产品宿主沿原生产者，产品缺少R关联即拒绝。实际launch part完成后复核command/accountHome/env/argv，仍用原CLI、provider-process和seal。
+
+受限builder只在精确contract/实际版本及toolsOff政策成立时允许fullAccess=false；不得强设full-access。固定argv为--mode rpc、--offline、--no-approve、明确--provider/--model、--no-tools、--no-extensions、--no-skills、--no-prompt-templates、--no-themes、--no-context-files；原记录需要的绝对--session/--fork互斥，全部extraArgs拒绝。环境仅保留SYSTEMROOT、WINDIR、SYSTEMDRIVE、COMSPEC、PATHEXT、PATH、NUMBER_OF_PROCESSORS、PROCESSOR_ARCHITECTURE、PROCESSOR_IDENTIFIER、OS、LANG、LC_ALL、LC_CTYPE、TERM、COLORTERM及既有HTTP_PROXY/HTTPS_PROXY/ALL_PROXY/NO_PROXY，再明确写产品私有HOME/USERPROFILE/APPDATA/LOCALAPPDATA/TEMP/TMP、项目账号根、PI_OFFLINE=1、PI_SKIP_VERSION_CHECK=1和原seal身份。其他账号/key、NODE_OPTIONS/NODE_EXTRA_CA_CERTS、owner capability及原Orca身份不继承，网络配置值不输出或改动。
+
+私有settings固定compaction.enabled=false、retry.enabled=false、retry.provider.maxRetries=0、cacheWarming='off'；用真实set_auto_compaction/set_auto_retry成功回执再次关闭，并核get_state.autoCompactionEnabled=false，retry结合原回执/同版本源码/实际私有设置，不造状态字段。offline仅关闭原生启动刷新；模型仍须完成真实provider请求。no-approve使原项目设置为空，不能从公开项目重开资源、重试或请求变换。
+
+首次和每次后续输入在serialized handOver等待后、adapter.dispatch前重读来源身份/版本/存在状态、逐类重解析/投影，并逐项比较实际私有auth/models/settings。Pi真实get_available_models/get_state证明provider/model/API/baseUrl、samplingParams及sessionId/sessionFile；原fence/归属由原R/Dispatch/session、expectedRuntimeFence及current consumer分别证明。继续核当前Go批准、原selection/model_target、停止/释放和完整所属Job；秘密只在内存比较，任一失配或未知拒绝。仅已审disabled政策映射为空required tools，空ProjectActionScope.Tools本身不证明Native关闭工具。
+
+原生API key没有TTL字段时有效期为unknown，其余条件满足可以真实请求，账号远程有效性仍由实际结果证明。有实际明确期限的来源每次要求`expires_at - 当前时间 > 本次已批准最长执行时间 + 30秒`，期限或执行上限缺证、余量不足或到期拒绝；此未知拒绝不适用于原格式没有TTL的key。可能输入后继续按§21.1.2保全原R/operation/Job，不重选或重放。
+
+准确方案§13.6全部真实检查进入同一Worker计划：真实账号/明确模型、用户单CLI和空工具批准、原生子树/argv/env/私有文件及自产JSONL、实际工具效果、逐类来源/路由/请求覆盖和TTL边界、首次及后续输入、同安装候选双Worker/停止A/B同会话成果。仅用获准真实来源，未命中记INCONCLUSIVE、不伪造协议或时钟；工具/T11待答及旧Codex/S3各自限制保持。
 
 ### 21.2 已采用的工程决策
 

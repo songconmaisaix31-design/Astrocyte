@@ -14,7 +14,7 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 独立发现与稳定AgentSelection按准确740/c3fca056接受，发现和选择不依赖原Orca正在运行；准确d441的N04/N05输入与模式技术计划已获73946fd2接受，准确079的T12计划已获7c6d3973接受。主控完整读取相应准确差异和报告并回复原hooks，技术契约定稿于SPEC §21.1.1—§21.1.3，同一Worker继续实现。工具范围待用户回答，技术计划接受不授予实际启动或模型窗口。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
 
-用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。449真实锁/构建入口获70f局部接受；build-04实际取得21bundle/metafile后在固定Node首下载TLS前ECONNRESET，内外退出均1，candidate03不可安装。原Worker按实际图中五处完整方法表导入及旧SDK消费者继续收窄，下载失败只读调查实际来源后再定修复，不盲重试。N08已补N11/N12，被b009退回N13实际请求覆盖，新字段仍未定稿；已定稿输入/恢复、完整Job/成果继续实施。当前原S55148已从restore-14恢复，创建UTC18:33:26.874753/epoch1792521206.8747532，原库和配置保持；c8未改，后继prepare取restore-14/restored.json并新鲜准入，旧失败原件保持。
+用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。build-04实际21bundle后Node TLS前重置，candidate03不可安装。后继9e的五条RPC边获f5dc局部静态接受，修后N08和Windows/.NET下载计划获限定技术接受；NativeLaunchPolicy及全部直接消费者按SPEC §21.1.5定稿，同Worker沿原写域实施，下载窄helper先准确CR再新窗口。原账号、工具和实际模型权限未扩大，输入/恢复/完整Job/成果继续。当前原S55148来自restore-14，创建UTC18:33:26.874753/epoch1792521206.8747532，原库和配置保持；c8未改，后继prepare取restore-14/restored.json并新鲜准入，旧失败保留。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户要求不妨碍本机Orca CLI并集成产品，产品采用独立后台，准确396e方案及测试计划已接受，SPEC §21.1明确接口与隔离边界。准确30b来源事实及此前提案保留，其Mission/Claim旧待决项按适用任务处理。程序已开始静态实现，CLI动态验收未通过。
 
