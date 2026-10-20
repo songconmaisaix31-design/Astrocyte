@@ -741,3 +741,17 @@ UTC14:52:33独立只读确认restore-05 launch/restored/current running、原程
 - 测试须在最终同一安装候选的T13中证明B接收实际后续正文、同一PID/session/Dispatch及正确原生操作/turn来源，按固定业务判据产出真实后续结果，A及其他Worker保全。核自产SDK输入与准确MessageRow正文对应，并覆盖真实重复请求/断开和必要拒绝；schema接受、另一会话、仅消息ID或模型自述均不满足这些条件。
 
 这些是现有首版输入能力的必要条件，尚未选择或接受新接口。后继完整方案及测试计划由原Worker准确提交、主控定稿并独立审核后实施；当前无新的运行窗口，本Reviewer没有运行任何消息、SDK、模型或业务正文。
+
+## 准确079bd958的T12补充计划复审
+
+结论：**接受准确`079bd958260ac3edb9fda6c13bb9e28a0a08cd56`的T12完整补充计划，P01—P03已覆盖。** 按原Worker`msg_fadace455b7c`完整读取相对897531的两文档差异，重读§3.4与§7.6及实际原生executor规则，再对照97a的八条独立条件和bad4的三项缺口。此提交只改文档；F16/enum参数WIP及正文语义新方案没有混入。实际普通push回执尚待补报，本次接受基于准确本地Git对象，不声明远端成功。
+
+P01现明确将recover纳入App/adapter/CLI outputFailure、client/native enum、durable方法及HTTP/CLI契约的写动作消费者；输入可能进入handler后网络或stdout失败为6，真实取消为130，保留原R/C_old及实际取得的C_new/Run/root，一次输出和原请求查询保持。R10复用真实C04/C05/C09条件并核原receipt/PTY/runUse与无第二副作用，没有伪Writer、假响应或延迟钩子，未命中仍INCONCLUSIVE。
+
+P02的默认拒绝矩阵分别规定pending open真实runCurrent/ready可为current=null、open完成后的只读、准确pending taskCreate的首次runCreate/root子请求、pending recover的ready/runUse、当前consumer写入、restored身份及完成Native R重放。合法未绑定阶段不预设已是consumer，完整launch/PTY/pane/host/incarnation与原parent/子R仍必需；worker.stop/release从实际evidence核caller，无参数from不构成豁免。helperless bridge仅白名单只读，任何原生写入/legacy takeover或隐式Run绑定拒绝；公开历史outer receipt不声明活owner。R01相应覆盖各真实启动阶段及无launch普通进程，缺restored attestation继续拒绝。
+
+P03已区分scope-reserved内部持久保留与pty-spawn前首次可能外部效果：前者不调用PTY/send/runUse，也不mark effect；两次成功观察确认旧helper仍活且原生effect-free结算成功后才解除reservation。读取/结算未知保持原R/占用。pty-spawn之前先checkpoint expected身份再mark effect，后继异常必须使用operation_unknown保留pending；准确原生executor对非prompt普通异常可能discard的实际行为已明确，单独mark effect不承担保全。pending同R只观察、不再次create/send/runUse；R03明确无效果且结算成功后，才允许旧helper真实退出及调用者显式新R的连续R04，R05同时保留竞争和未知屏障反向条件。
+
+原Run/root/context、真实generation、原Job复开与daemon来源/握手、历史只读和最终全部资源退出的既有条件保持，原R01—R09加R10没有发现剩余覆盖缺口或多余检查。此处接受方案及计划，源码仍须由同一Worker实施并准确CR，主控先将接口写入SPEC后再授权；T11待答、F16完整成果、F17真实正文语义及全部动态结果各自保持。没有执行controller、Job、数据库、服务、信号、SDK或模型。
+
+`check-revision.ps1 -Previous 897531d5d2978e3a51a043063a26e254b3d0f766 -Candidate 079bd958260ac3edb9fda6c13bb9e28a0a08cd56` EXIT0，两Markdown/5本地链接、无锚点/HTML或Git空白错误，marked18.1.0、BelowNormal、Node512MiB。普通源码格式/编译、安装和R01—R10正文均未执行，当前没有新重操作窗口。
