@@ -14,9 +14,9 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`53ad6e1479ef5cf3099372d2855087cf002513bb`已普通push，包含CLI/成果导出/打包、父持Job实现及F08关闭/创建竞争返修，原Reviewer正在审查。准确6168的F04—F07静态修复及父持Job方案/测试补充已接受；后继程序动态结果尚未取得。第二次窗口准备在停服前因可用内存不足被拒，原S12800继续运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`53ad6e1479ef5cf3099372d2855087cf002513bb`已普通push，包含CLI/成果导出/打包及父持Job实现。原Reviewer接受F08关闭/创建屏障的静态修复，退回F09：已创建root的Job绑定失败仍可能过早成为tree exited，返修交原Worker。准确6168的F04—F07及父持Job方案/测试接受保持，全部后继动态结果尚未取得。第二次窗口准备在停服前因可用内存不足被拒，原S12800继续运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
 
-当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 尚未实现。
+当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
 ## 已有产品验证与最近运行观察
 
