@@ -134,3 +134,16 @@ A01接受hook为`msg_94e5b0d5268a`，主控在`msg_c5b7dc996cdb`明确实际读�
 准确集成提交仍须独立核对，当前计划接受没有执行合并或授权主控以外的角色推进main。M1记录采用其准确最终已审版本，报告采用本分支提供的最终准确版本；未到齐前不开始集成。main管理后继bb51的五份文档及其实际M1/服务记录核查见独立M1报告。
 
 主控在`msg_e32bd84d5082`明确实际读取该集成计划接受及准确来源检查范围。M1最终记录已限定接受准确b112，原调查记录和故障因果未接受的区别继续保留。
+
+## 准确八文档集成核查
+
+结论：**接受准确`fac75c7f963d16c7f112e8e90ad30e36510d4738`的八份已审文档集成**。冻结main为`e149510762f89bed06e7c8c766917554a58294e4`；来源依次为准确30b、b112及Reviewer34cfe，未纳入本分支后继无界面评审报告。集成范围和原有功能接受范围保持。
+
+已读取集成Agent的完整报告及准确Git记录，随后独立核查：
+
+- `node --max-old-space-size=512 .verification/check-integration.mjs fac75c7f963d16c7f112e8e90ad30e36510d4738` EXIT0：相对冻结main仅新增两份CLI来源、两份M1记录和四份Reviewer报告；八份内容与各自固定来源Git对象相同，全部为100644。其他全部已跟踪路径、程序、依赖、原状态/决定及文件模式没有差异，三个来源及冻结main均为祖先。原件为`.verification/integration-fac75.json`。
+- 实际first-parent记录为e149→`e37685b8b2639307da9ba54d8f8a4fa9dc4fd67e`→`fd08eac83ebbfc9680b44d349aef21a5b2ba133c`→fac75；三个普通merge的第二父提交依次为准确30b、b112、34cfe，符合已接受顺序。
+- `.verification/check-revision.ps1 -Previous e149510762f89bed06e7c8c766917554a58294e4 -Candidate fac75c7f963d16c7f112e8e90ad30e36510d4738` EXIT0：Git空白及marked@18.1.0解析通过，八份Markdown、八个本地链接、无锚点或HTML。21个外部链接未逐一重新联网验证。BelowNormal、Node512MiB。
+- 真实`git ls-remote origin refs/heads/swa-records-integration-20261020 refs/heads/main`确认集成分支fac75已普通push，核查时main仍为冻结e149。
+
+没有发现需要交回集成Agent修正的差异。此次接受支持主控按已授权流程推进main；Reviewer没有执行合并或main操作，没有安装、编译、模型、浏览器、HTTP、SQLite或服务检查。产品CLI仍未实现，M1历史故障原因及补丁有效性继续证据不足，旧S3未验记录保持。
