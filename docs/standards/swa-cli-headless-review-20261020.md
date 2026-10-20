@@ -556,3 +556,41 @@ C06—C08明确ready前/启动中owner EOF的取消启动130、未就绪失败en
 覆盖对应独立六条件，未发现本次计划剩余缺口或应删除的多余用例。所有C项仍NOT_RUN，Go helper仅可先在编译窗口串行形成同源二进制，真实服务期间不编译；不增加命令/公开字段、权限、模型任务或执行账本。当前无动态窗口，本Reviewer没有运行信号、进程、编译、HTTP/SQLite、模型或计划正文。
 
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 8220d851dd998639a0ae3fbf4eff0212dd20ed7c -Candidate b3f0e22919fbbfab155af0fa9990602f50922117` EXIT0，两Markdown、5本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。本报告新增独立条件、对照及官方链接的成熟Markdown检查也通过。普通push/远端同SHA采用Worker准确交付回执，本轮主控未另查远端的事实保持。
+
+准确b3计划接受hook为`msg_52e19c678dc9`；主控在`msg_9a257fbab657`完整读取d7f相对2bd的三十一行无界面报告，逐项确认六条件、C01—C09、实际官方来源和全部未运行限制，安排原Worker按原写域静态实施；实际读取回复确认唤起，没有授予动态窗口。
+
+## 准确9741至8220的幂等、错误与观察静态CR
+
+按H03/H05/H06/H10/H11分别核准确`9741fccb8f705b057b913e617d9ae522536c1e88`八路径、`2c007de5ec54ce1cdb11a2f6052a116d1dc958c4`六路径、`72c7b8961a5677c7291967448507d3fc64340a4b`四路径及`8220d851dd998639a0ae3fbf4eff0212dd20ed7c`五路径，已完整读取四段差异。来源为Worker及主控实际交付消息`msg_23cf13c9882a/msg_14a13515a505`、`msg_35d491c02287/msg_35ae6f311ebc`、`msg_6065c2fe4f9e/msg_f7e6725f7263`和`msg_43f41e21991d/msg_1547e60aa401`；普通push/远端同SHA采用各自Worker成功回执，主控9741远端连接失败及其余未另查保持原事实。后继WIP和已审b3计划没有混入这些准确程序结论。
+
+### 9741：比较规范化静态接受，F15检查缺陷退回
+
+**接受task.create规范化及实际receipt补充的静态修复，退回F15**。原App每次ReadProjectContext确实生成新UUID/created_at，scope也在首次创建后增加Run/root/context；原executor把它们放入既有hashCanonical比较会使同R误判不同。新分支只作用于swa.taskCreate，复制invocation/context后删除两项采样字段，scope比较保留project/controller/authority；实际command/caller/project及上下文的其余内容、版本和路径保留，传给handler的原参数没有被修改，其他原生方法仍走原分支。
+
+已独立读取实际App双次当前授权、ReadProjectContext、原生controllerScope和controller-helper：每次task.create仍检查真实项目、controller、authority、Run/根Task关联和固定context settings，helper只经既定同controller单任务事务创建Run/root，完成receipt保存其实际身份和子请求。被剔除的scope内容来自这些关联；原件首次UUID/时间仍写入实际根Task spec。缺/坏invocation由实际wrapper的完整invocationSchema及dispatcher成熟schema在executor之前拒绝，task所需context缺失也仍由原handler失败，没有把无类型输入按规范化结果执行。
+
+完成receipt增加实际open的client identity/mutation ID、task两个真实子请求、deliver子请求及close的binding/root/helper身份，支持原请求只读观察，没有另建账本。T06源码保持实际CLI/PTY/SQLite，T13重放原start/stop/send/release并核B恰好两轮，第三席要求明确resource_limit且inventory/实际SDK没有第三项；这些均只形成检查源码，其余竞争、断开/重启及动态范围继续未验。
+
+**F15严重程度：中等，阻断真实T06检查。** 准确9741的`tests/swa-cli-headless/native-idempotency.mjs:126`在改写contextPath、writeFile恢复原字节后，又调用原taskArgs期待EXIT0；准确8220第209行仍保留该断言。真实`internal/adapters/agents/projects.go:154`把ContextFile.Version定义为mtime纳秒加size，ReadProjectContext读取并传入该版本，规范化继续保留files.version。恢复字节没有恢复真实mtime，版本已经变化时原R应得到request_mismatch，现断言与正确语义冲突。
+
+原Worker需调整合法未变来源的成功重放控制与版本变化用例的顺序/预期，保留首次固定context原件检查；不能删除真实version、回填旧mtime或重放替代任务来通过。该静态因果已通过`msg_dd12c01c25ef`交原Worker，没有运行写文件、版本读取测试或动态复现。此缺陷沿2c/72/822继承，其后续局部静态接受不会撤销F15退回。
+
+### 2c：产品拒绝与未知退出映射静态接受
+
+**接受本段错误映射及T08检查补充的静态范围**。dispatcher只对swa.*请求中的真实OrchestrationError保留code/message/data；已核实际admission先解析注册方法及参数，未知方法和schema失败沿原处理，普通SQLite异常及其他原生方法仍进入原来源映射。CLI把operation_in_progress/controller_closing映为6，保留未知效果；没有把它们改为已失败/已退出或授权成功。
+
+T08只在真实私有Orca库持有BEGIN IMMEDIATE锁，实际controller.open要求存储失败7/runtime_error、Run/Task和实际liveTab/liveLeaf不增、该R无receipt，释放自有锁后只查原R。已核getStatus确实提供相应数量字段，executor确实先begin receipt再invoke；这组组合证据针对输入前存储拒绝，单独absent没有承担无副作用证明。输入后存储失败及自然低资源仍未覆盖，Case保持6，F15及整体动态限制保持。
+
+### 72：一次真实所属CLI断开检查源码接受
+
+**接受本段检查源码范围**。仅从真实已完成open receipt和实际PTY root/helper观察副作用，保存本项CLI创建身份，仍同一身份且stdout尚为空才经其ChildProcess句柄终止这个客户端。实际终止成功、非正常退出且最终stdout为空才记命中，不能由发出kill请求独自成立。已返回输出、错过窗口或正常结束保持INCONCLUSIVE，不重复任务、不注入延迟或provider故障。
+
+后续只查原R并比较实际receipt/controller/binding，以新明确关闭请求清理已证实helper、两次新鲜身份观察确认退出。未到可核效果且客户端仍未结算时保存原R和本项身份后失败，继续保留占用；没有杀控制helper、Worker或其他进程来制造窗口。这一真实断开尝试不表示130，也不代替其他Run/输入/重启边界；F15与§7.5未实施限制保持。
+
+### 8220：原请求查询绕过派生pending scope静态接受
+
+**接受本段request.show必要修复及局部检查源码**。App仅该动作跳过ResolveScope，其前后真实project/caller/observe授权及revision检查仍在；输入与其他动作的scope校验未动。client先读取原生原R，再核实际receipt.project_id及给定controller，错配用既有RuntimeClientError返回scope_denied；不启动helper或重发。
+
+absent只返回原生absent，不能推断无副作用；已checkpoint的pending和完成记录都先核所属再输出原件及子receipt。pending尚无可核receipt时，成熟schema拒绝并沿既有nativeError保留operation_unknown，不输出未核业务内容；没有把这种情况登记为成功查询。源码用例仅补完成后project/controller两selector相同和另一真实controller拒绝，pending/重启实际命中仍未验，F15继承及b3计划尚未实施范围保持。
+
+四段`git diff --check`逐项EXIT0；`node --max-old-space-size=512 .verification/check-markdown.mjs 8220d851dd998639a0ae3fbf4eff0212dd20ed7c 39cc967df6a71b2c0c22e3daa520ca08331db17e`在BelowNormal下EXIT0，累计两Markdown、5本地链接及无锚点/HTML待审通过，marked18.1.0。没有类型/功能、编译、SQLite、CLI/进程、SDK/模型或服务检查，所有动态仍证据不足，当前无正式PR及动态窗口，原S12800/Orca保持。
