@@ -1208,3 +1208,27 @@ HttpClientHandler仅在子进程读实际DefaultProxy，默认TLS、无Cookies�
 准确helper以PowerShell Parser.ParseInput、后继runner以Parser.ParseFile均语法错误0；准确MJS经UTF-8 stdin交Node24.16.0 `--check --input-type=module`实际EXIT0，均body_executed=false，BelowNormal/Node512MiB。旧runner7755已保存在build-04原件，后继实际SHA为b7b5289cf7d312dea37320386de356c19156cb0e94b5634c17892f8e8a519237，全文比较只有candidate03改candidate04；build-05和新candidate04当前均不存在。`check-revision.ps1`以9e→2c实际EXIT0，两Markdown/5本地链接及Git空白通过。
 
 当前只是静态代码符合技术计划，实际D01—D05、网络/哈希/ABI/Go/类型/安装结果均未由本Reviewer执行；外部TLS问题尚未证明修复，完整依赖仍待新metafile。新build05须主控另行交付一次窗口，旧失败及原S55148/restore14/c8保全保持，全部真实账号/工具/输入恢复/Job/完整成果和同候选双Worker继续未通过。
+
+准确2c下载静态接受hook `msg_a1adae3ed2c8`及main0055定稿hook `msg_7c48f3fdf795`已分别获主控`msg_3af1a167b16a`、`msg_d1abbccd3082`完整读取d1ba两报告新增、103行helper和四文档规格的回复，实际唤起确认。后继实际结果分别按下载、RPC图及完整构建范围记录。
+
+## 准确2c的build-05实际下载、RPC图及Python失败
+
+结论：**接受准确`2c391e2718ceef2f44721b727c7471918fecdb4e`本次D02三项实际下载/原校验及已定位完整RPC入口的静态收窄结果；完整可构建交付退回Python选择修复，候选04不可安装。** 已完整读取16968字节build-05日志、内外退出/资源/运行及两次退出观察，实际exec63388和build-exit/outer-exit均1，没有重跑任何Stage。D01未运行、D04未命中分支及D05完整候选未通过，不能由本次200推断所有网络条件或旧TLS根因。
+
+本次准确2c、根37144/创建UTC18:56:09.2623720及一次msg_51ec窗口来源一致。资源UTC18:56:13.312041/15.815249，CPU37.5%/29.3%、可用7926308864/7770779648字节、单调2.503214秒，通过当前门限。实际prod deploy与21组bundle/metafile后，三个官方输入HTTP200，zip/headers/node.lib分别37618919/10291794/2988566字节；日志和原未改消费者连续进入实际Node24.21.0/node-gyp12.3.0，证明原三输入SHA、exe大小/SHA/version条件已通过。本次仅说明默认系统代理/TLS政策下的实际请求成功，没有读取或披露具体代理路由。原VoidTaskResult类型文本保留，安全但尚未验证后继抑制输出。
+
+随后首次node-pty配置因node-gyp自动发现未能取得Python而失败，尚未完成native、其他ABI、Go或VERSION。已完整读实际node-gyp12.3.0/lib/find-python.js：当前版本要求>=3.6.0，默认Windows位置只列311/310/39/38；查找失败不证明本机没有3.13。NODE_GYP_FORCE_PYTHON存在时只有一个检查来源，错误后失败，不转其他默认位置。修复交同一Worker，不能通过文件版本元数据替代实际解释器运行。
+
+同一只读JSON/尺寸检查器对candidate04的21组真实输出实际EXIT0，结果在`.verification/candidate04-metafiles-review.json`。相对build04同一esbuild配置/入口，host实际22483367→20957928字节、输入6136→5666、正bytesInOutput输入6120→5650，完整runtime/rpc/methods/index.ts不在新图中；原browser/Linear/Jira/SSH/updater方法来源已退出该host方法图，仍有通用mobile wiring等真实消费者。本次仅接受已定位入口的静态效果，不证明原生调用、完整动态/native/assets闭包或运行回归。
+
+UTC18:59:04.9625541/07.4104430两次所属及此前身份为空已读。prepare-15/stop-15及一致备份通过，原库integrity ok/foreign_keys空；原S55148/epoch1792521206.8747532于UTC18:55:05.264133明确退出15。prepare资源CPU67.4%/57.7%、可用7.060/7.301GiB、间隔3.014431秒，stop资源CPU65.5%/55.2%、可用7.546/7.608GiB、间隔3.011040秒。restore-15使用同一ed543与原库，资源CPU15.3%/17.2%、可用7.368/7.345GiB、间隔3.002247秒；数据库保全记录ok/fk空/equal。
+
+`.verification/inspect-restored-owner.ps1 -RestoreName restore-15`于UTC19:03:14实际EXIT0：current/restored整份JSON一致，实际S68128/父63436、原程序、创建UTC19:00:53.0194234/epoch1792522853.0194235相差0毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web及原Orca沿主控实际来源，本Reviewer没有执行SQLite/HTTP、解释器预检、构建、下载或模型。下一prepare取restore-15/restored.json，c8不变，当前窗口归原S；五次构建失败及所有部分候选保留，完整原生/成果/安装双Worker仍未通过。
+
+## 准确b75cf8ff的已有Python预检修正
+
+结论：**局部静态接受准确`b75cf8ffeedffd244934dfac078b4926e865eb15`的Python选择/实际预检、VoidTaskResult抑制及新构建准备。** 完整读取相对2c的四文件差异，并与真实node-gyp configure/find-python消费者对照。构建选择本机已有C:/Python313/python.exe的realpath，在prod deploy/下载前以独立参数数组执行短标准库JSON命令；成熟JSON读取sys.executable和三段整数版本，canonical身份不同、不可执行或不满足原>=3.6条件立即失败。仅本构建子进程environment设置force，四项gyp的--python与force同一来源，不修改系统PATH/全局配置或安装Python；当前没有执行该新预检或声明3.13已由它验证。
+
+下载器两处异步返回值使用void抑制，实际请求、token、文件、失败清理及全部原Node校验保持。准确MJS Node `--check --input-type=module`、准确PS Parser.ParseInput及runner ParseFile均EXIT0/语法错误0，body_executed=false，BelowNormal/Node512MiB。旧b7b5 runner已存build-05原件；后继SHA bae62ff4c1eee443f0efafabf87f814f4a47f6177b9e0812a0ed9622cd087522，全文只candidate04改candidate05，新candidate05/build-06当前均不存在。`check-revision.ps1`以2c→b75实际EXIT0，两Markdown/5本地链接及Git空白通过。
+
+本次静态接受不等于Python预检、ABI/类型/完整构建或输出修正实际通过；build06仍须主控新鲜准入和一次明确窗口，原失败不能覆盖或以重试替代准确修复。N08与原已定稿输入/恢复/Job/成果继续由同一Worker实施，全部真实验收保持未通过。
