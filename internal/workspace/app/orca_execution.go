@@ -310,7 +310,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		}
 		invocation.Command.Workdir = root
 		invocation.Project = p
-	} else if command.Controller != "" {
+	} else if command.Controller != "" && command.Action != "request.show" {
 		scope, err := s.runtime.ResolveScope(ctx, projectID, command)
 		if err != nil {
 			return reply, err

@@ -63,8 +63,9 @@ function receipt(request, method) {
   assert.equal(rows[0].state, 'completed')
   return { ...rows[0], receipt: JSON.parse(rows[0].receipt) }
 }
-async function inspect(request) {
-  const observed = (await cli(['request', 'show', '--project', values['project-id'], '--request-id', request])).envelope.result
+async function inspect(request, controller) {
+  const selector = controller ? ['--controller', controller] : ['--project', values['project-id']]
+  const observed = (await cli(['request', 'show', ...selector, '--request-id', request])).envelope.result
   assert.equal(observed.state, 'completed')
   return observed
 }
@@ -196,6 +197,7 @@ async function verifyIdempotency() {
   const fixedContext = JSON.parse(nativeTask.spec).context
   assert.ok(fixedContext.id && fixedContext.created_at)
   const taskReceipt = receipt(taskR, 'swa.taskCreate'), observedTask = await inspect(taskR)
+  assert.deepEqual(await inspect(taskR, controller), observedTask)
   assert.deepEqual(taskReceipt.receipt.children, [`${taskR}/run-create`, `${taskR}/root-task`])
   assert.deepEqual(observedTask.children.map(row => row.requestId), taskReceipt.receipt.children)
   assert.ok(observedTask.children.every(row => row.state === 'completed'))
@@ -218,9 +220,11 @@ async function verifyIdempotency() {
   const another = (await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])).envelope.controller
   assert.ok(another && another !== controller)
   await mismatch(['controller', 'close', '--controller', another, '--request-id', closeR])
+  const foreignRequest = await cli(['request', 'show', '--controller', another, '--request-id', taskR], [3])
+  assert.equal(foreignRequest.envelope.error.code, 'scope_denied')
   const anotherOwner = (await cli(['controller', 'show', '--controller', another])).envelope.result.owner
   await cli(['controller', 'close', '--controller', another, '--request-id', randomUUID()])
   const anotherExited = await gone(anotherOwner)
-  checks.push({ case: 'controller_close_same_request_concurrent_completed_and_other_controller', request: closeR, receipt: closed, exited, anotherExited })
+  checks.push({ case: 'controller_close_same_request_concurrent_completed_and_other_controller', request: closeR, receipt: closed, exited, anotherExited, foreignRequest })
   await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, checks, commands, model_calls: 0, remainingCases, scope: 'actual_native_non_model_idempotency_checks_only' }, null, 2) + '\n', { flag: 'wx' })
 }

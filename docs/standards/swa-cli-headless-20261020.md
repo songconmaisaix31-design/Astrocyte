@@ -132,6 +132,8 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 完成后的open receipt保留实际clientIdentity/clientMutationId；task.create保留两个实际子请求；其他写动作保留`R/native`；close保留实际binding及两项进程身份。`request show`从这些原生记录直接查子receipt，不另建请求账本。
 
+`request show`经App当前project/caller/observe授权后直接查询原receipt，controller形式不先解析可能pending的Run/root/context。私有client在任何receipt输出前核其实际project及给定controller；错配使用既有`RuntimeClientError('scope_denied')`，CLI返回3。此处不调用helper、不创建或重发原请求，也不改变执行动作的当前context和准入检查。
+
 open在PTY请求开始后抛出或失联时，产品handler将该已可能发生的效果返回`operation_unknown`，保留原生pending及checkpoint；不能让原executor的普通异常清理把它变成可重建。close及task create也在首次外部副作用前checkpoint，之后的异常保持相同unknown规则。此处错误转换保留具体cause/stage和已有身份，不捕获后继续执行。原executor对pending非release动作本就拒绝再次invoke，产品不增加自动恢复执行分支。
 
 响应丢失或runtime重启后，查询按原checkpoint只读核精确handle、真实daemon `listProcesses`、持久PTY/session归属及原生Run coordinator/子请求receipt。已创建PTY而尚无Run的状态保留该helper；Run已创建而根Task未确认时返回原Run及pending子请求。原生reconcile可核exact handle的既有PTY，但产品查询不得调用会在无匹配时spawn的`dedupeTerminalCreate(...,reconcileExisting=true,...)`。未知、无inventory、缺handle或多重匹配均不创建、不重发、不释放；单独absent不证明无副作用。需要新controller时先获得原精确helper和后代已退出的正向证明，再由新的明确请求创建；绑定已有Run仍按§3.2真实runUse及generation规则。
@@ -510,3 +512,5 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 准确9741fccb8f705b057b913e617d9ae522536c1e88的普通push及本Worker ls-remote均EXIT0，主控独立ls-remote随后连接失败，后者保留失败且不计为已核远端。后继修正swa原生拒绝code边界和未知关闭/创建占用的退出码，补真实SQLite写锁拒绝源码；`gofmt -d cmd/swa/main.go`无差异、PowerShell ParseFile及git diff --check实际通过，所有程序正文、类型检查、编译、模型和安装仍NOT_RUN。
 
 准确2c007de5ec54ce1cdb11a2f6052a116d1dc958c4已普通push，Worker ls-remote同SHA/EXIT0；后继补T06真实所属CLI断开源码与实际原R查询，不将正常回执或未命中窗口写成断开通过。PowerShell ParseFile和git diff --check实际通过；T06/T08及其余程序正文均未运行，原动态窗口和资源限制保持。
+
+准确72c7b8961a5677c7291967448507d3fc64340a4b普通push和Worker ls-remote EXIT0；后继修正App在`request.show --controller`之前解析pending任务而阻断原请求观察的问题。当前查询仍核当前项目批准及原receipt的project/controller，错配明确scope_denied；真实非模型用例补project/controller查询等价及另一实际controller拒绝。gofmt -d和git diff --check通过，pending/重启分支及全部程序正文未运行；主控最近只读可用0.396GiB，窗口未交。

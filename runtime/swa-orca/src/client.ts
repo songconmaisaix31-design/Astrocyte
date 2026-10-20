@@ -1,7 +1,7 @@
 import { stdin, stdout } from 'node:process'
 import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
-import { RuntimeRpcFailureError } from '../../../third_party/orca-v1.4.230/src/cli/runtime/types'
+import { RuntimeClientError, RuntimeRpcFailureError } from '../../../third_party/orca-v1.4.230/src/cli/runtime/types'
 import { commandSchema, invocationSchema, nativeObject, nativeError, type Invocation } from './contracts'
 
 const requestSchema = z.discriminatedUnion('operation', [
@@ -103,7 +103,7 @@ async function requestShow(client: RuntimeClient, invocation: Invocation) {
   const request = nativeObject(response.result)
   if (request.state === 'absent') return request
   const receipt = nativeObject(request.receipt)
-  if (receipt.project_id !== invocation.project.id || invocation.command.controller && receipt.controller !== invocation.command.controller) throw new Error('Native request belongs to another project or controller')
+  if (receipt.project_id !== invocation.project.id || invocation.command.controller && receipt.controller !== invocation.command.controller) throw new RuntimeClientError('scope_denied', 'Native request belongs to another project or controller')
   const childIds = z.array(z.string()).parse(receipt.children ?? (receipt.child_request ? [receipt.child_request] : []))
   const children = []
   for (const child of childIds) children.push((await client.call('orchestration.requestShow', { request: child })).result)
