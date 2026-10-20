@@ -6,7 +6,7 @@
 
 `O:` 表示只读上游 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`，准确 `b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`、tag `v1.4.230`；本次HEAD和干净状态均已核。`P:` 表示已安装 `C:/Users/DW/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent`，package版本 `1.0.1`。`S:` 表示本产品。来源源码描述可支持静态判断；动态能力仍须按§7验证。
 
-最新用户要求采用产品自带且隔离的后台，保全本机Orca。主控在本次 `ask` 回复批准本方案的状态边界：**私有Orca原生Run/Task/Dispatch拥有首版执行状态**；Workspace复用适用项目、授权与固定上下文；旧Mission/Claim/Relay保留原归属，同一首版任务不双写。主控在准确方案审核后更新SPEC，当前实现未变。
+最新用户要求采用产品自带且隔离的后台，保全本机Orca。主控在本次 `ask` 回复批准本方案的状态边界：**私有Orca原生Run/Task/Dispatch拥有首版执行状态**；Workspace复用适用项目、授权与固定上下文；旧Mission/Claim/Relay保留原归属，同一首版任务不双写。主控已将独立接受的接口及停止保护边界写入SPEC §21.1，当前程序继续实现和独立复审。
 
 | 对象 | 唯一拥有者与产品边界 |
 | --- | --- |
@@ -64,7 +64,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 ### 3.1 安装、状态和全局消费者
 
-已审Windows安装布局为`<InstallRoot>/bin/swa.exe`、`<InstallRoot>/lib/swa-runtime/`和`<InstallRoot>/runtimes/node-<原生版本标识>/node.exe`；可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器使用真实路径、reparse point及ACL核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。
+当前Windows安装契约与真实构建入口使用同一平铺布局：`<InstallRoot>/swa.exe`、`<InstallRoot>/server.exe`、`<InstallRoot>/node/node.exe`与`<InstallRoot>/runtime/`。runtime内包含`host.cjs`、`client.cjs`、`controller-helper.cjs`、`pi-entry.mjs`、`provider-job-bootstrap.mjs`、`pi-session.mjs`、固定依赖的`node_modules`及按来源basename放置的native child JS入口；Node LICENSE、产品及Orca许可和VERSION分别随包保留。所有适配器按上述实际绝对路径解析，安装复制真实内容，可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器在复制前创建独占新目录、设置私有ACL，并用真实路径及reparse核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。
 
 | 原生消费者 | 当前源码行为 | 产品composition处理 |
 | --- | --- | --- |
@@ -95,7 +95,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 原生`runCreate`要求stable pane/session，普通外部终端不能凭空取得该身份。方案增加一个**实际运行的控制helper**，只承担已有命令的传输和身份绑定，无模型或自动调度循环：
 
-1. `swa controller open`通过现有项目scoped token向Go App请求，重查项目、批准及允许动作。后台在私有runtime中创建真实后台PTY，启动随包`node swa-controller.js`；保存原生terminal/pane/process incarnation及实际PID/创建时间。该内部创建传入真实`launchConfig`，其`agentCommand/agentArgs/agentEnv`仅描述随包helper命令，不传`startupAgent/launchAgent`。`O:src/main/agent-launch/agent-launch-token.ts:agentLaunchTokenFor`仅在launchConfig存在时mint token，`terminal/launch/terminal-create.ts`负责环境注入和PTY commitment；普通空壳terminal没有这项token，不能当控制身份。此helper不登记成模型Agent，不伪造hook状态。
+1. `swa controller open`通过现有项目scoped token向Go App请求，重查项目、批准及允许动作。后台在私有runtime中创建真实后台PTY，启动准确`<InstallRoot>/node/node.exe <InstallRoot>/runtime/controller-helper.cjs`；保存原生terminal/pane/process incarnation及实际PID/创建时间。该内部创建传入真实`launchConfig`，其`agentCommand/agentArgs/agentEnv`仅描述随包helper命令，不传`startupAgent/launchAgent`。`O:src/main/agent-launch/agent-launch-token.ts:agentLaunchTokenFor`仅在launchConfig存在时mint token，`terminal/launch/terminal-create.ts`负责环境注入和PTY commitment；普通空壳terminal没有这项token，不能当控制身份。此helper不登记成模型Agent，不伪造hook状态。
 2. helper从自己原生launch环境读取宿主产生的真实token/handle和产品metadata，经RuntimeClient发起请求。open只创建并核实helper，不创建Run；每个controller只服务一次用户任务，`task create`随后由它创建一个Run及根Task。用户命令不接受`--from`、pane、consumer、actor或launch token；控制helper只以自己的实际身份调用runCreate/runUse和原生任务/Worker方法。
 3. 外部终端和已有Agent使用同一`controller`选择器及原有项目token。后台在每次写入核准主体、项目、批准、root Task、controller的完整活身份后，经原生terminal输入通道交付命令；helper只接收版本化JSON动作，由成熟JSON解析器解析，不执行调用者传入的shell字符串。命令结果使用原生request回执及私有终端输出返回；helper传输自身不另建持久队列或任务表。
 4. 严格产品admission调用原生精确launch校验，不能因上游核验返回null就沿宽松declared-handle分支放行。helper的输入接受与请求执行分别记录；传输未知时按原request ID查询，不再次terminal.send。真实收到的correlation ID用于定位，不充当权限凭据。
@@ -451,6 +451,10 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 本阶段实际轻量检查：修改的八个Go文件`gofmt -d`最终EXIT0；安装PowerShell的Language.Parser.ParseFile无语法错误、正文NOT_RUN；真实Git patch解析`git apply --numstat`接受node-pty补丁，产品差异`git diff --check`EXIT0。格式检查此前发现process_windows.go的字段空格并已通过文件编辑工具修正；检查不表示编译、安装或真实功能通过。
 
 阶段源码10deb049及普通纳入main13974后的f0ba550352ea28b63b008c12542e83dc47adbdf3已普通push、实际EXIT0。后继继续同一Worker补验证：CLI在传输前复用App同一字段校验；普通进程fixture使用实际安装Node、共同bootstrap和原ManagedProviderProcess/Job关闭适配，现已编写正常、强制、root异常、最后派生及无关Job保全和真实负向句柄/创建身份用例，尚未运行。T09父宿主失联、实际SDK abort后关闭及缺native预输入等分支仍待补齐，验证入口对未完成分支返回证据不足，不能把局部fixture成功登记成T09通过。原生Job补充拒绝已归另一自有Job的同一root，两个Job的实际目标仍分别核验。
+
+原Reviewer msg_331f32dfa9f5接受准确f0的F08静态修复，F09要求实际已创建的root必须先取得成功分配及真实成员见证，才允许全树结算。当前返修保存该必要见证；分配或成员缺证即保持unverifiable、保留Job外部对象和原会话，不以之后root消失和空Job结算。真实spawn未创建任何进程的processless另按实际无PID/原生error+close观察清理未绑定空Job，关闭结果tree=null，不输出已绑定全树退出证明。普通fixture已补实际Node先退出再绑定的缺成员见证，以及确实不存在程序的processless输入；两种结果分别断言unverifiable和无树证明，均未运行。另补真实父宿主失联、错误创建身份、已绑定另一自有Job、已关闭句柄和缺native副本，实际SDK abort分支仍待实施。
+
+主控prepare-02在停服前被真实资源门限拒绝：其ask回复记录UTC11:00:16 CPU7.2%、可用3.529GiB不足4GiB，原S12800未终止，没有prepared/window-ready；本Worker全部新Stage仍NOT_RUN。失败原件由主控保留，后续只在明确新窗口交付后执行，不降低门限或自行终止其他进程。
 
 第三方子树按Git archive导出视图导入，包含产品适配；原Reviewer使用准确Git对象核得导出视图省略docs/audits、其他文档/审查工具及部分tests/tools，另有Windows导入形成的执行位变化。LICENSE及根package/锁与准确b287来源相同。当前不把该子树描述为完整原树逐项相同；Windows实际构建闭包仍需逐入口验证，未执行上游录制fixture或为其原有空白修改原件。
 

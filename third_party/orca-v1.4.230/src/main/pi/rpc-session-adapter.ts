@@ -108,7 +108,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
           : new AgentSessionPreSpawnError(error)
       }
       const result = await session.close(false).catch(() => null)
-      if (result?.root === 'exited' && result.tree === 'exited') {
+      if (result?.root === 'exited' && (result.tree === 'exited' || session.connection.processless)) {
         throw new AgentSessionAcquisitionExitProvenError(error)
       }
       this.starts.retainFailed(id, session.connection)
@@ -246,7 +246,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
     if (result.root !== 'exited') {
       return false
     }
-    if (result.tree !== 'exited') {
+    if (result.tree !== 'exited' && !session.connection.processless) {
       throw new AgentSessionAcquisitionExitUnprovenError(new Error('SWA complete Pi Job exit remains unknown'))
     }
     return true

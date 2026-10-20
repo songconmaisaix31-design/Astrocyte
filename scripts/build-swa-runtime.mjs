@@ -36,6 +36,7 @@ export async function buildSWARuntime(output) {
     'controller-helper.cjs': join(runtime, 'src', 'controller-helper.ts'),
     'swa-provider-process-tree.cjs': join(upstream, 'src/main/provider-process/swa-provider-process-tree.ts'),
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
+    'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),
     'parcel-watcher-process-entry.js': join(upstream, 'src/main/ipc/parcel-watcher-process-entry.ts'),
     'daemon-entry.js': join(upstream, 'src/main/daemon/daemon-entry.ts'),
     'profile-state-writer-worker-entry.js': join(upstream, 'src/main/persistence/profile-state/profile-state-writer-worker-entry.ts'),
@@ -50,7 +51,7 @@ export async function buildSWARuntime(output) {
     const result = await build({ ...common, entryPoints: [entry], outfile: join(output, filename) })
     await writeFile(join(output, filename + '.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
-  for (const name of ['pi-entry', 'pi-session', 'provider-job-bootstrap']) {
+  for (const name of ['pi-entry', 'pi-session', 'provider-job-bootstrap', 'readonly-codex-credentials']) {
     const sdk = await build({ ...common, entryPoints: [join(runtime, 'src', name + '.ts')], outfile: join(output, name + '.mjs'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' }, packages: 'external', external: [...common.external, './pi-session.mjs', './provider-job-bootstrap.mjs'] })
     await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(sdk.metafile, null, 2) + '\n', { flag: 'wx' })
   }

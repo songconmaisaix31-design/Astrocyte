@@ -26,6 +26,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   private readonly job: object
   private child?: PipedChildProcess
   private root?: Identity
+  private assignmentWitness = false
   private exitState?: () => { observed: boolean; processless: boolean }
   private admission?: Promise<void>
   private closed = false
@@ -54,7 +55,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
     this.admission = this.admit(child)
     void this.admission.catch(error => {
       process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_admission_failed', pid: child.pid, message: error instanceof Error ? error.message : 'SWA admission failed' }) + '\n')
-      child.stdin.end()
+      if (child.pid !== undefined && !child.stdin.destroyed) child.stdin.end()
     })
   }
 
@@ -71,6 +72,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
 
   private async admit(child: PipedChildProcess): Promise<void> {
     if (!child.pid || !child.send || !child.connected) throw new Error('SWA SDK child has no actual Node IPC channel')
+    if (child.exitCode !== null || child.signalCode !== null || this.exitState?.().observed) throw new Error('SWA actual SDK root exited before its Job binding')
     const creationTimeMs = readWindowsProcessCreationTime(child.pid)
     if (!creationTimeMs) throw new Error('SWA SDK root creation identity unavailable')
     this.root = { pid: child.pid, creationTimeMs }
@@ -78,6 +80,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
     this.native.assignProviderJob(this.job, child.pid, creationTimeMs)
     const observed = this.observe()
     if (!observed.assigned || observed.rootPid !== child.pid || observed.rootCreationTimeMs !== creationTimeMs || !observed.members.some(row => row.pid === child.pid && row.creationTimeMs === creationTimeMs)) throw new Error('SWA actual Job root membership unconfirmed before SDK load')
+    this.assignmentWitness = true
     const pid = child.pid
     await new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => finish(new Error('SWA SDK bootstrap admission was not observed')), 10_000)
@@ -122,9 +125,27 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
 
   readObservation(): Observation { return this.observe() }
 
+  releaseProcessless(): void {
+    if (!this.child || !this.exitState?.().processless || this.child.pid !== undefined || this.root || this.identities.size) throw new Error('SWA processless cleanup requires actual evidence that no process was created')
+    if (this.closed) return
+    const observed = this.observe()
+    if (observed.assigned || observed.rootPid !== 0 || observed.members.length) throw new Error('SWA refuses processless cleanup of a bound Job')
+    this.native.closeProviderJob(this.job)
+    this.closed = true
+    process.stderr.write(JSON.stringify({ type: 'swa_processless_spawn_failure', observation: observed, treeProof: null }) + '\n')
+  }
+
   async reap(): Promise<DescendantTreeVerdict> {
     if (this.closed) return this.verdict
     if (!this.child || !this.exitState) throw new Error('SWA Job root observation unavailable')
+    if (this.exitState().processless) {
+      this.releaseProcessless()
+      return 'unverifiable'
+    }
+    if (!this.assignmentWitness) {
+      process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_exit_unknown', root: this.root, reason: 'successful_assignment_and_root_membership_not_observed' }) + '\n')
+      return 'unverifiable'
+    }
     const first = this.observe()
     if (first.members.length) {
       if (!first.assigned) throw new Error('SWA refuses termination without its actual Job assignment')
@@ -137,7 +158,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
     while (performance.now() < deadline) {
       const current = this.observe()
       const state = this.exitState()
-      const rootGone = state.processless || state.observed && current.rootExited && this.root !== undefined
+      const rootGone = state.observed && current.assigned && current.rootExited && this.root !== undefined && this.assignmentWitness
       const rows = await readWindowsProcessIdentityTableFresh()
       const identitiesGone = [...this.identities.values()].every(old => {
         const row = rows.find(item => item.pid === old.pid)

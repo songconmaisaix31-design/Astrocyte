@@ -11,6 +11,8 @@ export type ProviderProcessTree = {
   readonly treeVerdict: DescendantTreeVerdict
   /** A reap has reached the root while it lived: its exit since then is no longer its own. */
   readonly forcedReapAttempted?: boolean
+  /** 只清理经实际 spawn 失败证明从未创建进程的资源，不产生全树退出证明。 */
+  releaseProcessless?: () => void
 }
 
 export type ProviderProcessClosePolicy = {

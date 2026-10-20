@@ -47,7 +47,7 @@ export class JsonlRpcAgentConnection {
       this.managed = spawnManagedProviderProcess(launch, {
         spawnImpl,
         site: 'jsonl-rpc-agent-teardown',
-        ...(this.ownedTree ? { acceptClose: result => result.root === 'exited' && result.tree === 'exited' } : {}),
+        ...(this.ownedTree ? { acceptClose: result => result.root === 'exited' && (result.tree === 'exited' || this.managed.processless) } : {}),
         ...(options.onOutput ? { onOutput: options.onOutput } : {})
       })
     } catch (error) {
@@ -124,7 +124,7 @@ export class JsonlRpcAgentConnection {
         }
         if (!this.ownedTree) publish()
         else void managed.close(this.ownedTree).then(result => {
-          if (result.root === 'exited' && result.tree === 'exited') publish()
+          if (result.root === 'exited' && (result.tree === 'exited' || managed.processless)) publish()
           else this.diagnose('SWA SDK root exited while complete Job exit remains unknown')
         }, () => this.diagnose('SWA SDK Job exit query failed; retain its session and resources'))
       }
@@ -154,7 +154,7 @@ export class JsonlRpcAgentConnection {
     return this.peer.closed
   }
   get rootVerdict(): ManagedProviderProcess['rootVerdict'] {
-    if (this.ownedTree && this.managed.rootVerdict === 'exited' && this.ownedTree.treeVerdict !== 'exited') return 'unverifiable'
+    if (this.ownedTree && this.managed.rootVerdict === 'exited' && !this.managed.processless && this.ownedTree.treeVerdict !== 'exited') return 'unverifiable'
     return this.managed.rootVerdict
   }
   get processless(): boolean {

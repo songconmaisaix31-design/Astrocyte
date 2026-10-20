@@ -46,12 +46,14 @@ $revision = (Get-Content -LiteralPath (Join-Path $package 'VERSION') -Raw).Trim(
 if ($revision -notmatch '^[0-9a-f]{40}$') { throw '准确源码版本缺失' }
 $reported = & (Join-Path $package 'swa.exe') --version
 if ($LASTEXITCODE -ne 0 -or $reported.Trim() -ne $revision) { throw '候选 CLI 与准确源码版本不符' }
-$copy = "require('node:fs').cpSync(process.argv[1],process.argv[2],{recursive:true,dereference:true,errorOnExist:true,force:false})"
-& $bundledNode --max-old-space-size=1024 -e $copy $package $destination
-if ($LASTEXITCODE -ne 0) { throw '复制安装闭包失败，保留实际目标供检查' }
+if (-not (Test-Path -LiteralPath ([System.IO.Path]::GetDirectoryName($destination)) -PathType Container)) { throw '安装目标的明确父目录必须存在' }
+New-Item -ItemType Directory -Path $destination | Out-Null
 $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 & (Join-Path $env:SystemRoot 'System32/icacls.exe') $destination '/inheritance:r' '/grant:r' "*$($sid):(OI)(CI)F"
 if ($LASTEXITCODE -ne 0) { throw '安装根私有 ACL 设置失败' }
+$copy = "require('node:fs').cpSync(process.argv[1],process.argv[2],{recursive:true,dereference:true,errorOnExist:true,force:false})"
+& $bundledNode --max-old-space-size=1024 -e $copy $package $destination
+if ($LASTEXITCODE -ne 0) { throw '复制安装闭包失败，保留实际目标供检查' }
 $installed = Join-Path $destination 'swa.exe'
 $installedRevision = & $installed --version
 if ($LASTEXITCODE -ne 0 -or $installedRevision.Trim() -ne $revision) { throw '安装后 CLI 版本不符' }
