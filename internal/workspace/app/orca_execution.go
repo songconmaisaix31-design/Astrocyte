@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"path/filepath"
 	"strings"
 	"time"
@@ -329,13 +328,13 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 			return reply, err
 		}
 		var spec OrcaTaskSpec
+		if !json.Valid([]byte(file.Text)) {
+			return reply, projectError(apierrors.ValidationFailed, "task specification must contain exactly one JSON object")
+		}
 		decoder := json.NewDecoder(bytes.NewBufferString(file.Text))
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&spec); err != nil {
 			return reply, fmt.Errorf("decode task specification: %w", err)
-		}
-		if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-			return reply, projectError(apierrors.ValidationFailed, "task specification must contain exactly one JSON object")
 		}
 		if strings.TrimSpace(spec.Goal) == "" || spec.SourceRepo == "" || spec.SourceRevision == "" || len(spec.SuccessCriteria) == 0 || spec.MaxWorkers != 2 {
 			return reply, projectError(apierrors.ValidationFailed, "task specification requires goal, source revision, success criteria and max_workers=2")

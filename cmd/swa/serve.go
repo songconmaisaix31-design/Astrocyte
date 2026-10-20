@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
@@ -22,208 +23,362 @@ import (
 )
 
 func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	output := cliOutput{stdout: stdout, stderr: stderr, action: "serve"}
 	flags := flag.NewFlagSet("swa serve", flag.ContinueOnError)
-	flags.SetOutput(stderr)
+	flags.SetOutput(io.Discard)
 	data := flags.String("data-dir", "", "明确的私有数据目录")
 	port := flags.Int("port", 0, "明确的回环 HTTP 端口")
 	asJSON := flags.Bool("json", false, "输出实际 readiness")
 	auth := flags.String("codex-auth-file", os.Getenv("SWA_CODEX_AUTH_FILE"), "已配置的只读 Codex OAuth 文件")
 	protected := flags.String("protected-roots", os.Getenv("SWA_PROTECTED_ROOTS"), "本机 Orca 及账户受保护目录列表")
-	if err := flags.Parse(args); err != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || !filepath.IsAbs(*auth) || *port < 1 || *port > 65535 || *protected == "" {
-		return report(stderr, "validation_failed", "需要明确的数据目录、端口、只读认证来源及受保护目录", "correct_serve_configuration", 2)
+	parseError := flags.Parse(args)
+	output.pretty = !*asJSON
+	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || !filepath.IsAbs(*auth) || *port < 1 || *port > 65535 || *protected == "" {
+		return output.failure("validation_failed", "需要明确的数据目录、端口、只读认证来源及受保护目录", "correct_serve_configuration", 2)
+	}
+	ownerEOF := errors.New("所属 stdin 已结束")
+	ownerError := errors.New("所属 stdin 读取失败")
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
+	go func() {
+		if _, err := io.Copy(io.Discard, os.Stdin); err != nil {
+			cancel(errors.Join(ownerError, err))
+			return
+		}
+		cancel(ownerEOF)
+	}()
+	cancelled := func() int {
+		code := 130
+		if errors.Is(context.Cause(ctx), ownerError) {
+			code = 6
+		}
+		return output.failure("delivery_unknown", "启动结果尚未交付，所属等待已取消", "inspect_private_runtime_and_owned_processes", code)
+	}
+	if ctx.Err() != nil {
+		return cancelled()
 	}
 	if err := configureCurrentProcess(); err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_supported_platform", 4)
+		return output.failure("provider_unavailable", err.Error(), "inspect_supported_platform", 4)
 	}
 	probe, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(*port))
 	if err != nil {
-		return report(stderr, "address_in_use", err.Error(), "choose_unused_explicit_port", 5)
+		return output.failure("address_in_use", err.Error(), "choose_unused_explicit_port", 5)
 	}
 	if err := probe.Close(); err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_explicit_port", 4)
+		return output.failure("provider_unavailable", err.Error(), "inspect_explicit_port", 4)
 	}
 	executable, err := os.Executable()
 	if err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_installation", 4)
+		return output.failure("provider_unavailable", err.Error(), "inspect_installation", 4)
 	}
 	install, err := (agents.ProjectFiles{}).CanonicalRoot(filepath.Dir(executable))
 	if err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_installation", 4)
+		return output.failure("provider_unavailable", err.Error(), "inspect_installation", 4)
 	}
 	roots := filepath.SplitList(*protected)
 	canonicalData, err := privateDataDirectory(*data, install, roots)
 	if err != nil {
-		return report(stderr, "scope_denied", err.Error(), "choose_private_product_roots", 3)
+		return output.failure("scope_denied", err.Error(), "choose_private_product_roots", 3)
 	}
 	for _, name := range []string{"home", "temp"} {
 		if err := os.MkdirAll(filepath.Join(canonicalData, name), 0o700); err != nil {
-			return report(stderr, "storage_failed", err.Error(), "inspect_private_data_root", 7)
+			return output.failure("storage_failed", err.Error(), "inspect_private_data_root", 7)
 		}
 	}
 	native, err := orcaadapter.New(orcaadapter.Config{InstallRoot: install, DataRoot: canonicalData, NodeExecutable: filepath.Join(install, "node", "node.exe"), ClientEntry: filepath.Join(install, "runtime", "client.cjs"), PiEntry: filepath.Join(install, "runtime", "pi-entry.mjs"), CodexAuthFile: *auth, ProtectedRoots: roots})
 	if err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_installed_runtime", 4)
+		return output.failure("provider_unavailable", err.Error(), "inspect_installed_runtime", 4)
 	}
 	samples, err := resourceAdmission(ctx)
 	_ = json.NewEncoder(stderr).Encode(map[string]any{"type": "resource_admission", "samples": samples, "accepted": err == nil})
 	if err != nil {
-		return report(stderr, "resource_refused", err.Error(), "inspect_current_resources", 5)
+		if ctx.Err() != nil {
+			return cancelled()
+		}
+		return output.failure("resource_refused", err.Error(), "inspect_current_resources", 5)
+	}
+	job, err := ownServiceTree()
+	if err != nil {
+		return output.failure("provider_unavailable", err.Error(), "inspect_owned_service_job", 4)
+	}
+	var node, server *ownedService
+	var stopped *nativeStopped
+	finish := func(code int, message string) int {
+		if ctx.Err() != nil && !output.attempted {
+			code, message = 130, "启动结果尚未交付，所属等待已取消"
+		}
+		if errors.Is(context.Cause(ctx), ownerError) {
+			code, message = 6, context.Cause(ctx).Error()
+		}
+		// HTTP 先停止接收请求，原生后台随后按自己的资源与daemon关闭条件退出。
+		for _, child := range []*ownedService{server, node} {
+			if child == nil {
+				continue
+			}
+			if err := child.closeOwner(); err != nil {
+				_, _ = fmt.Fprintf(stderr, "所属服务 stdin 关闭失败: %v\n", err)
+				code = 6
+			}
+			childCode := child.await(stderr)
+			if childCode == 7 && code == 130 {
+				childCode = 6
+			}
+			if childCode == 6 || childCode == 7 && code != 6 {
+				code = childCode
+			}
+		}
+		if node != nil {
+			select {
+			case <-node.done:
+				if stopped == nil && (output.identity.RuntimeID != "" || node.waitError == nil) {
+					_, _ = fmt.Fprintln(stderr, "原生空闲关闭尚未确认；保留原请求与资源记录。")
+					code = 6
+				}
+			default:
+				code = 6
+			}
+		}
+		if err := job.awaitDescendants(stderr); err != nil {
+			_, _ = fmt.Fprintf(stderr, "全部所属后代退出尚未确认: %v\n", err)
+			code = 6
+		}
+		if err := job.close(); err != nil {
+			_, _ = fmt.Fprintf(stderr, "所属 Job 句柄关闭失败: %v\n", err)
+			code = 6
+		}
+		if code == 0 {
+			return 0
+		}
+		failureCode := "runtime_error"
+		if code == 4 {
+			failureCode = "provider_unavailable"
+		}
+		if code == 6 || code == 130 {
+			failureCode = "delivery_unknown"
+		}
+		return output.failure(failureCode, message, "inspect_private_runtime_and_owned_processes", code)
+	}
+	if ctx.Err() != nil {
+		return finish(130, "启动已取消")
 	}
 	baseEnv := native.ChildEnvironment()
 	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "GOMAXPROCS=4", "GOMEMLIMIT=512MiB")
-	node := exec.Command(filepath.Join(install, "node", "node.exe"), "--max-old-space-size=1024", filepath.Join(install, "runtime", "host.cjs"))
-	node.Env, node.Dir, node.Stderr = baseEnv, install, stderr
-	configureServiceChild(node)
-	nodeOwner, err := node.StdinPipe()
+	nodeCommand := exec.Command(filepath.Join(install, "node", "node.exe"), "--max-old-space-size=1024", filepath.Join(install, "runtime", "host.cjs"))
+	nodeCommand.Env, nodeCommand.Dir, nodeCommand.Stderr = baseEnv, install, stderr
+	ready := make(chan nativeStartup, 1)
+	node, err = startOwnedService(nodeCommand, func(stream io.Reader) error {
+		return readNativeLifecycle(stream, ready, &stopped, canonicalData, nodeCommand.Path)
+	})
 	if err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_owned_service_pipes", 4)
+		return finish(4, err.Error())
 	}
-	nodeOutput, err := node.StdoutPipe()
-	if err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_owned_service_pipes", 4)
+	if err := job.observeChild(node.command, stderr); err != nil {
+		return finish(6, err.Error())
 	}
-	if err := node.Start(); err != nil {
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_installed_node", 4)
-	}
-	nodeResult := make(chan error, 1)
-	go func() { nodeResult <- node.Wait() }()
-	defer nodeOwner.Close()
-	ready := make(chan map[string]any, 1)
-	readyError := make(chan error, 1)
-	go func() {
-		var actual map[string]any
-		if err := json.NewDecoder(nodeOutput).Decode(&actual); err != nil {
-			readyError <- err
-			return
-		}
-		ready <- actual
-	}()
-	var nativeReady map[string]any
+	var nativeReady nativeReadiness
 	select {
-	case nativeReady = <-ready:
-		if nativeReady["ok"] != true {
-			_ = nodeOwner.Close()
-			if waitOwnedService(node, nodeResult, stderr, 4) == 6 {
-				return 6
-			}
-			return report(stderr, "provider_unavailable", "私有原生后台没有返回真实 readiness", "inspect_private_runtime_log", 4)
+	case actual := <-ready:
+		if actual.err != nil {
+			return finish(7, actual.err.Error())
 		}
-	case err := <-readyError:
-		_ = nodeOwner.Close()
-		if waitOwnedService(node, nodeResult, stderr, 4) == 6 {
-			return 6
-		}
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_private_runtime_log", 4)
-	case err := <-nodeResult:
-		return report(stderr, "provider_unavailable", fmt.Sprintf("私有原生后台提前退出: %v", err), "inspect_private_runtime_log", 4)
+		nativeReady = actual.readiness
+		output.identity.RuntimeID = nativeReady.RuntimeID
+	case <-node.done:
+		return finish(7, "私有原生后台提前退出")
 	case <-ctx.Done():
-		_ = nodeOwner.Close()
-		return waitOwnedService(node, nodeResult, stderr, 130)
+		return finish(130, "启动已取消")
 	case <-time.After(60 * time.Second):
-		_ = nodeOwner.Close()
-		return waitOwnedService(node, nodeResult, stderr, 6)
+		return finish(6, "原生 readiness 尚未确认")
 	}
-	server := exec.Command(filepath.Join(install, "server.exe"))
-	server.Env, server.Dir, server.Stderr = baseEnv, install, stderr
-	configureServiceChild(server)
-	serverOwner, err := server.StdinPipe()
-	if err != nil {
-		_ = nodeOwner.Close()
-		return waitOwnedService(node, nodeResult, stderr, 7)
+	if ctx.Err() != nil {
+		return finish(130, "启动已取消")
 	}
-	serverOutput, err := server.StdoutPipe()
-	if err != nil {
-		_ = nodeOwner.Close()
-		return waitOwnedService(node, nodeResult, stderr, 4)
-	}
-	if err := server.Start(); err != nil {
-		_ = nodeOwner.Close()
-		_ = waitOwnedService(node, nodeResult, stderr, 4)
-		return report(stderr, "provider_unavailable", err.Error(), "inspect_installed_server", 4)
-	}
-	serverResult := make(chan error, 1)
-	go func() { serverResult <- server.Wait() }()
-	defer serverOwner.Close()
 	endpoint := "http://127.0.0.1:" + strconv.Itoa(*port)
 	listening := make(chan error, 1)
-	go func() {
+	serverCommand := exec.Command(filepath.Join(install, "server.exe"))
+	serverCommand.Env, serverCommand.Dir, serverCommand.Stderr = baseEnv, install, stderr
+	server, err = startOwnedService(serverCommand, func(stream io.Reader) error {
 		var announcement struct {
 			Type   string `json:"type"`
 			APIURL string `json:"api_url"`
 		}
-		if err := json.NewDecoder(serverOutput).Decode(&announcement); err != nil {
+		decoder := json.NewDecoder(stream)
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&announcement); err != nil {
 			listening <- err
-			return
+			return err
 		}
 		if announcement.Type != "http_listening" || announcement.APIURL != endpoint {
-			listening <- errors.New("所属 HTTP 子进程未确认实际指定监听地址")
-			return
+			err := errors.New("所属 HTTP 子进程未确认实际指定监听地址")
+			listening <- err
+			return err
 		}
-		listening <- waitHTTPHealth(ctx, endpoint)
-	}()
+		listening <- nil
+		if err := decoder.Decode(&struct{}{}); err != io.EOF {
+			return errors.New("所属 HTTP 子进程返回了额外或损坏的 stdout")
+		}
+		return nil
+	})
+	if err != nil {
+		return finish(4, err.Error())
+	}
+	if err := job.observeChild(server.command, stderr); err != nil {
+		return finish(6, err.Error())
+	}
 	var startupError error
 	select {
 	case startupError = <-listening:
+		if startupError == nil {
+			startupError = waitHTTPHealth(ctx, endpoint)
+		}
 	case <-ctx.Done():
 		startupError = ctx.Err()
+	case <-node.done:
+		startupError = errors.New("私有原生后台在 HTTP 就绪前退出")
+	case <-server.done:
+		startupError = errors.New("私有 HTTP 服务在就绪前退出")
 	case <-time.After(15 * time.Second):
 		startupError = errors.New("所属 HTTP 子进程监听未确认")
 	}
 	if startupError != nil {
-		_ = serverOwner.Close()
-		_ = nodeOwner.Close()
-		serverCode := waitOwnedService(server, serverResult, stderr, 7)
-		nodeCode := waitOwnedService(node, nodeResult, stderr, 7)
-		if serverCode == 6 || nodeCode == 6 {
-			return 6
-		}
-		return report(stderr, "provider_unavailable", startupError.Error(), "inspect_explicit_port_and_service_logs", 4)
+		return finish(7, startupError.Error())
 	}
-	state := map[string]any{"ok": true, "readiness": nativeReady["readiness"], "http": endpoint, "data_root": canonicalData, "install_root": install, "runtime_pid": node.Process.Pid, "server_pid": server.Process.Pid, "resource_samples": samples}
-	encoder := json.NewEncoder(stdout)
-	if !*asJSON {
-		encoder.SetIndent("", "  ")
+	if ctx.Err() != nil {
+		return finish(130, "启动已取消")
 	}
-	if err := encoder.Encode(state); err != nil {
-		_ = serverOwner.Close()
-		_ = nodeOwner.Close()
-		_ = waitOwnedService(server, serverResult, stderr, 7)
-		return waitOwnedService(node, nodeResult, stderr, 7)
+	select {
+	case <-node.done:
+		return finish(7, "私有原生后台在 readiness 发布前退出")
+	case <-server.done:
+		return finish(7, "私有 HTTP 服务在 readiness 发布前退出")
+	default:
 	}
-	code := 0
+	state := map[string]any{"ok": true, "readiness": nativeReady, "http": endpoint, "data_root": canonicalData, "install_root": install, "runtime_pid": node.command.Process.Pid, "server_pid": server.command.Process.Pid, "resource_samples": samples}
+	if err := output.publish(state); err != nil {
+		return finish(output.outputFailure(err), "readiness 输出失败")
+	}
 	select {
 	case <-ctx.Done():
-		code = 130
-	case err := <-serverResult:
-		_, _ = fmt.Fprintf(stderr, "私有 HTTP 服务退出: %v\n", err)
-		_ = nodeOwner.Close()
-		return waitOwnedService(node, nodeResult, stderr, 7)
-	case err := <-nodeResult:
-		_, _ = fmt.Fprintf(stderr, "私有原生后台退出: %v\n", err)
-		_ = serverOwner.Close()
-		return waitOwnedService(server, serverResult, stderr, 7)
+		if context.Cause(ctx) == ownerEOF {
+			return finish(0, "所属 stdin 已结束")
+		}
+		return finish(130, "所属服务等待已取消")
+	case <-server.done:
+		return finish(7, "私有 HTTP 服务意外退出")
+	case <-node.done:
+		return finish(7, "私有原生后台意外退出")
 	}
-	_ = serverOwner.Close()
-	serverCode := waitOwnedService(server, serverResult, stderr, code)
-	_ = nodeOwner.Close()
-	nodeCode := waitOwnedService(node, nodeResult, stderr, code)
-	if serverCode == 6 || nodeCode == 6 {
-		return 6
-	}
-	return code
 }
 
-func waitOwnedService(command *exec.Cmd, result <-chan error, stderr io.Writer, code int) int {
+type ownedService struct {
+	command              *exec.Cmd
+	owner                io.WriteCloser
+	done                 chan struct{}
+	waitError, readError error
+	closeOnce            sync.Once
+	closeError           error
+}
+
+func startOwnedService(command *exec.Cmd, read func(io.Reader) error) (*ownedService, error) {
+	configureServiceChild(command)
+	owner, err := command.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	stream, err := command.StdoutPipe()
+	if err != nil {
+		return nil, errors.Join(err, owner.Close())
+	}
+	if err := command.Start(); err != nil {
+		return nil, errors.Join(err, owner.Close(), stream.Close())
+	}
+	child := &ownedService{command: command, owner: owner, done: make(chan struct{})}
+	go func() {
+		child.readError = read(stream)
+		// 先消费实际 stdout 到 EOF，再 Wait，避免 Wait 提前关闭尚未读取的原生确认。
+		_, drainError := io.Copy(io.Discard, stream)
+		child.readError = errors.Join(child.readError, drainError)
+		child.waitError = command.Wait()
+		close(child.done)
+	}()
+	return child, nil
+}
+
+func (child *ownedService) closeOwner() error {
+	child.closeOnce.Do(func() { child.closeError = child.owner.Close() })
+	return child.closeError
+}
+
+func (child *ownedService) await(stderr io.Writer) int {
 	select {
-	case err := <-result:
-		if err != nil {
-			_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 退出: %v\n", command.Process.Pid, err)
+	case <-child.done:
+		if err := errors.Join(child.waitError, child.readError); err != nil {
+			_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 退出失败: %v\n", child.command.Process.Pid, err)
+			return 7
 		}
-		return code
+		return 0
 	case <-time.After(15 * time.Second):
-		_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 退出尚未确认，保留资源及原请求。\n", command.Process.Pid)
+		_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 退出尚未确认，保留资源及原请求。\n", child.command.Process.Pid)
 		return 6
 	}
+}
+
+type nativeReadiness struct {
+	RuntimeID string `json:"runtimeId"`
+	DataRoot  string `json:"dataRoot"`
+	Node      string `json:"node"`
+}
+
+type nativeStopped struct {
+	Type      string `json:"type"`
+	RuntimeID string `json:"runtime_id"`
+	DataRoot  string `json:"data_root"`
+}
+
+type nativeStartup struct {
+	readiness nativeReadiness
+	err       error
+}
+
+func readNativeLifecycle(stream io.Reader, ready chan<- nativeStartup, stopped **nativeStopped, data, node string) error {
+	decoder := json.NewDecoder(stream)
+	decoder.DisallowUnknownFields()
+	var first struct {
+		OK        bool            `json:"ok"`
+		Readiness nativeReadiness `json:"readiness"`
+		Type      string          `json:"type"`
+		RuntimeID string          `json:"runtime_id"`
+		DataRoot  string          `json:"data_root"`
+	}
+	if err := decoder.Decode(&first); err != nil {
+		ready <- nativeStartup{err: err}
+		return err
+	}
+	var final nativeStopped
+	if first.OK && first.Type == "" && first.RuntimeID == "" && first.DataRoot == "" && first.Readiness.RuntimeID != "" && strings.EqualFold(first.Readiness.DataRoot, data) && strings.EqualFold(first.Readiness.Node, node) {
+		ready <- nativeStartup{readiness: first.Readiness}
+		if err := decoder.Decode(&final); err != nil {
+			return err
+		}
+		if final.RuntimeID != first.Readiness.RuntimeID {
+			return errors.New("原生关闭确认的 runtime 发生变化")
+		}
+	} else if !first.OK && first.Type == "swa_runtime_stopped" && first.Readiness == (nativeReadiness{}) {
+		ready <- nativeStartup{err: errors.New("原生后台在 readiness 前结束所属关闭")}
+		final = nativeStopped{Type: first.Type, RuntimeID: first.RuntimeID, DataRoot: first.DataRoot}
+	} else {
+		err := errors.New("私有原生后台未返回准确 readiness")
+		ready <- nativeStartup{err: err}
+		return err
+	}
+	if final.Type != "swa_runtime_stopped" || final.RuntimeID == "" || !strings.EqualFold(final.DataRoot, data) {
+		return errors.New("私有原生后台的关闭确认无效")
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		return errors.New("私有原生后台关闭确认后仍有额外或损坏的输出")
+	}
+	*stopped = &final
+	return nil
 }
 
 func waitHTTPHealth(ctx context.Context, endpoint string) error {

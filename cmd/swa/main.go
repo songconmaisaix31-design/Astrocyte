@@ -48,18 +48,6 @@ func main() {
 	os.Exit(run(ctx, os.Args[1:], os.Stdout, os.Stderr))
 }
 
-type failure struct {
-	Code           string `json:"code"`
-	Message        string `json:"message"`
-	Retryable      bool   `json:"retryable"`
-	RequiredAction string `json:"required_action"`
-}
-
-func report(w io.Writer, code, message, action string, exit int) int {
-	_ = json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": failure{Code: code, Message: message, RequiredAction: action}})
-	return exit
-}
-
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	output := cliOutput{stdout: stdout, stderr: stderr}
 	if len(args) == 1 && args[0] == "--version" {

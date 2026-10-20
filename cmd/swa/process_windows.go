@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 	"runtime"
 	"syscall"
@@ -27,6 +28,116 @@ func configureCurrentProcess() error {
 func configureServiceChild(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.BELOW_NORMAL_PRIORITY_CLASS}
 }
+
+type serviceJob struct{ handle windows.Handle }
+
+func ownServiceTree() (*serviceJob, error) {
+	handle, err := windows.CreateJobObject(nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	job := &serviceJob{handle: handle}
+	limits := windows.JOBOBJECT_EXTENDED_LIMIT_INFORMATION{}
+	// 当前 serve 在创建子进程前加入独立 Job；关闭句柄不终止进程。
+	if _, err := windows.SetInformationJobObject(handle, windows.JobObjectExtendedLimitInformation, uintptr(unsafe.Pointer(&limits)), uint32(unsafe.Sizeof(limits))); err != nil {
+		return nil, errors.Join(err, job.close())
+	}
+	if err := windows.AssignProcessToJobObject(handle, windows.CurrentProcess()); err != nil {
+		return nil, errors.Join(err, job.close())
+	}
+	active, err := job.active()
+	if err != nil || active != 1 {
+		return nil, errors.Join(fmt.Errorf("serve Job 初始成员不确定: active=%d", active), err, job.close())
+	}
+	return job, nil
+}
+
+func (job *serviceJob) active() (uint32, error) {
+	if err := job.member(windows.CurrentProcess()); err != nil {
+		return 0, err
+	}
+	var accounting struct {
+		UserTime, KernelTime, PeriodUserTime, PeriodKernelTime  int64
+		PageFaults, TotalProcesses, ActiveProcesses, Terminated uint32
+	}
+	var length uint32
+	if err := windows.QueryInformationJobObject(job.handle, windows.JobObjectBasicAccountingInformation, uintptr(unsafe.Pointer(&accounting)), uint32(unsafe.Sizeof(accounting)), &length); err != nil {
+		return 0, err
+	}
+	if length != uint32(unsafe.Sizeof(accounting)) || accounting.ActiveProcesses < 1 || accounting.TotalProcesses < accounting.ActiveProcesses {
+		return 0, errors.New("serve Job 实际 accounting 无效")
+	}
+	return accounting.ActiveProcesses, nil
+}
+
+func (job *serviceJob) member(process windows.Handle) error {
+	var member int32
+	call := windows.NewLazySystemDLL("kernel32.dll").NewProc("IsProcessInJob")
+	result, _, err := call.Call(uintptr(process), uintptr(job.handle), uintptr(unsafe.Pointer(&member)))
+	if result == 0 {
+		return fmt.Errorf("IsProcessInJob: %w", err)
+	}
+	if member == 0 {
+		return errors.New("实际进程不属于本次 serve Job")
+	}
+	return nil
+}
+
+func (job *serviceJob) observeChild(command *exec.Cmd, stderr io.Writer) error {
+	process, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(command.Process.Pid))
+	if err != nil {
+		return err
+	}
+	observe := func() error {
+		if err := job.member(process); err != nil {
+			return err
+		}
+		var created, exited, kernel, user windows.Filetime
+		if err := windows.GetProcessTimes(process, &created, &exited, &kernel, &user); err != nil {
+			return err
+		}
+		active, err := job.active()
+		if err != nil {
+			return err
+		}
+		if created.Nanoseconds() <= 0 || active <= 1 {
+			return errors.New("所属子进程的创建身份或非空 Job 成员未确认")
+		}
+		_, err = fmt.Fprintf(stderr, "serve Job 子进程: pid=%d created_utc=%s active=%d\n", command.Process.Pid, time.Unix(0, created.Nanoseconds()).UTC().Format(time.RFC3339Nano), active)
+		return err
+	}
+	return errors.Join(observe(), windows.CloseHandle(process))
+}
+
+func (job *serviceJob) awaitDescendants(stderr io.Writer) error {
+	deadline := time.NewTimer(15 * time.Second)
+	defer deadline.Stop()
+	tick := time.NewTicker(100 * time.Millisecond)
+	defer tick.Stop()
+	consecutive := 0
+	for {
+		active, err := job.active()
+		if err != nil {
+			return err
+		}
+		if active == 1 {
+			consecutive++
+			_, _ = fmt.Fprintf(stderr, "serve Job 退出观察: utc=%s active=%d consecutive=%d\n", time.Now().UTC().Format(time.RFC3339Nano), active, consecutive)
+			if consecutive == 2 {
+				return nil
+			}
+		} else {
+			consecutive = 0
+		}
+		select {
+		case <-deadline.C:
+			return fmt.Errorf("serve Job 仍有所属后代: active=%d", active)
+		case <-tick.C:
+		}
+	}
+}
+
+func (job *serviceJob) close() error { return windows.CloseHandle(job.handle) }
 
 type cpuTimes struct{ idle, kernel, user windows.Filetime }
 

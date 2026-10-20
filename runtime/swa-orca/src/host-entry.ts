@@ -1,6 +1,7 @@
 import { mkdirSync, realpathSync, lstatSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { format } from 'node:util'
+import { z } from 'zod'
 import { setAppEnvironment, type AppPathName } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
 import { setSecretStore } from '../../../third_party/orca-v1.4.230/src/shared/secret-store'
 
@@ -53,7 +54,7 @@ async function main() {
     privatePath('pi')
     store.updateSettings({ agentStatusHooksEnabled: false, workspaceDir: privatePath('workspaces'), browserClientHostedRemoteEnabled: false, browserSshWorkspaceRoutingEnabled: false })
     const { initDaemonPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-init')
-    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
+    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement, listLiveDaemonPtyIds } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
     await initDaemonPtyProvider(undefined, { macosLoginSessionWatch: false, startupTimeoutMs: 30_000 })
     if (!daemonOwnsFreshPersistentPtys()) throw new Error('SWA requires its actual persistent daemon')
     registerCleanup(async () => {
@@ -94,11 +95,34 @@ async function main() {
     const { SWA_METHODS } = await import('./native-methods')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
     const rpc = new OrcaRuntimeRpcServer({ runtime, userDataPath: data, enableWebSocket: false, methods: [...ALL_RPC_METHODS.filter(method => allowed.has(method.name)), ...SWA_METHODS] })
+    registerCleanup(async () => {
+      if (rpc.readClientActivity().requestsInFlight !== 0) throw new Error('SWA native requests remain in flight')
+      const db = runtime.getOrchestrationDb()
+      const count = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare("SELECT COUNT(*) AS count FROM mutation_receipts WHERE state='pending'").get())
+      if (count.count !== 0) throw new Error('SWA native mutation outcomes remain pending')
+      if (db.listWorkerTerminalResources().some(row => !row.resource || row.resource.release_state !== 'released')) throw new Error('SWA native Worker resources remain unreleased')
+      const opens = z.array(z.object({ caller_fingerprint: z.string(), receipt: z.string() })).parse(db.db.prepare("SELECT caller_fingerprint, receipt FROM mutation_receipts WHERE method='swa.controllerOpen' AND state='completed'").all())
+      for (const open of opens) {
+        const owner = z.object({ controller: z.string().min(1) }).parse(JSON.parse(open.receipt))
+        const closed = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
+          WHERE caller_fingerprint=? AND method='swa.controllerClose' AND state='completed'
+          AND json_valid(receipt)=1 AND json_extract(receipt, '$.controller')=?`).get(open.caller_fingerprint, owner.controller))
+        if (closed.count !== 1) throw new Error('SWA native controller close remains unconfirmed')
+      }
+      const ptys = await listLiveDaemonPtyIds()
+      if (ptys === null || ptys.length !== 0) throw new Error('SWA private daemon idle inventory remains unconfirmed')
+    })
     registerCleanup(() => rpc.stop())
     await rpc.start()
     return { runtimeId: runtime.getRuntimeId(), dataRoot: data, node: process.execPath }
   }, () => { for (const callback of callbacks.splice(0)) callback() }, { browserProvider: false })
-  const shutdown = installOrcadShutdownSignals(() => running.stop())
+  const shutdown = installOrcadShutdownSignals(async () => {
+    await running.stop()
+    // 只有原生空闲检查、daemon退休及全部cleanup成功后确认所属关闭。
+    await new Promise<void>((resolve, reject) => {
+      process.stdout.write(JSON.stringify({ type: 'swa_runtime_stopped', runtime_id: running.runtimeId, data_root: data }) + '\n', error => error ? reject(error) : resolve())
+    })
+  })
   process.stdin.once('end', () => shutdown('SWA owning pipe ended'))
   if (ownerDisconnected) {
     shutdown('SWA owning pipe ended during startup')

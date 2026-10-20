@@ -83,3 +83,7 @@
 原Reviewer准确2bd10d21接受39cc静态返修及四包Go补充，d7fbcfb0接受准确b3f0e229的§7.5计划；主控msg_d7ccfb662bde已授予同一CLI写域静态实施，无运行窗口。F15按实际mtime/size版本修正真实用例：未变化时成功重放，context变化及恢复字节后的真实新版本都拒绝，原生首次固定context保持；没有伪造旧mtime或丢弃version。程序/SDK/编译/信号/安装/模型正文继续NOT_RUN，后继准确CR及§7.5实施继续由本Worker负责。
 
 准确c35的F15静态返修获27f7326a接受，a9eb2745的四段准确局部静态接受已完整读取；main30cd759f的HANDOFF/STATUS及SPEC §21.1条件已读。§7.5开始实施普通CLI的单stdout envelope、原R/selector、真实ErrorV1来源、取消/未知及输出失败路径，Go三个传输前函数同步更新；仅gofmt -d和差异检查通过，全部正文NOT_RUN。serve EOF/后代关闭及实际安装驱动继续实施；T11真实人类入口待用户决定，T12接续契约和计划随后提交主控定稿及独立审核，当前不冻结新参数或开放原生用户输入。
+
+本次唯一依赖/生成窗口已按原msg_36cd7da9f442串行执行一次dependency-02和一次generate-01，全部实际命令/资源退出文件为0，镜像内建重试及peer/deprecated原件保留；准确准备提交f08b52111d4860b5ef162987cce2f43f4a4e6ce0仅锁和生成API类型，普通push EXIT0。主控已收回窗口并确认原S同源恢复PID43068、原库/环境/配置及本机Orca通过；没有构建、安装或产品服务结果。main605f77a0的HANDOFF/STATUS已完整读取。后继§7.5静态源码加入serve实际所属EOF、单次输出、可重复观察的子进程完成，以及本次自有Win32 Job两次全后代退出观察；正常0另须真实原生资源released、无pending、controller关闭和daemon退休/cleanup成功。仅gofmt -d及差异检查通过，C01—C09驱动和T12契约继续由同一Worker处理，全部新功能正文NOT_RUN。
+
+实际静态架构命令首次EXIT1，发现App为JSON末尾校验引用io；原写域修正为json.Valid完整单JSON及原严格Decoder，不改架构规则。修正后同命令EXIT0，45个Go package通过，原件分别static-eof-01/02；Go单并发/256MiB、Node512、BelowNormal及私有TEMP。五份Go源码gofmt -d及git diff --check通过；没有编译或运行功能正文，后继仍须准确静态CR和完整真实验收。
