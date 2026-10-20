@@ -919,3 +919,17 @@ N05现按固定execution_mode明确来源及全过程：structured来自真实re
 G07补效果前明确拒绝、效果后子receipt保全、真实存储失败、逐模式来源及mode冲突；未实际命中继续未验，没有注入假异常或伪造事件。成熟marked AST核763时G表缺独立G08行，d441已恢复G01—G08同一表，补说明在表外，原最终同候选双Worker条件完整保留。另以`msg_94aa1086713a`交原Worker在常规文档更新中同步查询摘要的逐模式措辞，准确DTO及详细查询契约已经分别规定实际来源，不阻塞本次技术结论。
 
 `check-revision.ps1 -Previous 740ccdf9a9dfa33901274fd8dccd37c4beacf1fd -Candidate d441703a620f2e1bcca73edd50c7edc66dc92351` EXIT0，两Markdown/5本地链接及Git空白通过；`.verification/inspect-plan-tables.mjs`使用marked18.1.0读取准确763/d441，确认d441八行同表，BelowNormal/Node512MiB。未发现剩余N04/N05计划缺口或新增多余检查；本次只接受技术方案，由主控定稿SPEC再授权实施，原生Agent/模型/工具范围、T11/T12及全部真实输入/恢复/安装/同候选双Worker结果继续未验，没有新增运行授权。
+
+## 准确092b2613的恢复身份及注册链补充原件
+
+结论：**接受根控制脚本准确SHA256 `092b2613de7f6be3bd13356968029a9125777d446778304edf8bc7e303862433`的两项恢复身份常量。** 内存逆置41264/UTC16:23:39.495409到21300/UTC16:05:49.906991，全文件精确得到已审fea0。UTC16:33:29只读核restore-08 launch/restored/current及实际PID41264/父54292、原程序、创建UTC16:23:39.4954090/epoch1792513419.495409差0毫秒、唯一127.0.0.1:64505监听；原库记录integrity ok、foreign_keys空、stopped_interval_comparison equal。
+
+restore-08启动资源CPU6.0%/10.1%、可用11.679/11.662GiB、BelowNormal、单调3.001391秒符合当前门限。`.verification/verify-restored-owner.ps1`运行EXIT0，原件`.verification/window-092b-readonly.json`；没有执行控制脚本、SQLite、HTTP或采样。完整原环境/配置、health/Web及原Orca38652/runtime49da公开状态采用主控实际来源；当前窗口归原S41264，准确脚本供后继新prepare使用时仍须新鲜身份、环境、保全和资源，本次不授予新窗口。
+
+已独立读取当前注册链REA的exit/resources/summary及101314219字节原JSON。`.verification/read-rea-fields.mjs`使用stream-json3.7.0 parser/filter/streamValues在BelowNormal/Node512MiB下只组装身份、选取来源、统计、coverage/limits及limitations，输出`.verification/rea-registration-static-review.json`，EXIT0；未组装完整图/unknown_ids或逐项审核所有事实，没有重新执行REA或目标程序。
+
+准确Evidence `ev_4e2d7df01d23ced0410fc4f5f74584e6df4467159c03d01d19d5ba5efe62b7f9`绑定当前6a9交付物，实际CLI EXIT0。选取10个JS共896699字节，包括真实注册chunk、TUI配置、registered-agents/capabilities/account-home、launch command/override/defaults及两个RPC参数，解析失败0、5048文件未选。graph为partial/truncated=false，semantic为partial/truncated=true；原件明确注册chunk语义图超过parent剩余结果预算，static/module事实保留。不能由静态保留、声明能力或sender检查推断完整调用、授权执行、当前配置、依赖闭包或模型成功，缺失语义保持未知。
+
+原host Node24.16.0默认global fetch只对固定官方Node24.21.0归档执行一次30秒HEAD，原result为HTTP200/841.8795毫秒、retries=0、proxy_environment_present空，实际exit0。资源CPU8.2%/9.4%、可用11.850/11.821GiB、BelowNormal、约3.002秒通过；原MODULE_TYPELESS警告保留，没有据警告修改上游配置。本次仅证明该时点原传输HEAD返回200；完整下载及旧TimeoutError因果仍未验，没有新建或安装候选、启动产品服务或调用模型。
+
+主控`msg_3d3c842efa23`提出的首装人工授权入口检查纳入既有T02/T03及USAGE：后继准确候选须给出新DataRoot下实际可用的首次入口、真实session/CSRF与项目设置/Grant/token完整操作，必要原资源可复用，不能依赖用户猜正文、开发树或原服务；不因包列表就断言没有路径，不代human批准、不另开Web重构模块。先核当前真实实现，只有具体缺口交回原Worker；该检查不阻断已接受的独立发现代码。
