@@ -18,7 +18,7 @@ M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementati
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
-最新程序准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`已交静态CR；C01—C09及T12接续契约继续由同一Worker负责。T12来源核查确认已审strict helper caller准入尚未实施，须在原生去重执行前核当前及恢复证明，后继完整契约/计划待主控定稿和独立审核。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新preamble实际开始，后续邮件只发新Dispatch。完整当前接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持；c29/f08/c0程序结论仍待独立审核，管理脚本接受与当前窗口见下段。
+当前执行源码、构建修正和T12提案的准确提交及审查范围统一见STATUS与首版任务。C01—C09/helper、T12 strict caller及F16/F17真实消费契约返修继续由同一Worker负责；T12 P01—P03待补齐复审，SPEC接口未定稿。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新会话已实际读到接续说明，后续邮件只发新Dispatch。完整接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持，主控须完整读取每项正式报告再回复原hook。
 
 构建接续：build-01的dist父目录ENOENT/EXIT1原件保留，实际部署/native/TS/Go尚未开始，无候选。bc217的受控父目录修正及6d7控制脚本两身份字段已由独立97a04f01接受，原hook均由主控完整读取回复；当前程序来源897531只在bc217上增加T12完整提案，接口尚未定稿。最近重操作窗口、原S是否运行、实际身份与保全目录统一读取STATUS；每次只运行明确交付的Stage，完成后核所属执行结束并归还窗口，再用该次prepare/stop原件恢复同一S/原库/环境/配置，不以备份覆盖原库。
 
