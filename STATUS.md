@@ -33,7 +33,7 @@
 | 范围 | 记录的结果 |
 | --- | --- |
 | 当前服务与窗口 | restore-13实际EXIT0，同源S56896/创建UTC2026-10-20T18:17:05.651634Z/epoch1792520225.651634，原环境/配置/唯一监听/health/Web通过，原库integrity ok/fk空/equal。本次PID与旧进程数值相同，创建身份不同；原Orca公开status仍app38652/runtime49da ready/reachable/connected及graph ready。唯一窗口归原S，无新构建/服务/Agent/模型授权；c8未改，下次prepare取restore-13/restored.json并新鲜准入 |
-| 必要依赖实际安装 | 准确8ebe只交一次dependency-03，lock-only 36.4秒/frozen-install 4.8秒及两次资源gate退出均0；原peer/弃用警告保持，当前仅pnpm生成锁15行变化。主控已读实际退出文件/日志并定向核60728及阶段无执行匹配，消费收回授权/解除冻结后恢复原S；Worker完整同步退出及观察回执另按实际读取记录。没有新bundle/编译/安装候选或模型 |
+| 必要依赖实际安装 | 准确8ebe只交一次dependency-03，lock-only 36.4秒/frozen-install 4.8秒及两次资源gate退出均0；原peer/弃用警告保持，仅pnpm生成锁15行变化。主控已读实际退出文件/日志及Worker UTC18:18:16/19两次所属为空；外层exec27025的final因上下文截断未取回，后继poll为Unknown process id，不能声明取得外层EXIT0。授权收回/解除冻结后原S已恢复，没有新bundle/编译/安装候选或模型 |
 | 首次实际bundle | 准确e54d45489f54819cccb2d408474e6f885aac6970仅一次build-03，exec76466实际EXIT1；资源0、323项prod deploy完成，首host bundle因真实Unicode11与diff导入缺失失败。无host/metafile、Node下载/native/Go/VERSION；部分candidate02保留，授权已消费并收回。主控及Worker两次所属退出观察保留，恢复同一S后同Worker只继续静态返修 |
 | 最近恢复失败与诊断 | 首次restore-11中S43188在监听前退出，fatal仅原CodeGraph导出检查exit status1，原因未知。诊断01因环境名称大小写在目标启动前KeyError；修脚本的新02实际导出检查0/8.470091秒，Node512/45秒诊断上限，原服务15秒及原依赖/配置未改。核失败/诊断进程退出后才作一次新输出恢复并通过；全部失败保留，不把诊断成功写为旧失败根因 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
