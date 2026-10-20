@@ -286,6 +286,29 @@ Orca的原Pi launch仅允许fullAccess；产品Pi SDK composition以真实noTool
 
 工具关闭的Worker只输出任务结果，不执行Orca命令。产品preamble明确结果由宿主读取，不要求worker_done。`agent_settled`证明本轮原生执行结束；结构化结果及固定事实检查通过后，实际控制helper调用workerStop并核全树退出、原生归档/释放，再用自己的consumer执行taskUpdate。任意缺失不生成假worker_done、假hook、零费用或人类批准。
 
+### 4.4 关闭工具时后续正文的完整投递提案
+
+本节及§7.7按原Reviewer1b2954d9的七项独立条件、主控msg_0458b95cccf2提交审核，尚未定稿或实施。公开worker.send命令及原生send枚举保持；正文作为文本，沿同一原生MessageRow、structured mailbox、session operation和原Pi RPC进入同一Worker。其他原生宿主和本机Orca继续使用原pointer规则。
+
+产品composition在RuntimeConstructionDependencies注入可选的structured mail策略，经runtime-service-state交给原structured投递及host。没有产品策略的宿主完全保持现有行为；本产品启用后不允许回到pointer或另开直接prompt路径。策略只处理真实Pi Worker的确切Run/root/Dispatch/session，不处理协调者邮箱、其他项目或其他provider。每次原生选择仅取一封邮件，沿原SQL顺序及waiter/reservedTypes规则；一次operation对应该真实message ID和一个原样body，不能格式化后把同批其他消息一并标记已投递。
+
+| 边界 | 本产品策略与真实来源 |
+| --- | --- |
+| HTTP/App提交 | 当前原主体、Grant、settings revision、start批准、目录及外发目标按现有authorize复核。原swa.controllerDeliver checkpoint为worker.send补实际caller、准确Dispatch和input的path/version/完整text，保存在既有原R记录；不写令牌、不另建表。固定子R/native、真实controller consumer与项目/Run/root关系保持 |
+| Native消息关联 | 原生send-point-to-point在nudge前已调用recordReceiptForPostCommitNudge完成原生子receipt。策略要求该completed R/native内message.id与所选MessageRow一致，parent原R为真实pending/completed worker.send；父子原件、真实from/to/run/type=status、批准text及实际Dispatch-assignee-session逐项相同。只凭subject/type或声明handle不放行，缺关联不读取其他邮件或替代Worker |
+| 当前授权复核 | 原HTTP服务增加仅私有服务owner可调用的只读delivery-admission路由，复用Go App authorize及真实项目/Grant/当前settings和Native scope；不发起执行。serve以crypto/rand生成本次内存owner capability，只通过分别创建的Node/server env注入，普通helper/SDK env明确删除，不写文件、日志、receipt、命令参数或公开readiness。路由仅本次私有服务注册，固定loopback地址、不跟随重定向、恒定时间核capability，只返回授权结论。Node策略在排队前和原host beforeRun的实际消费边界分别调用；HTTP缺失/失败/撤销/过期或revision变化即不发送，原件及未知状态保留。该内部路由、App消费方及能力传递作为本提案共同审核，普通HTTP调用者不能声明caller取得该权限 |
+| 实际目标和消费 | 每次授权复核后立即重新核原consumer generation、Dispatch资源仍由Agent持有且未停止/释放、原runtime epoch、同一原session及expectedRuntimeFence；beforeRun继续保留原hasActionablePrompt的held规则。任何目标/fence变化不换新值重发。当前runtime无法证明恢复的旧SDK仍保持unknown/占用 |
+| SDK正文 | AgentJournalMessageItem仅一个text block，其text严格等于实际MessageRow.body，不添加提示、标签、trim或换行规范化；原生from保留真实message/Run/Dispatch来源。原preparePiRpcPrompt把该block送入真正SDK。固定model/provider、ToolsOff、资源关闭及六项RPC白名单继续在每次输入前核查 |
+| 编码和边界 | 原App输入必须实际有效UTF-8、非空，保留完整path/version/text。既有client单次序列化输入2MiB及Pi成熟preparePiRpcPrompt的8MiB-1 wire限制保持；在Native消息创建前对真实最终文本/序列化帧使用成熟JSON与原Pi准备函数核边界，超限明确拒绝，无新消息或模型输入。实际MessageRow坏源、非完整Unicode或不等正文拒绝，不截断；JSON样式文本只作为字符串，由标准JSON编码 |
+
+owner capability只用于同一私有HTTP服务的授权查询，不授予调用原生执行的权限；服务重启生成新的内存值。排队的原生turn在服务暂不可达时不能通过授权复核，不能为完成输入在其他地址、其他runtime或其他Worker重放。该复核调用不持Native数据库事务；Go App只读取得当前项目/Grant和明确Native scope，返回后Node再次核原fence及所属，避免等待期间目标改变。
+
+持久去重必须同时覆盖公开R、原生消息和真正session operation。原pointer的decideStructuredPointerAttempt可因另一次turn、进程变化或过旧而mint新operation；这只证明原通知需要再提示，不能证明正文未输入。产品策略对同一message/session的既有operation禁止因此mint：accepted按原记录标记原消息；pending/unknown、旧runtime、缺operation的实际输入结算证据均保留原operation/占用并只读查询。明确rejected也只返回原失败，不自动产生新operation。只对从未保留operation的新消息首次使用原生mint及既有operation表；不存在新账本。context clear、同一ID正文变化或投影缺失不得换operation掩盖未知；真实host的原operation/payload匹配继续生效。
+
+沿原structured host的sendAgentTurn、operationId、expectedRuntimeFence、beforeRun和queue接受规则提交；不直接调用SDK prompt。busy/held未写入SDK时保持消息未投递，原生queue已接受只表示排队；accepted来源明确后才表示SDK实际输入，turn started/settled由真实journal/SDK事件独立观察。原生投递标记继续只在原host已接受或队列持有后进行；输入后存储/通知失败不清除原operation或重新发送。worker.send结果保留原message receipt，并以原operation/journal来源区分message持久化、queued、accepted、unknown，不由envelope.ok推断模型已开始或完成。未知继续查询原R/原operation，无自动重试。
+
+实施范围为现有runtime/swa-orca、pin的runtime construction/structured delivery/host/operation消费者、cmd/swa/serve、cmd/server、既有Go App/HTTP适配及实际测试；HTTP契约的内部路由及必要结果字段按同一后继明确更新，API类型仍只由原生成器在获准窗口产生。本节新增语义与内部接口接受前不编码；Go独立编译及其他已审真实驱动可以继续。
+
 ## 5. 固定抽取与完整安装输入
 
 ### 5.1 源码、入口及传递依赖
@@ -566,6 +589,20 @@ Windows控制信号只允许在本项新建的隐藏console内执行：普通验
 R04/R06需要结束旧helper时，预编译普通控制helper只对本项已记录root/helper取得真实进程句柄，逐项核PID+创建时间、私有Job membership、Native PTY/安装及父链，再对同一句柄TerminateProcess并等待真实退出；不按PID重新寻找，不终止整个服务Job或其他进程，不把强制退出计为130。随后两次新鲜进程/PTY查询确认旧身份退出，任何缺项或实际PTY未消失即停止该分支并保留unknown。原生controller close满足全部既有资源条件时优先使用该动作。
 
 R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑定当作模型不中断。T13最终双Worker并发/指定停止/成果仍须同候选实际完成，不因本节条件降低。当前无新增运行授权；CPU/内存、BelowNormal、Go/Node、原服务及单窗口按RESOURCES，实际窗口由主控重新交付。原失败及INCONCLUSIVE保留，漏项重新交审。
+
+### 7.7 后续正文真实验证补充提案
+
+以下D项随§4.4先审后实施，全部NOT_RUN。沿最终同一安装候选、真实项目批准、同一私有D及已有T13任务，不增加用于代替B的Worker。普通源码编译、安装准入和Go服务条件保持原有范围。
+
+| 条件 | 实际操作及验收 |
+| --- | --- |
+| D01 T13原样正文与成果 | B原轮结束后保存同一PID/创建身份/session/Dispatch/fence。用实际A部分结果和固定公开原文形成真实followup文件，覆盖自然中文、换行、引号及JSON文本；逐字比较App读取text、原R checkpoint批准text、R/native receipt和真实MessageRow.body、Native journal唯一user text及SDK自产session实际user输入，禁止只比较message ID或模型自述。核同一B第二轮的真实accepted/start/settled、业务结果和超过1200字符完整导出，A及其他Worker/原Orca保全 |
+| D02 重复及原生队列 | T13沿同一R真实重放及并发请求，核唯一message/原operation、同一B恰好两次user输入与两轮，不多建Worker。保存真实held/queue边界及queued与实际SDK输入的区别；未实际命中忙碌窗口保持未验，不用替代事件。多封真实显式批准输入的排序/一封一operation只在所需独立分支验证，不混入T13的两轮计数 |
+| D03 当前授权与归属拒绝 | 使用实际另一项目/controller/Dispatch、真实停止或释放的本项Worker、真实当前批准撤销/过期及settings变化，分别在提交和原queue消费边界核拒绝。owner私有路由用普通无capability真实HTTP调用须拒绝，不输出Grant/正文；不构造human或假hook。未命中排队后撤销窗口保持INCONCLUSIVE；原SDK没有被输入、其他session没有新user记录 |
+| D04 断开和未知 | 复用真实C04及T12：在实际message/operation/SDK accepted边界观察后仅精确停止本项CLI或宿主，保存原R/Native SQLite/journal/SDK原件，再只查询原R/原operation。accepted只能标记同一原消息；pending/unknown/rejected或缺来源不能mint新ID或产生第二prompt。重启失去原SDK树证明保持unknown，原PID/session缺失不以替代Worker完成 |
+| D05 编码、大小与坏源 | 使用实际公开输入文件的完整UTF-8正文及当前真实序列化边界，正常中文/换行/引号/JSON文本必须逐字进入同一SDK；超限实际文件在消息创建前拒绝。仅在自有已归档Native/SDK原件副本核坏编码、来源不等和超限读取，不能篡改正在执行的消息或伪造Native协议；原候选原件保全。未具备真实queue/数据库故障条件的输入后存储失败继续未验 |
+
+所有D项保存实际源码SHA/候选VERSION、批准输入文件的非秘密版本、真实message ID/原R/operation/turn/事件来源与退出结果；SDK user输入从自产session成熟schema读取，事件逐项定位真实SQLite。输入前拒绝、队列持有、已接受、已开始、已结束和unknown分别报告。仅合法schema、pointer送达或普通SDK进程存在均不足以通过正文验收；T11待答与T12原门槛保持。
 
 ## 8. 审核、实施和真实限制
 

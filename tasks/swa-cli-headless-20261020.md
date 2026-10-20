@@ -99,3 +99,5 @@
 准确079bd958260ac3edb9fda6c13bb9e28a0a08cd56的T12 P01—P03补充及真实build-02记录已普通push EXIT0，交主控定稿和原Reviewer复审。后继helper按F16/F17原schema修正runShow的id及合法status消息类型，并逐项核已有方法、必填参数、枚举、子R和直接返回消费者，详情见报告§9；T07/T13仍未执行。F17继续存在正文语义缺口：原生structured投递仅提供check提示，Pi只接收text blocks，关闭工具后无法取得邮件正文。新增完整方案与真实输入一致性测试先交独立审核，不开放工具或绕过原生队列直接prompt。
 
 准确ebf55ac024a618d1ad32a741eb4eefcfc5dae77b的F16/F17参数修正已普通push EXIT0，等待局部独立CR，正文语义仍未修复。主控msg_e9b05ba6d40b要求先推进不依赖Node候选的四包Go编译；报告§7.4现提出原脚本移除Candidate前置条件、只核真实干净HEAD/新私有输出、成功后写既有SOURCE，并保留最终候选VERSION=SOURCE=准确源码及实际四函数PASS/零匹配/SKIP拒绝。该计划先审后改，脚本未修改，未编译或执行测试；无新重操作授权。
+
+报告§4.4/§7.7按原Reviewer1b295七条件补F17完整正文投递提案：私有host策略沿真实原生MessageRow/单封SQL顺序、R/native完成回执与parent批准全文关联、原operation及fence、原structured queue和真正Pi RPC投递原样body；不开放工具。当前授权在提交/排队/实际消费分别核，拟复用同一Go HTTP服务的私有owner只读admission及App authorize，能力仅内存传入Node/server并从helper/SDK删除，内部路由和结果消费者共同待审。原pointer重启/后续turn可mint通知ID的规则在产品正文策略中禁止用于已存在operation；未知不重发。D01—D05包含真实输入文件—消息—journal—同PID/session的SDK user逐字一致、最终业务结果、重复R、当前授权/所属拒绝、队列/断开/编码边界；全部未编码/未执行，等待主控定稿及独立审核。c2独立Go计划普通push实际TLS失败1，准确本地提交保留，未改全局网络或pin。
