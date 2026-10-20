@@ -97,3 +97,5 @@
 准确897531只执行一次主控msg_c1bdd050117d授予的build-02：资源0，实际PNPM deploy完成，固定官方Node首归档按原10分钟AbortSignal超时，构建EXIT1，无headers/native/TS/Go或候选VERSION。实际session82066退出及两次新鲜定向CIM无原18536/9272或其直接后代后，通过msg_b12eef9d323c交回窗口；build-02原件和部分candidate01完整保留，无重试或删除。主控已解除tracked/Git冻结并确认restore-05 EXIT0、原S18944及原库/环境/配置/Orca保持，后继无重操作授权。详细资源、时间、原件及失败范围见报告§9。
 
 准确079bd958260ac3edb9fda6c13bb9e28a0a08cd56的T12 P01—P03补充及真实build-02记录已普通push EXIT0，交主控定稿和原Reviewer复审。后继helper按F16/F17原schema修正runShow的id及合法status消息类型，并逐项核已有方法、必填参数、枚举、子R和直接返回消费者，详情见报告§9；T07/T13仍未执行。F17继续存在正文语义缺口：原生structured投递仅提供check提示，Pi只接收text blocks，关闭工具后无法取得邮件正文。新增完整方案与真实输入一致性测试先交独立审核，不开放工具或绕过原生队列直接prompt。
+
+准确ebf55ac024a618d1ad32a741eb4eefcfc5dae77b的F16/F17参数修正已普通push EXIT0，等待局部独立CR，正文语义仍未修复。主控msg_e9b05ba6d40b要求先推进不依赖Node候选的四包Go编译；报告§7.4现提出原脚本移除Candidate前置条件、只核真实干净HEAD/新私有输出、成功后写既有SOURCE，并保留最终候选VERSION=SOURCE=准确源码及实际四函数PASS/零匹配/SKIP拒绝。该计划先审后改，脚本未修改，未编译或执行测试；无新重操作授权。
