@@ -325,17 +325,19 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 #### 4.5.2 发现事实源、输出及刷新
 
-继续使用现有`swa capabilities --json`提供agents清单，不新增另一个发现服务或任务账本。只列实际原Orca只读注册/启动设置所指Agent；静态已知命令目录不自动当本机注册。每行保留真实Agent ID、来源版本/宿主、可核命令定位和以下独立观察，使用既有available/unavailable/unknown语义并附具体原因及观察时间；不合并成一个就绪布尔值。
+继续使用现有`swa capabilities --json`提供agents清单。权威注册来自产品进程中由抽取的原生definition及真实adapter实例构造的StructuredAgentRegistry；这证明本产品实际注册的控制实现，独立于原Orca是否运行。实际本机命令、原生配置与可选只读启动设置分别提供安装和选择事实，静态命令目录不补造注册。原Orca runtime只作可选对照，不成为发现、选择或执行前提。每行保留真实Agent ID、注册来源版本/宿主、可核命令定位和以下独立观察，使用available/unavailable/unknown及实际原因/时间，不合并成一个就绪布尔值。
 
 | 观察 | 事实源与判据 |
 | --- | --- |
-| registered | 原绝对Orca CLI所对应runtime的真实agentSession.agents及settings.getAgentLaunch只读响应；能力协商、实际runtime ID和当前交付物版本同时保存。adapter声明、用户启用/禁用/override分别标明，disabled不当可选；缺注册响应即unknown，不从TUI常量或Go List补造 |
+| registered | 私有runtime真实StructuredAgentRegistry.registrations及每个definition/adapter，原生构造器仍检查重复ID和声明能力所需方法。公开来源明确为本产品抽取版本/当前私有runtime；原Orca的可选只读对照另标来源，不混成当前注册。用户启用/禁用/override来自下述明确设置源，disabled不当可选，不从Go List补造 |
 | installed | 在产品自己的探测进程复用准确TUI检测/命令解析，核真实Windows PATH/已知安装目录、命令别名和override的实际可执行路径及版本来源。不得修改系统或原Orca PATH，不启动WSL/SSH、安装程序或模型。文件存在仅证明安装 |
-| configured | 只读原启动设置投影和该Agent实际必要配置/账号来源，秘密仅在获准原生读取中使用，不打印/存入清单。environmentNames仅证明名称声明；缺值/模型/端点/账号的正向证据继续unknown，认证有效性由真实原生握手或获准模型调用分别确认 |
+| configured | 该Agent实际必要的本机原生配置/账号来源和明确选择的启动设置；可选Orca profile按只读settings domain及真实revision取得，再用projectAgentLaunchSettings投影，不创建Store或调用update/migrate/authority-marker写入。environmentNames仅证明名称声明；缺值/模型/端点/账号正向证据继续unknown，认证有效性由真实原生握手或获准模型调用分别确认，秘密不进入清单 |
 | launchable | 对明确选择且满足当前权限的该Agent，在私有profile/workdir中执行真实命令与原生协议握手后记录；不由版本/help或另一个SDK成功推导。尚未启动时unknown，ToolsOff/隔离无法满足时明确unavailable及原因 |
 | native control | 分别记录start/send/read/stop/resume、原生session/turn/输入结算/树退出及工具关闭能力。声明、静态来源和本次真实验证分别标记；一种能力成功不补齐其他能力 |
 
-原Orca侧只允许上述必要只读查询，不调用settings.mutate、原生launch/send、账户切换、hook安装或会话恢复。响应在内存按成熟schema筛选，不把完整命令参数、环境值、账号标识、令牌或原对话存入日志。发现每次重新读取当前只读注册与启动投影，并在产品进程重新解析程序；结果保留来源时间，不自动运行Agent来“刷新”。实际启动前再次核注册启用状态、准确可执行路径/版本和所选配置，变化即拒绝原选择，要求显式重新选择，未知不切换目标。原Orca不可达时保留发现unknown，不用缓存冒充当前事实。
+设置源在serve时明确：未提供可选`--agent-profile <既有原Orca profile绝对路径>`时，使用抽取原生注册的标准命令/defaults及本机Agent自己的实际配置；提供时固定该既有profile，复用classifyProfileStateStorage、openProfileStateDatabaseReadOnly/readProfileStateDomains读取settings和revision，JSON-only仅用成熟JSON流选择settings，SQLite与legacy并存时核原acceptance。明确选择的源缺失/损坏/不匹配即失败，不迁移、不写入或改用另一源。保存的是源定位及非秘密投影，不复制整个profile或原会话；产品私有profile始终单独创建。
+
+每次capabilities在产品进程重新读注册、明确设置源和必要原生配置并解析程序，不启动Agent或访问模型来刷新。每次worker.start在App选择后和实际spawn前分别读取并比较该请求的真实配置revision、命令路径/版本及所选模型；期间变化拒绝原R，不换目标。同R仍按原生receipt比较完整非秘密selection及正文；完成/pending原R查询保持可用。原Orca侧的可选对照只允许必要只读查询，不调用settings.mutate、launch/send、账户切换或hook安装；没有对照结果不影响独立发现。
 
 #### 4.5.3 选择、原生调用及权限边界
 
@@ -343,7 +345,7 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 优先复用原Orca各Agent现有原生adapter与共同agent-launch-executor/workerStart控制链，按当前交付物核完整消费者；structured/TUI只取该Agent实际获准的一种方式，不在失败后换方式。已安装Pi必须使用该本机Pi真实CLI及原生RPC；随包Pi SDK的另一个模型会话不计该Agent调用。Codex沿真实app-server，Claude沿真实原生控制，ACP/TUI沿其实际注册adapter；缺必要协议或状态证据的Agent保留发现记录并明确拒绝相应动作，不伪造协议或用Pi替代。后续输入、取消和成果按各Agent自己的准确原生协议与自产原件核验，Pi六项RPC白名单不能套用于其他Agent。
 
-当前存在真实权限冲突：既有Codex0.162.0公开app-server没有已证关闭全部原生文件/命令工具的能力，read-only sandbox不等于ToolsOff；原生注册和已登录不能消除该限制。Claude当前配置的qwen3.7-max/dashscope来源仍受既有Aliyun调用禁令约束，旧marker成功不能授权本次调用。Pi系统认证历史拒绝及空auth记录不能由私有SDK读取Codex OAuth的成功代替。OpenCode1.18.35历史原生HTTP链有证据，但managed/wellknown输入、扩展和当前模型/账号仍须复核，deny权限不自动证明全部输入来源关闭。最新要求保留现有权限，不能推断开放这些工具或供应端点。主控需将必须实际调用但权限无法同时满足的准确Agent冲突提交用户决定；该部分保持未决定和未通过，不能把发现加拒绝当作完整调用目标已交付。
+权限要求由真实项目ProjectSettings.AllowedTools/AllowedActions、Grant及当前任务已批准范围进入既有ValidateProjectActionScope，产品接口保留各Agent的真实能力，不把ToolsOff写成所有通用调用永久拒绝。原固定验证任务的工具关闭条件及用户通用调用如何共存由主控核原决定，未答部分不推断授权。既有Codex0.162.0公开app-server没有已证关闭全部原生文件/命令工具的能力，read-only sandbox不等于ToolsOff；Claude当前qwen3.7-max/dashscope仍有既有调用禁令；Pi系统认证历史拒绝不能由私有SDK读取Codex OAuth替代；OpenCode1.18.35的managed/wellknown输入、扩展及当前模型/账号仍待复核。每项是具体任务/能力/权限的真实限制，不代表永久取消该Agent的原生调用接口；主控处理准确冲突，发现加拒绝不能作为完整调用交付。
 
 每条允许执行的路径只创建本项私有home/profile/config/SQLite/session/cache/端口/IPC与所属Job。原生账号解析若会写原home、workspace trust、hook或刷新原认证，须在首次输入前拒绝，不能把原home设为可写运行目录。只读必要凭据/配置的允许方式由准确Agent方案及既有授权核定，不复制可写refresh权、不替换账号、认证或原会话。当前未证明满足这些条件的路径如实保持阻塞；不降低最终双Worker验收。此前SDK父持Job、真实进程身份/子树退出、未知占用及原Orca定向保全可复用，但要对实际所选Agent重新验证。
 
@@ -351,9 +353,40 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 依据准确REA/源码和实际esbuild metafile保留CLI/RPC、Agent注册/选定原生adapter、原生receipt/Run/Task/Dispatch、PTY/daemon、provider进程、真实journal/SQLite、secret保护及所属进程必需的文件/资源/许可。静态未连边不作为删除依据；动态import、worker/sidecar、native ABI及通过字符串定位的资源逐项由真实入口核实。当前runtime package声明包含桌面UI、浏览器、更新和多个供应方依赖，build-swa-runtime还列若干未证明执行所必需的worker入口；需要按实际闭包核消费者后在同一原写域去除不需要的入口/声明，并由独立安装发现遗漏。成熟JSON/JSONL/TOML/YAML/SQLite及必要native库保留，不手写解析器替代。
 
-产品安装继续自带自己的必要Node/native与后台模块；本机Agent程序及已允许只读账号是明确外部依赖，按发现的准确路径使用，不重复打包另一份Agent来冒充本机调用。安装运行不依赖原Orca安装资源、原桌面IPC或开发树；原Orca只在必要发现时提供只读事实，已选Agent的实际控制在产品私有后台完成。安装独立性测试以明确PATH/env执行同一候选并检查实际模块/动态资源来源，不修改全局PATH或终止原Orca。
+产品安装继续自带自己的必要Node/native与后台模块；本机Agent程序及已允许只读账号是明确外部依赖，按发现的准确路径使用，不重复打包另一份Agent来冒充本机调用。发现/调用不连接原Orca桌面RPC，不依赖其进程、安装资源或开发树；原profile只是调用者明确选择的可选只读设置源。安装独立性测试以明确PATH/env执行同一候选，省略原Orca metadata/IPC环境并检查实际模块/动态资源来源，不修改全局PATH或停止原Orca。
 
 现有CLI envelope/错误退出、真实R/selector、HTTP/App权限、Native幂等/事务、定向保全、Job与Go检查可以继续复用；Pi-only验证、SDK账号来源和原生结果解析需要按本节调整。当前新增程序建议仍在已授cmd/swa、Go App/orca/HTTP适配、runtime/swa-orca、third_party、现有contracts/依赖/构建安装/真实测试及原两报告；若需要修改其他Agent模块，只向主控交Handoff申请准确路径，不越域。主控先定稿注册来源、实际Agent支持集合和冲突权限，独立审核通过后更新SPEC再实施，当前不提前编码新接口。
+
+#### 4.5.5 端到端技术契约提案
+
+`capabilities`沿现有POST `/api/v1/local-projects/{id}/orca/commands`、`{action:"capabilities"}`及真实项目token进入Go `OrcaExecutionService.ExecuteOrca`，仍为observe权限、无副作用R。App消费现有OrcaExecutionRuntime，新增只读`Capabilities(ctx, projectID, requirements)`端口由现有orca适配器调用私有`swa.capabilities`；它从已构造真实registry、只读设置源和本产品命令解析返回，不经过controller helper、原Orca RPC或模型。主控批准的任务要求由App取当前ProjectSettings/Grant提供，HTTP正文不能提供caller或工具授权。
+
+结果仍在原OrcaEnvelope.result，DTO固定为`{schema:"swa.capabilities.v1", source_revision, registry:{orca_version,artifact_sha256}, discovery:{host:"local",platform:"win32",observed_at,settings_source:{kind:"native"|"orca-profile",path?,revision?}}, agents:[{id,adapter,execution_mode,registered,enabled,installed,configured,launchable,control,requirements}]}`。registered/enabled/installed/configured/launchable和control中的start/send/read/stop/resume/tools各使用`{status:"available"|"unavailable"|"unknown",reason,checked_at?,source}`；installed正向才带executable/version，configured仅带已证model/provider及非秘密account-source类型，不填造账号/认证。requirements保留当前批准工具/目录/外发要求及该Agent的缺口；声明capability与本次观察通过source区分。
+
+| CLI/当前App动作 | 产品Native方法、真实caller及持久来源 |
+| --- | --- |
+| controller open / task create | 保持swa.controllerOpen,R及真实helper launch；task.create保持swa.taskCreate,R→helper自身runCreate R/run-create、root taskCreate R/root-task。同一Run/root/context和strict caller保持 |
+| worker start | App核start/模型/目录/外发与选择，swa.controllerDeliver,R保存真实selection及原scope；helper以自身真实兼容证明调用orchestration.workerStart,R/native，仍为spec/from/run/parent/worktree/name/agent/model及该原生Agent已核选项。原native launcher根据实际adapter执行选定本机程序，首次输入前重新核selection和policy；不固定Pi或xhigh，不接受原始shell/RPC参数 |
+| worker send | 复用parent swa.controllerDeliver,R及当前实际helper；helper以准确R/native调用私有durable swa.workerSend，schema只接受原invocation及准确Dispatch。准入在executor前核真实helper/current consumer、parent原R的实际批准text和目标。handler从实际Dispatch→私有session取当前fence，先在同一原生receipt checkpoint保存原生mintAgentSessionOperationId所得operation和正文来源，再仅一次调用既有sendAgentTurn/StructuredAgentSessionHost发送一个原样text block；不通过orchestration mailbox pointer，不直接调用SDK、不增加队列 |
+| worker show/list/read / task result | 先核项目和Run/root/Dispatch真实所属，再用既有native worker观察及所选definition的sessionHistory/transcriptImport/native journal提供原件。完整成果按实际provider原schema读取，来源缺失/截断明确incomplete；不把Pi解析器套到其他协议，不回到terminal tail声称完整 |
+| worker stop/release / task complete | 沿现有orchestration.workerStop/workerRelease/taskUpdate及R/native；依实际adapter/Job/树退出/ownership结算。当前helper原生证明、当前Grant、安全人类stop例外及释放条件保持 |
+| request show | 现有原R只读查询，不调用helper写入。worker.send从原R/native checkpoint/完成receipt取得唯一session/operation，再读该session原journal；历史receipt原样保留，动态delivery观察另列，不将completed R当再次发送许可 |
+
+当前RuntimeClient只对orchestration.*自动附兼容调用证明；因此本产品fork须将准确`swa.workerSend`加入同一envelope/contract-version路径及durable方法集合，沿constructor捕获的真实helper launch证据生成compatibilityInvocationId=R/native。没有新caller参数或信任布尔值。Native dispatcher的产品callback在任何executor/完成R重放前对该确切方法执行helper强核验，父R、当前consumer、真实launch/恢复证明及Dispatch目标全部匹配；不能把它按普通helperless swa.*端口放行。其他宿主未注册此方法时仍无该入口，本机Orca不修改。
+
+worker.send结果明确为`{native_receipt, input:{request_id,native_request_id,dispatch_id,agent,session_id,operation_id,client_message_id?,state,turn_id?,source}}`；request.show保持原state/receipt，并增加同结构的只读`delivery`投影。state只取`journaled|queued|accepted|rejected|unknown`：前两者分别要求原journal接收/实际host队列的正向证据，accepted要求实际adapter/SDK输入接受，rejected要求明确未输入拒绝，缺失/断开/输入结算不足为unknown。source指明原receipt/journal/原生事件，不由envelope.ok推断开始或完成。关联固定保留在既有R/native receipt和session journal，邮件指针删除、其他输入或宿主重启都不能改mint第二operation；同R重放只返回原件/观察，未知不重发。
+
+真实输入的异步授权扩展在产品composition向原生delivery-loop注入可选`authorizeDispatch(input):Promise<verdict>`，由serialized handOver在等待provider/applyMessageOptions之后、handOverSubmission写交付事实及adapter.dispatch之前await；原同步beforeRun只保留held规则。该hook经同一Go HTTP服务的私有owner只读delivery-admission调用App当前authorize/ValidateProjectActionScope；owner能力仅本次内存传给Node/server并从所有helper/Agent env删除，普通token不能调用。复核以原R/native的真实caller/项目/selection/正文/Dispatch/session/operation为源，不能信任HTTP声明的human；Go反查Native原件使用只读非serialized查询，不持Native事务或等待同一delivery lane，避免循环等待。await返回后重新读取并核相同child generation/ready、consumer、session/fence、真实model/工具策略、未停止/释放或人工接管；变化明确拒绝或unknown，不能调adapter。未配置该hook的其他宿主保持原行为。
+
+| 已有原生注册系列 | 调用与真实能力核查 |
+| --- | --- |
+| Codex | 明确本机codex执行文件，经原生app-server的initialize、thread/start/resume/read、turn/start/interrupt及真实事件控制；账户来源、工具配置和实际provider/model取原生来源。当前固定ToolsOff任务的缺口保留，通用接口不硬编码拒绝该Agent |
+| Claude | 原有structured adapter/stream-json initialize/user/interrupt及session原件；若复用原SDK，必须明确选择本机原CLI executable，不能把SDK自带另一CLI当本机调用。当前供应端点及工具/扩展条件按实际配置和批准核验 |
+| Pi | 明确本机pi，以其真实RPC get_state/prompt/abort及原sessionFile/事件读取，resume/close按原生真实能力；工具/资源及认证取该CLI本次实际状态，不替换成随包SDK |
+| ACP：grok/opencode/omp/antigravity | 由真实ACP_LAUNCH_SPECS映射原命令、平台、版本及dialect，沿原adapter的initialize、session/new/load/prompt/cancel、session/update及权限回调；read/恢复取各自原sessionHistory。声明approvalEnforcement不等于工具关闭，原生不满足本次批准策略则保留该具体能力缺口 |
+| 其余TUI注册 | 按原TUI配置/命令解析及原生PTY控制，逐项标明实际已证start/send/stop、read完整性和session/resume缺口；不虚构结构化协议或把终端尾部登记完整成果。最终任务选择必须满足其完整成果和停止要求，不能用未知状态通过 |
+
+上述为本次唯一原生调用方向，替代§4.4未定稿的mailbox正文路径；B01真实handover及B02原operation查询要求在原session queue/receipt中落实。公开schema、Go端口、私有Native方法/准入、OpenAPI和生成类型作为同一契约交审，未新增程序或运行授权。当前用户未答工具/账号范围保持未决定，不冻结为所有Agent仅可发现拒绝的产品结果。
 
 ## 5. 固定抽取与完整安装输入
 
@@ -657,12 +690,12 @@ R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑�
 | 条件 | 实际检查及结果边界 |
 | --- | --- |
 | G01 准确交付物/来源 | 核主控当前app.asar完整SHA/版本与限定REA原件，逐项核CLI→注册/发现→原生启动/输入/输出/停止及动态资源。保存选定模块/部分覆盖/未知，旧两REA不当新交付物，源码与包差异明确返修 |
-| G02 发现和刷新 | 在原Orca运行时，通过同候选capabilities读取实际注册/启动投影，在产品探测进程核真实命令/别名/override/版本/配置；逐行比较五种状态及来源，不以静态名单/路径存在充当登录或启动。实际命令/设置自然变化在下一次发现与启动前拒绝旧选择；没有自然变化的分支保留未验，不更改用户注册或PATH制造成功 |
+| G02 独立发现和刷新 | 同候选capabilities只调用产品私有registry/本产品探测与明确只读设置源，剔除原Orca metadata/桌面RPC依赖的环境后仍完成真实命令/别名/override/版本/配置发现；原Orca保持运行只作可选对照。逐行比较五种状态及来源，标准native源和明确选定的原profile源分别核验，后者缺失/坏源不得自动改用另一源。实际自然变化在下一次发现及spawn前核，未命中保持未验，不更改用户注册/PATH制造成功 |
 | G03 指定真实Agent调用 | 对每个声称可调用的Agent分别在真实当前Grant下明确选择，保存实际命令路径/创建身份/私有cwd-env来源/模型与账号来源，核原生handshake、Run/root/Dispatch/session、首输入及后续输入/输出/停止。真实未注册、缺程序、缺配置/能力各自拒绝；无该自然条件时不伪造注册或协议。SDK回显不能替代本机Agent调用 |
 | G04 权限与原件 | 首输入及每次后续输入前核实际tool/resource/扩展/MCP、当前Grant和外发目标；原生无法ToolsOff或原账号会写入时必须拒绝并报告真实冲突。跨项目/旧consumer/fence/停止释放目标拒绝，真实撤销/过期范围按原入口验证，不构造human。每个实际event_id逐项定位实际SQLite，并核Agent自产完整会话原件 |
 | G05 依赖及独立安装 | 完成原构建/native装载和闭包检查，在新独立安装目录运行同候选；实际依赖与资源来自包内或明确声明的本机Agent程序/只读账号，不来自开发树、原Orca资源或桌面运行通道。缺失动态资源在获准自有副本做真实负向，不能伪造成功模块或以静态metafile代替运行 |
 | G06 原Orca保全 | 安装前、发现后、双Worker并发中、指定停止后及产品退出后，重复原绝对CLI公开status、解析、进程创建身份/监听、配置与认证内存字节/ACL、定向通知及实际产品写端检查。原Orca和原Agent会话不被迁移/接管，未解释变化及通知溢出仍证据不足 |
-| G07 失败/异步/未知 | 对适用Agent保留真实启动部分失败、忙碌/queued、断开/超时/取消130、stdout失败、停止失败/树未知及资源占用；沿原R/消息/operation不重发不换目标。后续正文在实际serialized handover到adapter.dispatch之前await当前授权并重新核fence/身份/ToolsOff，不能把同步beforeRun当实际消费。原R已完成但消息仍queued或operation指针删除/另一消息到达时，仍须从原journal唯一关联原operation并提供真实状态；字段/来源随各Agent方案明确再审，2f不当定稿 |
+| G07 失败/异步/未知 | 对适用Agent保留真实启动部分失败、忙碌/queued、断开/超时/取消130、stdout失败、停止失败/树未知及资源占用；沿原R/native checkpoint和实际session operation不重发不换目标。在journal已接收但SDK尚未输入的真实窗口撤销/改变当前批准，serialized handOver在实际adapter.dispatch前await新授权，等待后重新核child/consumer/fence/工具策略；未命中保留INCONCLUSIVE。原R完成但仍queued、旧mailbox指针不存在或后续输入到达时，request.show仍从固定原receipt/journal返回同一原operation及真实state，不造Native事件或操作业务库 |
 | G08 最终同安装候选 | 使用同一准确已安装候选及所选真实本机Agent，完成原固定公开任务的至少两个真实Worker，不等前一结果即提交；核真实模型活动重叠、分别查询身份/输出，只停止指定A并取得全树退出/B保全，B在同一原生session接受真实后续正文并取得符合业务判据的完整成果。是否要求不同Agent类型不自行增加；每个声称可调用的Agent仍须有G03证据，未通过的范围明确保留 |
 
 普通终端与原有Agent真实命令工具调用、当前项目批准、真实成果/事件来源及最终关闭继续原验收。注册发现、依赖缩减、源码编译或局部方案接受均不计整体完成；原生ToolsOff/账号冲突由主控处理，其他已授静态开发与独立Go准备继续。
