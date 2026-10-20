@@ -20,11 +20,11 @@
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。主控为 M1 完成原服务保全、停止与 T09 恢复；当前同一 S 已重新运行。停止期间真实原 SQLite 与本次一致备份内容相同，完整环境、Q、媒体和 CodeGraph 配置保持。原件位于旧前端工作树 `.verification/swa-m1-contracts-20261020/service-before-01/` 和 `service-after-01/`；备份包含真实数据，保留在本地忽略目录。既有验收范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。M1已完成原服务保全和T09恢复；本次CLI依赖窗口由主控再次保全并停止同一S。当前原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-01/`及`stop-01/`，含实际环境、Q/媒体/CodeGraph配置和原库一致备份；备份包含真实数据，不进入Git或安装包。M1原件保留原位置，其已验范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务 | PID52040，创建 UTC `2026-10-20T07:44:04.137854Z`，BelowNormal，唯一 `127.0.0.1:64505` 监听；同一 S 元数据、实际环境、health ok 和主页原 Web 字节已核实。唯一窗口重新归运行服务 |
+| 当前服务与窗口 | 原S的PID52040于UTC `2026-10-20T09:37:01.796020Z` 正向退出，exit15；64505无监听，原库停前/停后一致备份完整性及外键检查通过。唯一窗口仅交Task9f/ctx0d串行锁生成及ignore-scripts冻结安装；原S待主控同源恢复。本机Orca公开CLI查询仍ready、runtime归属保持 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
