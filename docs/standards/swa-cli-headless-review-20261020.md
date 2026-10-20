@@ -778,3 +778,13 @@ F16参数错配及F17非法枚举的静态原因已消除；真实task.result、
 - 独立源码检查只帮助发现真实Go错误，T12/正文方案、原生/SDK/权限/隔离、最终同一安装候选双Worker及全部适用失败路径继续各自验收，原失败和未知不被执行顺序调整覆盖。
 
 这是实施前覆盖条件，未修改或运行编译入口，也没有新增动态授权。
+
+## 准确c2d4b62d的独立Go源码检查计划
+
+结论：**接受准确`c2d4b62d64eef73eb3c83064a8354696b6e623c7`的既有四包Go检查顺序调整计划。** 六条独立条件先在da2e7268形成并普通push，随后完整读取相对ebf的两文档差异及§7.4，并核原编译入口和现有真实服务T03的SOURCE/VERSION消费者；本次没有改动脚本或产品。
+
+新入口移除Candidate参数及VERSION前置，只读取实际40位干净HEAD并使用本项全新私有绝对输出，不伪造候选。四个原Go package逐包test -c及三个真实传输前函数保持，逐函数PASS、零匹配/SKIP拒绝；各重操作新资源准入、BelowNormal、Go4/-p4/512MiB及私有temp/cache/modcache、串行和失败即退出明确。只有全部实际成功且结束时仍为同一干净源码，才写既有SOURCE/tests.json，不把部分编译或未执行函数登记为通过。
+
+最终真实安装T03仍强制Candidate VERSION=编译SOURCE=准确源码，运行四个原live函数并拒绝零匹配/SKIP；源码变化时旧二进制不能用于新候选验收。当前调整只允许先发现Go源码错误，没有放宽HTTP、当前批准、原生SQLite/控制端、ToolsOff、模型、隔离或同候选T13双Worker条件，T03其他未覆盖范围继续保留。未发现六条件的剩余缺口或新增多余检查。
+
+`check-revision.ps1 -Previous ebf55ac024a618d1ad32a741eb4eefcfc5dae77b -Candidate c2d4b62d64eef73eb3c83064a8354696b6e623c7` EXIT0，两Markdown/5本地链接、无锚点/HTML或Git空白错误，marked18.1.0、BelowNormal、Node512MiB。本轮准确c2只取得本地已提交交付，普通push回执仍待补；计划接受后由原Worker修改入口并交准确CR，编译/函数/实际服务仍等待主控独占窗口，本Reviewer没有执行任何编译、业务测试或模型。
