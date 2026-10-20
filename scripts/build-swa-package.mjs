@@ -21,6 +21,7 @@ const runtimeSource = join(root, 'runtime', 'swa-orca')
 const sourceRequire = createRequire(join(runtimeSource, 'package.json'))
 const { unzipSync } = sourceRequire('fflate')
 const gyp = sourceRequire.resolve('node-gyp/bin/node-gyp.js')
+const python = await realpath('C:/Python313/python.exe')
 const taskWork = join(root, '.verification', 'swa-cli-headless-20261020')
 const store = join(taskWork, 'pnpm-store')
 await mkdir(store, { recursive: true })
@@ -30,10 +31,15 @@ await mkdir(temporaryRoot, { recursive: true })
 const work = await mkdtemp(join(temporaryRoot, 'candidate-'))
 const temp = join(work, 'temp')
 await mkdir(temp)
-const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_OPTIONS: '--max-old-space-size=1024', GOMAXPROCS: '4', GOMEMLIMIT: '512MiB' }
+const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_OPTIONS: '--max-old-space-size=1024', GOMAXPROCS: '4', GOMEMLIMIT: '512MiB', NODE_GYP_FORCE_PYTHON: python }
 const run = (program, args, cwd = root) => execFileSync(program, args, { cwd, env: environment, stdio: 'inherit', windowsHide: true, timeout: 20 * 60_000 })
 const capture = (program, args) => execFileSync(program, args, { cwd: root, env: environment, encoding: 'utf8', windowsHide: true, timeout: 60_000 }).trim()
 if (capture(process.execPath, [pnpm, '--version']) !== '11.27.0') throw new Error('The build requires pnpm 11.27.0')
+const pythonInfo = JSON.parse(capture(python, ['-c', 'import json,sys; print(json.dumps({"executable":sys.executable,"version":list(sys.version_info[:3])}))']))
+if (!pythonInfo || typeof pythonInfo.executable !== 'string' || !isAbsolute(pythonInfo.executable) || (await realpath(pythonInfo.executable)).toLowerCase() !== python.toLowerCase()) throw new Error('The actual Python executable differs from the selected native build input')
+const pythonVersion = pythonInfo.version
+if (!Array.isArray(pythonVersion) || pythonVersion.length !== 3 || !pythonVersion.every(Number.isSafeInteger) || pythonVersion.some(value => value < 0) || pythonVersion[0] < 3 || pythonVersion[0] === 3 && pythonVersion[1] < 6) throw new Error('The actual selected Python version is unsupported by node-gyp')
+console.log(JSON.stringify({ stage: 'native-python-preflight', executable: python, version: pythonVersion.join('.') }))
 const distribution = join(root, 'dist')
 await mkdir(distribution, { recursive: true })
 const actualDistribution = await realpath(distribution)
@@ -96,7 +102,7 @@ for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-s
     const headersDir = dirname(createRequire(join(packageDir, 'package.json')).resolve('node-addon-api/package.json'))
     await cp(headersDir, join(packageDir, 'deps', 'node-addon-api'), { recursive: true, dereference: true, errorOnExist: true })
   }
-  run(node, [gyp, 'rebuild', '--arch=x64', '--jobs=4', '--nodedir=' + nodeDir], packageDir)
+  run(node, [gyp, 'rebuild', '--python=' + python, '--arch=x64', '--jobs=4', '--nodedir=' + nodeDir], packageDir)
   if (name === 'node-pty') {
     const buildDir = join(packageDir, 'build', 'Release')
     for (const [file, source] of slotSourceFiles({ platform: 'win32', arch: 'x64', buildDir, nodePtyDir: packageDir })) {

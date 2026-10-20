@@ -141,3 +141,7 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 本次rpc-closure-static-01保留8份变动TS的成熟语法解析、JSON/YAML及两份Markdown/5本地链接/24Orca与11Pi来源路径的实际EXIT0，Git空白检查通过。语法解析不代表完整类型检查、原生功能、候选构建或安装验收；这些检查及真实双Worker仍未通过，不据静态提交创建完成PR。
 
 准确9e46579df4a073d1d67fc74c198274e0178e4147普通push0，独立f5dc局部接受RPC静态修正，并限定技术接受N13及Windows下载计划；N08新字段仍等主控SPEC。主控bcfec窄写域与独立接受条件满足后，同Worker实施download-swa-node.ps1及原构建调用：成熟.NET既有代理/默认TLS、准确三URI/私有新文件、600秒全流token及原Node所有pin校验，失败原件/安全原因保持。正文和后继实际构建尚未运行。原build04 runner已保存并核7755摘要，后继仅准备candidate04/build05；当前窗口仍归restore14原S55148，不执行新Stage。
+
+准确2c391e2718ceef2f44721b727c7471918fecdb4e普通push0且获d1ba静态接受，主控0055已定稿SPEC21.1.5并授原写域实施。原Run正式51ec仅一次build05消费：实际Windows三项官方HTTP200及原Node全部pin/exe/version通过，21metafile证明完整RPC index当前没有进入host；首node-pty gyp12.3配置因未选择Python失败，exec63388实际同步EXIT1且内外退出均1。candidate04保留不可安装，两次新鲜所属及旧创建身份均空，msg_a1c立即交回；主控确认restore15当前S68128/UTC19:00:53.019423及原库/环境/health-Web恢复，原Orca保持，授权撤销且冻结解除。
+
+当前构建修复显式选择本机已有C:/Python313/python.exe，部署/下载/编译前执行真实sys.executable/版本预检，四项gyp沿同一--python及子进程force唯一来源；缺失、不符或不可执行立即失败，不安装、不改系统PATH或全局配置。下载器[void]抑制原async VoidTaskResult，旧实际日志保留；后继尚未运行。原b7b5 runner已存build-05原件，下一candidate05/build06仅静态准备。N04纯App准入与N08契约/私有DACL的实际差异草案留在自有忽略目录，尚未应用或计为产品通过，其他输入/恢复/Job/成果由同Worker继续。

@@ -82,8 +82,8 @@ try {
     $swaStage = 'http-body'
     $swaStream = $swaResponse.Content.ReadAsStreamAsync($swaCancellation.Token).GetAwaiter().GetResult()
     $swaResources.Add($swaStream)
-    $swaStream.CopyToAsync($swaFile, 81920, $swaCancellation.Token).GetAwaiter().GetResult()
-    $swaFile.FlushAsync($swaCancellation.Token).GetAwaiter().GetResult()
+    [void]($swaStream.CopyToAsync($swaFile, 81920, $swaCancellation.Token).GetAwaiter().GetResult())
+    [void]($swaFile.FlushAsync($swaCancellation.Token).GetAwaiter().GetResult())
     Assert-ActualDirectory ([IO.Path]::GetDirectoryName($swaTarget))
     if ($swaFile.Length -le 0) { throw [IO.IOException]::new('The official Node response is empty') }
     $swaResult = [pscustomobject]@{schema='swa.node-download.v1';asset=$swaDownloadUri.AbsolutePath;bytes=$swaFile.Length;http_status=$swaStatus}

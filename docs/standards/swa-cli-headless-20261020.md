@@ -1038,6 +1038,14 @@ build-swa-package用execFileSync的独立参数数组调用已安装pwsh的绝�
 | D04 失败及600秒 | 真实HTTP失败、TLS断开、取消/超时或文件写入失败发生时核非零及保留部分文件、全部所属进程退出；未实际命中的分支为INCONCLUSIVE，不制造HTTP服务、假响应、证书或时钟 |
 | D05 完整候选 | 实际全部bundle/metafile、四个native ABI及两Go程序、依赖/许可检查和最终VERSION条件都通过后才可继续安装；下载通过不能代表候选可安装 |
 
-独立准确f5dc49f7c5003e896d5ee90cc81e0211ddb787e8技术接受本节后，同一Worker已实施scripts/download-swa-node.ps1及原build-swa-package.mjs消费者。实际PowerShell来源固定在已安装ProgramFiles/PowerShell/7/pwsh.exe，以独立参数数组调用；三个官方URI、独占私有candidate工作目录与原文件名、逐级ReparsePoint拒绝、CreateNew流、同一600秒token、默认代理/TLS及安全异常类别均按上述计划实现。原Node读取实际文件并保持所有原pin校验；原网络错误及候选没有删除。脚本和下载正文尚未运行，后继准确CR和新实际窗口仍须通过。
+独立准确f5dc49f7c5003e896d5ee90cc81e0211ddb787e8技术接受本节后，同一Worker已实施scripts/download-swa-node.ps1及原build-swa-package.mjs消费者，准确2c391e2718ceef2f44721b727c7471918fecdb4e获d1ba静态接受。实际PowerShell来源固定在已安装ProgramFiles/PowerShell/7/pwsh.exe，以独立参数数组调用；三个官方URI、独占私有candidate工作目录与原文件名、逐级ReparsePoint拒绝、CreateNew流、同一600秒token、默认代理/TLS及安全异常类别均按上述计划实现。原Node读取实际文件并保持所有原pin校验，原网络错误及候选没有删除。
 
-下一静态入口仅将候选改为全新dist/swa-cli-install-20261020-04，拟EvidenceName build-05；build04实际runner先存build-04/next-window-executed.ps1并核7755原摘要。新candidate04/build05尚未创建，不运行依赖、生成、安装、服务或模型。其他已批准的闭包、输入、恢复、Job和成果实现继续。
+原Run正式`msg_51ec7b66228f`的一次build05已消费，准确2c391干净、runner b7b5及新candidate04/build05前置通过；exec63388、根37144/UTC18:56:09.2623720Z，资源UTC18:56:13.312041/15.815249、CPU37.5/29.3%、可用7926308864/7770779648字节、单调2.5032144秒通过。实际prod deploy324项及21份bundle/metafile完成，Windows下载器取得三项官方HTTP200：zip37618919、headers10291794、node.lib2988566字节；原Node三输入SHA、exe大小/SHA和实际v24.21.0检查均通过。此结果证明本次下载路径可用，旧TLS失败原因仍未知，D01及没有实际命中的失败分支保持未验。
+
+首次node-pty的node-gyp12.3.0配置随即因未提供Python选择、原发现无法找到解释器而失败。实际同步exec63388 EXIT1，build-exit.txt/outer-exit.txt均1，未进入其余native/Go/VERSION；candidate04及私有work/candidate-B3Y5qw原件保留，不可安装。UTC18:59:04.9625541、18:59:07.4104430两次新鲜所属树及此前创建身份均空，以`msg_a1c06f42db08`立即交回。主控`msg_71607dd35701`消费收回并解除冻结，`msg_c0498a16a367`确认restore15实际EXIT0：当前S68128/UTC19:00:53.019423/epoch1792522853.0194235，原库/环境/配置/health/Web保全；下次prepare取restore15/restored.json，原c8不改。
+
+同次真实metafile标准JSON比较保存在build-05/rpc-metafile-comparison.json：host扫描6136→5666、正bytesInOutput输入6120→5650、实际输出22483367→20957928字节，完整RPC index当前不存在，正RPC方法输入279→94。此结果证明已定位全RPC入口的静态收窄，剩余动态/native/assets、旧SDK和完整功能继续未验，不能按包名裁剪。原async方法实际返回的两项VoidTaskResult类型文本保留在本次日志，当前调用用[void]抑制该返回值，等待后继实际输出验证；没有为清理日志重跑下载。
+
+只读核本机C:/Python313/python.exe存在、FileVersion3.13.13；原node-gyp12.3 configure/find-python消费者接受--python并在NODE_GYP_FORCE_PYTHON存在时只核该唯一来源。当前原构建先realpath选择该已有解释器，在部署/下载/编译前通过独立参数数组执行短标准库命令，取得实际sys.executable及三段版本；canonical身份不同或不满足原Python3.6以上要求即失败。只有同一构建子进程environment设置force，四项原gyp均显式传--python，不改系统PATH、全局配置或安装新Python。这一后继预检与编译尚未执行，文件版本元数据不代替可执行性证明。
+
+下一静态入口仅改为全新dist/swa-cli-install-20261020-05，拟EvidenceName build-06；build05实际runner先保存至build-05/next-window-executed.ps1并核b7b5原摘要。新candidate05/build06尚未创建，原失败候选不覆盖、不重试；后继须准确CR及新的明确窗口。其他已批准的闭包、输入、恢复、Job和成果实现继续。
