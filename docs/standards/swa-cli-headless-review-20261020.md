@@ -289,3 +289,47 @@ Microsoft明确kill-on-close在最后一个Job句柄关闭时作用于其成员�
 实际轻量检查：`.verification/check-revision.ps1 -Previous 847ec2687857b06430284aecdf81a6887f2f996f -Candidate 6168b4ea19e3b5468403e71a77a279b4bc18adf3` EXIT0；五路径Git空白、两份Markdown、5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。新增官方API/Node相关章节已读取，未进行动态验证、编译或安装。
 
 准确6168的决策hook为`msg_18d91715fa96`；主控在`msg_ef7d11edb358`明确完整读取四项静态修复、J01—J06/§5.4及测试补充的接受范围，并读取F08原生关闭作用域、交错及共同屏障要求，确认返修交原Worker、整体产品和动态未接受，实际读取回复确认本次唤起。
+
+## 准确f0ba与53ad的程序及真实fixture静态CR
+
+主控`msg_d76b0a4ae070`交付准确`f0ba550352ea28b63b008c12542e83dc47adbdf3`，其两个父提交分别为程序`10deb049cac61dd14646f2164bd291a1fc14de09`和已审main`13974f10041d2f8e846b951418172433751798c8`。10deb到f0只有五份主控文档变化，这五份文档与13974对应对象完全相同；程序审查依据为准确10deb/f0，未将main记录纳入程序修复。随后按`msg_548c85fec44e`读取准确`53ad6e1479ef5cf3099372d2855087cf002513bb`全部差异，真实远端分支同53ad。
+
+结论：**接受f0的F08静态修复；退回f0及53ad继承的F09未绑定Job退出结算；整体产品、安装、SDK认证和动态结果仍证据不足。** 53ad的共享字段校验、普通进程fixture及测试命令可以继续实施，尚未运行或尚未补齐的阶段项目保持待办。此前M0、M1记录、接口方案、集成计划和6168各项接受范围保留。
+
+### F08共同关闭屏障的静态修复
+
+f0的controllerClose通过与task.create/worker.start相同的reserve进入原生BEGIN IMMEDIATE事务。事务重新读取所属和scope，拒绝该controller既有关闭receipt；关闭分支核同一controller的pending taskCreate和worker.start，再核真实资源已释放，最后保存关闭checkpoint并提交。创建先保留时关闭拒绝；关闭先保留时后续创建及写动作被持久关闭记录拒绝，pending/unknown仍占用。现有原生同R回放在handler外处理，未新增执行状态账本。
+
+这补上6168所列不同R竞争缺口。真实T06/T11两种顺序竞争仍为NOT_RUN；静态接受不表示已经观察到竞争、全部Worker退出或关闭成功。
+
+### 父runtime持有Job与模型前准入的实际代码范围
+
+已读取新增native头文件、完整SwaProviderProcessTree、bootstrap及原生连接/关闭消费方。每Worker创建未命名且不可继承的真实Job；N-API external按当前environment/进程和自有集合核所属，查询实际限制、完整成员及PID/创建时间。分配前核root实际创建时间、父进程和空Job；父runtime保留Job与root进程句柄，SDK不取得句柄。
+
+实际子进程使用三条pipe和Node IPC；bootstrap准入前只加载Node内置生命周期代码，父确认成员后发送一次准入，bootstrap以自身PID/父PID回显收到的准入，之后才动态加载SDK。真实Pi请求等待该回显；原生连接在root退出后继续查询/清理Job，只有root和tree共同exited才发布已验证退出及Pi结算。重启旧runtime_epoch拒绝send/stop/release，未知句柄继续保留原资源。上述为源码行为，native编译、Windows实际分配和模型前无副作用仍待验证。
+
+### F09：已创建root的Job分配失败仍可成为tree exited
+
+严重程度：较高，影响J01/J04/J05及T03/T09。准确f0的`third_party/orca-v1.4.230/native/swa-provider-job.h:116`先保存真实root进程句柄、PID和创建时间，第119行AssignProcessToJobObject拒绝时抛出，assigned仍false。TypeScript的`swa-provider-process-tree.ts:76`在调用前已保存this.root；第55行捕获准入失败并关闭stdin，bootstrap可以实际退出。
+
+该状态下，reap的第140/146行只组合root exit、root句柄已signaled、空members和旧身份缺失，两次满足后第150—152行即可关闭Job并返回tree exited；成功条件没有要求该root曾成功分配并被实际Job成员查询观察。native close也只核成员为空及root已退出。准确`pi/rpc-session-adapter.ts:111`随后将root/tree exited转为AgentSessionAcquisitionExitProvenError，跳过第114行的retainFailed。
+
+因此一个**已创建root、从未成功加入目标Job**的分配失败可沿成功全树证明路径结算，违反已审§5.4“尚未绑定的空Job均不构成通过”及缺证保全。53ad只增加跨自有Job重复绑定拒绝，没有修改这一reap条件，问题仍在。这是源码推导的失败路径；当前没有动态复现，也没有据此声称已发生后代泄漏或模型调用。
+
+原Worker需保留实际分配及真实成员见证这一必要条件；已创建root的分配/绑定缺证保持unknown及原资源，不能借未绑定空Job获得全树通过。真正spawn未创建任何进程的processless预输入失败，应按实际无进程事实单独处理，不混入已绑定Job的全树证明。沿T03/T09检查相应实际失败，不增加模拟回执、管理员或全机追踪要求。具体调用链、行号及范围已通过`msg_331f32dfa9f5`交原Worker。
+
+### CLI、成果、构建安装及53ad测试差异
+
+已读取新CLI/serve/Windows资源采样、服务组装、RuntimeClient消费、真实成果收集、构建/检查/安装脚本及契约/依赖声明。查询使用明确回环HTTP端点及现有项目token，不隐式启动后台；App仍核当前Grant、目录和固定context。成果收集沿真实原生Task/Worker/transcript分页，缺原件或超限失败，usage未暴露时记录unknown。私有服务使用明确安装/数据根、生命周期stdin和实际readiness；构建导出独立依赖闭包，使用固定官方Node及对应native编译输入，安装只复制到不存在的新目录并设置当前用户ACL。
+
+这些入口目前没有构建或运行结果，不能据源码宣称安装闭包可用。锁同步、OpenAPI生成类型、全部T00—T15仍按Worker声明保持未完成；§3.1旧安装布局与当前flat源码布局的文档一致性也已交原Worker同步，没有替其修改实现或规格。
+
+53ad让CLI在HTTP传输前调用App同一ValidateOrcaCommand，区分worker.read默认100和显式无效0，参数解析诊断不混入JSON；新增测试只使用无效输入核预传输拒绝。普通进程fixture使用同候选Node、真实bootstrap、ManagedProviderProcess和SwaProviderProcessTree，实际创建root/child/grandchild及无关自有Job，编写正常、强制、root异常和最后派生等路径，以及真实句柄/创建身份/重复绑定负向检查。它没有冒充真实Agent；仍须实际执行后才能判断这些断言是否成立。
+
+53ad明确记录父宿主失联、实际SDK abort后关闭及缺native预输入三项未完成；验证入口遇剩余项返回6，不把局部fixture成功写成T09整体通过。当前没有正式PR，尚不能发布针对对应PR准确Commit的GitHub COMMENT review；该步骤随原Worker正式交付继续。
+
+### 实际检查及剩余窗口
+
+产品差异`git diff --check 6168b4ea f0ba5503 -- . ':!third_party/**'`及`git diff --check f0ba5503 53ad6e14`通过。已安装marked18.1.0分别检查f0三份产品Markdown、5本地链接，以及53ad两份Markdown、5本地链接，均无断链、锚点或HTML待审项；Node512MiB、BelowNormal。f0合入的五份主控文档与准确13974对象比较通过。
+
+主控`msg_548c85fec44e`记录prepare-02因当时可用内存3.529GiB在停服前拒绝，原S12800继续运行，未交依赖/生成/构建窗口。本Reviewer没有运行prepare、资源采样、原生fixture、Go测试、构建、安装、SDK、模型、HTTP或服务；所有功能、并发、停止和成果动态验收保持NOT_RUN。
