@@ -27,6 +27,8 @@
 
 原Reviewer准确`142869e5ddb7b06a1a1f45be978dbd1c595a98d1`对`5523564f2d76ee992b8ffe00d590dbc3b24a4f85`退回。本次按F01—F03修订真实SDK factory及定向provider刷新、controller公开请求到原生receipt/PTY/Run的映射，并采用当前权限下的写入消费者、真实路径/端点/进程和本机Orca定向保全组合。计划不要求WPR、提权、性能组或驱动；准确返修仍须原Reviewer接受，程序写域和动态窗口仍未授予。
 
+报告§4.3明确Pi过滤前的package-manager home消费者及仅在SDK子进程设置的私有home/agent/session/package路径；§5.3列出逐文件的程序写域申请，新增模块限定必要目录。该清单尚未授权；已只读核main后继`b26a2fab9b5cad853c777793dd17593fb4a509a2`的HANDOFF/STATUS及SPEC §21.1，本树尚未纳入该后继。
+
 ## 验收与执行顺序
 
 | 顺序 | 结果及停止条件 |

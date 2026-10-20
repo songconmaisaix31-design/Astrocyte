@@ -155,10 +155,13 @@ open在PTY请求开始后抛出或失联时，产品handler将该已可能发生
 
 使用公开`createAgentSessionRuntime(factory,{cwd,agentDir,sessionManager})`。该函数真实调用factory并用返回的session/services构造原生AgentSessionRuntime。factory按以下顺序执行，所有路径均显式私有，不调用`createAgentSessionServices`：
 
-1. 用上述显式选项创建真实ModelRuntime；`SettingsManager.inMemory`提供固定设置，packages和各资源路径为空、`defaultProjectTrust:'never'`且项目trusted=false。
-2. 直接`new DefaultResourceLoader`并`await reload()`；`noExtensions/noSkills/noPromptTemplates/noContextFiles/noThemes`均为true，additional资源和extensionFactories为空。非空固定systemPrompt及`appendSystemPrompt:[]`在原生discovery之前阻止SYSTEM/APPEND发现；不用加载后的Override过滤器承担准入。核实际扩展和pending provider/native/virtual registrations为空，非空立即失败。
-3. 仅执行§4.2的provider定向refresh并检查真实返回的errors/aborted/auth snapshot，取得并验证固定model及真实getAuth；没有选定OAuth或来源变化则在首次prompt前失败。原生`isUsingOAuth/hasConfiguredAuth`来自该次真实定向snapshot，不填假状态。
-4. 构造符合公开`AgentSessionServices`接口的对象，字段为实际cwd/agentDir/modelRuntime/settingsManager/resourceLoader/真实diagnostics；调用`createAgentSession`并显式传全部真实对象及固定model/thinkingLevel、sessionManager和空工具参数。`sdk.js`在已有modelRuntime/resourceLoader/model时不创建默认来源、不reload、不寻找默认model；modelFallbackMessage或诊断错误立即失败。factory返回真实session结果、同一services和diagnostics，由原生runtime接收后运行真正`runRpcMode`。
+1. 宿主先在SDK子进程的独立launch env中把`HOME/USERPROFILE`设为该Worker的`<DataRoot>/workers/<实际Dispatch>/home`，`PI_CODING_AGENT_DIR/PI_CODING_AGENT_SESSION_DIR`分别指向其私有agent/session目录，`PI_PACKAGE_DIR`固定随包SDK根；拒绝从调用者继承这些选择值。只修改传给真实子进程的env map，不给当前PowerShell的`$HOME`赋值，不修改父进程、用户或系统环境。原Codex认证通过已获准的唯一显式绝对路径只读访问，不依赖这些私有home去查认证。
+2. 用上述显式选项创建真实ModelRuntime；`SettingsManager.inMemory`提供固定设置，packages和各资源路径为空、`defaultProjectTrust:'never'`且项目trusted=false。
+3. 直接`new DefaultResourceLoader`并`await reload()`；`noExtensions/noSkills/noPromptTemplates/noContextFiles/noThemes`均为true，additional资源和extensionFactories为空。非空固定systemPrompt及`appendSystemPrompt:[]`在原生discovery之前阻止SYSTEM/APPEND发现；不用加载后的Override过滤器承担准入。核实际扩展和pending provider/native/virtual registrations为空，非空立即失败。
+4. 仅执行§4.2的provider定向refresh并检查真实返回的errors/aborted/auth snapshot，取得并验证固定model及真实getAuth；没有选定OAuth或来源变化则在首次prompt前失败。原生`isUsingOAuth/hasConfiguredAuth`来自该次真实定向snapshot，不填假状态。
+5. 构造符合公开`AgentSessionServices`接口的对象，字段为实际cwd/agentDir/modelRuntime/settingsManager/resourceLoader/真实diagnostics；调用`createAgentSession`并显式传全部真实对象及固定model/thinkingLevel、sessionManager、sessionStartEvent和空工具参数。`sdk.js`在已有modelRuntime/resourceLoader/model时不创建默认来源、不reload、不寻找默认model；modelFallbackMessage或诊断错误立即失败。factory返回真实session结果、同一services和diagnostics，由原生runtime接收后运行真正`runRpcMode`。
+
+`P:dist/core/package-manager.js:resolve/addAutoDiscoveredResources`在resource-loader的noSkills等过滤前执行，其中用户`.agents/skills`来自`getHomeDir()=process.env.HOME||homedir()`；因此空settings和noSkills本身不表示没有发生目录发现。上述真实子进程env把该消费者也导向空的私有home；`config.js:getAgentDir/getPackageDir`同样使用明确的私有目录与随包资源。T04在首次prompt前核子进程这些非秘密解析路径、真实资源来源列表及对应source调用闭包，任一解析到本机用户资源根立即失败。
 
 该组装没有改写依赖或替换refresh；定向refresh执行真实SDK逻辑，services包含真实已加载对象。后续允许的prompt继续走同一modelRuntime及只读store；会话替换等非白名单RPC不开放，factory本身仍保持相同限制。只读公开项目输入由Workspace固定提供，不继承项目本地配置。
 
@@ -229,7 +232,24 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 ### 5.3 实施写域建议及安装行为
 
-建议后续由同一Worker修改`cmd/swa/**`、Workspace消费方端口/现有HTTP组装的必要文件、`internal/adapters/orca/**`、明确的Orca来源目录与产品Nodecomposition、对应契约、构建/验证脚本和本任务文档。主控须在计划接受后授予准确文件写域，当前未获授权。
+以下是主控要求的准确实施写域申请；当前仅两份方案文档及自有验证目录有写入授权。新增模块以必要目录列出，既有文件逐文件列出，不据此扩大为整个Workspace、HTTP或其他产品目录：
+
+| 路径 | 必要修改与复用位置 |
+| --- | --- |
+| 新增`cmd/swa/**` | 真实Go CLI、参数/退出/JSON处理、serve启动及相应真实检查；协议边界只消费App或已装Go HTTP，不复制执行状态 |
+| `cmd/server/main.go`；新增`cmd/server/orca_runtime.go`、`cmd/server/orca_runtime_test.go` | 现有服务composition注入Orca执行端口、私有配置/生命周期和实际组装检查；已有业务实现保持各自归属 |
+| 新增`internal/workspace/app/orca_execution.go`、`internal/workspace/app/orca_execution_test.go` | Workspace的Orca消费方端口、DTO及用例；复用`LocalProjectRepository/ProjectFiles`、项目Grant和`ValidateProjectActionScope/AuthorizeProjectActionCaller`，每次重查主体与适用动作；固定上下文仍走既有显式服务 |
+| 新增`internal/adapters/orca/**` | App端口的真实适配、安装路径/metadata/进程所属检查、原生RuntimeClient调用及相应真实测试；传输使用随包Node入口导入准确原生RuntimeClient，Go侧仅以标准JSON与其自有stdin/stdout通信，避免重写Orca framing/协议或手写named-pipe parser |
+| 新增`internal/adapters/sqlite/orca_execution.go`、`internal/adapters/sqlite/orca_execution_test.go`、`migrations/028_orca_execution_links.sql` | 只保存Workspace项目/批准到真实native Run/root Task的关联；不保存另一套Task/Worker状态。当前迁移最大027，序号须由主控与公共迁移归属核准后使用。现有`migrations/embed.go`已按`*.sql`嵌入，无需改动 |
+| `internal/adapters/httpapi/server.go`、`internal/adapters/httpapi/session.go`；新增`internal/adapters/httpapi/orca_cli.go`、`internal/adapters/httpapi/orca_cli_test.go` | Services/路由注册、scopedAgentRoute精确放行与既有sessionGuard/项目token校验，新增HTTP处理只调用App，不直接读数据库，不调用human bootstrap代替批准 |
+| 新增`third_party/orca-v1.4.230/**` | 准确b287来源及原MIT/Lovecast许可，保留原路径和锁；只在此产品来源副本实施已审适配，原O目录保持只读。源码目录不作为独立运行候选 |
+| 新增`runtime/swa-orca/**` | 产品Nodecomposition、controller/helper、Go消费的真实RuntimeClient入口及Pi SDK入口；限定必要native methods/资源、来源适配和真实测试。构建产物进入既有忽略dist/verification，不把状态或凭据放入源码 |
+| `package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml`、`dependencies.lock.json` | 声明新runtime workspace、准确SDK/JOSE/构建依赖、实际锁及许可清单；原产品Node24.16.0工具链与随包Orca Node24.21.0分别记录。Go所需端口/JSON/Windows基础依赖已在go.mod内，本方案不申请Go依赖升级 |
+| `contracts/openapi.yaml`、`web/src/api/schema.d.ts`；新增`contracts/swa-cli.schema.json` | 首版HTTP及CLI契约、真实状态/错误/unknown和生成类型；schema.d.ts沿既有generate-client生成，不手改。无网页功能重构 |
+| `scripts/check-dependencies.mjs`；新增`scripts/build-swa-runtime.mjs`、`scripts/build-swa-package.mjs`、`scripts/check-swa-runtime.mjs`、`scripts/install-swa.ps1`、`scripts/verify-swa-cli-headless.ps1`及`tests/swa-cli-headless/**` | 精确runtime依赖检查、原生入口/资源闭包、候选打包/安装和T00—T15真实检查。Node架构/全局写端检查直接覆盖本新增runtime；既有Go架构检查已覆盖Workspace App及HTTP边界，无需为数量另加规则 |
+| 新增`THIRD_PARTY_SWA.md`；本任务两份文档及自有`.verification/swa-cli-headless-20261020/**` | 上游Orca MIT/Lovecast、Pi/Node/native/实际传递依赖许可和来源说明；候选实际结果/限制/命令保留。原LICENSE不替换；HANDOFF/STATUS/SPEC/QUESTIONS继续由主控维护 |
+
+现有`.gitignore`已经覆盖node_modules、dist及.verification；不申请其他公共文件。实施发现该清单以外的真实必要消费者时，先交主控具体路径及原因，不擅自写入。
 
 构建使用`go build`现有产品及新增swa、锁定Node构建工具和真实native；安装只写明确InstallRoot/DataRoot，不替换系统orca或Agent，不注册自动启动、不改变用户/系统PATH，不下载私有profile。普通终端通过swa绝对路径调用；如用户另行安装PATH入口，仅新增swa且需专门授权，不影响orca解析。
 
@@ -298,7 +318,7 @@ CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。e
 | T01 构建及闭包 | 获写域/窗口后执行`pnpm install --frozen-lockfile`、产品`pnpm build:swa-runtime`、`go build -p=4 ./cmd/swa ./cmd/server`；逐个加载实际随包entry/children及真实SQLite，检查构建metafile | bundle/Node/native架构匹配、Node24.21.0、无Electron执行依赖、所有实际fork/dynamic依赖在包内；所有TEMP/TMP归本任务忽略目录。不能运行上游mock测试当产品证据 |
 | T02 安装与私有隔离 | 使用T01同一候选执行产品`install.ps1 -InstallRoot ... -DataRoot ...`；绝对路径运行`$swaBin --version`和`serve --data-dir ... --port ... --json`；按§3.1逐一核实际可写消费者、`PRAGMA database_list`、metadata/pipe/锁、CIM PID/创建时间及监听；对已占用真实端口、原Orca根及本项junction指向原根提供真实拒绝输入 | 指定端口冲突EXIT5且无另选端口；路径在写入前拒绝，不能试写受保护根；私有profile-state.db/orchestration.db/pipe/daemon/key及所有实际session/cache根正确。§3.1定向配置/认证字节/ACL、目录通知和原绝对CLI status一起核保全；全局迁移/hooks/账号消费者源级关闭。当前权限执行，无内核采集前置；具体不可解释变化保持证据不足 |
 | T03 控制身份及权限 | `controller open/show`及`task create`；使用真实过期/撤销或缺失项目token、另一个真实项目/Run/旧controller访问；尝试CLI `--from`/human参数 | 仅真实helper及当前consumer可写；未知flag EXIT2，无效主体EXIT3；无headerless bootstrap调用、human cookie或伪consumer；Controller PID/创建时间和真实native pane可查；旧代请求拒绝 |
-| T04 Pi认证及ToolsOff | `capabilities`；无prompt准备真实Pi SDK并按§4.3 factory顺序加载。首次prompt前检查真实定向refresh结果、auth snapshot及getAuth来源，CredentialStore在实际read/list/modify/delete入口记录非秘密provider ID和操作，未知ID立即拒绝；从所用源码调用闭包核没有全量refresh、默认来源或其他provider环境/云账户探测。核资源/工具及设置后发送固定公开输入。自有准备会话调用真实只读modify(callback)，callback仅尝试创建本项自有标记文件 | 实际凭据操作集合仅openai-codex、没有list及修改callback执行；refresh errors空/aborted=false且真实snapshot为OAuth，provider/model正确。静态内置catalog的存在与实际认证来源分别记录；其他provider操作一次即失败，不能填undefined掩盖。工具allowlist/active/扩展/MCP/skills/templates/context文件均空、固定system和cache/retry/compaction关闭可核。modify/delete在callback前拒绝且没有刷新HTTP；凭据保全按§3.1核。自然短期原件未命中保持该分支未覆盖，不造token/有效期。Codex受限路径真实拒绝 |
+| T04 Pi认证及ToolsOff | `capabilities`；无prompt准备真实Pi SDK并按§4.3 factory顺序加载。首次prompt前检查真实定向refresh结果、auth snapshot及getAuth来源，CredentialStore在实际read/list/modify/delete入口记录非秘密provider ID和操作，未知ID立即拒绝；核真实子进程home/agent/session/package解析路径和过滤前的package-manager来源，从源码调用闭包核没有全量refresh、用户资源发现、默认来源或其他provider环境/云账户探测。核资源/工具及设置后发送固定公开输入。自有准备会话调用真实只读modify(callback)，callback仅尝试创建本项自有标记文件 | 实际凭据操作集合仅openai-codex、没有list及修改callback执行；refresh errors空/aborted=false且真实snapshot为OAuth，provider/model正确。静态内置catalog的存在与实际认证来源分别记录；其他provider操作一次即失败，不能填undefined掩盖。home/agent/session均在该真实Dispatch私有根、package为随包SDK，解析到本机用户资源根即失败；工具allowlist/active/扩展/MCP/skills/templates/context文件均空、固定system和cache/retry/compaction关闭可核。modify/delete在callback前拒绝且没有刷新HTTP；凭据保全按§3.1核。自然短期原件未命中保持该分支未覆盖，不造token/有效期。Codex受限路径真实拒绝 |
 | T05 启动和首输入 | 用真实不存在/不可执行的本任务入口以及正确入口分别`worker start ... --request-id ...`；记录native启动、input、turn事件和session自产文件 | 预启动失败无模型输入，native失败stage/residual真实；成功记录accepted与真实started。真实观测只到accepted时EXIT6且保留Dispatch，不能填ready |
 | T06 幂等与客户端断开 | 并发两个同R/同正文`controller open`，再同R改真实project/workdir；真实PTY创建后只断开本项CLI响应连接，用`request show --project P`查询；另在helper已创建、Run已创建及根Task未确认各实际边界终止本项等待/控制连接，检查§3.3原生checkpoint/子请求；runtime重启后重复只读查询。close同R并发、异controller正文及实际关闭后丢响应同样验证。对worker start/send再执行同R并发、异正文及真实提交后断开查询 | 每R仅一个真实helper及相应确定native handle；open不创建Run，task create至多一个Run/根Task，worker start仅一个子Task/Dispatch/输入。异正文`request_mismatch`；同R完成回原receipt，pending保持unknown及原占用，查询不创建/重发/关闭。真实命中副作用后响应丢失窗口才算该分支通过；未命中INCONCLUSIVE。核outer receipt及R/controller-pty、R/run-create、R/root-task或R/native映射实际存在；原生pending缺记录不证明无副作用 |
 | T07 输出、游标及成果来源 | `worker read --source transcript --limit 1`后按cursor分页；交叉把A的真实cursor用于B；`task result --output-dir ...`；在自有已归档副本做真实文件替换/缺失检查 | 真实消息/source/session/Dispatch对应，跨来源拒绝；结果保留完整来源、限制及unknown usage；缺原件明确失败，无terminal退路；导出不覆盖已有文件、不写出允许目录 |
@@ -379,7 +399,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 | `python .verification/swa-cli-headless-20261020/inspect-provider.py <明确两处Codex home>` | BelowNormal；标准TOML/JSON解析，仅输出provider/model/协议与认证字段存在性；两处默认OpenAI/gpt-6.1-sol/chatgpt OAuth，无凭据值输出 |
 | `git -C <公开验证项目原件> rev-parse HEAD/remote -v/show <准确SHA>:<四文件>` | 准确da3bdddb、固定origin及四份公开原文已读；本轮未核互联网可读状态 |
 | `wpr -profiles`、`wpr -help start`、`logman query providers Microsoft-Windows-Kernel-File`、WindowsPrincipal/当前权限只读查询 | FileIO profile和Kernel-File provider存在，查询EXIT0；当前token未提权、两个性能组均false、未见SystemProfile privilege。未开始采集，实际采集权限及范围尚未通过 |
-| `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接、24个Orca及9个Pi关键源码引用存在，EXIT0/PASS；不触发业务程序 |
+| `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接、24个Orca及11个Pi关键源码引用存在，EXIT0/PASS；不触发业务程序 |
 | `git diff --cached --check` | BelowNormal；两份文档最终暂存检查EXIT0/PASS，无空白错误 |
 | install/build/model/service、产品CLI、T00—T15 | 全部NOT_RUN；未取得窗口，未修改程序/依赖/全局Agent配置 |
 
