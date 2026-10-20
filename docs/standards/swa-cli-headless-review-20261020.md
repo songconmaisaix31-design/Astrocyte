@@ -1194,3 +1194,17 @@ Firecrawl CLI在本会话不可用，没有安装；已通过只读网页工具�
 D01—D05与独立条件相符：真实目录/已有输入在网络前拒绝，单次获准窗口中的三项官方资产及原哈希、当前系统代理/TLS、不伪造HTTP的真实失败/取消保全及完整候选顺序；未命中为INCONCLUSIVE，未执行保持NOT_RUN。下载脚本尚未实施，后继准确CR和实际窗口不可省略。N08所有新字段须主控SPEC定稿后同Worker实施，限定技术接受不代表当前Pi账号、全部Agent或模型可用；其他已定稿功能继续。
 
 `check-revision.ps1 -Previous 449184b826ae64de99d73476147d64967ef31667 -Candidate 9e46579df4a073d1d67fc74c198274e0178e4147`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。Worker八TS语法/来源检查保持原归属；本Reviewer只读官方网页和准确源码，没有安装工具、执行下载或把静态语法结果记为真实功能通过。
+
+准确9e局部静态/限定技术接受hook `msg_3a0f11e22c89`及main72ee管理hook `msg_d2806d65a148`已获主控`msg_f9f37a5900c6`、`msg_7b039abdede4`完整读取f5dc两报告新增、十文件差异及全部计划的逐项回复，实际唤起确认。主控后继0055已将N08定稿于SPEC21.1.5，技术接受与实际程序/账号未验分别保持。
+
+## 准确2c391e27的Windows下载实施审核
+
+结论：**局部静态接受准确`2c391e2718ceef2f44721b727c7471918fecdb4e`的下载helper、原构建消费者及新候选准备，真实下载与完整构建未验。** 已完整读取相对9e的四文件差异和103行脚本，逐项对照已审§14及D01—D05，原Node所有archive/header/lib SHA和exe大小/SHA/version、原解包/native/Go/VERSION顺序保持，没有以脚本退出0跳过校验。
+
+helper只准原24.21.0的三个官方HTTPS路径、443、无账号/查询/fragment及原文件名；使用成熟Uri/Path，WorkDirectory必须为本仓私有build下既有直接candidate工作目录，目标必须在其内部。逐级真实目录和祖先ReparsePoint拒绝、已有目标拒绝、CreateNew/Write/Share.None及异步流满足已审文件条件。build使用固定安装ProgramFiles/PowerShell/7/pwsh.exe和脚本绝对路径，execFileSync独立参数数组，无shell字符串拼接。
+
+HttpClientHandler仅在子进程读实际DefaultProxy，默认TLS、无Cookies、禁止redirect；非2xx立即进入失败。600秒CancellationToken覆盖SendAsync/ReadAsStreamAsync/CopyToAsync/FlushAsync，client无另一个较短时限，外层调用仍有600秒硬上限。逆序finally清理所有实际IDisposable，失败或清理异常均保留非零退出及部分文件，输出只含阶段/状态/异常类别，不记录原网络异常全文或代理凭据；清理后才输出成功，Node等待退出后读取真实文件并校验。未加入应用重试、换源或全局代理/证书写入。
+
+准确helper以PowerShell Parser.ParseInput、后继runner以Parser.ParseFile均语法错误0；准确MJS经UTF-8 stdin交Node24.16.0 `--check --input-type=module`实际EXIT0，均body_executed=false，BelowNormal/Node512MiB。旧runner7755已保存在build-04原件，后继实际SHA为b7b5289cf7d312dea37320386de356c19156cb0e94b5634c17892f8e8a519237，全文比较只有candidate03改candidate04；build-05和新candidate04当前均不存在。`check-revision.ps1`以9e→2c实际EXIT0，两Markdown/5本地链接及Git空白通过。
+
+当前只是静态代码符合技术计划，实际D01—D05、网络/哈希/ABI/Go/类型/安装结果均未由本Reviewer执行；外部TLS问题尚未证明修复，完整依赖仍待新metafile。新build05须主控另行交付一次窗口，旧失败及原S55148/restore14/c8保全保持，全部真实账号/工具/输入恢复/Job/完整成果和同候选双Worker继续未通过。

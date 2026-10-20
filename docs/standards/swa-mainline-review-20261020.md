@@ -531,3 +531,15 @@ restore-14同源S55148/创建UTC18:33:26.874753/epoch1792521206.8747532已于UTC
 结论：**接受准确`72ee2e98434189b1f638a74837fc8d97534887ea`相对646的一份任务文档管理范围。** 已完整读取差异。Windows/.NET现有代理单一路径保持官方URL、原Node pin及全部哈希、600秒和不重试，不修改系统代理/证书/本机Orca或输出代理凭据；精确缓存和环境/WinINET观察均保留来源限制，未推出旧TLS根因。新增scripts/download-swa-node.ps1仅属原Worker既有构建模块，先交具体方案/真实计划独立审核，再实施和准确CR，实际网络窗口另授；没有新的公开身份或权限接口。
 
 `check-revision.ps1 -Previous 646014d8d298a068692a14a15dd1490381951114 -Candidate 72ee2e98`实际EXIT0，唯一前缀解析至上述准确SHA，一Markdown/4本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。后继9e的下载/N08技术计划及RPC静态结论另记于headless报告，当前无真实网络修复、完整依赖、原生调用或安装双Worker通过。本Reviewer没有实施下载脚本或运行重操作。
+
+准确72ee接受hook `msg_d2806d65a148`已获主控`msg_7b039abdede4`完整读取f5dc两报告新增及对应差异/计划的回复，实际唤起确认；同轮9e限定技术及RPC静态接受也已获准确读取回复。
+
+## 准确0055af5e的N08契约定稿
+
+结论：**接受准确`0055af5e3a5f9f1fd02dedf1f4cc727febce1845`相对72ee的四文档管理及规格范围。** 完整读取HANDOFF、STATUS、SPEC及首版任务差异；SPEC21.1.5的严格NativeLaunchPolicy/native_launch/model_target字段、准确9e逐类清单引用及全部直接消费者，忠实保留f5dc限定技术接受。只有已证原生API key和三个已核实际API进入本政策，无refresh/新账号，其他Agent发现与不支持控制分别如实报告，不据默认Pi空源扩展全部账号状态。
+
+原生literal/转义、credential.env及models认证/三层headers/路由拒绝、samplingParams空集合和strict实际请求生产链、私有canonical根/Windows ACL、原R/accountHome与并发复用、固定argv/env/原生设置全部保持。首次及每次后续效果前源和私有文件逐项复核、当前批准/Job、Pi真实状态与Native fence分证、无TTL和有真实期限的不同条件，以及原unknown保全与全部真实计划没有删减或放宽。
+
+同一Worker沿原契约和直接消费者实施，下载窄helper按已审计划实施后准确CR；技术定稿不授新网络、构建、工具、账号或模型权限。原Codex/S3、工具/T11待答、最终同安装候选双Worker、原产品/原库和c8/restore14保全保持，全部实际验收未通过。原四次失败及实际21bundle仍各按原范围保留。
+
+`check-revision.ps1 -Previous 72ee2e98434189b1f638a74837fc8d97534887ea -Candidate 0055af5e`实际EXIT0，唯一前缀解析至上述准确SHA，四Markdown/48本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Worker2c下载实现的局部静态CR另记于headless报告；本Reviewer没有修改规格或实现，也没有运行下载、构建、SQLite/HTTP、服务或模型。
