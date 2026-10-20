@@ -34,6 +34,6 @@
 
 最终包按实际入口、构建metafile、动态子入口、native ABI和运行资产确定依赖。旧Pi SDK入口及不参与执行的界面、更新、浏览器、集成组件逐项核消费者后处理；静态分析未找到关系不能单独作为删除依据。保留命令解析、原生身份与执行状态、真实Agent调用、所属进程控制、实际输出所需的成熟依赖、资源和许可，不为裁剪手写替代解析器或调度器。
 
-本次prepare-09/stop-09及三项REA资源门限通过，BelowNormal、Node512MiB；原S41264明确退出15后才执行分析。同步执行结束及两次新鲜所属进程查询无匹配后，restore-09 EXIT0，恢复同一源码S、原数据库及原环境/配置/唯一监听/health/Web。原库integrity ok、外键空、停止区间内容equal；当前S47228，创建UTC `2026-10-20T16:59:21.622213Z`、epoch1792515561.6222126。原Orca仍app38652/runtime49da ready/reachable/connected及graph ready。
+本次prepare-09/stop-09及三项REA资源门限通过，BelowNormal、Node512MiB；原S41264明确退出15后才执行分析。同步执行结束及两次新鲜所属进程查询无匹配后，restore-09 EXIT0，恢复同一源码S、原数据库及原环境/配置/唯一监听/health/Web。原库integrity ok、外键空、停止区间内容equal；本次恢复的S47228，创建UTC `2026-10-20T16:59:21.622213Z`、epoch1792515561.6222126。原Orca仍app38652/runtime49da ready/reachable/connected及graph ready。
 
-控制脚本使用已审c8fdf318的`--expected-owner`读取实际上次恢复原件，不在每次恢复后修改PID常量。后继prepare须指定当前`restore-09/restored.json`并重新通过真实身份、环境、资源及保全；当前窗口归原S，无新Worker重操作授权。实际Node/native/TS完整构建、独立安装、当前原生账号/工具及同安装候选双Worker验收仍未通过；旧S3记录保持独立。
+控制脚本使用已审c8fdf318的`--expected-owner`读取实际上次恢复原件，不在每次恢复后修改PID常量。后继窗口须以STATUS登记的最新实际恢复原件重新通过真实身份、环境、资源及保全；本次归还窗口，没有授予新Worker重操作。实际Node/native/TS完整构建、独立安装、当前原生账号/工具及同安装候选双Worker验收仍未通过；旧S3记录保持独立。
