@@ -202,11 +202,13 @@
 | D03 规则 | 逐项读取 AGENTS/CODING/SPEC/四角色，结合旧分层、固定百分比、Python绝对禁令及全部三层测试要求的搜索核对：九项修订均有当前负责位置及直接消费者；Python文件格式和禁止脚本改写的规则继续有效 |
 | D04 决定 | 完整读取 cf22 QUESTIONS、RESOURCES、状态及对应任务；保留原决定正文、六步已确认定义与未决索引；新增首版决定明确替代原计划的首版范围和顺序，资源文件不变 |
 | D05/D08 保全与边界 | 同一静态检查：产品1446个路径全部保留，非文档修改为0；现有实验、资源参数和产品独有报告无差异；51份cf22独有文档及9140首版CLI/M2任务已纳入，121份来源文本比较通过 |
-| D06 链接与格式 | UTC `2026-10-20T07:04:03.677Z` 同一检查：123份变更Markdown、791个本地链接、34项引用定义、57个代码围栏，错误0；本次文档没有本地标题锚点引用，锚点数量为0 |
+| D06 链接与格式 | UTC `2026-10-20T07:12:18.771Z` 同一检查：123份变更Markdown、793个本地链接、34项引用定义、57个代码围栏，错误0；本次文档没有本地标题锚点引用，锚点数量为0 |
 | D07 接管阅读 | README → CONTRIBUTING/AGENTS → HANDOFF/STATUS → TASKS/总任务/M0 → SPEC/QUESTIONS/RESOURCES，以及研究、V4和归档入口逐项读取；已实现能力、规划与原 FAIL/NOT_RUN/BLOCKED 没有混写 |
 | D08 格式与PR | `git diff --check`：退出0；首份提交普通push、远端HEAD一致；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4)的base为产品集成分支、head为swa-m0-20261020；后续来源接续普通提交后核最新HEAD，准确实现独立CR另行记录 |
 
 检查结果原件为忽略目录中的 `result.json`。纯文档工作不将既有产品 FAIL、NOT_RUN 或 BLOCKED 改记为通过。D01/D03/D04/D07 的语义核对与 D02/D05/D06/D08 的机器检查共同支持 M0 文档结论。准确实现的独立 CR 与最终 main 集成尚待对应流程。
+
+独立 Reviewer 对准确 `7da19c06253d17384605fba4380ca136245a5a33` 的 [COMMENT review 5581817621](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581817621) 已逐项核对 R01—R13；产品保全、来源、权限、规则及791个本地链接通过，要求在 SPEC §21.1 明确规则的适用范围。现行 §21.1 将既有产品独立构建、启动和测试的要求限定到原 Go/TypeScript/SQLite 产品，直接引用首版 CLI 任务和 QUESTIONS；首版执行方式保持未决定。主控已实际读取该报告并回复 hook `msg_ca9c870c5242`，本次普通后继提交交原 Reviewer 复验。
 
 ## 真实剩余限制
 
