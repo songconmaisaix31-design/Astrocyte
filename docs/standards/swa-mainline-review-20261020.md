@@ -71,7 +71,7 @@
 
 ## 实施审核
 
-当前准确候选为`6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`，PR #4，base为`songconmaisaix31-design/works-relay-integration`、head为`swa-m0-20261020`，真实PR元数据与远端HEAD一致。结论：**接受M0文档整合**。F03已关闭，原R01—R13在本次文档范围满足；main/A01及首版CLI功能仍待主控和后继任务实际验收。
+当前准确候选为`6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`，PR #4，base为`songconmaisaix31-design/works-relay-integration`、head为`swa-m0-20261020`，真实PR元数据与远端HEAD一致。结论：**接受M0文档整合**。F03已关闭，原R01—R13在本次文档范围满足。主控随后已将同一准确来源推进默认main，独立只读确认见下文；首版CLI及其他产品功能验收继续按后继任务处理。
 
 首轮准确`7da19c06253d17384605fba4380ca136245a5a33`曾因F03退回，主控在`msg_8b665a2ddcde`明确实际读取报告与准确SPEC位置，接受退回并交原Worker。该次hook唤起已确认。下表保留首轮实际检查及返修依据，未变化部分按准确差异复用。
 
@@ -108,3 +108,17 @@ F03已关闭：原Worker在6eb的SPEC §21.1明确独立构建、启动和测试
 针对准确6eb的接受COMMENT review为`5581860208`：https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208 。状态为COMMENTED，commit_id已核实。
 
 接受hook为`msg_088e92f03e3f`，主控在`msg_a89819eca12e`明确实际读取最终接受、F03关闭、准确6eb检查和COMMENT review，并回复确认本次唤起。主控接续普通main集成；本Reviewer不执行合并、程序或服务操作。后续继续首版CLI独立条件与方案审核。
+
+主控集成后，独立再次执行`git ls-remote --heads origin main songconmaisaix31-design/works-relay-integration`，两者均为准确6eb；真实仓库API仍为ID1410836101、规范名称swarm-anything、默认main。该准确提交的产品与文档内容已有上述独立检查，因此产品32ab、有效决定、归档及当前CLI任务进入默认main的结果已核实。此项只支持A01的默认来源纳入，不表示CLI、M1运行、S3或发布通过；集成后的当前状态接续由主控记录。
+
+## main及A01的集成后核查
+
+结论：**接受准确`4132f28ecda414f2a1bd040d9eef50bbe1087cb6`的当前事实入口，A01唯一主线范围已核实**。主控已普通推进main，Reviewer只读核查，没有执行合并或程序操作。
+
+- 真实`git ls-remote`确认默认main为4132；6eb是其祖先。6eb→4132完整差异仅HANDOFF、STATUS、TASKS、总任务和CLI任务五份Markdown，未改变程序、资源、原治理规则及归档。因此沿用准确6eb的产品和来源保全检查。
+- 真实PR #4状态为MERGED，`mergedAt=2026-10-20T07:17:18Z`，`mergeCommit=6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；Orca仓库元数据的`worktreeBaseRef=origin/main`。主控main工作树实际分支为main、工作区干净。
+- 五文件已逐项读取：当前STATUS明确M0已接受、main已纳入产品和有效文档；HANDOFF及TASKS从origin/main接续；首版CLI任务拥有准确上游、Task/Dispatch、写域、未答边界及多执行者条件。M1仅计划与静态阶段交付，动态修复仍未实施；CLI尚未实现、S3及其他旧未验范围保持。
+- `.verification/check-revision.ps1 -Previous 6eb7c7f640a9cf1b05ea365b3afdf6883cd01765 -Candidate 4132f28ecda414f2a1bd040d9eef50bbe1087cb6` EXIT0：Git空白及marked@18.1.0检查通过，五份Markdown、76个本地链接、无锚点。BelowNormal，Node512MiB。
+- 独立确认上游真实Git根、HEAD和干净工作区为`b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`；远端`refs/tags/v1.4.230^{}`相同，package版本与已读取MIT原许可吻合。该结果只核来源，不宣称抽取、Agent或安装已通过。
+
+main目前能取得已核的当前产品、有效治理来源及首版开发入口；首版执行方案等待独立测试计划审核，产品程序和服务没有重新验证。此项不追加完整CI或旧S3为普通集成前置。

@@ -8,6 +8,8 @@
 
 上游由主控固定为Orca v1.4.230、`b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，本地只读目录为主控`.verification/orca-source-v1.4.230`。已读取package版本、LICENSE、CLI启动请求和handler、运行客户端、Worker启动/停止/释放handler，以及执行端agent-launch类型与executor的相关部分。实际看到的路径为CLI构造请求和能力检查 → RuntimeClient → agent.launch/orchestration RPC → 执行端的工作区、会话、提示投递与所有权处理；尚未证明任何抽取后的实现可运行。上游原许可证及归属应随实际迁入保留。
 
+已独立核实该目录是实际Git根、HEAD为准确b287、工作区干净；真实远端v1.4.230标签的peeled Commit相同。当前main管理入口为`4132f28ecda414f2a1bd040d9eef50bbe1087cb6`，已记录本来源及当前Worker归属，接口仍未决定。
+
 ## 读取Worker方案前形成的条件
 
 | 编号 | 正确实现必须满足的条件 | 边界与失败路径 |
