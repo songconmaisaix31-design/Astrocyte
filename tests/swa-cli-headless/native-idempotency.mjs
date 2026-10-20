@@ -8,7 +8,8 @@ import { dirname, isAbsolute, join, relative } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { parseArgs } from 'node:util'
 
-const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'output'].map(key => [key, { type: 'string' }])), allowPositionals: false })
+const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'output', 'case'].map(key => [key, { type: 'string' }])), allowPositionals: false })
+assert.ok(values.case === undefined || ['idempotency', 'storage'].includes(values.case))
 for (const key of ['candidate', 'data-root', 'project', 'output']) assert.ok(values[key] && isAbsolute(values[key]))
 assert.ok(values['project-id'] && values.endpoint && process.env.SWA_PROJECT_TOKEN)
 const candidate = await realpath(values.candidate), dataRoot = await realpath(values['data-root']), project = await realpath(values.project)
@@ -85,6 +86,33 @@ assert.ok(rel && !rel.startsWith('..') && !isAbsolute(rel))
 database = new DatabaseSync(dbPath, { readOnly: true })
 const remainingCases = ['actual_response_loss_after_each_effect_boundary', 'runtime_restart_pending_queries', 'worker_start_send_concurrent_and_disconnected_replays', 'different_request_close_create_start_interleavings']
 try {
+  if (values.case === 'storage') {
+    const counts = () => ({ runs: database.prepare('SELECT COUNT(*) AS total FROM coordinator_runs').get().total, tasks: database.prepare('SELECT COUNT(*) AS total FROM tasks').get().total })
+    const before = counts(), lock = new DatabaseSync(dbPath), refusedR = randomUUID()
+    let acquiredAt, refused
+    try {
+      lock.exec('BEGIN IMMEDIATE')
+      acquiredAt = new Date().toISOString()
+      refused = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', refusedR], [7])
+      assert.equal(refused.envelope.ok, false)
+      assert.equal(refused.envelope.error.code, 'runtime_error')
+      assert.deepEqual(counts(), before)
+      assert.equal(database.prepare('SELECT COUNT(*) AS total FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').get(authority, refusedR).total, 0)
+    } finally {
+      if (acquiredAt) lock.exec('ROLLBACK')
+      lock.close()
+    }
+    const queried = (await cli(['request', 'show', '--project', values['project-id'], '--request-id', refusedR])).envelope.result
+    assert.equal(queried.state, 'absent')
+    const after = (await cli(['status'])).envelope
+    assert.equal(after.result.native.liveTabCount, status.result.native.liveTabCount)
+    assert.equal(after.result.native.liveLeafCount, status.result.native.liveLeafCount)
+    assert.deepEqual(counts(), before)
+    await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, actual_lock: { database: dbPath, statement: 'BEGIN IMMEDIATE', acquired_at: acquiredAt }, request: refusedR, refused, queried, before, after: counts(), commands, model_calls: 0, remainingCases: ['two_slots_and_third_worker_refusal_in_T13', 'post_effect_result_storage_failure', 'actual_natural_low_resources'], scope: 'actual_private_sqlite_write_lock_refusal_before_receipt_and_pty_only' }, null, 2) + '\n', { flag: 'wx' })
+  } else await verifyIdempotency()
+} finally { database.close() }
+
+async function verifyIdempotency() {
   const openR = randomUUID(), openArgs = ['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', openR]
   const opened = await Promise.all([cli(openArgs), cli(openArgs)])
   const controller = opened[0].envelope.controller
@@ -142,4 +170,4 @@ try {
   const anotherExited = await gone(anotherOwner)
   checks.push({ case: 'controller_close_same_request_concurrent_completed_and_other_controller', request: closeR, receipt: closed, exited, anotherExited })
   await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, checks, commands, model_calls: 0, remainingCases, scope: 'actual_native_non_model_idempotency_checks_only' }, null, 2) + '\n', { flag: 'wx' })
-} finally { database.close() }
+}

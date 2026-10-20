@@ -71,3 +71,5 @@
 准确abdb07d31954b9e72f12bdaafdfe56406deb9004已普通push并经ls-remote核实；初两次TLS失败保留。原Reviewer a211b66接受F10—F12静态修复，F13/F14后继已按真实原生Stop目标turn/fold及成熟stringer正确边界和目标错误断言返修，继续同一模块复核。四包Go真实检查、无服务编译及实际服务执行分开的入口、T02真实拒绝用例和已跟踪资源采样器已编写；所有正文NOT_RUN。最近主控只读可用0.376GiB，未交新窗口，原S12800与本机Orca保持，整体首版没有通过动态验收。
 
 准确39cc967df6a71b2c0c22e3daa520ca08331db17e已普通push并经主控核实，F13/F14继续独立CR。T06发现同R任务创建会重新采样context ID/时间及解析创建后的scope；主控msg_5ff5b86bf277确认按既有语义修复。现有原生指纹规范化保留完整正文、实际context版本/内容/路径/权限、caller/project及scope的project/controller/authority，handler和首次固定原件保持；具体剔除字段及等价绑定见报告§3.3。真实非模型幂等脚本及T13写动作重放/两席拒绝已形成源码，断开/重启及不同R竞争保持待验证；最新资源观察可用0.247GiB，无新动态窗口，全部正文仍NOT_RUN。
+
+准确9741fccb8f705b057b913e617d9ae522536c1e88普通push及Worker ls-remote EXIT0，主控独立远端查询连接失败如实保留，已交原Reviewer静态CR。后继仅在swa方法边界保留实际OrchestrationError原code/data，修正既有CLI身份/资源及pending退出语义，并补T08真实SQLite写锁拒绝源码；输入后写失败及自然低资源仍待验证。gofmt -d、PowerShell ParseFile和git diff --check通过，全部程序正文/SDK/编译/安装/模型仍未执行；原S和Orca保持。

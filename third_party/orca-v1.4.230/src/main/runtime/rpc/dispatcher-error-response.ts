@@ -1,5 +1,6 @@
 import { InvalidArgumentError, ZodError, formatZodError } from './core'
 import type { RpcEnvelopeMeta, RpcRequest, RpcResponse } from './core'
+import { OrchestrationError } from '../orchestration/orchestration-error'
 import {
   computerErrorData,
   errorResponse,
@@ -27,6 +28,10 @@ export function mapDispatcherError(
   meta: RpcEnvelopeMeta,
   error: unknown
 ): RpcResponse {
+  // 产品方法保留真实原生拒绝；其他来源继续采用上游错误映射。
+  if (request.method.startsWith('swa.') && error instanceof OrchestrationError) {
+    return errorResponse(request.id, meta, error.code, error.message, error.data)
+  }
   if (error instanceof ZodError) {
     return invalidArgumentResponse(request, meta, formatZodError(error))
   }

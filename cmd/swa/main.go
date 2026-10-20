@@ -216,7 +216,7 @@ func failureExit(code string) int {
 		return 4
 	case "resource_limit", "resource_refused", "orcad_instance_lock_held", "address_in_use":
 		return 5
-	case "delivery_unknown", "operation_unknown", "start_unknown", "stop_unknown", "release_unknown", "release_pending", "worker_release_unconfirmed":
+	case "delivery_unknown", "operation_unknown", "start_unknown", "stop_unknown", "release_unknown", "release_pending", "worker_release_unconfirmed", "operation_in_progress", "controller_closing":
 		return 6
 	default:
 		return 7

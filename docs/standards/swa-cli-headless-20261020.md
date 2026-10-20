@@ -324,6 +324,8 @@ T07增加同一真实SDK会话输出超过1200字符的完整导出检查，逐�
 
 CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。envelope统一携带`ok/request_id/runtime_id/controller/run_id/task_id/dispatch_id/result/error`中本操作存在的字段，保留原生`code/message/retryable/required_action`和未知语义；不输出token或原账户路径。文字模式显示相同状态与明确下一动作；不通过匹配自然语言决定状态。
 
+私有dispatcher仅对`swa.*`方法中的实际`OrchestrationError`保留原code/data，避免产品身份/资源拒绝在上游通用allowlist中变成`runtime_error`。其他原生方法和普通SQLite异常继续使用来源映射；`operation_in_progress/controller_closing`保留原请求并返回EXIT6。
+
 | 退出码 | 语义 |
 | --- | --- |
 | 0 | 查询成功，或写动作取得满足该命令要求的明确结果；查询到failed任务仍可EXIT0，result保留failed |
@@ -381,6 +383,8 @@ T06增加同一真实controller、不同R的两项task.create竞争：原生事�
 T06/T11补充不同R的controller.close与task.create/worker.start真实竞争：关闭与创建使用同一原生SQLite事务检查已有receipt，并在该事务内checkpoint关闭屏障。创建先保留且尚未物化时，关闭保持拒绝；关闭先保留时，之后所有创建和输入拒绝。关闭pending/unknown及完成后的receipt都继续阻止新创建，查询不撤除屏障。只有此前创建均结算且真实资源全部released时才允许关闭helper；重启后的未知创建继续保留占用。两种取得顺序均按真实receipt、Task/Dispatch和所属进程核对，未命中的交错保持INCONCLUSIVE。
 
 T06真实非模型入口为`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T06`及相同候选/私有D/公开项目/既有人类批准参数；`native-idempotency.mjs`使用实际CLI、PTY、Run/Task及read-only SQLite。它检查open/close同R并发和完成重放、真实不同workdir/controller拒绝、task.create同R并发后完成重放、同路径规格正文及自有实际context文件变化拒绝、首次固定context原件保持、唯一Run/根Task及实际子receipt。并发请求若在App先遇到原生pending，必须明确unknown且之后只查询原请求；该分支不会据此宣称已合并等待。脚本保留未命中的断开/重启和不同R竞争，Case返回证据不足。T13另在实际A/B执行后重放原start/stop/send/release请求，确认原身份及B恰有两次真实输入；两席仍占用时实际第三名必须在输入前拒绝，且真实Worker列表和SDK事件没有第三项。这些源码均待真实窗口运行。
+
+T08的`-Case T08`使用同一实际脚本的storage分支，对经过私有D校验的真实Orca SQLite执行`BEGIN IMMEDIATE`并持有真实写锁，再调用新R的实际controller.open；要求明确存储失败EXIT7、原生Run/Task及真实Tab/Leaf不增加、该R无receipt，释放自有锁后仅查询该R。准入之前失败的结论结合原生executor先begin receipt再invoke的实际顺序，单独absent不承担无副作用证明。该分支不调用模型；实际输入后写结果失败及自然低资源仍未覆盖，Case保持证据不足，不能登记完整T08通过。
 
 T09依现有入口`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T09 -SwaPath $swaBin -InstallRoot $installRoot -DataRoot $dataRoot -CaseRoot $caseRoot`执行分支；Node原生测试采用同候选Node和native运行`tests/swa-cli-headless/provider-job.test.mjs`。当前两入口的相应实现和真实结果均未完成，缺失或未命中场景如实保留。T13指定停止A时另保存A专有Job的实际root绑定、成员查询/退出观察和B专有Job中的原成员/身份，原生stop/release只有在全树条件满足后才结算。T12宿主重启丢失旧Job句柄的路径保持unknown，不重发输入，也不把该分支记录为恢复了存活模型进程。
 
@@ -500,3 +504,5 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 后继Go检查与串行编译入口、T02真实端口/保护根/junction拒绝及已跟踪的资源采样器均为静态源码。安装Case在私有服务消费者尚未验证时返回证据不足；T03仅Go范围完成同样保留其他分支。gofmt -d、PowerShell ParseFile及git diff --check实际通过；没有编译、执行测试正文或运行服务。abdb普通push初两次TLS握手失败，主控观察网络变化后再一次普通push及ls-remote均EXIT0，远端准确abdb07d31954b9e72f12bdaafdfe56406deb9004已核；未force或更改证书/全局配置。最新主控只读可用内存0.376GiB，无新窗口。
 
 准确39cc967df6a71b2c0c22e3daa520ca08331db17e已普通push并经主控再次核远端；F13/F14及四包Go检查源码待原Reviewer复核。T06核查发现App重新采样context和创建前后scope变化会使相同task.create请求指纹变化；当前按§3.3仅规范化比较副本，保留全部业务正文、版本、路径、权限及主体/作用域绑定，并补实际非模型CLI检查和T13重放/第三席拒绝。所有新JS/Go/SDK/模型、依赖同步/生成/构建/安装及测试正文仍NOT_RUN；主控最新只读可用0.247GiB，S12800和本机Orca保持，无动态窗口。
+
+准确9741fccb8f705b057b913e617d9ae522536c1e88的普通push及本Worker ls-remote均EXIT0，主控独立ls-remote随后连接失败，后者保留失败且不计为已核远端。后继修正swa原生拒绝code边界和未知关闭/创建占用的退出码，补真实SQLite写锁拒绝源码；`gofmt -d cmd/swa/main.go`无差异、PowerShell ParseFile及git diff --check实际通过，所有程序正文、类型检查、编译、模型和安装仍NOT_RUN。
