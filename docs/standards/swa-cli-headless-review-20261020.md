@@ -862,3 +862,5 @@ UTC15:36:13独立只读确认restore-06 launch/restored/current running一致、
 G01—G08及既有D/T覆盖了来源、状态区分、原生调用、权限、独立依赖、原Orca保全、失败未知及同候选双Worker任务；未发现无关多余检查。它们是后继完整方案的必要验收条件，不等于当前未知接口或Agent范围已接受。N01—N03已通过`msg_9816edcff224`交原Worker，主控另已核相同后台依赖问题；修复全部交原Worker，本Reviewer没有修改实现。
 
 `check-revision.ps1 -Previous c4d1c140d8d231058c42c455bd8433de0fc256c2 -Candidate bf996c3465a8a4efb06e9e2a598dd6aab3ec6c2f` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。所有G/D/T12真实Agent/协议、注册查询、安装、模型与新接口仍未执行；没有重跑REA、采样、服务、控制端或网络探测。
+
+准确1dc4接受hook `msg_eb869aeebe1c`已获主控`msg_0c5569d36751`完整读取60b无界面报告新增回复，实际唤起确认；主控仅在接受及新鲜身份/环境依据下启动prepare-07，尚未返回或交付Go窗口的实际时点保持。准确bf退回hook为`msg_b30e747ca85f`，该回复确认N01—N03已完整读取并由原Worker返修；正式bf线程回复尚待取得，不把脚本接受扩大为方案或动态接受。

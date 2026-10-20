@@ -403,3 +403,11 @@ REA旧Evidence与当前app.asar摘要不符的事实保留主控实际来源，�
 c4入口局部静态接受及主控实际回复与准确记录一致；c9记载的本地准确提交及待push回执保留其记录时点，后继原Worker`msg_69bb54bdc6ad`已取得一次普通push0并包含c2/2f/c4/bf，原TLS失败仍保留。bf新方案另有N01—N03退回结论，不能从管理接受取得实现授权。
 
 `check-revision.ps1 -Previous 0647754b18b9bbb9eb1b7903f1342a3fb654d6e0 -Candidate c9fb9b7bda759e324fa9369209f29e221ca95d97` EXIT0，两Markdown/16本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有重复应用分析、运行采样/服务/SQLite/Agent/模型；当前控制脚本接受仍不代替新的窗口准入。
+
+## 准确1b578c2e的独立发现约束与未决工具范围
+
+结论：**接受准确`1b578c2ea13d8f553fa7bb7ddf5fa7d0c96ef7b9`相对c9的四文档及相对已审064的累计管理范围。** 完整读取STATUS、QUESTIONS、SPEC及首版任务新增。注册发现、选择和调用无原Orca后台运行前提写入规格，原服务只读查询限定为可选核对，与bf的N01返修要求一致；实际注册/选择契约及各Agent调用矩阵仍待完整审核，没有按框架冻结新接口。
+
+工具范围的问题准确登记为已询问未答，既有Codex验证和旧S3按各自适用范围保留；未推断开放工具、供应端点或账号，也不将所有Agent发现加拒绝算交付。独立发现、具体技术契约及依赖设计可继续，真实执行仍遵守当前限制。同一次普通push覆盖c2/2f/c4/bf的后继回执、原TLS失败及c4局部静态接受/未编译状态均与实际消息一致。
+
+`check-revision.ps1 -Previous c9fb9b7bda759e324fa9369209f29e221ca95d97 -Candidate 1b578c2ea13d8f553fa7bb7ddf5fa7d0c96ef7b9` EXIT0，四Markdown/63本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。准确版本未授予动态窗口或宣称Agent调用、完整依赖、安装、双Worker成功；原产品、旧S3和其他未答项保持。
