@@ -67,3 +67,5 @@
 原Reviewer cc4d1e6接受准确f8的F09静态修复；99d084da接受准确d7完整成果计划和76e9dafd安装入口/说明、真实注册target及SDK空闲abort测试源码。主控msg_db8583a97ed2已实际读取回复并授予实施§5.5，新增严格成熟JSONL和native journal只读成果、真实Worker source观察、每次Worker创建前实际资源双采样及私有SDK事件日志正在同一写域实施。T00公开来源、T02实际安装、T13服务/授权拒绝入口和T15定向Orca保全脚本已形成源码，双Worker完整驱动和后继真实用例继续编写；缺少脚本/授权/动态窗口均明确失败，不能登记通过。全部JS/Go功能、SDK、构建、安装和模型检查仍未运行。
 
 准确0c6及普通纳入main4b后的f2已push，主控已实际读取；原Reviewer提出F10—F12后，本Worker修正五项真实事件订阅的取得/存活检查/消费/清理、实际ownerProcess命名及按Pi1.0.1角色/内容块/entry的严格Zod校验。T13真实双Worker驱动、T07实际SDK原件的自有故障副本检查、本机Orca并发期间定向观察及服务所有后代退出检查已编写，后继仍待独立CR和真实运行。候选补齐原node-pty实际ConPTY文件及SDK实际xhigh核验；所有修改只完成git diff --check与PowerShell语法读取，JS/Go程序、SDK、安装、模型和资源窗口均未运行或授予。
+
+准确abdb07d31954b9e72f12bdaafdfe56406deb9004已普通push并经ls-remote核实；初两次TLS失败保留。原Reviewer a211b66接受F10—F12静态修复，F13/F14后继已按真实原生Stop目标turn/fold及成熟stringer正确边界和目标错误断言返修，继续同一模块复核。四包Go真实检查、无服务编译及实际服务执行分开的入口、T02真实拒绝用例和已跟踪资源采样器已编写；所有正文NOT_RUN。最近主控只读可用0.376GiB，未交新窗口，原S12800与本机Orca保持，整体首版没有通过动态验收。

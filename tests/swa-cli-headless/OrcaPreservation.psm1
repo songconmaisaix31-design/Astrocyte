@@ -55,7 +55,7 @@ function New-OrcaPreservation {
     $watchers = @($files | Group-Object { [IO.Path]::GetDirectoryName($_.path) } | ForEach-Object {
         $watcher = [IO.FileSystemWatcher]::new($_.Name)
         $watcher.IncludeSubdirectories = $false
-        $watcher.NotifyFilter = [IO.NotifyFilters]::FileName -bor [IO.NotifyFilters]::LastWrite -bor [IO.NotifyFilters]::Security
+        $watcher.NotifyFilter = [IO.NotifyFilters]::FileName -bor [IO.NotifyFilters]::DirectoryName -bor [IO.NotifyFilters]::LastWrite -bor [IO.NotifyFilters]::Size -bor [IO.NotifyFilters]::Security
         $watcher.InternalBufferSize = 65536
         $prefix = 'swa-orca-preservation-' + [Guid]::NewGuid().ToString()
         $subscriptions = @('Changed','Created','Deleted','Renamed','Error' | ForEach-Object {

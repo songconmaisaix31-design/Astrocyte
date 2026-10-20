@@ -413,8 +413,9 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 实施后执行以下真实命令，新增测试用例必须直接对应上表；不运行现有上游mock套件作为本产品证据：
 
-- `go test -p=4 ./cmd/swa ./internal/adapters/orca`：新增CLI解析和真实runtime消费方包；使用真实文件SQLite和实际loopback HTTP，禁止替身provider。既有Workspace/HTTP包采用本轮新增的`go test -p=4 ./internal/workspace/app ./internal/adapters/httpapi -run '^TestOrcaCLIReal'`检查受影响准入与HTTP路径；实际输出必须列出匹配测试执行，未匹配不能登记通过。上述新测试命名/命令是待实施计划，不调用既有替身Agent套件充当native验收。
-- `pnpm test:swa-runtime`：本产品Node适配的真实SQLite、controller、process与Pi SDK测试。生命周期fixture只代表普通进程；真实Agent路径在T04/T13覆盖。
+- Go真实检查使用真实安装CLI、原生controller/RuntimeClient、当前项目批准、实际loopback HTTP及原生`PRAGMA database_list`，四个`TestOrcaCLIReal...`已形成源码，分别覆盖安装调用、消费方scope、实际App授权和HTTP身份字段拒绝；不构造provider、批准或human会话。为遵守编译与服务串行要求，在构建窗口执行`pwsh -File tests/swa-cli-headless/compile-go-tests.ps1 -Candidate $installRoot -OutputRoot $goTests`，内部以`go test -c -p=4`分别编译`./cmd/swa`、`./internal/adapters/orca`、`./internal/workspace/app`、`./internal/adapters/httpapi`，并实际执行CLI三个传输前检查。编译源码SHA须与同候选VERSION相同，Go temp/cache/module cache均在本项新输出目录。
+- 实际服务窗口执行`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T03 -GoTestDirectory $goTests`及其余实际安装/端口/认证/项目/原Orca保全参数；脚本持有真实serve，创建本项真实controller，设置`SWA_REAL_ENABLED=1`后串行运行四个预编译二进制的`-test.run '^TestOrcaCLIReal'`，逐一要求真实PASS记录，空匹配或SKIP直接失败。无实际环境的普通Go检查会明确跳过live函数，不能算真实验收；此入口仅完成T03相应Go范围，人类撤销后安全停止、另一真实项目/Run及旧代条件仍单独保留未验，不能用四个函数代替全部T03。
+- `pnpm test:swa-runtime -Case T09`及实际`SwaPath/InstallRoot/DataRoot/CaseRoot/ProjectRoot/CodexAuthFile`参数转到同一PowerShell验证入口；T07/T13及其他编号沿相应Case执行。本产品Node适配使用真实SQLite、controller、process与Pi SDK；生命周期fixture只代表普通进程，真实Agent路径在T04/T13覆盖。测试资源采样器为已纳入源码的`tests/swa-cli-headless/resource-gate.py`，使用当前C:/Python313及实际psutil7.2.2；产品安装/运行不依赖该测试用Python。
 - `node scripts/check-architecture.mjs`、`pnpm check:contracts`及变更影响的生成一致性检查，均遵守实际资源窗口。若新增模块未被现有架构规则覆盖，在本任务报告实际覆盖，并由同一Worker补相应必要规则。
 - T01的Go/Node构建及T00—T15真实验证入口。全默认CI仍按其独立范围记录，本任务不替其未验项目登记通过。
 
@@ -480,3 +481,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 同安装候选的T13驱动已编写：真实CLI并发提交A/B，核私有SDK实际delta区间、准确停止A/B保全及同session后续输入、完整B成果和逐行真实SQLite来源，期间重复本机Orca定向保全。业务语义和普通终端实际调用须由当前控制端基于真实产物核查后，才能显式完成根Task；脚本不自动生成人工批准。T07仅使用该真实运行产生的SDK原件副本，按成熟JSONL解析/序列化覆盖完整读取、缺失、截断、坏编码/JSON、超限、替换、未知内容块/entry和坏字段，原件逐次内存比较保全。所有新增脚本及故障用例正文均未运行，不作为验收通过。
 
 构建静态核查发现node-pty的获准patch只编译conpty.node；当前沿准确上游`slotSourceFiles`补齐其实际ConPTY DLL/OpenConsole及console-list prebuild到候选build/Release，闭包检查逐件要求存在。实际native编译与PTY启动仍未运行。Pi factory另核实际thinkingLevel为xhigh后才允许输入，SDK准备检查相应保存真实值。新资源窗口未授予；最近主控只读观察可用1.85GiB，S12800与原Orca保持，全部依赖后继/生成/构建/SDK/安装/模型均NOT_RUN。
+
+准确abdb07d3的F10—F12静态修复已获原Reviewer a211b66接受，F13/F14交回本Worker后已形成后继源码：T13复用实际evict Stop事件及其原生turnId，用准确上游journal fold读取停止标记前running和之后实际interrupted/真实SDK aborted取消结果，排除自然完成和空结束集合；不要求A产生完整SDK成果。B先完成原轮，再在同一PID/session/fence接受后续输入。T07成熟stringer显式suffix换行，加入有效往返对照，并对八类坏结构要求对应Zod错误路径或明确的不完整错误；共19项实际原件副本场景仍NOT_RUN。实时SDK事件观察读取实际append-only日志的有界完整前缀并比较历史前缀，完整SDK成果则继续严格要求读取前后文件身份/长度/时间一致；journal采用既有SQLite适配器的read-only/must-exist连接，不调用可能修复状态的host db getter。
+
+后继Go检查与串行编译入口、T02真实端口/保护根/junction拒绝及已跟踪的资源采样器均为静态源码。安装Case在私有服务消费者尚未验证时返回证据不足；T03仅Go范围完成同样保留其他分支。gofmt -d、PowerShell ParseFile及git diff --check实际通过；没有编译、执行测试正文或运行服务。abdb普通push初两次TLS握手失败，主控观察网络变化后再一次普通push及ls-remote均EXIT0，远端准确abdb07d31954b9e72f12bdaafdfe56406deb9004已核；未force或更改证书/全局配置。最新主控只读可用内存0.376GiB，无新窗口。

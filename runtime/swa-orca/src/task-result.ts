@@ -9,6 +9,7 @@ import { sessionIdFromStructuredWorkerIncarnation } from '../../../third_party/o
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
 import { agentSessionProviderHandleChainHead } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
 import type { AgentSessionRecord } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-record'
+import Database from '../../../third_party/orca-v1.4.230/src/main/sqlite/sync-database'
 import { replayJournal } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-open'
 import { renderJournalState } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-reducer'
 import { iterateJournalEpochRows, readJournalSessionEpoch } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-row-table'
@@ -66,6 +67,13 @@ async function exactPrivatePath(root: string, path: string, missingLeaf = false)
   if (!equalPath(await realpath(dirname(path)), dirname(path))) return fail('The native source parent changed its real path')
 }
 
+async function readPrivateJournal<T>(data: string, directory: string, read: (database: Database.Database) => T): Promise<T> {
+  const path = await realpath(join(directory, 'agent-session-journal.db'))
+  await exactPrivatePath(data, path)
+  const database = new Database(path, { readonly: true, fileMustExist: true })
+  try { return read(database) } finally { database.close() }
+}
+
 export async function readSDKSessionSource(path: string, sessionRoot: string, cwd: string, sessionId: string, stopped: boolean) {
   const witnessed = sourceWitnesses.get(sessionId)
   if (witnessed && !equalPath(witnessed.path, path)) return fail('A previously observed SDK source changed its path')
@@ -105,7 +113,8 @@ export async function readSDKSessionSource(path: string, sessionRoot: string, cw
     })
     const after = await file.stat({ bigint: true })
     const actualPath = await realpath(path)
-    if (!equalPath(actualPath, path) || `${after.dev}:${after.ino}:${after.birthtimeNs}` !== identity || before.size !== after.size || before.mtimeNs !== after.mtimeNs) return fail('SDK source changed during its consistent read')
+    const currentPath = await stat(path, { bigint: true })
+    if (!equalPath(actualPath, path) || `${after.dev}:${after.ino}:${after.birthtimeNs}` !== identity || `${currentPath.dev}:${currentPath.ino}:${currentPath.birthtimeNs}` !== identity || before.size !== after.size || before.mtimeNs !== after.mtimeNs) return fail('SDK source changed during its consistent read')
     const messages = entries.filter(entry => entry.type === 'message').map(entry => ({ entry_id: entry.id, message: messageSchema.parse(entry.message) }))
     const last = messages.at(-1)?.message
     const complete = last?.role === 'assistant' && last.stopReason === 'stop' && !last.errorMessage && last.content.some(item => item.type === 'text' && item.text.trim().length > 0)
@@ -173,17 +182,18 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     await exactPrivatePath(data, sessionRoot)
     if (!equalPath(await realpath(sessionRoot), sessionRoot)) return fail('The private SDK session directory changed its real identity')
     const sdk = await readSDKSessionSource(head.handle.nativeId, sessionRoot, cwd, sessionId, nativeWorker.state === 'stopped')
-    const journalDB = host.deps.journalDatabase.db
-    const bound = z.object({ count: z.number(), bytes: z.number().nullable(), max_seq: z.number().nullable() }).parse(journalDB.prepare('SELECT COUNT(*) AS count, SUM(LENGTH(row_json)) AS bytes, MAX(seq) AS max_seq FROM journal_rows WHERE session_id=? AND epoch=?').get(sessionId, readJournalSessionEpoch(journalDB, sessionId)))
-    used += Buffer.byteLength(JSON.stringify(sdk)) + (bound.bytes ?? 0)
-    if (used > maximum || bound.count <= 0 || bound.count > 100_000) return fail('The required journal is missing or exceeds the declared result bound')
-    const journal = replayJournal(journalDB, sessionId)
-    if (!journal || journal.damage || journal.newer || journal.state.lastSequence !== bound.max_seq) return fail('The actual native journal is damaged, incomplete or has a newer schema')
-    const rows = [...iterateJournalEpochRows(journalDB, sessionId, journal.state.epoch)]
-    if (rows.length !== bound.count) return fail('Native journal rows changed during their consistent read')
-    const snapshot = renderJournalState(journal.state)
+    const { journal, rows, snapshot } = await readPrivateJournal(data, host.deps.journalDatabase.stateDirectory, journalDB => {
+      const bound = z.object({ count: z.number(), bytes: z.number().nullable(), max_seq: z.number().nullable() }).parse(journalDB.prepare('SELECT COUNT(*) AS count, SUM(LENGTH(row_json)) AS bytes, MAX(seq) AS max_seq FROM journal_rows WHERE session_id=? AND epoch=?').get(sessionId, readJournalSessionEpoch(journalDB, sessionId)))
+      used += Buffer.byteLength(JSON.stringify(sdk)) + (bound.bytes ?? 0)
+      if (used > maximum || bound.count <= 0 || bound.count > 100_000) return fail('The required journal is missing or exceeds the declared result bound')
+      const journal = replayJournal(journalDB, sessionId)
+      if (!journal || journal.damage || journal.newer || journal.state.lastSequence !== bound.max_seq) return fail('The actual native journal is damaged, incomplete or has a newer schema')
+      const rows = [...iterateJournalEpochRows(journalDB, sessionId, journal.state.epoch)]
+      if (rows.length !== bound.count || readJournalSessionEpoch(journalDB, sessionId) !== journal.state.epoch) return fail('Native journal rows changed during their consistent read')
+      return { journal, rows, snapshot: renderJournalState(journal.state) }
+    })
     const current = host.deps.store.getRecord(sessionId)
-    if (!current || sourceSignature(current) !== signature || readJournalSessionEpoch(journalDB, sessionId) !== journal.state.epoch) return fail('The native provider identity or journal epoch changed during result collection')
+    if (!current || sourceSignature(current) !== signature) return fail('The native provider identity changed during result collection')
     checks.push({ sessionId, signature, epoch: journal.state.epoch, sequence: journal.state.lastSequence, path: sdk.path, identity: 'file_identity' in sdk ? sdk.file_identity ?? null : null, size: 'size' in sdk ? sdk.size ?? null : null, mtime: 'mtime_ns' in sdk ? sdk.mtime_ns ?? null : null })
     outputs.push({ ...row, source: { native_session_id: sessionId, location: record.location, fence: record.lease.runtimeFence, provider_link: head, owner_process: record.lease.ownerProcess ? { pid: record.lease.ownerProcess.pid, creation_time_ms: record.lease.ownerProcess.processStartTimeMs, runtime_id: record.lease.ownerProcess.runtime ?? null } : null }, sdk, journal: { session_id: sessionId, epoch: journal.state.epoch, rows: rows.map(item => ({ epoch: item.epoch, seq: item.seq, ts: item.ts, row: JSON.parse(item.rowJson) })), snapshot }, usage: sdk.usage })
   }
@@ -196,9 +206,12 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     }
   }
   for (const check of checks) {
-    const current = host.deps.store.getRecord(check.sessionId), journalDB = host.deps.journalDatabase.db
-    const sequence = z.object({ seq: z.number().nullable() }).parse(journalDB.prepare('SELECT MAX(seq) AS seq FROM journal_rows WHERE session_id=? AND epoch=?').get(check.sessionId, check.epoch)).seq
-    if (!current || sourceSignature(current) !== check.signature || readJournalSessionEpoch(journalDB, check.sessionId) !== check.epoch || sequence !== check.sequence) return fail('Native result sources changed before the complete result was returned')
+    const unchanged = await readPrivateJournal(data, host.deps.journalDatabase.stateDirectory, journalDB => {
+      const sequence = z.object({ seq: z.number().nullable() }).parse(journalDB.prepare('SELECT MAX(seq) AS seq FROM journal_rows WHERE session_id=? AND epoch=?').get(check.sessionId, check.epoch)).seq
+      return readJournalSessionEpoch(journalDB, check.sessionId) === check.epoch && sequence === check.sequence
+    })
+    const current = host.deps.store.getRecord(check.sessionId)
+    if (!current || sourceSignature(current) !== check.signature || !unchanged) return fail('Native result sources changed before the complete result was returned')
   }
   const result = { ...summary, workers: outputs, source: 'native_journal_and_sdk_session', collected_at: new Date().toISOString() }
   if (Buffer.byteLength(JSON.stringify(result)) > maximum) return fail('The full result exceeds the declared 12 MiB export bound; no partial export is returned')

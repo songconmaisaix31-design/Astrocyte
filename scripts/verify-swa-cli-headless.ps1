@@ -1,7 +1,7 @@
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T07','T09','T13','T15')][string]$Case,
+    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T03','T07','T09','T13','T15')][string]$Case,
     [Parameter(Mandatory)][string]$SwaPath,
     [Parameter(Mandatory)][string]$InstallRoot,
     [Parameter(Mandatory)][string]$DataRoot,
@@ -17,7 +17,8 @@ param(
     [int]$Port,
     [string]$ProjectId,
     [string]$OwnedProcessEvidence,
-    [string]$FlowEvidence
+    [string]$FlowEvidence,
+    [string]$GoTestDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,10 +43,10 @@ New-Item -ItemType Directory -Path $swaEvidence -Force | Out-Null
 $env:TEMP = Join-Path $swaEvidence 'temp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP | Out-Null
-$swaGate = Join-Path (Split-Path $PSScriptRoot -Parent) '.verification/swa-cli-headless-20261020/resource-gate.py'
+$swaGate = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/resource-gate.py'
 & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'resources.log')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-if ($Case -in @('T00','T02','T13','T15')) {
+if ($Case -in @('T00','T02','T03','T13','T15')) {
     $swaTestDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless'
     Import-Module (Join-Path $swaTestDirectory 'OrcaPreservation.psm1') -Force
     $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds -ProbeDirectory $swaEvidence
@@ -65,7 +66,31 @@ if ($Case -in @('T00','T02','T13','T15')) {
                 & (Join-Path $InstallRoot 'node/node.exe') --max-old-space-size=1024 (Join-Path $PSScriptRoot 'check-swa-runtime.mjs') --candidate $InstallRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-closure.log')
                 $swaExit = $LASTEXITCODE
             }
-        } elseif ($Case -eq 'T13') {
+            if ($swaExit -eq 0) {
+                if ($Port -lt 1 -or $Port -gt 65535 -or -not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or $ProtectedRoots.Count -lt 1) { throw '安装隔离负向检查需要明确端口、只读认证及实际保护目录' }
+                $swaOccupied = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,$Port)
+                $swaOccupied.Start()
+                try {
+                    & $SwaPath serve --data-dir $DataRoot --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-port-conflict.log')
+                    if ($LASTEXITCODE -ne 5) { throw '真实占用端口没有按 EXIT5 拒绝' }
+                } finally { $swaOccupied.Stop() }
+                & $SwaPath serve --data-dir $ProtectedRoots[0] --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-root.log')
+                if ($LASTEXITCODE -ne 3) { throw '真实保护目录没有在写入前拒绝' }
+                $swaJunction = Join-Path $swaEvidence 'owned-protected-root-junction'
+                New-Item -ItemType Junction -Path $swaJunction -Target $ProtectedRoots[0] | Out-Null
+                try {
+                    & $SwaPath serve --data-dir $swaJunction --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-junction.log')
+                    if ($LASTEXITCODE -ne 3) { throw '实际本项 junction 没有在目标写入前拒绝' }
+                } finally {
+                    $swaLinkAbsolute = [IO.Path]::GetFullPath($swaJunction)
+                    $swaEvidenceAbsolute = [IO.Path]::GetFullPath($swaEvidence).TrimEnd('\') + '\'
+                    if (-not $swaLinkAbsolute.StartsWith($swaEvidenceAbsolute,[StringComparison]::OrdinalIgnoreCase) -or -not ((Get-Item -LiteralPath $swaLinkAbsolute -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw '本项 junction 清理目标无法核实' }
+                    [IO.Directory]::Delete($swaLinkAbsolute)
+                }
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'installation-scope.json'), (@{ installed_candidate = $InstallRoot; actual_port_conflict = 'rejected'; actual_protected_root = 'rejected'; actual_owned_junction = 'rejected'; actual_private_service_consumers = 'requires_T03_T13'; model_calls = 0 } | ConvertTo-Json))
+                $swaExit = 6
+            }
+        } elseif ($Case -in @('T03','T13')) {
             if (-not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or -not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确认证/公开项目/端口/保护目录' }
             $swaStart = [Diagnostics.ProcessStartInfo]::new($SwaPath)
             $swaStart.UseShellExecute = $false
@@ -88,6 +113,40 @@ if ($Case -in @('T00','T02','T13','T15')) {
             if ([string]::IsNullOrWhiteSpace($env:SWA_PROJECT_TOKEN) -or [string]::IsNullOrWhiteSpace($ProjectId)) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'approval-required.json'), (@{ ok = $false; required_action = 'human_register_public_project_review_settings_grant_agent_issue_project_token'; endpoint = "http://127.0.0.1:$Port"; project_root = $ProjectRoot; instructions = (Join-Path $InstallRoot 'USAGE.md'); automatic_human_session = $false } | ConvertTo-Json))
                 $swaExit = 3
+            } elseif ($Case -eq 'T03') {
+                if (-not [IO.Path]::IsPathFullyQualified($GoTestDirectory) -or (Get-Content -LiteralPath (Join-Path $GoTestDirectory 'SOURCE') -Raw).Trim() -ne (Get-Content -LiteralPath (Join-Path $InstallRoot 'VERSION') -Raw).Trim()) { throw '实际 Go 测试二进制必须预先串行编译自同一候选源码' }
+                $env:SWA_ENDPOINT = "http://127.0.0.1:$Port"
+                $env:SWA_PROJECT_ID = $ProjectId
+                $swaStatusText = & $SwaPath status --json
+                if ($LASTEXITCODE -ne 0) { throw '实际项目批准未通过状态查询' }
+                $swaStatus = ($swaStatusText -join "`n") | ConvertFrom-Json
+                $swaControllerText = & $SwaPath controller open --project $ProjectId --workdir $ProjectRoot --request-id ([Guid]::NewGuid().ToString()) --json
+                if ($LASTEXITCODE -ne 0) { throw '实际 Go 检查控制端创建失败，保留原请求' }
+                $swaGoController = ($swaControllerText -join "`n") | ConvertFrom-Json
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'go-controller.json'), ($swaGoController | ConvertTo-Json -Depth 40))
+                $env:SWA_REAL_ENABLED = '1'
+                $env:SWA_REAL_INSTALL_ROOT = $InstallRoot
+                $env:SWA_REAL_DATA_ROOT = $DataRoot
+                $env:SWA_REAL_CONTROLLER = $swaGoController.controller
+                $env:SWA_REAL_RUNTIME_ID = $swaStatus.runtime_id
+                $env:SWA_REAL_CODEX_AUTH_FILE = $CodexAuthFile
+                $env:SWA_REAL_PROTECTED_ROOTS = $ProtectedRoots -join ';'
+                try {
+                    $swaTests = Get-Content -LiteralPath (Join-Path $GoTestDirectory 'tests.json') -Raw | ConvertFrom-Json
+                    if ($swaTests.Count -ne 4) { throw '四个真实 Go 检查条目不完整' }
+                    foreach ($swaTest in $swaTests) {
+                        $swaTestLog = Join-Path $swaEvidence ($swaTest.binary + '.log')
+                        & (Join-Path $GoTestDirectory $swaTest.binary) '-test.v' '-test.run' '^TestOrcaCLIReal' 2>&1 | Tee-Object -FilePath $swaTestLog
+                        if ($LASTEXITCODE -ne 0) { throw '实际 Go 检查失败' }
+                        $swaActualTestText = Get-Content -LiteralPath $swaTestLog -Raw
+                        if ($swaActualTestText -notmatch ('--- PASS: ' + [Regex]::Escape($swaTest.test) + ' ') -or $swaActualTestText -match '--- SKIP:') { throw '真实 Go 检查未执行匹配函数，或存在跳过' }
+                    }
+                    [IO.File]::WriteAllText((Join-Path $swaEvidence 'go-checks.json'), (@{ actual_checks = $swaTests; model_calls = 0; remaining_T03 = @('real_human_safety_stop_after_revoke','different_real_project_run','old_controller_generation') } | ConvertTo-Json -Depth 15))
+                    $swaExit = 6
+                } finally {
+                    & $SwaPath controller close --controller $swaGoController.controller --request-id ([Guid]::NewGuid().ToString()) --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'go-controller-close.log')
+                    if ($LASTEXITCODE -ne 0) { throw '实际 Go 检查控制端退出未确认，保留原请求和资源' }
+                }
             } else {
                 $swaObservationConfig = Join-Path $swaEvidence 'original-observation.json'
                 [IO.File]::WriteAllText($swaObservationConfig, (@{ orca_path = $OrcaPath; metadata_file = $OrcaMetadataFile; protected_files = $ProtectedFiles; original_process_ids = $OriginalProcessIds } | ConvertTo-Json -Depth 10))

@@ -25,6 +25,7 @@ assert.equal((await realpath(source.project_root)).toLowerCase(), project.toLowe
 const environment = { ...process.env, SWA_ENDPOINT: values.endpoint, SWA_PROJECT_ID: values['project-id'], NODE_OPTIONS: '--max-old-space-size=1024' }
 const requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
 const processAPI = requireRuntime('@vscode/windows-process-tree')
+const { startJournalRowFold } = requireRuntime('./journal-open.cjs')
 const commands = [], observations = [], eventSources = new Map()
 let commandNumber = 0, runtimeId, controller, rootTask, runId
 const request = () => randomUUID()
@@ -85,6 +86,8 @@ async function events(source) {
     assert.equal(row.process.creationTimeMs, source.process.creation_time_ms)
     assert.equal(row.projection, 'actual_sdk_lifecycle_and_delta_fields')
   }
+  const previous = eventSources.get(source.native_session_id)
+  if (previous) assert.deepEqual(rows.slice(0, previous.rows.length), previous.rows, 'The observed append-only SDK event prefix changed')
   eventSources.set(source.native_session_id, { source, rows })
   return rows
 }
@@ -148,12 +151,21 @@ assert.equal(native(stopA).state, 'stopped')
 const stoppedAt = Date.now()
 const eventsAAfterStop = await events(initialA.source)
 const stopCommandA = commands.at(-1)
-assert.ok(ends(eventsAAfterStop).every(row => Date.parse(row.observed_at) >= Date.parse(stopCommandA.started)), 'A had already settled when its stop command started')
 const goneA = await requireRootGone(initialIdentityA)
 const afterStopB = await queryWorker(dispatchB)
 assert.deepEqual(identity(afterStopB.source), initialIdentityB)
 assert.equal(processAPI.getProcessCreationTime(initialIdentityB.pid), initialIdentityB.creation_time_ms)
 await preserveOriginal('after_exact_A_stop', [initialIdentityB.pid])
+const firstTurnDeadline = Date.now() + 600_000
+let firstTurnB
+while (Date.now() < firstTurnDeadline) {
+  firstTurnB = await events(initialB.source)
+  if (ends(firstTurnB).length) break
+  await setTimeout(1000)
+}
+assert.equal(starts(firstTurnB).length, 1)
+assert.equal(ends(firstTurnB).length, 1, 'B did not finish its original actual turn before follow-up')
+assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentityB)
 const followupFile = join(inputDirectory, 'b-followup.txt')
 await writeFile(followupFile, 'A已按固定条件停止。请在当前同一会话根据下列实际A部分输出和准确公开原文，完成最终Median设计及验证说明；逐项覆盖原固定业务条件并引用文件位置。保持原Mean不变，禁止声称已运行程序测试。\n实际A读取回执：\n' + JSON.stringify(partialA) + '\n固定公开原文：\n' + JSON.stringify(source) + '\n', { flag: 'wx' })
 await cli(['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', request()])
@@ -171,6 +183,23 @@ assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentit
 const exported = await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'result-' + randomUUID())])
 const result = native(exported), outputB = result.workers.find(row => row.worker.dispatchId === dispatchB)
 assert.ok(outputB && outputB.sdk.availability === 'complete')
+const outputA = result.workers.find(row => row.worker.dispatchId === dispatchA)
+assert.ok(outputA && outputA.journal.session_id === initialA.source.native_session_id)
+const nativeStopsA = outputA.journal.rows.filter(row => row.row.kind === 'tombstone' && row.row.stopEvent?.reason === 'evict' && typeof row.row.stopEvent.turnId === 'string' && row.row.stopEvent.at >= Date.parse(stopCommandA.started))
+assert.equal(nativeStopsA.length, 1, 'The actual stop did not record one active target turn; idle close is insufficient')
+const nativeStopA = nativeStopsA[0]
+const beforeStopFold = startJournalRowFold({ sessionId: outputA.journal.session_id, epoch: outputA.journal.epoch })
+for (const row of outputA.journal.rows.filter(row => row.seq < nativeStopA.seq)) assert.equal(beforeStopFold.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
+const beforeStop = beforeStopFold.finish()
+assert.equal(beforeStop.damage, null)
+assert.equal(beforeStop.newer, null)
+const targetTurnId = nativeStopA.row.stopEvent.turnId
+const beforeTurn = [...beforeStop.state.items.values()].find(item => item.body.kind === 'turn' && item.body.turnId === targetTurnId)
+assert.ok(beforeTurn && beforeTurn.body.state === 'running', 'The exact native stop target was not running at its accepted journal mark')
+assert.ok(!ends(eventsAAfterStop).some(row => Date.parse(row.observed_at) < nativeStopA.row.stopEvent.at), 'The actual SDK turn ended before the native stop was processed')
+const endedTurn = outputA.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === targetTurnId)
+const actualSDKAbort = eventsAAfterStop.find(row => row.record.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted' && Date.parse(row.observed_at) >= nativeStopA.row.stopEvent.at)
+assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' && endedTurn.body.outcome === undefined || endedTurn.body.outcome === 'cancellation' && actualSDKAbort), 'The active stop was not proven by the native interrupted turn or actual SDK cancellation')
 const actualLast = outputB.sdk.entries.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1)
 const fullText = typeof actualLast.message.content === 'string' ? actualLast.message.content : actualLast.message.content.filter(row => row.type === 'text').map(row => row.text).join('\n')
 assert.ok(fullText.length > 1200, 'The actual long-output case did not occur')
@@ -195,7 +224,7 @@ const goneB = await requireRootGone(initialIdentityB)
 await cli(['worker', 'release', '--controller', controller, '--dispatch', dispatchA, '--request-id', request()])
 await cli(['worker', 'release', '--controller', controller, '--dispatch', dispatchB, '--request-id', request()])
 await preserveOriginal('after_both_workers_released')
-const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
+const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, activeStop: { nativeStopA, beforeTurn, endedTurn, actualSDKAbort: actualSDKAbort ?? null }, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
 await writeFile(values.output, JSON.stringify(preliminary, null, 2) + '\n', { flag: 'wx' })
 process.stdout.write(JSON.stringify({ type: 'swa_actual_business_review_required', final_output: join(evidence, 'B-final-output.txt'), evidence: values.output, instruction: '核查真实B最终说明及固定业务条件，并从实际普通终端执行同候选查询后，输入一行JSON，含checked_result和ordinary_terminal_evidence绝对文件路径；该输入仅表示当前Agent控制端实际核查，不取得human身份。' }) + '\n')
 const input = createInterface({ input: process.stdin, crlfDelay: Infinity, terminal: false })

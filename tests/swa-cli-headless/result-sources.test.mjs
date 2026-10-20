@@ -28,7 +28,7 @@ assert.ok(complete.length >= 1)
 const worker = complete.at(-1), sessionId = worker.source.native_session_id
 const originalFile = worker.sdk.path, originalBytes = await readFile(originalFile)
 assert.ok(originalBytes.length > 1200)
-const cases = ['complete', 'missing', 'truncated', 'invalid_utf8', 'damaged_json', 'over_limit', 'wrong_filename', 'outside_root', 'replaced_after_read', 'prefix_changed_after_read', 'unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content']
+const cases = ['complete', 'round_trip_valid', 'missing', 'truncated', 'invalid_utf8', 'damaged_json', 'over_limit', 'wrong_filename', 'outside_root', 'replaced_after_read', 'prefix_changed_after_read', 'unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content']
 
 if (!values.case) {
   const observations = []
@@ -82,7 +82,7 @@ if (!values.case) {
       bytes[0] = 33
       await writeFile(copy, bytes)
       await assert.rejects(read(copy), SyntaxError)
-    } else if (['unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content'].includes(values.case)) {
+    } else if (['round_trip_valid', 'unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content'].includes(values.case)) {
       const rows = await readJSONL(candidate, copy)
       const entry = rows.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1)
       assert.ok(entry)
@@ -101,8 +101,23 @@ if (!values.case) {
       }
       if (values.case === 'empty_final_content') entry.message.content = []
       const { default: stringer } = await import(pathToFileURL(requireRuntime.resolve('stream-json/jsonl/stringer.js')).href)
-      await pipeline(Readable.from(rows), stringer.asStream(), createWriteStream(copy, { flags: 'w' }))
-      await assert.rejects(read(copy))
+      await pipeline(Readable.from(rows), stringer.asStream({ suffix: '\n' }), createWriteStream(copy, { flags: 'w' }))
+      assert.equal((await readFile(copy)).at(-1), 10)
+      assert.deepEqual(await readJSONL(candidate, copy), rows)
+      if (values.case === 'round_trip_valid') {
+        const source = await read(copy)
+        assert.equal(source.availability, 'complete')
+        assert.deepEqual(source.entries, worker.sdk.entries)
+      } else if (values.case === 'empty_final_content') await assert.rejects(read(copy), /required final Worker SDK output is not complete/)
+      else await assert.rejects(read(copy), error => {
+        if (error.name !== 'ZodError' || !Array.isArray(error.issues)) return false
+        const paths = error.issues.map(issue => issue.path)
+        if (values.case === 'unknown_entry_type') return paths.some(path => path[0] === 'type')
+        if (values.case === 'missing_model_change_field') return paths.some(path => path[0] === 'modelId')
+        if (values.case === 'missing_message_timestamp') return paths.some(path => path[0] === 'message' && path.at(-1) === 'timestamp')
+        if (values.case === 'missing_usage_tokens') return paths.some(path => path[0] === 'message' && path.includes('usage') && path.at(-1) === 'totalTokens')
+        return paths.some(path => path[0] === 'message' && path.includes('content') && (values.case !== 'non_string_text' || path.at(-1) === 'text'))
+      })
     } else {
       await read(copy)
       if (values.case === 'replaced_after_read') {

@@ -38,6 +38,7 @@ export async function buildSWARuntime(output) {
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
     'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),
     'task-result.cjs': join(runtime, 'src', 'task-result.ts'),
+    'journal-open.cjs': join(upstream, 'src/main/native-chat/agent-session-journal/journal-open.ts'),
     'parcel-watcher-process-entry.js': join(upstream, 'src/main/ipc/parcel-watcher-process-entry.ts'),
     'daemon-entry.js': join(upstream, 'src/main/daemon/daemon-entry.ts'),
     'profile-state-writer-worker-entry.js': join(upstream, 'src/main/persistence/profile-state/profile-state-writer-worker-entry.ts'),
