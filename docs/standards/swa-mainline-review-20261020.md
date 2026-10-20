@@ -159,3 +159,15 @@ A01接受hook为`msg_94e5b0d5268a`，主控在`msg_c5b7dc996cdb`明确实际读�
 `.verification/check-revision.ps1 -Previous fac75c7f963d16c7f112e8e90ad30e36510d4738 -Candidate 4e6e8ed4fa52521c2232dd770eb98297d8713785` EXIT0，四份Markdown、47本地链接、无锚点/HTML、Git空白通过；marked18.1.0、BelowNormal、Node512MiB。真实`git ls-remote origin refs/heads/main`相同，fac75祖先检查EXIT0。原来源保全检查沿已接受fac75的未变化范围复用。
 
 准确4e6接受hook为`msg_fed5032cba31`，主控在`msg_58fd00165ab1`明确完整读取四份管理文档、47本地链接、真实main及祖先保全结果，确认首版未实现、M1故障修复证据不足的范围准确，回复确认本次唤起。
+
+## main后继准确b26的规格与任务归属
+
+结论：**接受准确`b26a2fab9b5cad853c777793dd17593fb4a509a2`的四份管理文档**。已完整读取4e6→b26的HANDOFF、STATUS、SPEC及首版CLI任务差异，真实远端main为b26。原程序、依赖、八份集成来源、M1调查与S3未验范围没有变动。
+
+SPEC §21.1按最新用户目标明确产品自带的隔离后台、独立命令/profile/数据库/端点/进程及本机Orca保全，首版唯一执行状态为私有原生Run/Task/Dispatch；Workspace复用项目、适用授权和固定上下文。具体控制身份、请求映射、工具关闭和安装接口继续依独立审核方案实施，没有把未审接口写成现有功能。旧Mission/Claim/Relay的适用路径与旧S3验收保持。
+
+当前长期Worker沿原终端/工作树/分支由`task_9f062888e786 / ctx_0d069056baff`接续，原静态Task已结算；仅两份方案文档及自有忽略目录有授权。b26记录3162已交审核，在该提交形成时准确；其后396e的计划接受见独立无界面报告。程序写域、动态窗口及原S服务仍由主控安排。
+
+`.verification/check-revision.ps1 -Previous 4e6e8ed4fa52521c2232dd770eb98297d8713785 -Candidate b26a2fab9b5cad853c777793dd17593fb4a509a2` EXIT0：四份Markdown、45个本地链接，无锚点/HTML或空白错误；marked18.1.0、BelowNormal、Node512MiB。真实远端main相同；没有进行安装、构建、模型或服务检查。
+
+准确b26接受hook为`msg_a32ea5a916a4`；主控在`msg_d14013f15d20`明确完整读取四份管理核查、45本地链接/真实远端和准确归属，确认原程序依赖、M1调查与修复因果不足、旧S3状态保持，实际读取回复确认本次唤起。

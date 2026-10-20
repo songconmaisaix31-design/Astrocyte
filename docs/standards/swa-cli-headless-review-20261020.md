@@ -75,9 +75,9 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 
 ## 当前状态
 
-结论：**退回准确`5523564f2d76ee992b8ffe00d590dbc3b24a4f85`的完整方案与测试计划**，需要原Worker修订F01/F02，并删除F03所列的多余采集前置。来源事实、唯一执行账本方向及五阶段目标可继续使用；本次没有接受程序实现或动态验收。
+结论：**接受准确`396ed69b30890185bdade3ae23f8206cf18b9b82`的完整方案与T00—T15测试计划**。已独立核对5523→3162→396e的全部差异及相关真实源码，F01/F02的方案缺口已补，F03的内核采集前置已删除。此次接受限于方案、测试覆盖和拟申请的模块边界，程序写域由主控授予；程序实现、模型认证和动态验收均未接受。
 
-本方案首次归属为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`。主控报告该静态Task已结算，正在沿原终端、工作树和分支接续返修；新Task/Dispatch待主控登记。旧ctx_c9的启动未知及开发会话恢复不作为产品运行证据。本Reviewer没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务。现有S服务恢复记录为PID52040，运行窗口归该服务；后续动态操作仍需主控安排。
+本方案首次归属为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`。主控在`msg_d2e2d0b64a50`确认该静态Task已结算，返修沿原终端/工作树/分支由`task_9f062888e786 / ctx_0d069056baff`负责；仍为同一个原Worker，仅授权两份方案文档。正式意见通过`msg_e632a2126807`送该Dispatch。旧ctx_c9的启动未知及开发会话恢复不作为产品运行证据。本Reviewer没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务。现有S服务恢复记录为PID52040，运行窗口归该服务；后续动态操作仍需主控安排。
 
 ## 准确5523的独立对照
 
@@ -136,3 +136,48 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 - SDK服务工厂、auth/refresh、工具与资源加载、RPC直接bash、SSE maxRetries路径、原生launch证明/receipt/terminal去重及公开固定项目四份原文均已按实际源码只读核查。没有运行SDK、创建认证、调用模型或执行测试脚本。
 
 返修交原Worker沿原会话、工作树及分支完成。F01/F02影响依赖的模型/控制路径，修订后重新审核准确方案；F03不新增运行权限前置。原M0、八份文档集成及M1调查的接受范围保持。程序实现、安装、实际隔离、ToolsOff认证、同候选双Worker及全部动态测试仍NOT_RUN，当前不作通过结论。
+
+准确5523退回hook为`msg_b66fab57fbe3`；主控在`msg_7f066521739c`明确完整读取H01—H18对照、F01/F02的实际源码与必要返修、F03定向证据组合及需删除的内核采集前置，确认未批准程序或动态操作、原接受范围保持，并回复确认本次唤起。原Worker已在新Dispatch读取正式意见，下一准确提交按变更范围复验。
+
+## 准确396e的方案返修核查
+
+本次准确来源为`396ed69b30890185bdade3ae23f8206cf18b9b82`，包含前序`3162f9db37a3ea2d7799d058f4cdc6436e33fb49`。实际远端该分支为396e、工作树干净。已读取两次完整差异，没有只审核3162而遗漏SDK过滤前的home消费者；未变内容复用前述H01—H18独立对照。
+
+| 条件与原问题 | 返修后的事实及结论 |
+| --- | --- |
+| H12/H17/H18、F01 | §4.2—§4.3明确不调用无条件全量refresh的createAgentSessionServices，使用公开createAgentSessionRuntime(factory)、DefaultResourceLoader、显式createAgentSession及真实services。已核原runtime factory确实直接调用该factory；sdk.js在传入真实modelRuntime/resourceLoader/model时不创建默认来源、不reload、不寻找默认模型。model-runtime.js的providers限定分支只对选定provider重组、刷新和更新availability；T04核真实provider操作、snapshot、errors和auth来源。静态内置catalog与实际认证访问分别陈述，不再以创建参数代替后续调用约束。方案缺口已补，实际认证仍未运行 |
+| H17/H18、过滤前资源发现 | 已独立核package-manager.js的resolve/addAutoDiscoveredResources：noSkills过滤前仍读取用户.agents/skills，来源为process.env.HOME或homedir；projectTrusted=false关闭项目祖先发现。396e在SDK真实子进程启动前指定私有HOME/USERPROFILE、agent/session目录及随包PI_PACKAGE_DIR，原认证保留唯一显式只读绝对路径，父进程和用户环境保持原值。T04增加真实解析路径与过滤前调用闭包检查；解析到本机用户资源根即失败。不能以最后资源列表为空单项判定隔离 |
+| H03/H05/H06、F02 | §3.3区分controller open与task create，并把四项待实现composition方法明确接入已有OrchestrationMutationExecutor及mutation_receipts；公开R、固定子请求、canonical payload、PTY预分配handle和实际身份均有保存位置与副作用顺序。原生terminal创建去重只合并in-flight，真实reconcile在找不到时可创建，方案准确区分这些能力；查询不调用有创建副作用的reconcile。副作用后异常转为operation_unknown以保留pending，原executor对这类pending不再invoke，符合已核源码。T06补同键并发、异正文、PTY/Run/根Task边界、关闭后丢响应及重启只读查询，未命中窗口保持INCONCLUSIVE。方案缺口已补，没有另建任务账本 |
+| H17/H15、F03 | §3.1/T02/T15采用实际写入消费者闭包及写端准入、规范路径/reparse、真实SQLite/端点/PID创建身份、本机Orca公开查询、定向配置/认证字节与ACL及目录通知的组合。明确FileSystemWatcher没有writer PID、可能溢出，快照及无通知均不能单独证明隔离；自然变化无法解释时保留具体证据不足。删除WPR、提权、性能组及驱动前置，范围符合原条件 |
+| H01/H02/H04/H13、模块及安装 | §5.3逐项申请现有文件和必要新增目录，Go CLI/HTTP只消费App端口，Node适配使用真正RuntimeClient，原生状态唯一；SQLite仅保存项目/批准关联。第三方来源副本与产品composition分开，原上游只读，许可证和真实依赖闭包保留。028迁移序号仍由主控核准；所列文件未获写入授权，不代表Reviewer已经授权实现 |
+| H07—H11/H14/H16、其余边界 | 同一安装候选、同一任务两个真实模型执行区间与流事件重叠、A实际停止全树退出、B保全并继续、分别查询和真实成果仍完整保留。失败/unknown不释放、不换键重发；开发会话、普通进程fixture、空闲PID和旧S3均未替代真实Agent验收。没有发现本次返修新增的无关测试 |
+
+原生checkpoint使用已有数据库接口，composition handler及精确方法分类属于后续产品实现；这些内容需要按已审计划实际编码和验证。本次源码核对只能说明方案所用接口和调用顺序有真实来源，不能证明新增handler、隔离写端、安装闭包或失败恢复已经工作。
+
+实际验证：`.verification/check-revision.ps1 -Previous 5523564f2d76ee992b8ffe00d590dbc3b24a4f85 -Candidate 396ed69b30890185bdade3ae23f8206cf18b9b82` EXIT0；两份Markdown、4个本地链接、无锚点/HTML或空白错误。marked18.1.0、BelowNormal、Node512MiB。新增Microsoft外部文档链接未重新联网读取，该链接不作为此次接受的独立运行证据。真实远端查询使用单次schannel配置，未修改全局配置。
+
+主控准确`b26a2fab9b5cad853c777793dd17593fb4a509a2`已将独立后台及唯一执行状态写入SPEC §21.1，并更新当前Task归属；独立管理核查见主线报告。Worker396e任务明确尚未纳入该后继，开始实现前需由主控安排普通纳入及明确写域。M0、M1调查、八文档集成和原来源调查的接受范围保持。
+
+## 原S服务窗口脚本的只读核查
+
+主控`msg_f426537127f9`指定只读审查`C:/Users/DW/orca/Astrocyte/.verification/swa-cli-v1-control/service-window.py`。已完整读取234行；该忽略文件没有源码Commit，本次准确SHA256为`8084f0c34e913285b357695e4682e9586ef9656ce2ad141394004baf1c306ee8`。没有运行脚本、访问原SQLite、发送HTTP或停止/创建进程。该核查不作为396e程序或动态通过证据。
+
+结论：**该脚本当前版本退回窗口执行**，需主控补充异常接续办法。其正常路径按原PID52040及准确创建时间、真实exe/优先级/唯一loopback监听核所属，保存实际环境和原Q/media/CodeGraph来源，恢复使用同一S、原库、原命令及环境，并核健康和原Web；这些正常路径约束有具体实现。
+
+1. `stop`先terminate/wait并保存stopped.json，之后才运行resources及backup。若后两项失败，原S可以已经停止而current.sqlite缺失或不完整；`start`强制读取并比较该备份，缺少已停止但备份未完成时的恢复入口。停止超时或stopped.json写入失败也需按准确原身份接续，不能因没有成功标记推断原进程仍运行。
+2. `start`在Popen之后依次读取新PID、保存launch.json、等待监听、核环境/健康/Web及写最终running指针。后续任一步失败可以留下新S运行或状态未知；重跑start会因端口占用或证据目录已存在拒绝，脚本没有只读核同一launch身份并完成恢复记录的入口。Popen之后、launch.json写入之前的间隔也需要明确保存和恢复所属的办法。
+3. 应在停止前具备必要保全资料及可用备份，并保留原库变化的核对条件；对于实际已启动的新S，按已有准确身份只读检查并接续记录。异常时保留实际状态，不自动再次启动、不终止未知进程、不用备份覆盖原库。原PID被复用时安全拒绝是合理行为，不能据此宣称原S仍活。
+
+准确问题通过`msg_510546b1c82f`交主控；修订及执行均归主控。该限制只影响后续服务窗口交接，已接受396e静态方案及其他独立准备可以继续。原S仍按主控记录运行PID52040，本Reviewer没有重新验证其当前运行状态。
+
+### 主控返修后的窗口脚本
+
+已按`msg_e7da135158c3`完整只读返修后的345行，准确SHA256为`28433cfdd297814a39211d6f5926cd3c342216bd3c2862eb42eff1a211b27b29`。**接受该版本作为主控手动保全/恢复的静态方案**，原两处正常恢复入口缺口已补：
+
+- prepare在原服务仍运行时保存实际身份、环境、来源和配置，先核额度并完成一致备份/完整性，再写prepared；stop接受该基线，持久化准确stop-intent后才终止，正向退出同时输出并记录，停止后另备份stopped.sqlite，最后写window-ready。
+- 正常start要求window-ready，比较停止后备份与当前原库，再以同一S、原环境和原库启动。新增recover-original仅在窗口尚未ready时可用，明确停止区间比较不可用，禁止在ready后绕过比较；该入口不覆盖原库。
+- Popen后输出并记录准确新进程身份，新增reconcile-start只核已有launch及真实环境/健康/Web，再完成running元数据，不再创建或终止进程。旧PID若被复用保全其新所属者。
+
+停止退出或launch身份的正向记录都缺失时仍为未知。主控已明确根据实际stdout/系统身份检查后显式接续；脚本不自动从文件缺失推断未发生副作用，也不保证任意中断后自动恢复。静态接受不代表实际备份、停止、窗口就绪、启动或恢复成功；所有这些步骤仍由主控在获准窗口执行和核实。本Reviewer没有执行该脚本，也没有独立复跑其syntax检查。
+
+准确396e的方案接受hook为`msg_f3ddbb00f6f1`，包含初版窗口脚本退回的准确hash和分别适用范围；主控在`msg_09941fdfc009`明确完整读取条件对照、真实factory/provider/home、原生receipt/unknown及F03定向证据，确认F01—F03关闭、仅方案/测试接受及动态全部NOT_RUN，实际读取回复确认本次唤起。准确b26管理接受hook及实际回复分别为`msg_a32ea5a916a4`、`msg_d14013f15d20`。返修窗口脚本的后继静态结论另随本报告回传原Run。
