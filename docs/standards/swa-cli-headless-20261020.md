@@ -440,6 +440,41 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 - `node scripts/check-architecture.mjs`、`pnpm check:contracts`及变更影响的生成一致性检查，均遵守实际资源窗口。若新增模块未被现有架构规则覆盖，在本任务报告实际覆盖，并由同一Worker补相应必要规则。
 - T01的Go/Node构建及T00—T15真实验证入口。全默认CI仍按其独立范围记录，本任务不替其未验项目登记通过。
 
+### 7.5 CLI错误输出、原请求关联与所属stdin的补充测试计划
+
+本节是主控msg_34756d70dc45、msg_e18403c22437要求的实现前补充审核对象；程序基线为准确8220d851dd998639a0ae3fbf4eff0212dd20ed7c。本次只修改两份任务/报告，不实施本节程序，独立接受后由同一Worker返修。此前各准确Commit的审查范围保持。
+
+实际缺口：`cmd/swa/main.go:report`把本地失败写到stderr，未保留已解析的原R；CLI又直接输出既有HTTP ErrorV1，缺少统一的ok。`serve`没有读取自身stdin/EOF，只有ctx/node/server分支，正常所属EOF无法进入code0。`waitOwnedService`只等待直接子进程，不能单独证明后代已退出。这些影响§6输出规则、T06原请求恢复及T02/T15服务关闭，不涉及新产品命令、执行账本或权限。
+
+冻结的输出及生命周期条件：
+
+- `--json`的正常命令结果或失败只在stdout发布一个完整envelope；stderr保存实际诊断。serve成功readiness保留既有专用字段和结构，普通控制命令及serve失败沿既有CLI envelope。原有文字模式可继续使用缩进结构，须呈现同一code、message、required_action及已有真实关联。解析错误也需取得单一失败JSON；不能为取得输出模式而猜造尚未成功解析和校验的身份。
+- 外层`request_id`只能来自当前已成功解析并校验的命令R或真实原生envelope；controller/task/dispatch只保留该命令明确选择或真实响应已给出的值。runtime/authority仅来自实际原生响应或已核私有readiness。未知项省略。输入错误、取消、输出失败和网络未知都不能换键或自动重发。
+- 已知HTTP ErrorV1沿成熟JSON解码的明确协议分支转为既有CLI envelope：外层ok=false及既定code/message/required_action，CLI retryable按既定false；原完整ErrorV1原样保存在既有`error.data`，其中原`schema_version/error.request_id/retryable`保持HTTP来源。HTTP trace不填入命令R；不增加顶层字段。实际原生envelope及其result/error.data保持来源。无法识别、损坏或不完整的真实响应立即报告unknown，不猜测另一种结果或修复响应。
+- 取消当前CLI等待使用退出码130及一个失败envelope，已有R及selector保持，stderr给出针对该R的真实查询方法；取消不生成Worker停止/释放或Task完成结果。stdout实际不可写时保留错误和已知关联到stderr，按真实影响返回6或7，不再尝试第二次发布结果。
+- `serve`在readiness之前遇到所属EOF或真实中断，按取消启动130收尾，并只发布一次未就绪的失败envelope；其delivery_unknown描述尚未交付的启动结果，未知身份省略。实际所属进程退出无法确认时以6保留未知范围。readiness之后只保留已发布的那一次readiness；后续关闭/失败写stderr和实际退出码，不追加第二个结果。readiness已经发布不等于后继关闭成功。
+- readiness之后，在所有相关Worker/helper已按原生流程明确停止、归档/释放及关闭的空闲条件下，所属EOF须关闭本次node/server stdin并核实际退出，全部所属及已观察后代退出才返回0。实际子进程失败不能被忽略；已知失败及unknown分别保留7和6。有未确认的Job、daemon、helper或其他旧身份继续保留实际占用及原记录，不按serve root退出清除资源；不会自动完成Task或重放输入。
+
+拟在`tests/swa-cli-headless/cli-output.test.mjs`及必要Windows普通控制helper中实施，沿现有验证入口增加`-Case T14 -CLIScenario <pretransport|http|network|cancel|serve-owner|output-pipe>`。这些是待实施的验证参数；当前入口尚未提供，缺失不能计为通过。helper只控制本项真实进程、管道和console，不模拟HTTP、Agent、原生协议或业务结果。Go helper在服务启动前以相同源码SHA、现有Go额度串行编译；实际检查只使用预编译helper、安装后的同一候选及其Node，服务期间不编译。
+
+| 用例与现有需求 | 实际条件、命令与独立判断 |
+| --- | --- |
+| C01 本地解析/校验，T03/T14 | 同候选实际运行未知flag/动作、无关字段、非法source、无效R和缺少当前Grant；缺Grant只删除本项子进程环境中的token。涵盖合法R已解析后失败、R尚未解析及R本身非法的参数次序。要求EXIT2/3、stdout成熟Decoder恰好一个失败envelope且第二次Decode为EOF、诊断只在stderr；未核身份缺省。结合真实产品服务日志、原生库和进程基线核没有连接/命令、helper或输入副作用 |
+| C02 真实HTTP ErrorV1，T03/T14 | 使用真实当前批准和实际controller，传入本公开项目内确实不存在的spec/input路径，或复用人类实际撤销后的拒绝条件；由实际产品HTTP服务产生ErrorV1。比较其保留在error.data的真实schema/error/trace与服务实际日志/响应来源；外层保留原命令R，禁止把HTTP trace当R。已有真实controller/dispatch按当前命令保存；没有提供或取得的root Task不补造。按真实code执行既定退出映射 |
+| C03 实际原生成功/拒绝，T06/T08/T13 | 复用同候选controller/task/worker的真实envelope及第三席拒绝、另一实际controller的scope拒绝；保留所有实际runtime/authority/R/controller/Task/Dispatch、native结果及error.data。对同一真实回执用成熟JSON结构比较来源，不另作模型调用或生成假结果；success/error分别只有一次stdout输出 |
+| C04 真实连接失败及unknown，T06/T14 | 已核关闭的本项服务端点验证连接未建立EXIT4；连接已进入真实HTTP处理时，先保存本项server的实际句柄、创建身份、安装路径和所属父链，再仅终止该真实HTTP子进程，使仍存活的CLI收到真实断开。可以在真实私有SQLite写锁期间观察唯一实际RuntimeClient子进程，证明请求已进入处理；不使用空TCP服务、代理或响应注入。要求EXIT6、原R/selector及unknown保留、无重发；只查原R及真实SQLite/会话。命中副作用后断开的更细边界仍按T06实际证据判断，未命中INCONCLUSIVE |
+| C05 真实取消130，T06/T14 | 对实际CLI等待发送受控CTRL_BREAK_EVENT，覆盖已有合法R/controller及实际Task/Dispatch选择器的等待；真实SQLite写锁可形成实际等待条件，释放只处理自有锁。要求实际os.Interrupt路径EXIT130、单一失败envelope及原R查询诊断；按真实receipt/SDK事件核输入未被自动重发、既有其他Worker未被改作停止或释放。没有真实模型事件时仅登记CLI取消范围，不登记模型保全通过 |
+| C06 所属EOF在启动前/启动中，T02/T15 | 使用重定向且真实持有的serve stdin。分别在资源准入/子进程启动前，以及已观察实际node或server创建身份且尚无外层readiness时关闭该所属写端；保存事件顺序、stdout和实际进程。已启动阶段必须确实命中，未命中INCONCLUSIVE且不把另一个阶段当覆盖。要求取消130或真实关闭unknown6、没有成功readiness及第二次结果；全部已观察旧身份分别核退出/保留 |
+| C07 所属EOF在readiness后，T02/T13/T15 | 复用真实完整流程已释放Worker并关闭controller后的空闲服务，保存所属node/server/daemon及已观察后代的实际PID、创建时间和路径，再关闭唯一所属stdin。正常0只在原生关闭及两次新鲜退出观察一致时成立；持续存在、查询失败、残留或缺少可核归属保持6，不终止其他进程。核本机Orca实际CLI、进程、端点、配置/认证和ACL保持 |
+| C08 readiness前失败与readiness后失败，T02/T14 | 前者用明确已占用的本项端口或真实缺依赖候选副本，要求实际资源/依赖退出码和一次失败JSON；后者复用C04定向终止本项HTTP子进程，要求已有readiness仍为唯一stdout结果，失败诊断/7或6如实返回。收尾沿C07核实际后代；副本只作负向范围，不拼成正式候选成功 |
+| C09 stdout实际关闭，T06/T14 | 只关闭本项CLI的真实stdout读管道，使用真实API和原native receipt观察已发生效果；不使用抛错Writer或伪响应。要求输出失败不能EXIT0、不能二次输出或重发，stderr保留已知R及查询路径；完整发布窗口未命中则保留INCONCLUSIVE。serve的readiness写失败同时核所属关闭及未知范围 |
+
+Windows控制信号只允许在本项新建的隐藏console内执行：普通验证helper创建自己的隐藏console宿主，实际CLI作为该console中的新进程组启动；不attach、广播到组0或修改原Orca console。控制前保存创建句柄、PID/创建时间、成功的CREATE_NEW_PROCESS_GROUP来源，并用真实GetConsoleProcessList核console成员全部属于本项已核身份及父链，明确排除原Orca、原S和其他进程；目标group只使用该实际子进程PID。console/group隔离或身份缺证即不发送，记录失败/证据不足，不能替换为强制终止来登记130。实际130及未受影响进程还须独立观察。
+
+已完整读取本机工具链目录`C:/Users/DW/AppData/Local/Programs/go/VERSION`（记录go1.27.2）、`src/os/signal/signal_windows_test.go`及`doc.go`的Windows节：官方测试使用新process group及GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT,pid)，Windows Notify将其交为os.Interrupt。该测试没有创建独立console；本计划的隐藏console隔离是另外必须真实核查的条件。官方网页本次连接失败，未记为已读取或验证；没有执行Go官方测试、console信号、服务或其他本节正文。
+
+所有C项均保存同候选VERSION、准确源码、实际args（不含token）、stdout/stderr原件、退出码/信号、已知原R及真实所属/来源；捕获内容持久化之前核当前token没有泄漏，不把认证字节写到文件。JSON使用标准成熟Decoder判断唯一对象及EOF，文本/退出映射与同一真实结果比较。启动/取消/EOF/unknown沿实际发生顺序记录，不以最终一条结果推断中间窗口；缺Grant保持真实授权阻塞。编译、服务、实际模型与原S窗口继续串行，CPU/内存/BelowNormal/Go/Node额度沿RESOURCES，无额外Agent、提权、驱动或内核采集。
+
 ## 8. 审核、实施和真实限制
 
 原Reviewer准确01fd4bc1独立接受本报告396e方案及T00—T15，主控已将接口边界纳入SPEC §21.1并授予§5.3准确程序写域。未回答的新权限问题只阻塞依赖部分，普通命名和组织沿已审方案处理。当前代码正在实现，原本机Orca及来源O保持；构建/测试/服务/模型的动态窗口尚未交付。
@@ -514,3 +549,5 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 准确2c007de5ec54ce1cdb11a2f6052a116d1dc958c4已普通push，Worker ls-remote同SHA/EXIT0；后继补T06真实所属CLI断开源码与实际原R查询，不将正常回执或未命中窗口写成断开通过。PowerShell ParseFile和git diff --check实际通过；T06/T08及其余程序正文均未运行，原动态窗口和资源限制保持。
 
 准确72c7b8961a5677c7291967448507d3fc64340a4b普通push和Worker ls-remote EXIT0；后继修正App在`request.show --controller`之前解析pending任务而阻断原请求观察的问题。当前查询仍核当前项目批准及原receipt的project/controller，错配明确scope_denied；真实非模型用例补project/controller查询等价及另一实际controller拒绝。gofmt -d和git diff --check通过，pending/重启分支及全部程序正文未运行；主控最近只读可用0.396GiB，窗口未交。
+
+主控要求的§7.5已按准确8220基线补充CLI输出/原R、真实ErrorV1、网络unknown、取消130及serve自身EOF/后代关闭测试计划，待原Reviewer独立接受；当前只改两份文档。没有实施该补充的程序或验证正文，没有向任何console发送信号，动态窗口仍未交付。
