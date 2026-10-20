@@ -891,3 +891,15 @@ capabilities经既有HTTP/App observe、只读Capabilities端口和私有swa.cap
 N04/N05已以`msg_e527bd2d50de`交原Worker，主控已获`msg_d2e867af5ca6`说明独立发现可单独接受；新输入方法及模式适配不得据此提前实施。readonly发现和稳定选择契约不依赖工具范围待答，可由主控先写SPEC并授权相应原写域；实际启动/模型、原生工具及账号写入条件仍由当前决定和准确Agent能力核实。G/D/T验收没有删除，未发现额外无关检查。
 
 `check-revision.ps1 -Previous 9c0b62a39b04cdd3fc3d210ced200277824a4e75 -Candidate 5fc799e1dd9beda8f2978d4a04f1a1f8f9f2ffd3`及以5fc为基线、740为Candidate的检查均EXIT0，各两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有访问原profile数据库、实际注册配置、启动Agent/服务/模型、编译或运行新REA。
+
+## 准确9c的实际Go检查结果与fea0恢复身份
+
+结论：**接受准确`9c0b62a39b04cdd3fc3d210ced200277824a4e75`的主控独立四包源码编译及三项传输前检查结果。** 主控在准确干净detached目录仅执行一次已审`compile-go-tests.ps1 -OutputRoot .verification/swa-cli-headless-20261020/go-source-01`，实际会话81611 EXIT0。已独立完整读取根control/go-9c-execution-01.log、输出SOURCE/tests.json、三函数日志及五份资源原件，并核四个实际测试二进制存在；SOURCE为准确9c、末尾成功摘要明确actual_runtime_tests_executed=false/model_calls=0。
+
+原四包test-c通过，实际运行的三个函数为TestOrcaCLIRejectsAuthorityArgumentsBeforeTransport、TestOrcaCLIRejectsUnknownActionAndIrrelevantInput、TestOrcaCLIMissingCurrentGrantIsDenied，均有真实RUN/PASS且无SKIP。四次编译和一次传输前检查资源各passed=true、单调间隔约2.50—2.51秒，CPU最高60.4%、可用内存最低12051972096字节，符合当前门限；原入口Go4/-p4/512MiB、私有缓存及BelowNormal保持。主控已确认所属Go/compile/link/PWSH两次新鲜CIM无自有执行，本Reviewer没有运行第二次编译或二进制。
+
+此结果只覆盖主控该独立源码检查，不登记为Worker自测，也不证明四个live函数、服务、真实当前项目批准、原生controller/SQLite、Node/native包、安装、Agent/模型或同候选双Worker通过。旧两次构建失败、N04/N05及待答工具范围保持；源码改变后该SOURCE不能作为新候选测试。后继官方HEAD观察保留主控实际来源，不从HEAD200推断完整下载或原TimeoutError原因。
+
+结论：**接受控制脚本准确SHA256 `fea0faa051e6fe89674b2a4dfe3c53abb27990f959d7d0d6aa17cd4454bff57c`的两项恢复身份常量。** 内存逆置21300/UTC16:05:49.906991到57400/UTC15:33:20.748677，全文件精确得到已审1dc4。UTC16:08:08只读核restore-07 launch/restored/current与实际PID21300/父45632、原程序、创建UTC16:05:49.9069910及epoch1792512349.906991完全对应、差0毫秒，唯一127.0.0.1:64505监听。
+
+原库记录integrity ok、foreign_keys空、stopped_interval_comparison equal；启动资源CPU9.2%/11.7%、可用11.634/11.714GiB、BelowNormal、单调3.001725秒合规。`.verification/verify-restored-owner.ps1`以本次准确参数运行EXIT0，原件`.verification/window-fea0-readonly.json`；未执行控制脚本、SQLite、HTTP或采样。health/Web、完整原环境/配置及原Orca38652/runtime49da状态保留主控来源；当前窗口归原S21300，下次prepare仍须新鲜身份/环境/保全和资源，脚本接受不授予新窗口。
