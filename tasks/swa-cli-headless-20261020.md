@@ -65,3 +65,5 @@
 准确f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6已普通push，F09返修等待原Reviewer准确审核。报告§5.5补充完整成果读取与T07/T13真实用例，解决原生workerRead单block1200字符的预览边界；在独立接受前保持新增读取路径未实施。安装候选继续补充实际安装脚本、准确使用说明和T00/T02/T13/T15检查，不将缺少真实项目Grant或token自动转为human权限。
 
 原Reviewer cc4d1e6接受准确f8的F09静态修复；99d084da接受准确d7完整成果计划和76e9dafd安装入口/说明、真实注册target及SDK空闲abort测试源码。主控msg_db8583a97ed2已实际读取回复并授予实施§5.5，新增严格成熟JSONL和native journal只读成果、真实Worker source观察、每次Worker创建前实际资源双采样及私有SDK事件日志正在同一写域实施。T00公开来源、T02实际安装、T13服务/授权拒绝入口和T15定向Orca保全脚本已形成源码，双Worker完整驱动和后继真实用例继续编写；缺少脚本/授权/动态窗口均明确失败，不能登记通过。全部JS/Go功能、SDK、构建、安装和模型检查仍未运行。
+
+准确0c6及普通纳入main4b后的f2已push，主控已实际读取；原Reviewer提出F10—F12后，本Worker修正五项真实事件订阅的取得/存活检查/消费/清理、实际ownerProcess命名及按Pi1.0.1角色/内容块/entry的严格Zod校验。T13真实双Worker驱动、T07实际SDK原件的自有故障副本检查、本机Orca并发期间定向观察及服务所有后代退出检查已编写，后继仍待独立CR和真实运行。候选补齐原node-pty实际ConPTY文件及SDK实际xhigh核验；所有修改只完成git diff --check与PowerShell语法读取，JS/Go程序、SDK、安装、模型和资源窗口均未运行或授予。

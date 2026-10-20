@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util'
 import { root, findGo } from './process.mjs'
 import { NODE_RUNTIME_PIN, NODE_RUNTIME_ASSETS, nodeRuntimeReleaseUrl } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 import { buildSWARuntime } from './build-swa-runtime.mjs'
+import { slotSourceFiles } from '../third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs'
 
 const { values } = parseArgs({ options: { output: { type: 'string' } }, allowPositionals: false })
 if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('This candidate targets Windows x64')
@@ -82,6 +83,15 @@ for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-s
     await cp(headersDir, join(packageDir, 'deps', 'node-addon-api'), { recursive: true, dereference: true, errorOnExist: true })
   }
   run(node, [gyp, 'rebuild', '--arch=x64', '--jobs=4', '--nodedir=' + nodeDir], packageDir)
+  if (name === 'node-pty') {
+    const buildDir = join(packageDir, 'build', 'Release')
+    for (const [file, source] of slotSourceFiles({ platform: 'win32', arch: 'x64', buildDir, nodePtyDir: packageDir })) {
+      const destination = join(buildDir, file)
+      if (resolve(source) === resolve(destination)) continue
+      await mkdir(dirname(destination), { recursive: true })
+      await copyFile(source, destination)
+    }
+  }
 }
 await buildSWARuntime(runtime)
 const go = await findGo()

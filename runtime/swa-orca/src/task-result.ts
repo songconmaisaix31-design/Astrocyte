@@ -16,12 +16,37 @@ import { nativeObject, type Scope } from './contracts'
 
 const maximum = 12 * 1024 * 1024
 const sourceWitnesses = new Map<string, { path: string; identity: string; sdkSession: string; bytes: Buffer }>()
-const headerSchema = z.looseObject({ type: z.literal('session'), version: z.literal(3), id: z.uuid(), timestamp: z.iso.datetime(), cwd: z.string().min(1) })
-const entrySchema = z.looseObject({
-  type: z.enum(['message', 'thinking_level_change', 'model_change', 'usage', 'compaction', 'branch_summary', 'custom', 'custom_message', 'context_edit', 'label', 'session_info']),
-  id: z.string().min(1), parentId: z.string().min(1).nullable(), timestamp: z.iso.datetime()
+const headerSchema = z.looseObject({ type: z.literal('session'), version: z.literal(3), id: z.uuid(), timestamp: z.iso.datetime(), cwd: z.string().min(1), parentSession: z.never().optional() })
+const textContent = z.looseObject({ type: z.literal('text'), text: z.string(), textSignature: z.string().optional() })
+const thinkingContent = z.looseObject({ type: z.literal('thinking'), thinking: z.string(), thinkingSignature: z.string().optional(), redacted: z.boolean().optional() })
+const toolCallContent = z.looseObject({ type: z.literal('toolCall'), id: z.string().min(1), name: z.string().min(1), arguments: z.record(z.string(), z.json()), thoughtSignature: z.string().optional(), namespace: z.string().optional() })
+const sdkUsage = z.looseObject({
+  input: z.number().nonnegative(), output: z.number().nonnegative(), cacheRead: z.number().nonnegative(), cacheWrite: z.number().nonnegative(),
+  cacheWrite1h: z.number().nonnegative().optional(), reasoning: z.number().nonnegative().optional(), totalTokens: z.number().nonnegative(),
+  cost: z.looseObject({ input: z.number().nonnegative(), output: z.number().nonnegative(), cacheRead: z.number().nonnegative(), cacheWrite: z.number().nonnegative(), total: z.number().nonnegative() })
 })
-const messageSchema = z.looseObject({ role: z.enum(['user', 'assistant', 'toolResult']), content: z.union([z.string(), z.array(z.unknown())]), stopReason: z.string().optional(), usage: z.unknown().optional() })
+const timestamp = z.number().nonnegative()
+const diagnostic = z.looseObject({ type: z.string(), timestamp, error: z.looseObject({ name: z.string().optional(), message: z.string(), stack: z.string().optional(), code: z.union([z.string(), z.number()]).optional() }).optional(), details: z.record(z.string(), z.json()).optional() })
+const deferred = z.looseObject({ provider: z.string(), modelId: z.string(), api: z.string(), id: z.string(), expiresAt: z.number().optional(), pollAfterMs: z.number().optional(), data: z.json().optional() })
+const messageSchema = z.discriminatedUnion('role', [
+  z.looseObject({ role: z.literal('user'), content: z.union([z.string(), z.array(textContent)]), timestamp }),
+  z.looseObject({ role: z.literal('system'), content: z.union([z.string(), z.array(textContent)]), sections: z.record(z.string(), z.string().nullable()).optional(), toolsAdded: z.array(z.never()).optional(), toolsRemoved: z.array(z.never()).optional(), timestamp }),
+  z.looseObject({ role: z.literal('assistant'), content: z.array(z.discriminatedUnion('type', [textContent, thinkingContent, toolCallContent])), api: z.string().min(1),
+    provider: z.literal('openai-codex'), model: z.literal('gpt-6.1-sol'), responseModel: z.string().optional(), responseId: z.string().optional(),
+    providerThinkingLevel: z.string().optional(), thinkingLevel: z.string().optional(), usage: sdkUsage,
+    stopReason: z.enum(['pending', 'stop', 'length', 'toolUse', 'error', 'aborted', 'deferred']), deferred: deferred.optional(), diagnostics: z.array(diagnostic).optional(), errorMessage: z.string().optional(), rawStopReason: z.string().optional(), endTurn: z.boolean().optional(), timestamp })
+])
+const entryBase = {
+  id: z.string().min(1), parentId: z.string().min(1).nullable(), timestamp: z.iso.datetime()
+}
+const entrySchema = z.discriminatedUnion('type', [
+  z.looseObject({ ...entryBase, type: z.literal('message'), message: messageSchema }),
+  z.looseObject({ ...entryBase, type: z.literal('thinking_level_change'), thinkingLevel: z.literal('xhigh') }),
+  z.looseObject({ ...entryBase, type: z.literal('model_change'), provider: z.literal('openai-codex'), modelId: z.literal('gpt-6.1-sol') }),
+  z.looseObject({ ...entryBase, type: z.literal('usage'), kind: z.string().min(1), provider: z.literal('openai-codex'), model: z.literal('gpt-6.1-sol'), usage: sdkUsage, note: z.string().optional() }),
+  z.looseObject({ ...entryBase, type: z.literal('session_info'), name: z.string().optional() }),
+  z.looseObject({ ...entryBase, type: z.literal('label'), targetId: z.string().min(1), label: z.string().optional() })
+])
 const fail = (message: string): never => { throw new OrchestrationError('evidence_missing', message) }
 const equalPath = (left: string, right: string) => left.toLowerCase() === right.toLowerCase()
 const sourceSignature = (record: AgentSessionRecord) =>
@@ -72,11 +97,8 @@ export async function readSDKSessionSource(path: string, sessionRoot: string, cw
       seen.add(entry.id)
       if (entry.type === 'message') {
         const message = messageSchema.parse(entry.message)
-        if (message.role === 'toolResult') return fail('A restricted SDK source unexpectedly contains tool execution')
         if (message.role === 'assistant') {
-          z.looseObject({ provider: z.literal('openai-codex'), model: z.literal('gpt-6.1-sol') }).parse(message)
-          if (Array.isArray(message.content) && message.content.some(item => nativeObject(item).type === 'toolCall')) return fail('A restricted SDK source unexpectedly contains tool calls')
-          if (message.usage !== undefined) z.looseObject({ input: z.number().nonnegative(), output: z.number().nonnegative(), cacheRead: z.number().nonnegative(), cacheWrite: z.number().nonnegative() }).parse(message.usage)
+          if (message.content.some(item => item.type === 'toolCall')) return fail('A restricted SDK source unexpectedly contains tool calls')
         }
       }
       return entry
@@ -86,11 +108,11 @@ export async function readSDKSessionSource(path: string, sessionRoot: string, cw
     if (!equalPath(actualPath, path) || `${after.dev}:${after.ino}:${after.birthtimeNs}` !== identity || before.size !== after.size || before.mtimeNs !== after.mtimeNs) return fail('SDK source changed during its consistent read')
     const messages = entries.filter(entry => entry.type === 'message').map(entry => ({ entry_id: entry.id, message: messageSchema.parse(entry.message) }))
     const last = messages.at(-1)?.message
-    const complete = last?.role === 'assistant' && last.stopReason === 'stop'
+    const complete = last?.role === 'assistant' && last.stopReason === 'stop' && !last.errorMessage && last.content.some(item => item.type === 'text' && item.text.trim().length > 0)
     if (!complete && !stopped) return fail('The required final Worker SDK output is not complete')
     sourceWitnesses.set(sessionId, { path, identity, sdkSession: header.id, bytes })
-    const usage = messages.filter(row => row.message.role === 'assistant' && row.message.usage !== undefined).map(row => ({ entry_id: row.entry_id, value: row.message.usage }))
-    return { availability: complete ? 'complete' : 'incomplete', reason: complete ? null : 'no_complete_final_assistant_entry', persistence: 'observed', path, file_identity: identity, size: Number(after.size), mtime_ns: after.mtimeNs.toString(), header, entries, usage: { known: usage.length > 0, value: usage.length ? usage : null, reason: usage.length ? null : 'usage_not_present_in_actual_sdk_entries' } }
+    const usage = messages.flatMap(row => row.message.role === 'assistant' ? [{ entry_id: row.entry_id, value: row.message.usage }] : [])
+    return { availability: complete ? 'complete' : 'incomplete', reason: complete ? null : 'no_complete_final_assistant_entry', persistence: 'observed', path, file_identity: identity, size: Number(after.size), mtime_ns: after.mtimeNs.toString(), header, entries, usage: { known: usage.length > 0, value: usage.length ? usage : null, reason: usage.length ? null : 'usage_not_present_in_actual_sdk_entries', source: 'actual_sdk_message_usage', billed_cost: { known: false, value: null, reason: 'sdk_cost_fields_do_not_prove_billed_amount' } } }
   } finally { await file.close() }
 }
 
@@ -113,9 +135,9 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   const journal = await realpath(join(host.deps.journalDatabase.stateDirectory, 'agent-session-journal.db'))
   await exactPrivatePath(root, journal)
   await exactPrivatePath(root, workerRoot)
-  const process = record.lease.ownerProcess
+  const ownerProcess = record.lease.ownerProcess
   return { availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: record.lease.runtimeFence, claim_status: record.lease.claimStatus,
-    process: process ? { pid: process.pid, creation_time_ms: process.processStartTimeMs, runtime_id: process.runtime ?? null } : null,
+    process: ownerProcess ? { pid: ownerProcess.pid, creation_time_ms: ownerProcess.processStartTimeMs, runtime_id: ownerProcess.runtime ?? null } : null,
     provider_link: head, journal_database: journal, provider_events: join(workerRoot, 'provider-events.ndjson'), worker_state: nativeWorker.state, release_state: resource.release_state }
 }
 

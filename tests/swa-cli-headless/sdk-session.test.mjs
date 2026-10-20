@@ -69,6 +69,7 @@ assert.equal(prepareRecords.length, 1)
 const restrictions = prepareRecords[0]
 assert.equal(restrictions.provider, 'openai-codex')
 assert.equal(restrictions.model, 'gpt-6.1-sol')
+assert.equal(restrictions.thinkingLevel, 'xhigh')
 assert.equal(restrictions.authentication, 'oauth')
 assert.deepEqual(restrictions.activeTools, [])
 assert.deepEqual(restrictions.registeredTools, [])

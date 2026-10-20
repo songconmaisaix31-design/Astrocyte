@@ -1,7 +1,7 @@
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T09','T13','T15')][string]$Case,
+    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T07','T09','T13','T15')][string]$Case,
     [Parameter(Mandatory)][string]$SwaPath,
     [Parameter(Mandatory)][string]$InstallRoot,
     [Parameter(Mandatory)][string]$DataRoot,
@@ -16,7 +16,8 @@ param(
     [int[]]$OriginalProcessIds,
     [int]$Port,
     [string]$ProjectId,
-    [string]$OwnedProcessEvidence
+    [string]$OwnedProcessEvidence,
+    [string]$FlowEvidence
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,8 +48,11 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 if ($Case -in @('T00','T02','T13','T15')) {
     $swaTestDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless'
     Import-Module (Join-Path $swaTestDirectory 'OrcaPreservation.psm1') -Force
-    $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds
+    $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds -ProbeDirectory $swaEvidence
+    [IO.File]::WriteAllText((Join-Path $swaEvidence 'notification-probe.json'), ($swaPreservation.notification_probe | ConvertTo-Json))
     $swaService = $null
+    $swaServiceStarted = $false
+    $swaExit = 7
     try {
         Assert-OrcaPreservation -Observation $swaPreservation -OutputFile (Join-Path $swaEvidence 'orca-before.json') | Out-Null
         if ($Case -eq 'T00') {
@@ -73,6 +77,7 @@ if ($Case -in @('T00','T02','T13','T15')) {
             $swaService = [Diagnostics.Process]::new()
             $swaService.StartInfo = $swaStart
             if (-not $swaService.Start()) { throw '实际安装服务不能启动' }
+            $swaServiceStarted = $true
             $swaServiceError = $swaService.StandardError.ReadToEndAsync()
             $swaReadyLine = $swaService.StandardOutput.ReadLineAsync()
             if (-not $swaReadyLine.Wait(60000)) { throw '真实安装服务 readiness 超时，保留实际所属状态' }
@@ -84,7 +89,9 @@ if ($Case -in @('T00','T02','T13','T15')) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'approval-required.json'), (@{ ok = $false; required_action = 'human_register_public_project_review_settings_grant_agent_issue_project_token'; endpoint = "http://127.0.0.1:$Port"; project_root = $ProjectRoot; instructions = (Join-Path $InstallRoot 'USAGE.md'); automatic_human_session = $false } | ConvertTo-Json))
                 $swaExit = 3
             } else {
-                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'installed-flow.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --output (Join-Path $swaEvidence 'installed-flow.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-flow.log')
+                $swaObservationConfig = Join-Path $swaEvidence 'original-observation.json'
+                [IO.File]::WriteAllText($swaObservationConfig, (@{ orca_path = $OrcaPath; metadata_file = $OrcaMetadataFile; protected_files = $ProtectedFiles; original_process_ids = $OriginalProcessIds } | ConvertTo-Json -Depth 10))
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'installed-flow.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --orca-observation $swaObservationConfig --output (Join-Path $swaEvidence 'installed-flow.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-flow.log')
                 $swaExit = $LASTEXITCODE
             }
         } else {
@@ -98,7 +105,18 @@ if ($Case -in @('T00','T02','T13','T15')) {
             $swaExit = 0
         }
     } finally {
-        if ($swaService) {
+        if ($swaServiceStarted) {
+            $swaAllProcesses = @(Get-CimInstance Win32_Process)
+            $swaOwnedPids = [Collections.Generic.HashSet[int]]::new()
+            $swaOwnedPids.Add($swaService.Id) | Out-Null
+            do {
+                $swaAdded = $false
+                foreach ($swaRow in $swaAllProcesses) {
+                    if ($swaOwnedPids.Contains([int]$swaRow.ParentProcessId) -and $swaOwnedPids.Add([int]$swaRow.ProcessId)) { $swaAdded = $true }
+                }
+            } while ($swaAdded)
+            $swaOwnedIdentities = @($swaAllProcesses | Where-Object { $swaOwnedPids.Contains([int]$_.ProcessId) } | ForEach-Object { @{ pid = [int]$_.ProcessId; creation_utc = $_.CreationDate.ToUniversalTime().ToString('o'); executable = $_.ExecutablePath } })
+            [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-processes.json'), (@{ ownedProcesses = $swaOwnedIdentities; observed_before_owner_EOF = $true } | ConvertTo-Json -Depth 10))
             $swaService.StandardInput.Close()
             if (-not $swaService.WaitForExit(60000)) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-service-unknown.json'), (@{ pid = $swaService.Id; root_exit = 'unknown'; automatic_pid_kill = $false } | ConvertTo-Json))
@@ -107,11 +125,26 @@ if ($Case -in @('T00','T02','T13','T15')) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-service.log'), $swaServiceError.GetAwaiter().GetResult())
                 if ($swaService.ExitCode -ne 0 -and $swaExit -eq 0) { $swaExit = 6 }
             }
+            $swaExitObservations = @()
+            for ($swaIndex = 0; $swaIndex -lt 2; $swaIndex++) {
+                if ($swaIndex) { Start-Sleep -Milliseconds 75 }
+                $swaCurrentProcesses = @(Get-CimInstance Win32_Process)
+                $swaRetained = @($swaCurrentProcesses | Where-Object {
+                    $swaCurrentRow = $_
+                    @($swaOwnedIdentities | Where-Object { $_.pid -eq $swaCurrentRow.ProcessId -and $_.creation_utc -eq $swaCurrentRow.CreationDate.ToUniversalTime().ToString('o') }).Count -gt 0 -or ($swaCurrentRow.ExecutablePath -and $swaCurrentRow.ExecutablePath.StartsWith($InstallRoot.TrimEnd('\') + '\',[StringComparison]::OrdinalIgnoreCase))
+                } | Select-Object ProcessId,ParentProcessId,CreationDate,ExecutablePath)
+                $swaExitObservations += @{ utc = [DateTime]::UtcNow.ToString('o'); retained = $swaRetained }
+                if ($swaRetained.Count -gt 0) { $swaExit = 6 }
+            }
+            [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-process-exit.json'), ($swaExitObservations | ConvertTo-Json -Depth 15))
         }
         try { Assert-OrcaPreservation -Observation $swaPreservation -OutputFile (Join-Path $swaEvidence 'orca-after.json') | Out-Null } finally { Close-OrcaPreservation -Observation $swaPreservation }
     }
     [IO.File]::WriteAllText((Join-Path $swaEvidence 'exit.txt'), [string]$swaExit)
     exit $swaExit
+} elseif ($Case -eq 'T07') {
+    if (-not [IO.Path]::IsPathFullyQualified($FlowEvidence)) { throw 'T07 需要同一安装候选的真实双Worker结果原件' }
+    & $swaNode --max-old-space-size=512 (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/result-sources.test.mjs') --candidate $InstallRoot --flow-evidence $FlowEvidence --output (Join-Path $swaEvidence 'result-sources.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'result-sources.log')
 } elseif ($Case -eq 'T01') {
     & $swaNode --max-old-space-size=1024 (Join-Path $PSScriptRoot 'check-swa-runtime.mjs') --candidate $InstallRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'closure.log')
 } else {

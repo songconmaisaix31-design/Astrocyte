@@ -18,6 +18,7 @@ import { SwaProviderProcessTree } from '../provider-process/swa-provider-process
 import { appendFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 import { performance } from 'node:perf_hooks'
+import { z } from 'zod'
 
 export type JsonlRpcAgentConnectionOptions = JsonlRpcPeerHandlers & {
   allowedCommands?: ReadonlySet<string>
@@ -232,7 +233,9 @@ export class JsonlRpcAgentConnection {
       if (!observed.assigned || observed.rootPid !== this.managed.child.pid || !observed.members.some(row => row.pid === observed.rootPid && row.creationTimeMs === observed.rootCreationTimeMs)) throw new Error('SWA provider event has no actual assigned root identity')
       this.providerEventIdentity = { pid: observed.rootPid, creationTimeMs: observed.rootCreationTimeMs }
     }
-    appendFileSync(this.providerEventFile, JSON.stringify({ observed_at: new Date().toISOString(), monotonic_ms: performance.now(), process: this.providerEventIdentity, record }) + '\n', { encoding: 'utf8', flag: 'a' })
+    const event = record.assistantMessageEvent === undefined ? undefined : z.object({ type: z.string(), delta: z.string().optional(), contentIndex: z.number().optional() }).parse(record.assistantMessageEvent)
+    const message = record.message === undefined ? undefined : z.object({ role: z.string(), stopReason: z.string().optional() }).parse(record.message)
+    appendFileSync(this.providerEventFile, JSON.stringify({ observed_at: new Date().toISOString(), monotonic_ms: performance.now(), process: this.providerEventIdentity, record: { type: record.type, assistantMessageEvent: event, message }, projection: 'actual_sdk_lifecycle_and_delta_fields' }) + '\n', { encoding: 'utf8', flag: 'a' })
   }
   private diagnose(message: string): void {
     try {

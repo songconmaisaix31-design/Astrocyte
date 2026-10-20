@@ -88,7 +88,7 @@ export async function runRestrictedSession() {
   if (!resolvedAuth || resolvedAuth.source !== 'OAuth') throw new Error('pi_selected_oauth_source_mismatch')
   const services = { cwd, agentDir, modelRuntime: runtime, settingsManager: settings, resourceLoader: loader, diagnostics: [] }
   const assertRestrictions = (session: Awaited<ReturnType<typeof sdk.createAgentSession>>['session']) => {
-    if (session.model?.provider !== PROVIDER || session.model.id !== MODEL || session.getActiveToolNames().length || session.getAllTools().length) {
+    if (session.model?.provider !== PROVIDER || session.model.id !== MODEL || session.thinkingLevel !== 'xhigh' || session.getActiveToolNames().length || session.getAllTools().length) {
       throw new Error('pi_model_or_tools_changed')
     }
     if (loader.getSkills().skills.length || loader.getPrompts().prompts.length || loader.getThemes().themes.length || loader.getAgentsFiles().agentsFiles.length || loader.getAppendSystemPrompt().length) {
@@ -118,7 +118,7 @@ export async function runRestrictedSession() {
   assertRestrictions(host.session)
   if (process.argv.includes('--prepare')) {
     process.stdout.write(JSON.stringify({
-      provider: PROVIDER, model: MODEL, authentication: 'oauth',
+      provider: PROVIDER, model: MODEL, thinkingLevel: host.session.thinkingLevel, authentication: 'oauth',
       home: privateHome, agentDir, sessionDir, packageDir,
       activeTools: host.session.getActiveToolNames(), registeredTools: host.session.getAllTools(),
       credentialOperations: auth.observations,

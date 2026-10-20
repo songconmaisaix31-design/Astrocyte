@@ -77,7 +77,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 | daemon与history | `daemon-launch-paths.ts`按AppEnvironment解析daemon/history；daemon detached、runtime关闭只disconnect | 所有路径归私有根；只接管经PID/创建时间、token、协议及安装根核实的本产品daemon，未知拒绝；不关闭本机Orca daemon |
 | runtime metadata / instance lock / signer | userData下metadata、`orcad.lock`、HMAC key；Windows runtime pipe含PID | 保留真实锁与随机runtime身份，核创建时间；原Orca metadata不读作产品目标，不扫除其他根的锁/socket |
 | automation/session search/push/state-rule更新 | 原orcad启动会主动安装这些服务，部分涉及网络和会话发现 | 不在首版composition启动。结构化journal、已有特定会话读写继续可用，无全局会话扫描 |
-| SWA实际provider事件观察 | 原生JSONL连接已经接收真实SDK的agent/message事件 | 只在已验证的私有Worker根独占创建`provider-events.ndjson`，保留实际SDK事件、父runtime接收的单调时间和实际Job root PID/创建时间；用于T13核真实流式执行重叠，不作为Task状态或请求账本。写入错误立即失败，不生成或替换SDK事件 |
+| SWA实际provider事件观察 | 原生JSONL连接已经接收真实SDK的agent/message事件 | 只在已验证的私有Worker根独占创建`provider-events.ndjson`，记录实际生命周期、delta和消息role/stopReason字段的投影、父runtime接收的单调时间及实际Job root PID/创建时间；用于T13核真实流式执行重叠，不作为Task状态或请求账本。写入错误立即失败，不生成或替换SDK事件 |
 | browser/desktop/mobile/remote | 原runtime具备相关类型、注册和资源 | 产品方法表不注册相应入口，不安装visuals插件或浏览器资源；保留原上游源码的必要静态依赖，不把未注册能力写作产品功能 |
 
 保全采用以下当前用户权限可执行的组合，实施脚本使用系统PowerShell/.NET和随包Node，不需要内核采集、提权、性能组或驱动：
@@ -474,3 +474,9 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 第三方子树按Git archive导出视图导入，包含产品适配；原Reviewer使用准确Git对象核得导出视图省略docs/audits、其他文档/审查工具及部分tests/tools，另有Windows导入形成的执行位变化。LICENSE及根package/锁与准确b287来源相同。当前不把该子树描述为完整原树逐项相同；Windows实际构建闭包仍需逐入口验证，未执行上游录制fixture或为其原有空白修改原件。
 
 本次仅通过当前Dispatch的Orca通道交付，普通commit/push方案与阶段源码；没有发布GitHub评论、PR、Slack消息或公开artifact。
+
+准确0c6c701d及普通纳入main4b后的f2bcba97已push；HANDOFF/STATUS和SPEC21.1已重新读取。原Reviewer对F10—F12静态退回后，本Worker在原模块修正实际事件订阅、ownerProcess变量及SDK消息/entry结构校验；准确后继仍待复核。事件订阅沿完整读取的Microsoft [Register-ObjectEvent](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/register-objectevent?view=powershell-7.5)及[Get-EventSubscriber](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-eventsubscriber?view=powershell-7.5)契约，按实际subscriber保存及复核五项身份、读取Error并注销；不从注册命令的默认输出推断订阅。SDK schema依据准确Pi1.0.1的SessionManager及pi-ai消息、内容块、usage和diagnostics定义，用Zod验证受限分支，完整成果还要求最后实际assistant具有非空text与正常stop；SDK cost原字段保留来源，实际账单成本仍unknown。
+
+同安装候选的T13驱动已编写：真实CLI并发提交A/B，核私有SDK实际delta区间、准确停止A/B保全及同session后续输入、完整B成果和逐行真实SQLite来源，期间重复本机Orca定向保全。业务语义和普通终端实际调用须由当前控制端基于真实产物核查后，才能显式完成根Task；脚本不自动生成人工批准。T07仅使用该真实运行产生的SDK原件副本，按成熟JSONL解析/序列化覆盖完整读取、缺失、截断、坏编码/JSON、超限、替换、未知内容块/entry和坏字段，原件逐次内存比较保全。所有新增脚本及故障用例正文均未运行，不作为验收通过。
+
+构建静态核查发现node-pty的获准patch只编译conpty.node；当前沿准确上游`slotSourceFiles`补齐其实际ConPTY DLL/OpenConsole及console-list prebuild到候选build/Release，闭包检查逐件要求存在。实际native编译与PTY启动仍未运行。Pi factory另核实际thinkingLevel为xhigh后才允许输入，SDK准备检查相应保存真实值。新资源窗口未授予；最近主控只读观察可用1.85GiB，S12800与原Orca保持，全部依赖后继/生成/构建/SDK/安装/模型均NOT_RUN。
