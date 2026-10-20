@@ -1144,3 +1144,17 @@ prepare-13/stop-13及一致备份原件已读，原库integrity ok/foreign_keys�
 原build03 runner已保存在该次next-window-executed.ps1，SHA77d93dab38c8517c4280e03b4396ef21acb538ccf5eb2c9a890d9ca3c49352e4；后继runner实际SHA7755b770b1c1a7b25393aa21da166f01c6738513e73ac3a7d8cc65ddb704be37。独立全文比较仅candidate02改candidate03，PowerShell Parser.ParseFile语法错误0、body_executed=false；新candidate03和build-04当前均不存在。原pin/完整性/Stage/资源条件保持，下一正式一次build04须主控独立交付，不重复dependencies/generate或修改旧失败原件。
 
 `check-revision.ps1 -Previous 8ebefec700781e9883a3bb3f905233e07f03e671 -Candidate 449184b826ae64de99d73476147d64967ef31667`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB；原Promise泛型的HTML问题已消除。新增model_target及N11/N12投影/期限/分证计划尚未在本次局部结论中技术接受或冻结，没有真实认证/工具/模型结果，完整闭包和安装双Worker继续未通过。
+
+准确449锁/入口局部接受hook `msg_de865a336ab4`已获主控`msg_1d9c6ba948d7`完整读取70f准确新增和三文件差异的回复，实际唤起确认。下一build窗口仍由主控控制，N08技术决定独立继续。
+
+## 准确449184b8的N08返修及实际请求覆盖
+
+结论：**退回准确`449184b826ae64de99d73476147d64967ef31667`的N08技术契约，补齐N13实际请求参数准入后再审；真实锁与构建入口局部接受保持。** 已完整读修后§13和三文件差异，并独立继续追踪本机Pi1.0.1的ModelConfig、provider-composer、ModelRuntime及pi-ai真实请求生成分支。没有执行模型、伪造请求或修改实现，新稳定字段未冻结。
+
+N11已明确auth仅原生literal type/key、拒绝非空credential.env及models apiKey/oauth，三层headers逐项命令/环境/认证覆盖拒绝；使用同版本原生分类和转义，成熟结构解析、只投影准确provider/model及按原顺序合成。新增model_target绑定实际model/API/baseUrl，每次输入前重新解析来源、读取私有auth/models/settings比较及核当前批准。N12已明确无TTL只记录unknown、在其余批准条件满足后真实请求，有明确期限时每次按真实时间/本次批准上限加30秒判断；没有伪造有效期或将全部API key拒绝。Pi真实模型/会话与原Native fence分别取证、泛型显示及新增真实场景均已修正，与对应独立条件相符。
+
+**N13：计划仍直接保留model和modelOverrides的samplingParams，实际请求可覆盖已核目标和工具。** 原生ModelConfig将该字段定义为Record<string, unknown>，provider-composer的modelFromJson保留原字段，applyModelOverride合并它。真实pi-ai的api/openai-responses.js第286行、api/openai-completions.js第748行和api/azure-openai-responses.js第259行在最终请求参数生成末尾执行`Object.assign(params, model.samplingParams, options?.samplingParams)`，原源码明确后置自定义字段覆盖已命名字段。
+
+因此该路径支持覆盖实际model、input/messages、tools及其他请求字段；get_state中的model_target一致和原生no-tools空工具集合不能封闭最终参数覆盖。此结论来自实际消费者，未声称本机模型配置具有此类值或已经发生调用。技术计划须明确按真实API消费者准入/拒绝及最终请求条件，覆盖来源model、override、合成内置model和每请求options，不能只核表面selection，也不能删除原字段改变来源后继续。补充首次与后续真实输入的对应失败/保全场景，未命中仍按INCONCLUSIVE记录。
+
+N13已以`msg_0b85f81894d2`交主控、`msg_580bfac00d99`交原Worker；修正由同一Worker在当前build冻结解除后提交准确计划。原无refresh、私有ACL/accountHome/原R及并发、固定argv/env/原生设置、效果前批准、unknown保全和同候选双Worker条件保持。必要构建不依赖本次技术接受，本Reviewer没有增加运行阶段；实际原生账号/工具/调用和安装双Worker继续未通过。
