@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，本地准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`提交普通CLI输出/原R/HTTP ErrorV1及未知/取消/输出失败首段，五路径已完整读取并交原Reviewer，所有正文未运行。Worker首轮push报告EXIT1/TLS失败；主控只读远端核对EXIT0且仍c35，已按新连接事实允许一次准确c29普通push，尚待成功回执。c35 F15及其他既有静态接受保持；§7.5的serve EOF/后代退出及真实安装驱动继续实施，T12先补接续契约/计划，T11真实人工入口待用户范围回答。UTC13:20:55单次只读可用16.108GiB，主控已执行prepare-03，两次真实资源采样及原库一致备份通过；原S12800仍运行，依赖/生成命令就绪后才停止并交付唯一窗口。整体程序和构建/模型/安装包/双Worker及隔离动态验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`普通CLI输出首段已交原Reviewer，Worker报告后继一次普通push及远端核对EXIT0，首轮TLS失败保留；所有正文未运行。c35 F15及其他既有静态接受保持。主控prepare-03及stop-03实际通过，原S12800于UTC13:29:19退出15，停止后双样本和一致备份通过；只将依赖同步/类型生成两Stage串行窗口交原Worker，构建/安装/模型/产品服务尚未授予，结束后同源恢复原S。§7.5的serve EOF/后代退出及真实安装驱动仍待后续实施，T12先补接续契约/计划，T11真实人工入口待用户范围回答；依赖/生成期间暂停业务编辑和提交。整体程序及双Worker/隔离动态验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
@@ -24,7 +24,7 @@
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | 原S已恢复PID12800，创建UTC `2026-10-20T09:43:52.279923Z`，BelowNormal，唯一127.0.0.1:64505监听，实际完整环境/配置、health和原Web字节通过；停止区间原库iterdump相同、完整性/外键通过。依赖窗口已收回归原S运行，本机Orca公开CLI仍ready且runtime归属保持 |
+| 当前服务与窗口 | 准确S12800及创建UTC `2026-10-20T09:43:52.279923Z`已按prepare-03完整保全，于UTC13:29:19精确退出15，当前停止；stop-03双样本/停止后原库一致备份及window-ready通过，仅依赖同步/类型生成窗口已交Worker，结束后使用同一原库/配置同源恢复。原绝对Orca CLI的实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
@@ -35,6 +35,7 @@
 | 首版CLI依赖准备 | pnpm11.27.0的`install --lockfile-only --ignore-scripts`及`install --frozen-lockfile --ignore-scripts`均EXIT0，私有store/TEMP/TMP/cache，两次新资源门限通过。实际入口签名拒绝、peer警告及镜像超时/原命令内建重试记录保留；尚未构建或调用模型，不能计为安装包和CLI功能通过 |
 | 第二次窗口准备 | 根忽略目录`prepare-02/backup-resources.json`记录UTC11:00:16、CPU7.2%、可用内存3.529GiB；低于4GiB门槛，prepare命令EXIT1，未备份完成、未停止原S、未交窗口。原件保留于`.verification/swa-cli-v1-control/prepare-02/`；依赖更新、实际类型生成和候选构建继续等待新资源准入 |
 | 第三次窗口准备 | UTC13:22:33/36的prepare-03两次真实阻塞采样为CPU19.0%/5.2%、可用15.719/15.746GiB，单调间隔3.005秒、BelowNormal；命令EXIT0，准确S12800及实际环境/配置核实、原库一致备份完整性/外键和prepared标记通过。尚未stop-03或交付动态窗口，先核Worker的依赖/生成准确命令就绪；本机Orca保持原运行 |
+| 本次依赖/生成窗口 | stop-03实际EXIT0，停止后UTC13:29:22/25双样本CPU43.2%/16.6%、可用12.918/12.808GiB、间隔3.003秒/BelowNormal；原库停止后备份及window-ready通过。已通过原Run交付`next-window.ps1 -Stage dependencies -EvidenceName dependency-02`，成功后才执行`-Stage generate -EvidenceName generate-01`，各自重新资源准入；实际结果待Worker回执，未授权build或其他重操作 |
 | 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
