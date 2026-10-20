@@ -116,7 +116,8 @@ export const SWA_METHODS = [
   defineMethod({ name: 'swa.status', permission: 'workspace', params: null, handler: (_params, { runtime }) => ({
     native: runtime.getStatus(), authority_domain: authority(runtime),
     databases: runtime.getOrchestrationDb().db.pragma('database_list'),
-    provider: 'openai-codex', model: 'gpt-6.1-sol', tools: 'off', rpcCommands: ['get_state', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'prompt', 'abort']
+    configured: { provider: 'openai-codex', model: 'gpt-6.1-sol', tools: 'off', rpcCommands: ['get_state', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'prompt', 'abort'] },
+    sdk_validation: 'requires_actual_worker_session'
   }) }),
   defineMethod({ name: 'swa.scope', permission: 'workspace', params: lookup, handler: (params, { runtime }) => controllerScope(runtime, params.project_id, params.controller).scope }),
   defineMethod({ name: 'swa.controllerShow', permission: 'workspace', params: lookup, handler: async (params, { runtime }) => {
@@ -184,19 +185,18 @@ export const SWA_METHODS = [
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
     const c = invocation.command
-    if (!c.controller || !['task.show', 'task.list', 'worker.show', 'worker.list', 'worker.read'].includes(c.action)) return fail('invalid_argument', 'Unsupported observation')
+    if (!c.controller || !['task.show', 'task.list', 'task.result', 'worker.show', 'worker.list', 'worker.read'].includes(c.action)) return fail('invalid_argument', 'Unsupported observation')
     const { scope, owner } = controllerScope(runtime, invocation.project.id, c.controller)
     await exactController(runtime, owner)
     validateTaskAction(runtime, invocation, scope)
-    return { scope, native: (await helperCall(runtime, c.controller, randomUUID(), c.action, { ...invocation, scope })).result }
+    return { scope, ...(c.action === 'task.result' ? { output_dir: c.output_dir } : {}), native: (await helperCall(runtime, c.controller, randomUUID(), c.action, { ...invocation, scope })).result }
   } }),
   defineMethod({ name: 'swa.controllerClose', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const c = invocation.command
     if (!c.controller || c.action !== 'controller.close') return fail('invalid_argument', 'Exact controller close required')
     const { owner, scope } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
-    requireReleased(context.runtime, scope)
-    checkpoint(context, { project_id: invocation.project.id, controller: c.controller, binding: owner.binding, process: owner.process, helper: owner.helper, stage: 'controller-close' })
+    reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, action: c.action, binding: owner.binding, process: owner.process, helper: owner.helper, stage: 'controller-close' })
     return effect(async () => {
       await exactController(context.runtime, owner)
       const close = await context.runtime.closeTerminal(c.controller!)
@@ -223,8 +223,16 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
   db.db.exec('BEGIN IMMEDIATE')
   try {
     const fresh = controllerScope(runtime, invocation.project.id, c.controller)
+    if (recorded(runtime, 'swa.controllerClose', c.controller)) fail('controller_closing', 'The exact controller already reserved its close; inspect the original request')
     if (c.action === 'task.create') {
       if (fresh.scope.run_id || recorded(runtime, 'swa.taskCreate', c.controller)) fail('request_mismatch', 'This controller already reserved its one user task')
+    } else if (c.action === 'controller.close') {
+      const pending = z.object({ count: z.number().int() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
+        WHERE caller_fingerprint=? AND state='pending' AND json_valid(receipt)=1
+        AND json_extract(receipt, '$.controller')=?
+        AND (method='swa.taskCreate' OR (method='swa.controllerDeliver' AND json_extract(receipt, '$.action')='worker.start'))`).get(authority(runtime), c.controller))
+      if (pending.count > 0) fail('operation_in_progress', 'A native task or Worker creation still owns its reservation')
+      requireReleased(runtime, fresh.scope)
     } else {
       validateTaskAction(runtime, invocation, fresh.scope)
       if (c.action === 'worker.start') {
@@ -263,6 +271,11 @@ function validateTaskAction(runtime: OrcaRuntimeService, invocation: Invocation,
     const dispatch = db.getDispatchContextById(c.dispatch_id)
     const task = dispatch && db.getTask(dispatch.task_id)
     if (!dispatch || dispatch.run_id !== scope.run_id || !task || task.parent_id !== scope.root_task_id) fail('scope_denied', 'The exact Worker does not belong to this root task')
+    if (['worker.send', 'worker.stop', 'worker.release'].includes(c.action)) {
+      const worker = db.getWorkerDispatch(c.dispatch_id)
+      if (!worker || worker.runtime_epoch !== runtime.getRuntimeId()) fail('operation_unknown', 'The original Worker Job belongs to a different runtime generation; preserve its resources')
+      if (c.action === 'worker.send' && worker.state !== 'ready') fail('operation_unknown', 'The exact Worker is not ready for a new approved input')
+    }
   }
   const tasks = db.listTasksWithDispatch({ runId: scope.run_id })
   if (c.action === 'worker.start' && tasks.filter(task => task.parent_id === scope.root_task_id).length >= 2) fail('resource_limit', 'The fixed task permits exactly two Workers')

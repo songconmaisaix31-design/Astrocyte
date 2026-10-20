@@ -96,7 +96,8 @@ export function spawnManagedProviderProcess(
     cwd: spec.cwd,
     env: spec.env,
     detached: spec.detached,
-    stdio: ['pipe', 'pipe', 'pipe']
+    stdio: launch.swaJobIPC ? ['pipe', 'pipe', 'pipe', 'ipc'] : ['pipe', 'pipe', 'pipe'],
+    ...(launch.swaJobIPC ? { serialization: 'json' as const } : {})
   })
   const listeners = new Set<(exit: ProviderProcessExit) => void>()
   let observed: ProviderProcessExit | null = null

@@ -4,6 +4,7 @@ packages:
   - third_party/orca-v1.4.230/src/packages/process-host
   - third_party/orca-v1.4.230/native/windows-registry
   - third_party/orca-v1.4.230/native/windows-security
+injectWorkspacePackages: true
 allowBuilds:
   '@google/genai': false
   esbuild: true

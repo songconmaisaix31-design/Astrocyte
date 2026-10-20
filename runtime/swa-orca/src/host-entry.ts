@@ -1,7 +1,14 @@
 import { mkdirSync, realpathSync, lstatSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
+import { format } from 'node:util'
 import { setAppEnvironment, type AppPathName } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
 import { setSecretStore } from '../../../third_party/orca-v1.4.230/src/shared/secret-store'
+
+for (const method of ['log', 'info', 'debug'] as const) console[method] = (...args: unknown[]) => { process.stderr.write(format(...args) + '\n') }
+if (process.env.SWA_LIFECYCLE_STDIN !== '1') throw new Error('SWA requires its real owning lifecycle pipe')
+let ownerDisconnected = false
+process.stdin.once('end', () => { ownerDisconnected = true })
+process.stdin.resume()
 
 const absolute = (key: string) => {
   const input = process.env[key]
@@ -46,10 +53,14 @@ async function main() {
     privatePath('pi')
     store.updateSettings({ agentStatusHooksEnabled: false, workspaceDir: privatePath('workspaces'), browserClientHostedRemoteEnabled: false, browserSshWorkspaceRoutingEnabled: false })
     const { initDaemonPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-init')
-    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, readDaemonPidRecord } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
+    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
     await initDaemonPtyProvider(undefined, { macosLoginSessionWatch: false, startupTimeoutMs: 30_000 })
     if (!daemonOwnsFreshPersistentPtys()) throw new Error('SWA requires its actual persistent daemon')
-    registerCleanup(() => disconnectDaemon())
+    registerCleanup(async () => {
+      const retirement = await requestIdleDaemonRetirement()
+      if (retirement.state !== 'retiring') throw new Error(`SWA private daemon retirement unconfirmed: ${retirement.state}`)
+      await disconnectDaemon()
+    })
     const { getLocalPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry')
     const { agentHookServer } = await import('../../../third_party/orca-v1.4.230/src/main/agent-hooks/server')
     await agentHookServer.start({ env: 'production', userDataPath: data, statusHooksEnabled: false })
@@ -85,9 +96,14 @@ async function main() {
     const rpc = new OrcaRuntimeRpcServer({ runtime, userDataPath: data, enableWebSocket: false, methods: [...ALL_RPC_METHODS.filter(method => allowed.has(method.name)), ...SWA_METHODS] })
     registerCleanup(() => rpc.stop())
     await rpc.start()
-    return { runtimeId: runtime.getRuntimeId(), daemon: readDaemonPidRecord(), authority, dataRoot: data, node: process.execPath }
+    return { runtimeId: runtime.getRuntimeId(), dataRoot: data, node: process.execPath }
   }, () => { for (const callback of callbacks.splice(0)) callback() }, { browserProvider: false })
-  installOrcadShutdownSignals(() => running.stop())
-  process.stdout.write(JSON.stringify({ ok: true, readiness: running }) + '\n')
+  const shutdown = installOrcadShutdownSignals(() => running.stop())
+  process.stdin.once('end', () => shutdown('SWA owning pipe ended'))
+  if (ownerDisconnected) {
+    shutdown('SWA owning pipe ended during startup')
+    return
+  }
+  process.stdout.write(JSON.stringify({ ok: true, readiness: { runtimeId: running.runtimeId, dataRoot: running.dataRoot, node: running.node } }) + '\n')
 }
 main().catch(error => { process.stderr.write(JSON.stringify({ code: 'swa_runtime_start_failed', message: error instanceof Error ? error.message : 'SWA startup failed' }) + '\n'); process.exitCode = 1 })

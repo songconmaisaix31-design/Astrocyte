@@ -1,10 +1,12 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 	"time"
@@ -157,7 +159,34 @@ func validateOrcaCommand(c OrcaCommand) error {
 	if !known {
 		return projectError(apierrors.ValidationFailed, "unknown Swarm CLI action")
 	}
-	if mutation {
+	fields := map[string]string{
+		"status": "", "capabilities": "",
+		"controller.open": "workdir request_id", "controller.show": "controller", "controller.close": "controller request_id",
+		"task.create": "controller spec_file request_id", "task.show": "controller task_id", "task.list": "controller",
+		"task.complete": "controller task_id result_file request_id", "task.result": "controller task_id output_dir",
+		"worker.start": "controller task_id name agent model input_file request_id", "worker.list": "controller task_id",
+		"worker.show": "controller dispatch_id", "worker.read": "controller dispatch_id source cursor limit",
+		"worker.send": "controller dispatch_id input_file request_id", "worker.stop": "controller dispatch_id request_id",
+		"worker.release": "controller dispatch_id request_id", "request.show": "controller request_id",
+	}
+	allowed := map[string]bool{"action": true, "project_id": true}
+	for _, name := range strings.Fields(fields[c.Action]) {
+		allowed[name] = true
+	}
+	body, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	var actual map[string]json.RawMessage
+	if err := json.Unmarshal(body, &actual); err != nil {
+		return err
+	}
+	for name := range actual {
+		if !allowed[name] {
+			return projectError(apierrors.ValidationFailed, "the action does not accept "+name)
+		}
+	}
+	if mutation || c.Action == "request.show" {
 		id, err := uuid.Parse(c.RequestID)
 		if err != nil || id.String() != c.RequestID {
 			return projectError(apierrors.ValidationFailed, "a canonical UUID request_id is required for mutations")
@@ -299,8 +328,13 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 			return reply, err
 		}
 		var spec OrcaTaskSpec
-		if err := json.Unmarshal([]byte(file.Text), &spec); err != nil {
+		decoder := json.NewDecoder(bytes.NewBufferString(file.Text))
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&spec); err != nil {
 			return reply, fmt.Errorf("decode task specification: %w", err)
+		}
+		if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+			return reply, projectError(apierrors.ValidationFailed, "task specification must contain exactly one JSON object")
 		}
 		if strings.TrimSpace(spec.Goal) == "" || spec.SourceRepo == "" || spec.SourceRevision == "" || len(spec.SuccessCriteria) == 0 || spec.MaxWorkers != 2 {
 			return reply, projectError(apierrors.ValidationFailed, "task specification requires goal, source revision, success criteria and max_workers=2")
@@ -310,6 +344,21 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 			return reply, err
 		}
 		invocation.Spec, invocation.Context = &spec, &packet
+	}
+	var outputRoot string
+	if command.Action == "task.result" {
+		parent, err := s.files.CanonicalRoot(filepath.Dir(command.OutputDir))
+		if err != nil {
+			return reply, err
+		}
+		if filepath.Base(command.OutputDir) == "." || filepath.Base(command.OutputDir) == ".." || filepath.Clean(command.OutputDir) == filepath.Dir(filepath.Clean(command.OutputDir)) {
+			return reply, projectError(apierrors.ValidationFailed, "result export requires a new named directory")
+		}
+		if _, err := s.authorize(ctx, caller, projectID, permission, []string{parent}, false); err != nil {
+			return reply, err
+		}
+		outputRoot = parent
+		invocation.Command.OutputDir = filepath.Join(parent, filepath.Base(command.OutputDir))
 	}
 	inputPath := command.InputFile
 	if command.Action == "task.complete" {
@@ -323,7 +372,11 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		invocation.Input = &file
 	}
 	// 文件读取和原生观察之后再次核准，撤销不能沿旧预检继续输入。
-	current, err := s.authorize(ctx, caller, projectID, permission, nil, model)
+	var finalRoots []string
+	if outputRoot != "" {
+		finalRoots = []string{outputRoot}
+	}
+	current, err := s.authorize(ctx, caller, projectID, permission, finalRoots, model)
 	if err != nil {
 		return reply, err
 	}

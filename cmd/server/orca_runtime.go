@@ -1,14 +1,27 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	orcaadapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/orca"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
 func composeOrcaExecution(db *sqlite.DB, projects workspaceapp.LocalProjects) (workspaceapp.OrcaExecution, error) {
@@ -31,4 +44,72 @@ func composeOrcaExecution(db *sqlite.DB, projects workspaceapp.LocalProjects) (w
 		return nil, err
 	}
 	return workspaceapp.NewOrcaExecutionService(db, agents.ProjectFiles{}, projects, runtime, db)
+}
+
+func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
+	ctx, cancel := context.WithCancel(parent)
+	defer cancel()
+	if os.Getenv("SWA_LIFECYCLE_STDIN") != "1" {
+		return errors.New("the private SWA service requires its owning lifecycle pipe")
+	}
+	go func() {
+		_, _ = io.Copy(io.Discard, os.Stdin)
+		cancel()
+	}()
+	root := os.Getenv("SWA_DATA_DIR")
+	if !filepath.IsAbs(root) {
+		return errors.New("the private SWA data root must be absolute")
+	}
+	port, err := strconv.Atoi(os.Getenv("ASTROCYTE_PORT"))
+	if err != nil || port < 1 || port > 65535 {
+		return errors.New("the private SWA HTTP port must be explicit")
+	}
+	state := filepath.Join(root, "workspace")
+	if err := os.MkdirAll(state, 0o700); err != nil {
+		return err
+	}
+	db, err := sqlite.Open(filepath.Join(state, "state.sqlite"))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if err := db.RunMigrations(ctx, migrations.FS); err != nil {
+		return err
+	}
+	version, err := db.SchemaVersion(ctx)
+	if err != nil {
+		return err
+	}
+	storage, err := objects.New(filepath.Join(state, "objects"))
+	if err != nil {
+		return err
+	}
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{state}), storage, attentionapp.ServiceOptions{})
+	projects := workspaceapp.NewLocalProjectService(db, &projectReferenceBridge{attention: attention}, agents.ProjectFiles{}, agents.NewRegistry(filepath.Join(state, "native-sessions")))
+	execution, err := composeOrcaExecution(db, projects)
+	if err != nil {
+		return err
+	}
+	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
+	listener, err := bindHTTPListener(port)
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+	if err := announceHTTPListener(os.Stdout, listener); err != nil {
+		return err
+	}
+	result := make(chan error, 1)
+	go func() { result <- server.Serve(listener) }()
+	select {
+	case err := <-result:
+		if !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("private SWA HTTP service: %w", err)
+		}
+		return nil
+	case <-ctx.Done():
+		stopCtx, stop := context.WithTimeout(context.Background(), 10*time.Second)
+		defer stop()
+		return server.Shutdown(stopCtx)
+	}
 }

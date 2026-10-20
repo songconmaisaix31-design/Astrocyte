@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://astrocyte.local/contracts/swa-cli.schema.json",
+  "title": "SWA native execution command and response",
+  "$defs": {
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action"],
+      "properties": {
+        "action": { "enum": ["status", "capabilities", "controller.open", "controller.show", "controller.close", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "request.show"] },
+        "project_id": { "type": "string", "minLength": 1 },
+        "controller": { "type": "string", "minLength": 1 },
+        "task_id": { "type": "string", "minLength": 1 },
+        "dispatch_id": { "type": "string", "minLength": 1 },
+        "request_id": { "type": "string", "format": "uuid" },
+        "workdir": { "type": "string", "minLength": 1 },
+        "spec_file": { "type": "string", "minLength": 1 },
+        "input_file": { "type": "string", "minLength": 1 },
+        "result_file": { "type": "string", "minLength": 1 },
+        "output_dir": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "agent": { "const": "pi" },
+        "model": { "const": "openai-codex/gpt-6.1-sol" },
+        "source": { "const": "transcript" },
+        "cursor": { "type": "string", "minLength": 1 },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      },
+      "description": "Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here."
+    },
+    "nativeError": {
+      "type": "object",
+      "required": ["code", "message", "retryable", "required_action"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string" },
+        "retryable": { "const": false },
+        "required_action": { "type": "string", "minLength": 1 },
+        "data": {}
+      },
+      "additionalProperties": false
+    },
+    "envelope": {
+      "type": "object",
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "request_id": { "type": "string" },
+        "runtime_id": { "type": "string" },
+        "authority_domain": { "type": "string" },
+        "controller": { "type": "string" },
+        "run_id": { "type": "string" },
+        "task_id": { "type": "string" },
+        "dispatch_id": { "type": "string" },
+        "result": {},
+        "error": { "$ref": "#/$defs/nativeError" }
+      },
+      "additionalProperties": false,
+      "description": "Result preserves actual native records and provenance. HTTP transport success is insufficient for mutation success; unknown outcomes retain the original request and resource ownership."
+    }
+  },
+  "$ref": "#/$defs/command"
+}

@@ -1,0 +1,162 @@
+import { createRequire } from 'node:module'
+import { performance } from 'node:perf_hooks'
+import type { PipedChildProcess } from '@orca/process-host/process-spec'
+import { z } from 'zod'
+import type { DescendantTreeVerdict } from '../pty-descendant-exit-verification'
+import type { ProviderProcessTree } from './provider-process-close'
+import { isWindowsProcessStartTimeAvailable, readWindowsProcessCreationTime, readWindowsProcessIdentityTableFresh } from '../windows/windows-process-table'
+
+const identitySchema = z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive() })
+const observationSchema = z.object({ ownerPid: z.number().int().positive(), rootPid: z.number().int().nonnegative(), rootCreationTimeMs: z.number().nonnegative(), assigned: z.boolean(), rootExited: z.boolean(), limitFlags: z.number().int(), members: z.array(identitySchema) })
+type Observation = z.infer<typeof observationSchema>
+type Identity = z.infer<typeof identitySchema>
+type JobAPI = {
+  providerJobIsolationVersion: 1
+  createProviderJob(): object
+  assignProviderJob(job: object, pid: number, creationTimeMs: number): true
+  queryProviderJob(job: object): unknown
+  terminateProviderJob(job: object): true
+  closeProviderJob(job: object): true
+}
+const nativeFunction = z.custom<(...args: unknown[]) => unknown>(value => typeof value === 'function')
+const requireHere = createRequire(__filename)
+
+export class SwaProviderProcessTree implements ProviderProcessTree {
+  private readonly native: JobAPI
+  private readonly job: object
+  private child?: PipedChildProcess
+  private root?: Identity
+  private exitState?: () => { observed: boolean; processless: boolean }
+  private admission?: Promise<void>
+  private closed = false
+  private verdict: DescendantTreeVerdict = 'unverifiable'
+  private readonly identities = new Map<string, Identity>()
+  private readonly observations: { elapsedMs: number; observation: Observation }[] = []
+  private forced = false
+
+  constructor() {
+    if (process.platform !== 'win32' || !isWindowsProcessStartTimeAvailable()) throw new Error('SWA requires the compiled Windows process identity capability')
+    const utils = z.object({ loadNativeModule: nativeFunction }).parse(requireHere('node-pty/lib/utils'))
+    const loaded = (utils.loadNativeModule as (name: string) => { module: unknown })('conpty').module
+    this.native = z.object({ providerJobIsolationVersion: z.literal(1), createProviderJob: nativeFunction, assignProviderJob: nativeFunction, queryProviderJob: nativeFunction, terminateProviderJob: nativeFunction, closeProviderJob: nativeFunction }).parse(loaded) as unknown as JobAPI
+    this.job = this.native.createProviderJob()
+    const initial = this.observe()
+    if (initial.assigned || initial.rootPid !== 0 || initial.members.length) throw new Error('SWA Job was not freshly created for this Worker')
+  }
+
+  get treeVerdict(): DescendantTreeVerdict { return this.verdict }
+  get forcedReapAttempted(): boolean { return this.forced }
+
+  bind(child: PipedChildProcess, exitState: () => { observed: boolean; processless: boolean }): void {
+    if (this.child) throw new Error('SWA Job refuses a second child')
+    this.child = child
+    this.exitState = exitState
+    this.admission = this.admit(child)
+    void this.admission.catch(error => {
+      process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_admission_failed', pid: child.pid, message: error instanceof Error ? error.message : 'SWA admission failed' }) + '\n')
+      child.stdin.end()
+    })
+  }
+
+  async ready(): Promise<void> {
+    if (!this.admission) throw new Error('SWA Job has no actual child binding')
+    await this.admission
+  }
+
+  closeBeforeSpawnFailure(): void {
+    if (this.child) throw new Error('SWA cannot discard a bound Job')
+    this.native.closeProviderJob(this.job)
+    this.closed = true
+  }
+
+  private async admit(child: PipedChildProcess): Promise<void> {
+    if (!child.pid || !child.send || !child.connected) throw new Error('SWA SDK child has no actual Node IPC channel')
+    const creationTimeMs = readWindowsProcessCreationTime(child.pid)
+    if (!creationTimeMs) throw new Error('SWA SDK root creation identity unavailable')
+    this.root = { pid: child.pid, creationTimeMs }
+    this.identities.set(`${child.pid}:${creationTimeMs}`, this.root)
+    this.native.assignProviderJob(this.job, child.pid, creationTimeMs)
+    const observed = this.observe()
+    if (!observed.assigned || observed.rootPid !== child.pid || observed.rootCreationTimeMs !== creationTimeMs || !observed.members.some(row => row.pid === child.pid && row.creationTimeMs === creationTimeMs)) throw new Error('SWA actual Job root membership unconfirmed before SDK load')
+    const pid = child.pid
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => finish(new Error('SWA SDK bootstrap admission was not observed')), 10_000)
+      const onExit = () => finish(new Error('SWA SDK bootstrap exited before admission'))
+      const onError = (error: Error) => finish(error)
+      const onMessage = (value: unknown) => {
+        const received = z.object({ type: z.literal('swa_job_bootstrap_admitted'), pid: z.literal(pid), parentPid: z.literal(process.pid), creationTimeMs: z.literal(creationTimeMs) }).safeParse(value)
+        if (!received.success) return finish(new Error('SWA bootstrap returned a different actual identity'))
+        finish()
+      }
+      const finish = (error?: Error) => {
+        clearTimeout(timer)
+        child.removeListener('message', onMessage)
+        child.removeListener('exit', onExit)
+        child.removeListener('error', onError)
+        if (error) reject(error); else resolve()
+      }
+      child.once('message', onMessage)
+      child.once('exit', onExit)
+      child.once('error', onError)
+      child.send!({ type: 'swa_job_admitted', pid, parentPid: process.pid, creationTimeMs }, error => { if (error) finish(error) })
+    })
+    process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_admission', root: this.root, observation: observed }) + '\n')
+  }
+
+  private observe(): Observation {
+    if (this.closed) throw new Error('SWA refuses a closed Job handle')
+    const value = observationSchema.parse(this.native.queryProviderJob(this.job))
+    if (value.ownerPid !== process.pid || this.root && value.rootPid !== 0 && (value.rootPid !== this.root.pid || value.rootCreationTimeMs !== this.root.creationTimeMs)) throw new Error('SWA Job binding changed')
+    for (const member of value.members) this.identities.set(`${member.pid}:${member.creationTimeMs}`, member)
+    this.observations.push({ elapsedMs: performance.now(), observation: value })
+    if (this.observations.length > 32) this.observations.shift()
+    return value
+  }
+
+  async capture(): Promise<void> {
+    if (this.closed && this.verdict === 'exited') return
+    this.observe()
+  }
+
+  refresh(): Promise<void> { return this.capture() }
+
+  readObservation(): Observation { return this.observe() }
+
+  async reap(): Promise<DescendantTreeVerdict> {
+    if (this.closed) return this.verdict
+    if (!this.child || !this.exitState) throw new Error('SWA Job root observation unavailable')
+    const first = this.observe()
+    if (first.members.length) {
+      if (!first.assigned) throw new Error('SWA refuses termination without its actual Job assignment')
+      this.forced = true
+      this.native.terminateProviderJob(this.job)
+    }
+    const deadline = performance.now() + 2_000
+    let consecutive = 0
+    const independent: { elapsedMs: number; identities: { expected: Identity; observed: unknown }[] }[] = []
+    while (performance.now() < deadline) {
+      const current = this.observe()
+      const state = this.exitState()
+      const rootGone = state.processless || state.observed && current.rootExited && this.root !== undefined
+      const rows = await readWindowsProcessIdentityTableFresh()
+      const identitiesGone = [...this.identities.values()].every(old => {
+        const row = rows.find(item => item.pid === old.pid)
+        return row === undefined || row.creationTimeMs !== undefined && row.creationTimeMs !== old.creationTimeMs
+      })
+      consecutive = rootGone && current.members.length === 0 && identitiesGone ? consecutive + 1 : 0
+      if (consecutive) independent.push({ elapsedMs: performance.now(), identities: [...this.identities.values()].map(old => ({ expected: old, observed: rows.find(row => row.pid === old.pid) ?? null })) })
+      else independent.length = 0
+      if (consecutive >= 2) {
+        this.native.closeProviderJob(this.job)
+        this.closed = true
+        this.verdict = 'exited'
+        process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_tree_exited', root: this.root, processless: state.processless, observations: this.observations.slice(-2), independentIdentityObservations: independent.slice(-2), forced: this.forced }) + '\n')
+        return this.verdict
+      }
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    this.verdict = 'unverifiable'
+    process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_exit_unknown', root: this.root, observations: this.observations.slice(-2) }) + '\n')
+    return this.verdict
+  }
+}

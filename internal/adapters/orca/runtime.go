@@ -74,6 +74,8 @@ func New(config Config) (*Runtime, error) {
 
 func (r *Runtime) Target() string { return r.config.PiEntry }
 
+func (r *Runtime) ChildEnvironment() []string { return r.environment() }
+
 type bridgeRequest struct {
 	Operation  string              `json:"operation"`
 	ProjectID  string              `json:"project_id,omitempty"`
@@ -92,7 +94,7 @@ func (r *Runtime) environment() []string {
 	for _, item := range os.Environ() {
 		key, _, _ := strings.Cut(item, "=")
 		upper := strings.ToUpper(key)
-		if strings.HasPrefix(upper, "ORCA_") || strings.HasPrefix(upper, "PI_") || strings.HasPrefix(upper, "CODEX_") || strings.HasPrefix(upper, "CLAUDE_") || strings.HasPrefix(upper, "ANTHROPIC_") || strings.HasPrefix(upper, "SWA_") || upper == "NODE_OPTIONS" || upper == "NODE_PATH" || upper == "OPENAI_API_KEY" || upper == "HOME" || upper == "USERPROFILE" || upper == "APPDATA" || upper == "LOCALAPPDATA" || upper == "TEMP" || upper == "TMP" {
+		if strings.HasPrefix(upper, "ORCA_") || strings.HasPrefix(upper, "PI_") || strings.HasPrefix(upper, "CODEX_") || strings.HasPrefix(upper, "CLAUDE_") || strings.HasPrefix(upper, "ANTHROPIC_") || strings.HasPrefix(upper, "SWA_") || strings.HasPrefix(upper, "NODE_") || strings.HasPrefix(upper, "ASTROCYTE_") || upper == "OPENAI_API_KEY" || upper == "HOME" || upper == "USERPROFILE" || upper == "APPDATA" || upper == "LOCALAPPDATA" || upper == "TEMP" || upper == "TMP" {
 			continue
 		}
 		env = append(env, item)
@@ -104,6 +106,7 @@ func (r *Runtime) environment() []string {
 		"PI_CODING_AGENT_DIR="+filepath.Join(r.config.DataRoot, "pi"),
 		"SWA_DATA_DIR="+r.config.DataRoot,
 		"SWA_INSTALL_ROOT="+r.config.InstallRoot,
+		"SWA_PROTECTED_ROOTS="+strings.Join(r.config.ProtectedRoots, string(filepath.ListSeparator)),
 		"SWA_EXECUTABLE="+filepath.Join(r.config.InstallRoot, "swa.exe"),
 		"SWA_CODEX_AUTH_FILE="+r.config.CodexAuthFile,
 		"SWA_NODE_EXECUTABLE="+r.config.NodeExecutable,

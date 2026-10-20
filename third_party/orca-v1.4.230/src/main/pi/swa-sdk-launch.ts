@@ -6,6 +6,8 @@ import type { PiRpcResolvedLaunch } from './rpc-launch-resolution'
 import { agentSessionProviderHandleChainHead } from '../../shared/agent-session-provider-handle'
 import { PI_RPC_SESSION_ENV_TO_DELETE } from './rpc-launch'
 import { isWindowsProcessStartTimeAvailable } from '../windows/windows-process-table'
+import { structuredWorkerIdentities } from '../runtime/structured-worker-identity'
+import { AGENT_SESSION_FOUNDING_FENCE } from '../runtime/agent-session-record-founding'
 
 const requiredPath = async (key: string): Promise<string> => {
   const value = process.env[key]
@@ -29,6 +31,8 @@ async function directory(root: string, name: string): Promise<string> {
 
 export const swaPiLaunchPart: StructuredAgentLaunchPartResolver<PiRpcResolvedLaunch> = async (basis, identity) => {
   if (process.platform === 'win32' && !isWindowsProcessStartTimeAvailable()) throw new Error('SWA requires Windows process creation-time proof')
+  const worker = structuredWorkerIdentities.getBySessionId(identity.sessionId)
+  if (worker?.agent !== 'pi' || basis.record.lease.runtimeFence !== AGENT_SESSION_FOUNDING_FENCE + 1 || basis.record.lease.minimumNextFence !== undefined || basis.record.providerHandleChain.length) throw new Error('SWA refuses to restart or replace a prior Worker process; preserve its original Dispatch and request')
   if (!/^[a-zA-Z0-9_-]+$/.test(identity.sessionId)) throw new Error('Invalid native session ID')
   const data = await requiredPath('SWA_DATA_DIR')
   const workers = await directory(data, 'workers')
@@ -44,28 +48,19 @@ export const swaPiLaunchPart: StructuredAgentLaunchPartResolver<PiRpcResolvedLau
   const authFile = await requiredPath('SWA_CODEX_AUTH_FILE')
   const cwd = await realpath(await basis.launchDirectory())
   const previous = agentSessionProviderHandleChainHead(basis.record.providerHandleChain)
-  let sessionFile: string | undefined
-  if (previous) {
-    if (previous.handle.transport !== 'jsonl-rpc' || previous.handle.agent !== 'pi') throw new Error('SWA refuses a different native provider handle')
-    const actual = await realpath(previous.handle.nativeId)
-    const rel = relative(sessions, actual)
-    if (!rel || rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) throw new Error('SWA refuses a session outside its worker directory')
-    sessionFile = actual
-  }
   const env: Record<string, string> = {
     HOME: home, USERPROFILE: home, APPDATA: home, LOCALAPPDATA: home,
     TEMP: temporary, TMP: temporary,
     SWA_WORKER_ROOT: root, SWA_PROJECT_ROOT: cwd, SWA_CODEX_AUTH_FILE: authFile,
     PI_CODING_AGENT_DIR: agentDir, PI_CODING_AGENT_SESSION_DIR: sessions,
-    PI_PACKAGE_DIR: packageDir, NODE_OPTIONS: '--max-old-space-size=1024',
-    ...(sessionFile ? { SWA_PI_RESUME_FILE: sessionFile } : {})
+    PI_PACKAGE_DIR: packageDir, NODE_OPTIONS: '--max-old-space-size=1024'
   }
   const privateKeys = new Set(Object.keys(env).map(key => key.toUpperCase()))
   const remove = Object.keys(process.env).filter(key =>
-    /^(ORCA_|CODEX_|CLAUDE_|ANTHROPIC_|PI_|SWA_)/i.test(key) || ['NODE_PATH', 'NODE_OPTIONS', 'OPENAI_API_KEY'].includes(key.toUpperCase()))
+    /^(ORCA_|CODEX_|CLAUDE_|ANTHROPIC_|PI_|SWA_|NODE_|ASTROCYTE_)/i.test(key) || key.toUpperCase() === 'OPENAI_API_KEY')
     .filter(key => !privateKeys.has(key.toUpperCase()))
   return {
-    launch: { command: node, sdkEntry, fullAccess: false, previous, ...(sessionFile ? { sessionFile } : {}) },
+    launch: { command: node, sdkEntry, fullAccess: false, previous },
     env, inheritedEnvToDelete: [...PI_RPC_SESSION_ENV_TO_DELETE.filter(key => !privateKeys.has(key.toUpperCase())), ...remove]
   }
 }

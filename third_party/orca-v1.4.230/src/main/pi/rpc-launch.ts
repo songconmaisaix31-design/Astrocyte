@@ -64,6 +64,7 @@ export function buildPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLa
     command: options.command,
     cwd: options.cwd,
     args: ['--max-old-space-size=1024', options.sdkEntry],
+    swaJobIPC: true,
     env: { ...options.env },
     envToDelete: [...(options.envToDelete ?? [])]
   }

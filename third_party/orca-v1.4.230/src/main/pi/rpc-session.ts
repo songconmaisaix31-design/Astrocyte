@@ -185,7 +185,7 @@ export class PiRpcSession {
     })
     void this.close(false)
       .then((result) => {
-        if (result.root !== 'exited') {
+        if (result.root !== 'exited' || result.tree !== 'exited') {
           this.deps.logger.warn('Pi process exit is unverifiable', {
             scope: 'pi-stop',
             sessionId: this.input.identity.sessionId

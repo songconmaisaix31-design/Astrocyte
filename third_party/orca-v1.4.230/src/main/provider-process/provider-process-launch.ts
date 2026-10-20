@@ -7,6 +7,8 @@ export type ProviderProcessLaunch = {
   env?: Record<string, string>
   /** Keys stripped after the overlay. */
   envToDelete?: readonly string[]
+  /** SWA 受限 SDK 在真实父 Job 分配后通过 Node IPC 获得加载许可。 */
+  swaJobIPC?: true
 }
 
 /** The one env rule for provider children: inherit, overlay, then strip (so a delete beats an overlay). */

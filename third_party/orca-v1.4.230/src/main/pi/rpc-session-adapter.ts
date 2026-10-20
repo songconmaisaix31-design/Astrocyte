@@ -5,7 +5,6 @@ import { agentSessionFailureFact } from '../../shared/agent-session-failure'
 import { agentSessionFailureWords } from '../../shared/agent-session-failure-words'
 import {
   AgentSessionPreSpawnError,
-  AgentSessionAcquisitionRootExitObservedError,
   AgentSessionAcquisitionExitUnprovenError,
   AgentSessionAcquisitionExitProvenError,
   type AgentSessionAcquisition,
@@ -109,11 +108,8 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
           : new AgentSessionPreSpawnError(error)
       }
       const result = await session.close(false).catch(() => null)
-      if (result?.root === 'exited') {
-        if (session.connection.processless) {
-          throw new AgentSessionAcquisitionExitProvenError(error)
-        }
-        throw new AgentSessionAcquisitionRootExitObservedError(error)
+      if (result?.root === 'exited' && result.tree === 'exited') {
+        throw new AgentSessionAcquisitionExitProvenError(error)
       }
       this.starts.retainFailed(id, session.connection)
       throw new AgentSessionAcquisitionExitUnprovenError(error)
@@ -251,7 +247,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       return false
     }
     if (result.tree !== 'exited') {
-      throw new AgentSessionAcquisitionRootExitObservedError(new Error('Pi root exit observed'))
+      throw new AgentSessionAcquisitionExitUnprovenError(new Error('SWA complete Pi Job exit remains unknown'))
     }
     return true
   }

@@ -257,7 +257,7 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 ### 5.4 每个SDK Worker的原生Job及停止验证补充
 
-本节及下列T03/T06/T08/T09/T13差异提交原Reviewer独立审核，相应依赖、native构建和动态运行保持未执行。采用私有Node runtime持有每个Worker自己的Win32 Job，补充现有node-pty native适配和`ProviderProcessTree`消费方；不调整本机Orca或原daemon的Job，不增加执行账本。具体句柄适配属于产品源码修改，原node-pty通用PTY行为保持其来源范围。
+本节及相应T03/T06/T08/T09/T12/T13补充已由原Reviewer准确6874db165d577bac2137ff07ffab677c7ac92103独立接受，主控msg_5ca526aeec7c授予按此继续实现；相应依赖、native构建和动态运行保持未执行。采用私有Node runtime持有每个Worker自己的Win32 Job，补充现有node-pty native适配和`ProviderProcessTree`消费方；不调整本机Orca或原daemon的Job，不增加执行账本。具体句柄适配属于产品源码修改，原node-pty通用PTY行为保持其来源范围。
 
 已读取Microsoft [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[AssignProcessToJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-assignprocesstojobobject)、[QueryInformationJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-queryinformationjobobject)和[TerminateJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-terminatejobobject)完整正文，并核Node24.21.0的[stdio/IPC](https://nodejs.org/download/release/v24.21.0/docs/api/child_process.html#optionsstdio)及准确上游`process-host/src/process-spec.ts`。后者的真实`PipedProcessSpec`已经允许前三个pipe以外的stdio项，`PipedChildProcess`为原生`ChildProcessWithoutNullStreams`；以下仅把Node原生IPC用于启动准入，stdin/stdout继续承载真实Pi RPC。
 
@@ -352,6 +352,8 @@ CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。e
 
 T06增加同一真实controller、不同R的两项task.create竞争：原生事务在首次Run副作用前检查并checkpoint该controller，第二项只能拒绝或观察原占用；重启后pending仍占用，真实Run/root只能有一组。T08增加同一root的三个不同R并发worker.start：在已有原生mutation_receipts内原子保留额度，已创建子Task与尚未物化的pending请求合并计数，已关联的同一原生Dispatch只计一次；两席已保留即在模型输入前拒绝第三名，unknown继续占用。两项均运行真实CLI、helper和SQLite，不通过模拟接收器制造竞争命中。
 
+T06/T11补充不同R的controller.close与task.create/worker.start真实竞争：关闭与创建使用同一原生SQLite事务检查已有receipt，并在该事务内checkpoint关闭屏障。创建先保留且尚未物化时，关闭保持拒绝；关闭先保留时，之后所有创建和输入拒绝。关闭pending/unknown及完成后的receipt都继续阻止新创建，查询不撤除屏障。只有此前创建均结算且真实资源全部released时才允许关闭helper；重启后的未知创建继续保留占用。两种取得顺序均按真实receipt、Task/Dispatch和所属进程核对，未命中的交错保持INCONCLUSIVE。
+
 T09依现有入口`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T09 -SwaPath $swaBin -InstallRoot $installRoot -DataRoot $dataRoot -CaseRoot $caseRoot`执行分支；Node原生测试采用同候选Node和native运行`tests/swa-cli-headless/provider-job.test.mjs`。当前两入口的相应实现和真实结果均未完成，缺失或未命中场景如实保留。T13指定停止A时另保存A专有Job的实际root绑定、成员查询/退出观察和B专有Job中的原成员/身份，原生stop/release只有在全树条件满足后才结算。T12宿主重启丢失旧Job句柄的路径保持unknown，不重发输入，也不把该分支记录为恢复了存活模型进程。
 
 ### 7.3 同一安装候选的一次双Worker任务
@@ -437,6 +439,16 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 阶段源码包含Workspace App准入、028关联迁移、真实RuntimeClient适配、项目范围HTTP、产品服务组装、私有Node host、原生controller receipt/PTY/helper及Pi SDK ToolsOff入口；四项新增durable方法接入原有mutation executor。主控msg_eaaf01e60d77允许供原Reviewer先静态CR，编译和真实运行结果均不据此推断。CLI/结果导出、构建安装脚本、定向保护和T00—T15实现仍在本Worker继续；当前源码尚未形成可安装候选。
 
 准确阶段源码`847ec2687857b06430284aecdf81a6887f2f996f`已普通push、EXIT0。原Reviewer准确`80ed37f6af51f6c38df4f811d8e6c8f2376c089e`对F04—F07退回；当前返修将controller单任务与Worker额度准入/checkpoint合并到既有原生事务，按真实`row.resource.release_state`判定资源，并保留已认证human不依赖Agent执行批准和旧context版本的安全停止。它们仍须准确后继复审和真实测试。§5.4及T09/T13的Job与句柄设计属于本次待审核差异，相应依赖/构建和动态窗口未使用。
+
+原Reviewer通过msg_08a9c85e2399只读确认6168的F04—F07静态修复成立，并提出F08关闭与已保留创建的竞争。当前同一Worker按上文补关闭屏障和T06/T11差异，待准确后继独立核查；该消息没有授予动态窗口或代表整项功能接受。CLI、成果导出、私有服务和构建安装仍在实施，全部实际功能验收保持NOT_RUN。
+
+当前程序阶段已形成CLI/HTTP/App命令、成果原生分页及项目允许目录导出、独立私有HTTP服务组装与所属启动管道、Node父持Job及模型前真实IPC准入。补丁把独立Provider Job导出接入原node-pty编译；构建入口将获准`native/swa-provider-job.h`明确复制到候选node-pty源码再编译，原daemon通用Job逻辑保持来源行为。SDK factory位于`pi-session.ts`，bootstrap及其共享Node生命周期入口在准入前不加载SDK或认证。关闭结果和原生生命周期只在完整Job验证后发布，启动失败同样要求root/tree共同退出；当前缺句柄、查询失败及原runtime generation失配保留unknown与占用。
+
+当前固定Worker流程复用原生founding fence1及首次输入的reservation fence2；Pi launch仅接受本runtime新登记、未持有旧provider handle的这一次实际reservation。后续输入复用现有活跃session/进程，SDK进程退出或runtime重启后不自动新建替代者。此处依据实际foundConversation/reserveOwner及structuredWorkerIdentities来源，仍须真实首个输入、同session后续输入及T12验证；没有用fence数值本身判进程退出。
+
+构建入口为`node --max-old-space-size=1024 scripts/build-swa-package.mjs --output <本树dist内新候选绝对目录>`，明确使用已安装PNPM11.27.0入口、注入workspace闭包的pnpm deploy、固定官方Node24.21.0输入、候选内四个native模块编译、真实esbuild及`go build -p=4`。新增node-gyp12.3.0沿上游锁声明；workspace注入和补丁变更尚待lockfile-only及frozen ignore-scripts安装，当前锁和生成的HTTP类型尚未同步，不能构建验收。`check-swa-runtime.mjs --candidate ...`检查闭包及真实二进制装载，不替代SDK认证、普通后代fixture或T13模型验收。`install-swa.ps1`采用包内Node复制实际依赖内容至明确新目录并设置私有ACL，尚未执行。
+
+本阶段实际轻量检查：修改的八个Go文件`gofmt -d`最终EXIT0；安装PowerShell的Language.Parser.ParseFile无语法错误、正文NOT_RUN；真实Git patch解析`git apply --numstat`接受node-pty补丁，产品差异`git diff --check`EXIT0。格式检查此前发现process_windows.go的字段空格并已通过文件编辑工具修正；检查不表示编译、安装或真实功能通过。
 
 第三方子树按Git archive导出视图导入，包含产品适配；原Reviewer使用准确Git对象核得导出视图省略docs/audits、其他文档/审查工具及部分tests/tools，另有Windows导入形成的执行位变化。LICENSE及根package/锁与准确b287来源相同。当前不把该子树描述为完整原树逐项相同；Windows实际构建闭包仍需逐入口验证，未执行上游录制fixture或为其原有空白修改原件。
 

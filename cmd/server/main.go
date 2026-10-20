@@ -52,6 +52,9 @@ func main() {
 func run(logger *slog.Logger) (runErr error) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	if os.Getenv("SWA_INSTALL_ROOT") != "" {
+		return runOrcaProduct(ctx, logger)
+	}
 
 	halfLife, weights, err := resolveAttentionPolicy()
 	if err != nil {

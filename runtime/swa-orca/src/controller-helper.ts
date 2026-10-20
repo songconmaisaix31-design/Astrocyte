@@ -1,4 +1,5 @@
 import { createInterface } from 'node:readline'
+import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { helperInput, nativeObject, nativeError, type Invocation } from './contracts'
 
@@ -29,6 +30,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
   switch (action) {
     case 'task.list':
     case 'task.show': return call('orchestration.taskList', { run, callerTerminalHandle: controller })
+    case 'task.result': return collectTaskResult(invocation)
     case 'task.complete': return call('orchestration.taskUpdate', { id: c.task_id, status: 'completed', result: invocation.input?.text, run, callerTerminalHandle: controller }, `${requestId}/native`)
     case 'worker.start': {
       if (!invocation.input || c.agent !== 'pi' || c.model !== 'openai-codex/gpt-6.1-sol') throw new Error('fixed_worker_input_required')
@@ -51,6 +53,38 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     }
     default: throw new Error('unsupported_controller_action')
   }
+}
+
+async function collectTaskResult(invocation: Invocation) {
+  const run = invocation.scope.run_id, root = invocation.scope.root_task_id
+  const tasks = nativeObject(await call('orchestration.taskList', { run, callerTerminalHandle: controller }))
+  const rows = z.array(z.looseObject({ id: z.string(), parent_id: z.string().nullable() })).parse(tasks.tasks)
+  if (!rows.some(task => task.id === root)) throw new Error('The exact native root task is unavailable')
+  const children = new Set(rows.filter(task => task.parent_id === root).map(task => task.id))
+  const fleet = nativeObject(await call('orchestration.workerList', { run, paginate: true, limit: 100 }))
+  const page = z.object({ hasMore: z.boolean() }).parse(fleet.page)
+  if (page.hasMore) throw new Error('The fixed task worker inventory is unexpectedly incomplete')
+  const workers = z.array(z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() })).parse(fleet.workers)
+  const outputs = []
+  let bytes = Buffer.byteLength(JSON.stringify(tasks))
+  for (const worker of workers) {
+    if (worker.runId !== run || !children.has(worker.taskId)) throw new Error('Native output belongs to another task')
+    const observation = await call('orchestration.workerShow', { dispatch: worker.dispatchId })
+    const pages: Record<string, unknown>[] = []
+    let cursor: string | undefined
+    for (;;) {
+      const raw = nativeObject(await call('orchestration.workerRead', { dispatch: worker.dispatchId, source: 'transcript', limit: 100, ...(cursor ? { cursor } : {}) }))
+      const output = z.looseObject({ dispatchId: z.literal(worker.dispatchId), source: z.literal('transcript'), sourceIdentity: z.string().min(1), fallbackReason: z.null(), transcript: z.looseObject({ messages: z.array(z.unknown()), nextCursor: z.string().min(1), limited: z.boolean() }) }).parse(raw)
+      bytes += Buffer.byteLength(JSON.stringify(raw))
+      if (bytes > 12 * 1024 * 1024) throw new Error('The result exceeds the declared export bound; retain the original transcripts')
+      pages.push(raw)
+      if (!output.transcript.limited) break
+      if (!output.transcript.messages.length || output.transcript.nextCursor === cursor) throw new Error('Native transcript remains limited without a continuing cursor')
+      cursor = output.transcript.nextCursor
+    }
+    outputs.push({ worker, observation, pages, usage: { known: false, value: null, reason: 'usage_not_exposed_by_native_worker_read' } })
+  }
+  return { run: await call('orchestration.runShow', { run }), tasks, workers: outputs, source: 'native_transcript', collected_at: new Date().toISOString() }
 }
 
 async function main() {

@@ -984,7 +984,7 @@ index 7b286d3d64..5239ba4e40 100644
      HANDLE hLibrary = LoadConptyDll(info, useConptyDll);
      bool fLoadedDll = hLibrary != nullptr;
      if (fLoadedDll)
-@@ -544,29 +677,229 @@ static Napi::Value PtyKill(const Napi::CallbackInfo& info) {
+@@ -544,29 +677,231 @@ static Napi::Value PtyKill(const Napi::CallbackInfo& info) {
    int id = info[0].As<Napi::Number>().Int32Value();
    const bool useConptyDll = info[1].As<Napi::Boolean>().Value();
  
@@ -1225,10 +1225,12 @@ index 7b286d3d64..5239ba4e40 100644
 +  return Napi::Boolean::New(env, true);
 +}
 +
++#include "swa_provider_job.h"
++
  /**
  * Init
  */
-@@ -577,6 +910,10 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
+@@ -577,6 +912,16 @@ Napi::Object init(Napi::Env env, Napi::Object exports) {
    exports.Set("resize", Napi::Function::New(env, PtyResize));
    exports.Set("clear", Napi::Function::New(env, PtyClear));
    exports.Set("kill", Napi::Function::New(env, PtyKill));
@@ -1236,6 +1238,12 @@ index 7b286d3d64..5239ba4e40 100644
 +  exports.Set("listJobProcessIds", Napi::Function::New(env, PtyListJobProcessIds));
 +  exports.Set("assignCurrentProcessToJob", Napi::Function::New(env, PtyAssignCurrentProcessToJob));
 +  exports.Set("setActiveProcessLimit", Napi::Function::New(env, PtySetActiveProcessLimit));
++  exports.Set("createProviderJob", Napi::Function::New(env, SwaCreateProviderJob));
++  exports.Set("assignProviderJob", Napi::Function::New(env, SwaAssignProviderJob));
++  exports.Set("queryProviderJob", Napi::Function::New(env, SwaQueryProviderJob));
++  exports.Set("terminateProviderJob", Napi::Function::New(env, SwaTerminateProviderJob));
++  exports.Set("closeProviderJob", Napi::Function::New(env, SwaCloseProviderJob));
++  exports.Set("providerJobIsolationVersion", Napi::Number::New(env, 1));
    return exports;
  };
  

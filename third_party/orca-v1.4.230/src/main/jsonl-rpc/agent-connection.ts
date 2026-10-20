@@ -14,6 +14,7 @@ import {
   type JsonlRpcRecord
 } from './peer'
 import { resolveJsonlRpcPeerOptions, type JsonlRpcPeerOptions } from './peer-limits'
+import { SwaProviderProcessTree } from '../provider-process/swa-provider-process-tree'
 
 export type JsonlRpcAgentConnectionOptions = JsonlRpcPeerHandlers & {
   allowedCommands?: ReadonlySet<string>
@@ -27,6 +28,9 @@ export type JsonlRpcAgentConnectionOptions = JsonlRpcPeerHandlers & {
 export class JsonlRpcAgentConnection {
   private readonly managed: ManagedProviderProcess
   private readonly peer: JsonlRpcPeer
+  private readonly ownedTree?: SwaProviderProcessTree
+  private verifiedExit = false
+  private readonly verifiedExitListeners = new Set<() => void>()
   private closing = false
   private finishObservedExit?: () => void
   private streamExitTimer?: ReturnType<typeof setTimeout>
@@ -37,12 +41,21 @@ export class JsonlRpcAgentConnection {
     spawnImpl: PipedProcessSpawner = spawnProcess
   ) {
     const peerOptions = resolveJsonlRpcPeerOptions(options.peer)
-    this.managed = spawnManagedProviderProcess(launch, {
-      spawnImpl,
-      site: 'jsonl-rpc-agent-teardown',
-      ...(options.onOutput ? { onOutput: options.onOutput } : {})
-    })
+    if (launch.env?.SWA_WORKER_ROOT && !launch.swaJobIPC) throw new Error('SWA refuses SDK launch without parent Job admission')
+    if (launch.swaJobIPC) this.ownedTree = new SwaProviderProcessTree()
+    try {
+      this.managed = spawnManagedProviderProcess(launch, {
+        spawnImpl,
+        site: 'jsonl-rpc-agent-teardown',
+        ...(this.ownedTree ? { acceptClose: result => result.root === 'exited' && result.tree === 'exited' } : {}),
+        ...(options.onOutput ? { onOutput: options.onOutput } : {})
+      })
+    } catch (error) {
+      this.ownedTree?.closeBeforeSpawnFailure()
+      throw error
+    }
     const managed = this.managed
+    this.ownedTree?.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }))
     this.peer = new JsonlRpcPeer(
       managed.child.stdout,
       managed.child.stdin,
@@ -53,9 +66,9 @@ export class JsonlRpcAgentConnection {
             if (this.closing || managed.rootVerdict === 'exited') {
               return
             }
-            void managed.close().then(
+            void managed.close(this.ownedTree).then(
               (result) => {
-                if (result.root !== 'exited') {
+                if (result.root !== 'exited' || this.ownedTree && result.tree !== 'exited') {
                   this.diagnose('Agent exit was not proven after RPC failure')
                 }
               },
@@ -102,11 +115,18 @@ export class JsonlRpcAgentConnection {
         this.finishObservedExit = undefined
         this.peer.close(error)
         managed.child.removeListener('error', this.onError)
-        try {
-          options.onExit?.(error, { expected: this.closing, exit })
-        } catch {
-          this.diagnose('Agent exit observer failed')
+        const publish = (): void => {
+          this.verifiedExit = true
+          for (const listener of this.verifiedExitListeners) listener()
+          this.verifiedExitListeners.clear()
+          try { options.onExit?.(error, { expected: this.closing, exit }) }
+          catch { this.diagnose('Agent exit observer failed') }
         }
+        if (!this.ownedTree) publish()
+        else void managed.close(this.ownedTree).then(result => {
+          if (result.root === 'exited' && result.tree === 'exited') publish()
+          else this.diagnose('SWA SDK root exited while complete Job exit remains unknown')
+        }, () => this.diagnose('SWA SDK Job exit query failed; retain its session and resources'))
       }
       this.finishObservedExit = finish
       if (
@@ -134,6 +154,7 @@ export class JsonlRpcAgentConnection {
     return this.peer.closed
   }
   get rootVerdict(): ManagedProviderProcess['rootVerdict'] {
+    if (this.ownedTree && this.managed.rootVerdict === 'exited' && this.ownedTree.treeVerdict !== 'exited') return 'unverifiable'
     return this.managed.rootVerdict
   }
   get processless(): boolean {
@@ -144,10 +165,12 @@ export class JsonlRpcAgentConnection {
   }
 
   onExit(listener: () => void): void {
-    this.managed.onExit(listener)
+    if (!this.ownedTree) this.managed.onExit(listener)
+    else if (this.verifiedExit) listener()
+    else this.verifiedExitListeners.add(listener)
   }
 
-  request(
+  async request(
     command: string,
     params: Record<string, unknown> = {},
     options: { timeoutMs?: number | null } = {}
@@ -155,13 +178,15 @@ export class JsonlRpcAgentConnection {
     if (this.options.allowedCommands && !this.options.allowedCommands.has(command)) {
       return Promise.reject(new Error(`SWA refuses Pi RPC command: ${command}`))
     }
+    await this.ownedTree?.ready()
     return this.peer.request(command, params, options)
   }
 
-  send(record: JsonlRpcRecord): Promise<void> {
+  async send(record: JsonlRpcRecord): Promise<void> {
     if (this.options.allowedCommands && !this.options.allowedCommands.has(record.type)) {
       return Promise.reject(new Error(`SWA refuses Pi RPC command: ${record.type}`))
     }
+    await this.ownedTree?.ready()
     return this.peer.send(record)
   }
 
@@ -179,7 +204,7 @@ export class JsonlRpcAgentConnection {
     clearTimeout(this.streamExitTimer)
     this.finishObservedExit?.()
     this.peer.close(error)
-    return this.managed.close()
+    return this.managed.close(this.ownedTree)
   }
 
   private readonly onError = (error: Error): void => this.peer.close(error)
