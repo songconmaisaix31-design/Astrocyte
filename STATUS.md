@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，本地准确`abdb07d31954b9e72f12bdaafdfe56406deb9004`已提交，F10—F12返修、双Worker驱动及真实原件副本检查源码交原Reviewer复核；尚未取得本次push成功回执。此前两次普通push因TLS失败，主控随后只读ls-remote成功且核远端仍f2，已交原Worker按新连接事实继续一次普通push并保留原失败。d7、76e9及F04—F09既有静态接受保持，整体程序与全部动态未接受。原S12800运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`abdb07d31954b9e72f12bdaafdfe56406deb9004`已普通push EXIT0，主控实际ls-remote核远端同SHA；前两次TLS失败记录保留。F10—F12返修、双Worker驱动及真实原件副本检查源码交原Reviewer复核，四个真实Go检查文件仍在原写域编写、未运行。d7、76e9及F04—F09既有静态接受保持，整体程序与全部动态未接受。原S12800运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
