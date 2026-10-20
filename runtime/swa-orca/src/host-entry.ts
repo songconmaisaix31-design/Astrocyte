@@ -96,12 +96,20 @@ async function main() {
     registerCleanup(() => runtime.closeNotificationDismissals())
     const { disposeWatcherProcessAndWait } = await import('../../../third_party/orca-v1.4.230/src/main/ipc/parcel-watcher-process')
     registerCleanup(() => disposeWatcherProcessAndWait())
-    const { OrcaRuntimeRpcServer } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/runtime-rpc')
-    const { ALL_RPC_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods')
+    const { RuntimeRpcShutdown } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/runtime-rpc/runtime-rpc-shutdown')
+    const { STATUS_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/status')
+    const { ORCHESTRATION_RUN_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs')
+    const { ORCHESTRATION_WORKER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-methods')
+    const { ORCHESTRATION_MUTATION_REQUEST_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/mutation-request-show')
+    const { ORCHESTRATION_SEND_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/send-methods')
+    const { ORCHESTRATION_MESSAGE_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods')
+    const { ORCHESTRATION_CALLER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/caller-show')
     const { SWA_METHODS } = await import('./native-methods')
     const { OrchestrationError } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
-    const rpc = new OrcaRuntimeRpcServer({ runtime, userDataPath: data, enableWebSocket: false, methods: [...ALL_RPC_METHODS.filter(method => allowed.has(method.name)), ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
+    const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_SEND_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
+    if (nativeMethods.length !== allowed.size || new Set(nativeMethods.map(method => method.name)).size !== allowed.size) throw new Error('The required native product RPC methods are incomplete')
+    const rpc = new RuntimeRpcShutdown({ runtime, userDataPath: data, enableWebSocket: false, methods: [...nativeMethods, ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
       if (!request.method.startsWith('swa.') || request.method === 'swa.workerSend') return
       const value = request.swaOwnerCapability
       if (context.caller?.kind !== 'local-cli' || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value) || !timingSafeEqual(Buffer.from(value, 'hex'), ownerCapability)) throw new OrchestrationError('scope_denied', 'The private product owner capability is required')

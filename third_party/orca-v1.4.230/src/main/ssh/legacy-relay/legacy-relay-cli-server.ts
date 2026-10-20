@@ -12,7 +12,7 @@ import { ORCHESTRATION_CONTRACT_VERSION } from '../../../shared/protocol-version
 import type { OrcaRuntimeService } from '../../runtime/orca-runtime'
 import type { RpcResponse } from '../../runtime/rpc/core'
 import { RpcDispatcher } from '../../runtime/rpc/dispatcher'
-import { ALL_RPC_METHODS } from '../../runtime/rpc/methods'
+import { LEGACY_RELAY_CLI_METHODS } from './legacy-relay-cli-methods'
 import {
   assertLegacyRelayCliScope,
   resolveLegacyRelayCliCaller,
@@ -36,13 +36,7 @@ import {
 import { formatLegacyRelayCliResult, isRecord } from './legacy-relay-cli-output'
 import type { LegacyRelayLivePane } from './legacy-relay-bridge-leases'
 
-const METHODS: ReadonlySet<string> = new Set([
-  'orchestration.check',
-  'orchestration.inbox',
-  'orchestration.send',
-  'orchestration.ask',
-  'orchestration.reply'
-])
+const METHODS: ReadonlySet<string> = new Set(LEGACY_RELAY_CLI_METHODS.map(method => method.name))
 
 const COMMANDS: ReadonlySet<string> = new Set(
   [...METHODS].map((method) => method.replace('.', ' '))
@@ -77,7 +71,7 @@ function dispatcherFor(runtime: OrcaRuntimeService): RpcDispatcher {
     dispatcher = new RpcDispatcher({
       runtime,
       // Why a registry of only these methods: even a bug upstream cannot reach anything else.
-      methods: ALL_RPC_METHODS.filter((method) => METHODS.has(method.name)),
+      methods: LEGACY_RELAY_CLI_METHODS,
       callerScope: { kind: 'runtime-paired', grants: [] }
     })
     dispatchers.set(runtime, dispatcher)

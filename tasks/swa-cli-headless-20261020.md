@@ -133,3 +133,9 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 原Run正式msg_aede的一次dependency03已消费：准确8ebe、原runner77d及新证据目录前置通过，exec27025/根60728于UTC18:14:40启动；原pnpm lock-only及frozen install和各自资源门禁四份exit均0，lock真实生成，命令未重复。外层final在工具截断后未取回，恢复poll为Unknown process id，不能宣称已取得外层EXIT0。UTC18:18:16/19两次新鲜所属CIM均空，msg_c9b立即交回；主控确认restore13当前S56896为UTC18:17:05.651634的新创建身份，全部重授权撤销且tracked冻结解除。后继入口静态准备candidate03/build04并保存原77d runner，尚未运行。
 
 独立准确67b1d78b的N11/N12退回已完整读取。报告§13逐类明确credential.env、auth key、provider/model/override headers、models apiKey/oauth、实际model/API/baseUrl、fallback/virtual路由的原生投影/拒绝及首次和每次输入前私有文件复核；固定原生literal分类与转义语义，不执行命令或解析环境。无TTL API key可在其他条件满足后实际请求，有明确期限的来源按实际期限、本次已批准上限及30秒余量判定；Pi get_state与原Native fence证明分开。新增model_target及原计划所有新稳定字段仍未实施/冻结，继续由原Reviewer独立审核及主控定稿。
+
+准确449184b826ae64de99d73476147d64967ef31667普通push0；独立70f59152局部接受真实锁/入口，原Run正式71d080仅一次build04已消费。原prod deploy324项/363供应链检查及21份bundle/metafile完成，首Node归档下载TLS建立前ECONNRESET，exec86069同步EXIT1且内外退出原件均1。candidate03/runtime及空node目录保留，不可安装；UTC18:31:09/12两次新鲜所属树及已观察身份为空，msg_cc123立即交回。主控确认restore14当前S55148及原库/配置/环境/health/Web恢复，原Orca保持，全部窗口撤销且冻结解除。
+
+真实host metafile发现6136扫描输入和五处全RPC直接导入，包括PTY kill经SSH legacy relay的两处。当前原程序修正这五条边，复用现有RPC类/原handlers/同一16方法及SSH五方法参数/回执；不按包名删除依赖，后继实际闭包和native/Go仍未运行。独立b009的N13退回已完整读取，正式§13补原model/override/内置合成samplingParams非空拒绝及每请求严格生产者/首次和后续条件，新稳定契约仍未实施。主控新增download-swa-node.ps1窄写域，报告§14提交Windows/.NET既有代理、单次600秒流式下载/原pin全校验和D01—D05真实验证计划；脚本尚未实施，等待原Reviewer独立技术审核，不重试旧下载或冻结其他静态工作。
+
+本次rpc-closure-static-01保留8份变动TS的成熟语法解析、JSON/YAML及两份Markdown/5本地链接/24Orca与11Pi来源路径的实际EXIT0，Git空白检查通过。语法解析不代表完整类型检查、原生功能、候选构建或安装验收；这些检查及真实双Worker仍未通过，不据静态提交创建完成PR。

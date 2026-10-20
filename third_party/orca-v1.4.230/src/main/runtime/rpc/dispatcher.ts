@@ -12,7 +12,6 @@ import {
 } from './core'
 
 import { successResponse } from './errors'
-import { ALL_RPC_METHODS } from './methods'
 import { emulatorProbe, emulatorProbeError } from '../../emulator/emulator-probe'
 import type { OrcaRuntimeService } from '../orca-runtime'
 import { isDurableMutation } from '../../../shared/orchestration-rpc-contract'
@@ -35,7 +34,7 @@ import { admitRpcRequest } from './rpc-request-admission-prologue'
 
 export type DispatcherOptions = {
   runtime: OrcaRuntimeService
-  methods?: readonly RpcAnyMethodDeclaration[]
+  methods: readonly RpcAnyMethodDeclaration[]
   /** Pins every call to this scope, for in-process bridges that relay a non-owner caller. */
   callerScope?: RpcCallerScope
   executionAdmission?: RpcExecutionAdmission
@@ -56,7 +55,8 @@ export class RpcDispatcher {
   private readonly pinnedCallerScope: RpcCallerScope | undefined
   private readonly executionAdmission: RpcExecutionAdmission | undefined
 
-  constructor({ runtime, methods = ALL_RPC_METHODS, callerScope, executionAdmission }: DispatcherOptions) {
+  constructor({ runtime, methods, callerScope, executionAdmission }: DispatcherOptions) {
+    if (!methods) throw new Error('RPC method declarations are required')
     this.runtime = runtime
     this.pinnedCallerScope = callerScope
     this.executionAdmission = executionAdmission

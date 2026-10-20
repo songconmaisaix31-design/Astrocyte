@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import type { RuntimeTransportMetadata } from '../../../shared/runtime-bootstrap'
 import type { OrcaRuntimeService } from '../orca-runtime'
 import { RpcDispatcher } from '../rpc/dispatcher'
-import { ALL_RPC_METHODS } from '../rpc/methods'
+import type { RpcAnyMethodDeclaration } from '../rpc/core'
 import type { RpcTransport } from '../rpc/transport'
 import type { WebSocket } from 'ws'
 import type { DeviceRegistry } from '../device-registry'
@@ -121,9 +121,9 @@ export class RuntimeRpcState {
     metadataOwnershipPollMs = RUNTIME_METADATA_OWNERSHIP_POLL_MS,
     methods,
     executionAdmission
-  }: OrcaRuntimeRpcServerOptions) {
+  }: OrcaRuntimeRpcServerOptions & { methods: readonly RpcAnyMethodDeclaration[] }) {
     this.runtime = runtime
-    this.dispatcher = new RpcDispatcher({ runtime, methods: methods ?? ALL_RPC_METHODS, executionAdmission })
+    this.dispatcher = new RpcDispatcher({ runtime, methods, executionAdmission })
     this.userDataPath = userDataPath
     this.pid = pid
     this.platform = platform

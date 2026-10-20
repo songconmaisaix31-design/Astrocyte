@@ -928,6 +928,12 @@ N07静态消费者允许明确模型参与选择，不以缺少默认模型等�
 
 下一build静态入口仅改为全新dist/swa-cli-install-20261020-03，拟EvidenceName build-04；实际执行过的77d runner先保存到build-03/next-window-executed.ps1且SHA一致。旧candidate01/02和失败原件保留，新candidate03及build-04仍不存在。构建须先独立审核准确后继及另获正式一次窗口，不重复已通过dependencies/generate，不执行模型。
 
+原Run正式`msg_71d0802aa76b`仅一次build04已消费：准确449184b826ae64de99d73476147d64967ef31667干净、runner7755和新目录前置通过，exec86069/根8800于UTC18:28:30启动。门禁UTC18:28:32.431690/34.933581，CPU22.1/19.5%、可用9068683264/9124237312字节、单调2.5018908秒通过。实际prod deploy324项、363项供应链核查完成，21份bundle及metafile全部生成；随后首官方Node归档下载在nodejs.org:443的TLS建立前ECONNRESET，实际同步外层EXIT1，build-exit.txt与outer-exit.txt均1。candidate03/runtime和空node目录保留，没有native/Go编译、VERSION或swa.exe，不可安装。
+
+实际运行快照含根8800、40088、61684、62384及conhost36768；UTC18:31:09.3250354和18:31:12.6708658两次新鲜所属树及已观察创建身份均空，原件在build-04，以`msg_cc1236c8d8b5`立即交回。主控`msg_1db1028ec2fd`撤销已消费授权并解除tracked/Git冻结，`msg_b775b97adf6f`确认restore14实际当前S55148/UTC18:33:26.874753/epoch1792521206.8747532及原库/环境/health/Web保全；原Orca38652/runtime49da保持，下次prepare使用restore14/restored.json。
+
+21份实际metafile经标准JSON只读分析保存在build-04/metafile-analysis.json。host扫描6136个输入，正bytesInOutput的依赖确实进入产物；完整RPC index有五个实际直接importer：host、dispatcher、RPCState及经headless PTY kill进入的SSH legacy-relay-cli-server/call-limits。当前静态修正让产品host使用现有RuntimeRpcShutdown并显式提供同一16个原生方法，完整默认选择移到原公共OrcaRuntimeRpcServer；RpcDispatcher及RPCState要求显式methods，原桌面默认调用者改为显式ALL。SSH调度与完成回执共享同一五项原声明，保持scope、参数schema及原receipt规则。方法体、owner admission和原执行器保持；后继真实metafile/构建尚未执行，不能宣称完整闭包已经裁剪。旧SDK导出/检查、真实native Job和多provider完整成果消费者继续处理。
+
 ## 13. 原生账号与关闭工具的实施计划
 
 本节为N08新增稳定契约及直接消费者的完整技术计划，等待原Reviewer独立技术接受和主控SPEC定稿；当前没有实施native_launch字段或执行新账号/工具方法。依据实际本机Pi CLI1.0.1的main、auth-storage、resource-loader、settings-manager、agent-session-services、sdk、model-runtime、virtual-models、rpc-mode、model-config、provider-composer、resolve-config-value及pi-ai/auth/resolve/provider源码，使用真实CLI和原生格式，沿原Native状态与R运行。
@@ -974,8 +980,9 @@ private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open�
 | 原生配置值 | 对key及每一层header value先用同版本原生isCommandConfigValue和getConfigValueEnvVarNames作只读分类；命令或任何环境引用均拒绝，不调用其执行/环境解析路径。只有两者均未命中时才沿原生literal语义解析，保留`$$`及`$!`的原生转义；私有原格式保存同一已验证表达式，不能把解码后的前导`!`重新当配置表达式写入。秘密不输出或进入错误文本 |
 | models provider apiKey/oauth | 所选provider含apiKey或oauth即拒绝，即使另有stored key也不忽略；这两个字段可参与真实认证组合，不迁入私有文件。只有实际原生provider的API key handler与原auth条目匹配才继续，不能依赖composer生成新登录能力 |
 | provider/model/modelOverrides headers | 三层逐项按上行检查literal，使用成熟Headers检查名称和值；认证或账号替换字段Authorization、Proxy-Authorization、X-Api-Key、Api-Key、Cookie、Set-Cookie按大小写不敏感拒绝。其他已存在的literal声明按原composer优先级保留，不能丢弃某层改变语义。私有投影只保留原已验证层次，不执行命令，不带credential.env |
-| provider与明确model | 只保留原生schema已验证的name、baseUrl、api、headers、compat、authHeader及所选model的原生声明；provider authHeader仅允许缺省或false。model定义保留id/name/api/baseUrl、reasoning/thinkingLevelMap、input/inputLimits、cost/promptCache、contextWindow/maxTokens、samplingParams、headers/compat。未选择model不投影，不以原生defaults替换无法唯一确定的目标 |
+| provider与明确model | 只保留原生schema已验证的name、baseUrl、api、headers、compat、authHeader及所选model的原生声明；provider authHeader仅允许缺省或false。model定义保留id/name/api/baseUrl、reasoning/thinkingLevelMap、input/inputLimits、cost/promptCache、contextWindow/maxTokens、headers/compat，samplingParams遵循下行的缺省或空对象条件。未选择model不投影，不以原生defaults替换无法唯一确定的目标 |
 | modelOverrides与路由 | 只保留准确modelId对应、经原生ModelOverrideSchema验证的声明及上述header检查；其他model override不进入副本。provider/model/override的compat中allowedFallbackModels、openRouterRouting、vercelGatewayRouting只要具有实际候选或路由配置即拒绝，不删掉后继续。虚拟模型api为pi-virtual、扩展provider、动态router或无法确定最终物理目标时拒绝，不换model/provider |
+| samplingParams及最终请求 | 原所选model定义、所选modelOverride、原内置model及合成后model的samplingParams仅允许缺省或空对象；具有任何自有字段即拒绝整个来源，不删除后继续，也不按字段名猜测安全性。实际openai-responses/openai-completions/azure-openai-responses在生成请求末尾Object.assign，可覆盖model、正文、tools及路由，因此本contract仅对这三类已核实际API提供准入，其他实际API保持政策unknown，逐项核其真实消费者后另审。真实RPC get_available_models/get_state返回完整model，首次及每次输入前均核合成samplingParams为空及准确model/API/baseUrl |
 | 最终原生目标 | 依照同版本composer的实际顺序合成provider/model/override，结果必须与selection.model_target的modelId/API/baseUrl逐项一致，并重新经过当前Go批准。模型级baseUrl覆盖、provider级baseUrl覆盖、API或headers变化均使原selection失效；静态声明不代表远程账号有效 |
 
 原生ModelRuntime继续验证私有原格式；所选provider支持、账号ready与真实请求有效性分别由原生检查及实际执行证明。源models不存在时私有models保持不存在，仍固定并复核实际内置provider/model/API/baseUrl；存在时必须按上述规则生成唯一投影，不在错误时退回内置配置。
@@ -992,6 +999,8 @@ private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open�
 
 私有原生settings.json固定compaction.enabled=false、retry.enabled=false、retry.provider.maxRetries=0、cacheWarming='off'。原默认compaction/retry启用、agent retries最多3、provider retries独立、cache warming为streaming；sdk.js分别消费provider retry和cache warming，因此逐项关闭。启动后用真实set_auto_compaction/set_auto_retry成功回执再次关闭，在真实get_state核autoCompactionEnabled=false；retry没有同名state字段，结合原生回执、同版本源码及私有settings真实值核验。公开入口不暴露bash/compact/new_session/cycle_model或重开策略的原生通道。
 
+每请求options不接收透传对象：产品Pi RPC消费者只发送既有明确的文本prompt/steer/follow_up、abort、状态读取、准确set_model、thinking设置及上述关闭设置命令，逐命令使用strict DTO；prompt只允许message、原生streamingBehavior及原请求标识，当前固定任务没有images。不开放samplingParams、request options、provider override、onPayload/headers变换或任意RPC执行。实际RPC prompt只将message/images/streamingBehavior交session.prompt；Agent.createLoopConfig显式生成loop配置，没有samplingParams，agent-loop把该配置交streamFunction，sdk.buildRequestOptions及ModelRuntime.prepareRequest保留原生规定参数。空扩展和资源、私有固定settings封闭before_provider_request/before_provider_headers等用户覆盖生产者；实际来源与源码契约无法证明这一条件时在首次效果前拒绝，不能仅凭no-tools宣称最终请求安全。产品不替换原生provider或拦截后重写请求。
+
 ### 13.5 首次及每次效果前条件
 
 实际get_available_models/get_state证明准确provider/model/API/baseUrl与Pi sessionId/sessionFile，拒绝api='pi-virtual'路由模型、模糊或不唯一匹配；原fence及归属分别由原Native R/Dispatch/session记录、expectedRuntimeFence与current consumer证明，get_state不承担不存在的fence字段。在serialized handOver等待和选项变化之后、adapter.dispatch之前，首次和每次后续输入均重新核源文件身份/版本/存在状态，重新按§13.3解析所选条目和逐层投影，并读取私有auth/models/settings逐项比较当前原生表达式、结构与预期投影。私有新字段、不同key/env/headers/路由、缺失文件或权限/重定向变化立即拒绝；不得以源未改代替私有文件复核。秘密只作内存比较，不写日志或新增凭据账本。同时重核原selection及model_target、current consumer/session/fence、停止/释放、完整所属Job及Go当前批准。Go沿原selection消费政策，仅已审disabled模式映射为空required tools；空ProjectActionScope.Tools本身不证明Native关闭工具。
@@ -1004,7 +1013,29 @@ private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open�
 2. 用户本人在同一候选批准固定公开项目、单CLI及空工具范围。实际Go/HTTP错误主体、Grant/revision/CLI或工具不符在模型前拒绝，检查明确权限原因及设置保全，不取得人工会话。
 3. 核实际子树、canonical accountHome、完整env/argv/原生设置及自产session JSONL，完成真实provider请求。结合同版本源码、真实get_state/回执和所有实际事件证明受限行为，版本字符串、启动状态或无工具事件均不能单独证明工具关闭。
 4. 用真实固定公开输入要求文件/命令操作，观察关闭工具后的真实回应及完整session/实际文件效果；不伪造工具、协议、事件或时钟。真实offline、retry/compaction/cache warming保持预期，虚拟模型及冲突配置不能改换模型或另起未批准输入。
-5. 在获准私有来源副本或由用户本人变更的实际条件下验证来源变化、重定向、ACL/账号失配、模型/provider条件、停止和撤权；分别覆盖auth key命令/环境引用、非空credential.env、provider/model/override三层headers命令/环境及认证替换、models apiKey/oauth、目标API/baseUrl覆盖、modelOverrides和虚拟/候选路由。对首次与后续输入都核私有文件修改后在效果前拒绝，实际原生API key无TTL时允许其余条件满足的真实请求，有明确期限时核足额、余量不足、期限未知和已到期。场景只用用户本人持有且获准的真实原生来源，不制造认证/协议/时钟或修改原本机Orca/账号配置。未命中的真实分支记INCONCLUSIVE，未执行记NOT_RUN，原未知效果保全。
+5. 在获准私有来源副本或由用户本人变更的实际条件下验证来源变化、重定向、ACL/账号失配、模型/provider条件、停止和撤权；分别覆盖auth key命令/环境引用、非空credential.env、provider/model/override三层headers命令/环境及认证替换、models apiKey/oauth、目标API/baseUrl覆盖、modelOverrides和虚拟/候选路由。对原model、override、内置/合成model的非空samplingParams及每请求options透传分别核首次和后续输入效果前拒绝，缺省/空对象来源沿真实API执行并核实际产出/工具效果；不得删除配置后调用或以假provider构造请求来证明。实际原生API key无TTL时允许其余条件满足的真实请求，有明确期限时核足额、余量不足、期限未知和已到期。场景只用用户本人持有且获准的真实原生来源，不制造认证/协议/时钟或修改原本机Orca/账号配置。未命中的真实分支记INCONCLUSIVE，未执行记NOT_RUN，原未知效果保全。
 6. 同一安装候选的一次固定公开任务至少两个真实Worker模型活动重叠，分别观察与获取完整输出；指定停止A并证明全树退出，B保全、同session/fence接受实际后续输入并完成成果、退出及释放。原Job/原R/资源及原Orca保全计划全部保留。
 
 本节不授予新账号、refresh、通用工具或实际模型窗口，不以技术计划代替实际可用性。独立接受后由主控定稿SPEC，再由同一Worker在原写域实施、编译、运行全部适用检查和返修，直至目标满足或具体真实阻塞；当前原生认证/工具及同候选安装双Worker均未通过。
+
+## 14. 官方Node构建输入的Windows下载计划
+
+主控`msg_bcfec187f6c2`新增窄写域scripts/download-swa-node.ps1，要求先独立技术审核本节再实施。实际build02超时、build04 TLS前ECONNRESET分别保留，不能由现有代理元数据推断根因或宣布修好。只读已知source-pin与vendor根的out/node-runtime-cache均不存在，ORCA_NODE_RUNTIME_CACHE_DIR和父代理环境变量未设置；HKCU Internet Settings只记录ProxyEnable=true、ProxyServer存在、AutoConfigURL不存在，未输出其值或秘密，其他缓存来源仍未知。
+
+唯一构建方向为同任务PowerShell 7子进程中的成熟.NET HttpClient，使用HttpClientHandler及现有HttpClient.DefaultProxy解析，不设置静态DefaultProxy、系统代理、账号或证书。官方[DefaultProxy文档](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.defaultproxy?view=net-10.0)说明Windows优先使用已有代理环境，未设时使用用户代理设置；当前实际来源符合后者。Firecrawl CLI实际不可用，已通过只读网页工具读取Microsoft官方文档，没有安装依赖或执行下载。
+
+build-swa-package用execFileSync的独立参数数组调用已安装pwsh的绝对路径和-File脚本，传固定官方Uri、实际私有WorkDirectory、绝对新OutputFile，不拼接shell字符串。脚本先用成熟Uri验证HTTPS、nodejs.org、无账号/fragment/query及准确24.21.0三项release路径：win-x64归档、headers归档、win-x64/node.lib；版本、文件名和哈希仍由既有NODE_RUNTIME_PIN生产。仅接受仓库自有.verification/swa-cli-headless-20261020/build下已创建的实际私有candidate工作目录及其子路径，逐级拒绝ReparsePoint、路径重定向、外部路径和已有目标；目录须实际存在，FileStream使用CreateNew/Write/None独占创建。脚本不寻找其他来源、不复用失败候选、不下载非pin输入。
+
+每个输入创建一个HttpClientHandler/HttpClient及HttpRequestMessage，UseProxy=true，保持默认TLS/证书验证，不添加账号、Cookie、认证Header或自定义证书回调。AllowAutoRedirect=false，非2xx立即失败；该开关的实际含义已读取官方[AllowAutoRedirect文档](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclienthandler.allowautoredirect?view=net-10.0)。一次SendAsync使用ResponseHeadersRead，随后ReadAsStreamAsync/CopyToAsync流式写入私有FileStream。一个600秒CancellationTokenSource从请求前覆盖SendAsync和全部正文读取；HttpClient自身不另设较短时限。官方[HttpCompletionOption文档](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpcompletionoption?view=net-10.0)明确headers模式不会自行覆盖后续正文时限，因此每个异步操作都传同一token。
+
+应用只调用一次SendAsync，不写重试循环、失败换代理、其他URL或第二下载器；网络层行为按真实.NET记录，不宣称验证过每个底层报文。失败、超时、非成功HTTP或写入异常立即终止构建，保留真实部分文件并关闭response/stream/file/client/handler/token；不捕获后继续，不输出代理、credentials或原始网络异常全文。安全错误记录阶段、HTTP状态或异常类型，保留正常非零退出及原Cause类别，未知效果不改写为成功。脚本退出后，原Node读取实际下载文件并核原archive/header/lib SHA，原fflate只解包原pin Node/License，再核exe大小/SHA/version；native/Go/VERSION顺序及条件保持。没有通过脚本退出即跳过原哈希的分支。
+
+| 验证 | 实际来源与判定 |
+| --- | --- |
+| D01 参数和目录失败 | 用自有真实目录及真实已下载输入验证相对/越界路径、已有文件和实际重定向在网络前拒绝，文件及原设置保持；只用获准目录，不触及原Orca |
+| D02 三项官方输入 | 新窗口内沿原build一次串行取得实际官方archive/headers/lib，三项原SHA及解出exe原大小/SHA/version全部通过，记录安全阶段/退出和真实资源；不重复旧Stage |
+| D03 系统代理与TLS | 在既有Windows设置下执行实际官方请求，保持默认TLS验证、无代理配置写入和秘密输出；成功只证明本次来源，失败保留实际类别，不换网络路径 |
+| D04 失败及600秒 | 真实HTTP失败、TLS断开、取消/超时或文件写入失败发生时核非零及保留部分文件、全部所属进程退出；未实际命中的分支为INCONCLUSIVE，不制造HTTP服务、假响应、证书或时钟 |
+| D05 完整候选 | 实际全部bundle/metafile、四个native ABI及两Go程序、依赖/许可检查和最终VERSION条件都通过后才可继续安装；下载通过不能代表候选可安装 |
+
+本节只有方案与真实验证计划，脚本和下载调用尚未实施/运行；独立接受后由同一Worker实施并提交准确CR，实际网络/build仍需新的明确窗口。其他已批准的闭包、输入、恢复、Job和成果实现继续。

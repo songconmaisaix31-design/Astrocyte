@@ -6,6 +6,7 @@ import { StarNagService } from '../star-nag/service'
 import { AgentBrowserBridge } from '../browser/agent-browser-bridge'
 import { EmulatorBridge } from '../emulator/emulator-bridge'
 import { RpcDispatcher } from '../runtime/rpc/dispatcher'
+import { ALL_RPC_METHODS } from '../runtime/rpc/methods'
 import { browserManager } from '../browser/browser-manager'
 import { configureBrowserClientPageAutomationRuntime } from '../browser/browser-client-page-automation-runtime'
 import { BrowserClientPageCommandError } from '../browser/browser-client-page-command-failure'
@@ -61,7 +62,7 @@ export async function initializeReadyRuntimeServices(): Promise<void> {
   runtime.setAgentBrowserBridge(state.agentBrowserBridge)
   // Why: daemons a crashed or SIGKILL'd previous run left behind answer to nobody; nothing else reclaims them.
   void state.agentBrowserBridge.sweepOrphanedSessions()
-  const browserClientAutomationDispatcher = new RpcDispatcher({ runtime })
+  const browserClientAutomationDispatcher = new RpcDispatcher({ runtime, methods: ALL_RPC_METHODS })
   configureBrowserClientPageAutomationRuntime({
     browserManager,
     getAgentBrowserBridge: () => state.agentBrowserBridge,
