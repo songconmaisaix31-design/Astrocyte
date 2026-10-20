@@ -6,11 +6,15 @@
 
 M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 已合入产品分支；主控已普通快进并 push 默认 main。后续开发从 `origin/main` 接续，Orca 默认基准已相应更新。当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录 validation 分支及实验材料保留。准确来源和逐项处置见[整合清单](docs/integration-audit-20261020.md)及 [M0 报告](docs/standards/swa-mainline-m0-20261020.md)，当前状态由 STATUS 维护。
 
+准确 `fac75c7f963d16c7f112e8e90ad30e36510d4738` 的八份旧调查与独立报告也已接受并普通快进/push main。来源为 [CLI 调查](docs/standards/swa-cli-execution-20261020.md)、[M1 实际记录](docs/standards/swa-m1-contracts-20261020.md)及各自独立报告；保留其当时设计与限定接受范围。当前无界面方案按最新首版任务继续，不以旧提案替代新范围。
+
 用户最新明确首版为抽取 Orca CLI 对应执行能力、交付从原有 Agent 或终端调用的可控 Swarm CLI，主控继续核实可抽取范围，本任务不冻结新接口。原 v2.1 M2—M6 保留为后续规划；MCP 和完整 S3 不自动成为首版 CLI 的前置条件。M1 沿已接受计划实施，后继任务入口见 [TASKS](docs/TASKS.md)。默认 CI、受限 Codex、S3 预算与权限证据、经验准入及实际采用继续按原范围验收，未答项不推断授权。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户最新要求不妨碍本机Orca CLI并集成产品，本轮采用独立产品后台，先核实真实身份与profile/状态/端点/进程隔离、正向Agent能力和必要依赖，再固定精确接口及可执行计划。准确30b的来源事实及此前提案保留，不能将其中 Mission/Claim 的旧待决项自动作为最新首版的整体前置；程序实现及动态验收未开始。
 
-M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，实际客户端为 Orca / Codex `gpt-6.1-sol`。准确 `987811f417e92cd6f15961e60c279f616e3b21a8` 原冻结安装及未补丁的完整契约命令均 EXIT0，历史崩溃本次未复现。依已接受计划停止补丁实施；程序/依赖未改，T02—T08 未执行，因果证据不足。主控已完成 T09，恢复同一 S、原库和原配置，实际 PID52040，准确结果见 STATUS；当前不具备其他动态窗口。Worker 整理结果交原 Reviewer，完整修复保持未接受。
+M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，实际客户端为 Orca / Codex `gpt-6.1-sol`。准确 `987811f417e92cd6f15961e60c279f616e3b21a8` 原冻结安装及未补丁的完整契约命令均 EXIT0，历史崩溃本次未复现。依已接受计划停止补丁实施；程序/依赖未改，T02—T08 未执行，因果证据不足。主控已完成 T09，恢复同一 S、原库和原配置，实际 PID52040，准确结果见 STATUS；当前不具备其他动态窗口。最终记录 `b112ab9e03d9ea82247e73b5cb578529ca529f9d` 已独立接受并普通push，原hook由主控实际读取回复；本次调查Task已结算、终端released，完整修复保持未接受。
+
+无界面执行由 `task_4501441a2f59 / ctx_dc2fe5ba5526` 在独立 `swa-cli-headless-20261020` 工作树/分支负责，当前仅授权两份同名任务/报告和自有忽略目录，固定抽取范围、必要依赖、控制端身份、CLI规则和完整真实测试计划。主控已观察实际终端开始及heartbeat，原生启动回执仍为start_unknown，保留该差异；未据此宣称产品运行已验。原Reviewer在读取该Worker计划前已形成无界面独立条件，并按最新隔离要求接续；没有程序写入授权或动态窗口。
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
