@@ -84,6 +84,15 @@ async function readPrivateJSON(file: string) {
   return value
 }
 
+async function requireAbsent(file: string) {
+  try { await lstat(file) }
+  catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return
+    throw error
+  }
+  throw new Error('private_pi_models_configuration_appeared')
+}
+
 export async function verifyPrivatePiAccount(snapshot: NativePiPolicySnapshot) {
   const home = snapshot.policy.account.private_home
   await actualDirectory(home)
@@ -93,7 +102,8 @@ export async function verifyPrivatePiAccount(snapshot: NativePiPolicySnapshot) {
     security(join(home, name), true)
   }
   for (const [name, expected] of [['auth.json', snapshot.auth], ['models.json', snapshot.models], ['settings.json', nativePiSettings]] as const) {
-    if (!isDeepStrictEqual(await readPrivateJSON(join(home, name)), expected)) throw new Error('private_pi_account_configuration_changed')
+    if (expected === null) await requireAbsent(join(home, name))
+    else if (!isDeepStrictEqual(await readPrivateJSON(join(home, name)), expected)) throw new Error('private_pi_account_configuration_changed')
   }
 }
 
@@ -110,6 +120,7 @@ export async function materializePrivatePiAccount(snapshot: NativePiPolicySnapsh
   const acl = `O:${currentUserSid()}D:P${trustees.map(sid => `(A;;FA;;;${sid})`).join('')}`
   for (const [name, value] of [['auth.json', snapshot.auth], ['models.json', snapshot.models], ['settings.json', nativePiSettings]] as const) {
     security(home, true)
+    if (value === null) { await requireAbsent(join(home, name)); continue }
     createFileWithDacl(toNamespacedPath(join(home, name)), acl, Buffer.from(JSON.stringify(value) + '\n', 'utf8'))
   }
   for (const name of ['appdata', 'localappdata', 'temp']) await createPrivateDirectory(join(home, name))

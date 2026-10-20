@@ -1067,3 +1067,13 @@ build-swa-package用execFileSync的独立参数数组调用已安装pwsh的绝�
 本阶段实际静态命令为`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/check-n08-static.ps1`，同步EXIT0，原件位于自有`n08-source-static-01/`：成熟TypeScript parser解析39份TS/MJS语法，JSON.parse及YAML parser读取契约，gofmt-d读取五个Go文件，PowerShell Parser读取verify、download及私有runner三份脚本，Markdown parser核两份文档、6条本地链接及24项原Orca、11项Pi来源路径，全部通过。各最终日志及退出码分别保留；这些检查不执行程序正文、类型检查或编译。新增NativeLaunchPolicy的HTTP生成类型尚待单独generate窗口，由生成器更新`web/src/api/schema.d.ts`。
 
 T12十二阶段严格caller矩阵、`controller.recover`及实际后台接续Job尚未完成，通用TUI正文路径尚未实现；当前成功选择范围受Pi原生工具政策约束，其他已发现Agent不能据此登记可执行。CLI/Go/原生模块构建、实际HTTP批准、私有账号ACL、真实认证、实际模型、安装、本机Orca保全、§13.6负向场景和全部同候选验收均为`NOT_RUN`。没有可安装候选或整项功能接受结论；原S已恢复且持有唯一窗口，后续动态检查须由主控正式单次授权，同一Worker继续后续源码及返修。
+
+### 15.1 N14、N15源码返修
+
+准确3590已普通push并交原Reviewer；完整静态CR继续，`msg_76bf311f86cc`和主控`msg_f181936c1d90`提出N14、N15，由同一Worker返修。原models来源不存在时，snapshot.models为null，私有目录只创建auth/settings，models.json必须实际不存在；出现、消失或重定向导致来源或私有检查失败，不创建空models文件。原models存在时才写入已审有效投影，并要求其后始终与来源及私有原件一致。
+
+账号materialize、environment、disabled tools、Job launcher和首次input reservation均在Go异步批准返回后重新取得完整policySnapshot。每次beforeInput同样重新核真实selection、auth/models和CLI来源，验证私有材料后，以同步canonical路径、创建身份和版本检查覆盖原生文件及模型来源不存在状态，再核当前session/fence/consumer；该路径由原stdio队列最终beforeWrite调用，不在同一队列递归发送RPC。来源失配沿原拒绝或unknown结算保留原R、native operation及原件，不重放输入。
+
+本次只执行`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n14-n15-static.mjs`，三份返修TS的成熟parser语法检查EXIT0，及`git diff --check` EXIT0；原件在`n14-n15-static-01/`。原生文件、真实账号和Go等待期间变化的适用用例仍按§13.6执行，正文、类型检查、构建及模型为`NOT_RUN`。T12其他文件中的当前开发修改没有作为本次N14/N15接受范围。
+
+主控`msg_e7739c90a5b0`、`msg_fd71b815cd86`报告其detached准确3590/干净树独立执行原`compile-go-tests.ps1`，exec2414实际最终EXIT0，四包test-c及三个传输前函数逐PASS、零SKIP、模型调用0；根原件为`swa-go-3590-01/go-source-01`及`control/go-3590-execution-01.log`。这是主控独立结果，本Worker没有执行或复跑；live/runtime函数、N14/N15后继编译及全部真实功能仍未验。restore17已恢复S36744/UTC20:17:53.696819，原库、环境、配置及本机Orca保全由主控实际核查，当前没有Worker重操作授权。

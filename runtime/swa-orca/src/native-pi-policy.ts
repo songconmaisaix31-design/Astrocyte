@@ -1,4 +1,5 @@
 import { readFile, realpath, stat } from 'node:fs/promises'
+import { lstatSync, realpathSync, statSync } from 'node:fs'
 import { findPackageJSON } from 'node:module'
 import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -188,9 +189,27 @@ export async function inspectNativePiPolicy(input: { executable: string; version
   for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog]) {
     if (source && !isDeepStrictEqual(source, await nativeConfigurationSource(source.path))) throw new Error('native_cli_source_changed_during_read')
   }
-  return { policy, sources, auth: { [input.provider]: { type: credential.data.type, key: credential.data.key } }, models: { providers: projection ? { [input.provider]: projection } : {} } }
+  return { policy, sources, auth: { [input.provider]: { type: credential.data.type, key: credential.data.key } }, models: modelsSource === null ? null : { providers: projection ? { [input.provider]: projection } : {} } }
 }
 
 export const nativePiSettings = Object.freeze({ compaction: { enabled: false }, retry: { enabled: false, provider: { maxRetries: 0 } }, cacheWarming: 'off' })
 export type NativePiPolicySnapshot = Awaited<ReturnType<typeof inspectNativePiPolicy>>
 export function sameNativeLaunchPolicy(left: NativeLaunchPolicy, right: NativeLaunchPolicy) { return isDeepStrictEqual(left, right) }
+
+export function assertNativePiSnapshotCurrent(snapshot: NativePiPolicySnapshot) {
+  const sources = snapshot.sources, account = snapshot.policy.account
+  for (const source of [account.auth_source, account.models_source, sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog]) {
+    if (!source) continue
+    const path = realpathSync.native(source.path), info = statSync(path, { bigint: true })
+    const version = `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+    if (!info.isFile() || path !== source.path || version !== source.version) throw new Error('native_configuration_changed_before_effect')
+  }
+  if (account.models_source === null) {
+    try { lstatSync(join(account.source_home, 'models.json')) }
+    catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return
+      throw error
+    }
+    throw new Error('native_models_configuration_appeared_before_effect')
+  }
+}

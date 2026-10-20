@@ -8,7 +8,7 @@ import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/s
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { agentSelectionSchema, invocationSchema, nativeObject } from './contracts'
 import { selectAgent } from './agent-discovery'
-import { inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
+import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiAccount, privatePiEnvironment, verifyPrivatePiAccount } from './private-pi-account'
 import { createDeliveryAdmission } from './delivery-admission'
 import type { StructuredAgentInputAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
@@ -76,7 +76,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     db.checkpointPendingMutationReceipt({ callerFingerprint: row.caller_fingerprint, requestId: row.request_id, method: row.method, payloadHash: row.payload_hash, receipt: JSON.stringify({ ...receipt, swa_input_binding: binding }) })
   }
   async function beforeInput(input: StructuredAgentInputAdmission) {
-    const { snapshot, original } = await policySnapshot(input.sessionId, input.agent)
+    const { original } = await policySnapshot(input.sessionId, input.agent)
     const db = runtime.getOrchestrationDb()
     const rows = z.array(mutationRowSchema).parse(db.db.prepare(`SELECT * FROM mutation_receipts WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND json_valid(receipt)=1 AND json_extract(receipt, '$.swa_input_binding.operation_id')=?`).all(db.getOrCreateLocalMutationCallerFingerprint(), input.clientMessageId))
     if (rows.length !== 1 || !rows[0]!.receipt) throw new Error('The original native input has no unique parent request')
@@ -92,7 +92,9 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const run = db.getRun(invocation.scope.run_id)
     if (!identity || identity.dispatchId !== binding.dispatch_id || binding.session_id !== input.sessionId || binding.operation_id !== input.clientMessageId || binding.runtime_fence !== input.fence || !isDeepStrictEqual(binding.body, input.body) || !isDeepStrictEqual(invocation.selection, original) || !record || record.lease.runtimeFence !== input.fence || record.lease.unreconciled || !record.lease.ownerProcess || record.lease.claimStatus !== 'live' || !dispatch || dispatch.run_id !== invocation.scope.run_id || !worker || !['starting', 'ready'].includes(worker.state) || worker.runtime_epoch !== runtime.getRuntimeId() || !run || run.consumer_generation !== binding.consumer_generation || run.coordinator_handle !== invocation.scope.controller) throw new Error('The native input Worker, consumer or session identity changed')
     await admitCurrentApproval(invocation)
-    await verifyPrivatePiAccount(snapshot)
+    const fresh = await policySnapshot(input.sessionId, input.agent)
+    await verifyPrivatePiAccount(fresh.snapshot)
+    assertNativePiSnapshotCurrent(fresh.snapshot)
     const current = runtime.openedAgentSessionRecordStore()?.getRecord(input.sessionId)
     if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(input.sessionId), identity) || current?.lease.runtimeFence !== input.fence || current.lease.claimStatus !== 'live' || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || !['starting', 'ready'].includes(db.getWorkerDispatch(binding.dispatch_id)?.state ?? '')) throw new Error('The native input identity changed during current approval')
   }
@@ -108,38 +110,49 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!same) throw new Error('The native adapter resolved a different executable from the approved Agent selection')
     },
     accountHome: async (sessionId, agent) => {
-      const { snapshot, invocation } = await policySnapshot(sessionId, agent, false)
+      const { invocation } = await policySnapshot(sessionId, agent, false)
       await admitCurrentApproval(invocation)
+      const { snapshot } = await policySnapshot(sessionId, agent, false)
       await materializePrivatePiAccount(snapshot)
-      await originalSelection(sessionId, agent, false)
+      assertNativePiSnapshotCurrent(snapshot)
       return { variable: 'PI_CODING_AGENT_DIR', path: snapshot.policy.account.private_home }
     },
     environment: async (sessionId, agent, inherited) => {
-      const { snapshot, invocation } = await policySnapshot(sessionId, agent)
+      const { invocation } = await policySnapshot(sessionId, agent)
       await admitCurrentApproval(invocation)
+      const { snapshot } = await policySnapshot(sessionId, agent)
       await verifyPrivatePiAccount(snapshot)
+      assertNativePiSnapshotCurrent(snapshot)
       return privatePiEnvironment(snapshot.policy.account.private_home, inherited)
     },
     disabledPiTools: async (sessionId, agent) => {
-      const { snapshot, invocation } = await policySnapshot(sessionId, agent)
+      const { invocation } = await policySnapshot(sessionId, agent)
       await admitCurrentApproval(invocation)
+      const { snapshot } = await policySnapshot(sessionId, agent)
       await verifyPrivatePiAccount(snapshot)
+      assertNativePiSnapshotCurrent(snapshot)
       const account = snapshot.policy.account
       return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url }
     },
     providerJobLauncher: async (sessionId, agent) => {
-      const { snapshot, invocation } = await policySnapshot(sessionId, agent)
+      const { invocation } = await policySnapshot(sessionId, agent)
       await admitCurrentApproval(invocation)
+      const { snapshot } = await policySnapshot(sessionId, agent)
       await verifyPrivatePiAccount(snapshot)
       const node = z.string().min(1).parse(process.env.SWA_NODE_EXECUTABLE)
       const install = z.string().min(1).parse(process.env.SWA_INSTALL_ROOT)
       if (!isAbsolute(node) || !isAbsolute(install) || await realpath(node) !== join(await realpath(install), 'node', 'node.exe')) throw new Error('The installed native Job Node source is unavailable')
       const entry = await realpath(join(install, 'runtime', 'native-cli-entry.cjs'))
-      return { node, entry, eventDirectory: await createNativeWorkerDirectory(sessionId) }
+      const eventDirectory = await createNativeWorkerDirectory(sessionId)
+      assertNativePiSnapshotCurrent(snapshot)
+      return { node, entry, eventDirectory }
     },
     reserveInput: async input => {
       const { invocation, parentRow, childRow } = await policySnapshot(input.sessionId, input.agent)
       await admitCurrentApproval(invocation)
+      const { snapshot } = await policySnapshot(input.sessionId, input.agent)
+      await verifyPrivatePiAccount(snapshot)
+      assertNativePiSnapshotCurrent(snapshot)
       const identity = structuredWorkerIdentities.getBySessionId(input.sessionId)
       const db = runtime.getOrchestrationDb()
       const run = db.getRun(invocation.scope.run_id)
