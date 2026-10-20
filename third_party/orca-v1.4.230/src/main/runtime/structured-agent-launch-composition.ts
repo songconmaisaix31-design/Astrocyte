@@ -20,10 +20,22 @@ import { resolveAgentSessionLaunchDirectory } from './agent-session-launch-direc
 import type { AgentSessionRecordStore } from './agent-session-record-store'
 import type { StructuredAgentAdapterContext } from './structured-agent-runtime-registrations'
 import { sealStructuredSessionChild } from './structured-session-child-env'
+import type { AgentSessionAccountHome } from '../../shared/agent-session-account-home'
+import type { PiDisabledToolsPolicy } from '../pi/rpc-launch'
+import type { SwaProviderJobLauncher } from '../provider-process/provider-process-launch'
+import type { AgentJournalMessageItem } from '../../shared/agent-session-journal-types'
+
+export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
 
 export type StructuredAgentLaunchAdmission = {
   commandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
   validate(sessionId: string, agent: string, command: string): Promise<void>
+  accountHome?(sessionId: string, agent: string, currentHome: AgentSessionAccountHome): Promise<AgentSessionAccountHome>
+  environment?(sessionId: string, agent: string, currentEnvironment: Record<string, string>): Promise<Record<string, string>>
+  disabledPiTools?(sessionId: string, agent: string): Promise<PiDisabledToolsPolicy>
+  providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
+  reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
+  beforeInput?(input: StructuredAgentInputAdmission): Promise<void>
 }
 
 let launchAdmission: StructuredAgentLaunchAdmission | null = null
@@ -33,6 +45,18 @@ export function installStructuredAgentLaunchAdmission(admission: StructuredAgent
   if (launchAdmission) throw new Error('Structured Agent launch admission is already installed')
   launchAdmission = admission
   return () => { if (launchAdmission === admission) launchAdmission = null }
+}
+
+export function admitStructuredAgentAccountHome(sessionId: string, agent: string, currentHome: AgentSessionAccountHome): Promise<AgentSessionAccountHome> {
+  return launchAdmission?.accountHome ? launchAdmission.accountHome(sessionId, agent, currentHome) : Promise.resolve(currentHome)
+}
+
+export function reserveStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void> {
+  return launchAdmission?.reserveInput ? launchAdmission.reserveInput(input) : Promise.resolve()
+}
+
+export function admitStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void> {
+  return launchAdmission?.beforeInput ? launchAdmission.beforeInput(input) : Promise.resolve()
 }
 
 /** Where a launch's shared inputs come from. */
@@ -66,6 +90,8 @@ export type StructuredAgentLaunchBasis = {
   /** Null when the chat gets no visuals. */
   visuals(): Promise<NativeChatVisualsLaunch | null>
   commandSettings(): StructuredAgentCommandSettings
+  disabledPiTools?(): Promise<PiDisabledToolsPolicy>
+  providerJobLauncher?(): Promise<SwaProviderJobLauncher>
   /** For a part that found no program: refreshes the environment, after which both environment
    *  reads return the refreshed one. Absent when the runtime never retries. */
   refreshAfterMissingProgram?: (askedAt: number) => Promise<void>
@@ -159,10 +185,13 @@ async function composedPart<L>(
   const launchEnv = once(() => sources.resolveAgentLaunchEnv?.(definition.agent) ?? {})
   const readEnvironments = () => ({
     base: once(sources.resolveBaseEnvironment),
-    agent: once(() => sources.resolveAgentEnvironment(definition.agent))
+    agent: once(async () => {
+      const env = await sources.resolveAgentEnvironment(definition.agent)
+      return launchAdmission?.environment ? launchAdmission.environment(identity.sessionId, definition.agent, env) : env
+    })
   })
   let environments = readEnvironments()
-  const refresh = sources.refreshAfterMissingProgram
+  const refresh = launchAdmission ? undefined : sources.refreshAfterMissingProgram
   const basis: StructuredAgentLaunchBasis = {
     record,
     launchDirectory: once(() => resolveAgentSessionLaunchDirectory(sources, record)),
@@ -171,6 +200,8 @@ async function composedPart<L>(
     environment: () => environments.agent(),
     visuals: once(async () => (await sources.prepareVisuals?.(record.sessionId)) ?? null),
     commandSettings: once(() => selectedCommands ?? sources.resolveCommandSettings?.() ?? {}),
+    ...(launchAdmission?.disabledPiTools ? { disabledPiTools: () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent) } : {}),
+    ...(launchAdmission?.providerJobLauncher ? { providerJobLauncher: () => launchAdmission!.providerJobLauncher!(identity.sessionId, definition.agent) } : {}),
     ...(refresh
       ? {
           refreshAfterMissingProgram: async (askedAt) => {
@@ -206,7 +237,8 @@ export function composeStructuredLaunch<L>(
       inheritedEnvToDelete,
       ...(cliRuntimeCommand ? { cliRuntimeCommand } : {})
     })
-    return { ...launch, cwd, env: child.env, envToDelete: child.envToDelete }
+    const envToDelete = launchAdmission ? [...new Set([...child.envToDelete, ...Object.keys(process.env).filter(key => !Object.hasOwn(child.env, key))])] : child.envToDelete
+    return { ...launch, cwd, env: child.env, envToDelete }
   }
 }
 

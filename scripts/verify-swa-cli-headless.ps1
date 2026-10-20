@@ -7,7 +7,6 @@ param(
     [Parameter(Mandatory)][string]$DataRoot,
     [Parameter(Mandatory)][string]$CaseRoot,
     [string]$ProjectRoot,
-    [string]$CodexAuthFile,
     [string]$AgentProfile,
     [string]$Agent,
     [string]$Model,
@@ -181,7 +180,8 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
             } else {
                 $swaObservationConfig = Join-Path $swaEvidence 'original-observation.json'
                 [IO.File]::WriteAllText($swaObservationConfig, (@{ orca_path = $OrcaPath; metadata_file = $OrcaMetadataFile; protected_files = $ProtectedFiles; original_process_ids = $OriginalProcessIds } | ConvertTo-Json -Depth 10))
-                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'installed-flow.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --orca-observation $swaObservationConfig --output (Join-Path $swaEvidence 'installed-flow.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-flow.log')
+                if (!$Agent -or !$Model) { throw '真实双Worker需要明确已批准的原生Agent和模型' }
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'installed-flow.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --agent $Agent --model $Model --orca-observation $swaObservationConfig --output (Join-Path $swaEvidence 'installed-flow.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-flow.log')
                 $swaExit = $LASTEXITCODE
             }
         } else {
@@ -245,14 +245,14 @@ $swaExit = $LASTEXITCODE
 [IO.File]::WriteAllText((Join-Path $swaEvidence 'exit.txt'), [string]$swaExit)
 if ($Case -eq 'T09' -and $swaExit -eq 0) {
     $swaObserved = Get-Content -LiteralPath (Join-Path $swaEvidence 'ordinary-processes.json') -Raw | ConvertFrom-Json
-    if (-not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or -not [IO.Path]::IsPathFullyQualified($CodexAuthFile)) { throw '真实SDK检查需要明确公开项目和现有只读Codex认证路径' }
-    & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'sdk-resources.log')
+    if (-not [IO.Path]::IsPathFullyQualified($FlowEvidence)) { throw '真实原生会话检查需要同一安装候选的完整T13原件' }
+    & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'native-resources.log')
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    & $swaNode --max-old-space-size=1024 (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/sdk-session.test.mjs') --candidate $InstallRoot --project $ProjectRoot --auth-file $CodexAuthFile --output (Join-Path $swaEvidence 'sdk-session.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'sdk-session.log')
+    & $swaNode --max-old-space-size=1024 (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/native-session.test.mjs') --candidate $InstallRoot --flow-evidence $FlowEvidence --output (Join-Path $swaEvidence 'native-session.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'native-session.log')
     $swaExit = $LASTEXITCODE
-    [IO.File]::WriteAllText((Join-Path $swaEvidence 'sdk-exit.txt'), [string]$swaExit)
+    [IO.File]::WriteAllText((Join-Path $swaEvidence 'native-exit.txt'), [string]$swaExit)
     if ($swaExit -ne 0) { exit $swaExit }
-    $swaSDK = Get-Content -LiteralPath (Join-Path $swaEvidence 'sdk-session.json') -Raw | ConvertFrom-Json
-    if ($swaSDK.remainingCases.Count -gt 0 -or @($swaObserved.remainingCases | Where-Object { $_ -ne 'actual_sdk_abort_then_close' }).Count -gt 0) { throw 'T09 仍有必要分支未运行' }
+    $swaNative = Get-Content -LiteralPath (Join-Path $swaEvidence 'native-session.json') -Raw | ConvertFrom-Json
+    if ($swaNative.remainingCases.Count -gt 0 -or @($swaObserved.remainingCases | Where-Object { $_ -ne 'actual_native_abort_then_close' }).Count -gt 0) { throw 'T09 仍有必要分支未运行' }
 }
 exit $swaExit

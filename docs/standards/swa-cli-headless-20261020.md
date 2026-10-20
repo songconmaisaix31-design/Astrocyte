@@ -64,7 +64,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 ### 3.1 安装、状态和全局消费者
 
-当前Windows安装契约与真实构建入口使用同一平铺布局：`<InstallRoot>/swa.exe`、`<InstallRoot>/server.exe`、`<InstallRoot>/node/node.exe`与`<InstallRoot>/runtime/`。runtime内包含`host.cjs`、`client.cjs`、`controller-helper.cjs`、`pi-entry.mjs`、`provider-job-bootstrap.mjs`、`pi-session.mjs`、固定依赖的`node_modules`及按来源basename放置的native child JS入口；Node LICENSE、产品及Orca许可和VERSION分别随包保留。所有适配器按上述实际绝对路径解析，安装复制真实内容，可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器在复制前创建独占新目录、设置私有ACL，并用真实路径及reparse核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。
+当前Windows安装契约与真实构建入口使用同一平铺布局：`<InstallRoot>/swa.exe`、`<InstallRoot>/server.exe`、`<InstallRoot>/node/node.exe`与`<InstallRoot>/runtime/`。runtime内包含`host.cjs`、`client.cjs`、`controller-helper.cjs`、`native-cli-entry.cjs`、`provider-job-bootstrap.mjs`、固定依赖的`node_modules`及按来源basename放置的native child JS入口；Node LICENSE、产品及Orca许可和VERSION分别随包保留。所有适配器按上述实际绝对路径解析，安装复制真实内容，可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器在复制前创建独占新目录、设置私有ACL，并用真实路径及reparse核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。
 
 | 原生消费者 | 当前源码行为 | 产品composition处理 |
 | --- | --- | --- |
@@ -627,7 +627,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 - Go真实检查使用真实安装CLI、原生controller/RuntimeClient、当前项目批准、实际loopback HTTP及原生`PRAGMA database_list`，四个`TestOrcaCLIReal...`已形成源码，分别覆盖安装调用、消费方scope、实际App授权和HTTP身份字段拒绝；不构造provider、批准或human会话。独立Go源码入口调整已由准确48385383b657ad1d5fe7601c869e28e3b6b70320接受，主控msg_8daabc14f03b授权静态修改，当前源码待准确CR及实际窗口：在单独编译窗口运行`pwsh -File tests/swa-cli-headless/compile-go-tests.ps1 -OutputRoot $goTests`，不读取/创建候选或VERSION。入口核实际40位干净HEAD、本项忽略目录内全新私有输出；内部串行`go test -c -p=4`编译`./cmd/swa`、`./internal/adapters/orca`、`./internal/workspace/app`、`./internal/adapters/httpapi`，再实际执行CLI三个传输前函数，逐函数PASS、零匹配/SKIP拒绝。各重操作前新资源准入，BelowNormal、Go4/512MiB和私有temp/cache/module cache保持；任一失败立即退出，只有实际编译/三函数成功且结束时HEAD仍同一干净来源才写既有SOURCE/tests.json。编译期间不启动实际服务或模型，成功仅证明编译与三函数，不代表四个live函数已运行。
 - 实际服务窗口执行`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T03 -GoTestDirectory $goTests`及其余实际安装/端口/认证/项目/原Orca保全参数；开始前必须核真实安装候选VERSION、编译SOURCE和准确源码SHA三者完全相同，不接受占位候选或伪造SOURCE，缺失/不等直接失败。脚本持有真实serve，创建本项真实controller，设置`SWA_REAL_ENABLED=1`后串行运行四个预编译二进制的`-test.run '^TestOrcaCLIReal'`，逐一要求真实PASS记录，空匹配或SKIP直接失败。无实际环境的普通Go检查会明确跳过live函数，不能算真实验收；此入口仅完成T03相应Go范围，人类撤销后安全停止、另一真实项目/Run及旧代条件仍单独保留未验，不能用四个函数代替全部T03。
-- `pnpm test:swa-runtime -Case T09`及实际`SwaPath/InstallRoot/DataRoot/CaseRoot/ProjectRoot/CodexAuthFile`参数转到同一PowerShell验证入口；T07/T13及其他编号沿相应Case执行。本产品Node适配使用真实SQLite、controller、process与Pi SDK；生命周期fixture只代表普通进程，真实Agent路径在T04/T13覆盖。测试资源采样器为已纳入源码的`tests/swa-cli-headless/resource-gate.py`，使用当前C:/Python313及实际psutil7.2.2；产品安装/运行不依赖该测试用Python。
+- `pnpm test:swa-runtime -Case T09`及实际`SwaPath/InstallRoot/DataRoot/CaseRoot/ProjectRoot/FlowEvidence`参数转到同一PowerShell验证入口；T07/T13及其他编号沿相应Case执行。T13必须明确实际Agent与Model，T09的原生会话检查复用同候选T13实际原件。本产品Node适配使用真实SQLite、controller、process与已安装Pi CLI；生命周期fixture只代表普通进程，真实Agent路径在T04/T13覆盖。测试资源采样器为已纳入源码的`tests/swa-cli-headless/resource-gate.py`，使用当前C:/Python313及实际psutil7.2.2；产品安装/运行不依赖该测试用Python。
 - `node scripts/check-architecture.mjs`、`pnpm check:contracts`及变更影响的生成一致性检查，均遵守实际资源窗口。若新增模块未被现有架构规则覆盖，在本任务报告实际覆盖，并由同一Worker补相应必要规则。
 - T01的Go/Node构建及T00—T15真实验证入口。全默认CI仍按其独立范围记录，本任务不替其未验项目登记通过。
 
@@ -759,7 +759,7 @@ G07还逐模式覆盖：明确效果前拒绝保留原child/parent真实rejected
 
 原Reviewer通过msg_08a9c85e2399只读确认6168的F04—F07静态修复成立，并提出F08关闭与已保留创建的竞争。当前同一Worker按上文补关闭屏障和T06/T11差异，待准确后继独立核查；该消息没有授予动态窗口或代表整项功能接受。CLI、成果导出、私有服务和构建安装仍在实施，全部实际功能验收保持NOT_RUN。
 
-当前程序阶段已形成CLI/HTTP/App命令、成果原生分页及项目允许目录导出、独立私有HTTP服务组装与所属启动管道、Node父持Job及模型前真实IPC准入。补丁把独立Provider Job导出接入原node-pty编译；构建入口将获准`native/swa-provider-job.h`明确复制到候选node-pty源码再编译，原daemon通用Job逻辑保持来源行为。SDK factory位于`pi-session.ts`，bootstrap及其共享Node生命周期入口在准入前不加载SDK或认证。关闭结果和原生生命周期只在完整Job验证后发布，启动失败同样要求root/tree共同退出；当前缺句柄、查询失败及原runtime generation失配保留unknown与占用。
+当前程序阶段已形成CLI/HTTP/App命令、成果原生分页及项目允许目录导出、独立私有HTTP服务组装与所属启动管道、Node父持Job及模型前真实IPC准入。补丁把独立Provider Job导出接入原node-pty编译；构建入口将获准`native/swa-provider-job.h`明确复制到候选node-pty源码再编译，原daemon通用Job逻辑保持来源行为。`native-cli-entry.ts`在父Job准入后解析已选实际命令并启动原生CLI；账号投影和启动参数由§13及§15约束。关闭结果和原生生命周期只在完整Job验证后发布，启动失败同样要求root/tree共同退出；当前缺句柄、查询失败及原runtime generation失配保留unknown与占用。
 
 当前固定Worker流程复用原生founding fence1及首次输入的reservation fence2；Pi launch仅接受本runtime新登记、未持有旧provider handle的这一次实际reservation。后续输入复用现有活跃session/进程，SDK进程退出或runtime重启后不自动新建替代者。此处依据实际foundConversation/reserveOwner及structuredWorkerIdentities来源，仍须真实首个输入、同session后续输入及T12验证；没有用fence数值本身判进程退出。
 
@@ -1051,3 +1051,19 @@ build-swa-package用execFileSync的独立参数数组调用已安装pwsh的绝�
 原Run正式`msg_5b7d83fdfb5a`的一次build06已消费：准确b75cf8ffeedffd244934dfac078b4926e865eb15、runner bae62及新candidate05/build06前置通过，exec65865、根55820/UTC19:18:44.0288700Z。资源UTC19:18:46.515495/49.017364、CPU15.4/15.8%、可用7777550336/7801974784字节、单调2.5018756秒通过。真实Python预检为C:/Python313/python.exe 3.13.13；324项prod deploy、21份bundle/metafile、三项官方HTTP200及原pin/exe/version校验通过。node-gyp实际发现该Python及C:/BuildTools/VS2022的17.14.37710.0，随后首个conpty编译失败；日志先报swa_provider_job.h的C4819/代码页936，再在第17行报C2059/C2143及后续连锁错误。实际exec同步EXIT1，build-exit.txt/outer-exit.txt均1，未完成其他native/Go/VERSION，candidate05及candidate-IHFNTU原件保留，不可安装。UTC19:20:34.5682573/36.9947290两次新鲜所属及此前身份为空，以`msg_582d80531337`立即交回restore16；主控`msg_2f35028af91e`正式收回窗口并解除tracked/Git冻结。
 
 实际头文件保留完整struct及中文注释，候选生成的conpty.vcxproj没有UTF-8编译选项。Microsoft官方[/utf-8文档](https://learn.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8?view=msvc-170)说明无BOM源默认按用户代码页解释；[CL环境变量文档](https://learn.microsoft.com/en-us/cpp/build/reference/cl-environment-variables?view=msvc-170)说明CL参数前置、_CL_参数后置。当前修复仅在原四项native编译前清除本构建子进程继承的CL/_CL_，明确CL=/utf-8并输出该非秘密参数；系统代码页、原文件注释和用户环境不变。后继编译及完整候选仍未执行，不将该来源判断登记为已验证根因。build06实际runner已保存至build-06/next-window-executed.ps1，原失败候选不覆盖、不自动重试；其他已批准的账号、输入、恢复、Job和成果实现继续。
+
+## 15. 原生Pi账号、CLI及结构化正文阶段源码
+
+本阶段依据已接受的SPEC21.1.2、21.1.4、21.1.5及主控`msg_e98464a9e11e`提交完整静态消费者，供原Reviewer核对准确Commit。当前形成下列实现，真实执行结果保持未验：
+
+- `native-pi-policy.ts`使用实际安装Pi1.0.1的ModelConfig、provider composer、只读认证和literal解析，生成必需的`native_launch`稳定字段。原auth/models、启动器与实际解释器、模块来源版本在选择和输入前重读；命令、环境凭据、认证header、未知有效配置和非空samplingParams立即拒绝。只投影所选既有provider/model/API/base URL，不生成账号或刷新来源。
+- `private-pi-account.ts`在DataRoot/pi/实际项目UUID下创建私有账号目录与auth/models/settings；原生Windows安全模块读取owner SID及完整DACL。只有当前用户和SYSTEM的受保护完整权限通过后才独占写入秘密，既有弱化或变化材料直接失败。环境采用§13白名单、私有home/appdata/temp及固定offline设置，最终sealed身份之外的继承变量删除。
+- 原structured会话创建在attach指纹前取得实际accountHome，原Pi launch以已选真实CLI命令和固定RPC、模型及关闭工具参数启动。`native-cli-entry.ts`先等待父持Job的真实IPC准入，再通过原Windows shim解析和spawnProcess启动实际CLI；父进程独立核实际CLI PID、创建时间与Job成员。构建、候选闭包和真实事件消费者同步使用该入口，不再构建原产品SDK会话入口。
+- Pi session取得真实关闭自动compaction/retry回执，核get_state和get_available_models的实际目标、API、base URL、空samplingParams及真实会话身份；模型选项仅允许已批准目标及其实际thinking能力。原生RPC命令和prompt采用严格DTO，禁用产品自动重放，工具或扩展请求立即失败。每次实际stdio写入在原串行队列等待后执行异步批准与原session/fence/Job检查，队列关闭阻止后续写入。
+- Go App的`AdmitOrcaDelivery`只读核当前项目Grant、原授权期限、已保存Run/context/settings和真实输入材料；私有loopback端口只接受启动时封存的owner capability，不取得human身份或递归调用runtime。原`worker.start`首个正文与`swa.workerSend`后续正文将同一不可变binding写入原父R及R/native receipt，保留原native operation。实际拒绝先保存子结果再完成父结果，可能生效的断开保留unknown、原R和operation。
+- `worker.send`复用真实structured host、原生journal和当前活跃会话；正文是一条完整文本消息，投递状态取自原生实际结果。`request.show`附加原operation的只读journal状态。成果解析使用真实CLI自产session JSONL、实际selection及原生journal，返回`native_session`、完整内容、usage及来源，公开结果不再硬编码provider/model/effort。
+- T13真实驱动要求明确Agent与Model，保留同候选真实双Worker模型重叠、停止A全树退出、B同session/fence后续输入及完整成果。T09的`native-session.test.mjs`复用T13实际原件核真实CLI成员和两份会话，不新增模型调用；T07故障副本读取相同原件及实际selection。普通后代Job fixture仍只验证普通进程。
+
+本阶段实际静态命令为`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/check-n08-static.ps1`，同步EXIT0，原件位于自有`n08-source-static-01/`：成熟TypeScript parser解析39份TS/MJS语法，JSON.parse及YAML parser读取契约，gofmt-d读取五个Go文件，PowerShell Parser读取verify、download及私有runner三份脚本，Markdown parser核两份文档、6条本地链接及24项原Orca、11项Pi来源路径，全部通过。各最终日志及退出码分别保留；这些检查不执行程序正文、类型检查或编译。新增NativeLaunchPolicy的HTTP生成类型尚待单独generate窗口，由生成器更新`web/src/api/schema.d.ts`。
+
+T12十二阶段严格caller矩阵、`controller.recover`及实际后台接续Job尚未完成，通用TUI正文路径尚未实现；当前成功选择范围受Pi原生工具政策约束，其他已发现Agent不能据此登记可执行。CLI/Go/原生模块构建、实际HTTP批准、私有账号ACL、真实认证、实际模型、安装、本机Orca保全、§13.6负向场景和全部同候选验收均为`NOT_RUN`。没有可安装候选或整项功能接受结论；原S已恢复且持有唯一窗口，后续动态检查须由主控正式单次授权，同一Worker继续后续源码及返修。

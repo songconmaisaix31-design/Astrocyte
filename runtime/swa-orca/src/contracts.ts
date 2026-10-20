@@ -24,11 +24,24 @@ export const capabilityRequirementsSchema = z.strictObject({
 export const settingsSourceSchema = z.strictObject({
   kind: z.enum(['native', 'orca-profile']), path: z.string().min(1).optional(), revision: z.number().int().nonnegative().optional()
 })
+const nativeConfigurationSourceSchema = z.strictObject({ path: z.string().min(1), version: z.string().min(1) })
+export const nativeLaunchPolicySchema = z.strictObject({
+  schema: z.literal('swa.native-launch.v1'),
+  account: z.strictObject({
+    kind: z.literal('pi-native-api-key'), provider: z.string().min(1), source_home: z.string().min(1),
+    auth_source: nativeConfigurationSourceSchema, models_source: nativeConfigurationSourceSchema.nullable(),
+    private_home: z.string().min(1),
+    model_target: z.strictObject({ model_id: z.string().min(1), api: z.enum(['openai-responses', 'openai-completions', 'azure-openai-responses']), base_url: z.url() })
+  }),
+  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') })
+})
+export type NativeLaunchPolicy = z.infer<typeof nativeLaunchPolicySchema>
 export const agentSelectionSchema = z.strictObject({
   agent_id: z.string().min(1), adapter: z.string().min(1), execution_mode: z.literal('structured'),
   executable: z.string().min(1), version: z.string().min(1), model: z.string().min(1), provider: z.string().min(1),
   external_target: z.string().min(1), settings_source: settingsSourceSchema,
-  settings_revision: z.number().int().nonnegative(), configuration_version: z.string().min(1)
+  settings_revision: z.number().int().nonnegative(), configuration_version: z.string().min(1),
+  native_launch: nativeLaunchPolicySchema
 })
 export type AgentSelection = z.infer<typeof agentSelectionSchema>
 export type CapabilityRequirements = z.infer<typeof capabilityRequirementsSchema>
@@ -61,7 +74,7 @@ export const agentCapabilitiesSchema = z.strictObject({
 })
 export const invocationSchema = z.object({
   command: commandSchema,
-  caller: z.object({ id: z.string().min(1), kind: z.enum(['agent', 'human']), project_id: z.string().min(1), settings_revision: z.number().int().positive() }),
+  caller: z.strictObject({ id: z.string().min(1), kind: z.enum(['agent', 'human']), project_id: z.string().min(1), settings_revision: z.number().int().positive(), grant_expires_at: z.string().optional() }),
   project: z.looseObject({ id: z.string().min(1), root: z.string().min(1) }),
   scope: scopeSchema,
   selection: agentSelectionSchema.optional(),

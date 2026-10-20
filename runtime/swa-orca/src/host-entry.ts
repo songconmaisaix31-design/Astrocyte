@@ -54,7 +54,8 @@ async function main() {
     const { createOrcadProfileStateStartup } = await import('../../../third_party/orca-v1.4.230/src/main/orcad/orcad-profile-state-startup')
     const { store, authority } = await createOrcadProfileStateStartup(data)
     registerCleanup(() => flushOrcadProfileStoreForShutdown(store))
-    privatePath('pi')
+    const { initializePrivatePiRoot } = await import('./private-pi-account')
+    await initializePrivatePiRoot()
     store.updateSettings({ agentStatusHooksEnabled: false, workspaceDir: privatePath('workspaces'), browserClientHostedRemoteEnabled: false, browserSshWorkspaceRoutingEnabled: false })
     const { initDaemonPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-init')
     const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement, listLiveDaemonPtyIds } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
@@ -83,7 +84,7 @@ async function main() {
       getDesktopWindowStatus: () => 'blocked'
     })
     const { installAgentLaunchAdmission } = await import('./agent-launch-admission')
-    registerCleanup(installAgentLaunchAdmission(runtime))
+    registerCleanup(installAgentLaunchAdmission(runtime, { ownerCapability, ownerAlive: () => !ownerDisconnected }))
     await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
     const { registerHeadlessPtyRuntime } = await import('../../../third_party/orca-v1.4.230/src/main/ipc/pty/register-headless-runtime')
     await registerHeadlessPtyRuntime(runtime, undefined, () => store.getSettings(), undefined, store)
@@ -106,11 +107,13 @@ async function main() {
     const { ORCHESTRATION_CALLER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/caller-show')
     const { SWA_METHODS } = await import('./native-methods')
     const { OrchestrationError } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error')
+    const { admitNativeWorkerInputRPC } = await import('./worker-input')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
     const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_SEND_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
     if (nativeMethods.length !== allowed.size || new Set(nativeMethods.map(method => method.name)).size !== allowed.size) throw new Error('The required native product RPC methods are incomplete')
     const rpc = new RuntimeRpcShutdown({ runtime, userDataPath: data, enableWebSocket: false, methods: [...nativeMethods, ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
-      if (!request.method.startsWith('swa.') || request.method === 'swa.workerSend') return
+      if (request.method === 'swa.workerSend') { await admitNativeWorkerInputRPC(_params, request.orchestrationRequestId, { ...context, orchestrationCompatibilityEvidence: request.orchestrationCompatibilityEvidence }); return }
+      if (!request.method.startsWith('swa.')) return
       const value = request.swaOwnerCapability
       if (context.caller?.kind !== 'local-cli' || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value) || !timingSafeEqual(Buffer.from(value, 'hex'), ownerCapability)) throw new OrchestrationError('scope_denied', 'The private product owner capability is required')
     } })

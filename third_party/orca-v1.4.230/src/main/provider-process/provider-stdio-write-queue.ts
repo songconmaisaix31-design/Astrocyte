@@ -5,6 +5,11 @@ type Write = {
   resolve: () => void
   reject: (error: Error) => void
   detachAbort?: () => void
+  beforeWrite?: () => Promise<void>
+}
+
+export class ProviderWriteAdmissionError extends Error {
+  constructor(cause: unknown) { super('Native input was refused before its stream write', { cause }) }
 }
 
 export class ProviderStdioWriteQueue {
@@ -21,7 +26,7 @@ export class ProviderStdioWriteQueue {
     private readonly errors: { capacity: () => Error; closed: () => Error }
   ) {}
 
-  write(line: string, signal?: AbortSignal): Promise<void> {
+  write(line: string, signal?: AbortSignal, beforeWrite?: () => Promise<void>): Promise<void> {
     if (this.terminalError) {
       return Promise.reject(this.terminalError)
     }
@@ -34,7 +39,7 @@ export class ProviderStdioWriteQueue {
     }
     this.bytes += bytes
     return new Promise((resolve, reject) => {
-      const write: Write = { line, resolve, reject }
+      const write: Write = { line, resolve, reject, ...(beforeWrite ? { beforeWrite } : {}) }
       const abort = (): void => {
         // Why: a line already handed to the stream can't be taken back, and later writes wait on it.
         if (this.active === write) {
@@ -85,6 +90,16 @@ export class ProviderStdioWriteQueue {
       return
     }
     this.active = write
+    if (write.beforeWrite) {
+      void Promise.resolve().then(write.beforeWrite).then(() => {
+        if (this.active === write && !this.terminalError) this.writeActive(write)
+      }, error => this.onFailure(new ProviderWriteAdmissionError(error)))
+      return
+    }
+    this.writeActive(write)
+  }
+
+  private writeActive(write: Write): void {
     if (this.output.destroyed || !this.output.writable) {
       this.onFailure(this.errors.closed())
       return

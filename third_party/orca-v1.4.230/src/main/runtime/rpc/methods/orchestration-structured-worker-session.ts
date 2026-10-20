@@ -40,6 +40,7 @@ import {
 } from '../../structured-worker-identity'
 import { createKeyedTrailingEdgeCoalescer } from '../../keyed-trailing-edge-coalescer'
 import { createStructuredAgentSessionForWorktree } from './structured-agent-session-create'
+import { reserveStructuredAgentInput } from '../../structured-agent-launch-composition'
 
 type StructuredWorkerBinding = {
   sessionId: string
@@ -252,6 +253,10 @@ export async function sendStructuredWorkerPreamble(args: {
   if (fence === undefined) {
     throw new Error('The structured worker session has no durable record to dispatch into.')
   }
+  const operationId = mintAgentSessionOperationId(Date.now())
+  const agent = args.host.deps.store.getRecord(args.sessionId)?.provider
+  if (!agent) throw new Error('The original structured Worker Agent is unavailable')
+  await reserveStructuredAgentInput({ sessionId: args.sessionId, agent, clientMessageId: operationId, fence, body })
   const outcome = await sendAgentTurn({
     kind: 'structured-session',
     host: args.host,
@@ -261,7 +266,7 @@ export async function sendStructuredWorkerPreamble(args: {
     turn: {
       body,
       delivery: 'now',
-      operationId: mintAgentSessionOperationId(Date.now()),
+      operationId,
       expectedRuntimeFence: fence
     }
   })

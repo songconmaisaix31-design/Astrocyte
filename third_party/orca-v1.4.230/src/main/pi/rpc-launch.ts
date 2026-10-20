@@ -6,6 +6,16 @@ import {
 } from '../native-chat/native-chat-visuals-delivery'
 import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
 import { STRUCTURED_CHILD_ENV_TO_DELETE } from '../runtime/structured-session-child-env'
+import { isAbsolute } from 'node:path'
+import type { SwaProviderJobLauncher } from '../provider-process/provider-process-launch'
+
+export type PiDisabledToolsPolicy = {
+  nativeContract: 'pi-cli-1.0.1'
+  provider: string
+  modelId: string
+  api: 'openai-responses' | 'openai-completions' | 'azure-openai-responses'
+  baseUrl: string
+}
 
 export type PiRpcLaunchOptions = {
   /** Binary and paths are resolved by the execution host before building the launch. */
@@ -18,6 +28,8 @@ export type PiRpcLaunchOptions = {
   envToDelete?: readonly string[]
   sessionFile?: string
   forkFile?: string
+  toolsOff?: PiDisabledToolsPolicy
+  swaJobLauncher?: SwaProviderJobLauncher
 }
 
 const CALLER_ENV_TO_DELETE = [
@@ -58,6 +70,19 @@ export function piRpcSessionlessEnvironment(env: Readonly<Record<string, string>
 /** Pi stores its own sessions; an explicit session file is shared with terminal resumes. */
 export function buildPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLaunch {
   if (options.sdkEntry !== undefined) throw new Error('A native Pi launch cannot select an SDK entry')
+  if (options.toolsOff) {
+    const policy = options.toolsOff
+    if (policy.nativeContract !== 'pi-cli-1.0.1' || options.fullAccess || !policy.provider || !policy.modelId || !['openai-responses', 'openai-completions', 'azure-openai-responses'].includes(policy.api) || !policy.baseUrl || options.extraArgs?.length) throw new Error('Native Pi disabled-tool launch policy is invalid')
+    if (options.sessionFile !== undefined && !isAbsolute(options.sessionFile) || options.forkFile !== undefined && (!isAbsolute(options.forkFile) || options.sessionFile !== undefined)) throw new Error('Native Pi requires one absolute session or fork source')
+    const launcher = options.swaJobLauncher
+    if (!launcher || ![launcher.node, launcher.entry, launcher.eventDirectory, options.command].every(isAbsolute)) throw new Error('Native Pi requires its owning Job launcher')
+    const args = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', policy.provider, '--model', policy.modelId, '--no-tools', '--no-extensions', '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', ...(options.sessionFile ? ['--session', options.sessionFile] : []), ...(options.forkFile ? ['--fork', options.forkFile] : [])]
+    return {
+      command: launcher.node, cwd: options.cwd,
+      args: ['--max-old-space-size=1024', launcher.entry, JSON.stringify({ command: options.command, args })],
+      env: { ...options.env }, envToDelete: [...(options.envToDelete ?? [])], swaJobIPC: true, swaEventDirectory: launcher.eventDirectory
+    }
+  }
   if (!options.fullAccess) {
     throw new Error('Pi structured chat supports full access only')
   }

@@ -229,8 +229,9 @@ Napi::Value GetDaclAces(const Napi::CallbackInfo& info) {
   auto path = info[0].As<Napi::String>().Utf16Value();
   PSECURITY_DESCRIPTOR rawDescriptor = nullptr;
   PACL dacl = nullptr;
+  PSID owner = nullptr;
   DWORD status = GetNamedSecurityInfoW(reinterpret_cast<LPCWSTR>(path.c_str()), SE_FILE_OBJECT,
-                                       DACL_SECURITY_INFORMATION, nullptr, nullptr, &dacl,
+                                       DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION, &owner, nullptr, &dacl,
                                        nullptr, &rawDescriptor);
   if (status != ERROR_SUCCESS) {
     ToError(env, Fail("GetNamedSecurityInfoW", status)).ThrowAsJavaScriptException();
@@ -273,6 +274,13 @@ Napi::Value GetDaclAces(const Napi::CallbackInfo& info) {
     aces.Set(index, ace);
   }
   auto result = Napi::Object::New(env);
+  if (owner == nullptr) {
+    ToError(env, Fail("GetNamedSecurityInfoW owner", ERROR_INVALID_SECURITY_DESCR)).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  auto ownerSid = SidString(env, owner);
+  if (env.IsExceptionPending()) return env.Undefined();
+  result.Set("ownerSid", ownerSid);
   result.Set("protected", Napi::Boolean::New(env, (control & SE_DACL_PROTECTED) != 0));
   result.Set("aces", aces);
   return result;

@@ -47,13 +47,14 @@ export class JsonlRpcAgentConnection {
     spawnImpl: PipedProcessSpawner = spawnProcess
   ) {
     const peerOptions = resolveJsonlRpcPeerOptions(options.peer)
-    if (launch.env?.SWA_WORKER_ROOT && !launch.swaJobIPC) throw new Error('SWA refuses SDK launch without parent Job admission')
+    if ((launch.swaEventDirectory || launch.env?.SWA_WORKER_ROOT) && !launch.swaJobIPC) throw new Error('SWA refuses a native launch without parent Job admission')
     if (launch.swaJobIPC) this.ownedTree = new SwaProviderProcessTree()
     try {
-      if (launch.env?.SWA_WORKER_ROOT) {
-        if (!isAbsolute(launch.env.SWA_WORKER_ROOT)) throw new Error('SWA provider event directory must be absolute')
-        const root = realpathSync.native(launch.env.SWA_WORKER_ROOT)
-        if (root.toLowerCase() !== launch.env.SWA_WORKER_ROOT.toLowerCase()) throw new Error('SWA provider event directory changed its real identity')
+      const eventDirectory = launch.swaEventDirectory ?? launch.env?.SWA_WORKER_ROOT
+      if (eventDirectory) {
+        if (!isAbsolute(eventDirectory)) throw new Error('SWA provider event directory must be absolute')
+        const root = realpathSync.native(eventDirectory)
+        if (root.toLowerCase() !== eventDirectory.toLowerCase()) throw new Error('SWA provider event directory changed its real identity')
         this.providerEventFile = join(root, 'provider-events.ndjson')
         writeFileSync(this.providerEventFile, '', { flag: 'wx', mode: 0o600 })
       }
@@ -68,7 +69,7 @@ export class JsonlRpcAgentConnection {
       throw error
     }
     const managed = this.managed
-    this.ownedTree?.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }))
+    this.ownedTree?.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }), launch.swaEventDirectory !== undefined)
     this.peer = new JsonlRpcPeer(
       managed.child.stdout,
       managed.child.stdin,
@@ -199,13 +200,15 @@ export class JsonlRpcAgentConnection {
     return this.peer.request(command, params, options)
   }
 
-  async send(record: JsonlRpcRecord): Promise<void> {
+  async send(record: JsonlRpcRecord, beforeWrite?: () => Promise<void>): Promise<void> {
     if (this.options.allowedCommands && !this.options.allowedCommands.has(record.type)) {
       return Promise.reject(new Error(`SWA refuses Pi RPC command: ${record.type}`))
     }
     await this.ownedTree?.ready()
-    return this.peer.send(record)
+    return this.peer.send(record, undefined, beforeWrite)
   }
+
+  observeOwnedJob() { return this.ownedTree?.readObservation() }
 
   pauseReading(): void {
     this.peer.pauseReading()
@@ -235,7 +238,7 @@ export class JsonlRpcAgentConnection {
     }
     const event = record.assistantMessageEvent === undefined ? undefined : z.object({ type: z.string(), delta: z.string().optional(), contentIndex: z.number().optional() }).parse(record.assistantMessageEvent)
     const message = record.message === undefined ? undefined : z.object({ role: z.string(), stopReason: z.string().optional() }).parse(record.message)
-    appendFileSync(this.providerEventFile, JSON.stringify({ observed_at: new Date().toISOString(), monotonic_ms: performance.now(), process: this.providerEventIdentity, record: { type: record.type, assistantMessageEvent: event, message }, projection: 'actual_sdk_lifecycle_and_delta_fields' }) + '\n', { encoding: 'utf8', flag: 'a' })
+    appendFileSync(this.providerEventFile, JSON.stringify({ observed_at: new Date().toISOString(), monotonic_ms: performance.now(), process: this.providerEventIdentity, native_cli: this.ownedTree.readObservation().nativeCLI, record: { type: record.type, assistantMessageEvent: event, message }, projection: 'actual_native_cli_lifecycle_and_delta_fields' }) + '\n', { encoding: 'utf8', flag: 'a' })
   }
   private diagnose(message: string): void {
     try {

@@ -32,6 +32,7 @@ import {
 import { ORCA_LAYOUT_OWNER_IS_MAIN } from '../../../../shared/layout-owner-switch'
 import { structuredAgentSessionClosedBeforeCreate } from './structured-agent-session-close-before-create'
 import { structuredLaunchSeedOnSavedListing } from '../../session-tabs/structured-launch-seed-listing'
+import { admitStructuredAgentAccountHome } from '../../structured-agent-launch-composition'
 
 export type PreparedStructuredAgentSessionCreate = {
   host: StructuredAgentSessionHost
@@ -102,6 +103,7 @@ export async function prepareStructuredAgentSessionCreateForWorktree(args: {
     structuredAgentCliSourceEvidence,
     ...(args.resumeFrom ? { resumeFrom: args.resumeFrom } : {})
   })
+  resolved.accountHome = await admitStructuredAgentAccountHome(args.envelope.sessionId, args.agent, resolved.accountHome)
   const attachFingerprint = computeAgentSessionPayloadFingerprint({
     method: 'agentSession.attach',
     sessionId: args.envelope.sessionId,

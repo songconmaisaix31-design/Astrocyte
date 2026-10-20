@@ -8,7 +8,8 @@ import { isWindowsProcessStartTimeAvailable, readWindowsProcessCreationTime, rea
 
 const identitySchema = z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive() })
 const observationSchema = z.object({ ownerPid: z.number().int().positive(), rootPid: z.number().int().nonnegative(), rootCreationTimeMs: z.number().nonnegative(), assigned: z.boolean(), rootExited: z.boolean(), limitFlags: z.number().int(), members: z.array(identitySchema) })
-type Observation = z.infer<typeof observationSchema>
+type NativeCLIIdentity = z.infer<typeof identitySchema> & { program: string; entry: string }
+type Observation = z.infer<typeof observationSchema> & { nativeCLI?: NativeCLIIdentity }
 type Identity = z.infer<typeof identitySchema>
 type JobAPI = {
   providerJobIsolationVersion: 1
@@ -34,6 +35,11 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   private readonly identities = new Map<string, Identity>()
   private readonly observations: { elapsedMs: number; observation: Observation }[] = []
   private forced = false
+  private nativeCLI?: NativeCLIIdentity
+  private requiresNativeCLI = false
+  private nativeCLIReady?: Promise<void>
+  private resolveNativeCLI?: () => void
+  private rejectNativeCLI?: (error: Error) => void
 
   constructor() {
     if (process.platform !== 'win32' || !isWindowsProcessStartTimeAvailable()) throw new Error('SWA requires the compiled Windows process identity capability')
@@ -48,13 +54,19 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   get treeVerdict(): DescendantTreeVerdict { return this.verdict }
   get forcedReapAttempted(): boolean { return this.forced }
 
-  bind(child: PipedChildProcess, exitState: () => { observed: boolean; processless: boolean }): void {
+  bind(child: PipedChildProcess, exitState: () => { observed: boolean; processless: boolean }, requireNativeCLI = false): void {
     if (this.child) throw new Error('SWA Job refuses a second child')
     this.child = child
     this.exitState = exitState
+    this.requiresNativeCLI = requireNativeCLI
+    if (requireNativeCLI) {
+      this.nativeCLIReady = new Promise<void>((resolve, reject) => { this.resolveNativeCLI = resolve; this.rejectNativeCLI = reject })
+      void this.nativeCLIReady.catch(() => undefined)
+      child.on('message', this.observeNativeCLI)
+    }
     this.admission = this.admit(child)
     void this.admission.catch(error => {
-      process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_admission_failed', pid: child.pid, message: error instanceof Error ? error.message : 'SWA admission failed' }) + '\n')
+      process.stderr.write(JSON.stringify({ type: 'swa_provider_job_admission_failed', pid: child.pid, message: error instanceof Error ? error.message : 'SWA admission failed' }) + '\n')
       if (child.pid !== undefined && !child.stdin.destroyed) child.stdin.end()
     })
   }
@@ -71,20 +83,20 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   }
 
   private async admit(child: PipedChildProcess): Promise<void> {
-    if (!child.pid || !child.send || !child.connected) throw new Error('SWA SDK child has no actual Node IPC channel')
-    if (child.exitCode !== null || child.signalCode !== null || this.exitState?.().observed) throw new Error('SWA actual SDK root exited before its Job binding')
+    if (!child.pid || !child.send || !child.connected) throw new Error('SWA provider child has no actual Node IPC channel')
+    if (child.exitCode !== null || child.signalCode !== null || this.exitState?.().observed) throw new Error('SWA actual provider root exited before its Job binding')
     const creationTimeMs = readWindowsProcessCreationTime(child.pid)
-    if (!creationTimeMs) throw new Error('SWA SDK root creation identity unavailable')
+    if (!creationTimeMs) throw new Error('SWA provider root creation identity unavailable')
     this.root = { pid: child.pid, creationTimeMs }
     this.identities.set(`${child.pid}:${creationTimeMs}`, this.root)
     this.native.assignProviderJob(this.job, child.pid, creationTimeMs)
     const observed = this.observe()
-    if (!observed.assigned || observed.rootPid !== child.pid || observed.rootCreationTimeMs !== creationTimeMs || !observed.members.some(row => row.pid === child.pid && row.creationTimeMs === creationTimeMs)) throw new Error('SWA actual Job root membership unconfirmed before SDK load')
+    if (!observed.assigned || observed.rootPid !== child.pid || observed.rootCreationTimeMs !== creationTimeMs || !observed.members.some(row => row.pid === child.pid && row.creationTimeMs === creationTimeMs)) throw new Error('SWA actual Job root membership unconfirmed before native CLI load')
     this.assignmentWitness = true
     const pid = child.pid
     await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => finish(new Error('SWA SDK bootstrap admission was not observed')), 10_000)
-      const onExit = () => finish(new Error('SWA SDK bootstrap exited before admission'))
+      const timer = setTimeout(() => finish(new Error('SWA provider bootstrap admission was not observed')), 10_000)
+      const onExit = () => finish(new Error('SWA provider bootstrap exited before admission'))
       const onError = (error: Error) => finish(error)
       const onMessage = (value: unknown) => {
         const received = z.object({ type: z.literal('swa_job_bootstrap_admitted'), pid: z.literal(pid), parentPid: z.literal(process.pid), creationTimeMs: z.literal(creationTimeMs) }).safeParse(value)
@@ -103,12 +115,34 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
       child.once('error', onError)
       child.send!({ type: 'swa_job_admitted', pid, parentPid: process.pid, creationTimeMs }, error => { if (error) finish(error) })
     })
-    process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_admission', root: this.root, observation: observed }) + '\n')
+    process.stderr.write(JSON.stringify({ type: 'swa_provider_job_admission', root: this.root, observation: observed }) + '\n')
+    if (this.nativeCLIReady) {
+      let timer: ReturnType<typeof setTimeout> | undefined
+      try {
+        await Promise.race([this.nativeCLIReady, new Promise<never>((_resolve, reject) => { timer = setTimeout(() => reject(new Error('The actual native CLI did not prove its Job membership')), 10_000) })])
+      } finally { clearTimeout(timer) }
+    }
+  }
+
+  private readonly observeNativeCLI = (value: unknown): void => {
+    if (!value || typeof value !== 'object' || !('type' in value) || value.type !== 'swa_native_cli_started') return
+    try {
+      if (!this.requiresNativeCLI || this.nativeCLI || !this.child?.pid || !this.root) throw new Error('The actual native CLI launch association is ambiguous')
+      const received = z.strictObject({ type: z.literal('swa_native_cli_started'), rootPid: z.literal(this.child.pid), pid: z.number().int().positive(), program: z.string().min(1), entry: z.string().min(1) }).parse(value)
+      const creationTimeMs = readWindowsProcessCreationTime(received.pid)
+      if (!creationTimeMs || received.pid === this.root.pid) throw new Error('The actual native CLI creation identity is unavailable')
+      const observation = this.observe()
+      if (!observation.assigned || !observation.members.some(member => member.pid === received.pid && member.creationTimeMs === creationTimeMs)) throw new Error('The actual native CLI is outside its owning Job')
+      this.nativeCLI = { pid: received.pid, creationTimeMs, program: received.program, entry: received.entry }
+      process.stderr.write(JSON.stringify({ type: 'swa_native_cli_job_member', managedRoot: this.root, nativeCLI: this.nativeCLI }) + '\n')
+      this.resolveNativeCLI?.()
+    } catch (error) { this.rejectNativeCLI?.(error instanceof Error ? error : new Error('Native CLI Job membership is unverified')) }
   }
 
   private observe(): Observation {
     if (this.closed) throw new Error('SWA refuses a closed Job handle')
-    const value = observationSchema.parse(this.native.queryProviderJob(this.job))
+    const value: Observation = observationSchema.parse(this.native.queryProviderJob(this.job))
+    if (this.nativeCLI) value.nativeCLI = this.nativeCLI
     if (value.ownerPid !== process.pid || this.root && value.rootPid !== 0 && (value.rootPid !== this.root.pid || value.rootCreationTimeMs !== this.root.creationTimeMs)) throw new Error('SWA Job binding changed')
     for (const member of value.members) this.identities.set(`${member.pid}:${member.creationTimeMs}`, member)
     this.observations.push({ elapsedMs: performance.now(), observation: value })
@@ -143,7 +177,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
       return 'unverifiable'
     }
     if (!this.assignmentWitness) {
-      process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_exit_unknown', root: this.root, reason: 'successful_assignment_and_root_membership_not_observed' }) + '\n')
+      process.stderr.write(JSON.stringify({ type: 'swa_provider_job_exit_unknown', root: this.root, reason: 'successful_assignment_and_root_membership_not_observed' }) + '\n')
       return 'unverifiable'
     }
     const first = this.observe()
@@ -171,13 +205,13 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
         this.native.closeProviderJob(this.job)
         this.closed = true
         this.verdict = 'exited'
-        process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_tree_exited', root: this.root, processless: state.processless, observations: this.observations.slice(-2), independentIdentityObservations: independent.slice(-2), forced: this.forced }) + '\n')
+        process.stderr.write(JSON.stringify({ type: 'swa_provider_job_tree_exited', root: this.root, processless: state.processless, observations: this.observations.slice(-2), independentIdentityObservations: independent.slice(-2), forced: this.forced }) + '\n')
         return this.verdict
       }
       await new Promise(resolve => setTimeout(resolve, 50))
     }
     this.verdict = 'unverifiable'
-    process.stderr.write(JSON.stringify({ type: 'swa_sdk_job_exit_unknown', root: this.root, observations: this.observations.slice(-2) }) + '\n')
+    process.stderr.write(JSON.stringify({ type: 'swa_provider_job_exit_unknown', root: this.root, observations: this.observations.slice(-2) }) + '\n')
     return this.verdict
   }
 }

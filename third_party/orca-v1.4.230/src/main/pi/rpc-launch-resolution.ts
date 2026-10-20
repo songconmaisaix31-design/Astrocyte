@@ -141,6 +141,8 @@ export function piRpcLaunchPart(
 ): StructuredAgentLaunchPartResolver<PiRpcResolvedLaunch> {
   return async (basis) => {
     const { record } = basis
+    const toolsOff = await basis.disabledPiTools?.()
+    const swaJobLauncher = await basis.providerJobLauncher?.()
     const permissionMode = basis.permissionMode ?? record.permissionMode
     if (process.platform === 'win32' && !isWindowsProcessStartTimeAvailable()) {
       throw new Error('Pi structured sessions require Windows process creation-time proof')
@@ -196,7 +198,9 @@ export function piRpcLaunchPart(
     return {
       launch: {
         command,
-        fullAccess: isAgentChatPermissionMode(permissionMode) && permissionMode === 'full-access' && (deps.resolveFullAccess?.() ?? true),
+        fullAccess: toolsOff ? false : isAgentChatPermissionMode(permissionMode) && permissionMode === 'full-access' && (deps.resolveFullAccess?.() ?? true),
+        ...(toolsOff ? { toolsOff } : {}),
+        ...(swaJobLauncher ? { swaJobLauncher } : {}),
         previous,
         ...(sessionFile ? { sessionFile } : {}),
         ...(forkFile ? { forkFile } : {}),

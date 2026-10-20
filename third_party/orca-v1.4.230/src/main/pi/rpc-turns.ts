@@ -14,9 +14,10 @@ import { piRpcRetryActivity } from './rpc-retry-activity'
 import { piRpcMessageSchema } from './rpc-protocol'
 
 export type PiRpcTurnDeps = {
+  retrySignIn?: boolean
   lane: JsonlRpcTimelineLane
   generation: string
-  send: (frame: JsonlRpcRecord) => Promise<void>
+  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) => Promise<void>
   request: (
     command: string,
     params?: Record<string, unknown>,
@@ -57,8 +58,9 @@ export class PiRpcTurns {
       failed: deps.failed
     })
     this.delivery = new PiRpcPromptDelivery({
-      send: (frame) =>
-        deps.send({ ...frame, streamingBehavior: this.working ? 'steer' : 'followUp' }),
+      retrySignIn: deps.retrySignIn,
+      send: (frame, beforeWrite) =>
+        deps.send({ ...frame, streamingBehavior: this.working ? 'steer' : 'followUp' }, beforeWrite),
       settled: deps.settled,
       failed: deps.failed,
       accepted: (id, at) => {

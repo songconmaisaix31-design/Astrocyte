@@ -7,6 +7,7 @@ import { agentSessionFailureWords } from '../../shared/agent-session-failure-wor
 import type { AgentSessionDispatchOutcome } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
 import { piRpcPromptReplySchema } from './rpc-protocol'
+import { ProviderWriteAdmissionError } from '../provider-process/provider-stdio-write-queue'
 
 type Submission = {
   id: string
@@ -19,7 +20,8 @@ type Submission = {
   signInRefusal?: string
 }
 type DeliveryDeps = {
-  send: (frame: JsonlRpcRecord) => Promise<void>
+  retrySignIn?: boolean
+  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) => Promise<void>
   accepted: (id: string, at: number) => void
   commandOnly: () => void
   rejectedAfterAcceptance: (error: string) => void
@@ -78,6 +80,7 @@ export class PiRpcPromptDelivery {
     const submission: Submission = { id, at, frame, bytes, accepted: false, retries: 0 }
     this.pending.add(submission)
     this.heldBytes += bytes
+    let admittedToWriter = false
     try {
       await before?.()
       if (this.ended) {
@@ -86,11 +89,13 @@ export class PiRpcPromptDelivery {
       this.deps.beforeWrite?.()
       this.acknowledgements.push(submission)
       this.waiting.push(submission)
-      await this.deps.send(frame)
+      admittedToWriter = true
+      await this.deps.send(frame, before)
       return { state: 'admitted' }
-    } catch {
+    } catch (error) {
       this.remove(submission)
       this.deps.refused?.()
+      if (!admittedToWriter || error instanceof ProviderWriteAdmissionError) return piRejection({ ...agentSessionFailureFact('hostFault'), neverReachedAgent: true })
       return { state: 'unknown', reason: 'Pi prompt write did not settle' }
     }
   }
@@ -113,7 +118,7 @@ export class PiRpcPromptDelivery {
     if (!reply.success) {
       const error = reply.error ?? 'Pi rejected the prompt'
       const fact = piRpcFailureFact(error)
-      if (!submission.accepted && fact.kind === 'notSignedIn' && submission.retries++ < 8) {
+      if (this.deps.retrySignIn !== false && !submission.accepted && fact.kind === 'notSignedIn' && submission.retries++ < 8) {
         submission.signInRefusal = error
         this.removeWaiting(submission)
         const timer = setTimeout(() => {

@@ -17,11 +17,24 @@ import {
 import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
 import { PiRpcTurns } from './rpc-turns'
 import { PiRpcDialogCallbacks } from './rpc-dialog-callbacks'
-import { piRpcStateSchema } from './rpc-protocol'
+import { piRpcModelSchema, piRpcStateSchema, type PiRpcModel } from './rpc-protocol'
 import {
   withLiveCatalogListing,
   type AgentModelCatalogLiveListing
 } from '../native-chat/agent-model-catalog/agent-model-catalog-entry'
+import { z } from 'zod'
+import type { PiDisabledToolsPolicy } from './rpc-launch'
+import { applyPiRpcSessionOption, readPiRpcSessionOptions } from './rpc-options'
+import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
+
+const disabledToolsCommandSchemas = new Map<string, z.ZodType>([
+  ...['get_state', 'get_available_models', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'abort'].map(command => [command, z.strictObject({})] as const),
+  ['set_auto_compaction', z.strictObject({ enabled: z.literal(false) })],
+  ['set_auto_retry', z.strictObject({ enabled: z.literal(false) })],
+  ['set_model', z.strictObject({ provider: z.string().min(1), modelId: z.string().min(1) })],
+  ['set_thinking_level', z.strictObject({ level: z.enum(['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']) })]
+])
+const disabledToolsPromptSchema = z.strictObject({ type: z.literal('prompt'), message: z.string().min(1), images: z.tuple([]).optional(), streamingBehavior: z.enum(['steer', 'followUp']).optional(), id: z.union([z.string(), z.number()]).optional() })
 
 export type PiRpcConnection = Pick<
   JsonlRpcAgentConnection,
@@ -36,7 +49,7 @@ export type PiRpcConnection = Pick<
   | 'processless'
   | 'lastCloseResult'
   | 'onExit'
->
+> & { observeOwnedJob?: JsonlRpcAgentConnection['observeOwnedJob'] }
 export type PiRpcSessionDeps = {
   openConnection?: (
     launch: ProviderProcessLaunch,
@@ -76,7 +89,8 @@ export class PiRpcSession {
     launch: ProviderProcessLaunch,
     private readonly deps: PiRpcSessionDeps,
     /** A new Pi session starts on its config's model; a resumed or forked one keeps its own. */
-    readonly resolvesConfig = false
+    readonly resolvesConfig = false,
+    readonly toolsOff?: PiDisabledToolsPolicy
   ) {
     const sink = input.events && providerTimelineSink(input.events)
     if (!sink) {
@@ -100,8 +114,9 @@ export class PiRpcSession {
     this.turns = new PiRpcTurns({
       lane: this.lane,
       generation,
-      send: (frame) => this.connection.send(frame),
-      request: (command, params, options) => this.connection.request(command, params, options),
+      send: (frame, beforeWrite) => this.sendPrompt(frame, beforeWrite),
+      request: (command, params, options) => this.request(command, params, options),
+      ...(toolsOff ? { retrySignIn: false } : {}),
       settled: (id, outcome) => this.settle(id, outcome),
       idle: () => {
         this.dialogs.cancelAll()
@@ -123,10 +138,10 @@ export class PiRpcSession {
     this.connection = (
       deps.openConnection ?? ((spec, handlers) => new JsonlRpcAgentConnection(spec, handlers))
     )(launch, {
-      allowedCommands: new Set(['get_state', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'prompt', 'abort']),
+      ...(toolsOff ? { allowedCommands: new Set([...disabledToolsCommandSchemas.keys(), 'prompt']) } : {}),
       ...(input.onOutput ? { onOutput: input.onOutput } : {}),
       onRecord: (frame) => {
-        if (frame.type === 'extension_ui_request' || frame.type.startsWith('tool_execution_')) {
+        if (toolsOff && (frame.type === 'extension_ui_request' || frame.type.startsWith('tool_execution_'))) {
           this.fail(new Error('SWA received an unapproved Pi tool or extension request'))
           return
         }
@@ -150,12 +165,19 @@ export class PiRpcSession {
   }
 
   async start(): Promise<string> {
-    const state = piRpcStateSchema.parse(await this.connection.request('get_state'))
+    if (this.toolsOff) {
+      await this.request('set_auto_compaction', { enabled: false })
+      await this.request('set_auto_retry', { enabled: false })
+    }
+    const state = piRpcStateSchema.parse(await this.request('get_state'))
+    this.checkPolicyState(state)
+    this.assertOwnedJob()
     this.lane.apply(this.turns.context.setModel(state.model ?? undefined, Date.now()))
-    this.options = fixedOptions(state)
+    this.options = await this.readActualOptions()
     for (const [key, value] of Object.entries(this.input.options ?? {})) {
-      if ((key !== 'model' || value !== 'openai-codex/gpt-6.1-sol') &&
-          (key !== 'effort' || value !== 'xhigh')) throw new Error('SWA Pi options are fixed')
+      if (key === 'permissionMode') continue
+      if (key !== 'model' && key !== 'effort') throw new Error('Native Pi option is unsupported')
+      await this.applyOption(key, value)
     }
     return state.sessionFile
   }
@@ -167,7 +189,76 @@ export class PiRpcSession {
 
   /** What the child reports now; only the start says what its config resolved. */
   async readOptions() {
-    return withLiveCatalogListing(fixedOptions(piRpcStateSchema.parse(await this.connection.request('get_state'))))
+    await this.assertLivePolicy()
+    return withLiveCatalogListing(await this.readActualOptions())
+  }
+
+  async applyOption(key: string, value: string) {
+    if (this.toolsOff && (key === 'model' && value !== `${this.toolsOff.provider}/${this.toolsOff.modelId}` || key !== 'model' && key !== 'effort')) throw new Error('The original native Pi model policy cannot change')
+    const actual = await this.readActualOptions()
+    if (key === 'effort' && !actual.models.find(model => model.id === actual.current.model)?.efforts.some(effort => effort.value === value)) throw new Error('The actual native Pi model does not support the selected thinking level')
+    await applyPiRpcSessionOption({ request: (command, params, options) => this.request(command, params, options) }, this.selected, key, value)
+    await this.assertLivePolicy()
+    this.options = await this.readActualOptions()
+    return Object.fromEntries(this.selected)
+  }
+
+  async assertLivePolicy() {
+    if (!this.toolsOff) return
+    this.checkPolicyState(piRpcStateSchema.parse(await this.request('get_state')))
+    this.assertOwnedJob()
+  }
+
+  private assertOwnedJob() {
+    if (!this.toolsOff) return
+    const job = this.connection.observeOwnedJob?.()
+    if (!job?.assigned || job.rootExited || !job.nativeCLI || !job.members.some(member => member.pid === job.nativeCLI!.pid && member.creationTimeMs === job.nativeCLI!.creationTimeMs)) throw new Error('The actual native Pi Job membership is unavailable')
+  }
+
+  private async request(command: string, params?: Record<string, unknown>, options?: { timeoutMs?: number | null }) {
+    if (this.toolsOff) {
+      const schema = disabledToolsCommandSchemas.get(command)
+      if (!schema?.safeParse(params ?? {}).success) throw new Error('Unapproved native Pi RPC command or parameters')
+      if (command === 'set_model' && (params?.provider !== this.toolsOff.provider || params.modelId !== this.toolsOff.modelId)) throw new Error('The original native Pi model policy cannot change')
+    }
+    const result = await this.connection.request(command, params, options)
+    if (this.toolsOff && command === 'get_available_models') {
+      const models = z.object({ models: z.array(piRpcModelSchema) }).parse(result).models
+      const selected = models.filter(model => model.provider === this.toolsOff!.provider && model.id === this.toolsOff!.modelId)
+      if (selected.length !== 1) throw new Error('The actual native Pi catalog has no unique approved model')
+      this.checkPolicyModel(selected[0])
+    }
+    return result
+  }
+
+  private sendPrompt(frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) {
+    if (this.toolsOff && !disabledToolsPromptSchema.safeParse(frame).success) throw new Error('Unapproved native Pi prompt parameters')
+    return this.connection.send(frame, async () => {
+      await beforeWrite?.()
+      this.assertOwnedJob()
+      if (this.connection.closed) throw new Error('The native Pi connection closed before input')
+    })
+  }
+
+  private checkPolicyState(state: ReturnType<typeof piRpcStateSchema.parse>) {
+    if (!this.toolsOff) return
+    this.checkPolicyModel(state.model)
+    if (state.autoCompactionEnabled !== false || !state.sessionId) throw new Error('The actual native Pi state differs from the approved compaction or session policy')
+  }
+
+  private checkPolicyModel(model: PiRpcModel | null | undefined) {
+    if (!this.toolsOff) return
+    const sampling = z.record(z.string(), z.unknown()).optional().safeParse(model?.samplingParams)
+    if (!model || model.provider !== this.toolsOff.provider || model.id !== this.toolsOff.modelId || model.api !== this.toolsOff.api || model.baseUrl !== this.toolsOff.baseUrl || !sampling.success || Object.keys(sampling.data ?? {}).length) throw new Error('The actual native Pi model differs from the approved provider, API, base URL or sampling policy')
+  }
+
+  private async readActualOptions() {
+    const result = await readPiRpcSessionOptions({ request: (command, params, options) => this.request(command, params, options) })
+    if (!this.toolsOff) return result
+    const id = `${this.toolsOff.provider}/${this.toolsOff.modelId}`
+    const models = result.models.filter(model => model.id === id)
+    if (models.length !== 1 || result.current.model !== id) throw new Error('The actual native Pi catalog differs from the approved model')
+    return { ...result, models }
   }
 
   async close(requested = true): ReturnType<PiRpcConnection['close']> {
@@ -268,16 +359,5 @@ export class PiRpcSession {
       fence: this.input.fence,
       outcome
     })
-  }
-}
-
-function fixedOptions(state: ReturnType<typeof piRpcStateSchema.parse>): AgentSessionOptionsResult {
-  if (state.model?.provider !== 'openai-codex' || state.model.id !== 'gpt-6.1-sol' || state.thinkingLevel !== 'xhigh') {
-    throw new Error('SWA Pi model or thinking level changed')
-  }
-  const id = `${state.model.provider}/${state.model.id}`
-  return {
-    models: [{ id, label: state.model.name || id, isDefault: true, efforts: [{ value: 'xhigh', label: 'xhigh' }] }],
-    current: { model: id, effort: state.thinkingLevel, confirmed: ['model', 'effort'] }
   }
 }

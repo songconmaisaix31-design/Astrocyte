@@ -34,6 +34,7 @@ export async function buildSWARuntime(output) {
     'host.cjs': join(runtime, 'src', 'host-entry.ts'),
     'client.cjs': join(runtime, 'src', 'client.ts'),
     'controller-helper.cjs': join(runtime, 'src', 'controller-helper.ts'),
+    'native-cli-entry.cjs': join(runtime, 'src', 'native-cli-entry.ts'),
     'swa-provider-process-tree.cjs': join(upstream, 'src/main/provider-process/swa-provider-process-tree.ts'),
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
     'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),
@@ -53,9 +54,9 @@ export async function buildSWARuntime(output) {
     const result = await build({ ...common, entryPoints: [entry], outfile: join(output, filename) })
     await writeFile(join(output, filename + '.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
-  for (const name of ['pi-entry', 'pi-session', 'provider-job-bootstrap', 'readonly-codex-credentials']) {
-    const sdk = await build({ ...common, entryPoints: [join(runtime, 'src', name + '.ts')], outfile: join(output, name + '.mjs'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' }, packages: 'external', external: [...common.external, './pi-session.mjs', './provider-job-bootstrap.mjs'] })
-    await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(sdk.metafile, null, 2) + '\n', { flag: 'wx' })
+  for (const name of ['provider-job-bootstrap']) {
+    const result = await build({ ...common, entryPoints: [join(runtime, 'src', name + '.ts')], outfile: join(output, name + '.mjs'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' }, packages: 'external', external: common.external })
+    await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
   const pkg = JSON.parse(await readFile(join(output, 'package.json'), 'utf8'))
   if (pkg.type !== 'commonjs') throw new Error('The deployed runtime must preserve CommonJS child entry semantics')

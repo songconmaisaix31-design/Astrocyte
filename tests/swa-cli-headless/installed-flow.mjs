@@ -10,9 +10,10 @@ import { setTimeout } from 'node:timers/promises'
 import { parseArgs } from 'node:util'
 import { readJSONL } from './read-jsonl.mjs'
 
-const { values } = parseArgs({ options: { candidate: { type: 'string' }, 'data-root': { type: 'string' }, project: { type: 'string' }, 'project-id': { type: 'string' }, endpoint: { type: 'string' }, output: { type: 'string' }, 'orca-observation': { type: 'string' } }, allowPositionals: false })
+const { values } = parseArgs({ options: { candidate: { type: 'string' }, 'data-root': { type: 'string' }, project: { type: 'string' }, 'project-id': { type: 'string' }, endpoint: { type: 'string' }, output: { type: 'string' }, 'orca-observation': { type: 'string' }, agent: { type: 'string' }, model: { type: 'string' } }, allowPositionals: false })
 for (const key of ['candidate', 'data-root', 'project', 'output', 'orca-observation']) if (!values[key] || !isAbsolute(values[key])) throw new Error(`Explicit absolute ${key} is required`)
 if (!values['project-id'] || !values.endpoint || !process.env.SWA_PROJECT_TOKEN) throw new Error('The actual current project ID, endpoint and human-issued project token are required')
+if (!values.agent || !values.model) throw new Error('An explicit approved native Agent and model are required')
 const candidate = await realpath(values.candidate), dataRoot = await realpath(values['data-root']), project = await realpath(values.project)
 const node = join(candidate, 'node', 'node.exe'), swa = join(candidate, 'swa.exe')
 assert.equal((await realpath(process.execPath)).toLowerCase(), node.toLowerCase())
@@ -84,10 +85,11 @@ async function events(source) {
   for (const row of rows) {
     assert.equal(row.process.pid, source.process.pid)
     assert.equal(row.process.creationTimeMs, source.process.creation_time_ms)
-    assert.equal(row.projection, 'actual_sdk_lifecycle_and_delta_fields')
+    assert.equal(row.projection, 'actual_native_cli_lifecycle_and_delta_fields')
+    assert.ok(row.native_cli?.pid > 0 && row.native_cli.creationTimeMs > 0 && row.native_cli.pid !== row.process.pid)
   }
   const previous = eventSources.get(source.native_session_id)
-  if (previous) assert.deepEqual(rows.slice(0, previous.rows.length), previous.rows, 'The observed append-only SDK event prefix changed')
+  if (previous) assert.deepEqual(rows.slice(0, previous.rows.length), previous.rows, 'The observed append-only native event prefix changed')
   eventSources.set(source.native_session_id, { source, rows })
   return rows
 }
@@ -110,7 +112,7 @@ async function queryWorker(dispatch) { return native(await cli(['worker', 'show'
 await preserveOriginal('before_task')
 const status = await cli(['status'])
 runtimeId = status.runtime_id
-assert.ok(runtimeId && status.result.sdk_validation === 'requires_actual_worker_session')
+assert.ok(runtimeId && status.result.execution_validation === 'requires_actual_selected_native_agent_session')
 const database = status.result.databases.find(row => row.name === 'main')?.file
 assert.ok(database && !relative(dataRoot, await realpath(database)).startsWith('..'))
 const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', request()])
@@ -125,7 +127,7 @@ const repeatedCreate = await cli(createArgs)
 assert.equal(repeatedCreate.task_id, rootTask)
 assert.equal(repeatedCreate.run_id, runId)
 idempotency.push({ action: 'task.create', request: createArgs.at(-1), original: created, replay: repeatedCreate })
-const startArgs = ['A', 'B'].map(name => ['worker', 'start', '--controller', controller, '--task', rootTask, '--name', name, '--agent', 'pi', '--model', 'openai-codex/gpt-6.1-sol', '--input-file', join(inputDirectory, `${name.toLowerCase()}.txt`), '--request-id', request()])
+const startArgs = ['A', 'B'].map(name => ['worker', 'start', '--controller', controller, '--task', rootTask, '--name', name, '--agent', values.agent, '--model', values.model, '--input-file', join(inputDirectory, `${name.toLowerCase()}.txt`), '--request-id', request()])
 const started = await Promise.all(startArgs.map(args => cli(args)))
 const [dispatchA, dispatchB] = started.map(row => row.dispatch_id)
 assert.ok(dispatchA && dispatchB && dispatchA !== dispatchB)
@@ -196,11 +198,11 @@ while (Date.now() < finalDeadline) {
 assert.equal(starts(finalEventsB).length, 2, 'The same approved follow-up was executed more than once')
 assert.equal(ends(finalEventsB).length, 2)
 assert.ok(finalEventsB.some(row => delta(row) && Date.parse(row.observed_at) > stoppedAt))
-assert.deepEqual(await events(initialA.source), eventsAAfterStop, 'A produced additional SDK events after its confirmed stop')
+assert.deepEqual(await events(initialA.source), eventsAAfterStop, 'A produced additional native events after its confirmed stop')
 assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentityB)
 const exported = await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'result-' + randomUUID())])
 const result = native(exported), outputB = result.workers.find(row => row.worker.dispatchId === dispatchB)
-assert.ok(outputB && outputB.sdk.availability === 'complete')
+assert.ok(outputB && outputB.native_session.availability === 'complete')
 const outputA = result.workers.find(row => row.worker.dispatchId === dispatchA)
 assert.ok(outputA && outputA.journal.session_id === initialA.source.native_session_id)
 const nativeStopsA = outputA.journal.rows.filter(row => row.row.kind === 'tombstone' && row.row.stopEvent?.reason === 'evict' && typeof row.row.stopEvent.turnId === 'string' && row.row.stopEvent.at >= Date.parse(stopCommandA.started))
@@ -214,11 +216,11 @@ assert.equal(beforeStop.newer, null)
 const targetTurnId = nativeStopA.row.stopEvent.turnId
 const beforeTurn = [...beforeStop.state.items.values()].find(item => item.body.kind === 'turn' && item.body.turnId === targetTurnId)
 assert.ok(beforeTurn && beforeTurn.body.state === 'running', 'The exact native stop target was not running at its accepted journal mark')
-assert.ok(!ends(eventsAAfterStop).some(row => Date.parse(row.observed_at) < nativeStopA.row.stopEvent.at), 'The actual SDK turn ended before the native stop was processed')
+assert.ok(!ends(eventsAAfterStop).some(row => Date.parse(row.observed_at) < nativeStopA.row.stopEvent.at), 'The actual native turn ended before the native stop was processed')
 const endedTurn = outputA.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === targetTurnId)
-const actualSDKAbort = eventsAAfterStop.find(row => row.record.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted' && Date.parse(row.observed_at) >= nativeStopA.row.stopEvent.at)
-assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' && endedTurn.body.outcome === undefined || endedTurn.body.outcome === 'cancellation' && actualSDKAbort), 'The active stop was not proven by the native interrupted turn or actual SDK cancellation')
-const actualLast = outputB.sdk.entries.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1)
+const actualNativeAbort = eventsAAfterStop.find(row => row.record.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted' && Date.parse(row.observed_at) >= nativeStopA.row.stopEvent.at)
+assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' && endedTurn.body.outcome === undefined || endedTurn.body.outcome === 'cancellation' && actualNativeAbort), 'The active stop was not proven by the native interrupted turn or actual native cancellation')
+const actualLast = outputB.native_session.entries.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1)
 const fullText = typeof actualLast.message.content === 'string' ? actualLast.message.content : actualLast.message.content.filter(row => row.type === 'text').map(row => row.text).join('\n')
 assert.ok(fullText.length > 1200, 'The actual long-output case did not occur')
 for (const worker of result.workers) {
@@ -237,7 +239,7 @@ for (const worker of result.workers) {
 }
 await writeFile(join(evidence, 'B-final-output.txt'), fullText, { flag: 'wx' })
 await writeFile(join(evidence, 'actual-result.json'), JSON.stringify(exported, null, 2) + '\n', { flag: 'wx' })
-const thirdWorker = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'third-worker-quota-check', '--agent', 'pi', '--model', 'openai-codex/gpt-6.1-sol', '--input-file', join(inputDirectory, 'a.txt'), '--request-id', request()], 5)
+const thirdWorker = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'third-worker-quota-check', '--agent', values.agent, '--model', values.model, '--input-file', join(inputDirectory, 'a.txt'), '--request-id', request()], 5)
 assert.equal(thirdWorker.error.code, 'resource_limit')
 const fleet = native(await cli(['worker', 'list', '--controller', controller, '--task', rootTask]))
 assert.deepEqual(fleet.workers.map(row => row.dispatchId).sort(), [dispatchA, dispatchB].sort())
@@ -252,7 +254,7 @@ for (const dispatch of [dispatchA, dispatchB]) {
   idempotency.push({ action: 'worker.release', request: args.at(-1), original, replay })
 }
 await preserveOriginal('after_both_workers_released')
-const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, activeStop: { nativeStopA, beforeTurn, endedTurn, actualSDKAbort: actualSDKAbort ?? null }, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, idempotency, resource_quota: { thirdWorker, fleet }, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
+const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, activeStop: { nativeStopA, beforeTurn, endedTurn, actualNativeAbort: actualNativeAbort ?? null }, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, idempotency, resource_quota: { thirdWorker, fleet }, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
 await writeFile(values.output, JSON.stringify(preliminary, null, 2) + '\n', { flag: 'wx' })
 process.stdout.write(JSON.stringify({ type: 'swa_actual_business_review_required', final_output: join(evidence, 'B-final-output.txt'), evidence: values.output, instruction: '核查真实B最终说明及固定业务条件，并从实际普通终端执行同候选查询后，输入一行JSON，含checked_result和ordinary_terminal_evidence绝对文件路径；该输入仅表示当前Agent控制端实际核查，不取得human身份。' }) + '\n')
 const input = createInterface({ input: process.stdin, crlfDelay: Infinity, terminal: false })

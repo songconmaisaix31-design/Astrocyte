@@ -109,7 +109,11 @@ async function main() {
 }
 
 function nativeOutcomeError(action: string, native: Record<string, unknown> | undefined) {
-  const expected = action === 'worker.start' ? ['ready'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
+  if (action === 'worker.send' && native?.state === 'rejected') {
+    const failure = z.object({ code: z.string(), message: z.string(), retryable: z.boolean(), required_action: z.string(), data: z.unknown().optional() }).optional().parse(native.error)
+    return failure ?? { code: 'provider_unavailable', message: 'The actual native Worker rejected this input', retryable: false, required_action: 'inspect_original_request', data: native }
+  }
+  const expected = action === 'worker.start' ? ['ready'] : action === 'worker.send' ? ['journaled', 'queued', 'accepted', 'handed-to-terminal'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
   if (!expected) return undefined
   if (typeof native?.state === 'string' && expected.includes(native.state)) return undefined
   const failed = action === 'worker.start' && native?.state === 'failed'
@@ -127,7 +131,8 @@ async function requestShow(client: RuntimeClient, invocation: Invocation) {
   const childIds = z.array(z.string()).parse(receipt.children ?? (receipt.child_request ? [receipt.child_request] : []))
   const children = []
   for (const child of childIds) children.push((await client.call('orchestration.requestShow', { request: child })).result)
-  return { ...request, children }
+  const input = receipt.swa_input_binding === undefined ? undefined : (await client.call('swa.inputStatus', { project_id: invocation.project.id, request_id: requestId })).result
+  return { ...request, children, ...(input === undefined ? {} : { current_input: input }) }
 }
 
 main().catch(error => {

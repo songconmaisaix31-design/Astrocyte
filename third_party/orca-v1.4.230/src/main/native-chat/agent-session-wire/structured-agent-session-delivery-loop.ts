@@ -17,6 +17,7 @@ import type { AgentJournalSubmission } from '../../../shared/agent-session-journ
 import type { AgentSessionRecord } from '../../../shared/agent-session-record'
 import type { AgentChildWorkView } from '../../../shared/agent-status-child-work-view'
 import { agentSessionFailureFact } from '../../../shared/agent-session-failure'
+import { agentSessionFailureWords } from '../../../shared/agent-session-failure-words'
 import type { AgentSessionFailureWordsContext } from '../../../shared/agent-session-failure-words'
 import type { StructuredAgentSessionAdapter } from './structured-agent-session-adapter'
 import type { StructuredAgentRegistry } from './structured-agent-registry'
@@ -40,6 +41,8 @@ import type { StructuredAgentSessionStartReadiness } from './structured-agent-se
 import { holdRestartedStructuredAgentSessionSends } from './structured-agent-session-host-lifetime'
 import type { StructuredAgentSessionCurrentWork } from './structured-agent-session-current-work'
 import { structuredAgentSessionEndedChildFailure } from './structured-agent-session-ended-child-failure'
+import { admitStructuredAgentInput } from '../../runtime/structured-agent-launch-composition'
+import { agentJournalSubmissionKey } from '../../../shared/agent-session-journal-item-key'
 
 export type StructuredAgentSessionDeliveryLoopDeps = {
   deliveryOrder: StructuredAgentSessionDeliveryOrder
@@ -304,6 +307,15 @@ export class StructuredAgentSessionDeliveryLoop {
       }
     }
     await this.deps.applyMessageOptions(sessionId, next.options)
+    const record = this.deps.record(sessionId)
+    const body = session.journal.itemBody(agentJournalSubmissionKey(next.clientMessageId))
+    if (!record || body?.kind !== 'message') throw new Error('The original structured input body is unavailable')
+    try { await admitStructuredAgentInput({ sessionId, agent: record.provider, clientMessageId: next.clientMessageId, fence: awaitedChild.fence, body }) }
+    catch (error) {
+      await session.journal.resolveDispatch({ clientMessageId: next.clientMessageId, state: 'rejected', ...agentSessionFailureWords(agentSessionFailureFact('hostFault'), { surface: 'rejection' }), reason: error instanceof Error ? error.message : 'Current native input admission failed', fence: awaitedChild.fence })
+      return this.stop(sessionId)
+    }
+    if (session.child !== awaitedChild || this.deps.stopping(sessionId) || this.deps.record(sessionId)?.lease.runtimeFence !== awaitedChild.fence) return this.stop(sessionId)
     await handOverSubmission(
       {
         sessionId,

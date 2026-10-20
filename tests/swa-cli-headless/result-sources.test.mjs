@@ -23,16 +23,16 @@ assert.equal(actual.run_id, flow.run_id)
 assert.equal(actual.task_id, flow.root_task_id)
 assert.ok(actual.ok && actual.runtime_id && actual.run_id && actual.task_id)
 const workers = actual.result.native.workers
-const complete = workers.filter(worker => worker.sdk.availability === 'complete')
+const complete = workers.filter(worker => worker.native_session.availability === 'complete')
 assert.ok(complete.length >= 1)
 const worker = complete.at(-1), sessionId = worker.source.native_session_id
-const originalFile = worker.sdk.path, originalBytes = await readFile(originalFile)
+const originalFile = worker.native_session.path, originalBytes = await readFile(originalFile)
 assert.ok(originalBytes.length > 1200)
 const cases = ['complete', 'round_trip_valid', 'missing', 'truncated', 'invalid_utf8', 'damaged_json', 'over_limit', 'wrong_filename', 'outside_root', 'replaced_after_read', 'prefix_changed_after_read', 'unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content']
 
 if (!values.case) {
   const observations = []
-  const directory = join(dirname(values.output), 'actual-sdk-source-faults')
+  const directory = join(dirname(values.output), 'actual-native-source-faults')
   await mkdir(directory)
   for (const name of cases) {
     const caseDirectory = join(directory, name)
@@ -43,16 +43,16 @@ if (!values.case) {
     assert.deepEqual(await readFile(originalFile), originalBytes)
   }
   await writeFile(values.output, JSON.stringify({ candidate, source_revision: (await readFile(join(candidate, 'VERSION'), 'utf8')).trim(), real_runtime_id: actual.runtime_id, real_run_id: actual.run_id, real_dispatch_id: worker.worker.dispatchId, real_native_session_id: sessionId, actual_source: originalFile, original_source_bytes_unchanged: true, cases: observations, model_calls: 0, native_record_ownership_scope: 'covered_by_actual_installed_flow' }, null, 2) + '\n', { flag: 'wx' })
-  console.log(JSON.stringify({ output: values.output, actual_sdk_file_cases: observations.length, model_calls: 0 }))
+  console.log(JSON.stringify({ output: values.output, actual_native_file_cases: observations.length, model_calls: 0 }))
 } else {
   assert.ok(cases.includes(values.case))
   const requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
-  const { readSDKSessionSource } = requireRuntime('./task-result.cjs')
+  const { readNativePiSessionSource } = requireRuntime('./task-result.cjs')
   const root = join(dirname(values.output), 'sessions')
   await mkdir(root)
-  const copy = join(root, basename(originalFile)), cwd = await realpath(worker.sdk.header.cwd)
-  const read = path => readSDKSessionSource(path, root, cwd, sessionId, false)
-  if (values.case === 'missing') await assert.rejects(read(copy), /required SDK session source is missing/)
+  const copy = join(root, basename(originalFile)), cwd = await realpath(worker.native_session.header.cwd)
+  const read = path => readNativePiSessionSource(path, root, cwd, sessionId, false, worker.source.selection)
+  if (values.case === 'missing') await assert.rejects(read(copy), /required native session source is missing/)
   else if (values.case === 'outside_root') await assert.rejects(read(originalFile), /escaped its exact private session directory/)
   else if (values.case === 'over_limit') {
     const repeated = Buffer.concat(Array(Math.ceil((12 * 1024 * 1024 + 1) / originalBytes.length)).fill(originalBytes))
@@ -67,8 +67,8 @@ if (!values.case) {
     if (values.case === 'complete') {
       const source = await read(copy)
       assert.equal(source.availability, 'complete')
-      assert.deepEqual(source.entries, worker.sdk.entries)
-      assert.deepEqual(source.header, worker.sdk.header)
+      assert.deepEqual(source.entries, worker.native_session.entries)
+      assert.deepEqual(source.header, worker.native_session.header)
     } else if (values.case === 'truncated') {
       await writeFile(copy, originalBytes.subarray(0, originalBytes.length - 1))
       await assert.rejects(read(copy), /truncated or changed/)
@@ -107,8 +107,8 @@ if (!values.case) {
       if (values.case === 'round_trip_valid') {
         const source = await read(copy)
         assert.equal(source.availability, 'complete')
-        assert.deepEqual(source.entries, worker.sdk.entries)
-      } else if (values.case === 'empty_final_content') await assert.rejects(read(copy), /required final Worker SDK output is not complete/)
+        assert.deepEqual(source.entries, worker.native_session.entries)
+      } else if (values.case === 'empty_final_content') await assert.rejects(read(copy), /required final Worker native output is not complete/)
       else await assert.rejects(read(copy), error => {
         if (error.name !== 'ZodError' || !Array.isArray(error.issues)) return false
         const paths = error.issues.map(issue => issue.path)
@@ -123,10 +123,10 @@ if (!values.case) {
       if (values.case === 'replaced_after_read') {
         await rename(copy, join(root, 'previous-actual-copy.jsonl'))
         await writeFile(copy, originalBytes, { flag: 'wx' })
-        await assert.rejects(read(copy), /previously observed SDK source was replaced/)
+        await assert.rejects(read(copy), /previously observed native source was replaced/)
       } else {
         await writeFile(copy, originalBytes.subarray(0, Math.floor(originalBytes.length / 2)))
-        await assert.rejects(read(copy), /previously read SDK source prefix changed/)
+        await assert.rejects(read(copy), /previously read native source prefix changed/)
       }
     }
   }

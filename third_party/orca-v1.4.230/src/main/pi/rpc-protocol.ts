@@ -17,6 +17,7 @@ export const piRpcStateSchema = z.looseObject({
   sessionId: z.string().optional(),
   isStreaming: z.boolean(),
   isCompacting: z.boolean(),
+  autoCompactionEnabled: z.boolean().optional(),
   pendingMessageCount: z.number().int().nonnegative().optional()
 })
 export type PiRpcState = z.infer<typeof piRpcStateSchema>

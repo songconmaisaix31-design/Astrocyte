@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -97,13 +99,47 @@ type OrcaAgentSelection struct {
 	SettingsSource       OrcaAgentSettingsSource `json:"settings_source"`
 	SettingsRevision     int64                   `json:"settings_revision"`
 	ConfigurationVersion string                  `json:"configuration_version"`
+	NativeLaunch         OrcaNativeLaunchPolicy  `json:"native_launch"`
+}
+
+type OrcaNativeConfigurationSource struct {
+	Path    string `json:"path"`
+	Version string `json:"version"`
+}
+
+type OrcaNativeModelTarget struct {
+	ModelID string `json:"model_id"`
+	API     string `json:"api"`
+	BaseURL string `json:"base_url"`
+}
+
+type OrcaNativeLaunchAccount struct {
+	Kind         string                         `json:"kind"`
+	Provider     string                         `json:"provider"`
+	SourceHome   string                         `json:"source_home"`
+	AuthSource   OrcaNativeConfigurationSource  `json:"auth_source"`
+	ModelsSource *OrcaNativeConfigurationSource `json:"models_source"`
+	PrivateHome  string                         `json:"private_home"`
+	ModelTarget  OrcaNativeModelTarget          `json:"model_target"`
+}
+
+type OrcaNativeLaunchTools struct {
+	Mode           string `json:"mode"`
+	NativeContract string `json:"native_contract"`
+}
+
+type OrcaNativeLaunchPolicy struct {
+	Schema  string                  `json:"schema"`
+	Account OrcaNativeLaunchAccount `json:"account"`
+	Tools   OrcaNativeLaunchTools   `json:"tools"`
 }
 
 type OrcaExecutionCaller struct {
-	ID               string `json:"id"`
-	Kind             string `json:"kind"`
-	ProjectID        string `json:"project_id"`
-	SettingsRevision int    `json:"settings_revision"`
+	ID               string     `json:"id"`
+	Kind             string     `json:"kind"`
+	ProjectID        string     `json:"project_id"`
+	SettingsRevision int        `json:"settings_revision"`
+	GrantExpiresAt   *time.Time `json:"grant_expires_at,omitempty"`
 }
 
 type OrcaNativeError struct {
@@ -155,6 +191,15 @@ type OrcaExecutionLinks interface {
 
 type OrcaExecution interface {
 	ExecuteOrca(context.Context, domain.Caller, OrcaCommand) (OrcaEnvelope, error)
+	AdmitOrcaDelivery(context.Context, OrcaInvocation) (OrcaDeliveryAdmissionResult, error)
+}
+
+type OrcaDeliveryAdmissionResult struct {
+	Schema           string     `json:"schema"`
+	ProjectID        string     `json:"project_id"`
+	RequestID        string     `json:"request_id"`
+	SettingsRevision int        `json:"settings_revision"`
+	GrantExpiresAt   *time.Time `json:"grant_expires_at,omitempty"`
 }
 
 type OrcaExecutionService struct {
@@ -336,6 +381,16 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		return reply, err
 	}
 	invocation := OrcaInvocation{Command: command, Project: p, Caller: OrcaExecutionCaller{ID: caller.ID, Kind: caller.Kind, ProjectID: projectID, SettingsRevision: p.Settings.Revision}}
+	if model && caller.Kind == "agent" {
+		grant, err := s.projects.LoadGrant(ctx, projectID, caller.ID)
+		if err != nil {
+			return reply, err
+		}
+		invocation.Caller.GrantExpiresAt = grant.ExpiresAt
+		if err := s.checkOriginalOrcaGrant(ctx, invocation.Caller); err != nil {
+			return reply, err
+		}
+	}
 	if command.Action == "capabilities" {
 		requirements := OrcaCapabilityRequirements{SettingsRevision: p.Settings.Revision, AllowDirectory: p.Settings.AllowDirectory, AllowedSubdirs: p.Settings.AllowedSubdirs, AllowedActions: p.Settings.AllowedActions, AllowedTools: p.Settings.AllowedTools, ExternalModelCLI: p.Settings.ExternalModelCLI, AllowAgentControl: p.Settings.AllowAgentControl}
 		if caller.Kind == "agent" {
@@ -378,6 +433,9 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		}
 		if selection.AgentID == "" || selection.ExternalTarget != selection.AgentID || selection.Executable == "" || selection.Version == "" || selection.Model == "" || selection.Provider == "" || selection.ConfigurationVersion == "" || command.Action == "worker.start" && (selection.AgentID != command.Agent || selection.Model != command.Model) {
 			return reply, projectError(apierrors.EvidenceMissing, "native selection does not prove the requested Agent and model")
+		}
+		if err := validateOrcaNativeLaunch(selection, projectID); err != nil {
+			return reply, err
 		}
 		externalTarget = selection.ExternalTarget
 		current, err := s.authorize(ctx, caller, projectID, permission, nil, externalTarget)
@@ -474,6 +532,11 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 	if !safeHumanStop && current.Settings.Revision != p.Settings.Revision {
 		return reply, projectError(apierrors.ContextStale, "project settings changed while preparing the original command")
 	}
+	if model {
+		if err := s.checkOriginalOrcaGrant(ctx, invocation.Caller); err != nil {
+			return reply, err
+		}
+	}
 	reply, err = s.runtime.Execute(ctx, invocation)
 	if err != nil {
 		return reply, err
@@ -494,4 +557,114 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		}
 	}
 	return reply, nil
+}
+
+func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) error {
+	policy := selection.NativeLaunch
+	account := policy.Account
+	target := account.ModelTarget
+	endpoint, err := url.Parse(target.BaseURL)
+	if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
+		return projectError(apierrors.EvidenceMissing, "the selected native account and disabled-tool policy are unverified")
+	}
+	if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateHome) || filepath.Base(account.PrivateHome) != projectID || filepath.Base(filepath.Dir(account.PrivateHome)) != "pi" || account.AuthSource.Version == "" || account.AuthSource.Path != filepath.Join(account.SourceHome, "auth.json") || account.ModelsSource != nil && (account.ModelsSource.Version == "" || account.ModelsSource.Path != filepath.Join(account.SourceHome, "models.json")) {
+		return projectError(apierrors.EvidenceMissing, "the selected native account source and project home are incomplete")
+	}
+	return nil
+}
+
+// 效果前准入只读取当前批准、原Run关联和原上下文，不调用Native端口。
+func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation OrcaInvocation) (OrcaDeliveryAdmissionResult, error) {
+	var result OrcaDeliveryAdmissionResult
+	command := invocation.Command
+	if err := ValidateOrcaCommand(command); err != nil {
+		return result, err
+	}
+	if command.Action != "worker.start" && command.Action != "worker.send" {
+		return result, projectError(apierrors.ScopeDenied, "delivery admission requires an original Worker input")
+	}
+	actor, scope := invocation.Caller, invocation.Scope
+	if actor.ID == "" || actor.ProjectID == "" || actor.ProjectID != invocation.Project.ID || actor.ProjectID != scope.ProjectID || actor.SettingsRevision < 1 || scope.Controller == "" || scope.Controller != command.Controller || scope.RunID == "" || scope.RootTaskID == "" || scope.AuthorityDomain == "" || (actor.Kind != "agent" && actor.Kind != "human") {
+		return result, projectError(apierrors.ScopeDenied, "the original Worker delivery association is incomplete")
+	}
+	selection := invocation.Selection
+	if selection == nil || selection.ExternalTarget != selection.AgentID || selection.Executable == "" || selection.ConfigurationVersion == "" || command.Action == "worker.start" && (command.Agent != selection.AgentID || command.Model != selection.Model) {
+		return result, projectError(apierrors.EvidenceMissing, "the original native selection is incomplete")
+	}
+	if err := validateOrcaNativeLaunch(*selection, actor.ProjectID); err != nil {
+		return result, err
+	}
+	caller := domain.Caller{ID: actor.ID, Kind: actor.Kind, ProjectID: actor.ProjectID}
+	permission, _, _ := orcaAction(command.Action)
+	project, err := s.authorize(ctx, caller, actor.ProjectID, permission, nil, selection.ExternalTarget)
+	if err != nil {
+		return result, err
+	}
+	if project.Settings.Revision != actor.SettingsRevision || project.Root != invocation.Project.Root || scope.Context.ProjectID != project.ID || scope.Context.SettingsRevision != project.Settings.Revision {
+		return result, projectError(apierrors.ContextStale, "the original delivery project or context changed")
+	}
+	link, err := s.links.LoadOrcaExecutionLink(ctx, scope.AuthorityDomain, scope.RunID)
+	if err != nil {
+		return result, err
+	}
+	if link.ProjectID != project.ID || link.GrantAgentID != actor.ID || link.SettingsRevision != project.Settings.Revision || link.AuthorityDomain != scope.AuthorityDomain || link.RunID != scope.RunID || link.RootTaskID != scope.RootTaskID {
+		return result, projectError(apierrors.ScopeDenied, "the saved native Run association changed")
+	}
+	if err := s.checkOriginalOrcaGrant(ctx, actor); err != nil {
+		return result, err
+	}
+	if invocation.Input == nil || invocation.Input.Version == "" {
+		return result, projectError(apierrors.EvidenceMissing, "the original Worker input is unavailable")
+	}
+	input, err := s.readInput(ctx, project, invocation.Input.Path)
+	if err != nil {
+		return result, err
+	}
+	if input != *invocation.Input {
+		return result, projectError(apierrors.ContextStale, "the original Worker input file changed")
+	}
+	request := domain.ContextRequest{}
+	for _, material := range scope.Context.Materials {
+		if !material.Expanded {
+			request.References = append(request.References, material.Reference)
+		}
+	}
+	for _, file := range scope.Context.Files {
+		request.Files = append(request.Files, file.Path)
+	}
+	currentContext, err := s.contexts.ReadProjectContext(ctx, caller, project.ID, request)
+	if err != nil {
+		return result, err
+	}
+	if currentContext.ProjectID != scope.Context.ProjectID || currentContext.SettingsRevision != scope.Context.SettingsRevision || !reflect.DeepEqual(currentContext.Files, scope.Context.Files) || !reflect.DeepEqual(currentContext.Materials, scope.Context.Materials) {
+		return result, projectError(apierrors.ContextStale, "the original fixed delivery context changed")
+	}
+	current, err := s.authorize(ctx, caller, project.ID, permission, nil, selection.ExternalTarget)
+	if err != nil {
+		return result, err
+	}
+	if current.Settings.Revision != actor.SettingsRevision || current.Root != project.Root {
+		return result, projectError(apierrors.ContextStale, "delivery approval changed while reading its sources")
+	}
+	if err := s.checkOriginalOrcaGrant(ctx, actor); err != nil {
+		return result, err
+	}
+	return OrcaDeliveryAdmissionResult{Schema: "swa.delivery-admission.v1", ProjectID: project.ID, RequestID: command.RequestID, SettingsRevision: current.Settings.Revision, GrantExpiresAt: actor.GrantExpiresAt}, nil
+}
+
+func (s *OrcaExecutionService) checkOriginalOrcaGrant(ctx context.Context, caller OrcaExecutionCaller) error {
+	if caller.Kind == "human" {
+		if caller.GrantExpiresAt != nil {
+			return projectError(apierrors.ScopeDenied, "a human delivery cannot carry an Agent grant identity")
+		}
+		return nil
+	}
+	grant, err := s.projects.LoadGrant(ctx, caller.ProjectID, caller.ID)
+	if err != nil {
+		return err
+	}
+	if caller.GrantExpiresAt == nil || grant.ExpiresAt == nil || !grant.ExpiresAt.Equal(*caller.GrantExpiresAt) || !grant.ExpiresAt.After(time.Now().UTC()) || grant.RevokedAt != nil || grant.TokenDigest == "" {
+		return projectError(apierrors.ApprovalRevoked, "the original delivery credential expired or its grant changed")
+	}
+	return nil
 }

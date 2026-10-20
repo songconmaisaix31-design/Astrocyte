@@ -9346,6 +9346,8 @@ components:
       $ref: './swa-cli.schema.json#/$defs/capabilities'
     SwaAgentSelectionV1:
       $ref: './swa-cli.schema.json#/$defs/agentSelection'
+    SwaNativeLaunchPolicyV1:
+      $ref: './swa-cli.schema.json#/$defs/nativeLaunchPolicy'
     OpenVikingStatusV1:
       type: object
       additionalProperties: false

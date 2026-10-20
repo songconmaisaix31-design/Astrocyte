@@ -12,6 +12,7 @@ const call = async (method: string, params?: unknown, requestId?: string) =>
   (await client.call(method, params, requestId ? { orchestrationRequestId: requestId, timeoutMs: 120_000 } : undefined)).result
 
 async function execute(action: string, requestId: string, invocation?: Invocation): Promise<unknown> {
+  if (action === 'identify') return { ready: true }
   if (action === 'observe') return { current: await call('orchestration.runCurrent', { from: controller }) }
   if (!invocation || invocation.command.controller !== controller) throw new Error('controller_scope_mismatch')
   const c = invocation.command
@@ -46,10 +47,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     case 'worker.stop': return call('orchestration.workerStop', { dispatch: c.dispatch_id }, `${requestId}/native`)
     case 'worker.release': return call('orchestration.workerRelease', { dispatch: c.dispatch_id }, `${requestId}/native`)
     case 'worker.send': {
-      const observed = nativeObject(await call('orchestration.workerShow', { dispatch: c.dispatch_id }))
-      const dispatch = nativeObject(observed.dispatch)
-      if (!invocation.input || typeof dispatch.assigneeHandle !== 'string') throw new Error('exact_worker_recipient_missing')
-      return call('orchestration.send', { from: controller, to: dispatch.assigneeHandle, subject: 'SWA approved follow-up', body: invocation.input.text, type: 'status', run }, `${requestId}/native`)
+      return call('swa.workerSend', { controller, parent_request: requestId }, `${requestId}/native`)
     }
     default: throw new Error('unsupported_controller_action')
   }

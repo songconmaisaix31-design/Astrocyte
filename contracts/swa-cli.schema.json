@@ -71,14 +71,39 @@
         "external_model_cli": {"type": "string"}, "allow_agent_control": {"type": "boolean"}
       }
     },
+    "nativeConfigurationSource": {
+      "type": "object", "additionalProperties": false, "required": ["path", "version"],
+      "properties": {"path": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}}
+    },
+    "nativeLaunchPolicy": {
+      "type": "object", "additionalProperties": false, "required": ["schema", "account", "tools"],
+      "properties": {
+        "schema": {"const": "swa.native-launch.v1"},
+        "account": {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "provider", "source_home", "auth_source", "models_source", "private_home", "model_target"],
+          "properties": {
+            "kind": {"const": "pi-native-api-key"}, "provider": {"type": "string", "minLength": 1},
+            "source_home": {"type": "string", "minLength": 1}, "auth_source": {"$ref": "#/$defs/nativeConfigurationSource"},
+            "models_source": {"oneOf": [{"$ref": "#/$defs/nativeConfigurationSource"}, {"type": "null"}]},
+            "private_home": {"type": "string", "minLength": 1},
+            "model_target": {
+              "type": "object", "additionalProperties": false, "required": ["model_id", "api", "base_url"],
+              "properties": {"model_id": {"type": "string", "minLength": 1}, "api": {"enum": ["openai-responses", "openai-completions", "azure-openai-responses"]}, "base_url": {"type": "string", "format": "uri"}}
+            }
+          }
+        },
+        "tools": {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract"], "properties": {"mode": {"const": "disabled"}, "native_contract": {"const": "pi-cli-1.0.1"}}}
+      }
+    },
     "agentSelection": {
       "type": "object", "additionalProperties": false,
-      "required": ["agent_id", "adapter", "execution_mode", "executable", "version", "model", "provider", "external_target", "settings_source", "settings_revision", "configuration_version"],
+      "required": ["agent_id", "adapter", "execution_mode", "executable", "version", "model", "provider", "external_target", "settings_source", "settings_revision", "configuration_version", "native_launch"],
       "properties": {
         "agent_id": {"type": "string", "minLength": 1}, "adapter": {"type": "string", "minLength": 1}, "execution_mode": {"const": "structured"},
         "executable": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1},
         "model": {"type": "string", "minLength": 1}, "provider": {"type": "string", "minLength": 1}, "external_target": {"type": "string", "minLength": 1},
-        "settings_source": {"$ref": "#/$defs/settingsSource"}, "settings_revision": {"type": "integer", "minimum": 0}, "configuration_version": {"type": "string", "minLength": 1}
+        "settings_source": {"$ref": "#/$defs/settingsSource"}, "settings_revision": {"type": "integer", "minimum": 0}, "configuration_version": {"type": "string", "minLength": 1}, "native_launch": {"$ref": "#/$defs/nativeLaunchPolicy"}
       }
     },
     "installedObservation": {

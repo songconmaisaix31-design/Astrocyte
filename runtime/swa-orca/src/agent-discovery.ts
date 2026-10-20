@@ -15,6 +15,7 @@ import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/
 import { readAgentSettings, type AgentSettingsSnapshot } from './agent-settings'
 import { parsePiModelOptionId } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-options'
 import { agentCapabilitiesSchema, agentSelectionSchema, registeredAgentSchema, type AgentSelection, type CapabilityRequirements } from './contracts'
+import { inspectNativePiPolicy } from './native-pi-policy'
 
 type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
 const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
@@ -82,7 +83,7 @@ async function configuration(agent: string, snapshot: AgentSettingsSnapshot, req
     const oauth = entry?.type === 'oauth' && text(entry.access) && text(entry.refresh) && typeof entry.expires === 'number' && Number.isFinite(entry.expires)
     const account = oauth ? 'pi-oauth-file' : entry?.type === 'api_key' && text(entry.key) ? 'pi-api-key-file' : undefined
     const defaultModel = text(config?.value.defaultModel)
-    return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
+    return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, sourceHome: accountHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
   }
   return { model: undefined, provider: undefined, account: undefined, version: 'native-configuration-unobserved' }
 }
@@ -96,7 +97,7 @@ function discoveryEnvironment(): Record<string, string> {
   return env
 }
 
-async function inspectAgents(runtime: OrcaRuntimeService, requirements?: CapabilityRequirements, onlyAgent?: string, requestedModel?: string) {
+async function inspectAgents(runtime: OrcaRuntimeService, requirements?: CapabilityRequirements, onlyAgent?: string, requestedModel?: string, projectId?: string) {
   const snapshot = await readAgentSettings()
   await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
   const host = getStructuredAgentSessionHost()
@@ -134,7 +135,14 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
     const declared = available('The real adapter implements this structured operation; no live handshake is claimed', `adapter-declaration:${adapterName}`)
     const control = { start: declared, send: declared, read: unknown('No live session or complete transcript was observed', 'native-session'), stop: declared, resume: unknown('No native recovery handshake was observed', 'native-session'), tools: unknown('The selected Agent tool policy requires its own verified native contract', 'native-policy') }
     agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session'), control, ...(requirements ? { requirements } : {}) })
-    const selection = enabled.status === 'available' && executable && version && proven ? agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider: config.provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version}` }) : undefined
+    let selection: AgentSelection | undefined
+    if (projectId && enabled.status === 'available' && executable && version && proven) {
+      if (id !== 'pi' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
+      const { provider, modelId } = parsePiModelOptionId(config.model)
+      if (snapshot.settings.agentDefaultArgs?.pi?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Pi extra arguments have not been approved')
+      const native = await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, provider, modelId, env: discoveryEnvironment() })
+      selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })
+    }
     details.set(id, { selection, configuration: config })
   }
   return { agents, snapshot, details }
@@ -167,8 +175,8 @@ export async function discoverAgents(runtime: OrcaRuntimeService, requirements: 
   return result
 }
 
-export async function selectAgent(runtime: OrcaRuntimeService, agent: string, model: string) {
-  const { details } = await inspectAgents(runtime, undefined, agent, model)
+export async function selectAgent(runtime: OrcaRuntimeService, projectId: string, agent: string, model: string) {
+  const { details } = await inspectAgents(runtime, undefined, agent, model, projectId)
   const item = details.get(agent)
   if (!item?.selection) throw new OrchestrationError('agent_unconfigured', 'The selected native Agent lacks proven installation or configuration')
   return agentSelectionSchema.parse({ ...item.selection, model })

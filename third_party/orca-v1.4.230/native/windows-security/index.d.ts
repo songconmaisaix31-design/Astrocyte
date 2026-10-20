@@ -20,7 +20,7 @@ export declare function currentUserSid(): string
 export type WindowsAce = { type: number; flags: number; mask: number; sid: string | null }
 
 /** `protected` is SE_DACL_PROTECTED. */
-export type WindowsDacl = { protected: boolean; aces: WindowsAce[] }
+export type WindowsDacl = { protected: boolean; aces: WindowsAce[]; ownerSid?: string }
 
 /** The path's DACL as structure, or null for a NULL DACL (which grants everyone everything). */
 export declare function getDaclAces(path: string): WindowsDacl | null

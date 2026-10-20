@@ -12,10 +12,12 @@
 | Worker / 主控 | `term_f5235f4d-4de8-4f6e-8b12-a04e22c55500` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
-| 原独立Reviewer | `task_1cd8014750f9 / ctx_980a3282c339`，本次不另起Agent |
+| 原独立Reviewer | `task_1cd8014750f9 / ctx_6339d8beeb73`，本次不另起Agent |
 | 实施状态 | `TEST_PLAN_ACCEPTED / IMPLEMENTING / FUNCTIONAL_VALIDATION_NOT_RUN` |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
+
+当前阶段按主控`msg_e98464a9e11e`形成可独立审查的原生Pi账号、CLI启动及结构化正文投递源码，实施边界与必要消费者见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)。来源配置、私有ACL、当前Go批准、原R/native operation、原session/fence及实际Job成员进入首次和后续输入检查；构建和真实测试入口同步使用原生CLI。全部生成、类型检查、编译、真实安装、认证和模型正文均未执行；T12严格调用者矩阵、controller.recover、后台接续Job及通用终端输入继续实施。当前原S持有唯一窗口，无新重操作授权；本阶段提交及普通push供原Reviewer先审，不结束整体任务。
 
 ## 问题、建议与主控决定
 

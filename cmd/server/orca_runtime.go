@@ -102,7 +102,14 @@ func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
+	ownerCapability := os.Getenv("SWA_OWNER_CAPABILITY")
+	if len(ownerCapability) != 64 {
+		return errors.New("SWA private delivery admission requires its actual owner capability")
+	}
+	if err := os.Unsetenv("SWA_OWNER_CAPABILITY"); err != nil {
+		return err
+	}
+	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, SWAOwnerCapability: ownerCapability, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
 	listener, err := bindHTTPListener(port)
 	if err != nil {
 		return err

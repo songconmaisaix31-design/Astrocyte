@@ -52,6 +52,7 @@ import { CommandReceiptExistsError } from '../agent-session-journal/command-rece
 import type { StructuredAgentRegistry } from './structured-agent-registry'
 import { carriedStoppedHistory } from './structured-agent-session-stopped-history-selection'
 import { withStoppedHistory } from '../../../shared/agent-session-stopped-history'
+import { admitStructuredAgentInput } from '../../runtime/structured-agent-launch-composition'
 export { performSetOption } from './structured-agent-session-turns-options'
 export { performPrompt } from './structured-agent-session-turns-prompt'
 export { performCancel } from './structured-agent-session-turns-cancel'
@@ -129,7 +130,14 @@ async function dispatchSafely(
       clientMessageId,
       body,
       fence: ctx.fence,
-      requestedAt
+      requestedAt,
+      beforeDispatch: async () => {
+        const record = ctx.record()
+        const originalBody = ctx.journal.itemBody(agentJournalSubmissionKey(clientMessageId))
+        if (!record || record.lease.runtimeFence !== ctx.fence || originalBody?.kind !== 'message') throw new Error('The native input session fence or body changed')
+        await admitStructuredAgentInput({ sessionId: ctx.sessionId, agent: record.provider, clientMessageId, fence: ctx.fence, body: originalBody })
+        if (ctx.record()?.lease.runtimeFence !== ctx.fence) throw new Error('The native input session fence changed during admission')
+      }
     })
   } catch (error) {
     return { state: 'unknown', reason: error instanceof Error ? error.message : String(error) }

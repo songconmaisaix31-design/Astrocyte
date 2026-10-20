@@ -1,6 +1,8 @@
 package httpapi
 
 import (
+	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -9,6 +11,50 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
+
+const orcaDeliveryAdmissionPath = "/api/internal/swa/delivery-admission"
+
+func validOrcaOwnerRequest(r *http.Request, capability string) bool {
+	if r.Method != http.MethodPost || r.URL.RawQuery != "" || r.URL.RawPath != "" || r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" || len(capability) != 64 || len(r.Header.Values("X-SWA-Owner-Capability")) != 1 {
+		return false
+	}
+	expected, err := hex.DecodeString(capability)
+	if err != nil || len(expected) != 32 {
+		return false
+	}
+	actual, err := hex.DecodeString(r.Header.Get("X-SWA-Owner-Capability"))
+	return err == nil && len(actual) == 32 && subtle.ConstantTimeCompare(expected, actual) == 1
+}
+
+func (h *handler) registerOrcaDeliveryAdmission(mux *http.ServeMux, capability string) {
+	mux.HandleFunc("POST "+orcaDeliveryAdmissionPath, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		if !validOrcaOwnerRequest(r, capability) {
+			writeRejectionError(w, r, http.StatusForbidden, "private runtime admission requires its owning service")
+			return
+		}
+		if h.services.OrcaExecution == nil {
+			writeError(w, r, http.StatusServiceUnavailable, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "the product Orca runtime is not configured", RequiredAction: "inspect_original_request"})
+			return
+		}
+		var invocation workspaceapp.OrcaInvocation
+		decoder := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2*1024*1024))
+		decoder.DisallowUnknownFields()
+		err := decoder.Decode(&invocation)
+		if err == nil {
+			var extra any
+			if decoder.Decode(&extra) != io.EOF {
+				err = errors.New("exactly one original invocation is required")
+			}
+		}
+		if err != nil {
+			writeError(w, r, http.StatusBadRequest, &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: "invalid original delivery invocation", RequiredAction: "inspect_original_request"})
+			return
+		}
+		result, err := h.services.OrcaExecution.AdmitOrcaDelivery(r.Context(), invocation)
+		h.attentionResult(w, r, http.StatusOK, result, err)
+	})
+}
 
 func (h *handler) registerOrcaCLI(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/local-projects/{id}/orca/commands", func(w http.ResponseWriter, r *http.Request) {

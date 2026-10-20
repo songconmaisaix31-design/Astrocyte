@@ -12,64 +12,17 @@ import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
-import { invocationSchema, helperReply, nativeObject, contextSchema, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
+import { invocationSchema, helperReply, nativeObject, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
 import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
-import { completeTaskResult, observeWorkerSource } from './task-result'
+import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
+import { createPrivatePiHome } from './private-pi-account'
+import { deliverNativeWorkerInput } from './worker-input'
+import { authority, controllerScope, exactController, recorded } from './controller-scope'
 
-const openReceipt = z.object({
-  project_id: z.string(), controller: z.string(), worktree_id: z.string(),
-  binding: z.object({ ptyId: z.string(), processIncarnation: z.string(), generation: z.number() }),
-  process: z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive(), name: z.string() }),
-  helper: z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive(), name: z.string() })
-})
-type Controller = z.infer<typeof openReceipt>
 const wrapper = z.object({ invocation: invocationSchema })
 const lookup = z.object({ project_id: z.string().min(1), controller: z.string().min(1) })
 const fail = (code: string, message: string): never => { throw new OrchestrationError(code, message) }
-const authority = (runtime: OrcaRuntimeService) => runtime.getOrchestrationDb().getOrCreateLocalMutationCallerFingerprint()
-
-function recorded(runtime: OrcaRuntimeService, method: string, controller: string) {
-  const db = runtime.getOrchestrationDb()
-  const row = db.db.prepare(`SELECT receipt, state FROM mutation_receipts
-    WHERE caller_fingerprint=? AND method=? AND json_valid(receipt)=1 AND json_extract(receipt, '$.controller')=?
-    ORDER BY created_at DESC LIMIT 1`).get(authority(runtime), method, controller)
-  const parsed = z.object({ receipt: z.string(), state: z.string() }).optional().parse(row)
-  return parsed ? { state: parsed.state, receipt: nativeObject(JSON.parse(parsed.receipt)) } : undefined
-}
-
-function controllerScope(runtime: OrcaRuntimeService, project: string, controller: string): { owner: Controller; scope: Scope } {
-  const open = recorded(runtime, 'swa.controllerOpen', controller)
-  if (!open || open.state !== 'completed') return fail('operation_unknown', 'The exact controller open receipt is unavailable')
-  const owner = openReceipt.parse(open.receipt)
-  if (owner.project_id !== project) return fail('scope_denied', 'The native controller belongs to another project')
-  const created = recorded(runtime, 'swa.taskCreate', controller)
-  const scope: Scope = { project_id: project, controller, run_id: '', root_task_id: '', authority_domain: authority(runtime), context: {} }
-  if (created) {
-    if (created.state !== 'completed') return fail('operation_unknown', 'The original task creation remains pending')
-    const ids = z.object({ run_id: z.string(), root_task_id: z.string() }).parse(created.receipt)
-    const task = runtime.getOrchestrationDb().getTask(ids.root_task_id)
-    const run = runtime.getOrchestrationDb().getRun(ids.run_id)
-    if (!task || !run || task.run_id !== run.id || run.coordinator_handle !== controller) return fail('scope_denied', 'The native Run/Task/controller association changed')
-    const fixed = z.object({ project_id: z.string(), context: contextSchema }).parse(JSON.parse(task.spec))
-    if (fixed.project_id !== project) return fail('scope_denied', 'The fixed task belongs to another project')
-    Object.assign(scope, ids, { context: fixed.context })
-  }
-  return { owner, scope }
-}
-
-async function exactController(runtime: OrcaRuntimeService, owner: Controller) {
-  const inventory = await getLocalPtyProvider().listProcesses()
-  const matches = inventory.filter(row => row.id === owner.binding.ptyId && row.terminalHandle === owner.controller && row.incarnationId === owner.binding.processIncarnation && row.rootProcessId === owner.process.pid)
-  if (matches.length !== 1) return fail('worker_identity_changed', 'The exact controller PTY incarnation is not present')
-  const binding = runtime.getTerminalPromptRequestBinding(owner.controller)
-  if (binding.ptyId !== owner.binding.ptyId || binding.processIncarnation !== owner.binding.processIncarnation) return fail('worker_identity_changed', 'The controller binding changed')
-  const rows = await readWindowsProcessTableFresh()
-  for (const identity of [owner.process, owner.helper]) {
-    const row = rows.find(item => item.pid === identity.pid)
-    if (!row || row.creationTimeMs !== identity.creationTimeMs || row.name !== identity.name) return fail('worker_identity_changed', 'The controller process identity changed')
-  }
-}
 
 async function helperCall(runtime: OrcaRuntimeService, controller: string, requestId: string, action: string, invocation?: Invocation) {
   const ptyId = runtime.getTerminalPtyIdForHandle(controller)
@@ -124,6 +77,8 @@ export const SWA_METHODS = [
   }) }),
   defineMethod({ name: 'swa.capabilities', permission: 'workspace', params: z.object({ project_id: z.string().min(1), requirements: capabilityRequirementsSchema }), handler: ({ requirements }, { runtime }) => discoverAgents(runtime, requirements) }),
   defineMethod({ name: 'swa.resolveSelection', permission: 'workspace', params: z.object({ project_id: z.string().min(1), command: commandSchema }), handler: ({ project_id, command }, { runtime }) => resolveSelection(runtime, project_id, command) }),
+  defineMethod({ name: 'swa.workerSend', permission: 'workspace', params: z.strictObject({ controller: z.string().min(1), parent_request: z.uuid() }), handler: deliverNativeWorkerInput }),
+  defineMethod({ name: 'swa.inputStatus', permission: 'workspace', params: z.strictObject({ project_id: z.uuid(), request_id: z.uuid() }), handler: ({ project_id, request_id }, { runtime }) => readNativeInputStatus(runtime, project_id, request_id) }),
   defineMethod({ name: 'swa.scope', permission: 'workspace', params: lookup, handler: (params, { runtime }) => controllerScope(runtime, params.project_id, params.controller).scope }),
   defineMethod({ name: 'swa.controllerShow', permission: 'workspace', params: lookup, handler: async (params, { runtime }) => {
     const owned = controllerScope(runtime, params.project_id, params.controller)
@@ -136,6 +91,7 @@ export const SWA_METHODS = [
     const workdir = await realpath(invocation.command.workdir)
     checkpoint(context, { project_id: invocation.project.id, workdir, stage: 'workspace-registration' })
     return effect(async () => {
+      await createPrivatePiHome(invocation.project.id)
       const repo = await runtime.addRepo(workdir, 'folder')
       const workspace = getRepoMainWorktreeId(repo)
       const requestId = context.orchestrationMutation!.requestId
@@ -151,7 +107,7 @@ export const SWA_METHODS = [
           title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
         }))
       if (terminal.handle !== controller) throw new Error('native_controller_handle_mismatch')
-      const observed = await helperCall(runtime, controller, requestId, 'observe')
+      const observed = await helperCall(runtime, controller, requestId, 'identify')
       const binding = runtime.getTerminalPromptRequestBinding(controller)
       const listed = await getLocalPtyProvider().listProcesses()
       const pty = listed.find(row => row.id === binding.ptyId && row.terminalHandle === controller && row.incarnationId === binding.processIncarnation)
@@ -163,8 +119,14 @@ export const SWA_METHODS = [
       const ancestors = new Set<number>()
       for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
       if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
+      const liveAuthority = runtime.getOrchestrationDispatchAuthority(controller)
+      if (!liveAuthority?.launchTokenHash || !liveAuthority.paneKey || liveAuthority.hostScope.kind !== 'local' || liveAuthority.processIncarnation !== binding.processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
+      const callerAuthority = { terminalHandle: controller, paneKey: liveAuthority.paneKey, processIncarnation: liveAuthority.processIncarnation, launchTokenHash: liveAuthority.launchTokenHash, hostScope: liveAuthority.hostScope }
+      checkpoint(context, { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, binding,
+        process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority: callerAuthority, stage: 'helper-ready' })
+      const current = await helperCall(runtime, controller, requestId, 'observe')
       return { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, binding,
-        process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, observation: observed.result }
+        process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority: callerAuthority, observation: current.result }
     })
   } }),
   defineMethod({ name: 'swa.taskCreate', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
@@ -191,7 +153,7 @@ export const SWA_METHODS = [
     }
     if (c.action === 'worker.start') await admitWorkerResources()
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${c.request_id}/native`, stage: 'helper-input' })
-    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
+    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, ...(['worker.start', 'worker.send'].includes(c.action) ? { invocation: { ...invocation, scope } } : {}), child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
     const c = invocation.command
@@ -226,7 +188,7 @@ export const SWA_METHODS = [
 async function resolveSelection(runtime: OrcaRuntimeService, project: string, command: Invocation['command']): Promise<AgentSelection> {
   if (command.action === 'worker.start') {
     if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
-    return selectAgent(runtime, command.agent, command.model)
+    return selectAgent(runtime, project, command.agent, command.model)
   }
   if (command.action !== 'worker.send' || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
   const { scope } = controllerScope(runtime, project, command.controller)
@@ -242,7 +204,7 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   const dispatch = db.getDispatchContextById(command.dispatch_id)
   const record = dispatch?.assignee_orca_session_id && runtime.openedAgentSessionRecordStore()?.getRecord(dispatch.assignee_orca_session_id)
   if (!record || record.provider !== original.agent_id || record.options?.model !== original.model) return fail('worker_identity_changed', 'The actual Worker session does not match its original Agent selection')
-  const current = await selectAgent(runtime, original.agent_id, original.model)
+  const current = await selectAgent(runtime, project, original.agent_id, original.model)
   if (!isDeepStrictEqual(original, current)) return fail('request_mismatch', 'The original Worker Agent source changed; preserve the original selection')
   return original
 }
@@ -292,7 +254,7 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
         if (children.length + uncreated >= 2) fail('resource_limit', 'The fixed task has reserved both Worker slots')
       }
     }
-    const requestId = checkpoint(context, receipt)
+    const requestId = checkpoint(context, { ...receipt, ...(['worker.start', 'worker.send'].includes(c.action) ? { invocation: { ...invocation, scope: fresh.scope } } : {}) })
     db.db.exec('COMMIT')
     return requestId
   } catch (error) {

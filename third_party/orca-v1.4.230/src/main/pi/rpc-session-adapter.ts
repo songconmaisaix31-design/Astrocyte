@@ -78,7 +78,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       }
       const spec = buildPiRpcLaunch(launch)
       const fresh = !launch.sessionFile && !launch.forkFile
-      session = new PiRpcSession(input, randomUUID(), spec, this.deps, fresh)
+      session = new PiRpcSession(input, randomUUID(), spec, this.deps, fresh, launch.toolsOff)
       this.sessions.set(id, session)
       this.starts.track(attempt, session.connection)
       const spawned = providerSpawnedProcessIdentity(
@@ -140,11 +140,15 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
         )
       }
     }
+    await session.assertLivePolicy()
     return session.turns.submit(
       input.clientMessageId,
       input.requestedAt ?? Date.now(),
       { ...prompt },
-      input.beforeDispatch
+      async () => {
+        await input.beforeDispatch?.()
+        if (this.session(input.sessionId, input.fence) !== session) throw new Error('The native Pi session changed before its input')
+      }
     )
   }
 
@@ -213,9 +217,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       input.response,
       input.commit
     )
-  setOption: StructuredAgentSessionAdapter['setOption'] = async () => {
-    throw new Error('SWA Pi options are fixed at SDK session construction')
-  }
+  setOption: StructuredAgentSessionAdapter['setOption'] = async (input) => this.session(input.sessionId, input.fence).applyOption(input.key, input.value)
   readOptions: NonNullable<StructuredAgentSessionAdapter['readOptions']> = async (input) =>
     this.session(input.sessionId, input.fence).readOptions()
   readCommands = (id: string) => this.sessions.get(id)?.commands

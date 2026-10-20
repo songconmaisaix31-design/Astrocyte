@@ -27,16 +27,18 @@ type localSession struct {
 	Expires time.Time
 }
 type sessionGuard struct {
-	mu           sync.Mutex
-	sessions     map[string]localSession
-	agentToken   string
-	origins      map[string]bool
-	scopedTokens workspaceapp.ScopedAgentTokens
+	mu                 sync.Mutex
+	sessions           map[string]localSession
+	agentToken         string
+	origins            map[string]bool
+	scopedTokens       workspaceapp.ScopedAgentTokens
+	swaOwnerCapability string
 }
 
 func newSessionGuard(cfg Config) *sessionGuard {
 	g := &sessionGuard{sessions: map[string]localSession{}, agentToken: cfg.AgentToken, origins: map[string]bool{}}
 	g.scopedTokens, _ = cfg.Services.LocalProjects.(workspaceapp.ScopedAgentTokens)
+	g.swaOwnerCapability = cfg.SWAOwnerCapability
 	for _, origin := range cfg.AllowedOrigins {
 		g.origins[origin] = true
 	}
@@ -94,6 +96,14 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !g.validOrigin(r) {
 			writeRejectionError(w, r, http.StatusForbidden, "cross-origin request rejected")
+			return
+		}
+		if r.URL.Path == orcaDeliveryAdmissionPath {
+			if !validOrcaOwnerRequest(r, g.swaOwnerCapability) {
+				writeRejectionError(w, r, http.StatusForbidden, "private runtime admission requires its owning service")
+				return
+			}
+			next.ServeHTTP(w, r)
 			return
 		}
 		if !strings.HasPrefix(r.URL.Path, "/api/v1/") || r.URL.Path == "/api/v1/health" || r.URL.Path == "/api/v1/foundation" || r.URL.Path == "/api/v1/auth/session" {

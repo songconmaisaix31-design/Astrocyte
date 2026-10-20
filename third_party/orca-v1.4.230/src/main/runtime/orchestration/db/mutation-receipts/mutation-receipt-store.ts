@@ -3,6 +3,17 @@ import type { MutationReceiptRow } from '../../types'
 import { OrchestrationError } from '../../orchestration-error'
 import { ensureMutationReceiptCapacity } from '../../mutation-receipt-capacity'
 import type { OrchestrationDb } from '../orchestration-db'
+import { isDeepStrictEqual } from 'node:util'
+import { z } from 'zod'
+
+function preserveNativeInputBinding(method: string, previous: string | null | undefined, next: string): string {
+  if (!['orchestration.workerStart', 'swa.workerSend', 'swa.controllerDeliver'].includes(method) || !previous) return next
+  const prior = z.record(z.string(), z.unknown()).parse(JSON.parse(previous))
+  if (!Object.hasOwn(prior, 'swa_input_binding')) return next
+  const incoming = z.record(z.string(), z.unknown()).parse(JSON.parse(next))
+  if (Object.hasOwn(incoming, 'swa_input_binding') && !isDeepStrictEqual(prior.swa_input_binding, incoming.swa_input_binding)) throw new OrchestrationError('request_mismatch', 'The original native input binding cannot change')
+  return JSON.stringify({ ...incoming, swa_input_binding: prior.swa_input_binding })
+}
 
 // ── Durable mutation receipts ──
 
@@ -86,6 +97,7 @@ export function completeMutationReceipt(
     receipt: string
   }
 ): MutationReceiptRow {
+  const receipt = preserveNativeInputBinding(params.method, this.getMutationReceipt(params.callerFingerprint, params.requestId)?.receipt, params.receipt)
   const result = this.db
     .prepare(
       `UPDATE mutation_receipts
@@ -94,7 +106,7 @@ export function completeMutationReceipt(
          AND payload_hash = ?`
     )
     .run(
-      params.receipt,
+      receipt,
       params.callerFingerprint,
       params.requestId,
       params.method,
@@ -120,6 +132,7 @@ export function checkpointPendingMutationReceipt(
     receipt: string
   }
 ): MutationReceiptRow {
+  const receipt = preserveNativeInputBinding(params.method, this.getMutationReceipt(params.callerFingerprint, params.requestId)?.receipt, params.receipt)
   const result = this.db
     .prepare(
       `UPDATE mutation_receipts
@@ -128,7 +141,7 @@ export function checkpointPendingMutationReceipt(
          AND payload_hash = ? AND state = 'pending'`
     )
     .run(
-      params.receipt,
+      receipt,
       params.callerFingerprint,
       params.requestId,
       params.method,

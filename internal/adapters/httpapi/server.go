@@ -35,12 +35,13 @@ func (s *Server) Handler() http.Handler { return s.httpServer.Handler }
 
 // Config holds server configuration.
 type Config struct {
-	AgentToken     string
-	AllowedOrigins []string
-	Port           int
-	Logger         *slog.Logger
-	Services       Services
-	WebDir         string // Optional: directory for static file serving
+	AgentToken         string
+	SWAOwnerCapability string
+	AllowedOrigins     []string
+	Port               int
+	Logger             *slog.Logger
+	Services           Services
+	WebDir             string // Optional: directory for static file serving
 }
 
 // Services bundles all application services the HTTP layer depends on.
@@ -123,6 +124,7 @@ func NewServer(cfg Config) *Server {
 	h.registerOpenViking(mux)
 	h.registerLocalProjects(mux)
 	h.registerOrcaCLI(mux)
+	h.registerOrcaDeliveryAdmission(mux, cfg.SWAOwnerCapability)
 	h.registerRegisteredProjects(mux)
 	h.registerRepositories(mux)
 	h.registerPaperSearch(mux)
