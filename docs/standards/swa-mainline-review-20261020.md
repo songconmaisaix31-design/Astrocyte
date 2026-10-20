@@ -263,3 +263,17 @@ UTC11:31:06可用1.774GiB采用主控管理记录中的单次只读观察，未�
 记录准确f2的F10—F12、同一Worker返修、bc273ad两报告及主控实际读取两个hook的事实，与原Run和独立报告一致。d7及F04—F09/76的既有静态接受保持，双Worker驱动和故障副本仍为待办，全部动态未运行；资源门槛、原S/Orca归属和无窗口、M1修复因果不足及原S3/权限未知范围保持。此接受仅限管理记录。
 
 `.verification/check-revision.ps1 -Previous 3d2f4ab88fb155cf821a90380b7933fca20aa86a -Candidate 1f99f64d59d578954fb943518e34e41cf2ab38ed` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及远端核对通过，没有重复功能或资源检查。
+
+准确1f99接受hook为`msg_9496e00aac92`；主控在`msg_8f81826bb5e2`完整读取629e060主线新增范围、返修归属与原Run回执、16链接及程序未纳入main/动态未运行，确认仅接受管理记录，原S/Orca与M1/S3/权限范围保持；实际读取回复确认本次唤起。
+
+## 准确91735049至4e774764的推送状态记录复核
+
+结论：**接受准确`4e7747647d9f262f596cef37c25e098c91164a59`相对1f99经`917350493697fc0979733bffc8336f8f4fcca4e2`的管理记录范围**。按主控`msg_17258917d7ca`及`msg_fd70bed52e03`完整读取两段差异，只有STATUS.md和首版CLI任务两份文档；其他程序、依赖及文档均未变。
+
+917记录当时abdb本地提交、两次TLS失败及主控UTC11:45:35只读远端仍f2的事实，4e随后记录同一abdb普通push EXIT0与主控真实ls-remote核远端同SHA，原失败保留。最新STATUS已显示推送完成，任务正文按先后保存来源，没有将旧失败作为当前未推送状态。本Reviewer另以真实ls-remote核main为4e、Worker分支为abdb。
+
+四个Go检查仍在原Worker写域编写，未提交内容没有混入abdb的准确CR。主控记录独立Reviewer负责实际成果语义核查、功能测试不交用户代为执行，与既定角色相符；human项目批准沿已有权限边界。单次可用内存0.801GiB只是主控当时只读观察，未授予动态窗口；本Reviewer未重采样或运行prepare。
+
+这次接受仅覆盖管理记录，abdb程序另见无界面报告，F10—F12静态接受及F13/F14退回不代表整体功能通过。原S12800/Orca保全、资源门槛、M1修复因果证据不足及S3/权限未决范围保持，程序/依赖未纳入main。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 1f99f64d59d578954fb943518e34e41cf2ab38ed -Candidate 4e7747647d9f262f596cef37c25e098c91164a59` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及远端核对通过；此前Windows PowerShell辅助调用的宿主策略/编码错误与后继PowerShell7成功已如实记入无界面报告，没有重复动态检查。

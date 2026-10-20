@@ -454,3 +454,43 @@ T00固定公开来源及四原文、T02同候选安装、T13私有服务/缺Gran
 `.verification/check-revision.ps1 -Previous d7f21242259739cfb49a4f68a19a1a8f28bcec32 -Candidate 0c6c701daa0ab29995b34d657c463fb2c33d137c` EXIT0，十一路径Git空白、两份Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。f2两个父来源、四份主控原blob及其余程序未变已核；没有编译、安装、执行JSONL读取/PS观察器/fixture、模型或服务。原S12800与无动态窗口保持。
 
 准确f2退回hook为`msg_4329ac9d3bc1`；主控在`msg_2903075f2500`完整读取bc273ad无界面报告，逐项确认准确来源/F10—F12因果、官方及Pi类型依据、其余范围和全部动态未运行，确认返修仍交同一Worker，d7/F04—F09/76原接受保留；实际读取回复确认本次唤起。
+
+## 准确abdb07d3的返修及实际检查源码CR
+
+准确来源为`abdb07d31954b9e72f12bdaafdfe56406deb9004`，父提交f2。按原Worker`msg_20ee3dc6b88f`和主控`msg_80224e5e2ce8`完整读取十四路径；未提交的四个Go检查不纳入本次审查。此前两次TLS推送失败保持原记录，后继Worker`msg_0681a26676c2`及主控`msg_4f5e4e394ca4`报告普通push和远端核对成功，本Reviewer另以真实ls-remote核远端Worker分支同一准确SHA。
+
+结论：**接受F10—F12的静态修复；退回T13的F13及T07的F14检查缺陷**。整体程序、构建、安装、真实SDK/模型和双Worker功能仍证据不足，全部动态NOT_RUN。d7正常停止A/取得B完整成果的计划、F04—F09及76原有静态接受保持；尚未完成的其余阶段没有被单独判为失败。修复继续交原Worker，当前无正式PR，准确Commit的GitHub COMMENT review等待正式交付。
+
+### F10—F12静态返修接受范围
+
+F10现按实际SourceIdentifier取得Get-EventSubscriber返回的PSEventSubscriber，核对五个EventName和SubscriptionId、启用状态及活订阅，逐一读取Changed/Created/Deleted/Renamed/Error；监控Error失败，最后注销准确订阅、清理事件并释放watcher。另在自有探测目录创建真实文件并等待实际通知，检查观察机制可用。本轮只读核[Get-EventSubscriber官方文档](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-eventsubscriber?view=powershell-7.5)，返回类型和按标识读取方式相符；没有注册观察器或运行探测。
+
+F11把局部process改为ownerProcess，移除同作用域访问process.env前的遮蔽，保留真实owner PID/创建时间/runtime来源。原正向分支的ReferenceError源码因果已消除，尚未执行该查询。
+
+F12按实际Pi AI1.0.1类型区分user/system/assistant及允许entry分支，核必要timestamp、usage、provider/model和内容块字段；assistant字符串、未知block、非字符串text及未知entry不再通过原宽松schema。完整成果还要求实际末条assistant正常stop、没有错误及非空text。工具调用仍拒绝，实际SDK usage保留原件来源，billed_cost明确未知。原反例在源码上已被拒绝，真实合法SDK成果和故障副本尚未运行。
+
+### F13：T13不能证明原生处理停止时A仍在执行
+
+严重程度：较高，影响首版同一安装候选的真实并发与执行中停止验收。准确`tests/swa-cli-headless/installed-flow.mjs:144`先检查A尚无agent_end，第146行发起CLI停止，第151行只要求事后agent_end接收时间不早于客户端命令started；空数组的every也返回true。
+
+存在可从源码推导的顺序：客户端停止命令已启动，A随后自然结束，原生停止随后才处理并关闭空闲SDK。现有条件全部可成立，最终仍能写functional_flow passed。准确原生StructuredWorkerStopOutcome的stopped证明会话关闭及lease消失，空闲Worker同样可以满足，不能补足执行中取消的因果。这是静态可行分支，尚未动态复现。
+
+原Worker需关联实际A目标turn及原生处理停止/SDK中止的真实证据，使自然结束先于原生停止的分支保持失败或证据不足；复用已有journal/SDK事实，不新建执行账本或重放替代任务。已读取实际JournalStopAcceptor：原生接收时在writer事务内保存live turn及epoch/sequence，可用于实际关联。d7允许A没有完整持久化输出，不能因此追加A完成条件；缺少取消证据时继续未知。B仍须保留同一身份、继续执行和交付完整成果。
+
+### F14：T07八个结构损坏用例首先命中尾部截断
+
+严重程度：较高，影响H09、§5.5及F12返修的实际回归覆盖。准确`tests/swa-cli-headless/result-sources.test.mjs:104`对八个结构用例调用无选项stringer.asStream重写真实归档副本，第105行只作无错误谓词的assert.rejects。
+
+已读取实际安装stream-json到stream-chain的stringer调用及`src/jsonl/stringerStream.js`：默认separator为换行，suffix为空，末条后不输出换行。产品readSDKSessionSource先检查尾字节必须为10，然后才解析JSONL及schema。这八项unknown_content_block、non_string_text、assistant_string_content、missing_message_timestamp、missing_usage_tokens、unknown_entry_type、missing_model_change_field及empty_final_content均会先被统一尾部错误拒绝，无法据现有断言证明各目标结构错误被检查。
+
+原Worker需用成熟stringer配置形成完整尾部，保留真实合法原件对照，并断言各目标语义错误或准确错误分支，避免截断等无关错误满足断言。上述八项本来直接来自已审H09，没有新增无关用例；本轮未生成模型原件、运行损坏副本或执行parser。F13/F14及三项返修接受依据已通过`msg_c2f04f4bd2b2`交原Worker。
+
+### 其余已读取范围和验证结果
+
+T13驱动固定同一候选Node/SDK/version、真实公开原文、原生项目批准和Run/root/Dispatch；实际SDK delta重叠、真实owner根身份、停止A后B同PID/创建时间/fence继续、真实journal逐事件定位及完整B导出均形成检查源码。业务成果仍须原Worker实际执行后由独立Reviewer核语义与普通终端证据，不能凭程序的文本门槛或模型自评登记接受。实际A限制与B完整成果、根Task及资源最终状态均保持原计划要求。
+
+只读JSONL辅助使用成熟parser、fatal UTF-8及读前后文件身份/大小/时间和完整边界，原件故障用例基于实际T13归档的自有副本。构建复用上游slotSourceFiles复制候选所需ConPTY文件，conpty.node保留本次实际构建来源；闭包检查增加对应真实文件，尚无安装可用性结果。实际SDK准备及agent_start检查固定xhigh。PS入口保存自有进程树身份和EOF后两次实际缺席观察，未终止原S或Orca。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous f2bcba97b475b348bbb60b47dc3dd605a3f40739 -Candidate abdb07d31954b9e72f12bdaafdfe56406deb9004` EXIT0，十四路径Git空白、两份Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。此前误用Windows PowerShell的两次辅助脚本调用分别被执行策略及UTF-8脚本编码阻断，未执行产品检查；随后改用已安装PowerShell7，没有更改系统配置。
+
+原S12800及无窗口保持。本轮没有编译、安装、运行Go/Node测试、SDK/模型、JSONL产品读取、HTTP/SQLite或服务，也未读取原认证秘密、环境或SQLite原件。所有适用动态检查仍待原Worker在主控授予真实窗口后执行。
