@@ -2,7 +2,7 @@
 
 ## 当前工作
 
-用户于2026-10-20明确要求“以 re.md 为准重构项目主线”。本轮以 [META_PLAN v2.1](docs/META_PLAN.md) 为整合依据，入口为 [主线重构任务](tasks/swa-mainline-20261020.md)。当前先执行 M0 文档及规则整合，M1 契约故障只读调查并行；任务计划先经独立 Reviewer 审核。普通 main 集成与最终 S3 验收按规划分别处理，现有未决权限保持。
+用户于2026-10-20要求以 re.md 重构主线，随后明确首版为抽取 Orca CLI 执行能力、交付从原有 Agent 或终端调用的可控 Swarm CLI。当前实施入口为[首版任务](tasks/swa-cli-v1-20261020.md)，总体整合方向沿 [META_PLAN v2.1](docs/META_PLAN.md) 和[总任务](tasks/swa-mainline-20261020.md)。M0 正在完成来源及链接检查，M1 测试计划已接受但未执行动态操作；主控核实对应 Orca 源码，独立运行边界等待用户回答。MCP 扩展与完整 S3 验收另行接续，现有未决权限按其范围保持。
 
 用户于2026-10-20要求明确一个当前交付候选，使集成代码、验证记录和实际运行版本对应。当前候选为 `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`，已普通push，原PR #2实际状态为MERGED。运行源码S为ed543c12，S至候选仅治理/报告文档；完整对应关系见 [交付候选任务](tasks/delivery-candidate-20261020.md)。
 

@@ -2,7 +2,7 @@
 
 ## 本轮主线重构
 
-用户已确认按 [META_PLAN v2.1](docs/META_PLAN.md) 重构 SWA 主线。M0 文档与规则整合、M1 契约故障只读调查已派发，独立 Reviewer 正在准备验收条件；本轮尚未修改 main、程序或数据。执行信息与写入范围见 [当前任务](tasks/swa-mainline-20261020.md)，产品、服务及未验范围继续按下列准确来源记录。
+用户已明确首版为抽取 Orca CLI 执行能力、从原有 Agent 或终端调用的可控 Swarm CLI，见[首版任务](tasks/swa-cli-v1-20261020.md)。M0 文档整合正在检查来源和链接；M1 契约修复测试计划已获独立接受，动态检查尚未开始。当前核实对应 Orca 源码，是否脱离桌面独立运行的边界待用户回答；本轮尚未修改 main、程序或数据。整体整合规划仍见 [META_PLAN](docs/META_PLAN.md)，执行信息见[总任务](tasks/swa-mainline-20261020.md)。
 
 ## 状态来源
 
