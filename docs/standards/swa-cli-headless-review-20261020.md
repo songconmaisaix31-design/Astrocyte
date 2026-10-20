@@ -834,3 +834,31 @@ B01已通过`msg_0d0472dcf593`、B02通过`msg_f7a1c12ab6a5`交原Worker按原�
 T03在创建验证目录、资源检查或实际服务之前，核同一安装路径、真实Node、绝对Go目录及实际`VERSION=SOURCE=准确干净源码`。原四个live函数的逐项PASS、零匹配/SKIP拒绝及原controller关闭保持，没有用源码编译代替安装服务。原T03缺失的人类撤销安全停止、不同项目/Run及旧代范围、T12/正文和新增注册Agent要求仍各自未验。未发现六条已审条件的剩余静态缺口；此修改不接受继承2f的新接口或产品功能。
 
 对准确Git对象的两个PowerShell脚本使用已安装`System.Management.Automation.Language.Parser.ParseInput`在内存解析，均PARSE_PASS/EXIT0，没有执行脚本。`check-revision.ps1 -Previous 2f1eceaf3d5ad872339a2efba7fdbaa1178dbc78 -Candidate c4d1c140d8d231058c42c455bd8433de0fc256c2` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Worker`msg_8bbc73a957da`报告按主控要求暂不另跑网络，c4仅本地提交、尚未push；没有编译、函数、probe、服务、Agent或模型结果，本Reviewer没有取得运行窗口。
+
+准确c4接受hook `msg_32ef943e003c`已获主控`msg_1733606dc435`完整读取af666报告及准确四路径/整个编译入口回复，实际唤起确认。主控明确普通Git push授权保持，先前不另跑网络针对REA/HTTP探测；原Worker`msg_69bb54bdc6ad`后继报告一次普通push实际EXIT0，远端由ebf到bf，包含c2/2f/c4/bf；原c2/2f TLS失败事实保留，未将后继成功追改为首轮成功。
+
+## 准确1dc4cb5e的恢复身份及当前REA原件
+
+结论：**接受控制脚本准确SHA256 `1dc4cb5e5d35555a474792540535fcb081021cfe562b77427c07f870413290ab`的两项恢复身份常量。** 在内存把57400/UTC15:33:20.748677恢复为18944/UTC14:49:56.491641，全文件精确得到已审`03c64ef6922af3e4ce00763159377c26a03d8d065eb36e0b32e20b65ba577ceb`。沿既有真实恢复/所属/两常量判据，没有其他流程修订。
+
+UTC15:36:13独立只读确认restore-06 launch/restored/current running一致、准确原程序、PID57400/父32056、Get-Process创建UTC15:33:20.7486771、原件epoch1792510400.7486773，差0.0001毫秒符合既有小于1毫秒判据，唯一127.0.0.1:64505监听。database-check原件integrity ok、foreign_keys空、stopped_interval_comparison equal；启动资源CPU6.2%/5.7%、可用11.967/11.985GiB、BelowNormal、间隔3.001819秒符合门限。prepare-06/stop-06的prepared/stopped/window-ready及真实backup资源原件已读，原S18944精确退出15后恢复同一原库；未打开SQLite或执行HTTP。
+
+`.verification/verify-restored-owner.ps1`以本次准确hash和前后身份运行EXIT0，原件为`.verification/window-1dc4-readonly.json`。该结论只允许主控将准确脚本用于后继新的prepare，仍须新鲜身份/环境/备份及资源准入；没有授予新的动态窗口，当前窗口归原S57400。health/Web、完整环境与本机Orca38652/runtime49da公开状态保持主控实际来源，本Reviewer没有补写动态通过。
+
+已读主控限定inventory identity/分析exit/资源及doctor exit；成熟asar记录当前Orca1.4.230和REA6.5.0、目标6a9bd961，分析实际EXIT0。使用已安装stream-json3.7.0的parser/filter/streamValues对96945279字节完整JSON流进行语法读取，只组装Evidence身份、所选来源/统计、graph coverage、semantic coverage的status/truncated/limits及limitations，输出`.verification/rea-current-static-review-02.json`，BelowNormal/Node512MiB/EXIT0。未组装或逐项审核完整图、unknown_ids或全部AST事实，不声称已完整核查其语义。
+
+准确Evidence `ev_7003a444cd2970c2d3ace2427c883c461f6a1ec67b9dfdbe9be6528e775726d3`绑定当前6a9完整摘要，7来源/6JS、33407文本字节、解析失败0、5051文件未选，graph和semantic均partial/truncated=false。其limitations明确未选关系及动态路径未知，静态语法不证明执行。doctor原件healthy=false、Codex registration为config_drift、实际EXIT1；CLI分析独立成功，没有修复MCP、启动新REA分析或执行Orca目标。主控首次派生摘要失败及后继修正保留其原记录，没有覆盖为应用分析失败或重复应用分析。
+
+## 准确bf996c34的注册Agent方案审核
+
+结论：**退回准确`bf996c3465a8a4efb06e9e2a598dd6aab3ec6c2f`的具体注册发现/调用方案，保留G01—G08覆盖框架及全部真实未知。** 在2593先形成独立条件后，完整读取相对c4两文档§4.5/§7.8，并核真实注册handler、启动设置投影、worker配置预检和local-worker-start消费者；普通Git源码观察与当前REA限定证据分别记录。原Worker后继普通push成功已取得，不把本地可审误写为未提交。
+
+| 问题 | 独立依据与影响 | 原Worker需要补齐 |
+| --- | --- | --- |
+| N01 发现依赖原Orca后台 | §4.5.2每次发现及启动前都要求原Orca runtime的agents/settings响应，不可达即unknown；§4.5.4又要求安装运行不依赖原桌面IPC。必要原服务前置与独立抽取边界冲突。主控`msg_f513a3e06a00`确认新用户目标包含独立发现和调用，原Orca无须正在运行 | 使用产品复用的真实registry/adapter和产品本机命令发现，明确必要原配置的只读事实源及敏感筛选，原服务只能作可选对照。补原后台未作为发现前提的独立安装检查，同时按已有范围保全原Orca，不为测试终止它 |
+| N02 选择与调用契约未完整 | 框架提出capabilities五状态及agent/model选择，但准确输出schema、选择快照/当前配置变化绑定、模型/账号定位、失败/unknown字段及各CLI/HTTP/App/helper/native消费者仍未定。真实agentSession.agents受协商和client策略筛选，返回build声明；settings.getAgentLaunch只返回只读投影；worker别名与TUI路径的实际launcher不同。只列方法名不足以冻结原生caller、consumer及调用边界 | 提交准确发现/选择/执行及结果契约和消费者清单，说明原生声明与本机实际观察的对应、启动前变化拒绝、原controller/Run/root/Dispatch/session/generation，以及B01/B02在实际输入路径如何实现；不得在实现时另选协议或字段 |
+| N03 真实可调用范围证据不足 | 方案逐Agent列出工具/账号/供应来源未知，却尚无实际支持矩阵及可执行的原生launch/send/read/stop/resume路径。当前ev7003只选配置/检测规则和两个CLI入口，未覆盖注册handler到worker控制及动态闭包。发现后全部拒绝不能满足实际调用和最终双Worker目标 | 按准确交付物补必要链路/依赖来源和逐Agent程序、原生协议、账号读取/写入边界、产品能力及本轮实际验证权限矩阵；必须用户决定的范围保持未决定，由主控依据原决定处理。当前工具限制按其适用验证范围核实，不能扩大为所有产品能力的禁令，也不能推断开放。未具备依据的实现保持暂停，已审独立Go准备可继续 |
+
+G01—G08及既有D/T覆盖了来源、状态区分、原生调用、权限、独立依赖、原Orca保全、失败未知及同候选双Worker任务；未发现无关多余检查。它们是后继完整方案的必要验收条件，不等于当前未知接口或Agent范围已接受。N01—N03已通过`msg_9816edcff224`交原Worker，主控另已核相同后台依赖问题；修复全部交原Worker，本Reviewer没有修改实现。
+
+`check-revision.ps1 -Previous c4d1c140d8d231058c42c455bd8433de0fc256c2 -Candidate bf996c3465a8a4efb06e9e2a598dd6aab3ec6c2f` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。所有G/D/T12真实Agent/协议、注册查询、安装、模型与新接口仍未执行；没有重跑REA、采样、服务、控制端或网络探测。

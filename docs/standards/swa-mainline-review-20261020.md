@@ -391,3 +391,15 @@ F16的参数错配、高严重程度退回及原Worker收到后等待解除冻�
 REA旧Evidence与当前app.asar摘要不符的事实保留主控实际来源，本Reviewer只核既有摘要及完整partial startup trace，没有复算当前app或宣称新分析已执行。准确064时原S及本机Orca保持原运行，计划中的限定静态REA仍须由主控新prepare/stop窗口串行执行并恢复；本管理接受不代替窗口或新脚本运行结果。
 
 `check-revision.ps1 -Previous f011c257e36d57276037a638ba9f206857341cf6 -Candidate 0647754b18b9bbb9eb1b7903f1342a3fb654d6e0` EXIT0，七Markdown/117本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。META_PLAN既有`<task-id>`来自未改动正文，本次未新增HTML或锚点；没有重操作、Agent/probe、编译、模型或配置修改。
+
+准确064接受hook `msg_b899f2f19780`已获主控`msg_b34d8480a8a2`完整读取e173报告及2593条件回复，实际唤起确认；主控亦确认普通push实际EXIT0。
+
+## 准确c9fb9b7b的限定REA与同源恢复记录
+
+结论：**接受准确`c9fb9b7bda759e324fa9369209f29e221ca95d97`相对064的STATUS及首版任务管理范围。** 完整读取两文档差异，并独立核当前REA原件的限定身份/统计/覆盖/失败、prepare-06/stop-06及restore-06原件；准确1dc4两恢复常量的独立接受见同次无界面报告。当前S57400的真实程序/创建epoch/唯一监听已独立只读核实，完整环境/health/Web及本机Orca状态保留主控实际来源，没有补写Reviewer运行结果。
+
+当前ev7003绑定6a9交付物、7来源/6JS/5051未选/partial与实际EXIT0正确，doctor config_drift/EXIT1及主控派生摘要首次失败和后继修正分别保留。没有将静态图、命令声明、局部原件读取或旧版本Evidence写为注册Agent已可调用、完整依赖或模型验收。原库保持integrity ok/外键空/equal，窗口归原S；T11/S3/工具适用范围及全部动态未验保持。
+
+c4入口局部静态接受及主控实际回复与准确记录一致；c9记载的本地准确提交及待push回执保留其记录时点，后继原Worker`msg_69bb54bdc6ad`已取得一次普通push0并包含c2/2f/c4/bf，原TLS失败仍保留。bf新方案另有N01—N03退回结论，不能从管理接受取得实现授权。
+
+`check-revision.ps1 -Previous 0647754b18b9bbb9eb1b7903f1342a3fb654d6e0 -Candidate c9fb9b7bda759e324fa9369209f29e221ca95d97` EXIT0，两Markdown/16本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有重复应用分析、运行采样/服务/SQLite/Agent/模型；当前控制脚本接受仍不代替新的窗口准入。
