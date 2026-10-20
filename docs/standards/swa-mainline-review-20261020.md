@@ -545,3 +545,13 @@ restore-14同源S55148/创建UTC18:33:26.874753/epoch1792521206.8747532已于UTC
 `check-revision.ps1 -Previous 72ee2e98434189b1f638a74837fc8d97534887ea -Candidate 0055af5e`实际EXIT0，唯一前缀解析至上述准确SHA，四Markdown/48本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Worker2c下载实现的局部静态CR另记于headless报告；本Reviewer没有修改规格或实现，也没有运行下载、构建、SQLite/HTTP、服务或模型。
 
 准确0055管理接受hook `msg_7c48f3fdf795`已获主控`msg_d1abbccd3082`完整读取d1ba准确两报告新增、2c实现及规格定稿的回复，实际唤起确认。后继build05的实际下载/RPC图局部结果、Python配置失败及restore15已独立记录于headless报告；完整构建和运行状态没有因静态接受改变。
+
+## 准确68eff5b0的实际下载和Python失败记录
+
+结论：**接受准确`68eff5b0293552305c7fae532d7cdd82ca7bd5aa`相对0055的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，独立核build-05完整日志、内外退出、资源与观察、真实21metafile/输出、prepare/stop-15及restore-15。三项官方200及原Node连续校验已实际进入Node24.21.0/node-gyp，当前Node文件实际93580104字节；不据本次成功判定旧TLS原因或全部D01—D05通过。
+
+同一标准JSON比较另独立核正RPC方法输入279→94、完整index原4439输出字节到新图不存在；只接受已定位全表入口的本次静态效果，其他依赖/旧SDK/native/dynamic/assets和功能未验。首node-pty配置未找到Python后，内外退出均1，候选04没有完整native/Go/VERSION或安装条件；默认查找失败不代表本机无Python。实际VoidTaskResult日志保留，既有解释器的唯一force选择和部署前实际预检交同Worker准确修复，不改PATH或安装新Python。
+
+restore-15使用原ed543/原库和原环境配置，UTC19:03:14只读核实际S68128/创建UTC19:00:53.0194234/epoch1792522853.0194235的原程序、整份current/restored及唯一监听符合，原库记录ok/fk空/equal；完整health/Web及原Orca沿主控实际来源，后继prepare取restore-15/restored.json且c8不变。五次失败及全部部分候选保留，真实账号/工具/原生调用、输入恢复/Job/完整成果、安装同候选双Worker仍未通过。
+
+`check-revision.ps1 -Previous 0055af5e3a5f9f1fd02dedf1f4cc727febce1845 -Candidate 68eff5b0`实际EXIT0，唯一前缀解析至上述准确SHA，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有重跑网络、解释器、构建、原库/HTTP、服务或模型；后继b75修复的局部静态接受见headless报告，实际预检及新窗口仍待完成。
