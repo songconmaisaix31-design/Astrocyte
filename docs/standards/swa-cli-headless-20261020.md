@@ -171,6 +171,42 @@ controllerScope分别解析完成的新owner、历史只读owner和pending接续
 
 已完整读取Microsoft [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[CreateJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-createjobobjectw)和[OpenJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-openjobobjectw)：对象直到最后handle关闭且关联进程全部终止后才销毁，命名对象可重新打开。此为静态API依据，本机实际复开/嵌套仍须§7.6真实测试；失败即真实限制，不提权、装驱动或操作原Orca对象。
 
+#### 3.4.1 recover的CLI副作用与输出边界
+
+recover创建helper并改变consumer，必须同时纳入Go App的orcaAction与ValidateOrcaCommand字段表、Go runtime写动作分类、CLI outputFailure、client/native command enum、durable方法、HTTP/OpenAPI和CLI schema的写动作消费者。只使用既有controller/request_id字段。未完成外部连接沿依赖错误4；输入可能进入实际handler后的断开、不完整响应、超时及实际stdout写失败沿未知6；真实Windows os.Interrupt取消等待沿130。全部路径保留已成功解析的原R及C_old，C_new/Run/root只取已收到的真实回执。stdout只尝试一份envelope；发布或部分写入后只使用stderr诊断和原请求查询。取消等待不自动关闭新helper、改变consumer、停止Worker或释放资源。
+
+#### 3.4.2 方法与阶段的严格准入矩阵
+
+以下矩阵补充前述callback的实际判据：schema/transport准入后，先执行本产品callback，再进入任何legacy route及native executor。默认拒绝。真实launch证明沿原生live PTY/secret commitment、host/pane/incarnation，restored必须另有真实restored receipt及实际attestation；不把秘密证明写入日志。
+
+| 方法/真实阶段 | 前置证明及允许范围 |
+| --- | --- |
+| 产品swa.*端口 | 实际私有owner transport、真实Go App当前项目/主体/批准、严格invocation/schema和原receipt scope；open/recover可在尚无helper时进入自身outer executor，不能转发调用者选择的原生方法、from或actor。真正orchestration写入仍须下列helper证明 |
+| status.get/swa.status及无helper只读bridge | 只读bridge精确限定requestShow/runShow/显式run的taskList/workerShow/list/read，先核当前项目及原receipt/Run-root-Dispatch所属；没有from/evidence不声明helper权限。任何orchestration写入、legacy takeover或隐式current-Run绑定均拒绝 |
+| pending open的runCurrent/ready | 必须是该open checkpoint所指真实新PTY/handle/pane/host/incarnation、当前launch及实际helper PID/创建身份/父链。尚无Run时允许真实current=null，不要求已经是consumer，不准其他写入 |
+| open完成但taskCreate尚未开始 | 同一完成open的真实当前launch可查询runCurrent；没有pending swa.taskCreate和准确子R，不允许runCreate/taskCreate |
+| 首次runCreate | parent swa.taskCreate,R为pending，checkpoint唯一controller及子R/run-create，helper当前launch精确匹配，controller尚未创建另一用户任务。允许尚无Run，只使用helper自身from |
+| 首次root taskCreate | R/run-create必须completed，实际Run已绑定该helper；parent的固定spec/context/project不变，子R必须R/root-task，只创建该Run的首根Task |
+| pending recover的runCurrent/ready | 匹配原recover checkpoint已取得的C_new真实launch/PTY/PID，旧owner已证退出；允许尚未绑定的current=null，不准runCreate或普通Task/Worker写入 |
+| pending recover的runUse | 准确R/run-use、C_new真实当前launch及parent checkpoint同一旧C/Run/root/固定context/旧generation和已证旧owner退出。只绑定该Run，拒绝takeoverLegacy和其他目标，绑定后读取实际新generation |
+| 当前consumer普通写入 | 非空真实helper证明、实际当前Run/consumer与完成open/taskCreate或recover owner一致；native方法与R/native匹配真实pending swa.controllerDeliver的动作及Run/root/Dispatch。worker.stop/release虽无from参数，也从真实evidence核caller；缺parent或目标错配拒绝 |
+| 原helper恢复 | restored分支必须有真实restored receipt及实际attestation，且原Run consumer仍为该完整身份；缺证拒绝/unknown，不使用当前launch豁免 |
+| 任意completed Native R重放 | executor返回completed前仍执行该方法的真实helper及当前consumer检查；首次runCreate/taskCreate子R同时核completed receipt及parent指向的Run/root。旧generation拒绝。纯requestShow只读原件，不赋予写权限 |
+| 公开已完成R历史回执 | 当前HTTP/App批准、项目和原receipt关系仍核验，只返回真实历史open/close/recover及replayed来源，不把已关闭helper声明为活owner，不调用helper或原生写入 |
+
+#### 3.4.3 接续保留、首次外部效果与拒绝结算
+
+原生receipt保留、checkpoint和expected handle属于内部结算；首次外部副作用从实际createTerminal开始，后续helper输入及runUse同样属于外部效果。不新增状态表，按下表复用原生executor。
+
+| 阶段 | 实际边界与结算 |
+| --- | --- |
+| scope-reserved | 原生BEGIN IMMEDIATE保留project/prior_controller/Run-root/旧generation/旧owner，checkpoint stage=scope-reserved并提交，之后才异步新鲜观察；不调用PTY/send/runUse，也不markMutationEffectPossible |
+| 明确无外部副作用拒绝 | 两次成功新鲜观察证明旧helper仍活，且尚未进入pty-spawn边界时，返回controller_unverifiable及effectsApplied=false。原生executor按自身effect-free错误规则discardPendingMutationReceipt；仅该结算实际成功才解除本次reservation。读取或结算失败、不确定均保留原件及pending/unknown屏障，不手工删除未知receipt |
+| pty-spawn及以后 | 首次createTerminal之前先持久checkpoint expected handle/clientMutationId/stage=pty-spawn，再markMutationEffectPossible并进入既有效果包装。其后异常转换为operation_unknown保留pending，缺少可见PTY不能推断无效果；不同R竞争继续被阻止 |
+| pending同R观察 | 不create/dedupe/send/runUse。stage为pty-spawn或后继且缺完成证明时保留6/屏障；只在原R/run-use completed、完整C_new/Run/context/旧owner退出证明一致时完成原outer。明确位于外部效果前且原生规则可结算的拒绝才解除，其余不删除或重发 |
+
+原生executor对非prompt方法的普通异常可能清除pending，即使已经markMutationEffectPossible；因此pty-spawn之后必须使用现有operation_unknown效果包装，不能只标记后抛普通错误。R03/R04的连续序列只有在R_live明确无效果拒绝及原生结算均成功后，才允许在旧helper真实退出后由调用者显式提交新的R_recover；R_live或结算未知时只查询原R。
+
 待准确接口定稿及独立计划接受后，在已有write_paths实施CLI、Go App/adapter及HTTP契约、runtime/swa-orca、pin的dispatcher/options/receipt/daemon PID写读消费方、OpenAPI/CLI schema、测试入口及tests/swa-cli-headless。API类型仍只由生成器在明确窗口更新；主控SSOT只交Handoff，不自行修改。
 
 ## 4. 当前Agent与非Aliyun受限正向方案
@@ -516,15 +552,16 @@ Windows控制信号只允许在本项新建的隐藏console内执行：普通验
 
 | 条件 | 真实操作与判断 |
 | --- | --- |
-| R01 真实caller | 真实controller open/task create取得当前launch和consumer。另用没有launch环境的实际普通子进程及真实RuntimeClient，针对已有Run/准确方法/真实R调用及重放已完成R，须在executor之前拒绝；不拼造wire evidence。原helper当前launch正常通过，缺restored attestation不得通过 |
+| R01 真实caller及bootstrap | 分别真实覆盖pending open的runCurrent、首次runCreate/root taskCreate、pending recover的ready/runUse及completed Native R，逐项核§3.4.2矩阵。合法尚未绑定helper正常返回current=null并完成原生启动；无launch的实际普通子进程及真实RuntimeClient调用已有Run/准确方法/真实R和重放completed R均在executor前拒绝。helperless桥接不得调用任何原生写入，restored缺attestation拒绝；未命中细pending窗口保留未验，不拼造wire evidence |
 | R02 当前批准及范围 | 使用实际另一项目/controller、按既有人工入口实际撤销的批准/Grant和真实settings变化，核拒绝且无第二Run/helper或generation变化。不伪造human；未具备真实条件的分支保持未执行 |
-| R03 旧helper仍活 | 对真实活C_old执行recover，必须拒绝/6，原helper/PTY、Run/root/context和generation保持，原R查询可用，没有竞争C_new，其他Worker不被停止/释放 |
-| R04 完整接续 | 对同一真实任务，在旧root/helper及PTY精确退出后一次recover，核C_new实际launch、同Run的R/run-use与generation增加，root/context/原Dispatch-session引用不变；新controller可真实观察并执行批准的既有任务动作，旧C_old新写入拒绝。新controller不允许创建第二用户任务 |
-| R05 重放及竞争 | 同R同payload返回同一C_new/原receipt，不多建PTY/runUse；不同payload拒绝。两次不同真实R并发接续同一个旧controller，原生事务只许一项取得范围，另一项拒绝/unknown，最终唯一current consumer。不改后台或加入屏障 |
+| R03 旧helper仍活及结算 | 对真实活C_old提交R_live，须明确拒绝/6及effectsApplied=false，原helper/PTY、Run/root/context及generation不变，无新PTY/runUse。保存真实原生effect-free结算及reservation解除；查询或结算未知继续原R/占用，不能以新R替代，其他Worker不停止/释放 |
+| R04 连续完整接续 | 延续同一lineage的R03，只有R_live明确无效果且原生结算成功后，才真正结束旧root/helper及PTY，两次新鲜退出核验后由调用者显式提交新R_recover一次。核C_new真实launch、同Run的R/run-use与generation增加，root/context/原Dispatch-session不变；新controller可执行批准动作，旧C_old新写入和第二用户任务拒绝。R_live/结算未知时仅查询原R |
+| R05 重放及竞争 | 同R同payload返回同一C_new/原receipt，不多建PTY/runUse；不同payload拒绝。不同R并发分别观察scope-reserved事务和pty-spawn后的真实排他结果，最终唯一consumer；明确无效果拒绝结算后允许新的显式合法接续，未知屏障继续阻止竞争。不改后台或加入屏障 |
 | R06 同库重启 | 至少一个真实Worker输入已接受后，只精确停止本项runtime/所属服务，保留私有daemon/session文件及实际原R/SDK事件/Job成员。重启同候选/同D，复开同Job并核原daemon同身份，原请求/任务/Worker观察可用。原helper须全部真实恢复证明；缺attestation拒绝。SDK父Job丢失保持unknown/占用，不重发或替代，不假称模型不中断 |
 | R07 原handle关闭后复开 | 保存serve真实退出、原用户handle关闭及Job剩余实际成员，再由新serve真实Open同一个命名Job并加入，与kernel成员及daemon握手互核。对象缺失/权限/嵌套/来源失败必须拒绝，不用新Job空计数登记成功。自然PID复用未命中则不伪造该分支 |
 | R08 checkpoint断开 | 一次真实recover中观察SQLite实际checkpoint/PTY/runUse receipt后，只精确终止本项CLI或runtime，分别保存实际命中的边界；查原R及同R只读恢复，不再create/send/runUse。只有completed子R及完整当前proof可完成原outer，其他保持6/占用。未命中细窗口记INCONCLUSIVE，不合成延迟或自动重试 |
 | R09 只读及关闭 | 在helper无法核验/pending/已换consumer时，合法project/历史controller的原R和明确原生来源观察可用，跨项目/controller拒绝，成果缺失如实不完整。最终新owner close、Worker归档释放、daemon退休后，全Job两次仅剩serve及已观察旧身份两次退出，才允许EOF正常0；unknown资源仍在时不能0。重复原Orca CLI/进程/监听/配置/认证/ACL及通知观察 |
+| R10 recover的真实CLI失败 | 复用C04/C05/C09的实际条件，对真正recover分别观察handler前的连接失败4、可能已进入处理后的真实断开6、隐藏独立console中准确group的CTRL_BREAK取消130及真实stdout读端关闭6。逐项保留原R/C_old/已知C_new、唯一原receipt/PTY/runUse、一次stdout及原请求查询，核无第二副作用。未命中窗口记INCONCLUSIVE，不添加假响应/Writer、延迟钩子或自动重试 |
 
 R04/R06需要结束旧helper时，预编译普通控制helper只对本项已记录root/helper取得真实进程句柄，逐项核PID+创建时间、私有Job membership、Native PTY/安装及父链，再对同一句柄TerminateProcess并等待真实退出；不按PID重新寻找，不终止整个服务Job或其他进程，不把强制退出计为130。随后两次新鲜进程/PTY查询确认旧身份退出，任何缺项或实际PTY未消失即停止该分支并保留unknown。原生controller close满足全部既有资源条件时优先使用该动作。
 
@@ -624,3 +661,7 @@ R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑�
 本次既有`node --max-old-space-size=512 scripts/check-architecture.mjs`首次实际EXIT1，唯一报错为App引用`io`。已在原`orca_execution.go`写域采用成熟`json.Valid`校验完整单JSON，再由原有`DisallowUnknownFields` Decoder读取任务规格，移除该I/O依赖，未更改架构检查规则。源码修正后同一命令实际EXIT0，45个Go package满足Domain/app/context/transport规则；两次原件及退出文件分别在`static-eof-01`与`static-eof-02`。两次均BelowNormal、Go单并发/256MiB、Node512MiB、私有TEMP，GOPROXY=off及本机工具链；按RESOURCES静态豁免执行，只进行Go list及边界判断。五份Go源码gofmt -d无差异，git diff --check EXIT0。此结果没有编译或执行Go函数、TS、SDK及服务。
 
 准确c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c已普通push。主控msg_06a708e7594c正式授予的一次`next-window.ps1 -Stage build -EvidenceName build-01`已实际运行，资源UTC14:13:01.942490/14:13:04.443455、CPU7.2/6.5%、可用11307388928/11310837760字节、单调间隔2.5009953秒通过，build-resources-exit=0。构建Node48860在`mkdir(output)`实际ENOENT、build-exit=1，本树缺少dist父目录；失败发生在PNPM deploy、Node下载及native/TS/Go编译之前。两次新鲜CIM定向查询该Node及直接子进程均无匹配，实际Node命令已退出；完整log/退出码和processes-after.json保留在build-01。没有自动重试、补目录后重发或候选VERSION；主控已收回窗口并确认restore-04 EXIT0、同源S45948及原库/配置/Orca保持。后继在原构建脚本写域创建受控dist父目录，以lstat/realpath核其为真实仓库目录及候选实际父路径未越界，候选仍使用非递归mkdir独占创建。git diff --check通过；修正尚未运行，不为MODULE_TYPELESS警告修改上游package。
+
+准确897531d5d2978e3a51a043063a26e254b3d0f766的T12提案已由bad4d7c55249e310286a946e4a3eb603ef7060b3退回。当前§3.4.1—3.4.3和§7.6补齐P01—P03：recover的全部写动作/输出/取消消费者及真实R10，合法bootstrap与completed重放的前executor矩阵，scope-reserved/pty-spawn边界及明确无效果拒绝的原生结算；R03/R04连续同lineage和R05竞争保留。主控尚未定稿，原Reviewer尚未接受，不实施T12程序或执行新测试正文。
+
+主控msg_c1bdd050117d授予准确897531的一次build-02，实际资源检查0、构建1。UTC14:29:15.977114/14:29:18.478317的CPU32.9/5.0%、可用11693080576/11724275712字节、单调2.5012121秒符合门限；实际PNPM deploy完成323项依赖，原慢镜像警告保留。固定Node24.21.0首归档fetch触发原10分钟AbortSignal，build-exit.txt最后写入UTC14:47:59，日志原始TimeoutError及实际Node v24.16.0保留。候选仅runtime及空node目录，私有work无归档，无headers/native/TS/Go或VERSION。session82066已实际退出1；UTC14:49:02.0811535及14:49:27.8535268两次新鲜CIM的原Node18536/子9272及其直接后代均为空。完整原件和部分candidate01保留，没有重试、删除、修改超时/来源或执行版本/安装检查。主控msg_e00d82c78306收回窗口并解除tracked/Git冻结，msg_a7130df1a33c确认restore-05 EXIT0、同源原S18944及原库/环境/配置/Orca保持；Worker未操作原S。

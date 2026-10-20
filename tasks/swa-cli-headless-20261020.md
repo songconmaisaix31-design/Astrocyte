@@ -91,3 +91,7 @@
 准确c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c已普通push。正式一次build-01在资源EXIT0后实际EXIT1，原因是dist父目录缺失使mkdir(output)报ENOENT；尚未deploy/native/TS/Go编译或Node下载，无候选VERSION，没有重试。实际Node48860已退出且两次定向CIM无在途匹配，原件完整保留；主控收回窗口并确认同源S45948及原库/环境/配置/Orca保持。构建脚本后继静态修正受控父目录创建和真实路径边界，候选仍独占创建，diffcheck通过，尚未重跑；T12完整契约与strict caller缺口计划继续交审。
 
 准确bc217de88f4bb4b8af1ab63f3c281f4c2f649aea的受控构建父目录修正已普通push EXIT0，未重跑。报告§3.4/§7.6现提交T12完整提案：唯一controller recover动作、严格helper校验先于native executor及completed重放、原生同Run/generation接续、旧helper真实退出、同R pending只读恢复和不同R竞争拒绝；未知Worker/输入继续保留。命名Job及已有daemon PID record保存非秘密对象定位，重启必须真实Open同Job/成员/握手互核，不以新Job漏掉旧daemon；R01—R09覆盖当前批准、caller、真实重启/断开/只读及关闭。本提案等待主控定稿和新Reviewer ctx6339独立接受，未冻结参数或编写相关程序，T11保持待用户回答。仅文档与差异检查，当前没有新增动态窗口。
+
+准确897531的T12提案被原Reviewer bad4d7c5退回P01—P03。报告§3.4.1—3.4.3及§7.6现补recover写动作/输出/取消分类和真实R10、合法bootstrap与completed重放的强准入矩阵、原生reservation与首次外部效果及effect-free结算边界，并补同lineage的R03拒绝后显式R04和两阶段R05竞争。提案继续待主控定稿及原Reviewer独立复审，相关程序和全部新增正文均未执行。
+
+准确897531只执行一次主控msg_c1bdd050117d授予的build-02：资源0，实际PNPM deploy完成，固定官方Node首归档按原10分钟AbortSignal超时，构建EXIT1，无headers/native/TS/Go或候选VERSION。实际session82066退出及两次新鲜定向CIM无原18536/9272或其直接后代后，通过msg_b12eef9d323c交回窗口；build-02原件和部分candidate01完整保留，无重试或删除。主控已解除tracked/Git冻结并确认restore-05 EXIT0、原S18944及原库/环境/配置/Orca保持，后继无重操作授权。详细资源、时间、原件及失败范围见报告§9。
