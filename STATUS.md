@@ -16,6 +16,7 @@
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
 | 后继工作 | 同一无界面Worker以Task9f/ctx0d接续。准确c29普通CLI、f08锁/真实类型及c0所属EOF/Job/native关闭已获独立6d693df7局部静态接受；主控完整读取两报告并分别回复四项hooks。首次build-01在mkdir处ENOENT/EXIT1，无部署或实际编译/候选；准确`bc217de88f4bb4b8af1ab63f3c281f4c2f649aea`修正受控dist父目录，独立97a04f01已局部静态接受。后继`897531d5d2978e3a51a043063a26e254b3d0f766`仅两文档提交T12/strict caller完整提案及R01—R09，待独立审核和SPEC接口定稿，未实施；两提交Worker报告普通push EXIT0，主控已完整读差异并通过空白检查。当前仅交一次干净897531的build-02，实际结果待回执；C01—C09/helper与T12仍未完，T11范围待用户回答。功能、安装、模型及双Worker/隔离动态验收均未通过 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支，两份原报告写域保持。旧ctx980的前台Agent已返回PowerShell，提醒被shell拒绝；原生精确stop确认PTY退出后才重启，新preamble实际turn_started。既有27f报告保留；新邮件已入队，实际读取确认及新结论待回执，不将启动当成审查通过 |
+| 成果路径 F16 | 独立准确报告`abc8fc98b02173d225b8017b07417a7d526e17be`退回c0继承的task.result完整成果路径：helper向原生runShow传run，真实schema及handler要求id，会在成果组装前拒绝。bc217/897531继承；主控完整读取报告并核真实双方契约、实际回复hook，原Worker已收到，当前构建冻结期间不改源码，窗口结束后按原helper写域返修。T07/T13真实成果取得和导出仍必需，先前局部静态接受不覆盖该缺陷 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
@@ -41,6 +42,7 @@
 | 第四次构建窗口 | prepare-04实际EXIT0：UTC14:09:55/58 CPU16.4%/49.2%、可用10.706/10.627GiB、间隔3.004秒/BelowNormal；准确环境/配置及原库一致备份通过。stop-04 EXIT0，S43068于UTC14:10:08退出15，停止后双样本及备份/window-ready通过。干净c0仅执行一次`next-window.ps1 -Stage build -EvidenceName build-01`；资源EXIT0，构建EXIT1/ENOENT。mkdir候选目录时缺dist父目录，未执行部署/Node下载/native/TS/Go编译，无VERSION；Node48860实际退出1、同步版本命令已返回及两次定向进程核查完成后交回窗口。原失败与MODULE_TYPELESS警告保留，未自动重试 |
 | 第四次同源恢复 | restore-04 EXIT0，UTC14:14:43/46 CPU4.8%/9.8%、可用10.709/10.650GiB、间隔3.002秒/BelowNormal；实际同源S45948和原库/环境/配置/health/Web及本机Orca核查通过。控制脚本两身份字段SHA256为`6d7bed3576ade7b9522738ba741a55eade309f9c8b9de93a869b3150562d6870`，独立97a04f01已接受，主控完整读报告并实际回复；Reviewer创建时间显示精度检查两次失败及实际epoch数值通过原件保留，没有修改控制脚本/原件 |
 | 第五次构建窗口 | prepare-05 EXIT0：UTC14:26:20/23 CPU14.8%/10.1%、可用10.887/10.931GiB、间隔3.003秒/BelowNormal，真实环境/配置/一致备份通过。stop-05 EXIT0，停止后UTC14:26:48/51 CPU17.5%/18.0%、可用10.930/10.979GiB、间隔3.004秒。仅一次`next-window.ps1 -Stage build -EvidenceName build-02`交原Worker，准确897531干净、build-02及candidate01不存在已核；tracked和Git冻结，T12草案只在互斥忽略目录准备。成功后仅实际版本核对，其他测试/安装/服务/信号/模型未授权；当前build结果未验 |
+| 第二次构建实际进展 | 原Worker已实际读取授权并只启动一次build-02；UTC14:29:15/18 CPU32.9%/5.0%、可用11693080576/11724275712字节、单调2.501212秒、资源EXIT0。已通过受控dist创建，实际PNPM deploy下载/复制323项依赖，慢镜像警告保留；本项Node18536及同步子Node9272实际身份原件已保存。命令仍在途，无native/TS/Go编译或候选完成结果；不重启Stage、不修改冻结源码 |
 | 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
