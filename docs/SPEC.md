@@ -7,7 +7,7 @@
 
 **任务流程：用户目标与既有项目 → 提案及批准 → 蜂群执行 → 检查与成果 → 用户采用与经验回流。**
 
-资料沉淀作为可选入口：收藏 → 沉淀 → 品味筛选 → 工作区候选。Attention、Workspace、Swarm 保持各自业务归属，用户可围绕已有项目筹划任务。原整合方向见 [META_PLAN](META_PLAN.md)，当前实现与验证范围见根 [STATUS](../STATUS.md)。用户最新首版为抽取 Orca CLI 执行能力并交付可控 Swarm CLI，具体抽取范围与接口由后续任务核实；原 M2/M3 通用 CLI/MCP 及 M2—M6 保留后续规划，其 MCP 与完整 S3 不自动成为首版前置，适用关系见 [QUESTIONS](QUESTIONS.md)。
+资料沉淀作为可选入口：收藏 → 沉淀 → 品味筛选 → 工作区候选。Attention、Workspace、Swarm 保持各自业务归属，用户可围绕已有项目筹划任务。原整合方向见 [META_PLAN](META_PLAN.md)，当前实现与验证范围见根 [STATUS](../STATUS.md)。用户最新首版为抽取 Orca CLI 执行能力并交付可控 Swarm CLI，已审方案与接口边界见 §21.1；原 M2/M3 通用 CLI/MCP 及 M2—M6 保留后续规划，其 MCP 与完整 S3 不自动成为首版前置，适用关系见 [QUESTIONS](QUESTIONS.md)。
 
 本规格定义新平台的业务规则、接口和开发任务。`docs/SPEC.md` 是开发规格正文；Word 是同版阅读件。修改规格时先改 Markdown，再生成阅读件。
 
@@ -29,7 +29,7 @@
 
 ### 实施方式
 
-已有产品由一个 Go 主程序维护业务状态，一个 TypeScript 前端提供三模块界面。判断、Agent 和索引组件通过端口接入，保持现有模块化单体结构。最新 CLI 任务的抽取范围和实现不在本次文档整理中定稿。
+已有产品由一个 Go 主程序维护业务状态，一个 TypeScript 前端提供三模块界面。判断、Agent 和索引组件通过端口接入，保持现有模块化单体结构。首版 CLI 按 §21.1 新增独立 `swa` 入口和抽取的 Node 执行后台，复用 Workspace App 准入；实际安装、运行及功能验收由首版任务登记。
 
 已确认的产品约束见第 01 节；工程默认值可以通过短 ADR 调整。涉及自动执行权、资料外发、目标或产品范围的变化，先提交用户决定。
 
@@ -827,6 +827,10 @@ CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码
 | Workspace App → Orca execution adapter | App 声明消费方端口及 DTO，每次核项目主体、适用 Grant 与动作；原生关联仅保存 project/grant/Run/root Task，迁移使用028。adapter 以随包 Node 入口调用真实 RuntimeClient；执行状态保留在原生存储 |
 | 产品 Node composition → 原生 runtime/controller/Worker | 仅注册获准方法；真实 PTY helper 的 launch/current consumer 执行 Run 与 Worker 操作。公开请求映射到原生 mutation receipts、确定 PTY 创建身份及固定子请求；副作用未知保留 pending，只读查询，不重发输入 |
 | Worker → Pi SDK 1.0.1 | 固定真实 `openai-codex/gpt-6.1-sol`、显式只读认证来源、空工具及资源集合；私有 SDK 子进程 home/agent/session，随包 SDK；只允许已审六项原生 RPC，关闭隐式重试、压缩和缓存预热 |
+
+准确6168的方案补充见[执行方案 §5.4](https://github.com/songconmaisaix31-design/swarm-anything/blob/6168b4ea19e3b5468403e71a77a279b4bc18adf3/docs/standards/swa-cli-headless-20261020.md)：每个SDK Worker由私有runtime创建并唯一持有其不可继承的独立Win32 Job句柄，核实际root身份、分配及完整成员查询成功后，才通过Node原生IPC准入SDK加载。原生root退出、两次间隔至少50毫秒的成功完整Job空查询及两次新鲜旧进程身份退出观察共同满足后，才允许确认全树退出并关闭句柄；查询失败、身份不明或宿主重启丢失句柄继续保持unknown及占用。实际native缺失或必要嵌套被拒绝时在模型请求前失败，原Orca及非目标Job保持原所属，测试依T09/T13执行。
+
+合法已认证人类的自有安全停止保留原规则：严格核项目和原生进程所属，执行批准撤销及旧上下文版本不阻断安全停止；Agent的执行与撤销准入保持。关闭控制端与创建任务/Worker的准入必须共同核原生持久占用：创建先保留时，关闭须拒绝或等待其明确结算；关闭先保留时，新建及输入拒绝，unknown保持原屏障。关闭helper不能代替停止所属独立Worker。
 
 新代码遵守 §3 的 App 端口、adapter 和入口组装关系；来源副本与产品 composition 位于各自独立目录。需要改变上述动作、权限、状态拥有者、公开错误或模型范围时先修订本节及方案并重新审核相关测试。实际构建、安装及 T00—T15 的结果由任务和报告登记，计划接受不表示功能通过。
 

@@ -14,17 +14,17 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确396e方案及T00—T15已独立接受并普通纳入main，程序写域及SPEC §21.1接口已明确，开始静态实现；程序构建/模型/安装/双Worker及隔离动态全部未验。动态窗口尚未授予；M1原入口本次通过，补丁因果证据不足 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`6168b4ea19e3b5468403e71a77a279b4bc18adf3`已普通push，原Reviewer接受F04—F07静态修复及每Worker父持Job方案/测试补充；新F08关闭与创建的竞争仍退回，原Worker返修。CLI/成果导出/打包/原生停止保护继续实现；依赖准备EXIT0、原S12800运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 尚未实现。
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。主控为 M1 完成原服务保全、停止与 T09 恢复；当前同一 S 已重新运行。停止期间真实原 SQLite 与本次一致备份内容相同，完整环境、Q、媒体和 CodeGraph 配置保持。原件位于旧前端工作树 `.verification/swa-m1-contracts-20261020/service-before-01/` 和 `service-after-01/`；备份包含真实数据，保留在本地忽略目录。既有验收范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。本次CLI依赖窗口已完成原S保全、停止和同源恢复。原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-01/`、`stop-01/`及`restore-01/`，含实际环境、Q/媒体/CodeGraph配置、原库一致备份及停止区间内容相同结果；备份包含真实数据，不进入Git或安装包。M1原件保留原位置，其已验范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务 | PID52040，创建 UTC `2026-10-20T07:44:04.137854Z`，BelowNormal，唯一 `127.0.0.1:64505` 监听；同一 S 元数据、实际环境、health ok 和主页原 Web 字节已核实。唯一窗口重新归运行服务 |
+| 当前服务与窗口 | 原S已恢复PID12800，创建UTC `2026-10-20T09:43:52.279923Z`，BelowNormal，唯一127.0.0.1:64505监听，实际完整环境/配置、health和原Web字节通过；停止区间原库iterdump相同、完整性/外键通过。依赖窗口已收回归原S运行，本机Orca公开CLI仍ready且runtime归属保持 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
@@ -32,6 +32,7 @@
 | 独立运行核验 | 准确 S 的49项 GET（含5项403）、真实资料/项目 ID 与原 SQLite 对应、33件 Web 字节、原业务和 Q 保全 |
 | 原始失败与未执行 | 完整默认 CI：NOT_RUN；原 `pnpm check:contracts` 与 Redocly 直调：进程崩溃 FAIL；lint/vet 的实际串行偏差和退出保留在原报告 |
 | 本次 M1 原入口 | 准确 `987811f417e92cd6f15961e60c279f616e3b21a8`，原依赖冻结安装与未补丁的 `pnpm check:contracts` 均 EXIT0；13项警告、264项示例及类型一致均实际完成。Node24.16.0、pnpm11.27.0、CLI2.60.0；历史崩溃未复现，未应用补丁，T02—T08未执行，完整修复因果证据不足 |
+| 首版CLI依赖准备 | pnpm11.27.0的`install --lockfile-only --ignore-scripts`及`install --frozen-lockfile --ignore-scripts`均EXIT0，私有store/TEMP/TMP/cache，两次新资源门限通过。实际入口签名拒绝、peer警告及镜像超时/原命令内建重试记录保留；尚未构建或调用模型，不能计为安装包和CLI功能通过 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
 
