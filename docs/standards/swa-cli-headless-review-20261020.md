@@ -1382,3 +1382,19 @@ Worker的n19-static-01/syntax.log及syntax-exit.txt已完整读取，九份成�
 scope-reserved的后续解析及db.getRun仍位于新增try/catch之外。共享scopeSchema为兼容尚无Run的阶段允许空run_id，随后该分支的min(1)解析可直接抛出ZodError；真实Run读取异常同样缺少unknown包装，原非prompt executor仍可能删除该pending。建议动作：完整pending观察中的解析、读取及证明错误保持operation_unknown，只有完整正向无效果证明支持的controller_unverifiable/effectsApplied=false按原生规则结算。此剩余路径已通过`msg_f5164ac46155`交原Worker，没有操作业务数据库或制造故障。
 
 实际`check-revision.ps1`准确efa31191→8894055a EXIT0，一Markdown/1本地链接及Git空白通过。Worker的n20-static-01两TS/JSON/YAML、文档日志及两项退出0已读；全部只读检查BelowNormal、Node512MiB。真实begin后/首checkpoint前中断、其他pending阶段、N21停止、Program/生成/构建/安装及全部模型均NOT_RUN，同Worker持续返修，不以局部源码修正登记T12完成。
+
+## 准确c962bea7的完整pending观察保护
+
+结论：**局部静态接受准确`c962bea7ca39b9ca2190ee60380a80cc08f2ed42`的N20源码返修。** 完整读取相对889的handler和报告差异，全部pending字段解释、scope-reserved后继解析、真实Run读取、退出证明及完成观察均进入同一effect包装，未知异常统一operation_unknown。只有完整原记录、同一原consumer及两次成功新鲜观察支持的明确无效果结果作为内部返回值退出包装，才在外层抛出带effectsApplied=false的原生拒绝；继续使用原executor结算，未增加删除未知原件的路径或重放效果。
+
+实际`check-revision.ps1`准确8894055a→c962bea7 EXIT0，一Markdown/1本地链接及Git空白通过。n20-static-02的实际单handler成熟parser、文档日志及两个退出0已读，Program未创建、正文未执行。N20已定位源码路径修正确认，真实中断、存储失败和effect-free解除的实际结果仍NOT_RUN，不据此登记恢复、安装或T12通过。
+
+## 准确3c4e0364的同句柄故障归属与身份消费者
+
+结论：**准确`3c4e0364642a01c68c3b75a072d81573d6d6f0ed`已修正N21对应源码；控制端路径退回N22，全部真实运行未验。** 完整读取相对c962的十文件差异、401行Go控制程序、TS只读检查及实际身份producer。普通控制程序在原候选构建的Go串行阶段预编译，Node检查同样预构建并进入strict/noEmit实际类型范围；服务期间没有编译或新故障钩子。
+
+Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、创建时间及完整程序来源，保护PID直接拒绝；持有之后才调用原DaemonClient的authenticated hello/listSessions，并核完成owner receipt与私有SQLite原件。真实Toolhelp snapshot建立helper→root→daemon父链，持有链内句柄并核创建顺序、安装或允许的系统程序来源，终止前再次核活身份、成员和观察时效。只有原helper/root句柄取得终止权限并被TerminateProcess，随后等待这些相同句柄；daemon、父链及整个Job均不作为终止对象。父链缺失、观察过期或错误立即失败，部分终止及关闭失败返回6。上述源码修正确认，实际Go编译、链路和停止均未运行。
+
+**N22，严重程度高：createController比较两个语义不同的原生incarnation字段。** 当前native-methods.ts:133仍将live.processIncarnation与binding.processIncarnation直接比较。实际orca-runtime-agent-prompt-request-correlation.ts:13—31的getTerminalPromptRequestBinding将daemon原始incarnationId放入binding；terminal-interactive-wait.ts:172—192的getTerminalProcessIncarnation在原始值存在时返回ptyId加冒号及原始incarnation，terminal-orchestration-authority.ts:137用此完整值生成live authority。正常daemon提供原始值时，两者必不相等，控制端已创建PTY后会被该条件拒绝，open与recover均受影响；当前只确认源码路径，没有实际启动结果。建议动作：按原生接口各自语义核原始PTY incarnation和完整caller process incarnation，保留真实handle/PTY/launch/current证明，不伪造身份或放宽检查。此项已通过`msg_66685719f000`交原Worker。N21检查程序比较daemon原始session.incarnation与binding原始值符合这两个接口的含义，不将其改为完整caller字段。
+
+实际`check-revision.ps1`准确c962bea7→3c4e0364 EXIT0，两Markdown/7本地链接及Git空白通过，原§15/§16锚点保持。Worker的n21-static-01语法、文档、类型配置日志和五项退出0已完整读取，5份parser、Go格式、配置20个真实根文件名及来源检查保持Worker归属，没有创建Program或执行probe。全部只读检查BelowNormal、Node512MiB；类型/生成/Go-C++构建、Job及停止、全部T12余项、模型和同安装候选双Worker继续未验，修复由同一Worker完成，当前没有新重操作窗口。
