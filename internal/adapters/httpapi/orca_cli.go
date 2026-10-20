@@ -34,7 +34,11 @@ func (h *handler) registerOrcaCLI(mux *http.ServeMux) {
 		if command.Action == "controller.open" || command.Action == "request.show" && command.Controller == "" {
 			command.ProjectID = r.PathValue("id")
 		}
-		reply, err := h.services.OrcaExecution.ExecuteOrca(r.Context(), localCaller(r), command)
+		caller := localCaller(r)
+		if caller.Kind == "human" {
+			caller.ProjectID = r.PathValue("id")
+		}
+		reply, err := h.services.OrcaExecution.ExecuteOrca(r.Context(), caller, command)
 		if err == nil {
 			writeJSON(w, http.StatusOK, reply)
 			return

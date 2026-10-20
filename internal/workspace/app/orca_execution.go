@@ -220,6 +220,9 @@ func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Call
 	if err := AuthorizeProjectActionCaller(p, caller, grant, permission, time.Now().UTC()); err != nil {
 		return p, err
 	}
+	if caller.Kind == "human" && permission == "stop" {
+		return p, nil
+	}
 	scope := ProjectActionScope{ProjectID: p.ID, SettingsRevision: p.Settings.Revision, Action: permission, Roots: roots}
 	if model {
 		scope.ExternalTargets = []string{s.runtime.Target()}
@@ -252,6 +255,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		return reply, err
 	}
 	permission, _, _ := orcaAction(command.Action)
+	safeHumanStop := caller.Kind == "human" && permission == "stop"
 	projectID := command.ProjectID
 	if projectID == "" {
 		projectID = caller.ProjectID
@@ -285,7 +289,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 			return reply, projectError(apierrors.ScopeDenied, "native controller scope does not match the current project")
 		}
 		invocation.Scope = scope
-		if scope.Context.ProjectID != "" && (scope.Context.ProjectID != projectID || scope.Context.SettingsRevision != p.Settings.Revision) {
+		if scope.Context.ProjectID != "" && (scope.Context.ProjectID != projectID || !safeHumanStop && scope.Context.SettingsRevision != p.Settings.Revision) {
 			return reply, projectError(apierrors.ContextStale, "the fixed task context no longer matches current project permissions")
 		}
 	}
@@ -323,7 +327,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 	if err != nil {
 		return reply, err
 	}
-	if current.Settings.Revision != p.Settings.Revision {
+	if !safeHumanStop && current.Settings.Revision != p.Settings.Revision {
 		return reply, projectError(apierrors.ContextStale, "project settings changed while preparing the original command")
 	}
 	reply, err = s.runtime.Execute(ctx, invocation)

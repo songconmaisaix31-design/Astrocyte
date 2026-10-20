@@ -255,6 +255,25 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 现有Go HTTP及私有Node/daemon作为同一产品服务组被主控安排在唯一动态窗口内，固定所属关系。原S服务只能由主控保全、停止并在测试后恢复；本Worker本次未停止任何已有服务。构建和安装完成后才启动服务组，过程中不并行运行第二组构建或服务。
 
+### 5.4 每个SDK Worker的原生Job及停止验证补充
+
+本节及下列T03/T06/T08/T09/T13差异提交原Reviewer独立审核，相应依赖、native构建和动态运行保持未执行。采用私有Node runtime持有每个Worker自己的Win32 Job，补充现有node-pty native适配和`ProviderProcessTree`消费方；不调整本机Orca或原daemon的Job，不增加执行账本。具体句柄适配属于产品源码修改，原node-pty通用PTY行为保持其来源范围。
+
+已读取Microsoft [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[AssignProcessToJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-assignprocesstojobobject)、[QueryInformationJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-queryinformationjobobject)和[TerminateJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-terminatejobobject)完整正文，并核Node24.21.0的[stdio/IPC](https://nodejs.org/download/release/v24.21.0/docs/api/child_process.html#optionsstdio)及准确上游`process-host/src/process-spec.ts`。后者的真实`PipedProcessSpec`已经允许前三个pipe以外的stdio项，`PipedChildProcess`为原生`ChildProcessWithoutNullStreams`；以下仅把Node原生IPC用于启动准入，stdin/stdout继续承载真实Pi RPC。
+
+| 顺序与边界 | 准确调用、所属和拒绝规则 |
+| --- | --- |
+| 创建及能力 | 随包node-pty native适配提供真实`createProviderJob/assignProviderJob/queryProviderJob/terminateProviderJob/closeProviderJob`及编译能力标志。runtime在spawn前调用CreateJobObjectW，取得本次专有、未命名、不可继承的句柄；SetInformationJobObject设置KILL_ON_JOB_CLOSE，明确不设置两种BREAKAWAY标志，并重新查询实际限制。缺导出、创建/限制设置/查询错误即失败，不创建模型会话 |
+| SDK启动准入 | 用既有spawnProcess启动准确安装Node与产品SDK bootstrap，`stdio=['pipe','pipe','pipe','ipc']`、serialization=json、无shell、私有环境。bootstrap只加载Node内置生命周期代码并等待原生IPC，未准入不加载SDK、资源或认证，不生成后代和模型请求。父进程取得真正child.pid和创建时间；native用该自有child的进程句柄、GetProcessTimes及实际父进程身份再次核对，仅向这个空Job分配一次。分配成功且实际Job成员包含该root后，才通过此child.send发送一次准入；bootstrap核自身PID后加载既定SDK factory。Job分配或嵌套拒绝时关闭启动通道并保持预输入失败，缺证保留unknown |
+| 句柄生命周期 | 每个NativeConnection以强引用持有一个不可从JSON构造的N-API外部对象，包含该Job句柄、该root的原生进程句柄及创建身份；不接受CLI提供的数值句柄，不查询NULL/current Job，不命名后重新打开、不复制到子进程。A/B由同一runtime分别创建独立Job；B、IDE、本机Orca及daemon均不会被加入A。父进程是唯一Job句柄持有者；SDK继承成员资格，接收的IPC不携带句柄。未知关闭保留该对象及原资源，占用不因JS观察失败而释放 |
+| 正常关闭与强制停止 | 原abort仍只发送允许的abort RPC。关闭前通过实际Job句柄成功枚举成员并以真实进程表核PID/创建时间，保存实际观察；关闭RPC stdin后等待原root exit。父进程持续持有Job，root正常或异常退出均不会提前销毁见证句柄。若成员仍存在，只对这一Job调用TerminateJobObject；返回成功仅记录请求。不得按可复用PID执行taskkill或关闭其他Job |
+| 全树退出及关闭句柄 | 原生root exit事件、两次成功的Job成员查询均为空且间隔至少50毫秒、对应两次新鲜进程身份观察均无全部已观察旧身份，三项共同满足才返回root/tree exited；持续保存成功查询的成员及真实退出观察。空句柄、查询失败、一次空结果或尚未绑定的空Job均不构成通过。确认后才CloseHandle，并由原生Worker stop/release及archive流程继续结算；请求成功及配置标志单项不能结算 |
+| root故障及runtime重启 | root先退出时仍用父进程保留的确切Job查询/终止剩余成员并核全树。父runtime异常退出会关闭其唯一句柄，Windows按kill-on-close处理成员；新runtime没有旧外部对象，不能据此从root缺失推断树退出，保持原native请求、资源和未知状态，不复原数值句柄、不自动重发输入或启动替代者。旧控制端仍按实际PTY/consumer恢复规则处理 |
+
+这是本任务已采用的Node CreateProcess启动路径和Win32 Job API组合，不声明覆盖通过WMI创建进程、恶意同用户程序或未使用的全部Windows启动方式。实际系统不支持必要嵌套或私有native装载时在该处拒绝；无需提权、驱动或WPR。安装包必须携带对应实际补丁二进制及冻结锁，不能用包内JS能力名称代替该二进制。
+
+Pi原生`requested-close`生命周期及worker stop/release的消费方必须在实际全树结果可用后才结算；root异常退出可以记录已发生的root事实，同时树未知继续占用。不能让较早的root退出通知绕过原生关闭结果。实际Job/进程观察作为现有provider关闭结果及诊断保存，不新增任务状态、Manifest或完成证明系统。
+
 ## 6. 最少完整CLI规则
 
 以下为已审精确命令契约，当前实现中，尚无运行通过结论。CLI/HTTP/App共用同一准入语义；所有写命令要求显式`--request-id <UUID>`，按§3.3映射原生outer/child mutation receipt，公开键及每一步真实身份均保留。上下文通过UTF-8文件传入；禁止在命令行正文中放凭据。
@@ -317,19 +336,23 @@ CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。e
 | T00 来源、基线与授权 | 原件执行`git rev-parse HEAD`、`git show <准确SHA>:<四文件>`；匿名GET公开repo及准确commit；`Get-Command orca -All`、`orca status --json`和只读进程/监听查询；核现有Workspace真实项目/Grant | 固定公开原件、允许输入和成功条件可定位；记录原Orca二进制解析、metadata/runtimeId、PID/创建时间/daemon、配置字节及ACL比较基线；不读取全体会话正文；缺批准保持明确拒绝 |
 | T01 构建及闭包 | 获写域/窗口后执行`pnpm install --frozen-lockfile`、产品`pnpm build:swa-runtime`、`go build -p=4 ./cmd/swa ./cmd/server`；逐个加载实际随包entry/children及真实SQLite，检查构建metafile | bundle/Node/native架构匹配、Node24.21.0、无Electron执行依赖、所有实际fork/dynamic依赖在包内；所有TEMP/TMP归本任务忽略目录。不能运行上游mock测试当产品证据 |
 | T02 安装与私有隔离 | 使用T01同一候选执行产品`install.ps1 -InstallRoot ... -DataRoot ...`；绝对路径运行`$swaBin --version`和`serve --data-dir ... --port ... --json`；按§3.1逐一核实际可写消费者、`PRAGMA database_list`、metadata/pipe/锁、CIM PID/创建时间及监听；对已占用真实端口、原Orca根及本项junction指向原根提供真实拒绝输入 | 指定端口冲突EXIT5且无另选端口；路径在写入前拒绝，不能试写受保护根；私有profile-state.db/orchestration.db/pipe/daemon/key及所有实际session/cache根正确。§3.1定向配置/认证字节/ACL、目录通知和原绝对CLI status一起核保全；全局迁移/hooks/账号消费者源级关闭。当前权限执行，无内核采集前置；具体不可解释变化保持证据不足 |
-| T03 控制身份及权限 | `controller open/show`及`task create`；使用真实过期/撤销或缺失项目token、另一个真实项目/Run/旧controller访问；尝试CLI `--from`/human参数 | 仅真实helper及当前consumer可写；未知flag EXIT2，无效主体EXIT3；无headerless bootstrap调用、human cookie或伪consumer；Controller PID/创建时间和真实native pane可查；旧代请求拒绝 |
+| T03 控制身份及权限 | `controller open/show`及`task create`；使用真实过期/撤销或缺失项目token、另一个真实项目/Run/旧controller访问；尝试CLI `--from`/human参数；用已有真实人类认证在撤销Agent执行批准或更新settings后停止自有Worker | 仅真实helper及当前consumer可写；未知flag EXIT2，无效Agent主体EXIT3；不构造human cookie或伪consumer。实际人类仍能精确安全停止，不依赖Agent执行批准或旧context版本；Agent撤销门禁保持。Controller PID/创建时间和真实native pane可查；旧代请求拒绝 |
 | T04 Pi认证及ToolsOff | `capabilities`；无prompt准备真实Pi SDK并按§4.3 factory顺序加载。首次prompt前检查真实定向refresh结果、auth snapshot及getAuth来源，CredentialStore在实际read/list/modify/delete入口记录非秘密provider ID和操作，未知ID立即拒绝；核真实子进程home/agent/session/package解析路径和过滤前的package-manager来源，从源码调用闭包核没有全量refresh、用户资源发现、默认来源或其他provider环境/云账户探测。核资源/工具及设置后发送固定公开输入。自有准备会话调用真实只读modify(callback)，callback仅尝试创建本项自有标记文件 | 实际凭据操作集合仅openai-codex、没有list及修改callback执行；refresh errors空/aborted=false且真实snapshot为OAuth，provider/model正确。静态内置catalog的存在与实际认证来源分别记录；其他provider操作一次即失败，不能填undefined掩盖。home/agent/session均在该真实Dispatch私有根、package为随包SDK，解析到本机用户资源根即失败；工具allowlist/active/扩展/MCP/skills/templates/context文件均空、固定system和cache/retry/compaction关闭可核。modify/delete在callback前拒绝且没有刷新HTTP；凭据保全按§3.1核。自然短期原件未命中保持该分支未覆盖，不造token/有效期。Codex受限路径真实拒绝 |
 | T05 启动和首输入 | 用真实不存在/不可执行的本任务入口以及正确入口分别`worker start ... --request-id ...`；记录native启动、input、turn事件和session自产文件 | 预启动失败无模型输入，native失败stage/residual真实；成功记录accepted与真实started。真实观测只到accepted时EXIT6且保留Dispatch，不能填ready |
 | T06 幂等与客户端断开 | 并发两个同R/同正文`controller open`，再同R改真实project/workdir；真实PTY创建后只断开本项CLI响应连接，用`request show --project P`查询；另在helper已创建、Run已创建及根Task未确认各实际边界终止本项等待/控制连接，检查§3.3原生checkpoint/子请求；runtime重启后重复只读查询。close同R并发、异controller正文及实际关闭后丢响应同样验证。对worker start/send再执行同R并发、异正文及真实提交后断开查询 | 每R仅一个真实helper及相应确定native handle；open不创建Run，task create至多一个Run/根Task，worker start仅一个子Task/Dispatch/输入。异正文`request_mismatch`；同R完成回原receipt，pending保持unknown及原占用，查询不创建/重发/关闭。真实命中副作用后响应丢失窗口才算该分支通过；未命中INCONCLUSIVE。核outer receipt及R/controller-pty、R/run-create、R/root-task或R/native映射实际存在；原生pending缺记录不证明无副作用 |
 | T07 输出、游标及成果来源 | `worker read --source transcript --limit 1`后按cursor分页；交叉把A的真实cursor用于B；`task result --output-dir ...`；在自有已归档副本做真实文件替换/缺失检查 | 真实消息/source/session/Dispatch对应，跨来源拒绝；结果保留完整来源、限制及unknown usage；缺原件明确失败，无terminal退路；导出不覆盖已有文件、不写出允许目录 |
 | T08 资源与存储拒绝 | 同一批准max-workers=2的真实任务已占两席时请求第三名；在本项自有DataRoot施加真实只读/占用SQLite条件；CPU/内存门限仅用实际双采样结果 | 第三名在模型输入前拒绝；失败写入不继续启动/发送。已外部执行但结果写失败保留原request和unknown。无自然低资源情况时不声称内存门限动态已覆盖；不替换采样器 |
-| T09 进程所有权及后代 | 本项自有普通Node生命周期fixture创建根与真实后代，记录PID/创建时间；另起无关fixture进程，把其真实身份及旧incarnation用于控制；fixture不模拟Agent | 自有精确目标可停止；失配/无关目标被拒绝且原无关进程继续；根退出后后代仍活时tree不为exited、不释放。PID实际复用未发生不登记复用竞争通过 |
+| T09 进程所有权及后代 | 安装候选的Node/native与普通Node fixture实际创建root、子进程、孙进程和另一个无关进程，使用§5.4同一Job准入/关闭适配，保存非空Job成员及PID/创建时间；分别执行正常stdin结束、abort后关闭、root实际异常退出、强制停止和父宿主失联；检查真实已关闭/无效句柄、错误创建身份及对另一实际已绑定Job的重复分配拒绝。fixture不模拟Agent，缺native的真实候选副本只验预输入拒绝 | 必须先成功观察到root和实际后代属于目标Job，按§5.4取得Job两次成功空查询、原root exit和全部已观察旧身份的两次新鲜缺失，才登记tree exited。无关进程及B Job继续；失败查询、失配、关闭句柄或宿主重启丢失句柄保持unknown/占用，不按空枚举通过。所有生命周期分支逐项保留结果；嵌套拒绝、PID实际复用等自然条件未发生时不登记该分支通过 |
 | T10 停止未知与恢复 | 对本项owned Worker发stop，在已证明stop开始后只断开本项控制连接/暂停自有控制helper，再`request show/worker show`观察；恢复真实连接后精确停止 | 中断窗口确实被命中；unknown保留占用、拒绝替代者，恢复后同一身份可核并停止。未命中窗口为INCONCLUSIVE，不注入假回执；不停止原Orca/原S服务 |
 | T11 释放/接管/竞争 | 对同一owned执行重复stop/release；由本项实际终端输入使native ownership变user_owned；另在真实settled附近发stop/release | 只关闭原精确身份，人工接管保持retained；竞争不覆盖新owner；归档后实际全树退出才释放；unknown不清空资源，原工作树保留 |
 | T12 重启与控制端接续 | 在本项Worker输入已接受后，仅停止重启本项runtime，保留真实库、daemon及session；用原request查询，再核原helper/Worker | 原始输入不重发；可证原owner时恢复同一身份，否则真实unknown。新控制端只在旧helper真实退出后合法runUse、generation变化；旧controller不能继续写。没有证明全部structured进程存活时不宣称重启不中断 |
 | T13 安装后同一任务双Worker | 按§7.3完整执行一次任务，全部CLI来自T02同一安装候选；A/B输入不等前一结果即提交，分别观察并停止A、B继续 | 必须满足§7.3每项；无真实模型执行重叠即失败/证据不足，不能以两PID/两行列表代替。任务成果来自实际输出 |
 | T14 失败及准入回归 | 使用真实缺失依赖文件的本项候选副本、失效批准、未知source、原生返回的真实认证拒绝/限流/网络失败；静态覆盖输入校验与退出映射 | 明确失败及unknown状态、退出码和required_action一致；不换provider/模型/目录，不重发；只保留实际触发的故障覆盖。正式验收候选不修改，副本失败不拼成正式成功 |
 | T15 最终保全和清理 | T13期间、停止A后、T13后及本项服务退出后，按§3.1重复原绝对CLI公开status、`Get-Command orca -All`、定向CIM/监听/metadata和配置/认证内存字节/ACL比较，检查定向目录通知及所有实际写端路径；只关闭本项owned Worker/helper/daemon并核全树，再由主控恢复原S | 原Orca公开查询可用、解析不变、原进程及会话归属保持；源级全局副作用关闭和实际私有写端均核实，认证另按T04刷新前拒绝验证。自然变化按真实来源解释，无法解释的具体范围保留证据不足；通知溢出不能填无变更。全部本项owned进程实际退出或明确unknown残留；不修改全局审计/原配置或终止非所属进程，原S由主控实际核实 |
+
+T06增加同一真实controller、不同R的两项task.create竞争：原生事务在首次Run副作用前检查并checkpoint该controller，第二项只能拒绝或观察原占用；重启后pending仍占用，真实Run/root只能有一组。T08增加同一root的三个不同R并发worker.start：在已有原生mutation_receipts内原子保留额度，已创建子Task与尚未物化的pending请求合并计数，已关联的同一原生Dispatch只计一次；两席已保留即在模型输入前拒绝第三名，unknown继续占用。两项均运行真实CLI、helper和SQLite，不通过模拟接收器制造竞争命中。
+
+T09依现有入口`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T09 -SwaPath $swaBin -InstallRoot $installRoot -DataRoot $dataRoot -CaseRoot $caseRoot`执行分支；Node原生测试采用同候选Node和native运行`tests/swa-cli-headless/provider-job.test.mjs`。当前两入口的相应实现和真实结果均未完成，缺失或未命中场景如实保留。T13指定停止A时另保存A专有Job的实际root绑定、成员查询/退出观察和B专有Job中的原成员/身份，原生stop/release只有在全树条件满足后才结算。T12宿主重启丢失旧Job句柄的路径保持unknown，不重发输入，也不把该分支记录为恢复了存活模型进程。
 
 ### 7.3 同一安装候选的一次双Worker任务
 
@@ -409,7 +432,12 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 | 产品build/model/service/install、产品CLI、T00—T15 | 全部NOT_RUN；仅依赖窗口已用并交回，程序正在实现，未修改全局Agent配置或本机Orca |
 | 阶段Go格式与产品空白 | BelowNormal执行新增Go文件`gofmt -d`，修正显示的格式后复查无差异；产品路径`git diff --cached --check -- . ':(exclude)third_party/orca-v1.4.230/**'`实际EXIT0 |
 | 完整来源空白检查 | 包含准确上游原有终端录制fixture等的`git diff --cached --check`实际EXIT1，报告原有尾部空白及终端控制字节；这些来源原件保持，不修改上游录制结果以通过格式检查。该失败不计为产品功能测试 |
+| F04—F07及Job计划返修的静态检查 | BelowNormal、Node512MiB；`gofmt -d internal/workspace/app/orca_execution.go internal/adapters/httpapi/orca_cli.go`无差异/EXIT0，原`check-docs.mjs`检查两份Markdown、5个本地链接及24个Orca/11个Pi来源路径PASS/EXIT0；未运行程序构建或测试 |
 
 阶段源码包含Workspace App准入、028关联迁移、真实RuntimeClient适配、项目范围HTTP、产品服务组装、私有Node host、原生controller receipt/PTY/helper及Pi SDK ToolsOff入口；四项新增durable方法接入原有mutation executor。主控msg_eaaf01e60d77允许供原Reviewer先静态CR，编译和真实运行结果均不据此推断。CLI/结果导出、构建安装脚本、定向保护和T00—T15实现仍在本Worker继续；当前源码尚未形成可安装候选。
+
+准确阶段源码`847ec2687857b06430284aecdf81a6887f2f996f`已普通push、EXIT0。原Reviewer准确`80ed37f6af51f6c38df4f811d8e6c8f2376c089e`对F04—F07退回；当前返修将controller单任务与Worker额度准入/checkpoint合并到既有原生事务，按真实`row.resource.release_state`判定资源，并保留已认证human不依赖Agent执行批准和旧context版本的安全停止。它们仍须准确后继复审和真实测试。§5.4及T09/T13的Job与句柄设计属于本次待审核差异，相应依赖/构建和动态窗口未使用。
+
+第三方子树按Git archive导出视图导入，包含产品适配；原Reviewer使用准确Git对象核得导出视图省略docs/audits、其他文档/审查工具及部分tests/tools，另有Windows导入形成的执行位变化。LICENSE及根package/锁与准确b287来源相同。当前不把该子树描述为完整原树逐项相同；Windows实际构建闭包仍需逐入口验证，未执行上游录制fixture或为其原有空白修改原件。
 
 本次仅通过当前Dispatch的Orca通道交付，普通commit/push方案与阶段源码；没有发布GitHub评论、PR、Slack消息或公开artifact。

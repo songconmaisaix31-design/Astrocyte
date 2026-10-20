@@ -11,6 +11,7 @@ import { getRepoMainWorktreeId } from '../../../third_party/orca-v1.4.230/src/sh
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
+import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { invocationSchema, helperReply, nativeObject, contextSchema, type Invocation, type Scope } from './contracts'
 
 const openReceipt = z.object({
@@ -164,9 +165,8 @@ export const SWA_METHODS = [
     const c = invocation.command
     if (!c.controller || c.action !== 'task.create' || !invocation.context || !invocation.spec) return fail('invalid_argument', 'A fixed task and context are required')
     const owned = controllerScope(context.runtime, invocation.project.id, c.controller)
-    if (owned.scope.run_id || recorded(context.runtime, 'swa.taskCreate', c.controller)) return fail('request_mismatch', 'This controller already has its one user task')
     await exactController(context.runtime, owned.owner)
-    const requestId = checkpoint(context, { project_id: invocation.project.id, controller: c.controller, children: [`${c.request_id}/run-create`, `${c.request_id}/root-task`], stage: 'helper-input' })
+    const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, children: [`${c.request_id}/run-create`, `${c.request_id}/root-task`], stage: 'helper-input' })
     return effect(async () => {
       const reply = nativeObject((await helperCall(context.runtime, c.controller!, requestId, c.action, invocation)).result)
       const run = nativeObject(reply.run), task = nativeObject(reply.task)
@@ -179,7 +179,7 @@ export const SWA_METHODS = [
     const { scope, owner } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
     validateTaskAction(context.runtime, invocation, scope)
-    const requestId = checkpoint(context, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, child_request: `${c.request_id}/native`, stage: 'helper-input' })
+    const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${c.request_id}/native`, stage: 'helper-input' })
     return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
@@ -213,7 +213,47 @@ export const SWA_METHODS = [
 function requireReleased(runtime: OrcaRuntimeService, scope: Scope) {
   if (!scope.run_id) return
   const resources = runtime.getOrchestrationDb().listWorkerTerminalResources({ runId: scope.run_id, limit: 100 })
-  if (resources.some(row => row.release_state !== 'released')) fail('worker_release_unconfirmed', 'All exact Worker resources must be archived and released')
+  if (resources.some(row => !row.resource || row.resource.release_state !== 'released')) fail('worker_release_unconfirmed', 'All exact Worker resources must be archived and released')
+}
+
+// 准入与 checkpoint 在同一个原生事务中完成，未知请求继续占用原生 receipt。
+function reserve(context: RpcContext, invocation: Invocation, receipt: Record<string, unknown>) {
+  const runtime = context.runtime, db = runtime.getOrchestrationDb(), c = invocation.command
+  if (!context.orchestrationMutation || context.orchestrationMutation.requestId !== c.request_id || !c.controller) fail('request_mismatch', 'The public and native request IDs must match')
+  db.db.exec('BEGIN IMMEDIATE')
+  try {
+    const fresh = controllerScope(runtime, invocation.project.id, c.controller)
+    if (c.action === 'task.create') {
+      if (fresh.scope.run_id || recorded(runtime, 'swa.taskCreate', c.controller)) fail('request_mismatch', 'This controller already reserved its one user task')
+    } else {
+      validateTaskAction(runtime, invocation, fresh.scope)
+      if (c.action === 'worker.start') {
+        const children = db.listTasksWithDispatch({ runId: fresh.scope.run_id }).filter(task => task.parent_id === fresh.scope.root_task_id)
+        const taskIds = new Set(children.map(task => task.id))
+        const pending = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
+          WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='pending'
+          AND json_valid(receipt)=1 AND json_extract(receipt, '$.controller')=?
+          AND json_extract(receipt, '$.action')='worker.start'`).all(authority(runtime), c.controller))
+        let uncreated = 0
+        for (const item of pending) {
+          const held = z.object({ child_request: z.string() }).parse(JSON.parse(item.receipt))
+          const child = db.getMutationReceipt(authority(runtime), held.child_request)
+          const accepted = child && getPendingWorkerStartRecovery('orchestration.workerStart', child.receipt)
+          const complete = child?.receipt ? z.object({ dispatchId: z.string().optional() }).parse(JSON.parse(child.receipt)).dispatchId : undefined
+          const dispatchId = accepted?.dispatchId ?? complete
+          const dispatch = dispatchId ? db.getDispatchContextById(dispatchId) : undefined
+          if (!dispatch || !taskIds.has(dispatch.task_id)) uncreated++
+        }
+        if (children.length + uncreated >= 2) fail('resource_limit', 'The fixed task has reserved both Worker slots')
+      }
+    }
+    const requestId = checkpoint(context, receipt)
+    db.db.exec('COMMIT')
+    return requestId
+  } catch (error) {
+    db.db.exec('ROLLBACK')
+    throw error
+  }
 }
 
 function validateTaskAction(runtime: OrcaRuntimeService, invocation: Invocation, scope: Scope) {

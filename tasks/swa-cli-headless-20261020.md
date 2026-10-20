@@ -49,3 +49,7 @@
 主控在`msg_655f03dd1e98`确认原S已同源恢复为PID12800，原库/环境/Q/媒体/CodeGraph保全，原Orca同runtime仍ready；本Worker未接管原服务。入口exec会话37535实际EXIT0，两次PNPM同步返回均为0；定向CIM未发现本项安装脚本或PNPM store参数进程残留。本次没有逐时记录全部短命子PID，对该观察范围保持限制。
 
 已执行的检查与实际结果在报告§9登记。准确b287源码及MIT许可已通过Git archive导入获准来源副本；App/关联存储、HTTP及服务组装、原生调用适配、Pi只读SDK入口和native controller composition已形成阶段源码。主控msg_eaaf01e60d77允许阶段Commit供原Reviewer静态CR；本阶段仍有CLI、打包安装、保护检查及真实测试实施待办。产品构建、功能测试、模型调用、产品安装、双Worker并发/停止/成果和本机Orca安装前后保全均为`NOT_RUN`；当前窗口归原S12800，Pi受限认证和可安装闭包尚未验证，阶段提交不表示功能完成。
+
+阶段`847ec2687857b06430284aecdf81a6887f2f996f`已普通push、EXIT0；原Reviewer`80ed37f6af51f6c38df4f811d8e6c8f2376c089e`退回F04—F07，当前同一Worker返修原生单任务/两席原子准入、真实资源字段和human安全停止。报告§5.4给出父runtime分别持有A/B专有Win32 Job、模型前原生IPC准入、禁止breakaway、句柄所属/最后关闭、全树查询及独立进程退出观察；T03/T06/T08/T09/T12/T13补相应真实条件。此项必要差异先交原Reviewer，相关依赖/native构建仍待接受与明确窗口，其他CLI和打包静态工作继续。
+
+来源子树是准确b287的Git archive导出视图与产品适配，包含导出省略和Windows执行位变化；实际边界见报告，不声明为整个原树逐项相同。阶段源码及剩余实现没有构建、模型、安装或双Worker验收通过结论。
