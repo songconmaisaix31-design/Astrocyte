@@ -1398,3 +1398,9 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 **N22，严重程度高：createController比较两个语义不同的原生incarnation字段。** 当前native-methods.ts:133仍将live.processIncarnation与binding.processIncarnation直接比较。实际orca-runtime-agent-prompt-request-correlation.ts:13—31的getTerminalPromptRequestBinding将daemon原始incarnationId放入binding；terminal-interactive-wait.ts:172—192的getTerminalProcessIncarnation在原始值存在时返回ptyId加冒号及原始incarnation，terminal-orchestration-authority.ts:137用此完整值生成live authority。正常daemon提供原始值时，两者必不相等，控制端已创建PTY后会被该条件拒绝，open与recover均受影响；当前只确认源码路径，没有实际启动结果。建议动作：按原生接口各自语义核原始PTY incarnation和完整caller process incarnation，保留真实handle/PTY/launch/current证明，不伪造身份或放宽检查。此项已通过`msg_66685719f000`交原Worker。N21检查程序比较daemon原始session.incarnation与binding原始值符合这两个接口的含义，不将其改为完整caller字段。
 
 实际`check-revision.ps1`准确c962bea7→3c4e0364 EXIT0，两Markdown/7本地链接及Git空白通过，原§15/§16锚点保持。Worker的n21-static-01语法、文档、类型配置日志和五项退出0已完整读取，5份parser、Go格式、配置20个真实根文件名及来源检查保持Worker归属，没有创建Program或执行probe。全部只读检查BelowNormal、Node512MiB；类型/生成/Go-C++构建、Job及停止、全部T12余项、模型和同安装候选双Worker继续未验，修复由同一Worker完成，当前没有新重操作窗口。
+
+## 准确5110a888的原生incarnation消费修复
+
+结论：**局部静态接受准确`5110a888d0586a91ebd07cfecba7486261799d3f`的N22源码返修。** 完整读取相对3c4的四文件差异，并与三个原生producer逐项对照。createController沿真实controller handle调用原getTerminalProcessIncarnation取得完整值，与live authority及同一ptyId核对；原始binding仍由实际daemon inventory单独核对，owner分别保存两个实际接口原值。exactController另核当前完整值与原caller_authority相同，继续原始PTY/binding和真实root/helper创建身份条件。没有手动拼接、截取身份或放宽launch证明，controller-inspection的raw字段比较保持。
+
+实际`check-revision.ps1`准确3c4e0364→5110a888 EXIT0，两Markdown/7本地链接及Git空白通过。Worker的n22-static-01两TS成熟parser、文档来源日志和两个退出0已读，保持其执行归属；本Reviewer只读检查使用BelowNormal及Node512MiB，没有创建Program、运行正常helper启动、recover、故障停止或模型。N22已定位源码条件修正确认，N20/N21的限定源码结论保持，全部实际分支、T12余项、通用terminal、完整构建及同安装候选双Worker继续未验，原Worker持续实施。
