@@ -788,3 +788,20 @@ F16参数错配及F17非法枚举的静态原因已消除；真实task.result、
 最终真实安装T03仍强制Candidate VERSION=编译SOURCE=准确源码，运行四个原live函数并拒绝零匹配/SKIP；源码变化时旧二进制不能用于新候选验收。当前调整只允许先发现Go源码错误，没有放宽HTTP、当前批准、原生SQLite/控制端、ToolsOff、模型、隔离或同候选T13双Worker条件，T03其他未覆盖范围继续保留。未发现六条件的剩余缺口或新增多余检查。
 
 `check-revision.ps1 -Previous ebf55ac024a618d1ad32a741eb4eefcfc5dae77b -Candidate c2d4b62d64eef73eb3c83064a8354696b6e623c7` EXIT0，两Markdown/5本地链接、无锚点/HTML或Git空白错误，marked18.1.0、BelowNormal、Node512MiB。本轮准确c2只取得本地已提交交付，普通push回执仍待补；计划接受后由原Worker修改入口并交准确CR，编译/函数/实际服务仍等待主控独占窗口，本Reviewer没有执行任何编译、业务测试或模型。
+
+准确079bd的接受hook `msg_bb2f7ef94f96`已获主控`msg_314b61388dd4`完整读取7c6d报告回复，准确ebf的接受hook `msg_4638289c5248`已获主控`msg_9d609304dd77`完整读取da2报告回复，实际唤起均确认；T12先写SPEC再实施、F16/F17仅参数静态接受的范围保持。准确c2计划接受hook `msg_4cf6aa73441e`已获主控`msg_6c1a7618ade4`完整读取483及准确计划回复，实际唤起确认，仅可先改入口准确CR，无运行窗口。原Worker`msg_f508bb720505`补报c2及2f普通push均实际TLS失败EXIT1，准确本地Git对象保留，不宣称远端更新或重试成功。
+
+## 准确2f1eceaf的完整正文投递计划审核
+
+局部发现：**准确`2f1eceaf3d5ad872339a2efba7fdbaa1178dbc78`的正文投递计划有B01/B02两项覆盖缺口，接口定稿暂停。** 在1b295先形成七条独立条件，完整读取本提交相对c2的两文档§4.4/§7.7差异，并核准确c0的真实structured host、sendPlan、performSend、delivery loop、operation store及消息来源。主控`msg_fc6fe552ac5b`转来用户首版须发现本机注册Agent并通过Swarm CLI调用的新要求，明确暂停2f冻结结论；本次只保留局部发现，不发送本提案正式接受或定稿决定，不宣称尚未实施的策略已经动态失败。
+
+方案已覆盖真实批准全文及MessageRow逐项关联、仅产品Pi策略、ToolsOff及固定模型、同目标/fence、单封原SQL顺序、原样文本与成熟JSON边界、未知不mint、原R重复、同安装候选B的真实正文及业务结果。D01—D05分别覆盖来源一致、队列/去重、授权/归属、断开/未知、编码/大小，没有发现这些业务条件的多余检查；普通SDK存在、schema接受及模型自述继续不足以验收。
+
+| 缺口 | 独立来源及影响 | 返修要求 |
+| --- | --- | --- |
+| B01 实际handover前的异步授权 | §4.4把host beforeRun称为实际消费边界。真实send-agent-turn、host-mutations及sendPlan的beforeRun为同步`function(): void`；mutation-plans.ts:163在performSend之前调用，performSend只写journal。后续delivery-loop.ts的独立serialized handOver及turns.ts的handOverSubmission才调用adapter.dispatch，等待启动和队列后没有再次执行原beforeRun。因此现有callback位置不能证明SDK实际输入前仍有当前授权，异步HTTP也不能依同步调用获得等待保证 | 明确定稿被await的真实handover准入接口及其消费者，等待返回后重新核原child/fence/consumer/归属及ToolsOff，保留原同步held和无产品策略宿主行为。D03必须明确覆盖journal已接收、SDK尚未输入的真实窗口和拒绝后原状态，未命中仍未验 |
+| B02 原operation关联及公开状态契约 | §4.4把必要结果字段留待后继明确。真实原生send子receipt在nudge前完成，正文operation后分配；现有request.show只返回原R。structured_pointer_operations以mailbox为唯一键，put会覆盖，原delivery在queued/sent后标记消息并删除指针。仅声明保留原operation不足以定稿多封后续邮件和原R已完成时的查询来源 | 明确message/session到原operation的唯一持久关联、各queued/pending/accepted/unknown状态的保留或原journal恢复来源、后续消息不能覆盖旧未知的规则，以及worker.send/request.show准确结果字段和权威读取路径。复用既有R/journal/operation，不另建账本或把完成R解释为重发许可。D02/D04补原R已完成而正文仍排队、指针移除或后续消息到达时仍查询同一原operation及真实状态 |
+
+B01已通过`msg_0d0472dcf593`、B02通过`msg_f7a1c12ab6a5`交原Worker按原写域补计划；已以`msg_f959d9bd7555`回复主控暂停定稿，新内部HTTP路由及结果消费者保持未定稿，后继须结合注册Agent要求完整审核。此处不指定另一队列或新权限系统。T12独立接受和Go源码检查顺序可按各自范围继续，F17完整功能、T11与所有动态结果保持未验。
+
+`check-revision.ps1 -Previous c2d4b62d64eef73eb3c83064a8354696b6e623c7 -Candidate 2f1eceaf3d5ad872339a2efba7fdbaa1178dbc78` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。只读真实源码和准确Git对象，没有调用新路由、操作数据库、创建消息、启动服务、SDK、模型、编译或执行D项；普通push实际失败的范围保持。
