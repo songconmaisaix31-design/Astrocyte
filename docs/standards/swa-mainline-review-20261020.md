@@ -277,3 +277,5 @@ UTC11:31:06可用1.774GiB采用主控管理记录中的单次只读观察，未�
 这次接受仅覆盖管理记录，abdb程序另见无界面报告，F10—F12静态接受及F13/F14退回不代表整体功能通过。原S12800/Orca保全、资源门槛、M1修复因果证据不足及S3/权限未决范围保持，程序/依赖未纳入main。
 
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 1f99f64d59d578954fb943518e34e41cf2ab38ed -Candidate 4e7747647d9f262f596cef37c25e098c91164a59` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及远端核对通过；此前Windows PowerShell辅助调用的宿主策略/编码错误与后继PowerShell7成功已如实记入无界面报告，没有重复动态检查。
+
+准确4e管理接受hook为`msg_dbf5f70f228e`；主控在`msg_6a65a02c9856`完整读取a211b66相对629e的十四行新增，确认只接受两文档管理记录、程序单独适用静态接受/退回，原S/M1/S3/权限及无窗口保持；实际读取回复确认本次唤起。

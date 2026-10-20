@@ -494,3 +494,5 @@ T13驱动固定同一候选Node/SDK/version、真实公开原文、原生项目�
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous f2bcba97b475b348bbb60b47dc3dd605a3f40739 -Candidate abdb07d31954b9e72f12bdaafdfe56406deb9004` EXIT0，十四路径Git空白、两份Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。此前误用Windows PowerShell的两次辅助脚本调用分别被执行策略及UTF-8脚本编码阻断，未执行产品检查；随后改用已安装PowerShell7，没有更改系统配置。
 
 原S12800及无窗口保持。本轮没有编译、安装、运行Go/Node测试、SDK/模型、JSONL产品读取、HTTP/SQLite或服务，也未读取原认证秘密、环境或SQLite原件。所有适用动态检查仍待原Worker在主控授予真实窗口后执行。
+
+准确abdb退回hook为`msg_16d3b555e2f2`；主控在`msg_723b52740787`完整读取a211b66相对629e的四十行新增，逐项确认三项静态修复接受、F13/F14的源码及库因果、其余已读取范围和宿主调用失败/成功及动态未运行，确认问题交原Worker、既有接受及A正常分支保持。实际读取回复确认本次唤起，没有新增动态窗口。
