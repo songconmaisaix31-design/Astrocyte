@@ -14,7 +14,8 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`普通CLI输出首段待原Reviewer准确CR；后继准备提交`f08b52111d4860b5ef162987cce2f43f4a4e6ce0`仅更新锁文件和实际生成的HTTP类型，Worker报告普通push EXIT0，主控已完整读取差异。依赖同步、冻结安装和类型生成实际EXIT0，窗口已收回，原S同源恢复PID43068并通过保全/健康检查。§7.5的serve EOF/后代退出及真实安装驱动继续静态实施，T12先补接续契约/计划，T11真实人工入口待用户范围回答；编译、功能测试、构建、安装和模型尚未执行，整体程序及双Worker/隔离动态验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`普通CLI输出、`f08b52111d4860b5ef162987cce2f43f4a4e6ce0`锁/真实生成类型及`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所属EOF/Job后代/原生关闭源码均已交独立准确CR。Worker报告普通push EXIT0，主控已读准确差异；架构检查首次App io失败，成熟JSON修正后45包通过，Go格式及空白检查通过，均为静态检查。依赖同步、冻结安装和类型生成实际EXIT0，窗口已收回，原S恢复PID43068并通过保全/健康检查。C01—C09安装驱动/console helper继续静态实施；T12先补接续契约/计划，包含已审要求中尚未实施的strict helper caller准入，缺恢复证明须拒绝，不能因已完成R重放绕过当前核验。T11真实人工入口待用户范围回答；编译、功能测试、构建、安装和模型尚未执行，整体程序及双Worker/隔离动态验收均未通过 |
+| 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支，两份原报告写域保持。旧ctx980的前台Agent已返回PowerShell，提醒被shell拒绝；原生精确stop确认PTY退出后才重启，新preamble实际turn_started。既有27f报告保留；新邮件已入队，实际读取确认及新结论待回执，不将启动当成审查通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 

@@ -18,4 +18,6 @@ M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementati
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
+最新程序准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`已交静态CR；C01—C09及T12接续契约继续由同一Worker负责。T12来源核查确认已审strict helper caller准入尚未实施，须在原生去重执行前核当前及恢复证明，后继完整契约/计划待主控定稿和独立审核。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新preamble实际开始，后续邮件只发新Dispatch。完整当前接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持；尚未取得新审查结论或控制脚本接受。
+
 科研沿[预印本任务](tasks/research-preprint-20261019.md)、[重启任务](tasks/restart-product-research-20261019.md)和[研究反馈](docs/research/research-product-decisions.md)接续；V4 沿[日运行任务](tasks/M6-V4-daily-operation.md)及[实验目录](docs/experiment/README.md)接续。外部权威锁、原件、正式研究数据、TeX 技术交付和作者许可各按原条件处理。历史管理记录见[归档说明](docs/archive/20261020/README.md)，准确 S 的交接保留在 [Git 原文](https://github.com/songconmaisaix31-design/swarm-anything/blob/ed543c12106c2dbb3e181cb9bc1647b626455179/HANDOFF.md)。
