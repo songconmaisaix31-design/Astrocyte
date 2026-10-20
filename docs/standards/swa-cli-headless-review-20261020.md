@@ -1366,3 +1366,19 @@ Worker的n19-static-01/syntax.log及syntax-exit.txt已完整读取，九份成�
 | R10 | recover的真实连接失败、处理后断开、取消130和stdout失败仍需覆盖 |
 
 该入口remainingCases非空时外围返回6，未将核心路径登记为完整T12通过；所有上述正文均NOT_RUN，没有新增模型轮次。本Reviewer实际`check-revision.ps1`准确68bc4d8c→7e090587 EXIT0，三Markdown/7本地链接及Git空白通过，§15/§16两个锚点与实际标题一致。Worker的t12-source-static-01日志、两PS parser结果及六项退出0原件已读，24份语法、JSON/YAML、8Go格式、native JS和来源检查保持其执行归属。全部检查BelowNormal；本Reviewer仅使用成熟Markdown读取/静态源码核查，未创建Program、编译、安装、访问目标数据库/HTTP、控制进程或调用模型。T12余项、正文结算及通用TUI继续同Worker，类型/生成/完整构建和同安装候选双Worker全部未验，当前没有新重操作窗口。
+
+## 准确efa31191的正文持久结算
+
+结论：**局部静态接受准确`efa31191025e45ac65063993adb3d1e0d49d3f94`相对7e090587的七文件差异，适用当前structured输入路径。** 依据SPEC21.1.2及已审D01—D05，读取完整差异、host send消费者和journal字段。handler在第一次host调用前，将有正向无输入证明的prepare拒绝通过原recordMutationReceipt完成child；callback缺失或保存失败保持operation_unknown。parent/child在同一原SQLite事务保存operation及完整正文关联，事务不能确认、host调用后的异常、refused或无确定submission继续unknown；实际host确定结果先持久完成child再交父请求，不只依靠markEffectPossible。
+
+共用严格binding增加agent/structured模式，实际handover逐项比较Agent、session、operation、fence、body及原consumer，继续已有当前Go批准和最后同步guard。request.show只读原parent/child的相同binding及原journal submission，核fence/operation；handoverRecorded存在且尚无handedOverAt的pending区分queued，其余pending为journaled，与实际journal类型和fold相符。返回已确定的请求、Dispatch、Agent、模式、session及operation，缺少真实turn不制造值。
+
+同一T13驱动增加原send/重放binding、完整公开输入文件与text block、真实只读SQLite中child completed/binding、B第二轮结束后原request.show accepted/session/operation的检查；复用既有两Worker及轮次，正文与所有模型均未运行。效果前拒绝、host后不确定和真实存储失败仍须自然条件验证，terminal正文继续原Worker实施。实际`check-revision.ps1`准确7e090587→efa31191 EXIT0，两Markdown/7本地链接及Git空白通过。Worker的input-settlement-static-01日志及三项退出0已读，5份parser/JSON/YAML/文档检查保持原执行归属，类型、生成、构建及实际队列未验；此限定接受不解除7e的N20/N21。
+
+## 准确8894055a的pending checkpoint返修
+
+结论：**准确`8894055a6fea1cabcd3753381c7cb1571310bdaf`已修正N20的JSON/null入口；N20仍退回scope-reserved后续异常路径，N21继续未完成。** 完整读取相对efa的两份TS及报告差异。executor将原JSON解码失败转为operation_unknown，handler将null和字段解释失败同样保留unknown，并比较原invocation、owner/scope、旧generation及准确children/R/run-use；这些源码修正已确认。
+
+scope-reserved的后续解析及db.getRun仍位于新增try/catch之外。共享scopeSchema为兼容尚无Run的阶段允许空run_id，随后该分支的min(1)解析可直接抛出ZodError；真实Run读取异常同样缺少unknown包装，原非prompt executor仍可能删除该pending。建议动作：完整pending观察中的解析、读取及证明错误保持operation_unknown，只有完整正向无效果证明支持的controller_unverifiable/effectsApplied=false按原生规则结算。此剩余路径已通过`msg_f5164ac46155`交原Worker，没有操作业务数据库或制造故障。
+
+实际`check-revision.ps1`准确efa31191→8894055a EXIT0，一Markdown/1本地链接及Git空白通过。Worker的n20-static-01两TS/JSON/YAML、文档日志及两项退出0已读；全部只读检查BelowNormal、Node512MiB。真实begin后/首checkpoint前中断、其他pending阶段、N21停止、Program/生成/构建/安装及全部模型均NOT_RUN，同Worker持续返修，不以局部源码修正登记T12完成。
