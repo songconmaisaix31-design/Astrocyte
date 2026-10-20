@@ -844,6 +844,22 @@ CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实�
 
 新代码遵守 §3 的 App 端口、adapter 和入口组装关系；来源副本与产品 composition 位于各自独立目录。需要改变上述动作、权限、状态拥有者、公开错误或模型范围时先修订本节及方案并重新审核相关测试。实际构建、安装及 T00—T15 的结果由任务和报告登记，计划接受不表示功能通过。
 
+#### 21.1.1 本机 Agent 的独立发现与稳定选择契约
+
+准确`740ccdf9a9dfa33901274fd8dccd37c4beacf1fd`的[方案§4.5.2—§4.5.5及§7.8](https://github.com/songconmaisaix31-design/swarm-anything/blob/740ccdf9a9dfa33901274fd8dccd37c4beacf1fd/docs/standards/swa-cli-headless-20261020.md)已由独立c3fca056局部接受。本节定稿其中的只读发现、设置源、capabilities DTO、稳定AgentSelection及现有批准的技术契约；程序实施仍须准确CR及实际运行。新workerSend、普通TUI模式路由与工具待答分支各按原任务继续，不能由本节推断其接受或执行授权。
+
+`swa capabilities --json`沿既有项目token及POST `/api/v1/local-projects/{id}/orca/commands`的`{action:"capabilities"}`进入App observe准入。App的现有执行端口增加`Capabilities(ctx, projectID, requirements)`，由orca adapter调用私有只读`swa.capabilities`。requirements来自当前App项目设置及适用批准，HTTP正文不能提供身份或工具授权。发现只访问产品实际注册、必要本机配置及命令解析，无controller helper、模型请求或原Orca运行前提。
+
+注册事实来自产品内抽取的definition与真实adapter构造的StructuredAgentRegistry，保留原生重复ID及能力方法校验。已注册、启用、已安装、已配置、可启动及start/send/read/stop/resume/tools分别给出实际来源和available/unavailable/unknown；静态名单、文件存在、声明能力及本次真实调用各有自己的来源，不能互相替代。发现不自动运行模型或建立Worker来刷新。
+
+serve可显式接受`--agent-profile <既有原Orca profile绝对路径>`。省略时读取原生标准命令/defaults及本机Agent实际配置；指定时固定该只读源，复用classifyProfileStateStorage、openProfileStateDatabaseReadOnly/readProfileStateDomains取得同一snapshot中的settings/revision，legacy并存核原acceptance，JSON-only使用成熟JSON流筛选。明确源缺失、损坏或不匹配立即失败，不迁移、创建Store、写marker或更换来源。产品私有profile继续独立，秘密和原对话不进入清单、receipt或安装包。
+
+结果在既有OrcaEnvelope.result中使用`schema:"swa.capabilities.v1"`，包含source_revision、registry的orca_version/artifact_sha256、discovery的local host/platform/observed_at及settings_source，以及agents清单。每项包含id、adapter、execution_mode、registered、enabled、installed、configured、launchable、control、requirements；状态对象使用`{status,reason,checked_at?,source}`。installed正向才返回真实executable/version，configured仅返回已证model/provider及非秘密账号来源类型。字段与生成契约按上述准确方案共同更新。
+
+现有执行端口增加只读`ResolveSelection(ctx, projectID, command)`，返回稳定`AgentSelection{agent_id,adapter,execution_mode,executable,version,model,provider,external_target,settings_source,settings_revision,configuration_version}`。App先核observe并取得实际选择，再按真实external_target、现有ProjectSettings.ExternalModelCLI单CLI批准、当前Grant、目录、工具和外发目标核动作；不继续硬编码pi，不接受HTTP声明的外发身份。实际选择进入既有原R的比较/原checkpoint，排除observed_at和凭据，不另建Hash或选择账本。spawn前再次核相同来源，变化拒绝，未知不换目标。后续输入只能从实际Dispatch的原receipt/session取得原选择，禁止用新参数更换Agent或模型。
+
+当前接受范围包括上述端口、DTO及固定pi消费者的同步调整和对应G02/G03/G04/G05/G06必要检查；实际启动、输入和所选Agent支持能力仍遵守其准确方案及当前权限。首版最终同一安装候选、至少两个真实Worker、并发、指定停止和完整成果条件保持。
+
 ### 21.2 已采用的工程决策
 
 | ADR | 决策 | 改动边界 |
