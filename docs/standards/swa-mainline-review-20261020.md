@@ -555,3 +555,17 @@ restore-14同源S55148/创建UTC18:33:26.874753/epoch1792521206.8747532已于UTC
 restore-15使用原ed543/原库和原环境配置，UTC19:03:14只读核实际S68128/创建UTC19:00:53.0194234/epoch1792522853.0194235的原程序、整份current/restored及唯一监听符合，原库记录ok/fk空/equal；完整health/Web及原Orca沿主控实际来源，后继prepare取restore-15/restored.json且c8不变。五次失败及全部部分候选保留，真实账号/工具/原生调用、输入恢复/Job/完整成果、安装同候选双Worker仍未通过。
 
 `check-revision.ps1 -Previous 0055af5e3a5f9f1fd02dedf1f4cc727febce1845 -Candidate 68eff5b0`实际EXIT0，唯一前缀解析至上述准确SHA，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有重跑网络、解释器、构建、原库/HTTP、服务或模型；后继b75修复的局部静态接受见headless报告，实际预检及新窗口仍待完成。
+
+准确68eff管理接受hook `msg_daefd11b88ab`已获主控`msg_d1f6359ca175`完整读取36d准确新增及三文档差异的回复，实际唤起确认；同轮b75静态接受及build05完整退回也分别获准确读取回复，范围保持。
+
+## 准确bc66bf9e的Python通过及C++失败记录
+
+结论：**接受准确`bc66bf9e3f9673fb7cc3f036d4821aa729a772e0`相对68eff的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，独立核build-06全部303行日志、资源/内外退出、运行与两次后继退出、21份真实metafile，以及prepare/stop-16和restore-16原件。详细结果及后继653c静态修复分别记于headless报告，不把当前管理接受扩大为产品交付接受。
+
+准确b75实际已有Python预检和node-gyp选择同一3.13.13、VS2022发现、三官方Node输入/原校验及VoidTaskResult输出修正通过。随后首node-pty/conpty在完整Job头文件出现C4819/936和第17行语法错误，实际exec65865及内外退出均1，其余native/Go/VERSION未完成、candidate05不可安装。编码配置是有来源的修复方向，具体根因及完整结果尚未证明；六次失败及全部部分候选保留，未把局部成功登记为完整构建。
+
+原S68128确实退出后才运行一次build06，所属空观察及正式收回窗口按实际来源分别记录。restore-16使用同一ed543、原库和原环境配置，UTC19:24:24只读核实际S60656/创建UTC19:21:16.7506354/epoch1792524076.7506354、原程序、整份current/restored和唯一64505监听符合，原库记录ok/fk空/equal；完整health/Web与原Orca保持沿主控实际来源。下一prepare使用restore-16/restored.json并新鲜准入，c8不改，当前窗口归原S，没有新重操作授权。
+
+tracked/Git冻结解除后，同一Worker直接继续已定稿账号/工具、输入、恢复、Job和完整成果实现；技术计划及局部修复没有成为整体停止条件。原权限/T11和Codex/S3未决范围保持，全部真实调用、完整成果、安装及同候选双Worker仍未通过。
+
+`check-revision.ps1 -Previous 68eff5b0293552305c7fae532d7cdd82ca7bd5aa -Candidate bc66bf9e3f9673fb7cc3f036d4821aa729a772e0`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行编译、下载、解释器、SQLite/HTTP、控制脚本、服务或模型，也没有修改实现和管理事实源。

@@ -1232,3 +1232,29 @@ UTC18:59:04.9625541/07.4104430两次所属及此前身份为空已读。prepare-
 下载器两处异步返回值使用void抑制，实际请求、token、文件、失败清理及全部原Node校验保持。准确MJS Node `--check --input-type=module`、准确PS Parser.ParseInput及runner ParseFile均EXIT0/语法错误0，body_executed=false，BelowNormal/Node512MiB。旧b7b5 runner已存build-05原件；后继SHA bae62ff4c1eee443f0efafabf87f814f4a47f6177b9e0812a0ed9622cd087522，全文只candidate04改candidate05，新candidate05/build-06当前均不存在。`check-revision.ps1`以2c→b75实际EXIT0，两Markdown/5本地链接及Git空白通过。
 
 本次静态接受不等于Python预检、ABI/类型/完整构建或输出修正实际通过；build06仍须主控新鲜准入和一次明确窗口，原失败不能覆盖或以重试替代准确修复。N08与原已定稿输入/恢复/Job/成果继续由同一Worker实施，全部真实验收保持未通过。
+
+准确b75静态接受hook `msg_e8be86ce5dd4`、准确2c完整构建退回hook `msg_2b1cf6550bf9`已分别获主控`msg_9c02fba1520f`、`msg_94d7206befc5`完整读取4b99/36d两报告新增及准确差异的回复，实际唤起确认。后继实际结果按各自阶段另行记录。
+
+## 准确b75的build-06实际Python通过与native编译失败
+
+结论：**接受准确`b75cf8ffeedffd244934dfac078b4926e865eb15`本次已有Python预检/实际选择、VS2022发现及下载输出修正的实际结果；完整可构建交付退回首项C++编译修复，candidate05不可安装。** 已完整读取build-06全部303行/44386字节日志、内外退出、资源、三次运行观察及两次后继退出原件，未重跑任何Stage。实际exec65865同步EXIT1沿Worker/主控实际来源保留，build-exit/outer-exit均1、资源退出0；三官方输入和原pin/exe/version校验成功不能补作native、Go、VERSION或安装通过。
+
+原一次msg_5b7d83fdfb5a窗口、准确b75/runner bae62和根55820/创建UTC19:18:44.0288700一致。资源UTC19:18:46.515495/49.017364，CPU15.4%/15.8%、可用7777550336/7801974784字节、单调2.5018756秒，通过当前门限。部署前真实JSON预检取得C:/Python313/python.exe 3.13.13，node-gyp12.3.0随后实际使用同一解释器并发现C:/BuildTools/VS2022的17.14.37710.0；已解决build05的自动发现阻塞。324项prod deploy、21份真实metafile、三项官方HTTP200及未改Node校验完成，下载正文37618919/10291794/2988566字节，旧VoidTaskResult文本本次已不再输出。
+
+首node-pty/conpty编译出现swa_provider_job.h的C4819/代码页936及第17行C2059/C2143，后继SwaProviderJob未声明等连锁诊断和原警告完整保留。实际候选头文件与准确b75的Git blob同为`7d9701d7a8939d58ea7043e103135bc02ac2d7f3`，中文注释和struct完整，未发现候选复制截断；以成熟.NET XML读取实际conpty.vcxproj，两个配置的AdditionalOptions没有显式UTF-8字符集参数。以上支持编码配置修复方向，仍不足以宣称已验证根因或全部编译错误将消失。
+
+运行原件包含根55820及conhost43460、pwsh61744、Node67284/63864、esbuild46104和下载器64368等各自实际创建身份。UTC19:20:34.5682573/36.9947290两次新鲜所属及此前身份均空；较早UTC19:20:27空观察单独保留。prepare-16资源CPU14.4%/13.7%、可用7.188/7.255GiB、单调3.002397秒，stop-16资源CPU22.2%/17.3%、可用7.193/7.229GiB、单调3.009458秒。原S68128/epoch1792522853.0194235于UTC19:13:16.473849退出15，准确c8控制及原库一致备份保持。
+
+restore-16实际exec77870 EXIT0沿主控来源，资源CPU18.5%/8.9%、可用7.190/7.201GiB、单调3.001681秒，原库记录ok/fk空/停止区间equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-16`于UTC19:24:24实际EXIT0：当前/restored整份JSON相同，实际S60656/父66988、原ed543程序、创建UTC19:21:16.7506354/epoch1792524076.7506354相差0.0001毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web和原Orca38652/runtime49da沿主控实际来源，本Reviewer仅只读核进程/监听和记录，没有访问SQLite/HTTP或运行控制脚本。
+
+已消费授权收回、tracked/Git冻结解除，下一prepare取restore-16/restored.json且c8不改，当前窗口归原S。六次失败、所有部分候选及candidate-IHFNTU保留；同一Worker继续真实编译、N08/输入恢复/Job/完整成果，原账号/工具及安装同候选双Worker验收仍未通过。
+
+## 准确653cfff7的UTF-8构建修复
+
+结论：**局部静态接受准确`653cfff7bc8c23e467a9f233fcb8f332aaae082b`相对b75的native编译参数修复及实际结果记录。** 已完整读取三文件差异，并核实际候选头文件和生成的MSBuild项目。四行代码仅在原四项native构建前，从本构建environment删除大小写形式的CL/_CL_并明确CL=/utf-8，日志只输出固定非秘密参数；没有修改process.env、系统代码页、源注释、Node pin或原编译/退出条件。Go后续沿原environment调用，CL的MSVC含义没有据此扩大为新运行权限。
+
+已通过只读网页工具完整读取两份Microsoft官方文档：无BOM源默认使用当前用户代码页，显式/utf-8同时指定源及执行字符集；这与当前UTF-8源码和936诊断相符。[UTF-8官方说明](https://learn.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8?view=msvc-170)。CL参数在命令行前处理、_CL_在后处理，清除继承冲突后明确本构建参数符合该消费者规则。[CL环境变量官方说明](https://learn.microsoft.com/en-us/cpp/build/reference/cl-environment-variables?view=msvc-170)。Firecrawl CLI仍不可用，没有安装。实际完整编译尚未运行，生成项目未显式指定字符集也不能证明外部属性表或真实编译器的全部有效参数，后继结果必须以真实日志判定。
+
+`check-revision.ps1 -Previous b75cf8ffeedffd244934dfac078b4926e865eb15 -Candidate 653cfff7bc8c23e467a9f233fcb8f332aaae082b`实际EXIT0，两Markdown/5本地链接及Git空白通过；准确MJS管道交Node `--check --input-type=module`实际EXIT0，未执行模块正文。全部检查BelowNormal、marked18.1.0、Node512MiB。Worker首次普通push被远端拒绝、确认远端仍b75后普通push成功沿其来源保留，本Reviewer没有将首次失败记为成功或重复远端操作。
+
+本次只接受准确静态修复，没有新的构建窗口或后继编译结果，不能宣布C++问题已消失。N08与其他已定稿实现继续，全部真实原生、完整成果、安装及同候选双Worker保持未通过。
