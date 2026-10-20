@@ -604,3 +604,15 @@ absent只返回原生absent，不能推断无副作用；已checkpoint的pending
 成功重放控制现放在contextPath实际改写之前；改写并恢复字节后，真实stat核size及原字节相同、mtimeNs确已变化，再要求原R得到request_mismatch，实际前后mtime记录进入结果。没有观察到mtime变化时该断言失败，不能计版本变化通过。首次原生固定context和唯一Run/root仍检查，不回填旧mtime、不删除version或生成替代任务，原F15的预期矛盾已消除。运行结果仍NOT_RUN，原有局部静态接受和整体动态证据不足保持。
 
 本段`git diff --check b3f0e22919fbbfab155af0fa9990602f50922117 c35ec0d9003d0052f0a1ee9e5da5d1b8f9efb279`在BelowNormal下EXIT0。说明仅更新接受归属/事实及原件版本检查，没有新增或修改链接，沿用两文档成熟Markdown结果，没有运行测试或资源采样；推送及远端同SHA采用Worker成功回执，主控本轮未另核远端保持。§7.5仍由原Worker静态实施；T11新增真实人类入口待用户范围回答，T12后继契约及测试计划待准确交审，均未被本次接受登记通过或冻结接口。
+
+## 恢复会话与准确8e066控制脚本身份复核
+
+本任务经原生retry-of恢复为`task_1cd8014750f9 / ctx_6339d8beeb73`，当前terminal为`term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，实际客户端Orca / Codex、会话模型`gpt-6.1-sol`、effort xhigh，来源为主控当前任务记录。完整读取根忽略目录`swa-review-recovery-20261020.md`及main当前事实源；原M0与既有准确审查保持。已通过`msg_6ae48a37e0fd`报告实际读取，主控`msg_e24b6fe726d9`回复确认恢复唤起；c29/f08/c0及累计管理记录分别接续审核。
+
+先独立确定本次控制脚本接受条件：准确全文件只有两项真实身份常量改变；恢复launch、restored及当前running记录同源同身份；当前进程程序、创建时间及唯一监听相符；原库保全原件保留；既有准备、精确停止和恢复条件保持，下次窗口仍须新鲜身份核查与资源准入。
+
+结论：**接受准确SHA256 `8e06639aa6c0bf635b037fb82a8b745540ed0dd3a754b15e8220d098652b606d`的两项身份常量更新，可用于主控安排下次窗口的准备；本次不授予执行窗口。** 已完整读取根忽略目录`swa-cli-v1-control/service-window.py`。仅在内存把PID43068及创建UTC13:41:49.053571恢复为旧PID12800及UTC09:43:52.279923后，全文件SHA256精确等于已接受`0742a46eb64d399ed8171b5a9f426a0a5bfb53e1561442428d7484b46df22424`，其他流程字节没有变化。
+
+UTC2026-10-20T14:08:18的独立只读查询确认：restore-03/launch.json、restored.json及当前running.json均为原S `ed543c12106c2dbb3e181cb9bc1647b626455179`、PID43068、创建UTC2026-10-20T13:41:49.053571Z；真实程序为原`versions/ed543c12/astrocyte.exe`，父PID51152，唯一监听127.0.0.1:64505属于该进程。restore-03/database-check.json记录integrity ok、foreign_keys空及stopped_interval_comparison equal；这是已执行恢复的原件核对，本Reviewer没有重新访问SQLite或HTTP。
+
+`pwsh -NoProfile -File .verification/verify-window-8e066.ps1` EXIT0，BelowNormal，原件为`.verification/window-8e066-readonly.json`。没有执行控制脚本、资源采样、停止、启动、编译、安装、信号或模型。下次prepare仍须重新核对真实进程与环境、使用新保全目录及真实资源检查；当前唯一窗口继续属于原S。首版程序、T00—T15、C01—C09及安装后同候选双Worker动态范围继续未验，T11待答及T03/T12 strict helper准入缺口保持。
