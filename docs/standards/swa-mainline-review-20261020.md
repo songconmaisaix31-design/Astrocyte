@@ -411,3 +411,17 @@ c4入口局部静态接受及主控实际回复与准确记录一致；c9记载�
 工具范围的问题准确登记为已询问未答，既有Codex验证和旧S3按各自适用范围保留；未推断开放工具、供应端点或账号，也不将所有Agent发现加拒绝算交付。独立发现、具体技术契约及依赖设计可继续，真实执行仍遵守当前限制。同一次普通push覆盖c2/2f/c4/bf的后继回执、原TLS失败及c4局部静态接受/未编译状态均与实际消息一致。
 
 `check-revision.ps1 -Previous c9fb9b7bda759e324fa9369209f29e221ca95d97 -Candidate 1b578c2ea13d8f553fa7bb7ddf5fa7d0c96ef7b9` EXIT0，四Markdown/63本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。准确版本未授予动态窗口或宣称Agent调用、完整依赖、安装、双Worker成功；原产品、旧S3和其他未答项保持。
+
+准确1b接受hook `msg_a6e45f5a75cc`已获主控`msg_8a98651ebe6c`完整读取a58报告回复，累计c9管理范围及其准确时点亦确认，实际唤起完成。
+
+## 准确ff2a0861的独立发现规格与实际Go结果
+
+结论：**接受准确`ff2a08615fedfeda0a11e46c0157796cdd84c979`相对1b的四文档范围。** 完整读取HANDOFF、STATUS、SPEC及首版任务差异。SPEC §21.1.1准确限定740/c3报告已接受的产品真实registry/独立命令配置发现、明确native或可选profile只读源、capabilities DTO、App只读端口、稳定AgentSelection及现行单CLI外发批准；各字段、坏源失败、无原Orca运行前提及秘密筛选与已审范围一致，没有把新workerSend/TUI路由或未答工具/账号权限纳入本次授权。
+
+同一Worker的原逐文件写域静态实施、直接消费者和必要真实检查符合既有归属；代码仍须准确CR和实际窗口。c3独立发现接受及N04/N05退回的主控正式读取回复为`msg_78bd22dfc244`与`msg_5c0ab07b0334`，实际范围一致。T12、成果、实际Agent支持及最终同安装候选双Worker保持各自未验，不以接口定稿替代运行。
+
+主控独立detached9c的原入口四包源码编译、三个传输前函数真实PASS/零SKIP及SOURCE=9c，已由本Reviewer在bb5报告核原件并局部接受；Worker未执行旧撤销指令、原树WIP及后继提交保留。官方HEAD原result/exit记录独立读到三项200及521.999/199.2013/217.1768毫秒，30秒/零重试；不据此推断完整下载或TimeoutError原因。Handler代理/TLS等执行设置保留主控实际脚本来源，本Reviewer没有重复网络探测。
+
+restore-07同源S21300的真实创建epoch/程序/唯一监听和原库记录已独立核实；fea0两常量逆置1dc4全文件一致另有正式脚本接受，ff2在其实际时点仍准确写待复核。完整原环境/health/Web及原Orca状态保持主控来源，当前窗口归原S，没有新的运行授权；旧构建失败、旧S3及待答项保持。
+
+`check-revision.ps1 -Previous 1b578c2ea13d8f553fa7bb7ddf5fa7d0c96ef7b9 -Candidate ff2a08615fedfeda0a11e46c0157796cdd84c979` EXIT0，四Markdown/45本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有编译、启动服务/Agent/模型、操作原库或改动实现。
