@@ -6,7 +6,8 @@
 
 | 项目 | 当前事实 |
 | --- | --- |
-| 用户首版目标 | 抽取 Orca CLI 对应执行能力，交付用户从原有 Agent 或终端调用的可控 Swarm CLI；具体范围与接口待后续任务核实 |
+| 用户首版目标 | 抽取 Orca CLI 对应执行能力，交付用户从原有 Agent 或终端调用的可控 Swarm CLI；[首版任务](tasks/swa-cli-v1-20261020.md)记录具体范围与验收，尚未实现 |
+| 首版执行边界 | 是否脱离 Orca 桌面独立运行已询问、未答；执行接口保持未决定，继续真实源码及依赖调查 |
 | 规范仓库 / 默认分支 | GitHub 仓库 ID `1410836101`，`songconmaisaix31-design/swarm-anything` / `main` |
 | 默认分支核查快照 | `3a02ce38481d1885adee2e051a1b524d78376897`，为产品32ab祖先；本轮未推进 main |
 | 产品基线 | `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`；原 PR #2 已普通合入 |

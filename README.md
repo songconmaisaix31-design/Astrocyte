@@ -1,6 +1,6 @@
 # SWA（Swarm Anything）
 
-SWA 首版目标：抽取 Orca CLI 对应的执行能力，交付一个用户能从原有 Agent 或终端调用的可控 Swarm CLI。该目标已确认，具体抽取范围和接口由后续任务核实；当前产品能力及未验范围见 [STATUS](STATUS.md)。资料导入与 Attention Engine 提供可选的研究和经验支持。
+SWA 首版目标：抽取 Orca CLI 对应的执行能力，交付一个用户能从原有 Agent 或终端调用的可控 Swarm CLI。当前实施入口为[首版任务](tasks/swa-cli-v1-20261020.md)；是否脱离 Orca 桌面独立运行尚未决定，具体抽取范围和接口继续核实。当前产品能力及未验范围见 [STATUS](STATUS.md)。资料导入与 Attention Engine 提供可选的研究和经验支持。
 
 本仓库从已接受的 Astrocyte 产品历史接续。已有网页、HTTP、认知 MCP 与 SQLite 数据路径继续使用原程序标识。[META_PLAN](docs/META_PLAN.md) 保留原 v2.1 规划，M2—M6 为后续规划；MCP 和完整 S3 不自动成为首版 CLI 的前置条件，现有任务的权限和验收限制保持。最新目标及适用关系见 [QUESTIONS](docs/QUESTIONS.md)。仓库规范名称为 `songconmaisaix31-design/swarm-anything`，默认分支为 `main`；当前产品历史进入 main 由主控安排，M0 文档 PR 的目标仍为产品集成分支。
 

@@ -2,6 +2,8 @@
 
 先读 [AGENTS](AGENTS.md)、[HANDOFF](HANDOFF.md)、[STATUS](STATUS.md)，再读 [META_PLAN](docs/META_PLAN.md)、当前 [TASKS](docs/TASKS.md) 和具体任务。业务规格在 [SPEC](docs/SPEC.md)，代码约定在 [CODING](docs/CODING.md)，已确认决定与未答问题在 [QUESTIONS](docs/QUESTIONS.md)，资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护。
 
+首版实施以[可控 Swarm CLI 任务](tasks/swa-cli-v1-20261020.md)为准；原 M2—M6 沿后续规划分别处理，未答执行边界不在普通文档或局部实现中定稿。
+
 ## 环境与启动
 
 现有程序使用 Go、React/TypeScript、Vite 和 SQLite。锁定版本为 Node 24.16.0、pnpm 11.27.0、Go 1.27.2；以仓库清单和锁文件为准。Python 可用于明确需要它的工具链，媒体依赖需另外安装核实。Morphogenesis 研究运行时独立管理。启动、媒体安装、数据目录、权限和备份要求见 [README](README.md)，不要将业务 SQLite 放入工作树。

@@ -21,6 +21,14 @@
 
 本轮再次读取真实 API/远端：仓库 ID、名称、默认分支和 main/产品/前端 SHA 保持上表值；主控新增 `2fefbe79075bb94660059fcedd88b8008931b92f`，仅追加 [M2 建议任务](../../tasks/swa-m2-public-contracts-20261020.md)，已依主控 `msg_fdd7705d3f50` 原样纳入。该任务尚未实施，首版范围仍按最新用户决定。
 
+主控随后提供 `9140cf8aa618c832b3a099222a46991b7c2b3ddd` 的最新六份文档。已重新读取并将首版 CLI 任务、M2 延后说明、QUESTIONS 的最新决定及独立运行待答、总任务和 STATUS/HANDOFF 的接续内容纳入当前入口，保留本轮已修订的规则、来源和导航。首版是否独立运行或依赖已安装 Orca 尚未回答，执行接口保持未决定。
+
+| 追加来源 | 当前目标与消费者 | 验证 |
+| --- | --- | --- |
+| `9140cf8a:tasks/swa-cli-v1-20261020.md` | [首版 CLI 事实源](../../tasks/swa-cli-v1-20261020.md)，README、HANDOFF、STATUS、TASKS及文档目录 | 完整来源文本比较 |
+| `9140cf8a:tasks/swa-m2-public-contracts-20261020.md` | [后续 M2 建议](../../tasks/swa-m2-public-contracts-20261020.md)，原2fef内容及最新延后说明 | 完整来源文本比较 |
+| `9140cf8a:docs/QUESTIONS.md`、`tasks/swa-mainline-20261020.md`、`STATUS.md`、`HANDOFF.md` | 对应当前文件中最新首版目标、待答边界、范围与接续；保留已完成的M0整合 | 完整读取最新文件并逐项核对新决定及直接消费者 |
+
 ## §7.5 的现行规则
 
 | 规划要求 | 规则拥有者及直接消费者 | 实施结果 |
@@ -193,10 +201,10 @@
 | D02 原文 | `node --max-old-space-size=512 .verification/swa-m0-20261020/check-documents.mjs`：退出0，re.md移除外围围栏后与 META_PLAN 完整一致 |
 | D03 规则 | 逐项读取 AGENTS/CODING/SPEC/四角色，结合旧分层、固定百分比、Python绝对禁令及全部三层测试要求的搜索核对：九项修订均有当前负责位置及直接消费者；Python文件格式和禁止脚本改写的规则继续有效 |
 | D04 决定 | 完整读取 cf22 QUESTIONS、RESOURCES、状态及对应任务；保留原决定正文、六步已确认定义与未决索引；新增首版决定明确替代原计划的首版范围和顺序，资源文件不变 |
-| D05/D08 保全与边界 | 同一静态检查：产品1446个路径全部保留，非文档修改为0；现有实验、资源参数和产品独有报告无差异；51份主控独有文档及2fef新增M2建议已纳入，120份来源文本比较通过 |
-| D06 链接与格式 | UTC `2026-10-20T07:00:25.284Z` 同一检查：122份变更Markdown、775个本地链接、34项引用定义、57个代码围栏，错误0；本次文档没有本地标题锚点引用，锚点数量为0 |
+| D05/D08 保全与边界 | 同一静态检查：产品1446个路径全部保留，非文档修改为0；现有实验、资源参数和产品独有报告无差异；51份cf22独有文档及9140首版CLI/M2任务已纳入，121份来源文本比较通过 |
+| D06 链接与格式 | UTC `2026-10-20T07:04:03.677Z` 同一检查：123份变更Markdown、791个本地链接、34项引用定义、57个代码围栏，错误0；本次文档没有本地标题锚点引用，锚点数量为0 |
 | D07 接管阅读 | README → CONTRIBUTING/AGENTS → HANDOFF/STATUS → TASKS/总任务/M0 → SPEC/QUESTIONS/RESOURCES，以及研究、V4和归档入口逐项读取；已实现能力、规划与原 FAIL/NOT_RUN/BLOCKED 没有混写 |
-| D08 格式 | `git diff --check`：退出0；普通 commit/push、PR base/head与准确实现独立CR在交付时另行核对 |
+| D08 格式与PR | `git diff --check`：退出0；首份提交普通push、远端HEAD一致；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4)的base为产品集成分支、head为swa-m0-20261020；后续来源接续普通提交后核最新HEAD，准确实现独立CR另行记录 |
 
 检查结果原件为忽略目录中的 `result.json`。纯文档工作不将既有产品 FAIL、NOT_RUN 或 BLOCKED 改记为通过。D01/D03/D04/D07 的语义核对与 D02/D05/D06/D08 的机器检查共同支持 M0 文档结论。准确实现的独立 CR 与最终 main 集成尚待对应流程。
 
