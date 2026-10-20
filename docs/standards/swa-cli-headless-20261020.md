@@ -913,3 +913,5 @@ N07静态消费者允许明确模型参与选择，不以缺少默认模型等�
 按独立`msg_b4d0f6632c93`，N09检查在真实私有SQLite的mode=ro连接读取项目，实际HTTP只用于合法的项目内capabilities和Agent写入拒绝；未开放全局管理接口或获取人工会话。§12当前接口及USAGE批准来源已同步。下一构建原入口仅将候选目录改为全新dist/swa-cli-install-20261020-02，拟EvidenceName build-03，必须另获一次窗口；build01/02及部分candidate01保持，固定Node来源与校验未改。
 
 后继`generate-followup-static-01`保留两个Go检查文件的gofmt-d、实际生成TS及JSON/YAML解析、两份文档来源/5本地链接及构建入口PowerShell语法通过；正文均未执行。拒绝检查要求原Native owner scope_denied及明确消息，HTTP Agent拒绝要求实际scope_denied及当前操作权限原因，其他依赖错误不计权限通过。主控`msg_2d38445cb876`通报原S在restore11的CodeGraph导出检查失败并由主控独占诊断，Worker不处理原依赖或启动服务，尚无build授权。
+
+按主控`msg_f70d7b47f419`，构建仅将同一`buildSWARuntime(runtime)`调用提前到prod deploy及准确干净源码核实之后、Node下载/native编译之前。该函数使用已装source esbuild与已部署package.json，以external处理native模块，静态源码没有依赖待下载Node或已编译ABI的前置；原入口、Node pin/URL/校验/超时、后续native/Go及最终VERSION写入条件保持。此顺序允许先保存真实bundle/metafile和导入错误，不能据此认为完整类型检查或依赖裁剪已通过。新候选及失败保留规则保持，build03须另授一次窗口；主控通知同源恢复原S22036成功，restore11失败与独立诊断原件保持。

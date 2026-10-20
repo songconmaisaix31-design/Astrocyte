@@ -43,6 +43,7 @@ run(process.execPath, [pnpm, '--filter', '@swa/orca-runtime', '--prod', 'deploy'
 const revision = capture('git', ['rev-parse', 'HEAD'])
 if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('Exact source revision is unavailable')
 if (capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('Commit the candidate source before building the installable package')
+await buildSWARuntime(runtime)
 const nodeDirectory = join(output, 'node')
 await mkdir(nodeDirectory)
 const nodeAsset = NODE_RUNTIME_ASSETS['win32-x64']
@@ -100,7 +101,6 @@ for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-s
     }
   }
 }
-await buildSWARuntime(runtime)
 const go = await findGo()
 for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/server']]) {
   const args = ['build', '-p=4', '-trimpath']
