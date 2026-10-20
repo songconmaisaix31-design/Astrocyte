@@ -14,7 +14,7 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 独立发现与稳定AgentSelection按准确740/c3fca056接受，发现和选择不依赖原Orca正在运行；准确d441的N04/N05输入与模式技术计划已获73946fd2接受，准确079的T12计划已获7c6d3973接受。主控完整读取相应准确差异和报告并回复原hooks，技术契约定稿于SPEC §21.1.1—§21.1.3，同一Worker继续实现。工具范围待用户回答，技术计划接受不授予实际启动或模型窗口。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
 
-用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及命令目录20JS的REA结果、调用语义和依赖取舍见[CLI实现参考](docs/standards/swa-orca-cli-reference-20261021.md)。按实际行为与必要闭包接入，原生函数未反编译及JS部分覆盖保持。e549的N10/生成和e54构建顺序获c5f3局部静态接受，原三hook已完整读取回复。build-03真实prod deploy完成后因Unicode11/diff缺失导入失败，没有安装候选；同Worker继续必要依赖和真实闭包返修。N08、输入/恢复、完整Job/成果仍未通过；默认Pi auth条目0只限定该实际来源，不推断其他账号。当前原S56896已从restore-12恢复，原库和配置保持；此前CodeGraph失败及诊断原件保留，旧原因未知。c8控制脚本未改，后继prepare读取restore-12/restored.json并新鲜准入。
+用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。build-03因两缺失导入失败，8ebe必要依赖/CAS获891局部静态接受，dependency-03真实lock/install退出均0；锁由pnpm生成，后继bundle尚未运行，没有安装候选。N08计划被67b退回补具体配置准入/TTL边界及分别取证，新字段未定稿；同Worker在冻结解除后返修。输入/恢复、完整Job/成果仍未通过。当前原S56896已从restore-13恢复，创建UTC18:17:05.651634/epoch1792520225.651634，与旧相同PID的创建身份不同；原库和配置保持。c8未改，后继prepare读取restore-13/restored.json并新鲜准入；此前CodeGraph失败及诊断原件和未知原因保留。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户要求不妨碍本机Orca CLI并集成产品，产品采用独立后台，准确396e方案及测试计划已接受，SPEC §21.1明确接口与隔离边界。准确30b来源事实及此前提案保留，其Mission/Claim旧待决项按适用任务处理。程序已开始静态实现，CLI动态验收未通过。
 
