@@ -1342,3 +1342,27 @@ Worker的n19-static-01/syntax.log及syntax-exit.txt已完整读取，九份成�
 结论：**局部静态接受准确`68bc4d8c5d182575fe6fe679a436033e8cdc6b36`相对7a0058的三文件差异。** 七项已审精确版本仅加入runtime devDependencies及既有依赖清单，原prod dependencies、scripts和其他包参数保持；文档正确记录产品paths优先匹配及TypeScript普通祖先查找，显式声明与尚未安装分别记录。pnpm权威锁没有修改，本次不具备frozen安装或实际类型通过结论，后继仅由主控安排原串行dependency Stage。
 
 本Reviewer完整读取三文件差异及两个实际JSON，以成熟JSON/YAML实际运行`node --max-old-space-size=512 .verification/review-type-plan.mjs 68bc4d8c5d182575fe6fe679a436033e8cdc6b36 7a0058fefb8499ffb37ffebc47e24866f0218ff7`，EXIT0：上游原锁版本、七项精确新增、完整manifest其余字段及清单56项逐项一致，变更集合只含这三文件。`check-revision.ps1`准确7a0058→68bc4d8c实际EXIT0，一Markdown/1本地链接及Git空白通过，BelowNormal/Node512MiB。没有安装依赖、创建Program或运行产品正文；T12/recover/后台Job仍为同Worker未完成范围，整体真实验收保持未通过。
+
+## 准确7e090587的控制端恢复阶段
+
+结论：**退回准确`7e09058776a06253c7134c60cc88868be27eefbd`的N20/N21，整体T12保持未验。** 以已接受main783203c3的SPEC21.1.3和079bd已审§3.4/§7.6为准，读取相对68bc4d8c的四十文件差异及实际消费者。先从定稿推导：真实caller校验先于legacy/executor/完成重放；事务先保留同一Run/root/context和旧generation；旧helper须两次新鲜退出证明；首次PTY效果前持久checkpoint；pending只观察原R；原命名Job以实际成员、来源及authenticated hello证明复开；任何未知继续原占用，完整关闭及R01—R10另由实际证据验收。
+
+源码将recover接入公开字段/动作、当前start准入、写动作与输出分类、Node enum/私有durable方法。dispatcher的executionAdmission确在legacy route和executor前执行；12阶段分支核原生launch/owner/PTY/进程与父R参数，restored仍进入原生receipt和attestation分支。恢复使用原SQLite BEGIN IMMEDIATE及R/controller-pty、R/run-use，持久pty-spawn后才创建新helper；保留原Run/root/context及原pending Worker.start席位/关闭屏障，历史读取沿原方法handler。命名Job、当前用户/SYSTEM DACL、PID record、authenticated hello及真实成员交叉核查均有对应Go/TS/C++源码，native尚未编译或运行。
+
+**N20，严重程度高：缺失checkpoint的pending恢复会进入删除原receipt的错误路径。** orchestration-mutation-executor.ts:232为pending recover传入JSON.parse(receipt ?? 'null')；原生begin完成、首次checkpoint前发生真实中断时，原receipt可为null。native-methods.ts:253—254先调用nativeObject，contracts.ts:89的成熟Zod record.parse对null抛出ZodError，尚未进入后面的effect包装。executor:240—246对该非prompt、非operation_unknown异常调用discardPendingMutationReceipt。此源码路径将原pending变成缺失，违反SPEC21.1.3及§3.4的checkpoint前未知保留条件；当前没有运行该故障或观察到第二个helper。建议动作：缺失或无法完整解释的原pending保持operation_unknown及原R，只有明确信息支持的无效果分支使用原生effect-free结算，不删除未知原件。
+
+**N21，严重程度高：故障停止入口缺少同一目标句柄上的完整归属核查。** controller-recovery.mjs先按PID调用readServiceJobMember，再启动stop-owned-controller.ps1。后者持有Process.SafeHandle并核创建时间、程序文件名及保护PID，随后Kill；未在所持目标句柄上核原私有Job成员，也没有计划要求的新鲜PTY/incarnation、安装来源及父链复核。父进程先前按PID取得的观察不能补作该持有句柄的全部证明。建议动作：沿获准现有Windows能力，在真正终止前对同一实际句柄完成上述证据并保留结果，缺项立即拒绝；不在服务期间编译或按新PID寻找替代进程。此入口未运行，本Reviewer没有终止任何进程。
+
+两项已通过`msg_83a96a758e65`交回原Worker，其`msg_3d7fed665f00`确认读取并持续返修。其余源码的存在和限定静态检查不代替下列真实覆盖：
+
+| 已审条件 | 本次真实入口的覆盖范围 |
+| --- | --- |
+| R01 | 已有完成run-create子R的无helper调用拒绝；细pending/bootstrap、其他方法及restored分支仍未覆盖 |
+| R02 | 另一真实项目/Run、批准撤销及settings变化仍需实际入口与条件 |
+| R03/R04 | 活旧helper拒绝/原receipt解除、同lineage结束helper后恢复；故障停止须先修N21，未涉及活模型Worker |
+| R05 | 已完成同R重放及旧C/第二任务拒绝；不同payload与两阶段不同R竞争仍需覆盖 |
+| R06/R07/R08 | 同库重启、原handle关闭后复开、各真实checkpoint断开及pending观察仍需覆盖，缺失checkpoint先修N20 |
+| R09 | helper失效后的历史task读取及新owner close；完整成果、全部未知资源和最终服务退出仍需覆盖 |
+| R10 | recover的真实连接失败、处理后断开、取消130和stdout失败仍需覆盖 |
+
+该入口remainingCases非空时外围返回6，未将核心路径登记为完整T12通过；所有上述正文均NOT_RUN，没有新增模型轮次。本Reviewer实际`check-revision.ps1`准确68bc4d8c→7e090587 EXIT0，三Markdown/7本地链接及Git空白通过，§15/§16两个锚点与实际标题一致。Worker的t12-source-static-01日志、两PS parser结果及六项退出0原件已读，24份语法、JSON/YAML、8Go格式、native JS和来源检查保持其执行归属。全部检查BelowNormal；本Reviewer仅使用成熟Markdown读取/静态源码核查，未创建Program、编译、安装、访问目标数据库/HTTP、控制进程或调用模型。T12余项、正文结算及通用TUI继续同Worker，类型/生成/完整构建和同安装候选双Worker全部未验，当前没有新重操作窗口。
