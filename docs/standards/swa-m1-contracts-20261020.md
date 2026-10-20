@@ -75,6 +75,7 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 
 | 编号 / 覆盖要求 | 具体输入与操作 | 必须观察的结果 |
 | --- | --- | --- |
+| T00 当前服务停止与保全（主控） | 重新读取原运行根 `running.json`，核 PID、精确创建时间、程序路径、S、BelowNormal 及唯一 `127.0.0.1:64505` 监听；保全当前 SQLite、完整 Q 指针、媒体配置和 CodeGraph 配置，取得真实进程的当前环境用于同源恢复。主控核实后停止已确认进程并等待退出 | 记录实际原状态和当前配置来源；只有该进程停止且端口无监听才交付重操作窗口。读取环境失败、身份变化或存在其他占用时立即报告，保持原服务。敏感环境只保存在私有忽略目录，不打印值、不进入 Git |
 | T01 改前对照 | 获批窗口中以干净基线与当前真实依赖运行一次原 `pnpm check:contracts`，沿原 pipe 输出方式；先记录 `process.version`、`process.versions`、execPath、pnpm 版本及环境额度 | 记录完整原退出和三个阶段实际发生情况；发生原崩溃则保持 FAIL；没有复现时不得宣告已完成因果对照 |
 | T02 安装修复 | E 内明确 edit-dir 准备精确 2.60.0 包副本，经文件编辑工具仅改该退出操作；使用当前 pnpm 登记补丁和锁文件，再冻结安装 | 补丁被实际应用；锁文件及实际包中仅出现预期变动；依赖仍为同版，原命令及检查输入相同。不得设置允许未用补丁或忽略补丁失败 |
 | T03 原入口成功 | `pnpm check:contracts`，原契约、原配置和未改脚本，保持与 T01 同一输出方式及额度 | EXIT0；Redocly 原规则输出有效与 13 警告，`Validated 264 OpenAPI examples and supported capability boundaries`、`OpenAPI generated types match source` 均实际出现；没有 native 断言、遗漏阶段或残留本次子进程 |
@@ -83,6 +84,7 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 | T06 类型漂移拒绝 | 在 E 的完整真实源码副本中，仅将 `web/src/api/schema.d.ts` 换成 Git 中真实 `f48122ba5eb4f469bf13cb0e27539942ceee3841` 的该文件；当前历史比较确认其与基线存在 100 行差异。使用成熟归档工具取得 Git 原文件，禁止改写生产文件；运行原 `pnpm check:contracts` | 前两阶段实际通过；原 `generate-client --check` 抛出 `Generated client schema drift: run pnpm generate and commit schema.d.ts`，整体非零退出；历史 schema 完整字节保持，证明 --check 未写文件 |
 | T07 干净冻结安装 | 用最终准确 Commit 的真实归档创建 E 内独立副本，包含原 package、workspace、lock、patch、contracts、scripts 和生成类型；副本初始无 node_modules。在唯一窗口内运行原 `pnpm install --frozen-lockfile`，随后原 `pnpm check:contracts`；不使用业务/CLI 替身 | 安装及命令均退出 0；三个阶段实际完成；同版精确依赖补丁可重建，锁文件无自动漂移。该步骤为 Windows 本地证据；未执行 Linux 时不扩写跨平台通过 |
 | T08 适用静态检查 | 准确最终差异核对；`git diff --check`、`node scripts/check-architecture.mjs`、`node scripts/check-dependencies.mjs`，按各自额度串行；两份 Markdown 通过已安装成熟解析器检查本地链接 | 命令退出 0；原规则和生成物未发生修改，依赖差异限定为该精确包的项目补丁；不触发完整默认 CI 中其他受阻路径 |
+| T09 同一 S 和原库恢复（主控） | Worker 确认所有本次子进程退出、交还窗口；主控按 T00 取得的当前 `running.json`、真实环境与配置，重新采样后启动原 `versions/ed543c12/astrocyte.exe`、同目录 Web 和当前原 SQLite，保持原 Q/媒体/CodeGraph 配置及 BelowNormal/额度；核实际健康和唯一监听，登记新的 PID/创建时间 | 程序仍为准确 S、Web/原库路径保持、真实配置可追溯；只有新进程身份、健康和唯一监听实际通过才更新运行记录并报告恢复。启动失败保存原件并报告；没有自动切换 c5、恢复旧数据库或重试 |
 
 T04 / T06 隔离副本使用真实原文件与原 package 命令；可以复用同一实际安装的 node_modules 链接，必须记录解析的实际 CLI 路径，T07 则独立安装。副本生成、历史文件取得、命令启动及原件保存脚本均只位于 E 内；脚本在独立接受后才编写并执行。测试执行不写真实 SQLite、不访问业务 HTTP、不产生模型调用。
 
@@ -90,7 +92,11 @@ T04 的规则级别变化只在负向检查副本中使用，不进入生产配�
 
 ## 资源、审核与接续
 
-主控继续管理原 64505 服务；当前只读调查没有取得重操作窗口。每个实际安装、测试或命令验收前，先取得主控授予的独占窗口，确认服务已由主控按授权处理；随后两次真实 CPU/可用内存采样，UTC 与单调计时记录齐全，间隔 2—5 秒、CPU 均小于 85%、内存均至少 4 GiB。进程采用 BelowNormal、Node heap 不超过 1024 MiB；临时目录和缓存限定 E。已有窗口或采样不复用为下一重操作的额度。静态审查与文档检查遵守现有 RESOURCES 专用范围。
+主控继续管理原 64505 服务；当前只读调查没有取得重操作窗口。每个实际安装、测试或命令验收前，先取得主控授予的独占窗口，确认服务已由主控按授权处理；随后两次真实 CPU/可用内存采样，UTC 与单调计时记录齐全，间隔 2—5 秒、CPU 均小于 85%、内存均至少 4 GiB。进程采用 BelowNormal、Node heap 不超过 1024 MiB；本次检查的临时目录和缓存限定 E，原服务恢复沿真实配置。已有窗口或采样不复用为下一重操作的额度。静态审查与文档检查遵守现有 RESOURCES 专用范围。
+
+主控 `msg_656f36f44f3e` 补充的服务事实已读取：当前 PID45956、创建 UTC `2026-10-19T19:47:04.6572166Z`、S 路径和唯一 loopback 监听已由主控核实。本轮只读 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，其 source 仍为准确 S；静态读取旧 `candidate-service.py` 已确认 `original_identity` 和 start 前置绑定 c5。它与旧 `restart-product/restore-service.ps1` 不能直接用于本次同源恢复，S 目录没有旧工具要求的 stage 元数据。
+
+T00/T09 若需要新控制工具，限 `E/service-window.py` 等自有文件，先审核后编写，再交主控审阅执行。工具依当前实际记录限定程序、Web、原库、端口及进程身份，成熟 psutil 读取真实进程环境，成熟 SQLite backup API 保全原库，不直接写业务表；缺少权限或配置立即失败。保全 Q 的完整指针及原媒体/CodeGraph 配置，禁止输出秘密值。停止与恢复均由主控执行；保存失败或资源拒绝时保留原状态，不使用旧库覆盖当前业务，不编造 stage.json，不修改旧已验脚本。服务自身正常启动的既有观察更新时间按真实启动区间保留；出现业务值变化交主控核查。
 
 各项前后记录准确 Commit、工具版本、输入、命令、stdout/stderr、实际退出、采样、时长及实际残留进程。改后与改前同条件比较，没有以成功结果覆盖失败。出现资源不足、非预期包变动、不同警告/规则集合、崩溃或错误码变化时立即报告，未验范围继续保留；不自动恢复数据或停止其他进程。
 
