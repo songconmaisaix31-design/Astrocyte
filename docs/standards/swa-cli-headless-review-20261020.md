@@ -1136,3 +1136,11 @@ lock资源UTC18:14:44.580157/47.086692，CPU62.0%/46.9%、可用9000308736/90692
 prepare-13/stop-13及一致备份原件已读，原库integrity ok/foreign_keys空；原S56896旧epoch1792519213.3731608于UTC18:12:35.908098明确退出15。prepare资源CPU30.4%/16.0%、可用8.283/8.382GiB、单调3.002656秒；stop资源CPU26.4%/19.1%、可用8.503/8.613GiB、单调3.003143秒。restore-13使用同一ed543、原库及该次prepare/stop，资源CPU15.8%/19.8%、可用8.231/8.440GiB、间隔3.002350秒，数据库保全记录ok/fk空/equal。
 
 `.verification/inspect-restored-owner.ps1 -RestoreName restore-13`于UTC18:20:09实际EXIT0：current/restored整份记录一致，实际S56896/父9948、原程序、创建UTC18:17:05.6516341/epoch1792520225.651634相差0.0002毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。该PID数值与旧者相同，创建身份不同；下一prepare取restore-13/restored.json，c8不变。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源保留，本Reviewer没有执行SQLite/HTTP、资源采样、控制或服务。当前窗口归原S，新build/模型未授，全部原生执行及安装双Worker仍未通过。
+
+## 准确449184b8的真实锁与后继构建准备
+
+结论：**局部接受准确`449184b826ae64de99d73476147d64967ef31667`的真实pnpm锁及后继构建静态准备，N08修后技术契约另审。** 已完整读取相对8ebe的三文件差异和修后计划，程序保持已审8ebe。锁差异仅含两项必要importer及Unicode11的resolution/snapshot；`.verification/review-generated-lock.mjs`以成熟yaml2.9.1/JSON解析准确Git对象，核全部runtime声明与importer相符、两依赖的实际resolution/snapshot存在，Node512MiB/BelowNormal实际EXIT0，没有执行pnpm。真实lock/install来源及外层最终回执缺失继续按上一节保留。
+
+原build03 runner已保存在该次next-window-executed.ps1，SHA77d93dab38c8517c4280e03b4396ef21acb538ccf5eb2c9a890d9ca3c49352e4；后继runner实际SHA7755b770b1c1a7b25393aa21da166f01c6738513e73ac3a7d8cc65ddb704be37。独立全文比较仅candidate02改candidate03，PowerShell Parser.ParseFile语法错误0、body_executed=false；新candidate03和build-04当前均不存在。原pin/完整性/Stage/资源条件保持，下一正式一次build04须主控独立交付，不重复dependencies/generate或修改旧失败原件。
+
+`check-revision.ps1 -Previous 8ebefec700781e9883a3bb3f905233e07f03e671 -Candidate 449184b826ae64de99d73476147d64967ef31667`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB；原Promise泛型的HTML问题已消除。新增model_target及N11/N12投影/期限/分证计划尚未在本次局部结论中技术接受或冻结，没有真实认证/工具/模型结果，完整闭包和安装双Worker继续未通过。
