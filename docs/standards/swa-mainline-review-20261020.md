@@ -323,3 +323,19 @@ d7f两hook实际读取回复、仅计划接受和原Worker在原写域静态实�
 `git diff --check c82fef37bfc6312ed24ff7a702e6768e29445187 30cd759f1896d1505d08ebe9df59ad3c69bbc0a3` EXIT0；差异无新增/修改链接，沿用既有规格及两管理文档的链接结果，不重复Markdown、资源或产品检查。普通push采用主控准确成功回执，本轮未增加远端核查成功声明。
 
 准确30cd接受hook为`msg_02ae02bb8cde`；主控在`msg_bf251486bd15`完整读取a9相对d7f的十行主线报告新增，确认仅接受规格摘录和管理范围、原程序局部接受/F15及全部动态未验、M1/S3/权限和原S/Orca/无窗口保持；实际读取回复确认唤起。
+
+## 准确7b4ac410的累计管理与窗口记录复核
+
+本任务经原生retry-of接续到`task_1cd8014750f9 / ctx_6339d8beeb73`，实际terminal为`term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，使用原审查工作树和两报告写域。完整读取恢复brief和主控最新main入口；原M0与准确30cd及以前接受范围保持。实际模型为Orca/Codex `gpt-6.1-sol`、xhigh，来自当前任务的实际会话恢复记录；没有增加子Agent。
+
+先核定管理接受条件：既有独立结论、失败及未验范围准确；状态归STATUS、待答归QUESTIONS、连续执行归原任务；当前Worker及Reviewer归属明确；窗口只按实际原S身份保全和新资源检查交付，不能把文档、依赖或生成成功计为产品通过；未答T11及T03/T12身份缺口保持。
+
+结论：**接受准确`7b4ac4104cf0202735d654f007138ce5c173f006`相对已接受30cd的四文档累计管理范围。** 已完整读取189bb/8168/f103/605/cca/87c及7b的实际差异，只有HANDOFF、STATUS、QUESTIONS及首版任务变化，其他全部已跟踪实现、依赖、SPEC、既有方案/报告和归档均未改变。c29/f08/c0逐项局部静态结论见同次无界面报告；完整§7.5、T00—T15及安装后同候选双Worker动态范围继续证据不足。
+
+F15静态修复接受、c29首次TLS失败及后续普通push成功、dependency-02/generate-01实际EXIT0和内建镜像重试/警告、架构首次App io失败和后继45包通过，均与已读准确源码/实际原件对应；没有把首次失败改写为首轮成功。prepare-03、stop-03和restore-03非秘密JSON原件的PID/时间、资源、备份及原库equal结果已独立读取，未重新打开SQLite或读取秘密环境。本Reviewer仅将主控公开CLI/实际完整配置及Web核查记为其实际来源，没有补写本轮独立动态成功。
+
+8e066控制脚本两字段已由准确ebd独立接受，主控实际回复`msg_3abd95e5ac8f`后才开始prepare-04。已读该次资源与backup/prepared、stop/stopped/window-ready原件：原S43068于UTC14:10:08.237348退出15，停止前后均为新双样本、CPU/内存满足门限、BelowNormal且单调间隔3.003503/3.002948秒，原库一致备份结果保留。7b正确将当前S记为停止，仅一次干净c0 build及成功后的版本核查交原Worker，tracked文件/Git冻结，恢复须用本次prepare-04/stop-04保全同一原库及配置。构建结果尚未进入本次接受范围，其他功能/安装/服务/信号/模型没有获此窗口授权。
+
+T11人工接管范围在QUESTIONS明确待答，原测试条件保持未验，未开放伪人类事件；T12按已审要求补完整契约/计划，在主控定稿及独立审核前不冻结新增参数。strict helper caller须在native mutation executor前覆盖当前及已完成R重放，恢复缺真实证明拒绝或unknown；当前方法白名单及declared-handle边界未被描述为完成。M1补丁因果证据不足、旧S3/权限/实际采用和正式发布限制保持。
+
+`check-revision.ps1 -Previous 30cd759f -Candidate 87c532d97ff69e2d2e1b1144445ffb9b51874900` EXIT0，四Markdown/80本地链接、无锚点/HTML或空白错误；87c至7b没有新链接，沿用这次成熟marked18.1.0检查，并执行准确累计空白和四路径外无变化核查。全部检查为BelowNormal、Node512MiB，只读Git、文档、非秘密JSON与已述当前进程身份；没有执行重操作或修改业务代码。普通push采用主控准确成功回执，本轮未新增远端核查成功声明；没有正式PR，未公开新评论。

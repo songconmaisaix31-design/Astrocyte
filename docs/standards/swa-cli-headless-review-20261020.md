@@ -616,3 +616,37 @@ absent只返回原生absent，不能推断无副作用；已checkpoint的pending
 UTC2026-10-20T14:08:18的独立只读查询确认：restore-03/launch.json、restored.json及当前running.json均为原S `ed543c12106c2dbb3e181cb9bc1647b626455179`、PID43068、创建UTC2026-10-20T13:41:49.053571Z；真实程序为原`versions/ed543c12/astrocyte.exe`，父PID51152，唯一监听127.0.0.1:64505属于该进程。restore-03/database-check.json记录integrity ok、foreign_keys空及stopped_interval_comparison equal；这是已执行恢复的原件核对，本Reviewer没有重新访问SQLite或HTTP。
 
 `pwsh -NoProfile -File .verification/verify-window-8e066.ps1` EXIT0，BelowNormal，原件为`.verification/window-8e066-readonly.json`。没有执行控制脚本、资源采样、停止、启动、编译、安装、信号或模型。下次prepare仍须重新核对真实进程与环境、使用新保全目录及真实资源检查；当前唯一窗口继续属于原S。首版程序、T00—T15、C01—C09及安装后同候选双Worker动态范围继续未验，T11待答及T03/T12 strict helper准入缺口保持。
+
+准确8e066接受hook为`msg_da4f4cbe6ff9`；主控`msg_3abd95e5ac8f`完整读取准确报告ebd相对27f的全部新增，确认内存字节对比、当前真实身份及数据库原件、全部未执行限制，实际读取回复确认唤起。后继主控安排prepare-04/stop-04和仅构建窗口，不改变本次接受范围。
+
+## c29、f08与c0的独立条件及准确静态CR
+
+本会话依据main的首版目标、SPEC §21.1、既有H05/H06/H08/H10/H11/H15/H17及已审b3 §7.5核定条件，再沿准确Git对象逐段追踪：普通CLI只发布一次完整JSON，原R和实际选择器与HTTP trace分开，错误原件和原生结果保持；网络、取消、输出失败不重发；serve启动前后EOF和失败分别结算，ready后的诊断不追加结果；直接子进程完成可重复观察，全体所属后代明确退出且原生资源空闲才允许正常0；准备提交须与已声明依赖、补丁、实际生成来源相符，准备成功不扩大为功能通过。后继工作树WIP没有用于这些结论。
+
+### c29：普通CLI输出首段静态接受
+
+结论：**接受准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`相对c35五路径的局部静态范围。** 已完整读取三份Go及两份说明差异，并追踪实际ValidateOrcaCommand、OrcaEnvelope与ErrorV1结构。合法原R仅从实际已解析的canonical UUID取得，选择器在App校验后保存；未知flag导致解析提前终止时，不从尚未处理的后继参数补取身份。三个传输前函数现检查一次对象及EOF，分别保留合法R先解析、尚未解析和非法R的实际次序，未生成runtime/authority/Run。
+
+单次发布在实际写入前设置attempted，短写与部分写入失败不再输出第二个结果，stderr保留已知及请求的关联；有副作用的命令返回未知6，其余输出失败7。成熟Decoder的UseNumber保留结果数字、DisallowUnknownFields及恰好一个对象检查明确native和HTTP ErrorV1来源；原生结果/error.data及实际关联保持，HTTP ErrorV1原件进入既有error.data，HTTP header trace只写独立诊断。真实连接未建立映射4，其他网络/响应不完整保持6，实际context取消为130；没有重发分支。失败任务的成功查询仍按真实envelope退出0。
+
+这段没有实施serve EOF、全后代收尾或C01—C09驱动。`check-revision.ps1 -Previous c35ec0d9003d0052f0a1ee9e5da5d1b8f9efb279 -Candidate c29e5af7dd8fa1c578ba7499564365f692dd8a9d` EXIT0，Git空白、两Markdown及5本地链接通过。没有运行Go函数、HTTP或取消/管道正文；实际功能继续证据不足。c29首次TLS push失败与随后Worker普通push/ls-remote成功均按主控准确任务记录保留，本Reviewer没有重新推送Worker分支。
+
+### f08：锁与真实类型生成准备范围接受
+
+结论：**接受准确`f08b52111d4860b5ef162987cce2f43f4a4e6ce0`相对c29的两路径准备范围。** 完整读取锁与类型差异、准确workspace/runtime包声明及generate-client.mjs。成熟YAML2.9.1/JSON读取准确Git对象，核43项runtime依赖与4项开发依赖specifier均对应锁，injectWorkspacePackages与现有workspace声明一致；node-gyp12.3.0及其新增闭包来自既有包声明。准确node-pty补丁原字节SHA256为`e8bc0de94dc02036833f92059fc6e000fea00e113811193382164deab7c7ea60`，锁的patch值、importer及snapshot相同，其他补丁没有改动。
+
+类型只增加既有contracts的Orca命令路径、18项动作及对应command/nativeError/envelope/operation，没有修改原公开字段或生成器。已读取Worker dependency-02的lock/install原日志、四项实际退出与两组资源原件，以及generate-01日志、两项退出与新双样本：均EXIT0；真实镜像超时的命令内建重试、peer和弃用警告保留。next-window脚本明确BelowNormal、私有TEMP/cache/store、安装Node1024MiB及生成512MiB，各项重新采样且串行，实际日志与准入门限相符。生成日志为实际成熟openapi-typescript链写入结果，本Reviewer没有重复安装或生成。
+
+`node --max-old-space-size=512 .verification/review-f08-source.mjs` EXIT0，原件`.verification/f08-source-review.json`；两路径`git diff --check c29e5af7dd8fa1c578ba7499564365f692dd8a9d f08b52111d4860b5ef162987cce2f43f4a4e6ce0` EXIT0，BelowNormal。仅支持锁同步及实际类型生成准备接受，native编译、类型检查、完整包、安装或功能均不能由这次结果判定通过。
+
+### c0：所属EOF、Job与原生空闲关闭局部静态接受
+
+结论：**接受准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`相对f08八路径的局部静态范围，完整§7.5和首版功能继续证据不足。** 已完整读取全部差异，额外追踪准确原生orcad-lifecycle、OrcadRuntimeLifetime、RPC stop、Worker资源查询与daemon代际清单。serve消费自己的真实stdin，通过带原因的context区分EOF、读取失败及取消；readiness前取消输出单一失败，readiness后只保留原结果并用stderr及实际退出表示关闭。子进程的done关闭后可重复观察，stdout先读至EOF再Wait，不再重复消费单一Wait值。
+
+serve在创建子进程前加入新独立Job；初始核自身成员及active=1，直接子进程经真实句柄核成员/创建时间，关闭后两次相隔100毫秒的新accounting必须只剩serve自身。没有kill-on-close、breakaway、原Job配置或广域终止；成员/查询/句柄失败、残留和清理超时保留6，子进程失败保留相应非零。实际嵌套Job、ConPTY及全部退出观察仍须动态验证，静态代码不能证明本机已经支持该路径。
+
+原生stop先停止RPC，再检查in-flight、全部pending receipts、无分页上限的实际Worker资源、每个controller准确close及所有daemon代际权威PTY清单。原有cleanup按逆序运行，失败会聚合抛出且不释放相应fence；只有全部成功才写一次私有关闭确认，Go核runtime/data与readiness一致并等到EOF。缺确认或未知后代不能取得正常0；没有把直接root退出当全树完成。内部生命周期记录没有扩展公开命令/字段或执行状态账本。
+
+App任务规格使用成熟json.Valid先核完整单JSON，再用原DisallowUnknownFields Decoder和原业务字段校验；连续JSON或坏结构不能通过，移除io没有降低该校验。已读static-eof-01实际架构失败及static-eof-02的45包通过原件，检查规则没有改动。`check-revision.ps1 -Previous f08b52111d4860b5ef162987cce2f43f4a4e6ce0 -Candidate c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。
+
+C01—C09安装驱动/console helper尚未交付；T03/T12已审strict helper caller准入尚未实施，当前host的方法白名单不能证明真实caller，原生verify=null仍允许declared-handle的边界保持待修。强核验必须位于native mutation executor前并覆盖已完成R重放；恢复证明须单独核实，缺attestation拒绝或保留unknown，不能沿当前launch豁免。T12完整契约/计划须由主控定稿并独立审核，T11真实人类入口范围待答；本轮不冻结新参数，不计这些范围通过。没有正式PR，本轮未发布GitHub review；仅通过原Run交付。当前仅原Worker获主控的一次build窗口，本Reviewer没有编译、产品测试、安装、服务、SQLite、信号或模型调用；后继实际构建和动态结果另审。
