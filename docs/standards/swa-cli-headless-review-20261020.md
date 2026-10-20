@@ -705,3 +705,11 @@ UTC14:20:26的独立只读查询确认原程序、PID45948、父PID55664和唯�
 P03为方案未规定的状态分支，不宣称现有源码已经产生永久阻塞。原生executor会按错误类型等条件结算pending；补充方案须明确如何使用其真实规则，不能在实现时猜测。P02同样不预先指定新的公开字段或额外身份系统，要求原已审能力的真实启动过程能够通过严格验证。
 
 已通过`msg_6dc0bb0e151b`交原Worker三项补充；接口仍为提案，由主控定稿后才实施，T11待答不阻断本项，F16另行准确返修。`check-revision.ps1 -Previous bc217de88f4bb4b8af1ab63f3c281f4c2f649aea -Candidate 897531d5d2978e3a51a043063a26e254b3d0f766` EXIT0，两Markdown/5本地链接和Git空白通过，marked18.1.0、BelowNormal、Node512MiB；没有编译、原生调用、重启、服务、Job创建/复开、模型或计划正文执行。
+
+准确897531退回hook为`msg_7f667155d33a`；主控`msg_43bc1c4befbe`完整读取准确bad4d7c5相对abc8二十行新增并回复，确认三项方案缺口及全部未运行限制，接口继续提案。原Worker在build-02/Git冻结期间只准备忽略目录草案，窗口归还后正式提交复审；原hook实际读取唤起已确认。
+
+## F17：worker.send消息类型不符合真实原生枚举
+
+结论：**退回准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所含worker.send路径，严重程度高。** 对F16同一helper的直接消费者继续核查，准确controller-helper.ts的worker.send分支把`type: 'message'`送入`orchestration.send`；同准确第三方`src/main/runtime/rpc/methods/orchestration/schemas.ts:96`的SendParams.type使用`z.enum(MESSAGE_TYPES)`，其`src/main/runtime/orchestration/types.ts:3`定义的真实枚举没有message。RuntimeClient不转换这个字段，合法项目/Worker/输入也会在原生schema处被拒绝，T13要求的同session后续输入不能由当前实现完成。bc217/897531继承；没有运行产品或模型复现。
+
+已通过`msg_1dacccd77c30`及`msg_518dd0cfda7f`交原Worker与主控，要求在当前build-02结束解除冻结后，与F16按原helper写域依据真实协议返修；不修改在途准确897531、不扩充上游枚举、不伪造消息或以新Worker代替后续一轮。后继准确提交独立复核，原真实send、B的同session后续输入及无重复效果验证继续必需。既有局部静态接受保持，完整输入/成果与首版动态验收从未登记通过。
