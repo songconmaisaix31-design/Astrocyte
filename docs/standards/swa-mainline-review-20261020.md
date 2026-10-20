@@ -427,3 +427,15 @@ restore-07同源S21300的真实创建epoch/程序/唯一监听和原库记录已
 `check-revision.ps1 -Previous 1b578c2ea13d8f553fa7bb7ddf5fa7d0c96ef7b9 -Candidate ff2a08615fedfeda0a11e46c0157796cdd84c979` EXIT0，四Markdown/45本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有编译、启动服务/Agent/模型、操作原库或改动实现。
 
 准确ff2接受hook `msg_ae3ec4b4bcbc`已获主控`msg_44029b20e40f`完整读取c3a主线报告回复，实际唤起确认。已授的独立发现代码由原Worker继续，后继输入技术计划、限定REA和服务恢复分别依准确来源另审，没有扩大本次管理或规格接受。
+
+## 准确a6f387ff的输入、恢复规格及当前事实
+
+结论：**接受准确`a6f387ff480d7fa9f5314319e014ba7eb77f13e0`相对ff2的四文档范围。** 已完整读取HANDOFF、STATUS、SPEC及首版任务差异。SPEC §21.1.2依已审d441/739定稿child R/native自身checkpoint、效果前拒绝结算、效果后unknown保全、structured原队列及实际terminal普通输入、异步批准后身份重核、逐模式回执/查询和输出来源；与已接受N04/N05边界一致，没有把PTY写入当模型接受。
+
+SPEC §21.1.3依已审079/7c6定稿controller recover、原R/Run/root/context、严格caller的12阶段准入、旧owner退出、scope-reserved与pty-spawn效果边界、原SQLite/receipts及所属命名Job接续，保留真实R01—R10、取消和失联阶段未命中时的INCONCLUSIVE。T11与通用工具待答保持，技术定稿及原Worker静态实施授权不授予运行窗口，也不表示程序或恢复通过。
+
+restore-08的实际S41264/创建UTC16:23:39.495409/epoch1792513419.495409、092b两常量准确接受和主控实际读取回复，与本Reviewer5b所核一致。ev4e当前6a9来源、10JS/5048未选、graph partial不截断和semantic partial截断均准确保留；默认Node24.16对官方归档HEAD200只记当前可达，未推断下载或旧TimeoutError原因。独立9c检查归主控，旧两次构建失败、完整安装/Agent调用/同候选双Worker未验保持。
+
+首装要求位于既有T02/T03及USAGE，复用实际human session/CSRF与项目设置/Grant/token完整人工流程；不依赖开发树、原服务或原Orca，未代用户批准。准确61a实施提交已由原Worker随后提供，其程序问题独立记录于另一报告，不改变a6f在提交时记录的准确静态事实和授权范围。
+
+`check-revision.ps1 -Previous ff2a08615fedfeda0a11e46c0157796cdd84c979 -Candidate a6f387ff480d7fa9f5314319e014ba7eb77f13e0` EXIT0，四Markdown/45本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行编译、服务、SQLite、Agent或模型，也没有修改主线实现或管理文档。

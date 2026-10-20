@@ -933,3 +933,24 @@ restore-08启动资源CPU6.0%/10.1%、可用11.679/11.662GiB、BelowNormal、单
 原host Node24.16.0默认global fetch只对固定官方Node24.21.0归档执行一次30秒HEAD，原result为HTTP200/841.8795毫秒、retries=0、proxy_environment_present空，实际exit0。资源CPU8.2%/9.4%、可用11.850/11.821GiB、BelowNormal、约3.002秒通过；原MODULE_TYPELESS警告保留，没有据警告修改上游配置。本次仅证明该时点原传输HEAD返回200；完整下载及旧TimeoutError因果仍未验，没有新建或安装候选、启动产品服务或调用模型。
 
 主控`msg_3d3c842efa23`提出的首装人工授权入口检查纳入既有T02/T03及USAGE：后继准确候选须给出新DataRoot下实际可用的首次入口、真实session/CSRF与项目设置/Grant/token完整操作，必要原资源可复用，不能依赖用户猜正文、开发树或原服务；不因包列表就断言没有路径，不代human批准、不另开Web重构模块。先核当前真实实现，只有具体缺口交回原Worker；该检查不阻断已接受的独立发现代码。
+
+准确d441技术计划hook `msg_885e2ea87b6b`及092b控制脚本hook `msg_b607d65e257b`分别获主控`msg_fbb1dd4189d6`和`msg_084e2c28f2d0`完整读取739/5b准确报告及差异的回复，实际唤起确认。后继main a6f已将对应技术契约定稿，原Task继续，不因一次静态决策结束。
+
+## 准确61a17226的发现与选择实现审核
+
+结论：**退回准确`61a172264d7d3784c63ab8a100af6382ebe78c85`，修正实际启动消费者、可证配置选择及来源/策略准入后再交准确CR。** 已完整读取相对d441的31文件差异，并分别追踪原生factory、launch resolver、adapter、Pi builder、账户home、Go项目批准与设置入口。只读发现的来源组织及当前外发目标调整已有实现；该提交尚不能接受为完整稳定选择与原生调用实现。全部问题交同一原Worker，没有修改程序或执行Agent。
+
+| 问题 | 准确源码与影响 | 返修及必要验证 |
+| --- | --- | --- |
+| N06 Pi factory与实际builder不兼容 | `rpc-runtime-registration.ts`改用`piRpcLaunchPart({})`，resolver返回无sdkEntry且fullAccess=true。`PiRpcSessionAdapter.acquire`仍消费导出的`buildPiRpcLaunch`，该函数明确要求sdkEntry且fullAccess=false，否则抛出固定SDK入口错误。未导出的另一个builder没有调用方；当前原生Pi路径在spawn前必拒绝 | 修实际消费者及原生argv/策略，核全部相关调用方，保持未获批准的工具路径拒绝；后继真实Pi检查必须以该本机CLI及实际自产会话证明，不能计SDK会话 |
+| N07 配置已读分支仍无法形成选择 | `configuration('claude')`识别settings中的API key或auth token并设置account，但provider只有OAuth token存在才赋值；无OAuth的该分支永远不能通过model/provider/account全有的条件。Codex仅取显式model_provider，未核原生已可证默认来源；其他registry项全部固定native-configuration-unobserved，`selectAgent`统一拒绝 | 按具体Agent的真实配置/默认及明确模型选择核事实，不填造provider或伪装配置成功。明确已支持和仍缺来源的路径，必要真实Agent正向选择不能由清单加拒绝替代；当前没有读取本机秘密或断言每个Agent已配置 |
+| N08 发现来源未绑定实际运行账户与工具策略 | `agent-discovery`从原home或可选profile读取配置；实际host仍使用私有Store/环境，Pi的PI_CODING_AGENT_DIR固定私有DataRoot/pi。launch admission只返回所选命令并核程序、原session/model及重读发现结果，没有比较实际record.accountHome或实际launch账户/策略与获准来源。Go authorize构造的ProjectActionScope.Tools为空，capabilities中的allowed_tools和tools unknown仅为显示，不能证明启动前的工具准入 | 继续只读发现可独立进行。实际调用必须使用同一已批准来源及已证隔离，按当前工具限制在首次输入前正向核准；来源、策略或写原home风险未证时明确拒绝。不能通过把原账户home设成可写运行目录或把旧工具限制推断开放来补齐 |
+| N09 原生注册与人工外发批准入口仍不一致 | 实际`SetProjectSettings`仍以旧`s.registry.Adapter`校验ExternalModelCLI，无法为仅在新Native registry中的Agent保存现有单CLI批准。此入口还明确拒绝非空AllowedTools，实际语义必须与未答工具范围共同保留 | 主控处理必要窄接口/写域，同一Worker复用真实注册验证并保持旧S3职责；禁止造空Adapter来放行，禁止自行改变工具批准。新增批准入口与具体Agent实际调用均须后继验证 |
+
+N06已通过`msg_dba72e4e9ac0`通知主控、`msg_0c9771247145`交原Worker；原Worker`msg_101f553d3180`实际读到并核原件，返修继续。其余发现独立依据上述源码，主控关于默认来源、旧注册批准及账户运行环境的来信仅作为检查线索。没有编译或启动假协议来证明这些分支。
+
+正向静态范围：serve不再以固定Pi SDK入口/OAuth文件作为启动前提，原本机home/AppData仅作为显式发现定位，实际子进程私有home保持；显式profile使用成熟流JSON或原read-only SQLite/snapshot和acceptance读取，不创建原Store或迁移。注册来自实际StructuredAgentRegistry，禁用项和真实version probe各有来源，启动/完整读取/恢复/工具缺证保持unknown。App先observe解析实际选择，再按当前Grant、revision和真实单CLI外发目标核动作，稳定选择进入父R并在实际launch前重读；上述方向不消除N06—N09。
+
+`check-revision.ps1 -Previous d441703a620f2e1bcca73edd50c7edc66dc92351 -Candidate 61a172264d7d3784c63ab8a100af6382ebe78c85`实际EXIT0，三个Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。Worker所报gofmt/TS语法/架构检查只作为其静态结果，不当作本Reviewer执行或功能通过。生成、类型检查、编译、HTTP/SQLite/Native正文、安装及同候选双Worker均未执行；新输入/T12准确技术计划已接受，程序按各自准确提交另审。
+
+首装实际入口另已核：`server.go`在LocalProjects服务存在时注册`GET /api/v1/auth/session`，与SPA资产无依赖；session guard在无Authorization且Origin合法时建立真实cookie/CSRF，写路由继续验证它们。准确61a的USAGE只列项目/设置/Grant/token路径，缺初始session获取及完整合法正文、实际响应ID/revision的人工步骤；已交原Worker补在既有T02/T03及说明，无需由包内缺Web推断无授权入口。本Reviewer未执行human bootstrap、签发token或代用户批准。
