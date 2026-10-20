@@ -1,13 +1,22 @@
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('T01','T09')][string]$Case,
+    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T09','T13','T15')][string]$Case,
     [Parameter(Mandatory)][string]$SwaPath,
     [Parameter(Mandatory)][string]$InstallRoot,
     [Parameter(Mandatory)][string]$DataRoot,
     [Parameter(Mandatory)][string]$CaseRoot,
     [string]$ProjectRoot,
-    [string]$CodexAuthFile
+    [string]$CodexAuthFile,
+    [string]$PackageRoot,
+    [string[]]$ProtectedRoots,
+    [string]$OrcaPath,
+    [string]$OrcaMetadataFile,
+    [string[]]$ProtectedFiles,
+    [int[]]$OriginalProcessIds,
+    [int]$Port,
+    [string]$ProjectId,
+    [string]$OwnedProcessEvidence
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,6 +30,10 @@ foreach ($path in @($SwaPath,$InstallRoot,$DataRoot,$CaseRoot)) {
 $swaExpectedPath = [System.IO.Path]::GetFullPath((Join-Path $InstallRoot 'swa.exe'))
 if ([System.IO.Path]::GetFullPath($SwaPath) -ne $swaExpectedPath) { throw 'CLI 必须来自同一安装候选' }
 $swaNode = Join-Path $InstallRoot 'node/node.exe'
+if ($Case -eq 'T02') {
+    if (-not [IO.Path]::IsPathFullyQualified($PackageRoot)) { throw '安装检查需要明确的真实候选目录' }
+    $swaNode = Join-Path $PackageRoot 'node/node.exe'
+}
 if (-not (Test-Path -LiteralPath $swaNode -PathType Leaf)) { throw '同候选 Node 不存在' }
 $swaEvidenceParent = Join-Path $CaseRoot '.verification/swa-cli-headless'
 $swaEvidence = Join-Path $swaEvidenceParent ($Case.ToLowerInvariant() + '-' + [Guid]::NewGuid().ToString())
@@ -31,7 +44,75 @@ New-Item -ItemType Directory -Path $env:TEMP | Out-Null
 $swaGate = Join-Path (Split-Path $PSScriptRoot -Parent) '.verification/swa-cli-headless-20261020/resource-gate.py'
 & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'resources.log')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-if ($Case -eq 'T01') {
+if ($Case -in @('T00','T02','T13','T15')) {
+    $swaTestDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless'
+    Import-Module (Join-Path $swaTestDirectory 'OrcaPreservation.psm1') -Force
+    $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds
+    $swaService = $null
+    try {
+        Assert-OrcaPreservation -Observation $swaPreservation -OutputFile (Join-Path $swaEvidence 'orca-before.json') | Out-Null
+        if ($Case -eq 'T00') {
+            & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'public-case.mjs') --root $CaseRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'public-source.log')
+            $swaExit = $LASTEXITCODE
+        } elseif ($Case -eq 'T02') {
+            & pwsh -NoProfile -File (Join-Path $PackageRoot 'install-swa.ps1') -PackageRoot $PackageRoot -InstallRoot $InstallRoot -ProtectedRoots $ProtectedRoots 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'install.log')
+            $swaExit = $LASTEXITCODE
+            if ($swaExit -eq 0) {
+                & (Join-Path $InstallRoot 'node/node.exe') --max-old-space-size=1024 (Join-Path $PSScriptRoot 'check-swa-runtime.mjs') --candidate $InstallRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-closure.log')
+                $swaExit = $LASTEXITCODE
+            }
+        } elseif ($Case -eq 'T13') {
+            if (-not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or -not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确认证/公开项目/端口/保护目录' }
+            $swaStart = [Diagnostics.ProcessStartInfo]::new($SwaPath)
+            $swaStart.UseShellExecute = $false
+            $swaStart.CreateNoWindow = $true
+            $swaStart.RedirectStandardInput = $true
+            $swaStart.RedirectStandardOutput = $true
+            $swaStart.RedirectStandardError = $true
+            foreach ($argument in @('serve','--data-dir',$DataRoot,'--port',[string]$Port,'--codex-auth-file',$CodexAuthFile,'--protected-roots',($ProtectedRoots -join ';'),'--json')) { $swaStart.ArgumentList.Add($argument) }
+            $swaService = [Diagnostics.Process]::new()
+            $swaService.StartInfo = $swaStart
+            if (-not $swaService.Start()) { throw '实际安装服务不能启动' }
+            $swaServiceError = $swaService.StandardError.ReadToEndAsync()
+            $swaReadyLine = $swaService.StandardOutput.ReadLineAsync()
+            if (-not $swaReadyLine.Wait(60000)) { throw '真实安装服务 readiness 超时，保留实际所属状态' }
+            $swaReady = $swaReadyLine.Result | ConvertFrom-Json
+            if (-not $swaReady.ok) { throw '真实安装服务没有取得 readiness' }
+            [IO.File]::WriteAllText((Join-Path $swaEvidence 'service-readiness.json'), ($swaReady | ConvertTo-Json -Depth 40))
+            Assert-OrcaPreservation -Observation $swaPreservation -OutputFile (Join-Path $swaEvidence 'orca-after-private-start.json') | Out-Null
+            if ([string]::IsNullOrWhiteSpace($env:SWA_PROJECT_TOKEN) -or [string]::IsNullOrWhiteSpace($ProjectId)) {
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'approval-required.json'), (@{ ok = $false; required_action = 'human_register_public_project_review_settings_grant_agent_issue_project_token'; endpoint = "http://127.0.0.1:$Port"; project_root = $ProjectRoot; instructions = (Join-Path $InstallRoot 'USAGE.md'); automatic_human_session = $false } | ConvertTo-Json))
+                $swaExit = 3
+            } else {
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'installed-flow.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --output (Join-Path $swaEvidence 'installed-flow.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-flow.log')
+                $swaExit = $LASTEXITCODE
+            }
+        } else {
+            if (-not [IO.Path]::IsPathFullyQualified($OwnedProcessEvidence)) { throw 'T15 需要先前真实运行保存的 owned 进程身份原件' }
+            $swaOwned = Get-Content -LiteralPath $OwnedProcessEvidence -Raw | ConvertFrom-Json
+            if ($swaOwned.ownedProcesses.Count -lt 1) { throw '实际 owned 进程身份列表缺失' }
+            foreach ($identity in $swaOwned.ownedProcesses) {
+                $swaCurrent = Get-CimInstance Win32_Process -Filter "ProcessId = $([int]$identity.pid)"
+                if ($swaCurrent -and $swaCurrent.CreationDate.ToUniversalTime().ToString('o') -eq $identity.creation_utc) { throw "先前 owned 进程仍存在: $($identity.pid)" }
+            }
+            $swaExit = 0
+        }
+    } finally {
+        if ($swaService) {
+            $swaService.StandardInput.Close()
+            if (-not $swaService.WaitForExit(60000)) {
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-service-unknown.json'), (@{ pid = $swaService.Id; root_exit = 'unknown'; automatic_pid_kill = $false } | ConvertTo-Json))
+                $swaExit = 6
+            } else {
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'owned-service.log'), $swaServiceError.GetAwaiter().GetResult())
+                if ($swaService.ExitCode -ne 0 -and $swaExit -eq 0) { $swaExit = 6 }
+            }
+        }
+        try { Assert-OrcaPreservation -Observation $swaPreservation -OutputFile (Join-Path $swaEvidence 'orca-after.json') | Out-Null } finally { Close-OrcaPreservation -Observation $swaPreservation }
+    }
+    [IO.File]::WriteAllText((Join-Path $swaEvidence 'exit.txt'), [string]$swaExit)
+    exit $swaExit
+} elseif ($Case -eq 'T01') {
     & $swaNode --max-old-space-size=1024 (Join-Path $PSScriptRoot 'check-swa-runtime.mjs') --candidate $InstallRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'closure.log')
 } else {
     $swaFixture = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/provider-job.test.mjs'

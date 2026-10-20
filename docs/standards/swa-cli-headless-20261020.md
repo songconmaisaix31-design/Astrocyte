@@ -77,6 +77,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 | daemon与history | `daemon-launch-paths.ts`按AppEnvironment解析daemon/history；daemon detached、runtime关闭只disconnect | 所有路径归私有根；只接管经PID/创建时间、token、协议及安装根核实的本产品daemon，未知拒绝；不关闭本机Orca daemon |
 | runtime metadata / instance lock / signer | userData下metadata、`orcad.lock`、HMAC key；Windows runtime pipe含PID | 保留真实锁与随机runtime身份，核创建时间；原Orca metadata不读作产品目标，不扫除其他根的锁/socket |
 | automation/session search/push/state-rule更新 | 原orcad启动会主动安装这些服务，部分涉及网络和会话发现 | 不在首版composition启动。结构化journal、已有特定会话读写继续可用，无全局会话扫描 |
+| SWA实际provider事件观察 | 原生JSONL连接已经接收真实SDK的agent/message事件 | 只在已验证的私有Worker根独占创建`provider-events.ndjson`，保留实际SDK事件、父runtime接收的单调时间和实际Job root PID/创建时间；用于T13核真实流式执行重叠，不作为Task状态或请求账本。写入错误立即失败，不生成或替换SDK事件 |
 | browser/desktop/mobile/remote | 原runtime具备相关类型、注册和资源 | 产品方法表不注册相应入口，不安装visuals插件或浏览器资源；保留原上游源码的必要静态依赖，不把未注册能力写作产品功能 |
 
 保全采用以下当前用户权限可执行的组合，实施脚本使用系统PowerShell/.NET和随包Node，不需要内核采集、提权、性能组或驱动：
@@ -276,7 +277,7 @@ Pi原生`requested-close`生命周期及worker stop/release的消费方必须在
 
 ### 5.5 完整成果读取的必要补充
 
-本节为实施前补充审核对象。准确上游的`workerRead`是有界预览：每条消息至多六个block，每个block至多1200字符；分页不能恢复已经裁剪的内容。`worker read`继续复用其实际游标语义，`task result`统一从已验证的原生journal和Pi自产session原件读取完整内容，不从预览拼接成果。
+本节准确d7计划已由原Reviewer99d084da5c17b207e5ed555f4cc44758c9dde341独立接受，主控msg_db8583a97ed2授予按原写域实施；当前形成静态源码，全部实际读取验证仍未运行。准确上游的`workerRead`是有界预览：每条消息至多六个block，每个block至多1200字符；分页不能恢复已经裁剪的内容。`worker read`继续复用其实际游标语义，`task result`统一从已验证的原生journal和Pi自产session原件读取完整内容，不从预览拼接成果。
 
 读取在私有runtime内进行，先核controller、Run、根Task、子Task、Dispatch及实际structured process incarnation，再从实际StructuredAgentSessionHost store取得对应record。record的workspace必须属于controller；Pi providerHandleChainHead必须是`jsonl-rpc/pi`，原件绝对路径只取自该已验证record，并位于该session的私有`workers/<sessionId>/sessions`真实目录。文件header的session身份和cwd须与真实record及原生workspace解析端口相符，调用者不能指定原件路径。缺记录、缺端口、错误归属、其他provider或其他私有根均明确失败；SDK内容可用性按后文已计划停止A和最终成果B分别返回。
 
@@ -286,7 +287,7 @@ Pi的`SessionManager.open`和`loadEntriesFromFile`含迁移或补写行为，不
 
 固定成功条件允许A在真实执行中被计划停止。A的实际stopped/failed原因、整Job退出/资源状态、已存在的原生journal部分和SDK原件可用性分别返回；SDK没有完整assistant条目时标记`incomplete`，文件未存在时标记`unavailable`及实际ENOENT，原因未知时明确`unknown`，不声称从未持久化、不填空完整成果。该分支允许导出同任务B的完整最终成果，整体明确列A的限制；原生journal部分不替代SDK完整记录。A已存在原件的坏行/截断、错误归属、已观察来源改变及读取期间文件消失属于错误，不能解释成正常未持久化。B为成功条件要求的最终成果，其原件缺失、损坏、截断或不完整均使本次最终成果验收失败。根Task完成仍要求真实计划停止A、完整B成果、固定业务条件和全部相关资源已退出/归档/释放，不增加A完成或生成完整SDK输出的条件。
 
-T07增加同一真实SDK会话输出超过1200字符的完整导出检查，逐项比对SDK原件和journal内容；仅在自有已归档原件副本执行真实缺失、损坏、截断、无效UTF-8、路径替换及超限输入，按上述规则返回明确错误且原候选原件字节不变。T07/T13必须覆盖A真实计划停止且SDK未持久化完整assistant内容，验证A限制如实返回且B完整成果仍可取得；并验证A已有坏源或来源变化不会被登记为正常未持久化。B最后结果必须完整可读取并通过固定业务判据。所有补充当前`NOT_RUN`；原Reviewer接受前不实现该新增读取路径。
+T07增加同一真实SDK会话输出超过1200字符的完整导出检查，逐项比对SDK原件和journal内容；仅在自有已归档原件副本执行真实缺失、损坏、截断、无效UTF-8、路径替换及超限输入，按上述规则返回明确错误且原候选原件字节不变。T07/T13必须覆盖A真实计划停止且SDK未持久化完整assistant内容，验证A限制如实返回且B完整成果仍可取得；并验证A已有坏源或来源变化不会被登记为正常未持久化。B最后结果必须完整可读取并通过固定业务判据。所有补充当前`NOT_RUN`，准确后继源码和真实结果继续独立审核。
 
 ## 6. 最少完整CLI规则
 

@@ -15,6 +15,9 @@ import {
 } from './peer'
 import { resolveJsonlRpcPeerOptions, type JsonlRpcPeerOptions } from './peer-limits'
 import { SwaProviderProcessTree } from '../provider-process/swa-provider-process-tree'
+import { appendFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { isAbsolute, join } from 'node:path'
+import { performance } from 'node:perf_hooks'
 
 export type JsonlRpcAgentConnectionOptions = JsonlRpcPeerHandlers & {
   allowedCommands?: ReadonlySet<string>
@@ -29,6 +32,8 @@ export class JsonlRpcAgentConnection {
   private readonly managed: ManagedProviderProcess
   private readonly peer: JsonlRpcPeer
   private readonly ownedTree?: SwaProviderProcessTree
+  private readonly providerEventFile?: string
+  private providerEventIdentity?: { pid: number; creationTimeMs: number }
   private verifiedExit = false
   private readonly verifiedExitListeners = new Set<() => void>()
   private closing = false
@@ -44,6 +49,13 @@ export class JsonlRpcAgentConnection {
     if (launch.env?.SWA_WORKER_ROOT && !launch.swaJobIPC) throw new Error('SWA refuses SDK launch without parent Job admission')
     if (launch.swaJobIPC) this.ownedTree = new SwaProviderProcessTree()
     try {
+      if (launch.env?.SWA_WORKER_ROOT) {
+        if (!isAbsolute(launch.env.SWA_WORKER_ROOT)) throw new Error('SWA provider event directory must be absolute')
+        const root = realpathSync.native(launch.env.SWA_WORKER_ROOT)
+        if (root.toLowerCase() !== launch.env.SWA_WORKER_ROOT.toLowerCase()) throw new Error('SWA provider event directory changed its real identity')
+        this.providerEventFile = join(root, 'provider-events.ndjson')
+        writeFileSync(this.providerEventFile, '', { flag: 'wx', mode: 0o600 })
+      }
       this.managed = spawnManagedProviderProcess(launch, {
         spawnImpl,
         site: 'jsonl-rpc-agent-teardown',
@@ -61,6 +73,10 @@ export class JsonlRpcAgentConnection {
       managed.child.stdin,
       {
         ...options,
+        onRecord: record => {
+          this.observeProviderRecord(record)
+          options.onRecord?.(record)
+        },
         onClose: (error) => {
           const fail = (): void => {
             if (this.closing || managed.rootVerdict === 'exited') {
@@ -208,6 +224,16 @@ export class JsonlRpcAgentConnection {
   }
 
   private readonly onError = (error: Error): void => this.peer.close(error)
+  private observeProviderRecord(record: JsonlRpcRecord): void {
+    if (!this.providerEventFile || !['agent_start', 'agent_end', 'message_start', 'message_update', 'message_end'].includes(record.type)) return
+    if (!this.ownedTree) throw new Error('SWA provider event has no owned Job')
+    if (!this.providerEventIdentity) {
+      const observed = this.ownedTree.readObservation()
+      if (!observed.assigned || observed.rootPid !== this.managed.child.pid || !observed.members.some(row => row.pid === observed.rootPid && row.creationTimeMs === observed.rootCreationTimeMs)) throw new Error('SWA provider event has no actual assigned root identity')
+      this.providerEventIdentity = { pid: observed.rootPid, creationTimeMs: observed.rootCreationTimeMs }
+    }
+    appendFileSync(this.providerEventFile, JSON.stringify({ observed_at: new Date().toISOString(), monotonic_ms: performance.now(), process: this.providerEventIdentity, record }) + '\n', { encoding: 'utf8', flag: 'a' })
+  }
   private diagnose(message: string): void {
     try {
       this.options.onDiagnostic?.(message)

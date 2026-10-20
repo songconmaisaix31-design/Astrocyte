@@ -66,25 +66,12 @@ async function collectTaskResult(invocation: Invocation) {
   if (page.hasMore) throw new Error('The fixed task worker inventory is unexpectedly incomplete')
   const workers = z.array(z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() })).parse(fleet.workers)
   const outputs = []
-  let bytes = Buffer.byteLength(JSON.stringify(tasks))
   for (const worker of workers) {
     if (worker.runId !== run || !children.has(worker.taskId)) throw new Error('Native output belongs to another task')
     const observation = await call('orchestration.workerShow', { dispatch: worker.dispatchId })
-    const pages: Record<string, unknown>[] = []
-    let cursor: string | undefined
-    for (;;) {
-      const raw = nativeObject(await call('orchestration.workerRead', { dispatch: worker.dispatchId, source: 'transcript', limit: 100, ...(cursor ? { cursor } : {}) }))
-      const output = z.looseObject({ dispatchId: z.literal(worker.dispatchId), source: z.literal('transcript'), sourceIdentity: z.string().min(1), fallbackReason: z.null(), transcript: z.looseObject({ messages: z.array(z.unknown()), nextCursor: z.string().min(1), limited: z.boolean() }) }).parse(raw)
-      bytes += Buffer.byteLength(JSON.stringify(raw))
-      if (bytes > 12 * 1024 * 1024) throw new Error('The result exceeds the declared export bound; retain the original transcripts')
-      pages.push(raw)
-      if (!output.transcript.limited) break
-      if (!output.transcript.messages.length || output.transcript.nextCursor === cursor) throw new Error('Native transcript remains limited without a continuing cursor')
-      cursor = output.transcript.nextCursor
-    }
-    outputs.push({ worker, observation, pages, usage: { known: false, value: null, reason: 'usage_not_exposed_by_native_worker_read' } })
+    outputs.push({ worker, observation })
   }
-  return { run: await call('orchestration.runShow', { run }), tasks, workers: outputs, source: 'native_transcript', collected_at: new Date().toISOString() }
+  return { run: await call('orchestration.runShow', { run }), tasks, workers: outputs }
 }
 
 async function main() {

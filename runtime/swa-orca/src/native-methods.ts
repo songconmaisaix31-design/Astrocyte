@@ -13,6 +13,8 @@ import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { invocationSchema, helperReply, nativeObject, contextSchema, type Invocation, type Scope } from './contracts'
+import { admitWorkerResources } from './resource-admission'
+import { completeTaskResult, observeWorkerSource } from './task-result'
 
 const openReceipt = z.object({
   project_id: z.string(), controller: z.string(), worktree_id: z.string(),
@@ -180,6 +182,7 @@ export const SWA_METHODS = [
     const { scope, owner } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
     validateTaskAction(context.runtime, invocation, scope)
+    if (c.action === 'worker.start') await admitWorkerResources()
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${c.request_id}/native`, stage: 'helper-input' })
     return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
@@ -189,7 +192,10 @@ export const SWA_METHODS = [
     const { scope, owner } = controllerScope(runtime, invocation.project.id, c.controller)
     await exactController(runtime, owner)
     validateTaskAction(runtime, invocation, scope)
-    return { scope, ...(c.action === 'task.result' ? { output_dir: c.output_dir } : {}), native: (await helperCall(runtime, c.controller, randomUUID(), c.action, { ...invocation, scope })).result }
+    const native = (await helperCall(runtime, c.controller, randomUUID(), c.action, { ...invocation, scope })).result
+    const result = c.action === 'task.result' ? await completeTaskResult(runtime, scope, owner.worktree_id, native)
+      : c.action === 'worker.show' ? { ...nativeObject(native), source: await observeWorkerSource(runtime, scope, owner.worktree_id, c.dispatch_id!) } : native
+    return { scope, ...(c.action === 'task.result' ? { output_dir: c.output_dir } : {}), native: result }
   } }),
   defineMethod({ name: 'swa.controllerClose', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const c = invocation.command
