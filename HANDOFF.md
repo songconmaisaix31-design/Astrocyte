@@ -14,7 +14,7 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，实际客户端为 Orca / Codex `gpt-6.1-sol`。准确 `987811f417e92cd6f15961e60c279f616e3b21a8` 原冻结安装及未补丁的完整契约命令均 EXIT0，历史崩溃本次未复现。依已接受计划停止补丁实施；程序/依赖未改，T02—T08 未执行，因果证据不足。主控已完成 T09并曾恢复同一 S、原库和原配置，记录PID52040；后继首版窗口及当前服务见STATUS。最终记录 `b112ab9e03d9ea82247e73b5cb578529ca529f9d` 已独立接受并普通push，原hook由主控实际读取回复；本次调查Task已结算、终端released，完整修复保持未接受。
 
-无界面执行由 `task_9f062888e786 / ctx_0d069056baff` 沿同一真实Codex会话、`swa-cli-headless-20261020` 工作树/分支继续负责。准确396e方案及T00—T15已独立接受并普通纳入main，原hook已实际读取回复；SPEC §21.1及首版任务明确接口边界、逐文件程序写域和迁移028。Worker已纳入f7c97并实现；两项依赖准备EXIT0、原件为自有`dependency-01`，当前代码和锁未提交，继续静态实现。原静态Task450/ctxdc资源原生retain以保留正在使用的同一终端，整体任务结算后明确释放。主控实际完成prepare-01/stop-01/restore-01，原S已恢复PID12800、原库/环境/配置及停止区间内容保全通过，唯一窗口收回归S，后续构建/模型/产品运行需再交付。下次窗口重新核当前身份；控制脚本停前期望仍为旧52040，不能直接复用该常量执行停止。本机Orca保持原运行。
+无界面执行由 `task_9f062888e786 / ctx_0d069056baff` 沿同一真实Codex会话、`swa-cli-headless-20261020` 工作树/分支继续负责。准确396e方案及T00—T15已独立接受并普通纳入main，原hook已实际读取回复；SPEC §21.1及首版任务明确接口边界、逐文件程序写域和迁移028。Worker已纳入f7c97并实现；两项依赖准备EXIT0，原件为自有`dependency-01`。阶段源码、远端回执及当前检查以STATUS和Worker报告为准，准确代码由原Reviewer接续CR。原静态Task450/ctxdc资源原生retain以保留正在使用的同一终端，整体任务结算后明确释放。主控实际完成prepare-01/stop-01/restore-01，原S已恢复PID12800、原库/环境/配置及停止区间内容保全通过，唯一窗口收回归S，后续构建/模型/产品运行需再交付。下次窗口重新核实际身份及控制脚本期望值，使用对应次保全原件；本机Orca保持原运行。
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
