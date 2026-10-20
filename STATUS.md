@@ -6,7 +6,7 @@
 
 | 项目 | 当前事实 |
 | --- | --- |
-| 用户首版目标 | 抽取 Orca CLI 对应执行能力，交付用户从原有 Agent 或终端调用的可控 Swarm CLI；[首版任务](tasks/swa-cli-v1-20261020.md)记录具体范围与验收，程序实现中，尚未通过验收 |
+| 用户首版目标 | 使用 REA 逆向分析 Orca 交付物，抽取 CLI 执行能力，发现并调用本机注册的 Agent，减少运行依赖并隔离环境；交付从原有 Agent 或终端调用的可控 Swarm CLI。[首版任务](tasks/swa-cli-v1-20261020.md)记录具体范围与验收，尚未通过验收 |
 | 首版执行与验收 | 已确认 Orca 无界面执行及控制端身份；固定抽取范围后定义 CLI 规则，完成多 Worker、失败/资源及安装包。最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取；产品采用独立后台，须验证不妨碍本机Orca CLI及其原配置/状态/进程 |
 | 规范仓库 / 默认分支 | GitHub 仓库 ID `1410836101`，`songconmaisaix31-design/swarm-anything` / `main` |
 | main 的产品与治理集成来源 | `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；已从初始 main 普通快进并 push，完整包含产品32ab历史与接受后的M0文档；后继当前事实记录沿 main 维护 |
@@ -14,10 +14,11 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续。c29普通CLI、f08锁/真实类型及c0 EOF/Job/native关闭仅获6d693df7局部静态接受，bc217构建目录修正仅获97a04f01静态接受；build-01 ENOENT/EXIT1，build-02在固定Node归档下载处TimeoutError/EXIT1，两次均无可用候选或实际编译结果。准确`897531d5d2978e3a51a043063a26e254b3d0f766`的T12/strict提案已由bad4d7c5退回补P01—P03，SPEC接口未定稿，相关程序未实施。两提交Worker报告普通push EXIT0，主控已完整读差异并通过空白检查。窗口已收回、源码冻结已解除，原Worker继续F16/F17消费契约返修、T12计划和下载条件只读调查；C01—C09/helper仍未完，T11范围待用户回答。功能、安装、模型及双Worker/隔离动态验收均未通过 |
+| 后继工作 | 同一Worker Task9f/ctx0d接续。c29/f08/c0及bc217保持原局部静态接受；build-01 ENOENT/EXIT1，build-02固定Node下载TimeoutError/EXIT1，无可用候选或实际编译结果。079bd补齐T12 P01—P03计划并获7c6d接受，ebf55的F16/F17两参数获da2e局部静态接受，两源码均有普通push EXIT0回执。c2d4独立四包Go编译计划获48385383接受；2f1正文新提案尚未定稿，c2/2f普通push均SSL失败，本地准确提交保留。主控已完整读取三个报告并回复hook。用户新增明确注册Agent发现/调用及减少依赖要求，原Worker先补完整方案及测试计划，暂停未定稿T12/正文接口实施；当前固定Pi方案尚不满足完整首版。原S占用窗口，无新动态授权；C01—C09/helper、T11、全部功能/安装/模型及同候选双Worker仍未通过 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支及两报告写域。旧ctx980已精确停止并原生释放，既有报告保留；新会话实际读到brief并获主控回复确认。后继6d693/97a/abc8/bad4/d442准确报告均已完整读取并回复对应hooks，局部接受和退回各按准确范围；当前继续同一Worker返修和T12复审 |
-| 成果路径 F16 | 独立准确报告`abc8fc98b02173d225b8017b07417a7d526e17be`退回c0继承的task.result完整成果路径：helper向原生runShow传run，真实schema及handler要求id，会在成果组装前拒绝。bc217/897531继承；主控已完整读报告并回复hook。构建窗口已归还、冻结已解除，同一Worker正在原helper写域静态返修；T07/T13真实成果取得和导出仍必需，先前局部静态接受不覆盖该缺陷 |
-| 后续输入 F17 | 独立d44267b9退回helper的type=message非法枚举，c0/bc217/897531继承；窗口已归还，同一Worker与F16一并静态返修并核全部已有RPC消费契约。另已核原生structured流程只发送check提示和消息ID来源，Pi仅转blocks为SDK输入，ToolsOff无法取正文；合法枚举修复不足以完成后续输入。完整正文投递方案/测试计划待准确交审，独立1b2954d9已先形成七条件；须沿真实消息行/队列/operation/fence及当前授权传实际正文，不另发prompt或开放工具，T13同PID/session正文和真实后续结果仍须通过 |
+| 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
+| 后续输入 F17 | ebf55已改为原生合法status枚举，获da2e局部静态接受；实际structured只发送check提示，ToolsOff的Pi无法取得正文，完整能力仍未实现。2f1完整正文提案先独立审核，结合注册Agent新要求再定稿；真实消息/原队列/operation/fence、当前授权、同PID/session实际正文及后续成果要求保持 |
+| REA 来源核查 | 现有REA两份静态原件来自2026-10-14，摘要绑定6d2cbf63及0c17a376；当前本机app.asar已实际计算为SHA256 6a9bd9614a884f6172aa22029227a95dde1f25cd86651dfbb7998f25a81d6077，旧分析不能代表当前交付物。已安装REA CLI可用路径存在，本会话未提供REA MCP工具，按CLI继续，不修改MCP或Agent配置；准确新分析尚未执行 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
