@@ -8,15 +8,16 @@
 
 | 项目 | 实际记录 |
 | --- | --- |
-| 产品工作树 | `C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018` |
-| 分支 / 接管 HEAD | `songconmaisaix31-design/frontend-observatory-20261018` / `32ab1eec808a5848aabad40f11133735a1214e55`，接管时干净 |
+| 实施工作树 | `C:/Users/DW/orca/workspaces/Astrocyte/swa-m1-contracts-implementation-20261020` |
+| 分支 / 接管 HEAD | `swa-m1-contracts-implementation-20261020` / `4132f28ecda414f2a1bd040d9eef50bbe1087cb6`，接管时干净 |
+| 原 M1 材料 | `80d4f8d1e323982ef73d880ce9927f4bc5c58340`，通过普通合并 `4f49d6ea3c0cfcfa6bdf4143d576239b158fe878` 保留两份文档及历史；原产品树只读 |
 | 原实际运行源码 S | `ed543c12106c2dbb3e181cb9bc1647b626455179`；原服务和数据继续由主控管理 |
-| Orca | Run `run_62ada397a104`；Task `task_261b4dab6d89`；Dispatch `ctx_958a2bf0ae27` |
-| Worker / 主控 | `term_dd3bd86f-4d58-4e59-b59a-8b643ac53be5` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
-| 实际客户端与模型 | Orca / Codex；`worker-show` 的实际 projection 为 `gpt-6.1-sol`，终端显示 `GPT-6.1-Sol xhigh fast`；没有覆盖模型或使用子 Agent |
-| 前置条件 | 根因方案和测试计划由独立 Reviewer 接受；M0 依赖完成；主控明确实现写域和唯一重操作窗口 |
+| Orca | Run `run_62ada397a104`；Task `task_ceb3b3bb76be`；Dispatch `ctx_8d6a6e1c0145` |
+| Worker / 主控 | `term_e9753d8f-70d9-4acd-8cc4-b98a61328b1b` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
+| 实际客户端与模型 | Orca 1.4.230 / Codex；本 Dispatch 的 `worker-show` 实际 projection 为 `gpt-6.1-sol`，实际终端预览为 `GPT-6.1-Sol xhigh fast`；请求参数中的 model 为 null，没有子 Agent |
+| 前置条件 | 准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 计划已接受，M0/A01 已接受，实现写域已授权；当前只允许静态准备，重操作窗口尚未交付 |
 
-完整读取桌面 `re.md`；主控 `META_PLAN.md` 全文与它的逐行比较只差外层 Markdown 围栏。已读取当前 HANDOFF、STATUS、AGENTS、CODING、RESOURCES、TASKS、QUESTIONS、SPEC §20、主控交付任务、产品交付报告及两份实际失败日志和结果。M0 在独立文档树实施，本轨不修改原产品治理文件。
+原调查的规格与来源保留在报告。本次已读取本树 HANDOFF、STATUS、AGENTS、CODING、RESOURCES、相关规格、根主控当前首版 CLI 任务与 QUESTIONS、两份准确 M1 Git 原文和独立审核报告。实际 Git 比较确认本树 package、workspace、lock、contracts、scripts 和生成类型与 `32ab1eec808a5848aabad40f11133735a1214e55`、S 均无差异；`80d4` 相对于 `32ab` 仅新增本任务和报告，`5cd8` 后没有修改已接受的测试表。首版独立运行问题仍未回答，本任务不选择执行组件或扩大 S3 工具、预算与数据权限。
 
 ## 根因判断与一个方案
 
@@ -26,20 +27,20 @@
 
 ## write_paths
 
-当前仅允许：
+本 Dispatch 的文档与临时写入范围：
 
 - `tasks/swa-m1-contracts-20261020.md`。
 - `docs/standards/swa-m1-contracts-20261020.md`。
 - 自有 `.verification/swa-m1-contracts-20261020/**`，已被根 `.gitignore` 排除。
 
-请求主控在独立接受并完成 M0 后确认的实现路径：
+本 Dispatch 已授权、等待窗口后实施的程序路径：
 
 - `pnpm-workspace.yaml`：登记精确包补丁。
 - `pnpm-lock.yaml`：由当前 pnpm 生成补丁来源及依赖解析记录。
 - `patches/@redocly__cli@2.60.0.patch`：只修正实际发布包 `lib/index.js` 中对应的退出操作。
 - 上述两份任务文档及自有验证目录。
 
-生成类型仅在自有隔离验证副本中使用真实历史版本形成漂移；产品 `contracts/openapi.yaml`、`contracts/redocly.yaml`、`scripts/validate-examples.mjs`、`scripts/generate-client.mjs` 和 `web/src/api/schema.d.ts` 不需要修改。主控尚未授权上述实现路径，当前没有修改它们。
+生成类型仅在自有隔离验证副本中使用真实历史版本形成漂移；产品 `contracts/openapi.yaml`、`contracts/redocly.yaml`、`scripts/validate-examples.mjs`、`scripts/generate-client.mjs` 和 `web/src/api/schema.d.ts` 保持原内容。其他文件或依赖变化先提交 Handoff。
 
 ## 实施、验证与停止条件
 
@@ -53,8 +54,8 @@
 
 ## 当前结果与接续
 
-独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）；接受 hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。接受范围为计划和待验证方案，当前 M0 仍在实施，正式依赖修改和重操作未开始。
+独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）；接受 hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次主控已确认 M0/A01 接受并授权程序写域，当前尚未交付重操作窗口。
 
-主控已允许先在自有忽略目录准备脚本。已通过文件编辑工具编写 `run-check.ps1`、`runtime-info.mjs`、`service-window.py` 和本地 `CONTROL.md`，待主控静态审阅。控制脚本读取真实当前环境失败即在停止前退出，按真实记录保全 Q/媒体/CodeGraph 与原 SQLite；服务停止、恢复和异常启动后的显式停止均由主控执行。没有运行 Parser、脚本正文、复现、安装、编译、测试或业务脚本，未启动或停止服务，未修改源码、依赖或系统环境。历史两次崩溃继续为 FAIL，历史示例和生成检查的通过只属于原 S。
+本树自有 `E=.verification/swa-m1-contracts-20261020/` 准备 `run-check.ps1`、`runtime-info.mjs`、`resources.py` 与 `CONTROL.md`。已完整读取原树同名检查脚本及其资源脚本，使用文件编辑工具按本树路径准备；原树服务控制脚本只由主控执行，本树不复制或执行服务控制。旧 Task `task_261b4dab6d89 / ctx_958a2bf0ae27` 已结算，原件继续保留。历史两次崩溃保持 FAIL；本树实际安装和修复结果均为 NOT_RUN。
 
-主控最新 `msg_cb81640c6705` 要求本轮静态临时工具准备收尾并交付路径，M1 修复任务继续保留，正式依赖修改和窗口均未授权开始。三个脚本与 `CONTROL.md` 已准备，交主控静态审阅；首版 CLI 执行来源与范围由主控另行确认。本轮静态交付到此结束，后续同一 Worker 按新的安排继续。此时未创建实现 Commit，未普通 push，未创建或更新 PR。
+本树初始没有 node_modules。窗口交付后先用原锁文件冻结安装到本树，再执行 T01；该准备不改变依赖或已接受输入及断言。T02 后保存准确补丁源码 Commit，再继续冻结安装及 T03—T08，T07 使用准确程序 Commit 的干净归档。每条命令采用新的独立输出目录，命令与目录映射见报告。所有原命令、故意拒绝输入与失败原件保持。通过后普通提交、push 并创建针对 main 的新 M1 PR，交原独立 Reviewer；原 PR #2/#4 保持原状态，主控负责最终恢复和集成。

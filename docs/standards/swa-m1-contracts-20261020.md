@@ -1,6 +1,6 @@
-# M1 Windows 契约检查：只读根因调查与测试计划
+# M1 Windows 契约检查：根因调查、接受计划与实施记录
 
-本报告支持[本轨任务](../../tasks/swa-m1-contracts-20261020.md)的独立计划审核。当前结论为可检验的根因判断，运行验证尚未执行。
+本报告支持[本轨任务](../../tasks/swa-m1-contracts-20261020.md)的实施与独立审核。准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）已接受；本树当前完成静态准备，运行验证尚未执行。
 
 ## 需求与准确来源
 
@@ -69,7 +69,7 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 | 真实历史 schema 与当前契约不匹配 | 原生成脚本具有逐字漂移拒绝 | 仍抛出原 drift 错误并非零退出；原生成文件不被覆盖 |
 | 冻结安装 | 原 CLI 未带项目补丁 | 从项目补丁与锁文件安装同版真实 CLI，再执行原入口 |
 
-## 待审核测试计划
+## 已接受测试计划
 
 本轮所有条目均为 **NOT_RUN**。测试使用真实原契约、原 CLI 和真实历史生成文件，不构造协议、CLI 替身或业务数据。修改依赖退出行为的相关边界由真实子进程检查；不为这一修改添加只复述实现的纯函数测试。原命令集成与干净副本安装分别覆盖项目调用和交付后的依赖复现。
 
@@ -93,6 +93,33 @@ T04 的规则级别变化只在负向检查副本中使用，不进入生产配�
 
 T05A 的公开输入为[准确基线契约](https://github.com/songconmaisaix31-design/swarm-anything/blob/32ab1eec808a5848aabad40f11133735a1214e55/contracts/openapi.yaml)中 `#/paths/~1events/get/responses/403/content/application~1json/example`，只在隔离副本复制到同操作 `501` 的 example。原 `GET /events` 标记 `x-s0-supported: false`，没有 `x-s1-supported: true`；原 ErrorV1.enum 明确允许 `scope_denied`，故 Schema 检查可继续，随后原 supported capability 检查会拒绝该未来操作的 501 example。这个负向检查验证原脚本的真实契约边界，不表示业务接口曾返回该结果。验收同时保存两个 example 的来源、隔离文件实际差异、原脚本/命令未改的比较结果、整体实际退出及完整输出；若先在 Redocly 阶段拒绝或出现其他诊断，则 T05A 未覆盖目标，须报告并修订计划，不能按预期补写第二阶段已执行。
 
+## 本树实施记录
+
+本次固定 Worktree 为 `C:/Users/DW/orca/workspaces/Astrocyte/swa-m1-contracts-implementation-20261020`，Branch 同名，Task `task_ceb3b3bb76be` / Dispatch `ctx_8d6a6e1c0145`，仍属原 Run `run_62ada397a104`。接管 HEAD `4132f28ecda414f2a1bd040d9eef50bbe1087cb6` 干净，主控确认 M0/A01 已独立接受；普通合并 `4f49d6ea3c0cfcfa6bdf4143d576239b158fe878` 保留 `80d4f8d1e323982ef73d880ce9927f4bc5c58340` 的两份 M1 文档及其原历史。
+
+实际 Git 比较确认 `80d4` 对 `32ab` 仅增加本任务和报告，`5cd8` 至 `80d4` 未修改测试表。本树 package、pnpm workspace/lock、contracts、scripts 和生成类型与 `32ab`、S 均无差异；已接受计划可用于当前源。已完整读取本树入口、规范和资源文件，根主控当前首版 CLI 任务及 QUESTIONS，准确两份 Git 原文、独立审核报告、原两次失败的结果与日志、原 `run-check.ps1` / `runtime-info.mjs` / `CONTROL.md` 和资源脚本。
+
+本次实际会话为 Orca 1.4.230 / Codex，`worker-show --dispatch ctx_8d6a6e1c0145` 的实际 projection 为 `gpt-6.1-sol`，终端实际预览为 `GPT-6.1-Sol xhigh fast`；请求中的模型字段为 null，没有据此推断模型，没有子 Agent。首版是否独立运行仍未回答；本修复只支持既有契约命令。
+
+新树 `E=.verification/swa-m1-contracts-20261020/` 已被现有 `.gitignore` 忽略。通过文件编辑工具准备本树 `run-check.ps1`、`runtime-info.mjs`、`resources.py` 和 `CONTROL.md`：沿原脚本的真实命令、合并 pipe 输出、准确源码、资源采样和真实退出设计；资源入口移到本 E，补充实际 PID/优先级和耗时。原产品树未修改，服务控制只由主控使用原已审脚本执行。本树初始没有 node_modules，先在获准窗口冻结安装原锁文件，随后 T01；补丁登记后保存准确程序 Commit，后续冻结安装与 T07 归档均使用该 Commit。
+
+| 阶段 | 本树实际命令 / 输入 | 独立输出目录（E 内） | 当前结果 |
+| --- | --- | --- | --- |
+| T00 | 主控执行原树已审服务控制脚本；停止当前同 S 服务并保全原库与环境 | 主控登记原树实际路径 | NOT_RUN |
+| 准备 | `pnpm install --frozen-lockfile`，原 workspace/lock | `baseline-install-01` | NOT_RUN |
+| T01 | 原 `pnpm check:contracts`，未补丁依赖 | `t01-baseline-01` | NOT_RUN |
+| T02 | `pnpm patch @redocly/cli@2.60.0 --edit-dir <本E/package-edit>`；文件编辑工具修改准确包；`pnpm patch-commit <本E/package-edit>`；`pnpm install --frozen-lockfile` | `t02-prepare-01`、`t02-register-01`、`t02-install-01` | NOT_RUN |
+| T03 | 原 `pnpm check:contracts` | `t03-contracts-01` | NOT_RUN |
+| T04 | 真实 CLI + 原规范 + E 内 error 配置；隔离副本中的原 `pnpm check:contracts` | `t04-cli-01`、`t04-chain-01` | NOT_RUN |
+| T05 | 真实 CLI + 原规范 + E 内不存在的配置路径 | `t05-config-01` | NOT_RUN |
+| T05A | 隔离副本复制原 GET /events 403 example 至同操作 501；原 `pnpm check:contracts` | `t05a-capability-01` | NOT_RUN |
+| T06 | 隔离副本采用准确历史 schema；原 `pnpm check:contracts` | `t06-drift-01` | NOT_RUN |
+| T07 | 准确程序 Commit 的独立归档；原冻结安装及原契约命令 | `t07-install-01`、`t07-contracts-01` | NOT_RUN |
+| T08 | `git diff --check`、`node scripts/check-dependencies.mjs`、成熟 Markdown 解析器本地链接检查 | `t08-dependencies-01`、文档检查原件 | NOT_RUN |
+| T09 | 本次子进程全部结束后交还窗口；主控恢复同 S、Web、原库和配置 | 主控登记实际路径 | NOT_RUN |
+
+上述目录只作为执行位置，尚无相应运行结果。每次以独立 PowerShell 进程调用本 E 的 run-check，填写准确完整 ExpectedSource、新 OutputName 和明确窗口标记；副本使用 CheckRoot，CLI 负向配置使用 ConfigPath。原 `pnpm check:contracts` 字符串保持。实际 stdout/stderr 合并保存到 check.log，另存 run.log、invocation.json、resources.json、runtime.json、pnpm-version.txt、result.json；实际负向退出保留，不覆盖为通过。每个安装/检查启动前重新采样，原服务恢复期间不运行检查。
+
 ## 资源、审核与接续
 
 主控继续管理原 64505 服务；当前只读调查没有取得重操作窗口。每个实际安装、测试或命令验收前，先取得主控授予的独占窗口，确认服务已由主控按授权处理；随后两次真实 CPU/可用内存采样，UTC 与单调计时记录齐全，间隔 2—5 秒、CPU 均小于 85%、内存均至少 4 GiB。进程采用 BelowNormal、Node heap 不超过 1024 MiB；本次检查的临时目录和缓存限定 E，原服务恢复沿真实配置。已有窗口或采样不复用为下一重操作的额度。静态审查与文档检查遵守现有 RESOURCES 专用范围。
@@ -103,10 +130,10 @@ T00/T09 若需要新控制工具，限 `E/service-window.py` 等自有文件，�
 
 各项前后记录准确 Commit、工具版本、输入、命令、stdout/stderr、实际退出、采样、时长及实际残留进程。改后与改前同条件比较，没有以成功结果覆盖失败。出现资源不足、非预期包变动、不同警告/规则集合、崩溃或错误码变化时立即报告，未验范围继续保留；不自动恢复数据或停止其他进程。
 
-独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案和全部 T00—T09（含 T05A）；独立报告为 `swa-mainline-review-20261020/docs/standards/swa-m1-contracts-review-20261020.md`，hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。M0 尚在实施，接受没有启动依赖修改或重操作。
+独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案和全部 T00—T09（含 T05A）；独立报告为 `swa-mainline-review-20261020/docs/standards/swa-m1-contracts-review-20261020.md`，hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次 M0/A01 前置已完成，实现写域已授权；当前仅静态准备，等待主控明确交付窗口。
 
-主控对 ask `msg_55a6311b4b99` 的回复允许先在 E 内准备真实检查和当前 S 服务控制脚本。现有草稿为 `E/run-check.ps1`、`E/runtime-info.mjs`、`E/service-window.py`，本地使用边界见 `E/CONTROL.md`；下一步提交主控静态审阅。单次检查入口保留真实失败退出和原 package 命令，实际 V8 heap 另行读取确认；服务控制从当前真实进程取得完整环境，在停止后备份原库，显式恢复同一 S，健康与真实环境/监听通过后才登记新进程。启动失败保留 launch 和日志，由主控决定后续操作。
+原调查 Task `task_261b4dab6d89 / ctx_958a2bf0ae27` 已正式结算，原脚本和证据仍在原产品树。主控已完整静态审阅该树 `service-window.py`、`CONTROL.md` 和检查入口，并核旧 PowerShell Parser 通过；服务控制只由主控执行。原当前 S、Web、原库与环境的停止/恢复仍按 T00/T09，不沿用旧 c5 控制脚本。
 
-本轮已执行的操作为文件与 Git 核查、Orca 状态/消息核查、官方原文 HTTP GET 及通过文件编辑工具准备上述本地脚本；没有执行脚本或 Parser，没有运行复现、安装、编译、测试或架构/依赖业务检查，没有操作服务、修改依赖或系统环境。外部原始源码位于 E/sources。M0 完成、实现写域确定并取得窗口后，同一 Worker 继续实现与自测。主控已明确授权补丁验证完成后的普通 push 与 PR 创建/更新；准确 Commit 审查及主线集成按主控安排，当前未执行。
+本次已执行文件与 Git 核查、普通文档合并、Orca 状态/消息核查和文件编辑工具准备；本树 PowerShell `Language.Parser.ParseFile` 只读解析通过，`git diff --check` 退出 0，本地 resources.py 与原资源入口逐字比较无差异。这些检查在 BelowNormal 下逐项执行。没有执行本树脚本正文、复现、安装、编译、测试或业务检查，没有操作服务、修改依赖或系统环境。原调查保存的外部原始来源仍在原树 E/sources。普通提交、push 与针对 main 的新 M1 PR 已授权，须在实际自测通过后交准确 Commit；独立实施审查仍交 `task_1cd8014750f9 / ctx_980a3282c339`。
 
-主控最新 `msg_cb81640c6705` 要求当前静态临时工具准备收尾，交付路径供主控静态审阅；M1 修复任务保留，服务停止、依赖修改、安装和动态命令继续未执行。首版 CLI 的执行来源和范围由主控确认，本轨不追加 MCP/S3 验收前置。本轮交付为已接受计划及未执行的脚本草稿，未宣称实际修复完成。
+当前程序修复有效性为 NOT_RUN；两次原始崩溃保持 FAIL。没有创建或更新 PR，不宣称契约、首版 CLI、完整 CI 或 S3 已通过。发现因果否定或测试/方案实质变化先交原 Reviewer；主控负责最终服务恢复、检查与集成。
