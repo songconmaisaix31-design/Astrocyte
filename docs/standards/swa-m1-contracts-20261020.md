@@ -20,7 +20,7 @@
 | `E0/run-redocly/{run.log,result.json,resources.json}` | `node node_modules/@redocly/cli/bin/cli.js lint contracts/openapi.yaml --config contracts/redocly.yaml`；相同断言和退出；UTC `2026-10-19T19:32:25.6647030+00:00` |
 | `E0/contracts-diagnosis.md`、交付报告 | 独立诊断范围已审，随后独立示例检查 264 项和生成一致性各自退出 0；这些结果未将原入口改为通过 |
 
-两个失败均使用 BelowNormal、Node1024MiB；原入口 CPU 样本 15.4% / 9.7%、可用内存约 11.25 / 11.24 GiB，直调 CPU 9.0% / 7.6%、约 11.28 / 11.32 GiB，单调间隔均约 3 秒。样本只说明启动时满足额度，未证明运行峰值，也不能确定崩溃的内部句柄。
+两个失败均使用 BelowNormal、`NODE_OPTIONS=--max-old-space-size=1024`；原入口 CPU 样本 15.4% / 9.7%、可用内存约 11.25 / 11.24 GiB，直调 CPU 9.0% / 7.6%、约 11.28 / 11.32 GiB，单调间隔均约 3 秒。1024 是历史 old-space 参数，原件没有记录完整 V8 heap 上限。样本只说明启动时满足额度，未证明运行峰值，也不能确定崩溃的内部句柄。
 
 ## 本机实现与官方原始来源
 
@@ -145,6 +145,17 @@ pwsh -NoLogo -NoProfile -File .verification/swa-m1-contracts-20261020/run-check.
 T01 入口 PID7840，采样中观察到真实子进程 Node PID18540、创建本地时间 `2026-10-20 15:42:29`；实际命令行保存在 children-snapshot.json。命令返回后实际进程查询确认这两个 PID 及其当前直接子进程均不存在，查询结果保存在 residual-processes.json。原服务仍由主控管理，未对业务 HTTP 或 SQLite 运行检查。
 
 T01 未复现原失败，已接受计划中“改前成功则因果证据不足，先更新计划”的条件触发。没有实施 T02、没有生成补丁、没有自动重复原命令；T02—T08 保持 NOT_RUN。已通过 `msg_596d46c36d91` 报告并交还唯一窗口，主控已将实际结果交原 Reviewer。两次历史 FAIL 与本次 EXIT0 分别保留；本次 EXIT0 不能证明退出补丁有效。
+
+历史失败与本次 T01 存在以下条件差异，不能视为完全同条件因果比较：
+
+| 条件 | 历史两次失败 | 本次 T01 |
+| --- | --- | --- |
+| 工作树及准确源码 | 原 frontend-observatory 树，准确 S | 新 swa-m1-contracts-implementation 树，准确 987811f4；契约程序同源 |
+| Node 参数 | `--max-old-space-size=1024` | `--max-old-space-size=960 --max-semi-space-size=16`；实际 heap 1056964608 字节 |
+| 依赖安装 | 原树已有安装 | 新树先从原锁文件冻结安装；Redocly 同版 2.60.0 |
+| 临时及编译缓存 | 原 E0/run-contracts 或 run-redocly 下的独立目录 | 本 E/t01-baseline-01 下新的 temp 与 node-cache |
+
+原 E0/run-check.ps1 的历史参数已经完整读取。本次没有对上述差异逐项控制并验证，不能把未复现归因于内存参数、工作树、安装、缓存或某个异步组件。原 Reviewer 经主控 `msg_bb713b3301fb` 确认两树 Redocly bin/lib 逐字相同、原三阶段 EXIT0 与历史 FAIL 均有效，要求保留上述比较限制，无须重跑或继续 T02。补丁有效性和历史故障因果仍为证据不足。
 
 主控 `msg_7d11251e5e36` 报告 T09 已完成：新 PID52040、创建 UTC `2026-10-20T07:44:04.137854Z`，原 S 程序、同目录 Web、原 cwd、完整环境、原库及 Q/媒体/CodeGraph 配置保持。主控核实停止期间当前原库与 T00 备份 iterdump 逐字相同，启动资源合法、健康成功、主页字节与同源 Web 一致，唯一 loopback 监听、实际进程身份/优先级/环境通过，running.json 已按新身份更新。原件在原产品树 `E/service-after-01`；本 Worker 未执行这些服务/数据库检查。原服务重新占用窗口，后续动态操作停止；本次只提交、push 真实调查文档，不创建修复 PR。
 
