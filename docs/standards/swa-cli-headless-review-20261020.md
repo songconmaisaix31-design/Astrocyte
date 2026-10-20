@@ -894,7 +894,7 @@ N04/N05已以`msg_e527bd2d50de`交原Worker，主控已获`msg_d2e867af5ca6`说�
 
 ## 准确9c的实际Go检查结果与fea0恢复身份
 
-结论：**接受准确`9c0b62a39b04cdd3fc3d210ced200277824a4e75`的主控独立四包源码编译及三项传输前检查结果。** 主控在准确干净detached目录仅执行一次已审`compile-go-tests.ps1 -OutputRoot .verification/swa-cli-headless-20261020/go-source-01`，实际会话81611 EXIT0。已独立完整读取根control/go-9c-execution-01.log、输出SOURCE/tests.json、三函数日志及五份资源原件，并核四个实际测试二进制存在；SOURCE为准确9c、末尾成功摘要明确actual_runtime_tests_executed=false/model_calls=0。
+结论：**接受准确`9c0b62a39b04cdd3fc3d210ced200277824a4e75`的主控独立四包源码编译及三项传输前检查结果。** 主控在准确干净detached目录仅执行一次已审`compile-go-tests.ps1 -OutputRoot C:/Users/DW/orca/Astrocyte/.verification/swa-go-9c-01/.verification/swa-cli-headless-20261020/go-source-01`，实际会话81611 EXIT0。已独立完整读取根control/go-9c-execution-01.log、输出SOURCE/tests.json、三函数日志及五份资源原件，并核四个实际测试二进制存在；SOURCE为准确9c、末尾成功摘要明确actual_runtime_tests_executed=false/model_calls=0。
 
 原四包test-c通过，实际运行的三个函数为TestOrcaCLIRejectsAuthorityArgumentsBeforeTransport、TestOrcaCLIRejectsUnknownActionAndIrrelevantInput、TestOrcaCLIMissingCurrentGrantIsDenied，均有真实RUN/PASS且无SKIP。四次编译和一次传输前检查资源各passed=true、单调间隔约2.50—2.51秒，CPU最高60.4%、可用内存最低12051972096字节，符合当前门限；原入口Go4/-p4/512MiB、私有缓存及BelowNormal保持。主控已确认所属Go/compile/link/PWSH两次新鲜CIM无自有执行，本Reviewer没有运行第二次编译或二进制。
 
