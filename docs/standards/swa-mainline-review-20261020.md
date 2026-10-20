@@ -217,3 +217,5 @@ SPEC §21.1引用准确6168的GitHub原文，明确每Worker父持独立Job、�
 1f231所存STATUS旧“尚未实现”与总任务“根因已接受”已通过`msg_6c0a520413d3`交主控；65bd当前明确为程序实现中未验收、M1调查/测试计划接受及b112修复因果证据不足。原FAIL、M1未实施补丁与T02—T08未运行、S3及原权限未决范围保留。
 
 `.verification/check-revision.ps1 -Previous 13974f10041d2f8e846b951418172433751798c8 -Candidate 65bd699cffe9207f3504cb7744db2fdca0d483bb` EXIT0：三份Markdown、22本地链接、无断链/锚点/HTML和Git空白错误，marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA核对通过；没有进行新的动态验收。
+
+准确65bd接受hook为`msg_419ed6d5d75a`；主控在`msg_ad2fde2e9860`明确完整读取42dc09的管理审核、非秘密原件与主控回执的不同来源、F08/F09和M1/S3范围及实际轻量结果，确认只接受三份管理文档，原S与无窗口保持；实际读取回复确认本次唤起。

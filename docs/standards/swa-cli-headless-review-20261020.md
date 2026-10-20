@@ -335,3 +335,18 @@ f0的controllerClose通过与task.create/worker.start相同的reserve进入原�
 主控`msg_548c85fec44e`记录prepare-02因当时可用内存3.529GiB在停服前拒绝，原S12800继续运行，未交依赖/生成/构建窗口。本Reviewer没有运行prepare、资源采样、原生fixture、Go测试、构建、安装、SDK、模型、HTTP或服务；所有功能、并发、停止和成果动态验收保持NOT_RUN。
 
 本轮报告`f911c36c12a6eab0415a973d453b307ae89b7873`已普通push；f0和53ad的决策hook分别为`msg_ce3651740f1a`及`msg_2b097b9e4660`。主控在`msg_577f0cbfcd21`明确完整读取新增准确报告、F08接受/F09退回的源码因果及静态与动态范围，确认修复交原Worker、processless分别处理、原S和无窗口保持；`msg_d5ed76bd51bf`另对53ad hook确认完整读取同一报告及九路径范围，两次实际读取回复确认本轮唤起。
+
+## 完整成果读取的后继复核条件
+
+主控`msg_f946e03389dc`转交原Worker发现的原生预览限制，要求随F09后继复核。以下沿H09及既定完整成果目标形成，不新增模型任务或动态窗口，尚未收到对应准确修复提交。
+
+已独立读取准确f0的`worker-transcript-payload.ts`：每条消息最多六个block，文字block最多1200字符，裁剪使limited为true。`worker-transcript-read.ts`合并分页限制与payload裁剪；实际structured路径`orchestration-structured-worker-lifecycle.ts`的readStructuredWorkerJournal先裁剪，pageMessages把该limited继续带入每页，消息已读完也不清除。普通消息cursor不能恢复同一block已裁去的文字。当前task.result循环仅见limited时继续分页，后续无消息或cursor不前进即报不完整，不能由此获得长消息的完整原文。Worker对此静态问题的发现成立，当前没有动态复现。
+
+| 条件 | 后继必须保持的结果与失败路径 |
+| --- | --- |
+| 原件所属 | 从真实Run/root Task/Dispatch和provider session绑定取得原件；不接受正文任意路径或另一会话。实际路径、reparse point、固定上下文与私有根仍核验，缺绑定或来源改变立即失败 |
+| 完整内容 | 保留完整消息及原件来源，区分消息分页与单消息裁剪。空文件、损坏/未完整写入、缺原件或超出已声明读取/输出上限时明确失败或缺证，不能靠非空预览宣称完整 |
+| 只读与格式 | 复用成熟库或准确SDK公开解析接口；读取原件不迁移、修补、创建会话、调用模型或刷新认证。解析库若跳过坏记录，该行为不能自动代表原件完整；不得为规避依赖手写JSONL parser |
+| 真实结算 | 导出保留A被停止等实际状态及B的原会话成果，不将文本内容当成功状态或用量。T13仍为同一安装候选、真实A/B重叠、停止A后B继续及完整成果；当前不登记通过 |
+
+已只读核已安装Pi SDK1.0.1的公开index及session-manager实现：SessionManager.open最终使用persist=true，旧版本可迁移并重写原文件；loadEntriesFromFile在尾部pending非空时会追加换行，且缺文件或坏行有宽松处理；公开parseSessionEntries只解析传入内容，但同样跳过损坏行。接口名称不足以证明只读或完整。上述来源事实与条件已通过`msg_2ec478e8ce85`及`msg_698e72686772`交原Worker，具体方案及实现继续由原Worker完成并交准确版本审核。
