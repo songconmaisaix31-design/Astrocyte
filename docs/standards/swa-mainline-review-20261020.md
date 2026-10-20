@@ -63,6 +63,10 @@
 
 现有 `scripts/review-decision-hook.mjs` 已将计划接受投递为 `msg_98434bd02e8d`；主控在 `msg_e278a9dfab0d` 明确完整读取本报告及计划 blob，并回复原 Worker。该次唤起已确认。主控另在 `msg_d4aee513da9a` 明确 `.agents/skills/astrocyte-research/SKILL.md` 为获准来源文档路径，实施审核将检查其原文保全及无程序变化。
 
+主控消息`msg_f7c3035478f0`补充`docs/STATUS.md`写入范围，仅允许改为根STATUS入口并归档原文；实施审核继续核对唯一状态来源及归档原文、链接。
+
+主控消息`msg_7ffdd2e1a148`传达最新首版目标：抽取Orca CLI对应执行能力，交付用户从原有Agent或终端调用的可控Swarm CLI。M0继续审核来源、治理及文档职责，并核对当前事实入口已记录该目标；META_PLAN原文保持可追溯，MCP扩展与完整S3为后续范围。该变化不扩大工具或资料权限。
+
 本报告使用 `.verification/check-review.ps1` 验证，`git diff --check` 和已安装 `marked@18.1.0` 的 Markdown 解析通过；当前报告无本地链接或锚点。过程采用 BelowNormal、Node heap 512 MiB。未运行产品检查。
 
 ## 实施审核
