@@ -241,3 +241,15 @@ SPEC §21.1引用准确d7的§5.5原文，该内容已按同一准确Git对象�
 pi注册标识及固定同候选执行入口、包内安装器/说明和空闲SDK检查仅静态接受，真实Grant仍由既有人类批准路径提供；服务启动不签发token。两次hook实际读取回复、全部动态未运行及无窗口状态准确，未新增权限、公开接口或执行状态。M1调查接受/修复因果不足和原S3/权限未决范围保持。
 
 `.verification/check-revision.ps1 -Previous a6b3898e893aa2488280fd0be8851485f1d663ab -Candidate 4b40495cdab7eb9ffe98d1f30a89b895b33e13dd` EXIT0，三份Markdown、22本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。真实远端及三路径以外无差异检查通过；没有访问产品服务、数据库或执行新的功能检查。
+
+准确4b接受hook为`msg_2df4e2c9d3a9`；主控在`msg_a6eae9ad7e9c`完整读取3669主线新增审核、精确来源和三路径保全、规格边界及轻量结果，确认只接受管理/规格、程序尚未进入main、同一Worker继续静态实施且整体任务不结算；实际读取回复确认本次唤起。
+
+## main后继准确3d2f4ab8的准确代码交审记录
+
+结论：**接受准确`3d2f4ab88fb155cf821a90380b7933fca20aa86a`的两份管理记录**。按`msg_c514efaac00d`完整读取4b→3d的STATUS和首版任务差异，真实远端main同SHA；两路径以外无变化，产品程序及依赖未进入main。
+
+记录准确0c6程序和f2普通纳入main4b的交审来源、原计划/静态接受范围，以及双Worker驱动和故障副本的待办，未写成完整成果或动态通过。已独立核f2父来源、相对0c6仅四份管理差异且对象与4b完全相同；本轮程序退回F10—F12另见无界面报告，不改变原4b及之前接受范围。
+
+UTC11:31:06可用1.774GiB采用主控管理记录中的单次只读观察，未代替双样本准入或窗口交付，本Reviewer没有重复查询。原S、Orca及写域归属保持，M1修复因果不足、原S3与权限未知均未改变。
+
+`.verification/check-revision.ps1 -Previous 4b40495cdab7eb9ffe98d1f30a89b895b33e13dd -Candidate 3d2f4ab88fb155cf821a90380b7933fca20aa86a` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及真实远端检查通过，没有动态重验。

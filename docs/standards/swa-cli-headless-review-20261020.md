@@ -414,3 +414,41 @@ Runtime.Target改为现有注册标识pi。已核同一准确代码：SetProject
 verify入口在普通进程fixture后重新资源准入并调用该SDK检查，保留两个命令的实际退出及剩余分支；没有在源码阶段执行这些命令。`.verification/check-revision.ps1 -Previous f295f7c9360a31e6c1ac4ade2ab9c090c455ddae -Candidate 76e9dafd12f4ff430a3082ff4a65ec543d1e02f8` EXIT0，七路径Git空白及USAGE成熟Markdown解析通过，无本地链接/锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。当前无正式PR或动态窗口，所有测试、构建、安装、模型及服务仍NOT_RUN。
 
 准确76e9接受hook为`msg_4a9a79825778`；主控在`msg_fe6bcb71dc35`确认完整读取同一99d084报告的七路径、target及安装入口和空闲SDK检查范围，确认只接受静态修复与检查源码、未宣布SDK或安装可用；实际读取回复确认本次唤起。
+
+## 准确0c6c701d/f2bcba97的完整读取及保全代码CR
+
+准确程序来源为`0c6c701daa0ab29995b34d657c463fb2c33d137c`，其后普通merge为`f2bcba97b475b348bbb60b47dc3dd605a3f40739`，父提交分别为0c6及已审main4b。按原Worker`msg_1a88202db278`和主控`msg_bdb5b576d13f`完整读取0c6相对d7的全部十一路径；0c6→f2只有四份主控文档变化，对应blob与准确4b完全相同，程序和其余路径相同。真实远端Worker分支为f2。
+
+结论：**退回准确f2中来源0c6的F10—F12**。d7完整成果补充计划、F04—F09静态修复和76e9已接受范围保持。整体产品及实际结果仍证据不足；双Worker驱动、故障副本用例及其他阶段待办没有被单独判定为失败。当前无正式PR，GitHub COMMENT review继续等待真实PR及准确交付。
+
+### F10：保全观察器没有保存实际事件订阅
+
+严重程度：较高，影响H17及T00/T02/T13/T15。准确`tests/swa-cli-headless/OrcaPreservation.psm1:43`把Register-ObjectEvent的返回放入subscriptions，第44行没有传Action。官方文档明确默认无返回值，使用Action时才返回PSEventJob；本轮已读取该[官方接口文档](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/register-objectevent?view=powershell-7.5)，仅查询本机cmdlet元数据，没有注册或执行观察器。
+
+由此可推导subscriptions为空：第62行不会读取定向事件或Error，第85—86行也不会注销实际注册；第75行仍可能在末态字节/ACL和进程相同的情况下给出passed。监控溢出或通知缺失因而不能正确成为缺证，这不符合已审“目录通知为补充证据、Error不能忽略”的条件。没有动态复现或原Orca文件变化声明。
+
+原Worker需按真实SourceIdentifier保存/取得实际订阅及事件信息，确实读取Changed/Created/Deleted/Renamed/Error、在监控错误时保留证据不足，并清理本项订阅；不增加内核追踪、写入PID推断或全机监控。具体依据和行号已通过`msg_7d52ae511577`交原Worker。
+
+### F11：来源观察的局部process阻断真实正向分支
+
+严重程度：较高，影响H09及真实Worker来源观察。准确`runtime/swa-orca/src/task-result.ts:110`访问process.env.SWA_DATA_DIR，同一observeWorkerSource作用域第116行却声明const process并赋值record.lease.ownerProcess。该局部绑定遮蔽Node全局process，真实record/provider head成立后，第110行会在局部初始化之前访问它而抛出ReferenceError。
+
+因此worker.show新增source观察的正向路径无法返回；缺record的早返回不能覆盖该缺陷。原Worker应使用不遮蔽全局的owner进程身份变量，保留真实PID/创建时间/runtime字段及所属检查。此为源码判断，未运行TS/Go编译或产品查询，已同F10经`msg_7d52ae511577`交原Worker。
+
+### F12：宽松消息结构可把坏SDK源标成complete
+
+严重程度：较高，影响§5.5未知格式/损坏拒绝和T07。准确task-result.ts第24行messageSchema将所有role的content共同放宽为string或未知元素数组；第73—80行仅进一步核assistant的provider/model并排除toolCall，没有校验内容块结构。第89行只看最后role与stopReason即可标complete。
+
+已独立读取实际安装Pi AI类型定义：AssistantMessage.content为Text/Thinking/ToolCall数组，TextContent.text为string等。当前assistant使用普通字符串、未知block，或text块的text不是字符串，都可通过现有宽松条件；若最后stopReason为stop，还会成为availability complete。这里指出的是JSON语法合法但SDK结构损坏的来源，未生成伪造模型输出或运行损坏副本测试，也没有据此宣称根Task已错误完成。
+
+原Worker需依实际受限SDK消息和entry分支校验必要结构，保留真实允许格式，未知或坏结构明确拒绝；继续使用成熟JSONL及schema库，不能手写格式parser或只凭终止字段认定源有效。沿既定T07的自有真实归档副本覆盖坏字段/未知块，A正常计划停止的可用性范围保持。已通过`msg_ad371a15339d`交原Worker。
+
+### 其余已读取范围及真实限制
+
+完整读取代码从原生所属记录取得SDK路径，采用已固定stream-json严格解析、标准fatal UTF-8检查、header/entry父链及前后文件/record/fence/epoch/seq核查，保留真实journal rows与usage并最终检查12MiB；helper不再把有界预览拼成完整成果。源码返回停止Worker的SDK可用性事实，查询成功不代表B已满足最终成果或根Task完成；后继T13仍须核预定A和B完整成果及固定业务条件。本轮未将这些源码描述为已通过完整功能验收。
+
+worker.start增加真实CPU/可用内存双采样，在原生reserve及模型输入前失败；reserve仍重新核原生配额和关闭屏障。实际SDK事件日志只在私有Worker根独占创建，保存SDK原事件、接收时间及Job root身份，写失败沿原RPC错误关闭，不作为执行账本。实际模型重叠、停止A后B原身份继续须由真实T13验证，当前没有流式事件结果。
+
+T00固定公开来源及四原文、T02同候选安装、T13私有服务/缺Grant拒绝和T15旧进程/Orca保全检查都仅形成源码；完整驱动及故障用例继续由原Worker实施。认证配置原件只由将来的实际受限验证定向读取，本Reviewer没有读取原token、环境或SQLite秘密原件，没有执行这些脚本。
+
+`.verification/check-revision.ps1 -Previous d7f21242259739cfb49a4f68a19a1a8f28bcec32 -Candidate 0c6c701daa0ab29995b34d657c463fb2c33d137c` EXIT0，十一路径Git空白、两份Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。f2两个父来源、四份主控原blob及其余程序未变已核；没有编译、安装、执行JSONL读取/PS观察器/fixture、模型或服务。原S12800与无动态窗口保持。
