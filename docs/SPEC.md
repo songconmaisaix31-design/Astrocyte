@@ -815,7 +815,7 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 既有 Go/TypeScript/SQLite 产品保持现有模块与数据。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)集成抽取出的 Orca 无界面执行后台，采用独立 `swa` 命令、安装根、profile、数据库、端点及所属进程；本机 Orca 保持原安装、配置、账户及会话。用户决定与隔离验收见 [QUESTIONS](QUESTIONS.md) 和首版任务。
 
-首版须发现本机注册的 Agent，并通过 Swarm CLI 调用发现的真实 Agent。注册来源、安装、配置、可启动和实际原生控制能力分别返回真实观察及原因；当前固定 Pi SDK 方案不足以满足该要求。使用 REA 分析准确 Orca 交付物，核对注册发现、启动、输入、状态、输出、停止与释放路径，提取执行需要的依赖和许可，验证独立安装闭包。注册读取与产品私有状态保持各自归属，不修改本机 Orca 或 Agent 配置。具体发现/选择接口及各 Agent 执行范围由同一 Worker 的完整方案和独立测试审核定稿，未答权限保持未决定。
+首版须发现本机注册的 Agent，并通过 Swarm CLI 调用发现的真实 Agent。注册来源、安装、配置、可启动和实际原生控制能力分别返回真实观察及原因。使用 REA 分析准确 Orca 交付物，核对注册发现、启动、输入、状态、输出、停止与释放路径，提取执行需要的依赖和许可，验证独立安装闭包。注册读取与产品私有状态保持各自归属，不修改本机 Orca 或 Agent 配置。发现/稳定选择、原生输入/模式及控制端恢复分别按§21.1.1—§21.1.3定稿，未答权限保持未决定。
 
 独立产品后台的发现、选择和调用不得以原 Orca 桌面或后台正在运行为必要条件。真实注册来源、命令检测和必要配置读取的具体接口先核实并审核；原 Orca 运行时只读查询可以用于核对来源，不能成为产品运行前置。首版通用 Agent 的工具范围与既有受限 Codex 验证的适用关系已询问用户，未答前保持原限制，不影响独立发现及依赖技术设计。
 
@@ -823,20 +823,20 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码、控制端身份、请求去重、工具关闭和安装接口依独立审核后的方案实施。原生调用的真实身份及退出证据不能由外部传入的 handle、actor 或模型自述替代。模型接入不修改本机 Agent 配置和认证，权限与资料范围按适用任务核实。
 
-准确396e的[执行方案与测试计划](standards/swa-cli-headless-20261020.md)及后继已审补充作为已有实施边界保留；注册 Agent 新要求相关的接口和依赖调整先审核定稿。下表中的固定 Pi 路径保持其局部范围，尚未代表首版全部 Agent 能力：
+准确396e的[执行方案与测试计划](standards/swa-cli-headless-20261020.md)及后继已审补充的来源和验证记录保留。当前执行契约按本节及§21.1.1—§21.1.3，真实注册Agent路径由同一Worker实现并验证：
 
 | 模块与显式接口 | 状态与权限边界 |
 | --- | --- |
-| `cmd/swa`、HTTP → Workspace App 的 Orca execution 用例 | `serve/status/capabilities`、`controller open/show/close`、`task create/show/list/result/complete`、`worker start/show/list/read/send/stop/release`、`request show`；参数、JSON envelope、退出码和未知效果按方案 §6；传输层不访问业务数据库 |
+| `cmd/swa`、HTTP → Workspace App 的 Orca execution 用例 | `serve/status/capabilities`、`controller open/show/close/recover`、`task create/show/list/result/complete`、`worker start/show/list/read/send/stop/release`、`request show`；参数、JSON envelope、退出码和未知效果按方案 §6及本节已审补充；传输层不访问业务数据库 |
 | Workspace App → Orca execution adapter | App 声明消费方端口及 DTO，每次核项目主体、适用 Grant 与动作；原生关联仅保存 project/grant/Run/root Task，迁移使用028。adapter 以随包 Node 入口调用真实 RuntimeClient；执行状态保留在原生存储 |
 | 产品 Node composition → 原生 runtime/controller/Worker | 仅注册获准方法；真实 PTY helper 的 launch/current consumer 执行 Run 与 Worker 操作。公开请求映射到原生 mutation receipts、确定 PTY 创建身份及固定子请求；副作用未知保留 pending，只读查询，不重发输入 |
-| Worker → Pi SDK 1.0.1 | 固定真实 `openai-codex/gpt-6.1-sol`、显式只读认证来源、空工具及资源集合；私有 SDK 子进程 home/agent/session，随包 SDK；只允许已审六项原生 RPC，关闭隐式重试、压缩和缓存预热 |
+| Worker → 实际注册Agent的原生adapter/CLI | 使用稳定AgentSelection选择实际executable、模型、provider及配置来源；保持明确execution_mode、原session/PTY/operation归属。私有写入目录和实际账号来源分别核实，工具、目录及外发按当前批准，不以SDK替换所选Agent |
 
-准确6168的方案补充见[执行方案 §5.4](https://github.com/songconmaisaix31-design/swarm-anything/blob/6168b4ea19e3b5468403e71a77a279b4bc18adf3/docs/standards/swa-cli-headless-20261020.md)：每个SDK Worker由私有runtime创建并唯一持有其不可继承的独立Win32 Job句柄，核实际root身份、分配及完整成员查询成功后，才通过Node原生IPC准入SDK加载。原生root退出、两次间隔至少50毫秒的成功完整Job空查询及两次新鲜旧进程身份退出观察共同满足后，才允许确认全树退出并关闭句柄；查询失败、身份不明或宿主重启丢失句柄继续保持unknown及占用。实际native缺失或必要嵌套被拒绝时在模型请求前失败，原Orca及非目标Job保持原所属，测试依T09/T13执行。
+实际Worker须保留完整所属树的创建、输入前准入、停止及退出证据。Win32 Job控制沿准确6168的已审[方案§5.4](https://github.com/songconmaisaix31-design/swarm-anything/blob/6168b4ea19e3b5468403e71a77a279b4bc18adf3/docs/standards/swa-cli-headless-20261020.md)：不可继承的所属句柄、实际root身份、分配及完整成员查询均确认后才允许模型输入；root退出、两次间隔至少50毫秒的成功完整Job空查询及两次新鲜旧身份退出观察满足后才确认全树退出。structured原生CLI和terminal的实际Job/PTY custody消费者随§21.1.2接入并按T09/T13逐项验证。查询失败、身份不明、必要native缺失、嵌套拒绝或重启后无法证明旧Job时保持unknown及占用，不能只凭root退出宣布停止；原Orca及非目标进程保持原所属。
 
 合法已认证人类的自有安全停止保留原规则：严格核项目和原生进程所属，执行批准撤销及旧上下文版本不阻断安全停止；Agent的执行与撤销准入保持。关闭控制端与创建任务/Worker的准入必须共同核原生持久占用：创建先保留时，关闭须拒绝或等待其明确结算；关闭先保留时，新建及输入拒绝，unknown保持原屏障。关闭helper不能代替停止所属独立Worker。
 
-完整成果依准确d7已审[方案 §5.5](https://github.com/songconmaisaix31-design/swarm-anything/blob/d7f21242259739cfb49a4f68a19a1a8f28bcec32/docs/standards/swa-cli-headless-20261020.md)及T07/T13实施。`worker read`保留原生有界预览与游标；`task result`从核实所属的原生journal和Pi自产session只读取得完整内容，采用成熟严格解析，检查原件身份、格式、读取一致性及12MiB上限，不迁移、修补或换源。计划停止A时分别返回实际状态、journal部分及SDK的incomplete/unavailable/unknown；已有坏源或来源变化明确失败。B的完整成果、固定业务判据和全部相关资源退出/归档/释放仍为根Task完成条件，不追加A完成条件。项目执行目标使用既有注册标识`pi`，实际执行入口仍为安装候选内的固定Node/SDK；新数据根不预置Grant，服务启动不签发token。候选携带实际安装入口及必要使用说明，真实结果按同一安装候选核验。
+完整成果沿准确d7已审[方案§5.5](https://github.com/songconmaisaix31-design/swarm-anything/blob/d7f21242259739cfb49a4f68a19a1a8f28bcec32/docs/standards/swa-cli-headless-20261020.md)、§21.1.2及T07/T13实施。`worker read`保留原生有界预览与游标；`task result`从已核所属的实际原生journal及对应Agent自产transcript取得内容，采用成熟严格解析，检查身份、格式、读取一致性及12MiB上限，不迁移、修补或换源。terminal只有有界输出时明确标注，不能作为完整成果通过。计划停止A时分别返回真实状态、已有部分和incomplete/unavailable/unknown；坏源或来源变化明确失败。B的完整成果、固定业务判据和全部相关资源退出/归档/释放仍为根Task完成条件，不追加A完成条件。实际项目执行目标来自稳定AgentSelection并核现有批准；新数据根不预置Grant，服务启动不签发token。候选携带真实首次人工授权步骤及必要使用说明，真实结果按同一安装候选核验。
 
 CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实施。`--json`在stdout只发布一个完整结果，stderr保存诊断；已成功解析并校验的原请求ID及实际selector须在失败或取消时保留，未知身份省略。真实HTTP ErrorV1转换为既有CLI envelope，完整HTTP原件保存在既有`error.data`，HTTP trace与命令原请求ID各保留其来源；原生结果及错误数据保持。真实网络效果未知时只查询原请求，不重发；取消当前CLI等待返回130，不据此停止Worker。stdout实际不可写时将已知关联和实际影响保留到stderr并非零退出，不再次发布结果。
 
