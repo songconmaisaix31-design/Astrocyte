@@ -449,3 +449,5 @@ restore-08的实际S41264/创建UTC16:23:39.495409/epoch1792513419.495409、092b
 完整所属树的Job创建、输入前成员/身份准入、停止后两次完整空查询、至少50毫秒间隔及两次新鲜旧身份退出条件保持，原生structured/terminal消费者仍须按T09/T13实际验证。完整成果使用对应Agent自产transcript，保留12MiB上限、身份/格式/一致性、坏源失败及有界terminal不得当完整成果；B完整成果及相关退出/归档/释放、最终同候选双Worker条件没有降低。QUESTIONS工具问题继续未答，三份已审技术计划只更新定稿状态，未声明程序、安装或调用通过。
 
 `check-revision.ps1 -Previous a6f387ff480d7fa9f5314319e014ba7eb77f13e0 -Candidate 70ca072309f9f646835b19eedaa276285daeb75b`实际EXIT0，三个Markdown/77本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有新运行授权或实际程序执行；准确61a的N06—N09独立退回保持，后继仍由原Worker返修。
+
+准确70ca接受hook `msg_bdfa051f0335`已获主控`msg_b21610f58c73`完整读取aed4准确主线新增及差异回复，实际唤起确认。准确16ad的N06局部静态返修、首装人工说明和N09窄端口技术计划另见本Reviewer的headless报告；整体程序、动态调用和未答权限保持各自状态。

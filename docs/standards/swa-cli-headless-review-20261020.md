@@ -964,3 +964,23 @@ N06已通过`msg_dba72e4e9ac0`通知主控、`msg_0c9771247145`交原Worker；�
 原PID/创建时间固定常量已由该实际原件替代。owner仍核准确S、程序/Web/数据库实际路径、创建时间差小于1毫秒、BelowNormal及唯一127.0.0.1:64505监听；prepare重复核环境/配置及身份，stop仍要求实际prepared基线，恢复仍核正向退出、端口、原库完整性/外键/停止区间内容及同次原环境。start/reconcile的原有创建与只读观察区别、恢复元数据冲突拒绝保持，没有新增状态账本或自动重试执行。
 
 静态`ast.parse`当前Python源码EXIT0，只解析语法，没有运行脚本正文；Node512MiB以成熟JSON和isDeepStrictEqual读取restore-08/restored.json及当前running.json，整份相等，实际记录仍为S41264/epoch1792513419.495409。上述只读查询没有重复资源采样、访问SQLite/HTTP或操作服务。该次源码接受允许主控按新参数准备后继具体窗口；实际prepare仍须新鲜身份、环境、资源及保全全部通过，当前窗口仍归原S。
+
+准确c8接受hook `msg_72ea71c99c18`已获主控`msg_f7638e45b5c4`完整读取aed4准确全节及当前源码回复，实际唤起确认。主控继续安排准确CLI交付物的限定REA，原app.asar分析只作为对应后台来源；本Reviewer没有据新任务自行运行REA或目标程序。
+
+## 准确16ad5ef6的N06局部返修、首装说明及N09技术计划
+
+结论：**接受准确`16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3`中N06实际Pi builder局部静态返修、随包首装人工流程和N09外发批准注册端口技术计划；整体发现/选择实现及真实调用仍未接受。** 完整读取7f相对61a的五文件和16ad相对7f的两文件差异，重读实际Pi adapter/permission枚举、session guard、空间/项目/设置/Grant/token源码及真实StructuredAgentRegistry；USAGE在16ad相对7f无差异。
+
+N06当前导出buildPiRpcLaunch由实际PiRpcSessionAdapter消费，构造真实本机Pi的`--mode rpc`及原生session/fork参数，明确拒绝sdkEntry。resolver使用原isAgentChatPermissionMode校验basis或record的实际值，仅合法full-access且原resolveFullAccess允许时形成true；缺失或未知值保持拒绝。此局部消除固定SDK builder与原生factory的不兼容；实际账户/工具策略、Job、原生握手及成果继续按N07/N08和现行验收核实，未运行Pi或模型。
+
+首装说明使用同一安装服务GET auth/session的真实cookie/CSRF，实际创建空间并取space.id、登记公开目录并取project.id/settings.revision，保持完整settings与expected_revision，Grant及token分别校验实际归属。初始只有observe，之后实际status/capabilities供人类审阅；执行批准明确等待真实Agent能力和当前授权，单CLI批准、目录/空工具和旧注册限制如实说明。实际一小时token、重新签发或Grant更新失效、human会话重取及revision冲突处理均与源码一致；调用端ID与原生Agent ID分别保留。没有自动批准或要求开发树/原服务/Web资产。
+
+适用T02/T03计划覆盖同安装/新私有根的真实人工session→space→project/settings→Grant/token以及状态/发现，实际库逐项定位身份和revision；拒绝Agent bearer管理、缺CSRF、过期会话、旧revision及旧token。人工请求由用户本人执行，未命中或没有具体候选时保持未验；当前没有申请用户提前批准或执行这些正文。`.verification/check-usage-snippets.mjs`用marked18.1.0读准确7f的14个PowerShell片段，再以原生Parser.ParseInput逐项仅解析语法，EXIT0、body_executed=false，BelowNormal/Node512MiB。文档数据以UTF-8/Base64交给解析器，没有执行其中命令。
+
+N09先独立提出新项目批准不能循环依赖既有Grant/CLI批准、真实注册来源、失败无设置写入及旧HistoryRoots/S3职责等条件，并以`msg_034c86ed6be0`交Worker；之后对照7f/16ad方案。只读ExternalCLIRegistry.ValidateExternalCLI由同一真实orca adapter在HTTP开放前一次注入；nil/重复配置失败，无Orca配置才保持原旧registry路径，已绑定端口失败不能换源。只改变非空ExternalModelCLI验证，原HistoryRoots、旧NativeAdapter和AllowedTools限制保持，不造空Adapter。
+
+16ad已明确strict registered_agent请求/Native params及RegisteredAgent/OrcaEnvelope字段：真实ID/adapter/mode及成对source.kind、registered=true、schema、同安装VERSION/host.cjs来源、私有runtime/authority/data/install根。Native取实际registration，Go逐项核与请求、真实RPC包络及Config根一致，全部通过才返回nil；缺失/错误/未知来源失败。新项目人工校验不依赖已有批准，不执行完整发现、命令版本、会话或模型。安装来源摘要复用已有字段，不另建执行账本。
+
+对应计划覆盖旧四CLI以外真实注册ID的正向人工批准、真实未知ID/未绑定模式/服务不可达失败且设置不变、另一选择不匹配时模型前拒绝、无Orca旧行为、HistoryRoots/S3及工具/身份/revision回归，与独立条件相符，没有多余自证用例。技术计划由主控定稿SPEC及必要窄写域后，同一Worker实施；它只证明拟校验注册，未证明该Agent安装/账户/工具/可启动。N07/N08剩余、N09实现和首版真实安装/双Worker全部未验。
+
+`check-revision.ps1`以61a→7f及7f→16ad分别检查EXIT0，前者三Markdown/5本地链接、后者一Markdown/1本地链接及Git空白通过；成熟marked18.1.0、BelowNormal、Node512MiB。没有运行编译、类型检查、HTTP/SQLite正文、实际Agent或模型；两个既有构建失败及当前权限未答保持。
