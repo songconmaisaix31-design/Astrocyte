@@ -553,3 +553,7 @@ Windows控制信号只允许在本项新建的隐藏console内执行：普通验
 主控要求的§7.5已按准确8220基线补充CLI输出/原R、真实ErrorV1、网络unknown、取消130及serve自身EOF/后代关闭测试计划，待原Reviewer独立接受；当前只改两份文档。没有实施该补充的程序或验证正文，没有向任何console发送信号，动态窗口仍未交付。
 
 准确b3f0e229的§7.5计划已获原Reviewer d7fbcfb097275c27255a8ab4a77a3d517c25c81a独立接受，主控msg_d7ccfb662bde授予原CLI写域静态实施；准确39cc的F13/F14和四包Go计划/源码已由2bd10d21接受。它们均不表示动态通过。原Reviewer提出F15后，T06用例将成功重放控制放在实际context文件变化之前；文件恢复原字节后仍核实际mtime已变、size/字节相等，并继续要求request_mismatch。实际ContextFile.Version包含mtime纳秒和size，首次原生固定context仍逐项不变；没有重写mtime、剔除version或创建替代任务。所有正文NOT_RUN，§7.5程序接续实施但尚未运行。
+
+准确c35ec0d9的F15静态返修已由27f7326a830c8c2930c77457b693eded6045b54c接受；a9eb2745分别接受9741的规范化/receipt、2c错误映射、72断开源码及8220原请求查询的静态范围，实际功能仍未验。本Worker已完整读取准确main30cd759f的HANDOFF/STATUS及SPEC §21.1条件。
+
+§7.5首段CLI源码采用单次发布状态、标准成熟JSON Decoder/UseNumber及明确的native/ErrorV1分支：本地错误发布到stdout，合法已解析原R和已校验selector保持；完整HTTP ErrorV1保存在原有error.data，原生结果/错误数据保持，HTTP header trace独立写诊断。取消及断开保留原R，stdout部分/失败写入不再二次发布，已知关联留stderr；三个传输前Go函数按单一envelope及真实参数解析顺序更新。gofmt -d和git diff --check实际通过；没有编译或运行这些函数。serve自身EOF、后代退出及C01—C09实际安装驱动仍在同一Worker实施，本阶段没有对应完成结论。

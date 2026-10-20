@@ -81,3 +81,5 @@
 准确8220d851dd998639a0ae3fbf4eff0212dd20ed7c普通push及Worker ls-remote EXIT0。主控msg_34756d70dc45、msg_e18403c22437确认CLI本地错误/原R输出及serve未消费自身stdin的缺口，要求先补计划独立审核；报告§7.5列C01—C09、真实ErrorV1来源、网络断开、隐藏console隔离和实际130、启动前中后EOF/已观察后代与unknown条件。当前只修改两份文档，程序保持8220；未发送console信号，所有新增正文NOT_RUN，计划未接受前不实施该补充。
 
 原Reviewer准确2bd10d21接受39cc静态返修及四包Go补充，d7fbcfb0接受准确b3f0e229的§7.5计划；主控msg_d7ccfb662bde已授予同一CLI写域静态实施，无运行窗口。F15按实际mtime/size版本修正真实用例：未变化时成功重放，context变化及恢复字节后的真实新版本都拒绝，原生首次固定context保持；没有伪造旧mtime或丢弃version。程序/SDK/编译/信号/安装/模型正文继续NOT_RUN，后继准确CR及§7.5实施继续由本Worker负责。
+
+准确c35的F15静态返修获27f7326a接受，a9eb2745的四段准确局部静态接受已完整读取；main30cd759f的HANDOFF/STATUS及SPEC §21.1条件已读。§7.5开始实施普通CLI的单stdout envelope、原R/selector、真实ErrorV1来源、取消/未知及输出失败路径，Go三个传输前函数同步更新；仅gofmt -d和差异检查通过，全部正文NOT_RUN。serve EOF/后代关闭及实际安装驱动继续实施；T11真实人类入口待用户决定，T12接续契约和计划随后提交主控定稿及独立审核，当前不冻结新参数或开放原生用户输入。

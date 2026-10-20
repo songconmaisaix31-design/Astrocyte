@@ -61,12 +61,17 @@ func report(w io.Writer, code, message, action string, exit int) int {
 }
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	output := cliOutput{stdout: stdout, stderr: stderr}
 	if len(args) == 1 && args[0] == "--version" {
-		_, _ = fmt.Fprintln(stdout, version)
+		if _, err := fmt.Fprintln(stdout, version); err != nil {
+			return output.outputFailure(err)
+		}
 		return 0
 	}
 	if len(args) == 0 || args[0] == "help" || args[0] == "--help" {
-		_, _ = io.WriteString(stdout, usage)
+		if _, err := io.WriteString(stdout, usage); err != nil {
+			return output.outputFailure(err)
+		}
 		return 0
 	}
 	if args[0] == "serve" {
@@ -75,7 +80,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	action, rest := args[0], args[1:]
 	if action != "status" && action != "capabilities" {
 		if len(rest) == 0 {
-			return report(stderr, "validation_failed", "缺少命令动作", "read_swa_help", 2)
+			return output.failure("validation_failed", "缺少命令动作", "read_swa_help", 2)
 		}
 		action, rest = action+"."+rest[0], rest[1:]
 	}
@@ -104,39 +109,44 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		defaultLimit = 100
 	}
 	flags.IntVar(&command.Limit, "limit", defaultLimit, "读取上限，worker read 默认为 100")
-	if err := flags.Parse(rest); err != nil || flags.NArg() != 0 {
-		return report(stderr, "validation_failed", "命令参数无效", "read_swa_help", 2)
+	parseError := flags.Parse(rest)
+	output.parsedRequest(command)
+	output.pretty = !*asJSON
+	if parseError != nil || flags.NArg() != 0 {
+		return output.failure("validation_failed", "命令参数无效", "read_swa_help", 2)
 	}
 	command.ProjectID = *project
 	if err := workspaceapp.ValidateOrcaCommand(command); err != nil {
 		var service *apierrors.ServiceError
 		if errors.As(err, &service) {
-			return report(stderr, string(service.Code), service.Message, service.RequiredAction, failureExit(string(service.Code)))
+			return output.failure(string(service.Code), service.Message, service.RequiredAction, failureExit(string(service.Code)))
 		}
-		return report(stderr, "validation_failed", err.Error(), "read_swa_help", 2)
+		return output.failure("validation_failed", err.Error(), "read_swa_help", 2)
 	}
+	output.validatedCommand(command)
 	projectID := *project
 	if projectID == "" {
 		projectID = os.Getenv("SWA_PROJECT_ID")
 	}
 	if projectID == "" || strings.ContainsAny(projectID, "/\\?#") {
-		return report(stderr, "validation_failed", "需要明确的项目 ID", "set_current_project_id", 2)
+		return output.failure("validation_failed", "需要明确的项目 ID", "set_current_project_id", 2)
 	}
+	output.projectID = projectID
 	token := os.Getenv("SWA_PROJECT_TOKEN")
 	if token == "" {
-		return report(stderr, "scope_denied", "缺少当前项目授权令牌", "obtain_current_project_grant", 3)
+		return output.failure("scope_denied", "缺少当前项目授权令牌", "obtain_current_project_grant", 3)
 	}
 	base, err := loopbackEndpoint(*endpoint)
 	if err != nil {
-		return report(stderr, "validation_failed", err.Error(), "set_explicit_loopback_endpoint", 2)
+		return output.failure("validation_failed", err.Error(), "set_explicit_loopback_endpoint", 2)
 	}
 	body, err := json.Marshal(command)
 	if err != nil {
-		return report(stderr, "validation_failed", err.Error(), "correct_command", 2)
+		return output.failure("validation_failed", err.Error(), "correct_command", 2)
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/api/v1/local-projects/"+url.PathEscape(projectID)+"/orca/commands", bytes.NewReader(body))
 	if err != nil {
-		return report(stderr, "validation_failed", err.Error(), "correct_endpoint", 2)
+		return output.failure("validation_failed", err.Error(), "correct_endpoint", 2)
 	}
 	request.Header.Set("Authorization", "Bearer "+token)
 	request.Header.Set("Content-Type", "application/json")
@@ -147,42 +157,45 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	response, err := client.Do(request)
 	if err != nil {
 		if ctx.Err() != nil {
-			if command.RequestID != "" {
-				_, _ = fmt.Fprintf(stderr, "原请求：swa request show --project %s --request-id %s --json\n", projectID, command.RequestID)
-			}
-			return 130
+			return output.failure("delivery_unknown", "当前 CLI 等待已取消；后台效果按原请求查询", "inspect_original_request", 130)
 		}
 		var network *net.OpError
 		if errors.As(err, &network) && network.Op == "dial" {
-			return report(stderr, "provider_unavailable", "指定 HTTP 服务连接尚未建立", "inspect_explicit_service_endpoint", 4)
+			return output.failure("provider_unavailable", "指定 HTTP 服务连接尚未建立", "inspect_explicit_service_endpoint", 4)
 		}
-		return report(stderr, "delivery_unknown", "HTTP 结果不可用；保留原始请求 ID", "inspect_original_request", 6)
+		return output.failure("delivery_unknown", "HTTP 结果不可用；保留原始请求 ID", "inspect_original_request", 6)
 	}
 	defer response.Body.Close()
+	traceDiagnostic := func() {
+		if trace := response.Header.Get("X-Request-ID"); trace != "" {
+			_, _ = fmt.Fprintf(stderr, "HTTP trace=%q status=%d\n", trace, response.StatusCode)
+		}
+	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024+1))
-	if err != nil || len(data) > 16*1024*1024 || !json.Valid(data) {
-		return report(stderr, "delivery_unknown", "HTTP 响应不完整或超过声明上限", "inspect_original_request", 6)
+	if ctx.Err() != nil && err != nil {
+		traceDiagnostic()
+		return output.failure("delivery_unknown", "当前 CLI 等待已取消；后台效果按原请求查询", "inspect_original_request", 130)
 	}
-	var reply struct {
-		OK    bool     `json:"ok"`
-		Error *failure `json:"error"`
+	if err != nil || len(data) > 16*1024*1024 {
+		traceDiagnostic()
+		return output.failure("delivery_unknown", "HTTP 响应不完整或超过声明上限", "inspect_original_request", 6)
 	}
-	if err := json.Unmarshal(data, &reply); err != nil {
-		return report(stderr, "delivery_unknown", "HTTP envelope 无效", "inspect_original_request", 6)
+	reply, err := output.response(data, response.StatusCode)
+	if err != nil {
+		traceDiagnostic()
+		return output.failure("delivery_unknown", err.Error(), "inspect_original_request", 6)
+	}
+	output.identity = reply
+	if reply.Error != nil {
+		traceDiagnostic()
 	}
 	if command.Action == "task.result" && reply.OK && reply.Error == nil && response.StatusCode == http.StatusOK {
 		if err := exportResult(command.OutputDir, data); err != nil {
-			return report(stderr, "result_export_failed", err.Error(), "inspect_explicit_output_directory", 7)
+			return output.failure("result_export_failed", err.Error(), "inspect_explicit_output_directory", 7)
 		}
 	}
-	if *asJSON {
-		_, _ = stdout.Write(append(data, '\n'))
-	} else {
-		var formatted bytes.Buffer
-		if err := json.Indent(&formatted, data, "", "  "); err != nil {
-			return report(stderr, "delivery_unknown", err.Error(), "inspect_original_request", 6)
-		}
-		_, _ = stdout.Write(append(formatted.Bytes(), '\n'))
+	if err := output.publish(reply); err != nil {
+		return output.outputFailure(err)
 	}
 	if reply.Error != nil {
 		return failureExit(reply.Error.Code)
