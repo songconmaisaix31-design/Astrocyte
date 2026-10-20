@@ -755,3 +755,26 @@ P03已区分scope-reserved内部持久保留与pty-spawn前首次可能外部效
 原Run/root/context、真实generation、原Job复开与daemon来源/握手、历史只读和最终全部资源退出的既有条件保持，原R01—R09加R10没有发现剩余覆盖缺口或多余检查。此处接受方案及计划，源码仍须由同一Worker实施并准确CR，主控先将接口写入SPEC后再授权；T11待答、F16完整成果、F17真实正文语义及全部动态结果各自保持。没有执行controller、Job、数据库、服务、信号、SDK或模型。
 
 `check-revision.ps1 -Previous 897531d5d2978e3a51a043063a26e254b3d0f766 -Candidate 079bd958260ac3edb9fda6c13bb9e28a0a08cd56` EXIT0，两Markdown/5本地链接、无锚点/HTML或Git空白错误，marked18.1.0、BelowNormal、Node512MiB。普通源码格式/编译、安装和R01—R10正文均未执行，当前没有新重操作窗口。
+
+## 准确ebf55ac0的F16及F17参数返修
+
+结论：**接受准确`ebf55ac024a618d1ad32a741eb4eefcfc5dae77b`相对079bd三路径的局部静态返修。** 完整读取helper两行及两份说明差异，F16调用现传`runShow({id: run})`，对应已独立读取的RunShowParams必填id及实际handler；F17改为真实枚举包含的status，原生schema与RuntimeClient没有修改。原R及固定子R、实际Dispatch收件人、原项目与上下文没有改变。
+
+Worker逐调用核查表保留实际来源；本Reviewer另核原生WorkerStartParams的spec/task互斥、from/model/effort/timeout字段，WorkerListParams的显式run/paginate/limit、真实分页上限100，workerRead的transcript及workerShow投影assigneeHandle，与现有直接消费者一致。已有hasMore仍使不完整成果清单失败，没有通过扩大上游字段、枚举或忽略分页解决问题。
+
+F16参数错配及F17非法枚举的静态原因已消除；真实task.result、完整成果及T07/T13正文仍未验。合法status当前仍只投递check提示，F17完整正文能力继续退回，七项独立条件及其新完整方案另审；本次没有把参数接受扩大为权限、功能或模型成功。原Worker`msg_e63aea03cb87`后继报告079bd普通push EXIT0，`msg_f11c208bde90`报告ebf普通push EXIT0，按这两项真实回执记录，本Reviewer未另查其远端。
+
+`check-revision.ps1 -Previous 079bd958260ac3edb9fda6c13bb9e28a0a08cd56 -Candidate ebf55ac024a618d1ad32a741eb4eefcfc5dae77b` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB；没有运行原生schema、SDK、HTTP、消息、模型、编译或产品测试。
+
+## 独立Go源码检查调整的计划读取前条件
+
+按主控`msg_d7173cc26dcb`的既有四包检查顺序要求，先完整读取准确079bd的compile-go-tests.ps1，并依据H05/H13/H15、已审39cc四包计划及原T03/T13形成条件，尚未读取后继c2d4b62d计划正文：
+
+- 编译前取得真实准确干净HEAD，只在本项忽略目录的全新私有绝对输出目录编译；移除Candidate前置时，不创建假安装目录、伪VERSION或替代候选。SOURCE仅记录实际编译源码。
+- 四个真实Go package及已有目标live函数不变，逐包串行test -c；此阶段只运行已审三项真实传输前CLI拒绝函数，逐项实际PASS，零匹配、SKIP或失败不能计通过。不在编译窗口启动HTTP/原生服务或模型。
+- 按RESOURCES每次真实资源准入、BelowNormal、Go4/-p4/512MiB及私有TEMP/cache/modcache执行，原S窗口由主控另行交付；无窗口保持未执行，不更改全局配置或安装后的用户目录。
+- 编译及允许的检查全部成功后，再核同一干净源码未变化，才写既有SOURCE/tests.json；任一失败保留真实日志/退出与部分输出，不发布完整成功，也不伪造未执行包的结果。
+- 后继安装服务T03仍强制候选VERSION、编译SOURCE及当前准确源码一致，并运行四个真实live函数；零匹配/SKIP和仅编译不代替真实结果。源码变化后旧二进制不得冒充新候选测试。
+- 独立源码检查只帮助发现真实Go错误，T12/正文方案、原生/SDK/权限/隔离、最终同一安装候选双Worker及全部适用失败路径继续各自验收，原失败和未知不被执行顺序调整覆盖。
+
+这是实施前覆盖条件，未修改或运行编译入口，也没有新增动态授权。
