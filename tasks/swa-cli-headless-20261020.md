@@ -145,3 +145,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 准确2c391e2718ceef2f44721b727c7471918fecdb4e普通push0且获d1ba静态接受，主控0055已定稿SPEC21.1.5并授原写域实施。原Run正式51ec仅一次build05消费：实际Windows三项官方HTTP200及原Node全部pin/exe/version通过，21metafile证明完整RPC index当前没有进入host；首node-pty gyp12.3配置因未选择Python失败，exec63388实际同步EXIT1且内外退出均1。candidate04保留不可安装，两次新鲜所属及旧创建身份均空，msg_a1c立即交回；主控确认restore15当前S68128/UTC19:00:53.019423及原库/环境/health-Web恢复，原Orca保持，授权撤销且冻结解除。
 
 当前构建修复显式选择本机已有C:/Python313/python.exe，部署/下载/编译前执行真实sys.executable/版本预检，四项gyp沿同一--python及子进程force唯一来源；缺失、不符或不可执行立即失败，不安装、不改系统PATH或全局配置。下载器[void]抑制原async VoidTaskResult，旧实际日志保留；后继尚未运行。原b7b5 runner已存build-05原件，下一candidate05/build06仅静态准备。N04纯App准入与N08契约/私有DACL的实际差异草案留在自有忽略目录，尚未应用或计为产品通过，其他输入/恢复/Job/成果由同Worker继续。
+
+原Run正式msg_5b7d83fdfb5a仅一次build06已消费，准确b75及runner bae62前置通过；exec65865实际同步EXIT1，内外退出原件均1。Python3.13.13及VS2022实际发现成功，324项部署/21份bundle/metafile/三官方HTTP200及原pin校验完成；首conpty编译在中文UTF-8头文件报C4819/代码页936及第17行C2059/C2143，未完成native/Go/VERSION，candidate05保留不可安装。UTC19:20:34.5682573/36.9947290两次新鲜所属及旧身份均空，msg_582d立即交回；主控msg_2f350收回全部重操作并解除tracked/Git冻结，要求同Worker继续实际程序。当前只在构建的native子进程显式CL=/utf-8且清除继承CL/_CL_冲突，保持源注释和系统代码页；后继尚未编译，准确CR和全部真实验收继续。

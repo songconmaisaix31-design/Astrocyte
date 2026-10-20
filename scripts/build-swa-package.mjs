@@ -91,6 +91,10 @@ await fetchPinned(library.file, library.sha256, join(nodeDir, 'Release', 'node.l
 environment.PATH = nodeDirectory + ';' + environment.PATH
 environment.npm_config_msvs_version = '2022'
 environment.npm_config_devdir = join(work, 'gyp-cache')
+// 原生源码使用UTF-8；编译参数只作用于本候选的子进程。
+for (const key of Object.keys(environment)) if (/^(?:CL|_CL_)$/i.test(key)) delete environment[key]
+environment.CL = '/utf-8'
+console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL }))
 const installed = createRequire(join(runtime, 'package.json'))
 for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry']) {
   const packageDir = await realpath(dirname(installed.resolve(name + '/package.json')))
