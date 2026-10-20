@@ -859,7 +859,7 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 
 适用T02/T03检查：在新同源安装和新私有根，用户本人按随包USAGE取得真实会话，执行空间→项目→当前revision设置→Grant→token；Worker只接收用户签发的实际项目token，调用同一安装CLI的status/capabilities并逐项在实际SQLite定位space/project/settings/grant身份及版本，不输出秘密。必要负向为带Agent bearer的bootstrap、设置/Grant/token请求拒绝，缺CSRF/过期human会话拒绝，旧settings revision冲突，Grant替换/撤销和token重新签发使旧token失效；由合法当前身份和真实原件执行，不伪造会话。项目目录/CLI/tool请求保持已批准条件，失败即保留未验状态。程序/安装正文当前全部NOT_RUN；本轮仅核来源及解析文档内PowerShell语法。
 
-原Reviewer对61a指出的Pi消费者缺口已沿实际链返修：`rpc-session-adapter.acquire`所调用的导出`buildPiRpcLaunch`现在直接构造原生`--mode rpc`命令，拒绝sdkEntry；不再有未消费的另一个native builder。`piRpcLaunchPart`从真实record/permissionMode取得fullAccess，未明确fullAccess时保持Pi原生拒绝，不把原生factory恢复写成工具批准。实际Pi认证、模型、同session输入、Job与成果未运行，相关剩余范围保持。
+原Reviewer对61a指出的Pi消费者缺口已沿实际链返修：`rpc-session-adapter.acquire`所调用的导出`buildPiRpcLaunch`现在直接构造原生`--mode rpc`命令，拒绝sdkEntry；不再有未消费的另一个native builder。`piRpcLaunchPart`以原生`isAgentChatPermissionMode`校验真实basis/record来源，仅实际持久枚举`full-access`形成fullAccess=true；缺失或未知记录值不授予。原生factory恢复不构成工具批准。实际Pi认证、模型、同session输入、Job与成果未运行，相关剩余范围保持。
 
 独立准确be1b18b7退回61a的N06—N09已完整读取。上述返修处理实际Pi builder；N07真实配置/defaults与N08实际record.accountHome、launch账号来源及工具策略仍未通过，不能把程序路径/重读发现配置当成账号和工具已绑定。N09由下节完整窄端口提案处理。后继需要改变稳定选择字段或跨模块签名时，先提交完整契约审核和主控定稿；未知来源/工具保持首次输入前拒绝条件，不设置原home为可写运行目录，不开放用户未答权限。
 
@@ -872,6 +872,29 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 唯一方案是在Workspace App声明`ExternalCLIRegistry`只读端口`ValidateExternalCLI(ctx, cliID) error`。LocalProjectService保留原构造器，以一次性的`ConfigureExternalCLIRegistry(port) error`在Composition中绑定，nil或重复绑定立即失败。`SetProjectSettings`仅对非空ExternalModelCLI使用已绑定端口；未配置Orca的原产品继续调用既有NativeRegistry.Adapter。HistoryRoots、旧S3原生会话、NativeAdapter及其原验收维持原消费方；端口失败不改用旧registry。
 
 SWA Composition在HTTP开放前构造明确安装/私有profile的同一orca adapter，将其注册验证端口注入项目服务，并复用该实例构造OrcaExecution。adapter新增只读bridge operation `registered_agent`，私有Native方法`swa.registeredAgent`从本产品实际StructuredAgentRegistry返回所请求ID及真实adapter/执行模式/来源；后继terminal只在真实TUI配置和已绑定PTY launcher/controller共同存在时可用。该校验不读原Orca RPC，不运行版本探测、会话或模型；未知ID、实际registry缺失、传输/元数据不匹配立即失败。它只证明注册，不证明安装、账号或可启动，启动继续按明确selection和当前批准核验。
+
+跨进程契约固定为以下非秘密结构，复用原OrcaEnvelope，不新增请求账本：
+
+```typescript
+type RegisteredAgentRequest = { operation: 'registered_agent'; agent_id: string }
+type NativeRegisteredAgentParams = { agent_id: string } // swa.registeredAgent
+type RegisteredAgent = {
+  schema: 'swa.registered-agent.v1'
+  id: string
+  adapter: string
+  execution_mode: 'structured' | 'terminal'
+  registered: true
+  source: { kind: 'structured-registry' | 'tui-launcher' }
+  source_revision: string
+  registry: { orca_version: '1.4.230'; artifact_sha256: string }
+  runtime: { runtime_id: string; authority_domain: string; data_root: string; install_root: string }
+}
+type RegisteredAgentReply = { envelope: OrcaEnvelope /* result: RegisteredAgent */ }
+```
+
+bridge请求及Native params均strict、agent_id非空；没有project批准、Grant、调用者声明或可转发方法字段。Native从实际registry的registration(id)取definition及adapter；terminal从已接入的真实模式绑定取事实。未知或不完整注册返回原生明确错误，不返回registered=false成功对象。私有owner transport继续按SPEC21.1.3核验；新空DataRoot的人类设置校验不先要求ExternalModelCLI、Agent Grant或已批准的capabilities请求，因此没有首次授权循环。
+
+Native读取本安装VERSION的完整40位source_revision和本安装runtime/host.cjs的SHA256，runtime字段取实际runtime ID、原SQLite authority及已核canonical私有data/install根。Node RuntimeClient保留真实响应_meta.runtimeId，将其填入既有envelope.runtime_id；authority_domain取同次Native结果，原RPC metadata/source fence保持。Go adapter严格解码并逐项要求：ok=true且无error；schema和registered精确匹配；id等于原请求CLI，adapter非空；execution_mode及source.kind成对；完整revision等于Config.InstallRoot下实际VERSION；artifact等于同根实际host.cjs；runtime.runtime_id等于真实RPC envelope的非空runtime_id，runtime.authority_domain等于非空外层authority_domain；canonical data_root/install_root分别等于本adapter的明确私有/安装根。任一字段缺失、未知、错误或不一致立即返回证据/依赖错误，只有全部通过才ValidateExternalCLI返回nil。它不执行全量发现或命令版本探测；文件摘要只核准确安装来源，不参与执行状态或另建Hash系统。
 
 申请新增窄写域为`internal/workspace/app/contracts.go`、`internal/workspace/app/projects.go`及新增`internal/workspace/app/external_cli_registry_real_test.go`；现有`cmd/server/orca_runtime.go`及相关真实测试、`internal/adapters/orca/**`、`runtime/swa-orca/**`、契约与本任务两文档沿原写域同步。不修改`internal/adapters/agents/native.go`，不增加公共HTTP身份或批准字段，不改变AllowedTools非空拒绝。
 

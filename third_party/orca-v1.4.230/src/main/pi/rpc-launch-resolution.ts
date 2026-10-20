@@ -18,6 +18,7 @@ import {
 import type { StructuredAgentLaunchPartResolver } from '../runtime/structured-agent-launch-composition'
 import { isWindowsProcessStartTimeAvailable } from '../windows/windows-process-table'
 import { sessionIdFromFileName } from '../ai-vault/session-scanner-accumulator'
+import { isAgentChatPermissionMode } from '../../shared/agent-chat-permission-mode'
 import {
   PI_RPC_SESSION_ENV_TO_DELETE,
   withoutPiCallerEnv,
@@ -140,6 +141,7 @@ export function piRpcLaunchPart(
 ): StructuredAgentLaunchPartResolver<PiRpcResolvedLaunch> {
   return async (basis) => {
     const { record } = basis
+    const permissionMode = basis.permissionMode ?? record.permissionMode
     if (process.platform === 'win32' && !isWindowsProcessStartTimeAvailable()) {
       throw new Error('Pi structured sessions require Windows process creation-time proof')
     }
@@ -194,7 +196,7 @@ export function piRpcLaunchPart(
     return {
       launch: {
         command,
-        fullAccess: (basis.permissionMode ?? record.permissionMode) === 'fullAccess' && (deps.resolveFullAccess?.() ?? true),
+        fullAccess: isAgentChatPermissionMode(permissionMode) && permissionMode === 'full-access' && (deps.resolveFullAccess?.() ?? true),
         previous,
         ...(sessionFile ? { sessionFile } : {}),
         ...(forkFile ? { forkFile } : {}),
