@@ -21,7 +21,7 @@ type Submission = {
 }
 type DeliveryDeps = {
   retrySignIn?: boolean
-  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) => Promise<void>
+  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>) => Promise<void>
   accepted: (id: string, at: number) => void
   commandOnly: () => void
   rejectedAfterAcceptance: (error: string) => void
@@ -62,7 +62,7 @@ export class PiRpcPromptDelivery {
     id: string,
     at: number,
     frame: JsonlRpcRecord,
-    before?: () => Promise<void>
+    before?: () => Promise<void | (() => void)>
   ): Promise<AgentSessionDispatchOutcome> {
     if (this.ended) {
       throw new Error('Pi prompt queue unavailable')

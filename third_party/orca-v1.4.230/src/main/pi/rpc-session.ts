@@ -26,6 +26,8 @@ import { z } from 'zod'
 import type { PiDisabledToolsPolicy } from './rpc-launch'
 import { applyPiRpcSessionOption, readPiRpcSessionOptions } from './rpc-options'
 import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
+import type { AgentSessionProviderHandleLink } from '../../shared/agent-session-provider-handle'
+import { isAbsolute } from 'node:path'
 
 const disabledToolsCommandSchemas = new Map<string, z.ZodType>([
   ...['get_state', 'get_available_models', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'abort'].map(command => [command, z.strictObject({})] as const),
@@ -82,6 +84,8 @@ export class PiRpcSession {
   private failedCause?: Error
   private exitDelivery: Promise<void> = Promise.resolve()
   private releaseAfterExit?: () => void
+  private nativeSessionIdentity?: Readonly<{ sessionId: string; sessionFile: string }>
+  private providerSessionFile?: string
 
   constructor(
     readonly input: StructuredAgentSessionAcquireInput,
@@ -179,7 +183,15 @@ export class PiRpcSession {
       if (key !== 'model' && key !== 'effort') throw new Error('Native Pi option is unsupported')
       await this.applyOption(key, value)
     }
-    return state.sessionFile
+    if (!this.toolsOff) return state.sessionFile
+    if (!this.nativeSessionIdentity) throw new Error('The actual native Pi session identity is unavailable')
+    return this.nativeSessionIdentity.sessionFile
+  }
+
+  bindProviderLink(link: AgentSessionProviderHandleLink) {
+    if (!this.toolsOff) return
+    if (!this.nativeSessionIdentity || link.handle.agent !== 'pi' || link.handle.transport !== 'jsonl-rpc' || link.handle.nativeId !== this.nativeSessionIdentity.sessionFile || this.providerSessionFile !== undefined) throw new Error('The actual native Pi provider link differs from the first session identity')
+    this.providerSessionFile = link.handle.nativeId
   }
 
   /** What this child listed at its start, with what its config resolved; the host saves it once. */
@@ -222,6 +234,7 @@ export class PiRpcSession {
       if (command === 'set_model' && (params?.provider !== this.toolsOff.provider || params.modelId !== this.toolsOff.modelId)) throw new Error('The original native Pi model policy cannot change')
     }
     const result = await this.connection.request(command, params, options)
+    if (this.toolsOff && command === 'get_state') this.checkPolicyState(piRpcStateSchema.parse(result))
     if (this.toolsOff && command === 'get_available_models') {
       const models = z.object({ models: z.array(piRpcModelSchema) }).parse(result).models
       const selected = models.filter(model => model.provider === this.toolsOff!.provider && model.id === this.toolsOff!.modelId)
@@ -231,19 +244,25 @@ export class PiRpcSession {
     return result
   }
 
-  private sendPrompt(frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) {
+  private sendPrompt(frame: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>) {
     if (this.toolsOff && !disabledToolsPromptSchema.safeParse(frame).success) throw new Error('Unapproved native Pi prompt parameters')
     return this.connection.send(frame, async () => {
-      await beforeWrite?.()
-      this.assertOwnedJob()
-      if (this.connection.closed) throw new Error('The native Pi connection closed before input')
+      const finalAdmission = await beforeWrite?.()
+      return () => {
+        if (typeof finalAdmission === 'function') finalAdmission()
+        this.assertOwnedJob()
+        if (this.connection.closed) throw new Error('The native Pi connection closed before input')
+      }
     })
   }
 
   private checkPolicyState(state: ReturnType<typeof piRpcStateSchema.parse>) {
     if (!this.toolsOff) return
     this.checkPolicyModel(state.model)
-    if (state.autoCompactionEnabled !== false || !state.sessionId) throw new Error('The actual native Pi state differs from the approved compaction or session policy')
+    if (state.autoCompactionEnabled !== false || !z.uuid().safeParse(state.sessionId).success || !isAbsolute(state.sessionFile)) throw new Error('The actual native Pi state differs from the approved compaction or session policy')
+    const identity = { sessionId: state.sessionId!, sessionFile: state.sessionFile }
+    if (this.nativeSessionIdentity && (identity.sessionId !== this.nativeSessionIdentity.sessionId || identity.sessionFile !== this.nativeSessionIdentity.sessionFile) || this.providerSessionFile !== undefined && identity.sessionFile !== this.providerSessionFile) throw new Error('The actual native Pi session identity or provider link changed')
+    this.nativeSessionIdentity ??= Object.freeze(identity)
   }
 
   private checkPolicyModel(model: PiRpcModel | null | undefined) {

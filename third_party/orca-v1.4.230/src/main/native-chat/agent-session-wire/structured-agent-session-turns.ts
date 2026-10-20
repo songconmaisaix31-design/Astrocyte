@@ -135,8 +135,9 @@ async function dispatchSafely(
         const record = ctx.record()
         const originalBody = ctx.journal.itemBody(agentJournalSubmissionKey(clientMessageId))
         if (!record || record.lease.runtimeFence !== ctx.fence || originalBody?.kind !== 'message') throw new Error('The native input session fence or body changed')
-        await admitStructuredAgentInput({ sessionId: ctx.sessionId, agent: record.provider, clientMessageId, fence: ctx.fence, body: originalBody })
+        const finalAdmission = await admitStructuredAgentInput({ sessionId: ctx.sessionId, agent: record.provider, clientMessageId, fence: ctx.fence, body: originalBody })
         if (ctx.record()?.lease.runtimeFence !== ctx.fence) throw new Error('The native input session fence changed during admission')
+        return finalAdmission
       }
     })
   } catch (error) {

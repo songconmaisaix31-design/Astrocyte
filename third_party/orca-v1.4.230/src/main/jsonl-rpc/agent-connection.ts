@@ -200,7 +200,7 @@ export class JsonlRpcAgentConnection {
     return this.peer.request(command, params, options)
   }
 
-  async send(record: JsonlRpcRecord, beforeWrite?: () => Promise<void>): Promise<void> {
+  async send(record: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>): Promise<void> {
     if (this.options.allowedCommands && !this.options.allowedCommands.has(record.type)) {
       return Promise.reject(new Error(`SWA refuses Pi RPC command: ${record.type}`))
     }

@@ -6,6 +6,14 @@ import type { Invocation } from './contracts'
 const resultSchema = z.strictObject({ schema: z.literal('swa.delivery-admission.v1'), project_id: z.string().min(1), request_id: z.string().min(1), settings_revision: z.number().int().positive(), grant_expires_at: z.string().optional() })
 const errorSchema = z.object({ error: z.object({ code: z.string().min(1), message: z.string().min(1) }) })
 
+export function assertDeliveryGrantCurrent(invocation: Invocation) {
+  const expiresAt = invocation.caller.grant_expires_at
+  if (expiresAt === undefined) return
+  const deadline = Date.parse(expiresAt)
+  if (!Number.isFinite(deadline)) throw new OrchestrationError('approval_unverified', 'The original Grant expiry is invalid')
+  if (Date.now() >= deadline) throw new OrchestrationError('approval_revoked', 'The original Grant expired before the native effect', { effectsApplied: false })
+}
+
 export function createDeliveryAdmission(owner: Buffer, ownerAlive: () => boolean) {
   const port = Number(process.env.ASTROCYTE_PORT)
   if (owner.length !== 32 || !Number.isSafeInteger(port) || port < 1 || port > 65535) throw new Error('private_delivery_admission_owner_unavailable')
@@ -23,6 +31,7 @@ export function createDeliveryAdmission(owner: Buffer, ownerAlive: () => boolean
     }
     const result = resultSchema.parse(body)
     if (!ownerAlive() || result.project_id !== invocation.project.id || result.request_id !== invocation.command.request_id || result.settings_revision !== invocation.caller.settings_revision || result.grant_expires_at !== invocation.caller.grant_expires_at) throw new OrchestrationError('context_stale', 'Current delivery approval differs from the original invocation')
+    assertDeliveryGrantCurrent(invocation)
     return result
   }
 }

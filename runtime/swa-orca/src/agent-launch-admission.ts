@@ -10,7 +10,7 @@ import { agentSelectionSchema, invocationSchema, nativeObject } from './contract
 import { selectAgent } from './agent-discovery'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiAccount, privatePiEnvironment, verifyPrivatePiAccount } from './private-pi-account'
-import { createDeliveryAdmission } from './delivery-admission'
+import { assertDeliveryGrantCurrent, createDeliveryAdmission } from './delivery-admission'
 import type { StructuredAgentInputAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { installWorkerInputApproval } from './worker-input'
 
@@ -94,9 +94,15 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     await admitCurrentApproval(invocation)
     const fresh = await policySnapshot(input.sessionId, input.agent)
     await verifyPrivatePiAccount(fresh.snapshot)
-    assertNativePiSnapshotCurrent(fresh.snapshot)
-    const current = runtime.openedAgentSessionRecordStore()?.getRecord(input.sessionId)
-    if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(input.sessionId), identity) || current?.lease.runtimeFence !== input.fence || current.lease.claimStatus !== 'live' || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || !['starting', 'ready'].includes(db.getWorkerDispatch(binding.dispatch_id)?.state ?? '')) throw new Error('The native input identity changed during current approval')
+    const finalAdmission = () => {
+      assertNativePiSnapshotCurrent(fresh.snapshot)
+      const current = runtime.openedAgentSessionRecordStore()?.getRecord(input.sessionId)
+      if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(input.sessionId), identity) || current?.lease.runtimeFence !== input.fence || current.lease.claimStatus !== 'live' || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || !['starting', 'ready'].includes(db.getWorkerDispatch(binding.dispatch_id)?.state ?? '')) throw new Error('The native input identity changed during current approval')
+      if (!isDeepStrictEqual(current.accountHome, record.accountHome) || !isDeepStrictEqual(current.options, record.options) || !isDeepStrictEqual(current.providerHandleChain, record.providerHandleChain)) throw new Error('The native input account, options or provider link changed during current approval')
+      assertDeliveryGrantCurrent(invocation)
+    }
+    finalAdmission()
+    return finalAdmission
   }
   const releaseLaunchAdmission = installStructuredAgentLaunchAdmission({
     commandSettings: async (sessionId, agent) => {
@@ -113,8 +119,10 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { invocation } = await policySnapshot(sessionId, agent, false)
       await admitCurrentApproval(invocation)
       const { snapshot } = await policySnapshot(sessionId, agent, false)
+      assertDeliveryGrantCurrent(invocation)
       await materializePrivatePiAccount(snapshot)
       assertNativePiSnapshotCurrent(snapshot)
+      assertDeliveryGrantCurrent(invocation)
       return { variable: 'PI_CODING_AGENT_DIR', path: snapshot.policy.account.private_home }
     },
     environment: async (sessionId, agent, inherited) => {
@@ -123,6 +131,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { snapshot } = await policySnapshot(sessionId, agent)
       await verifyPrivatePiAccount(snapshot)
       assertNativePiSnapshotCurrent(snapshot)
+      assertDeliveryGrantCurrent(invocation)
       return privatePiEnvironment(snapshot.policy.account.private_home, inherited)
     },
     disabledPiTools: async (sessionId, agent) => {
@@ -131,6 +140,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { snapshot } = await policySnapshot(sessionId, agent)
       await verifyPrivatePiAccount(snapshot)
       assertNativePiSnapshotCurrent(snapshot)
+      assertDeliveryGrantCurrent(invocation)
       const account = snapshot.policy.account
       return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url }
     },
@@ -145,6 +155,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const entry = await realpath(join(install, 'runtime', 'native-cli-entry.cjs'))
       const eventDirectory = await createNativeWorkerDirectory(sessionId)
       assertNativePiSnapshotCurrent(snapshot)
+      assertDeliveryGrantCurrent(invocation)
       return { node, entry, eventDirectory }
     },
     reserveInput: async input => {
@@ -153,6 +164,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { snapshot } = await policySnapshot(input.sessionId, input.agent)
       await verifyPrivatePiAccount(snapshot)
       assertNativePiSnapshotCurrent(snapshot)
+      assertDeliveryGrantCurrent(invocation)
       const identity = structuredWorkerIdentities.getBySessionId(input.sessionId)
       const db = runtime.getOrchestrationDb()
       const run = db.getRun(invocation.scope.run_id)

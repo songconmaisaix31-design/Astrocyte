@@ -17,7 +17,7 @@ export type PiRpcTurnDeps = {
   retrySignIn?: boolean
   lane: JsonlRpcTimelineLane
   generation: string
-  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void>) => Promise<void>
+  send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>) => Promise<void>
   request: (
     command: string,
     params?: Record<string, unknown>,
@@ -96,7 +96,7 @@ export class PiRpcTurns {
     id: string,
     at: number,
     frame: JsonlRpcRecord,
-    before?: () => Promise<void>
+    before?: () => Promise<void | (() => void)>
   ): Promise<AgentSessionDispatchOutcome> {
     if (this.ended) {
       throw new Error('Pi session ended before dispatch')

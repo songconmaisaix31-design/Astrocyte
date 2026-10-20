@@ -35,7 +35,7 @@ export type StructuredAgentLaunchAdmission = {
   disabledPiTools?(sessionId: string, agent: string): Promise<PiDisabledToolsPolicy>
   providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
-  beforeInput?(input: StructuredAgentInputAdmission): Promise<void>
+  beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
 }
 
 let launchAdmission: StructuredAgentLaunchAdmission | null = null
@@ -55,7 +55,7 @@ export function reserveStructuredAgentInput(input: StructuredAgentInputAdmission
   return launchAdmission?.reserveInput ? launchAdmission.reserveInput(input) : Promise.resolve()
 }
 
-export function admitStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void> {
+export function admitStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void | (() => void)> {
   return launchAdmission?.beforeInput ? launchAdmission.beforeInput(input) : Promise.resolve()
 }
 

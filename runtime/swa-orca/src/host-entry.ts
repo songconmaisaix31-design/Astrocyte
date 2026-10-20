@@ -104,12 +104,13 @@ async function main() {
     const { ORCHESTRATION_MUTATION_REQUEST_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/mutation-request-show')
     const { ORCHESTRATION_SEND_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/send-methods')
     const { ORCHESTRATION_MESSAGE_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods')
+    const { ORCHESTRATION_WORKER_LIST_METHOD } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-list-method')
     const { ORCHESTRATION_CALLER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/caller-show')
     const { SWA_METHODS } = await import('./native-methods')
     const { OrchestrationError } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error')
     const { admitNativeWorkerInputRPC } = await import('./worker-input')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
-    const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_SEND_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
+    const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_SEND_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ORCHESTRATION_WORKER_LIST_METHOD, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
     if (nativeMethods.length !== allowed.size || new Set(nativeMethods.map(method => method.name)).size !== allowed.size) throw new Error('The required native product RPC methods are incomplete')
     const rpc = new RuntimeRpcShutdown({ runtime, userDataPath: data, enableWebSocket: false, methods: [...nativeMethods, ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
       if (request.method === 'swa.workerSend') { await admitNativeWorkerInputRPC(_params, request.orchestrationRequestId, { ...context, orchestrationCompatibilityEvidence: request.orchestrationCompatibilityEvidence }); return }

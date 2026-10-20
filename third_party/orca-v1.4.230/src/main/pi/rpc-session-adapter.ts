@@ -94,10 +94,12 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       if (session.connection.closed || attempt.signal.aborted) {
         throw new Error('Pi exited while starting')
       }
+      const link = piRpcProviderLink(launch, file, input.fence, randomUUID(), Date.now())
+      session.bindProviderLink(link)
       return {
         process,
         acquisitionGeneration: session.generation,
-        link: piRpcProviderLink(launch, file, input.fence, randomUUID(), Date.now()),
+        link,
         ...(session.startListing ? { catalogListing: session.startListing } : {})
       }
     } catch (error) {
@@ -146,8 +148,12 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       input.requestedAt ?? Date.now(),
       { ...prompt },
       async () => {
-        await input.beforeDispatch?.()
+        const finalAdmission = await input.beforeDispatch?.()
         if (this.session(input.sessionId, input.fence) !== session) throw new Error('The native Pi session changed before its input')
+        return () => {
+          if (typeof finalAdmission === 'function') finalAdmission()
+          if (this.session(input.sessionId, input.fence) !== session) throw new Error('The native Pi session changed before its stream write')
+        }
       }
     )
   }

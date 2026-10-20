@@ -1,11 +1,14 @@
 import type { Writable } from 'node:stream'
 
+export type ProviderWriteAdmission = () => Promise<void | (() => void)>
+
 type Write = {
   line: string
   resolve: () => void
   reject: (error: Error) => void
   detachAbort?: () => void
-  beforeWrite?: () => Promise<void>
+  beforeWrite?: ProviderWriteAdmission
+  finalAdmission?: () => void
 }
 
 export class ProviderWriteAdmissionError extends Error {
@@ -26,7 +29,7 @@ export class ProviderStdioWriteQueue {
     private readonly errors: { capacity: () => Error; closed: () => Error }
   ) {}
 
-  write(line: string, signal?: AbortSignal, beforeWrite?: () => Promise<void>): Promise<void> {
+  write(line: string, signal?: AbortSignal, beforeWrite?: ProviderWriteAdmission): Promise<void> {
     if (this.terminalError) {
       return Promise.reject(this.terminalError)
     }
@@ -91,7 +94,8 @@ export class ProviderStdioWriteQueue {
     }
     this.active = write
     if (write.beforeWrite) {
-      void Promise.resolve().then(write.beforeWrite).then(() => {
+      void Promise.resolve().then(write.beforeWrite).then(finalAdmission => {
+        if (finalAdmission) write.finalAdmission = finalAdmission
         if (this.active === write && !this.terminalError) this.writeActive(write)
       }, error => this.onFailure(new ProviderWriteAdmissionError(error)))
       return
@@ -126,6 +130,8 @@ export class ProviderStdioWriteQueue {
     this.output.once('drain', onDrain)
     this.detachDrain = () => this.output.removeListener('drain', onDrain)
     try {
+      try { write.finalAdmission?.() }
+      catch (error) { this.onFailure(new ProviderWriteAdmissionError(error)); return }
       const accepted = this.output.write(write.line, (error) => {
         if (error) {
           this.onFailure(error)

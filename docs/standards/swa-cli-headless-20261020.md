@@ -1077,3 +1077,13 @@ T12十二阶段严格caller矩阵、`controller.recover`及实际后台接续Job
 本次只执行`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n14-n15-static.mjs`，三份返修TS的成熟parser语法检查EXIT0，及`git diff --check` EXIT0；原件在`n14-n15-static-01/`。原生文件、真实账号和Go等待期间变化的适用用例仍按§13.6执行，正文、类型检查、构建及模型为`NOT_RUN`。T12其他文件中的当前开发修改没有作为本次N14/N15接受范围。
 
 主控`msg_e7739c90a5b0`、`msg_fd71b815cd86`报告其detached准确3590/干净树独立执行原`compile-go-tests.ps1`，exec2414实际最终EXIT0，四包test-c及三个传输前函数逐PASS、零SKIP、模型调用0；根原件为`swa-go-3590-01/go-source-01`及`control/go-3590-execution-01.log`。这是主控独立结果，本Worker没有执行或复跑；live/runtime函数、N14/N15后继编译及全部真实功能仍未验。restore17已恢复S36744/UTC20:17:53.696819，原库、环境、配置及本机Orca保全由主控实际核查，当前没有Worker重操作授权。
+
+### 15.2 N16、N17、N18源码返修
+
+原Reviewer`msg_6978c87325db`确认1b的N14/N15对应静态修复，并提出N16真实会话身份和N18实际Go Grant期限；N17由Worker与Reviewer各自从原生定义核实。当前返修固定首次真实get_state的UUID sessionId及绝对sessionFile，后续每次get_state完整比较；首次返回的同一文件用于实际Pi provider link，adapter将该原生link与固定身份绑定，首次和后续输入均保留该关系，账号/options/provider chain在异步等待后也核原件。
+
+N18使用Go原回包中与原invocation一致的实际grant_expires_at。异步批准、完整来源重读和私有材料核查后，原结构化host逐层传递一个同步finalAdmission至原stdio写入队列；队列在实际output.write之前且没有异步等待的边界，再核来源身份/版本、当前session/fence/consumer、原生Job成员及Date.now下的Grant有效期。到期、身份或来源拒绝形成实际写入前拒绝，可能生效的未知仍保留原R及native operation；未伪造时钟或在同一队列递归请求get_state。该期限属于项目Grant，与原生API-key无TTL的政策分别处理。
+
+N17在host现有精确白名单中显式加入唯一`ORCHESTRATION_WORKER_LIST_METHOD`，保留message-methods中的真实Task消费者和原数量/唯一性完整性检查。没有注册全表、制造列表或放宽缺失检查。此项只完成源码修复，原生后台启动尚未运行；T12严格caller与recover另行继续。
+
+实际静态入口`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n16-n18-static.mjs`读取本次13份TS源码的成熟parser语法，日志与退出码保留在`n16-n18-static-01/`；另执行文档来源/本地链接及git diff --check。程序正文、类型检查、编译、真实Grant自然到期、真实Pi身份变化和全部安装/模型用例保持`NOT_RUN`，后继须准确CR及主控单次动态窗口。

@@ -178,7 +178,7 @@ export class JsonlRpcPeer {
   }
 
   /** The dialect may track acknowledgements independently of transport correlation. */
-  send(record: JsonlRpcRecord, signal?: AbortSignal, beforeWrite?: () => Promise<void>): Promise<void> {
+  send(record: JsonlRpcRecord, signal?: AbortSignal, beforeWrite?: () => Promise<void | (() => void)>): Promise<void> {
     if (this.terminalError) {
       return Promise.reject(this.terminalError)
     }
