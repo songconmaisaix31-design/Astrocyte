@@ -25,7 +25,7 @@
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | 原S已在restore-03同源恢复PID43068，创建UTC `2026-10-20T13:41:49.053571Z`，实际程序/环境/配置、唯一127.0.0.1:64505监听、health及原Web字节核对通过。原库完整性/外键和停止区间内容相同检查通过；依赖/生成窗口已收回，当前归原S。恢复后原绝对Orca CLI实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
+| 当前服务与窗口 | 原S43068已按prepare-04保全，于UTC `2026-10-20T14:10:08.237348Z`在stop-04精确退出15，当前停止。停止后新双样本及原库一致备份/window-ready通过，唯一窗口只交原Worker对干净c0源码执行一次build；结束后使用prepare-04/stop-04同一原库/配置恢复准确S。原绝对Orca CLI实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
@@ -37,7 +37,8 @@
 | 第二次窗口准备 | 根忽略目录`prepare-02/backup-resources.json`记录UTC11:00:16、CPU7.2%、可用内存3.529GiB；低于4GiB门槛，prepare命令EXIT1，未备份完成、未停止原S、未交窗口。原件保留于`.verification/swa-cli-v1-control/prepare-02/`；后续依赖/生成结果见本次窗口，候选构建未执行 |
 | 第三次窗口准备 | UTC13:22:33/36的prepare-03两次真实阻塞采样为CPU19.0%/5.2%、可用15.719/15.746GiB，单调间隔3.005秒、BelowNormal；命令EXIT0，准确S12800及实际环境/配置核实、原库一致备份完整性/外键和prepared标记通过；随后精确停止并交付两Stage，本机Orca保持原运行 |
 | 本次依赖/生成窗口 | stop-03实际EXIT0，S12800于UTC13:29:19退出15；停止后双样本CPU43.2%/16.6%、可用12.918/12.808GiB、间隔3.003秒/BelowNormal。原Worker串行执行`next-window.ps1 -Stage dependencies -EvidenceName dependency-02`和`-Stage generate -EvidenceName generate-01`，锁同步/冻结安装/真实类型生成及各自资源检查均EXIT0；pnpm原命令内建镜像超时重试及peer警告保留。仅锁/生成类型提交f08，实际原件在Worker自有忽略目录。没有构建、功能测试、安装或模型调用 |
-| 本次同源恢复 | restore-03实际EXIT0，启动前双样本CPU18.7%/6.8%、可用10.369/10.485GiB、间隔3.002秒/BelowNormal；原库integrity为ok、外键为空、stopped_interval_comparison为equal，恢复使用同一原库。实际S43068及原Orca核查通过。控制脚本仅更新两项实际进程身份，新SHA256为`8e06639aa6c0bf635b037fb82a8b745540ed0dd3a754b15e8220d098652b606d`，已交原Reviewer独立复核，接受前不运行下次prepare |
+| 本次同源恢复 | restore-03实际EXIT0，启动前双样本CPU18.7%/6.8%、可用10.369/10.485GiB、间隔3.002秒/BelowNormal；原库integrity为ok、外键为空、stopped_interval_comparison为equal，恢复使用同一原库。实际S43068及原Orca核查通过。控制脚本两项实际进程身份更新SHA256为`8e06639aa6c0bf635b037fb82a8b745540ed0dd3a754b15e8220d098652b606d`，已获准确报告ebd7880d独立接受，主控完整读取并实际回复hook；没有据此授予产品功能通过 |
+| 第四次构建窗口 | prepare-04实际EXIT0：UTC14:09:55/58 CPU16.4%/49.2%、可用10.706/10.627GiB、间隔3.004秒/BelowNormal；准确环境/配置及原库一致备份通过。stop-04 EXIT0，停止后UTC14:10:09/12 CPU7.7%/7.3%、可用10.684/10.677GiB、间隔3.003秒。原Worker准确干净c0、build-01及候选目录不存在已核；仅授予`next-window.ps1 -Stage build -EvidenceName build-01`一次及成功后的真实版本核对，tracked文件/Git冻结。实际build结果待回执，不含功能测试、安装、服务、信号或模型；原件在根prepare-04/stop-04和Worker自有build-01 |
 | 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
