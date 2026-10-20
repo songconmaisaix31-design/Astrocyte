@@ -253,3 +253,13 @@ pi注册标识及固定同候选执行入口、包内安装器/说明和空闲SD
 UTC11:31:06可用1.774GiB采用主控管理记录中的单次只读观察，未代替双样本准入或窗口交付，本Reviewer没有重复查询。原S、Orca及写域归属保持，M1修复因果不足、原S3与权限未知均未改变。
 
 `.verification/check-revision.ps1 -Previous 4b40495cdab7eb9ffe98d1f30a89b895b33e13dd -Candidate 3d2f4ab88fb155cf821a90380b7933fca20aa86a` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及真实远端检查通过，没有动态重验。
+
+准确3d管理接受hook为`msg_3c7717e261cd`；主控在`msg_2dd9679b6be4`完整读取bc273ad主线报告，确认管理记录接受与程序F10—F12退回分别适用，16本地链接及其他未验/资源观察范围准确；实际读取回复确认本次唤起。
+
+## main后继准确1f99f64d的返修归属记录
+
+结论：**接受准确`1f99f64d59d578954fb943518e34e41cf2ab38ed`的两份管理增量**。按`msg_d994797f5a46`完整读取相对3d的STATUS及首版任务差异，真实远端main同SHA；两路径以外全部已跟踪内容无变化，程序及依赖未纳入main。
+
+记录准确f2的F10—F12、同一Worker返修、bc273ad两报告及主控实际读取两个hook的事实，与原Run和独立报告一致。d7及F04—F09/76的既有静态接受保持，双Worker驱动和故障副本仍为待办，全部动态未运行；资源门槛、原S/Orca归属和无窗口、M1修复因果不足及原S3/权限未知范围保持。此接受仅限管理记录。
+
+`.verification/check-revision.ps1 -Previous 3d2f4ab88fb155cf821a90380b7933fca20aa86a -Candidate 1f99f64d59d578954fb943518e34e41cf2ab38ed` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及远端核对通过，没有重复功能或资源检查。

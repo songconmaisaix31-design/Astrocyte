@@ -452,3 +452,5 @@ worker.start增加真实CPU/可用内存双采样，在原生reserve及模型输
 T00固定公开来源及四原文、T02同候选安装、T13私有服务/缺Grant拒绝和T15旧进程/Orca保全检查都仅形成源码；完整驱动及故障用例继续由原Worker实施。认证配置原件只由将来的实际受限验证定向读取，本Reviewer没有读取原token、环境或SQLite秘密原件，没有执行这些脚本。
 
 `.verification/check-revision.ps1 -Previous d7f21242259739cfb49a4f68a19a1a8f28bcec32 -Candidate 0c6c701daa0ab29995b34d657c463fb2c33d137c` EXIT0，十一路径Git空白、两份Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。f2两个父来源、四份主控原blob及其余程序未变已核；没有编译、安装、执行JSONL读取/PS观察器/fixture、模型或服务。原S12800与无动态窗口保持。
+
+准确f2退回hook为`msg_4329ac9d3bc1`；主控在`msg_2903075f2500`完整读取bc273ad无界面报告，逐项确认准确来源/F10—F12因果、官方及Pi类型依据、其余范围和全部动态未运行，确认返修仍交同一Worker，d7/F04—F09/76原接受保留；实际读取回复确认本次唤起。
