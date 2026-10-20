@@ -79,20 +79,50 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 | automation/session search/push/state-rule更新 | 原orcad启动会主动安装这些服务，部分涉及网络和会话发现 | 不在首版composition启动。结构化journal、已有特定会话读写继续可用，无全局会话扫描 |
 | browser/desktop/mobile/remote | 原runtime具备相关类型、注册和资源 | 产品方法表不注册相应入口，不安装visuals插件或浏览器资源；保留原上游源码的必要静态依赖，不把未注册能力写作产品功能 |
 
-保全检查比较明确配置文件和认证文件的字节、ACL及持有进程，不遍历私人会话正文。运行中原Orca可以合法写入自身日志/状态，不能要求整棵活跃目录逐字节不变；需要记录自然写入并证明产品的实际文件I/O只在获准范围。原客户端自然刷新认证时，还须从实际writer及进程身份归因，证明产品无写入/刷新；无法归因即证据不足，不能仅凭差异将本机状态改回旧值。动态时使用本项目进程的Windows文件/进程追踪，认证只记录比较结果，不把原件放进报告；缺少可用追踪权限/工具时保留相应隔离证据未验，不自行提权或安装系统驱动。
+保全采用以下当前用户权限可执行的组合，实施脚本使用系统PowerShell/.NET和随包Node，不需要内核采集、提权、性能组或驱动：
+
+| 对象与具体观察方法 | 准入、实际结果与判据 |
+| --- | --- |
+| 每个实际可写消费者 | 按上表及构建metafile核真实调用闭包；为profile/SQLite、metadata/lock/key、daemon/history、launcher、session/journal、Pi settings/cache逐项记录注入位置、允许根和实际文件。写端在打开/创建前核规范路径及所属，所有可写路径限定DataRoot或本项安装输出；禁止只审顶层环境变量。实际SQLite以`node:sqlite`的`PRAGMA database_list`核主文件位置，并查真实Run/Task/Dispatch/session记录 |
+| 路径与端点 | 安装器及写端用Go/Node真实路径解析、Windows文件属性/reparse核验及既有windows-security读取ACL；拒绝本机Orca/账号根、祖先/后代重合和重定向到它们的junction。用本项自有junction指向受保护根作真实拒绝输入，不向目标试写。`Get-NetTCPConnection`核loopback端口及OwningProcess；真实RuntimeClient核私有metadata中的runtimeId/endpoint/PID/startedAt，私有锁冲突和占用端口均在使用前拒绝 |
+| 进程与关闭目标 | `Get-CimInstance Win32_Process`定向读取已知runtime/daemon/helper/Worker的ProcessId、ParentProcessId、CreationDate、ExecutablePath；与原生host/incarnation及精确所属记录互核。只保留非秘密字段；创建时间或所属失配时在调用树终止前拒绝。原生退出观察与后代检查证明实际全树退出，不能用一次进程枚举的缺项推断退出 |
+| 原Orca配置和认证 | T00按真实路径解析确定原Orca安装、profile/config、Agent配置及本次选定Codex认证文件清单；用`.NET FileStream(FileMode.Open,FileAccess.Read,FileShare.ReadWrite\|FileShare.Delete)`读入内存比较字节，用`Get-Acl`比较owner/SDDL，仅保存路径类别、相等布尔值和变化时间，不保存秘密字节。读取保持原客户端共享权限，及时关闭读取句柄。T02、并发期间、停止A后和T15重复；同时用原绝对CLI的`status --json`核原runtime/daemon/会话归属及查询可用 |
+| 定向目录变更通知 | 在上述明确配置/认证父目录使用`.NET FileSystemWatcher`，按FileName/DirectoryName/LastWrite/Size/Security通知记录创建、修改、删除、重命名及Error；范围只含已审目录，不读取会话正文。先在本项自有目录实际验证通知，再观察受保护目录。该接口不提供writer PID，不能独自归因或证明没有写入；溢出/不可读或自然变更无法解释时保留相应范围证据不足，不把无事件当完整隔离证明 |
+
+上述文件变更通知的能力和缓冲区溢出限制依据[Microsoft FileSystemWatcher文档](https://learn.microsoft.com/en-us/dotnet/api/system.io.filesystemwatcher?view=net-9.0)。实际隔离结论依赖写入消费者准入、精确运行事实和前后保全的共同结果。原客户端可正常写自身日志/状态或更新认证；发生变化时核原客户端实际记录及产品写端和SDK来源，无法解释的具体文件保留证据不足，不回写原值。不要求活跃Orca整棵目录逐字节不变，不宣称恶意同用户隔离或系统调用级全量追踪通过。
 
 ### 3.2 从普通终端或原有Agent取得真实控制身份
 
 原生`runCreate`要求stable pane/session，普通外部终端不能凭空取得该身份。方案增加一个**实际运行的控制helper**，只承担已有命令的传输和身份绑定，无模型或自动调度循环：
 
 1. `swa controller open`通过现有项目scoped token向Go App请求，重查项目、批准及允许动作。后台在私有runtime中创建真实后台PTY，启动随包`node swa-controller.js`；保存原生terminal/pane/process incarnation及实际PID/创建时间。该内部创建传入真实`launchConfig`，其`agentCommand/agentArgs/agentEnv`仅描述随包helper命令，不传`startupAgent/launchAgent`。`O:src/main/agent-launch/agent-launch-token.ts:agentLaunchTokenFor`仅在launchConfig存在时mint token，`terminal/launch/terminal-create.ts`负责环境注入和PTY commitment；普通空壳terminal没有这项token，不能当控制身份。此helper不登记成模型Agent，不伪造hook状态。
-2. helper从自己原生launch环境读取宿主产生的真实token/handle和产品metadata，经RuntimeClient发起请求。用户命令不接受`--from`、pane、consumer、actor或launch token；控制helper只以自己的实际身份调用runCreate/runUse和原生任务/Worker方法。
+2. helper从自己原生launch环境读取宿主产生的真实token/handle和产品metadata，经RuntimeClient发起请求。open只创建并核实helper，不创建Run；每个controller只服务一次用户任务，`task create`随后由它创建一个Run及根Task。用户命令不接受`--from`、pane、consumer、actor或launch token；控制helper只以自己的实际身份调用runCreate/runUse和原生任务/Worker方法。
 3. 外部终端和已有Agent使用同一`controller`选择器及原有项目token。后台在每次写入核准主体、项目、批准、root Task、controller的完整活身份后，经原生terminal输入通道交付命令；helper只接收版本化JSON动作，由成熟JSON解析器解析，不执行调用者传入的shell字符串。命令结果使用原生request回执及私有终端输出返回；helper传输自身不另建持久队列或任务表。
 4. 严格产品admission调用原生精确launch校验，不能因上游核验返回null就沿宽松declared-handle分支放行。helper的输入接受与请求执行分别记录；传输未知时按原request ID查询，不再次terminal.send。真实收到的correlation ID用于定位，不充当权限凭据。
 5. 本机Orca内的原有Agent调用swa时，其ORCA环境属于另一个宿主。产品入口只用产品controller，不把该环境转换成产品Worker或human；产品子进程清除外部Orca身份、pairing、account及remote选择变量，再注入自己的真实环境。父进程环境不改动。
 6. runtime重启后，能核实原生恢复证明的原helper才继续；证明不足返回`controller_unverifiable`，只读查询仍可用。确认原helper真实退出后才允许创建新helper并由它调用原生runUse推进consumer generation。未知时不重绑、不创建竞争控制端。
 
 控制helper是需要实现并真实验证的适配部分，不能由当前开发终端的身份代替。本地owner token与同一Windows用户的权限边界仍属协作式控制；不宣称阻止恶意同用户读取其可读凭据。应用层项目/批准检查不因这项边界而省略。
+
+### 3.3 controller请求、原生去重与恢复
+
+准确上游`shared/orchestration-rpc-contract.ts:isDurableMutation`未包含`terminal.create/close`。`terminal-lifecycle-methods.ts`将create交给`dedupeTerminalCreate(clientIdentity,worktreeSelector,clientMutationId,reconcileExisting,run)`；`terminal-create-deduplication.ts`解析真实workspace，以原生`deriveRemoteRuntimeTerminalCreateHandle`从clientIdentity、workspace ID和clientMutationId得到确定handle，并传入`preAllocatedHandle`。`RemoteRuntimeTerminalCreateIdempotency`只合并in-flight，成功或失败均移除；`reconcileExisting`找不到时会执行新创建，不能承担未知操作的只读恢复。
+
+产品需要在**同一原生mutation executor及orchestration.db的mutation_receipts**中登记准确方法名：`swa.controllerOpen`、`swa.controllerClose`、`swa.taskCreate`、`swa.controllerDeliver`。这些为待实施的产品composition方法，非声称上游已有；将它们加入现有durable方法分类并复用`OrchestrationMutationExecutor.run`、原生canonical payload比较、begin/checkpoint/complete receipt及`orchestration.requestShow`。没有新增表、执行状态或payload hash实现。Go App先核真实项目主体/批准，再由受保护私有RuntimeClient发起；入口不允许外部原始RPC，普通CLI输入不能选择caller fingerprint。
+
+| 公开动作与请求R | 精确原生映射、保存位置及副作用顺序 |
+| --- | --- |
+| `controller open` | Go App规范化并核实际project、workdir、批准与主体，把这些非秘密字段全部放入`method=swa.controllerOpen`的原生payload，`orchestrationRequestId=R`，使用私有runtime真实local caller fingerprint。原生receipt在任何PTY副作用前pending；其checkpoint保存真实workspace ID、固定clientIdentity=`swa-controller-local`、clientMutationId=`R/controller-pty`、调用原生derive函数所得expected handle及stage。产品handler直接复用原生`runtime.dedupeTerminalCreate`，明确传上述clientIdentity、`worktree=id:<真实ID>`、clientMutationId、`reconcileExisting=false`；callback调用真实`runtime.createTerminal`，传原生preAllocatedHandle及§3.2真实launchConfig。这与原terminal.create handler使用相同的实际原生操作，不依赖RuntimeClient未提供的clientId参数。创建后保存实际pane/host/incarnation/PID/创建时间；真实helper ready和launch核验满足后才complete receipt，controller selector为该原生handle，runId此时为空 |
+| `task create` | 在同一原生executor先登记`method=swa.taskCreate,R`及精确controller绑定，checkpoint记录子请求`R/run-create`、`R/root-task`。只向真实helper输入一次结构化命令；helper以自身真实身份执行`orchestration.runCreate`，header请求为`R/run-create`，随后以得到的实际runId执行`orchestration.taskCreate`、请求`R/root-task`。两项均有各自原生receipt；返回真实Run/根Task后完成外层receipt。失败保留已创建Run/根Task，禁止用第二个controller/Run替代；controller已有根Task时拒绝创建另一用户任务 |
+| `controller close` | 原生`method=swa.controllerClose,R`的payload固定controller handle及当前open receipt中的精确incarnation/host/进程身份，先重核授权和所有所属Worker已退出/归档/释放。checkpoint在关闭前保存exact identity及stage，然后调用原生精确`terminal.close`和全树退出观察；没有Run状态删除动作。全树退出明确时complete，未知保持pending/EXIT6及占用，不能借close清除残留 |
+| 其他经helper的写操作 | `swa.controllerDeliver`以公开R登记原生outer receipt，payload含真实主体/project/controller/动作及完整输入；在一次terminal输入前checkpoint保存固定子请求`R/native`、精确controller绑定及stage。helper仅一次执行对应原生方法，native请求为`R/native`；`workerStart(spec,parent=<根Task>)`在原生接受内创建子Task/Dispatch，无先行独立taskCreate。send定位真实input operation。外层unknown不再次terminal.send，native及外层receipt均可由公开R查询；只有原生动作明确完成才完成outer receipt |
+| 无controller的查询 | 增加`swa request show --project P --request-id R --json`，用于open回执丢失而没有controller selector时；与`--controller C`互斥。Go App核原主体/project，再读取原生requestShow和相关native状态；不启动helper、不发送输入、不根据absent创建资源。返回open/close checkpoint、原始副作用身份和真实观察；项目不匹配在输出前拒绝 |
+
+同一公开R的所有controller/task组合步骤仅使用上述固定子请求名称，映射在原生receipt中保存，不放在CLI缓存。native caller fingerprint为同一私有runtime的真实local身份，因此同R更改project、主体、workdir、controller或正文会由原生payload比较得到`request_mismatch`，不能换clientIdentity回避冲突。并发同R由原生executor合并，已完成同R只回原receipt；PTY的in-flight去重另外使用原生clientMutationId，不把transport response ID当去重键。
+
+open在PTY请求开始后抛出或失联时，产品handler将该已可能发生的效果返回`operation_unknown`，保留原生pending及checkpoint；不能让原executor的普通异常清理把它变成可重建。close及task create也在首次外部副作用前checkpoint，之后的异常保持相同unknown规则。此处错误转换保留具体cause/stage和已有身份，不捕获后继续执行。原executor对pending非release动作本就拒绝再次invoke，产品不增加自动恢复执行分支。
+
+响应丢失或runtime重启后，查询按原checkpoint只读核精确handle、真实daemon `listProcesses`、持久PTY/session归属及原生Run coordinator/子请求receipt。已创建PTY而尚无Run的状态保留该helper；Run已创建而根Task未确认时返回原Run及pending子请求。原生reconcile可核exact handle的既有PTY，但产品查询不得调用会在无匹配时spawn的`dedupeTerminalCreate(...,reconcileExisting=true,...)`。未知、无inventory、缺handle或多重匹配均不创建、不重发、不释放；单独absent不证明无副作用。需要新controller时先获得原精确helper和后代已退出的正向证明，再由新的明确请求创建；绑定已有Run仍按§3.2真实runUse及generation规则。
 
 ## 4. 当前Agent与非Aliyun受限正向方案
 
@@ -108,7 +138,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 ### 4.2 复用Pi原生provider和只读OAuth
 
-准确接口来自`P:dist/index.js`导出的`ModelRuntime`、`createAgentSessionServices`、`createAgentSessionFromServices`、`createAgentSessionRuntime`、`SessionManager`、`SettingsManager`、`runRpcMode`，以及对应`.d.ts`、`docs/sdk.md`、`examples/sdk/13-session-runtime.ts`。采用产品`Pi SDK 1.0.1`入口，调用真正的`runRpcMode`；不仿造pi CLI、不手写Pi原生协议或模型HTTP。
+准确接口来自`P:dist/index.js`导出的`ModelRuntime`、`DefaultResourceLoader`、`createAgentSession`、`createAgentSessionRuntime`、`SessionManager`、`SettingsManager`、`runRpcMode`，以及对应`.d.ts`、`docs/sdk.md`、`examples/sdk/13-session-runtime.ts`。采用产品`Pi SDK 1.0.1`入口，调用真正的`runRpcMode`；不仿造pi CLI、不手写Pi原生协议或模型HTTP。
 
 `P:node_modules/@earendil-works/pi-ai/dist/providers/openai-codex.js`使用原生`openai-codex-responses` API及`https://chatgpt.com/backend-api`；其catalog文件`providers/data/openai-codex.json`包含`gpt-6.1-sol`。OAuth来源`auth/oauth/openai-codex.js`具有真实OAuth flow与toAuth，使用access bearer；产品不变更endpoint、provider、账号或模型，未通过就返回具体错误。
 
@@ -118,14 +148,21 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 2. `read/list`仅向同一`openai-codex` provider返回真实OAuth字段及非秘密元数据。原access/refresh/account字段保持来源，expires来自真实标准声明；不伪造有效期，不把OAuth改称API key，不创建可写认证副本。
 3. 每次read先核真实有效期足以覆盖本次最长请求和SDK五分钟刷新界限；不足或无法解释即在模型请求前拒绝。read按当前原件取快照，不刷新、不撤销、不写回本机登录。
 4. `modify/delete`立即抛出明确只读错误，**不执行传入的callback**。原生`auth/resolve.js:resolveStoredOAuth`只在`credentials.modify`的callback中调用`oauth.refresh`；`models.js:resolveRefreshCredential`亦如此。两条路径都在网络刷新之前被拒绝；不能先refresh再阻止保存。
-5. `ModelRuntime.create({credentials, modelsPath:null, allowModelNetwork:false, refreshOnCreate:false})`使用真实已安装catalog；禁用启动时所有provider的catalog/auth枚举及网络刷新。显式`getModel('openai-codex','gpt-6.1-sol')`取得原生对象，随后仅对该模型调用getAuth；不枚举其他provider的环境/云账户。产品Pi options适配读取真实get_state及这个固定catalog项，不调用原实现全量get_available_models。没有有效模型/认证时立即失败，拒绝SDK默认选其他model的结果。
+5. `ModelRuntime.create({credentials, modelsPath:null, allowModelNetwork:false, refreshOnCreate:false})`注册SDK自带的静态catalog对象，不执行初次catalog/auth refresh；这些随包元数据的注册仍涉及全部内置provider，不宣称已经移除它们。后续只调用真实`refresh({providers:['openai-codex'],allowNetwork:false})`：源码明确分支只更新该provider的catalog及`refreshProviderAvailability`，其getAvailable/checkAuth/credentials.read均限定该ID；不会进入全量queueAvailabilityRefresh/credentials.list。检查aborted、errors、getError，任何错误立即失败。再显式`getModel('openai-codex','gpt-6.1-sol')`及该模型getAuth，核实际OAuth来源和模型身份。产品不探测其他provider的环境/云账户，不调用全量get_available_models，也不把静态catalog注册说成实际认证通过。
 6. 原凭据自然被原有Codex更新时，下次read校验同一来源与当前授权。产品不写原auth，不复制刷新权；解析错误保持失败。后续产品长期登录能力另行设计，本次可通过重新读取仍由原客户端正常管理的当前有效access继续获准固定任务。
 
 ### 4.3 工具、扩展、输入和实际完成
 
-创建服务时显式私有agentDir；`SettingsManager.inMemory`提供固定设置，packages和各资源路径为空、`defaultProjectTrust:'never'`且项目trusted=false；`resourceLoaderOptions`将`noExtensions/noSkills/noPromptTemplates/noContextFiles/noThemes`均设为true，未传入任何additional资源或extensionFactories。直接提供非空固定systemPrompt及`appendSystemPrompt:[]`，在原生discovery分支之前阻止SYSTEM/APPEND文件发现；不使用加载后才执行的extensionsOverride等过滤器承担准入。只读公开项目输入由Workspace固定提供，不继承项目本地配置。
+使用公开`createAgentSessionRuntime(factory,{cwd,agentDir,sessionManager})`。该函数真实调用factory并用返回的session/services构造原生AgentSessionRuntime。factory按以下顺序执行，所有路径均显式私有，不调用`createAgentSessionServices`：
 
-`createAgentSessionFromServices`传入`noTools:'all'`、`tools:[]`、`customTools:[]`。源码`dist/core/sdk.js`把此组合转换为空allowlist及空active tools；`DefaultResourceLoader`不加载扩展/MCP。启动与每次输入前检查原生`session.getActiveToolNames()`为空、注册工具集合及resource列表为空，并从实际请求前原生session状态核对。仅零工具调用次数不能通过该检查。
+1. 用上述显式选项创建真实ModelRuntime；`SettingsManager.inMemory`提供固定设置，packages和各资源路径为空、`defaultProjectTrust:'never'`且项目trusted=false。
+2. 直接`new DefaultResourceLoader`并`await reload()`；`noExtensions/noSkills/noPromptTemplates/noContextFiles/noThemes`均为true，additional资源和extensionFactories为空。非空固定systemPrompt及`appendSystemPrompt:[]`在原生discovery之前阻止SYSTEM/APPEND发现；不用加载后的Override过滤器承担准入。核实际扩展和pending provider/native/virtual registrations为空，非空立即失败。
+3. 仅执行§4.2的provider定向refresh并检查真实返回的errors/aborted/auth snapshot，取得并验证固定model及真实getAuth；没有选定OAuth或来源变化则在首次prompt前失败。原生`isUsingOAuth/hasConfiguredAuth`来自该次真实定向snapshot，不填假状态。
+4. 构造符合公开`AgentSessionServices`接口的对象，字段为实际cwd/agentDir/modelRuntime/settingsManager/resourceLoader/真实diagnostics；调用`createAgentSession`并显式传全部真实对象及固定model/thinkingLevel、sessionManager和空工具参数。`sdk.js`在已有modelRuntime/resourceLoader/model时不创建默认来源、不reload、不寻找默认model；modelFallbackMessage或诊断错误立即失败。factory返回真实session结果、同一services和diagnostics，由原生runtime接收后运行真正`runRpcMode`。
+
+该组装没有改写依赖或替换refresh；定向refresh执行真实SDK逻辑，services包含真实已加载对象。后续允许的prompt继续走同一modelRuntime及只读store；会话替换等非白名单RPC不开放，factory本身仍保持相同限制。只读公开项目输入由Workspace固定提供，不继承项目本地配置。
+
+`createAgentSession`传入`noTools:'all'`、`tools:[]`、`customTools:[]`。源码`dist/core/sdk.js`把此组合转换为空allowlist及空active tools；`DefaultResourceLoader`不加载扩展/MCP。启动与每次输入前检查原生`session.getActiveToolNames()`为空、注册工具集合及resource列表为空，并从实际请求前原生session状态核对。仅零工具调用次数不能通过该检查。
 
 禁用agent retry、provider retry、autoCompaction、cacheWarming，transport固定`sse`，拒绝modelFallbackMessage及任何模型身份变化；这些来自已读取`docs/settings.md`的真实设置及对应SettingsManager。原Pi API的默认transport auto与retry设置不沿用。内部RPC只允许`get_state/get_messages/get_session_stats/get_last_assistant_text/prompt/abort`六项；不向外暴露`bash`、全provider枚举、任意工具启用、任意model切换或session目录选择。原Orca Pi options查询依§4.2改为仅当前真实state，不能冒充已进行全provider动态catalog核查。
 
@@ -200,15 +237,15 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 ## 6. 最少完整CLI规则
 
-以下为待审核的精确拟定命令，不是当前可执行功能。变更后CLI/HTTP/App共用同一准入语义；所有写命令要求显式`--request-id <UUID>`，原生mutation receipt保留该键。上下文通过UTF-8文件传入；禁止在命令行正文中放凭据。
+以下为待审核的精确拟定命令，不是当前可执行功能。变更后CLI/HTTP/App共用同一准入语义；所有写命令要求显式`--request-id <UUID>`，按§3.3映射原生outer/child mutation receipt，公开键及每一步真实身份均保留。上下文通过UTF-8文件传入；禁止在命令行正文中放凭据。
 
 | 命令 | 输入与实际结果 / 复用 |
 | --- | --- |
 | `swa serve --data-dir D --port N --json` | 必须明确私有根和端口；打印真实readiness/版本/路径/身份的非秘密部分。缺依赖、锁冲突或端口占用失败，禁止改用其他runtime/端口 |
 | `swa status --json`、`swa capabilities --json` | 原生runtimeId/startedAt、数据库authority、daemon/provider支持/当前证据与限制；读操作不调用模型、不隐式启动后台 |
-| `swa controller open --project P --workdir W --request-id R --json` | 创建§3真实helper；验证当前项目/批准/写域，回controller selector及真实native身份。输入的P必须是实际Workspace ID |
+| `swa controller open --project P --workdir W --request-id R --json` | 创建§3真实helper；验证当前项目/批准/写域，回controller selector及真实native身份，此时没有Run。输入的P必须是实际Workspace ID |
 | `swa controller show --controller C --json`、`close ... --request-id R` | 精确观察/关闭自有helper；close需所属全部Worker已退出/释放，否则拒绝。不得用terminal全量关闭 |
-| `swa task create --controller C --spec-file F --request-id R --json` | 在真实Run中创建根Task；F固定目标、公开来源版本、scope与成功条件，返回runId/root taskId及已有批准引用 |
+| `swa task create --controller C --spec-file F --request-id R --json` | 依§3.3创建真实Run及根Task；每controller一次用户任务。F固定目标、公开来源版本、scope与成功条件，返回runId/root taskId及已有批准引用 |
 | `swa task show --controller C --task T --json`、`list --controller C` | 原生根/子Task/Dispatch及只读汇总；原请求未决、启动/停止未知和资源占用分别展示 |
 | `swa worker start --controller C --task T --name A --agent pi --model openai-codex/gpt-6.1-sol --input-file F --request-id R --json` | 新建T的子Task及原生Worker Dispatch，以真实Pi SDK执行固定公开输入；ready只在真实turn开始证明满足时返回，接受但未证明开始保持unknown |
 | `swa worker show --controller C --dispatch X --json`、`list --controller C --task T` | 精确Dispatch、子Task、runtime/session/fence、PID/创建时间、Agent实际状态和root/tree exit；不只输出PTY是否live |
@@ -218,7 +255,7 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 | `swa worker release --controller C --dispatch X --request-id R --json` | 只对原生允许结算状态执行冻结输出与释放；未知、人工接管、缺归档或后代未退出时不释放。重复同键只回原receipt |
 | `swa task result --controller C --task T --output-dir O --json` | 提取根及各Worker真实输出、来源、检查引用、版本和已知usage；输出路径须不存在或由本命令精确拥有，禁止覆盖其他文件 |
 | `swa task complete --controller C --task T --result-file F --request-id R --json` | 当前控制端确认固定成功条件和真实结果，全部相关Worker退出/归档后调用原生taskUpdate；失败或unknown不能完成；完成不表示用户采用或Git发布 |
-| `swa request show --controller C --request-id R --json` | 查原生mutation receipt及原run/task/dispatch/input operation，不生成新请求。无receipt仍不能单独证明未发生外部输入 |
+| `swa request show --controller C --request-id R --json`或`--project P` | 两种scope互斥；project形式支持open未回selector时查询。按§3.3查outer/child原生receipt、checkpoint及原run/task/dispatch/input operation，不生成新请求。无receipt仍不能单独证明未发生外部输入 |
 
 CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。envelope统一携带`ok/request_id/runtime_id/controller/run_id/task_id/dispatch_id/result/error`中本操作存在的字段，保留原生`code/message/retryable/required_action`和未知语义；不输出token或原账户路径。文字模式显示相同状态与明确下一动作；不通过匹配自然语言决定状态。
 
@@ -259,11 +296,11 @@ CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。e
 | --- | --- | --- |
 | T00 来源、基线与授权 | 原件执行`git rev-parse HEAD`、`git show <准确SHA>:<四文件>`；匿名GET公开repo及准确commit；`Get-Command orca -All`、`orca status --json`和只读进程/监听查询；核现有Workspace真实项目/Grant | 固定公开原件、允许输入和成功条件可定位；记录原Orca二进制解析、metadata/runtimeId、PID/创建时间/daemon、配置字节及ACL比较基线；不读取全体会话正文；缺批准保持明确拒绝 |
 | T01 构建及闭包 | 获写域/窗口后执行`pnpm install --frozen-lockfile`、产品`pnpm build:swa-runtime`、`go build -p=4 ./cmd/swa ./cmd/server`；逐个加载实际随包entry/children及真实SQLite，检查构建metafile | bundle/Node/native架构匹配、Node24.21.0、无Electron执行依赖、所有实际fork/dynamic依赖在包内；所有TEMP/TMP归本任务忽略目录。不能运行上游mock测试当产品证据 |
-| T02 安装与私有隔离 | 使用T01同一候选执行产品`install.ps1 -InstallRoot ... -DataRoot ...`；绝对路径运行`$swaBin --version`和`serve --data-dir ... --port ... --json`；另对已占用真实端口/原Orca根尝试启动 | 指定端口冲突EXIT5且无另选端口；重合/reparse共享路径拒绝；私有profile-state.db/orchestration.db/pipe/daemon/key正确。安装前后原orca解析/进程/配置及公开status可用；不启动Electron/自动启动或全局hook修改 |
+| T02 安装与私有隔离 | 使用T01同一候选执行产品`install.ps1 -InstallRoot ... -DataRoot ...`；绝对路径运行`$swaBin --version`和`serve --data-dir ... --port ... --json`；按§3.1逐一核实际可写消费者、`PRAGMA database_list`、metadata/pipe/锁、CIM PID/创建时间及监听；对已占用真实端口、原Orca根及本项junction指向原根提供真实拒绝输入 | 指定端口冲突EXIT5且无另选端口；路径在写入前拒绝，不能试写受保护根；私有profile-state.db/orchestration.db/pipe/daemon/key及所有实际session/cache根正确。§3.1定向配置/认证字节/ACL、目录通知和原绝对CLI status一起核保全；全局迁移/hooks/账号消费者源级关闭。当前权限执行，无内核采集前置；具体不可解释变化保持证据不足 |
 | T03 控制身份及权限 | `controller open/show`及`task create`；使用真实过期/撤销或缺失项目token、另一个真实项目/Run/旧controller访问；尝试CLI `--from`/human参数 | 仅真实helper及当前consumer可写；未知flag EXIT2，无效主体EXIT3；无headerless bootstrap调用、human cookie或伪consumer；Controller PID/创建时间和真实native pane可查；旧代请求拒绝 |
-| T04 Pi认证及ToolsOff | `capabilities`；启动无用户prompt的Pi SDK准备，读真实model/资源/工具状态；随后一个固定公开输入。使用本项自有SDK准备会话调用真实只读CredentialStore.modify(callback)，callback仅尝试创建本项自有标记文件；必须在callback执行前拒绝，原生调用顺序审查另核refresh只在该callback内部 | provider/model为原生openai-codex/gpt-6.1-sol、工具allowlist/active/扩展/MCP/skills/templates/context文件均空、固定system输入可核。modify/delete在callback执行前拒绝且没有刷新HTTP；实际凭据字节未变。短期原凭据只能等待自然进入实际界限，未命中则该分支未覆盖；不造token/有效期，不因测试有缺陷触发真实refresh。Codex受限路径真实拒绝 |
+| T04 Pi认证及ToolsOff | `capabilities`；无prompt准备真实Pi SDK并按§4.3 factory顺序加载。首次prompt前检查真实定向refresh结果、auth snapshot及getAuth来源，CredentialStore在实际read/list/modify/delete入口记录非秘密provider ID和操作，未知ID立即拒绝；从所用源码调用闭包核没有全量refresh、默认来源或其他provider环境/云账户探测。核资源/工具及设置后发送固定公开输入。自有准备会话调用真实只读modify(callback)，callback仅尝试创建本项自有标记文件 | 实际凭据操作集合仅openai-codex、没有list及修改callback执行；refresh errors空/aborted=false且真实snapshot为OAuth，provider/model正确。静态内置catalog的存在与实际认证来源分别记录；其他provider操作一次即失败，不能填undefined掩盖。工具allowlist/active/扩展/MCP/skills/templates/context文件均空、固定system和cache/retry/compaction关闭可核。modify/delete在callback前拒绝且没有刷新HTTP；凭据保全按§3.1核。自然短期原件未命中保持该分支未覆盖，不造token/有效期。Codex受限路径真实拒绝 |
 | T05 启动和首输入 | 用真实不存在/不可执行的本任务入口以及正确入口分别`worker start ... --request-id ...`；记录native启动、input、turn事件和session自产文件 | 预启动失败无模型输入，native失败stage/residual真实；成功记录accepted与真实started。真实观测只到accepted时EXIT6且保留Dispatch，不能填ready |
-| T06 幂等与客户端断开 | 同时发两个相同R/正文的真实请求，再同R改正文；实际提交后只终止本项CLI等待进程，`request show`/`worker show/read`查询 | 只有一份原生Task/Dispatch/对应输入；不同正文冲突。CLI退出后同一原生会话继续。没有receipt不能作为安全重发证据；未知不换键/不第二次输入 |
+| T06 幂等与客户端断开 | 并发两个同R/同正文`controller open`，再同R改真实project/workdir；真实PTY创建后只断开本项CLI响应连接，用`request show --project P`查询；另在helper已创建、Run已创建及根Task未确认各实际边界终止本项等待/控制连接，检查§3.3原生checkpoint/子请求；runtime重启后重复只读查询。close同R并发、异controller正文及实际关闭后丢响应同样验证。对worker start/send再执行同R并发、异正文及真实提交后断开查询 | 每R仅一个真实helper及相应确定native handle；open不创建Run，task create至多一个Run/根Task，worker start仅一个子Task/Dispatch/输入。异正文`request_mismatch`；同R完成回原receipt，pending保持unknown及原占用，查询不创建/重发/关闭。真实命中副作用后响应丢失窗口才算该分支通过；未命中INCONCLUSIVE。核outer receipt及R/controller-pty、R/run-create、R/root-task或R/native映射实际存在；原生pending缺记录不证明无副作用 |
 | T07 输出、游标及成果来源 | `worker read --source transcript --limit 1`后按cursor分页；交叉把A的真实cursor用于B；`task result --output-dir ...`；在自有已归档副本做真实文件替换/缺失检查 | 真实消息/source/session/Dispatch对应，跨来源拒绝；结果保留完整来源、限制及unknown usage；缺原件明确失败，无terminal退路；导出不覆盖已有文件、不写出允许目录 |
 | T08 资源与存储拒绝 | 同一批准max-workers=2的真实任务已占两席时请求第三名；在本项自有DataRoot施加真实只读/占用SQLite条件；CPU/内存门限仅用实际双采样结果 | 第三名在模型输入前拒绝；失败写入不继续启动/发送。已外部执行但结果写失败保留原request和unknown。无自然低资源情况时不声称内存门限动态已覆盖；不替换采样器 |
 | T09 进程所有权及后代 | 本项自有普通Node生命周期fixture创建根与真实后代，记录PID/创建时间；另起无关fixture进程，把其真实身份及旧incarnation用于控制；fixture不模拟Agent | 自有精确目标可停止；失配/无关目标被拒绝且原无关进程继续；根退出后后代仍活时tree不为exited、不释放。PID实际复用未发生不登记复用竞争通过 |
@@ -272,7 +309,7 @@ CLI stdout在`--json`下只包含一个完整JSON envelope；诊断写stderr。e
 | T12 重启与控制端接续 | 在本项Worker输入已接受后，仅停止重启本项runtime，保留真实库、daemon及session；用原request查询，再核原helper/Worker | 原始输入不重发；可证原owner时恢复同一身份，否则真实unknown。新控制端只在旧helper真实退出后合法runUse、generation变化；旧controller不能继续写。没有证明全部structured进程存活时不宣称重启不中断 |
 | T13 安装后同一任务双Worker | 按§7.3完整执行一次任务，全部CLI来自T02同一安装候选；A/B输入不等前一结果即提交，分别观察并停止A、B继续 | 必须满足§7.3每项；无真实模型执行重叠即失败/证据不足，不能以两PID/两行列表代替。任务成果来自实际输出 |
 | T14 失败及准入回归 | 使用真实缺失依赖文件的本项候选副本、失效批准、未知source、原生返回的真实认证拒绝/限流/网络失败；静态覆盖输入校验与退出映射 | 明确失败及unknown状态、退出码和required_action一致；不换provider/模型/目录，不重发；只保留实际触发的故障覆盖。正式验收候选不修改，副本失败不拼成正式成功 |
-| T15 最终保全和清理 | T13后及本项服务退出后重复T00原Orca公开CLI/解析/配置/认证/进程/监听观察；关闭本项owned Worker/helper/daemon，核全树，再由主控恢复原S | 原Orca仍可公开CLI查询、原进程归属和配置保持；产品无全局写入/认证刷新。全部本项owned进程实际退出或明确报告unknown残留；不删除未知文件/进程，原S恢复由主控实际核实 |
+| T15 最终保全和清理 | T13期间、停止A后、T13后及本项服务退出后，按§3.1重复原绝对CLI公开status、`Get-Command orca -All`、定向CIM/监听/metadata和配置/认证内存字节/ACL比较，检查定向目录通知及所有实际写端路径；只关闭本项owned Worker/helper/daemon并核全树，再由主控恢复原S | 原Orca公开查询可用、解析不变、原进程及会话归属保持；源级全局副作用关闭和实际私有写端均核实，认证另按T04刷新前拒绝验证。自然变化按真实来源解释，无法解释的具体范围保留证据不足；通知溢出不能填无变更。全部本项owned进程实际退出或明确unknown残留；不修改全局审计/原配置或终止非所属进程，原S由主控实际核实 |
 
 ### 7.3 同一安装候选的一次双Worker任务
 
@@ -325,13 +362,11 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 当前待独立审核的事项是本报告的准确方案与T00—T15；主控已批准唯一原生账本及Pi静态调查方向，未授予程序写入或动态窗口。未回答的新权限问题只阻塞依赖部分，普通命名和组织沿此方案处理。没有把后台安装归属旧选项保留成整体阻塞。
 
-主控要求提前核查文件追踪的现成条件，本次只读结果为：系统自带`C:/Windows/system32/wpr.exe`、`logman.exe`、`wevtutil.exe`存在；`wpr -profiles`列出FileIO，`logman query providers Microsoft-Windows-Kernel-File`返回真实provider及WRITE/DELETE/RENAME等keywords、EXIT0。当前Windows token的ElevatedAdministrator=false，PerformanceLogUsers/PerformanceMonitorUsers均false，当前权限列表未发现SeSystemProfilePrivilege；未发现Procmon可调用入口或进程。工具存在和provider查询成功不能证明当前token可以采集，未启动WPR/ETW，未提权或安装驱动。
-
-因此T02/T15所需隔离证据在动态开始前仍有明确准入条件：主控须安排获准且实际具备权限的采集执行者，并先核采集范围、现有trace会话及产品PID/创建时间过滤；当前Worker token没有实际采集证明，不能直接把全机FileIO默认采集作为获准范围。使用WPR时需要独立instance、专属recordtempto和输出根，只停止自己创建的trace，不能取消其他会话。没有满足这些条件时T02/T15必要隔离验收保持阻塞，不能豁免、降低标准或以配置快照单项代替全部证据；主控可继续独立审核及其他不依赖该条件的工作。
+原Reviewer准确`142869e5ddb7b06a1a1f45be978dbd1c595a98d1`已按H01—H18独立审查并退回5523。F01/F02依本报告§4的公开factory/定向provider实际路径及§3.3的原生receipt/PTY/Run映射返修；F03采用§3.1、T02/T15当前权限下的定向组合方法。准确新计划仍待原Reviewer接受；实际动态操作只等待既有程序写域、批准和唯一窗口，不增加特权采集执行者条件。
 
 实际尚未证明：最终构建闭包与native装载、严格controller helper及其恢复、Pi SDK只读认证的真实成功和ToolsOff、真实双Worker模型活动重叠、指定停止的全树退出/保全、安装及原Orca文件I/O隔离。发现SDK或原生接口不能提供必要证明时明确失败并提交主控，不能把unknown改成pass或采用当前Claude配置。`jose 6.2.3`来源pin已找到，产品依赖尚未安装；短期凭据与部分真实故障窗口可能无法在一次运行命中，对应分支保持未覆盖。
 
-完整旧S3、MCP、网页重构、历史分支清理、正式实验、用户采用和正式发布均保留各自任务的决定及验收。本报告只交付本首版静态方案与真实测试计划。
+完整旧S3、MCP、网页重构、历史分支清理、正式实验、用户采用和正式发布均保留各自任务的决定及验收。本次准确返修先交原Reviewer；同一Worker在计划接受和明确授权后继续产品实现及全部真实验收，不以静态方案提交结束整体任务。
 
 ## 9. 本次实际检查记录
 
@@ -344,7 +379,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 | `python .verification/swa-cli-headless-20261020/inspect-provider.py <明确两处Codex home>` | BelowNormal；标准TOML/JSON解析，仅输出provider/model/协议与认证字段存在性；两处默认OpenAI/gpt-6.1-sol/chatgpt OAuth，无凭据值输出 |
 | `git -C <公开验证项目原件> rev-parse HEAD/remote -v/show <准确SHA>:<四文件>` | 准确da3bdddb、固定origin及四份公开原文已读；本轮未核互联网可读状态 |
 | `wpr -profiles`、`wpr -help start`、`logman query providers Microsoft-Windows-Kernel-File`、WindowsPrincipal/当前权限只读查询 | FileIO profile和Kernel-File provider存在，查询EXIT0；当前token未提权、两个性能组均false、未见SystemProfile privilege。未开始采集，实际采集权限及范围尚未通过 |
-| `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接及16个关键源码引用存在，EXIT0/PASS；不触发业务程序 |
+| `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接、24个Orca及9个Pi关键源码引用存在，EXIT0/PASS；不触发业务程序 |
 | `git diff --cached --check` | BelowNormal；两份文档最终暂存检查EXIT0/PASS，无空白错误 |
 | install/build/model/service、产品CLI、T00—T15 | 全部NOT_RUN；未取得窗口，未修改程序/依赖/全局Agent配置 |
 
