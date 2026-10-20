@@ -984,3 +984,17 @@ N09先独立提出新项目批准不能循环依赖既有Grant/CLI批准、真�
 对应计划覆盖旧四CLI以外真实注册ID的正向人工批准、真实未知ID/未绑定模式/服务不可达失败且设置不变、另一选择不匹配时模型前拒绝、无Orca旧行为、HistoryRoots/S3及工具/身份/revision回归，与独立条件相符，没有多余自证用例。技术计划由主控定稿SPEC及必要窄写域后，同一Worker实施；它只证明拟校验注册，未证明该Agent安装/账户/工具/可启动。N07/N08剩余、N09实现和首版真实安装/双Worker全部未验。
 
 `check-revision.ps1`以61a→7f及7f→16ad分别检查EXIT0，前者三Markdown/5本地链接、后者一Markdown/1本地链接及Git空白通过；成熟marked18.1.0、BelowNormal、Node512MiB。没有运行编译、类型检查、HTTP/SQLite正文、实际Agent或模型；两个既有构建失败及当前权限未答保持。
+
+准确16ad局部接受hook `msg_56c9462ad896`已获主控`msg_92795a7f47c5`完整读取b64新增全节及7f/16ad两组完整差异回复，实际唤起确认。主控随后按SPEC §21.1.4定稿N09技术契约并授原Worker必要窄写域；本次接受没有改变N07/N08或真实运行状态。
+
+## 当前CLI交付物限定证据与restore-09
+
+已完整读取当前CLI PE清单及Rust元数据原JSON，Evidence分别为`ev_134bd75b1aba20bc6e6587377854b27f2468f2ba137024a215868bcde78bdbc4`和`ev_46808fa0cc8dba796125e3d035c82acdc40be7d51c7ab41d93e60559878c861a`。二者绑定实际389384字节、SHA256 `612b2669808fe1e53ed7e8afd9e2b5c11ae59b7c2eeb324e2e0086e429332dab`的orca.exe；分别只证明根文件/PE及amd64/64位/little endian等静态事实。原生函数/类型/执行未恢复，未找到.dep-v0不能说明依赖为空，rustc路径hash只是推断。
+
+当前命令目录分析Evidence `ev_c6bf5b3fd2db044912040136dd5195895e3a4bc111b9341396587d2f327a9e7e`绑定目录144e9caf549ab54f0756e2108b3584cdd8a721cde2970777941de7945e285f49，242文件清单、20JS/108537字节/11401 AST节点/解析失败0，222文件未选；graph与semantic均partial/truncated=false。独立`read-rea-fields.mjs`以成熟stream-json读取16937686字节原件，仅组装身份、来源选择、统计及coverage/limitations，精确核Evidence及目标摘要，EXIT0，输出`.verification/rea-cli-js-static-review.json`；没有重跑REA或组装完整关系图。
+
+已读取实际index、Worker启动/观察/停止/释放、消息及请求查询等相关JS和RuntimeClient/transport/兼容包络对应分支，核当前文件先校验参数再加载客户端、实际Agent/model/from与原RPC、transcript/terminal来源、未知停止/释放非零及原请求查询。另完整读取准确b287的Rust启动器源码，它提供桌面Electron与旁置服务配置两种布局参考，不能认证当前PE每个函数。对主控分析输入记录中的CLI及20个选取JS逐项只读核当前长度/内容摘要，21项均相同，没有执行目标脚本或操作本机Orca。
+
+三项实际REA exit均0，原resources及summary资源已读，BelowNormal、间隔约3.002—3.009秒，CPU最高19.4%、可用内存最低约11.369GiB；静态关系、未选取关系与完整动态闭包各保留其限制。prepare-09/stop-09实际原件表明S41264在UTC16:57:54.831364明确退出15后才分析；恢复资源CPU5.6%/12.0%、可用11.327/11.404GiB、间隔3.001976秒，通过当前门限。
+
+`.verification/inspect-restored-owner.ps1 -RestoreName restore-09`于UTC17:05:43实际EXIT0：恢复/current整份JSON深比较相同，实际S47228/父54112、原程序、创建UTC16:59:21.6222126及epoch1792515561.6222126差0毫秒、BelowNormal及唯一127.0.0.1:64505监听符合；数据库记录integrity ok、foreign_keys空、stopped_interval_comparison equal。控制脚本仍为已审c8，无恢复常量修改。该命令只读记录和进程/监听，没有执行SQLite、HTTP、资源采样或控制正文；完整环境/配置、health/Web及原Orca38652/runtime49da保留主控实际来源。下次prepare取实际restore-09/restored.json并重新准入，当前窗口归原S，无新Worker运行授权。

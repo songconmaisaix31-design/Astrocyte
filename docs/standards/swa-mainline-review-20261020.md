@@ -451,3 +451,15 @@ restore-08的实际S41264/创建UTC16:23:39.495409/epoch1792513419.495409、092b
 `check-revision.ps1 -Previous a6f387ff480d7fa9f5314319e014ba7eb77f13e0 -Candidate 70ca072309f9f646835b19eedaa276285daeb75b`实际EXIT0，三个Markdown/77本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有新运行授权或实际程序执行；准确61a的N06—N09独立退回保持，后继仍由原Worker返修。
 
 准确70ca接受hook `msg_bdfa051f0335`已获主控`msg_b21610f58c73`完整读取aed4准确主线新增及差异回复，实际唤起确认。准确16ad的N06局部静态返修、首装人工说明和N09窄端口技术计划另见本Reviewer的headless报告；整体程序、动态调用和未答权限保持各自状态。
+
+## 准确50202fb6与3d82bfed的CLI参考及注册批准规格
+
+结论：**接受准确`50202fb62f16296ee1e14e8a8eed572472704bc8`五文档及后继`3d82bfedf08af471c974461bf6ac008b9e1e5324`三文档的累计管理范围。** 已完整读取两组差异与新增CLI参考报告，独立核实际PE/Rust/JS原件、选取来源、资源及restore-09，详情见headless报告。用户“将orca cli逆向后参考”的当前对象直接指向准确orca.exe及实际命令JS，原app.asar后台证据、b287源码参考与当前文件静态观察分别保留；没有把部分覆盖、PE文件清单或上游源码当完整原生函数、执行或依赖证明。
+
+CLI参考表中的参数/连接、真实launch、协调端身份、查询/输出、停止/释放、正文和原请求语义与已读实际JS相符。最终依赖按实际入口、构建metafile、动态子入口/native ABI/资源和独立安装核实，既有贡献及许可保持；没有按整个上游依赖清单或静态未连边决定删除。原产品S、旧S3、待答工具/T11及最终同候选双Worker条件保持。
+
+SPEC §21.1.4与已审16ad/b64相符：App只读ExternalCLIRegistry端口、HTTP开放前同实例一次注入、非空ExternalModelCLI验证、未知/传输/来源失败不保存或换源，无Orca才维持原路径。strict请求/RegisteredAgent/原envelope、实际registration、同runtime/authority/安装来源及canonical根逐项核验完整，新项目批准无已有Grant循环；HistoryRoots、旧NativeAdapter和工具限制不变。任务仅授同一Workercontracts.go、projects.go及external_cli_registry_real_test.go三条必要窄路径和原消费者静态修改，未授动态窗口。
+
+16ad局部接受、61a整体退回及N07/N08继续返修的状态准确；502提交时记录7f等待复审，后继3d已记录准确16ad接受，时点及范围一致。原S47228和restore-09与实际只读复核一致，已审c8控制入口取实际恢复原件继续准入；原库/环境/配置/原Orca保全范围和两次构建失败保留，未把CLI分析记成产品调用或安装成功。
+
+`check-revision.ps1`以70ca→502及502→3d分别EXIT0，前者五Markdown/86本地链接，后者三Markdown/24本地链接，Git空白均通过；marked18.1.0、BelowNormal、Node512MiB。没有重跑REA、启动目标程序/服务/Agent/模型、编译、安装或操作原库；实际调用、账号/工具绑定、输入/恢复及同候选双Worker仍须原Worker完成并准确复审。
