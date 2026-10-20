@@ -371,7 +371,7 @@ App先按observe核项目并解析selection，再按既有start/目录/工具和
 | --- | --- |
 | controller open / task create | 保持swa.controllerOpen,R及真实helper launch；task.create保持swa.taskCreate,R→helper自身runCreate R/run-create、root taskCreate R/root-task。同一Run/root/context和strict caller保持 |
 | worker start | App核start/模型/目录/外发与选择，swa.controllerDeliver,R保存真实selection及原scope；helper以自身真实兼容证明调用orchestration.workerStart,R/native，仍为spec/from/run/parent/worktree/name/agent/model及该原生Agent已核选项。原native launcher根据实际adapter执行选定本机程序，首次输入前重新核selection和policy；不固定Pi或xhigh，不接受原始shell/RPC参数 |
-| worker send | 复用parent swa.controllerDeliver,R及当前实际helper；helper以准确R/native调用私有durable swa.workerSend，schema只接受原invocation及准确Dispatch。准入在executor前核真实helper/current consumer、parent原R的实际批准text和目标。handler从实际Dispatch→私有session取当前fence，先在同一原生receipt checkpoint保存原生mintAgentSessionOperationId所得operation和正文来源，再仅一次调用既有sendAgentTurn/StructuredAgentSessionHost发送一个原样text block；不通过orchestration mailbox pointer，不直接调用SDK、不增加队列 |
+| worker send | 复用parent swa.controllerDeliver,R及当前实际helper；helper以准确R/native调用私有durable swa.workerSend，schema只接受原invocation及准确Dispatch。准入在executor前核真实helper/current consumer、parent原R批准text和目标。handler按固定execution_mode分支：structured从Dispatch取实际私有session/fence及原生mint operation，terminal取实际handle/PTY/incarnation及R/native write关联；先在原receipt checkpoint持久保存实际模式/操作/正文来源，再各调用一次原native host queue或普通terminal writer。不经mailbox pointer、不直接SDK、不另建队列，无session的目标不进入StructuredHost |
 | worker show/list/read / task result | 先核项目和Run/root/Dispatch真实所属，再用既有native worker观察及所选definition的sessionHistory/transcriptImport/native journal提供原件。完整成果按实际provider原schema读取，来源缺失/截断明确incomplete；不把Pi解析器套到其他协议，不回到terminal tail声称完整 |
 | worker stop/release / task complete | 沿现有orchestration.workerStop/workerRelease/taskUpdate及R/native；依实际adapter/Job/树退出/ownership结算。当前helper原生证明、当前Grant、安全人类stop例外及释放条件保持 |
 | request show | 现有原R只读查询，不调用helper写入。worker.send从原R/native checkpoint/完成receipt取得唯一session/operation，再读该session原journal；历史receipt原样保留，动态delivery观察另列，不将completed R当再次发送许可 |
@@ -714,9 +714,9 @@ R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑�
 | G05 依赖及独立安装 | 完成原构建/native装载和闭包检查，在新独立安装目录运行同候选；实际依赖与资源来自包内或明确声明的本机Agent程序/只读账号，不来自开发树、原Orca资源或桌面运行通道。缺失动态资源在获准自有副本做真实负向，不能伪造成功模块或以静态metafile代替运行 |
 | G06 原Orca保全 | 安装前、发现后、双Worker并发中、指定停止后及产品退出后，重复原绝对CLI公开status、解析、进程创建身份/监听、配置与认证内存字节/ACL、定向通知及实际产品写端检查。原Orca和原Agent会话不被迁移/接管，未解释变化及通知溢出仍证据不足 |
 | G07 失败/异步/未知 | 对适用Agent保留真实启动部分失败、忙碌/queued、断开/超时/取消130、stdout失败、停止失败/树未知及资源占用；沿原R/native checkpoint和实际session operation不重发不换目标。在journal已接收但SDK尚未输入的真实窗口撤销/改变当前批准，serialized handOver在实际adapter.dispatch前await新授权，等待后重新核child/consumer/fence/工具策略；未命中保留INCONCLUSIVE。原R完成但仍queued、旧mailbox指针不存在或后续输入到达时，request.show仍从固定原receipt/journal返回同一原operation及真实state，不造Native事件或操作业务库 |
+| G08 最终同安装候选 | 使用同一准确已安装候选及所选真实本机Agent，完成原固定公开任务的至少两个真实Worker，不等前一结果即提交；核真实模型活动重叠、分别查询身份/输出，只停止指定A并取得全树退出/B保全，B在同一原生session接受真实后续正文并取得符合业务判据的完整成果。是否要求不同Agent类型不自行增加；每个声称可调用的Agent仍须有G03证据，未通过的范围明确保留 |
 
 G07还逐模式覆盖：明确效果前拒绝保留原child/parent真实rejected结果、无host/PTY写入；实际输入/排队后断开和原生结算失败必须保留R/native checkpoint/operation，不能只在parent保留unknown。原生存储失败仅在真实条件命中时登记，不注入假错误。structured核同session操作/journal；terminal核准确PTY/incarnation、原R/write receipt及handed-to-terminal与实际turn证据的区别，禁止把dispatch-preamble当后续输入。原生模式解析未命中降级/冲突时保持未验，不造TUI注册或SDK会话。
-| G08 最终同安装候选 | 使用同一准确已安装候选及所选真实本机Agent，完成原固定公开任务的至少两个真实Worker，不等前一结果即提交；核真实模型活动重叠、分别查询身份/输出，只停止指定A并取得全树退出/B保全，B在同一原生session接受真实后续正文并取得符合业务判据的完整成果。是否要求不同Agent类型不自行增加；每个声称可调用的Agent仍须有G03证据，未通过的范围明确保留 |
 
 普通终端与原有Agent真实命令工具调用、当前项目批准、真实成果/事件来源及最终关闭继续原验收。注册发现、依赖缩减、源码编译或局部方案接受均不计整体完成；原生ToolsOff/账号冲突由主控处理，其他已授静态开发与独立Go准备继续。
 
