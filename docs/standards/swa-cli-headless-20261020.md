@@ -1137,3 +1137,15 @@ Go首次serve创建当前用户与SYSTEM受保护DACL的`Local\SWAService<UUID>`
 本阶段静态检查入口为`.verification/swa-cli-headless-20261020/check-t12-source-static.ps1`，原件目录`t12-source-static-01/`。检查限定成熟TS/JS语法、CLI JSON与OpenAPI YAML解析、Go只读gofmt-d、两份PowerShell Parser、native JS的node --check、三份Markdown来源/本地链接和Git空白；未创建TypeScript Program，未编译Go/C++，未运行测试正文。必要类型声明的真实锁/安装、完整类型检查、生成、构建及所有动态验收仍须主控交付准确串行窗口。
 
 该入口本次实际EXIT0：24份TS/MJS语法、JSON/YAML、8份Go格式、两份PowerShell Parser、native JS语法及Git空白检查通过；三份Markdown共7个本地链接、24处Orca及11处Pi来源路径检查通过。完整类型、生成、Go/C++构建、CLI、native Job、故障、服务与模型正文全部NOT_RUN，静态检查不构成T12或安装接受。
+
+## 17. 正文子请求持久结算及实际来源关联
+
+本阶段继续实现SPEC21.1.2已定稿的效果结算和结果字段，沿原R/native、原native executor及真实structured host。handler在首次host输入前完成真实controller/Dispatch/session及当前Go批准检查，明确在本次调用尚无输入时，将真实rejected/effects_applied=false先写原child完成receipt；缺少持久结算callback或保存失败返回unknown。原parent/child的完整operation、Agent、模式、session、fence及正文在同一既有SQLite事务中checkpoint，事务任一步骤无法确认均保留unknown。首次调用host以后，异常或无明确结算的host refusal保持operation_unknown，不把operation_unknown类拒绝解释为已知无输入。实际host返回的queued/journaled/accepted/rejected也先持久完成child，再交外层父请求。
+
+首次及后续正文共用严格的structuredInputBinding schema，Agent与execution_mode写入原checkpoint，和实际host消费前的Agent/session逐项比较。实际结果提供request_id、native_request_id、dispatch_id、agent、execution_mode、session_id、operation_id及真实client_message_id/source；没有真实turn_id时不填造。request.show沿同一binding读取原journal，核原submission的operation与fence，按实际handoverRecorded/handedOverAt区分queued与journaled，不从当前其他输入替换原请求归属。
+
+原T13同候选双Worker驱动增加真实验证：B后续输入及同R重放的binding相同、完整text block等于实际公开输入文件、真实SQLite的R/native已completed且保存同一binding、B实际第二轮完成后request.show仍指同session/operation且原journal已accepted。复用原双Worker和原模型轮次，不新增模型调用或伪造数据库内容。全部新增正文NOT_RUN；当前成功选择仍限定已审Pi结构化原生账号政策，terminal模式及其真实能力条件继续按SPEC实施，未新增其他Agent的执行许可。
+
+本阶段只运行成熟TS/MJS及JSON/YAML语法、三份Markdown的来源/本地链接与Git空白检查，入口为`.verification/swa-cli-headless-20261020/check-input-settlement-static.ps1`，原件目录`input-settlement-static-01/`；完整类型、生成、编译、host队列、真实SQLite正文、模型和安装验收未运行。
+
+该入口实际EXIT0，5份TS/MJS、JSON/YAML、三份Markdown/7个本地链接/24处Orca及11处Pi来源路径和空白检查通过。原Reviewer已对前序7e阶段发出N20/N21初步返修：pending缺失checkpoint保全及故障目标同句柄完整归属；由同一Worker后继处理，7e没有整体接受结论。

@@ -187,7 +187,24 @@ const followupFile = join(inputDirectory, 'b-followup.txt')
 await writeFile(followupFile, 'A已按固定条件停止。请在当前同一会话根据下列实际A部分输出和准确公开原文，完成最终Median设计及验证说明；逐项覆盖原固定业务条件并引用文件位置。保持原Mean不变，禁止声称已运行程序测试。\n实际A读取回执：\n' + JSON.stringify(partialA) + '\n固定公开原文：\n' + JSON.stringify(source) + '\n', { flag: 'wx' })
 const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', request()]
 const originalSend = await cli(sendArgs), repeatedSend = await cli(sendArgs)
-idempotency.push({ action: 'worker.send', request: sendArgs.at(-1), original: originalSend, replay: repeatedSend })
+const sendResult = native(originalSend), sendRequest = sendArgs.at(-1)
+assert.equal(sendResult.request_id, sendRequest)
+assert.equal(sendResult.native_request_id, `${sendRequest}/native`)
+assert.equal(sendResult.agent, values.agent)
+assert.equal(sendResult.execution_mode, 'structured')
+assert.equal(sendResult.session_id, initialB.source.native_session_id)
+assert.equal(sendResult.operation_id, sendResult.client_message_id)
+assert.deepEqual(native(repeatedSend).swa_input_binding, sendResult.swa_input_binding)
+assert.deepEqual(sendResult.swa_input_binding.body, { kind: 'message', role: 'user', blocks: [{ type: 'text', text: await readFile(followupFile, 'utf8') }] })
+const inputDatabase = new DatabaseSync(database, { readOnly: true })
+let sendNativeReceipt
+try {
+  sendNativeReceipt = inputDatabase.prepare('SELECT method, state, receipt FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').get(status.authority_domain, `${sendRequest}/native`)
+  assert.equal(sendNativeReceipt.method, 'swa.workerSend')
+  assert.equal(sendNativeReceipt.state, 'completed')
+  assert.deepEqual(JSON.parse(sendNativeReceipt.receipt).swa_input_binding, sendResult.swa_input_binding)
+} finally { inputDatabase.close() }
+idempotency.push({ action: 'worker.send', request: sendRequest, original: originalSend, replay: repeatedSend, actual_native_receipt: sendNativeReceipt })
 const finalDeadline = Date.now() + 600_000
 let finalEventsB
 while (Date.now() < finalDeadline) {
@@ -197,6 +214,11 @@ while (Date.now() < finalDeadline) {
 }
 assert.equal(starts(finalEventsB).length, 2, 'The same approved follow-up was executed more than once')
 assert.equal(ends(finalEventsB).length, 2)
+const inputStatus = await cli(['request', 'show', '--controller', controller, '--request-id', sendRequest])
+assert.equal(inputStatus.result.current_input.state, 'accepted')
+assert.equal(inputStatus.result.current_input.operation_id, sendResult.operation_id)
+assert.equal(inputStatus.result.current_input.session_id, initialB.source.native_session_id)
+assert.equal(inputStatus.result.current_input.source.session_id, initialB.source.native_session_id)
 assert.ok(finalEventsB.some(row => delta(row) && Date.parse(row.observed_at) > stoppedAt))
 assert.deepEqual(await events(initialA.source), eventsAAfterStop, 'A produced additional native events after its confirmed stop')
 assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentityB)

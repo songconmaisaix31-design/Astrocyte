@@ -14,7 +14,7 @@ import Database from '../../../third_party/orca-v1.4.230/src/main/sqlite/sync-da
 import { replayJournal } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-open'
 import { renderJournalState } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-reducer'
 import { iterateJournalEpochRows, readJournalSessionEpoch } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-row-table'
-import { agentSelectionSchema, nativeObject, type AgentSelection, type Scope } from './contracts'
+import { agentSelectionSchema, nativeObject, structuredInputBindingSchema, type AgentSelection, type Scope } from './contracts'
 
 const maximum = 12 * 1024 * 1024
 const sourceWitnesses = new Map<string, { path: string; identity: string; nativeSession: string; bytes: Buffer }>()
@@ -94,7 +94,7 @@ export async function readNativeInputStatus(runtime: OrcaRuntimeService, project
   if (!row?.receipt || row.method !== 'swa.controllerDeliver') return fail('The original native input receipt is unavailable')
   const receipt = nativeObject(JSON.parse(row.receipt))
   if (receipt.project_id !== projectId) throw new OrchestrationError('scope_denied', 'The original input belongs to another project')
-  const binding = z.object({ child_request: z.string(), session_id: z.string(), operation_id: z.string(), runtime_fence: z.number().int(), dispatch_id: z.string() }).parse(receipt.swa_input_binding)
+  const binding = structuredInputBindingSchema.parse(receipt.swa_input_binding)
   const children = z.array(z.object({ receipt: z.string().nullable() })).parse(db.db.prepare('SELECT receipt FROM mutation_receipts WHERE request_id=?').all(binding.child_request))
   if (children.length !== 1 || !children[0]!.receipt || !isDeepStrictEqual(nativeObject(JSON.parse(children[0]!.receipt)).swa_input_binding, receipt.swa_input_binding)) return fail('The original native child input binding is unavailable')
   const host = getStructuredAgentSessionHost()
@@ -104,7 +104,9 @@ export async function readNativeInputStatus(runtime: OrcaRuntimeService, project
     const replay = replayJournal(journalDB, binding.session_id)
     if (!replay || replay.damage || replay.newer) return fail('The original input journal is missing or damaged')
     const submission = replay.state.submissions.get(binding.operation_id)
-    return { binding: receipt.swa_input_binding, state: !submission ? 'unknown' : submission.dispatchState === 'pending' ? 'journaled' : submission.dispatchState, reason: submission ? null : 'original_operation_not_observed_in_journal', submission: submission ?? null, source: { session_id: binding.session_id, epoch: replay.state.epoch, sequence: replay.state.lastSequence } }
+    if (submission && (submission.fence !== binding.runtime_fence || submission.clientMessageId !== binding.operation_id)) return fail('The original native input journal operation changed its identity')
+    const state = !submission ? 'unknown' : submission.dispatchState === 'pending' ? submission.handoverRecorded && submission.handedOverAt === undefined ? 'queued' : 'journaled' : submission.dispatchState
+    return { request_id: binding.parent_request, native_request_id: binding.child_request, dispatch_id: binding.dispatch_id, agent: binding.agent, execution_mode: binding.execution_mode, session_id: binding.session_id, operation_id: binding.operation_id, client_message_id: submission?.clientMessageId, binding: receipt.swa_input_binding, state, reason: submission ? null : 'original_operation_not_observed_in_journal', submission: submission ?? null, source: { session_id: binding.session_id, epoch: replay.state.epoch, sequence: replay.state.lastSequence } }
   })
 }
 

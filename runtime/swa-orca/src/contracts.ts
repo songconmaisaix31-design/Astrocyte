@@ -44,6 +44,12 @@ export const agentSelectionSchema = z.strictObject({
   native_launch: nativeLaunchPolicySchema
 })
 export type AgentSelection = z.infer<typeof agentSelectionSchema>
+export const structuredInputBindingSchema = z.strictObject({
+  parent_request: z.string().min(1), child_request: z.string().min(1), dispatch_id: z.string().min(1),
+  agent: z.string().min(1), execution_mode: z.literal('structured'), session_id: z.string().min(1),
+  operation_id: z.string().min(1), runtime_fence: z.number().int().nonnegative(),
+  consumer_generation: z.number().int().nonnegative(), body: z.unknown()
+})
 export type CapabilityRequirements = z.infer<typeof capabilityRequirementsSchema>
 export const observationSchema = z.strictObject({
   status: z.enum(['available', 'unavailable', 'unknown']), reason: z.string().min(1), source: z.string().min(1), checked_at: z.string().optional()

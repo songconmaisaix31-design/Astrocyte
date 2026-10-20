@@ -8,7 +8,7 @@ import { structuredPointerCallerKey } from '../../../third_party/orca-v1.4.230/s
 import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
 import type { AgentJournalMessageItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-types'
-import { invocationSchema, nativeError, nativeObject } from './contracts'
+import { invocationSchema, nativeError, nativeObject, structuredInputBindingSchema, type Invocation } from './contracts'
 import { controllerScope, exactController } from './controller-scope'
 
 let admitCurrentApproval: ((invocation: z.infer<typeof invocationSchema>) => Promise<unknown>) | null = null
@@ -37,6 +37,26 @@ export async function admitNativeWorkerInputRPC(params: unknown, requestId: stri
   if (child[0]?.state === 'completed') await admitCurrentApproval(invocation)
 }
 
+async function prepareStructuredInput(invocation: Invocation, controller: string, context: RpcContext) {
+  const { runtime } = context, db = runtime.getOrchestrationDb(), selection = invocation.selection
+  const dispatchId = invocation.command.dispatch_id
+  if (!selection || !dispatchId) throw new OrchestrationError('scope_denied', 'The original selected Worker input is unavailable')
+  const { owner, scope } = controllerScope(runtime, invocation.project.id, controller)
+  await exactController(runtime, owner)
+  const live = runtime.getOrchestrationDispatchAuthority(controller)
+  const caller = runtime.verifyOrchestrationCompatibilityCaller(context.orchestrationCompatibilityEvidence, { currentRuntimeLaunchSufficient: !!live?.launchTokenHash })
+  if (!caller || !isDeepStrictEqual(caller, owner.caller_authority) || scope.run_id !== invocation.scope.run_id || scope.root_task_id !== invocation.scope.root_task_id) throw new OrchestrationError('scope_denied', 'The actual controller launch and current Run consumer are required')
+  const dispatch = db.getDispatchContextById(dispatchId), task = dispatch && db.getTask(dispatch.task_id), worker = db.getWorkerDispatch(dispatchId)
+  const host = getStructuredAgentSessionHost(), sessionId = dispatch?.assignee_orca_session_id
+  const identity = sessionId && structuredWorkerIdentities.getBySessionId(sessionId), record = sessionId && host?.deps.store.getRecord(sessionId)
+  if (!host || !sessionId || !identity || identity.dispatchId !== dispatchId || !record || record.provider !== selection.agent_id || record.options?.model !== selection.model || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || dispatch?.run_id !== scope.run_id || task?.parent_id !== scope.root_task_id || worker?.state !== 'ready' || worker.runtime_epoch !== runtime.getRuntimeId()) throw new OrchestrationError('worker_identity_changed', 'The original live Worker session is unavailable')
+  if (!admitCurrentApproval) throw new OrchestrationError('approval_unverified', 'Current Worker input approval is unavailable')
+  await admitCurrentApproval(invocation)
+  const run = db.getRun(scope.run_id)
+  if (!run || run.coordinator_handle !== controller) throw new OrchestrationError('scope_denied', 'The original controller is no longer the current consumer')
+  return { scope, host, sessionId, record, run }
+}
+
 export async function deliverNativeWorkerInput(params: { controller: string; parent_request: string }, context: RpcContext) {
   const { runtime } = context, db = runtime.getOrchestrationDb(), mutation = context.orchestrationMutation
   if (!mutation || mutation.requestId !== `${params.parent_request}/native`) throw new OrchestrationError('request_mismatch', 'The original native child input request is required')
@@ -45,37 +65,36 @@ export async function deliverNativeWorkerInput(params: { controller: string; par
   const receipt = nativeObject(JSON.parse(parent.receipt)), invocation = invocationSchema.parse(receipt.invocation)
   const command = invocation.command, selection = invocation.selection
   if (command.action !== 'worker.send' || command.controller !== params.controller || command.request_id !== params.parent_request || !command.dispatch_id || !invocation.input || !selection || receipt.child_request !== mutation.requestId) throw new OrchestrationError('scope_denied', 'The native child does not match its original Worker input')
-  const { owner, scope } = controllerScope(runtime, invocation.project.id, params.controller)
-  await exactController(runtime, owner)
-  const live = runtime.getOrchestrationDispatchAuthority(params.controller)
-  const caller = runtime.verifyOrchestrationCompatibilityCaller(context.orchestrationCompatibilityEvidence, { currentRuntimeLaunchSufficient: !!live?.launchTokenHash })
-  if (!caller || !isDeepStrictEqual(caller, owner.caller_authority) || scope.run_id !== invocation.scope.run_id || scope.root_task_id !== invocation.scope.root_task_id) throw new OrchestrationError('scope_denied', 'The actual controller launch and current Run consumer are required')
-  const dispatch = db.getDispatchContextById(command.dispatch_id), task = dispatch && db.getTask(dispatch.task_id), worker = db.getWorkerDispatch(command.dispatch_id)
-  const host = getStructuredAgentSessionHost(), sessionId = dispatch?.assignee_orca_session_id
-  const identity = sessionId && structuredWorkerIdentities.getBySessionId(sessionId), record = sessionId && host?.deps.store.getRecord(sessionId)
-  if (!host || !sessionId || !identity || identity.dispatchId !== command.dispatch_id || !record || record.provider !== selection.agent_id || record.options?.model !== selection.model || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || dispatch?.run_id !== scope.run_id || task?.parent_id !== scope.root_task_id || worker?.state !== 'ready' || worker.runtime_epoch !== runtime.getRuntimeId()) throw new OrchestrationError('worker_identity_changed', 'The original live Worker session is unavailable')
-  if (!admitCurrentApproval) throw new OrchestrationError('approval_unverified', 'Current Worker input approval is unavailable')
-  try { await admitCurrentApproval(invocation) }
-  catch (error) { return { project_id: invocation.project.id, controller: params.controller, run_id: scope.run_id, dispatch_id: command.dispatch_id, state: 'rejected', effects_applied: false, error: nativeError(error) } }
+  const recordNativeResult = context.recordMutationReceipt
+  if (!recordNativeResult) throw new OrchestrationError('operation_unknown', 'Durable native input settlement is unavailable')
+  const recordResult = (result: Record<string, unknown>) => {
+    try { recordNativeResult(result); return result }
+    catch (error) { throw new OrchestrationError('operation_unknown', error instanceof Error ? error.message : 'Native input settlement could not be saved') }
+  }
+  let prepared: Awaited<ReturnType<typeof prepareStructuredInput>>
+  try { prepared = await prepareStructuredInput(invocation, params.controller, context) }
+  catch (error) { return recordResult({ project_id: invocation.project.id, controller: params.controller, run_id: invocation.scope.run_id, request_id: parent.request_id, native_request_id: mutation.requestId, dispatch_id: command.dispatch_id, agent: selection.agent_id, execution_mode: selection.execution_mode, state: 'rejected', effects_applied: false, error: nativeError(error), source: { kind: 'native_pre_input_admission', child_request: mutation.requestId } }) }
+  const { scope, host, sessionId, record, run } = prepared
   const operationId = mintAgentSessionOperationId(Date.now())
   const body: AgentJournalMessageItem = { kind: 'message', role: 'user', blocks: [{ type: 'text', text: invocation.input.text }] }
-  const run = db.getRun(scope.run_id)
-  if (!run || run.coordinator_handle !== params.controller) throw new OrchestrationError('scope_denied', 'The original controller is no longer the current consumer')
-  const binding = { parent_request: parent.request_id, child_request: mutation.requestId, dispatch_id: command.dispatch_id, session_id: sessionId, operation_id: operationId, runtime_fence: record.lease.runtimeFence, consumer_generation: run.consumer_generation, body }
-  db.db.exec('BEGIN IMMEDIATE')
+  const binding = structuredInputBindingSchema.parse({ parent_request: parent.request_id, child_request: mutation.requestId, dispatch_id: command.dispatch_id, agent: selection.agent_id, execution_mode: selection.execution_mode, session_id: sessionId, operation_id: operationId, runtime_fence: record.lease.runtimeFence, consumer_generation: run.consumer_generation, body })
   try {
-    db.checkpointPendingMutationReceipt({ callerFingerprint: parent.caller_fingerprint, requestId: parent.request_id, method: parent.method, payloadHash: parent.payload_hash, receipt: JSON.stringify({ ...receipt, swa_input_binding: binding }) })
-    db.checkpointPendingMutationReceipt({ ...mutation, receipt: JSON.stringify({ project_id: invocation.project.id, controller: params.controller, parent_request: parent.request_id, dispatch_id: command.dispatch_id, swa_input_binding: binding, stage: 'input-submit' }) })
-    db.db.exec('COMMIT')
-  } catch (error) { db.db.exec('ROLLBACK'); throw error }
+    db.db.exec('BEGIN IMMEDIATE')
+    try {
+      db.checkpointPendingMutationReceipt({ callerFingerprint: parent.caller_fingerprint, requestId: parent.request_id, method: parent.method, payloadHash: parent.payload_hash, receipt: JSON.stringify({ ...receipt, swa_input_binding: binding }) })
+      db.checkpointPendingMutationReceipt({ ...mutation, receipt: JSON.stringify({ project_id: invocation.project.id, controller: params.controller, parent_request: parent.request_id, dispatch_id: command.dispatch_id, swa_input_binding: binding, stage: 'input-submit' }) })
+      db.db.exec('COMMIT')
+    } catch (error) { db.db.exec('ROLLBACK'); throw error }
+  } catch (error) { throw new OrchestrationError('operation_unknown', error instanceof Error ? error.message : 'Native input binding could not be saved') }
   context.markMutationEffectPossible?.()
   try {
     const delivery = await sendAgentTurn({ kind: 'structured-session', host, sessionId, callerKey: structuredPointerCallerKey(command.dispatch_id), turn: { body, operationId, expectedRuntimeFence: record.lease.runtimeFence, delivery: 'now', beforeRun: () => {
       const current = host.deps.store.getRecord(sessionId)
       if (current?.lease.runtimeFence !== binding.runtime_fence || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || db.getWorkerDispatch(command.dispatch_id!)?.state !== 'ready') throw new Error('The original Worker identity changed before input admission')
     } } })
-    const state = delivery.kind === 'refused' ? 'rejected' : delivery.kind === 'queued' ? 'queued' : delivery.submission?.dispatchState
+    if (delivery.kind === 'refused') throw new Error(`The native host refused this operation without a confirmed input settlement: ${delivery.refusal.code}`)
+    const state = delivery.kind === 'queued' ? 'queued' : delivery.submission?.dispatchState
     if (!state || state === 'unknown') throw new Error('The original native input settlement is unknown')
-    return { project_id: invocation.project.id, controller: params.controller, run_id: scope.run_id, dispatch_id: command.dispatch_id, state: state === 'pending' ? 'journaled' : state, swa_input_binding: binding, delivery }
+    return recordResult({ project_id: invocation.project.id, controller: params.controller, run_id: scope.run_id, request_id: parent.request_id, native_request_id: mutation.requestId, dispatch_id: command.dispatch_id, agent: selection.agent_id, execution_mode: selection.execution_mode, session_id: sessionId, operation_id: operationId, client_message_id: delivery.clientMessageId, state: state === 'pending' ? 'journaled' : state, swa_input_binding: binding, delivery, source: { kind: 'native_session_operation', session_id: sessionId, operation_id: operationId, child_request: mutation.requestId } })
   } catch (error) { throw new OrchestrationError('operation_unknown', error instanceof Error ? error.message : 'The original native input outcome is unknown') }
 }

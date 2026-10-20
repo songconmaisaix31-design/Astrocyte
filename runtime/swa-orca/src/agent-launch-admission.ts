@@ -6,7 +6,7 @@ import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/
 import { installStructuredAgentLaunchAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
-import { agentSelectionSchema, invocationSchema, nativeObject } from './contracts'
+import { agentSelectionSchema, invocationSchema, nativeObject, structuredInputBindingSchema as inputBindingSchema } from './contracts'
 import { selectAgent } from './agent-discovery'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiAccount, privatePiEnvironment, verifyPrivatePiAccount } from './private-pi-account'
@@ -15,7 +15,6 @@ import type { StructuredAgentInputAdmission } from '../../../third_party/orca-v1
 import { installWorkerInputApproval } from './worker-input'
 
 const mutationRowSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), state: z.enum(['pending', 'completed']), receipt: z.string().nullable() })
-const inputBindingSchema = z.strictObject({ parent_request: z.string().min(1), child_request: z.string().min(1), dispatch_id: z.string().min(1), session_id: z.string().min(1), operation_id: z.string().min(1), runtime_fence: z.number().int().nonnegative(), consumer_generation: z.number().int().nonnegative(), body: z.unknown() })
 
 export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: { ownerCapability: Buffer; ownerAlive(): boolean }) {
   const admitCurrentApproval = createDeliveryAdmission(owner.ownerCapability, owner.ownerAlive)
@@ -90,7 +89,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const dispatch = db.getDispatchContextById(binding.dispatch_id)
     const worker = db.getWorkerDispatch(binding.dispatch_id)
     const run = db.getRun(invocation.scope.run_id)
-    if (!identity || identity.dispatchId !== binding.dispatch_id || binding.session_id !== input.sessionId || binding.operation_id !== input.clientMessageId || binding.runtime_fence !== input.fence || !isDeepStrictEqual(binding.body, input.body) || !isDeepStrictEqual(invocation.selection, original) || !record || record.lease.runtimeFence !== input.fence || record.lease.unreconciled || !record.lease.ownerProcess || record.lease.claimStatus !== 'live' || !dispatch || dispatch.run_id !== invocation.scope.run_id || !worker || !['starting', 'ready'].includes(worker.state) || worker.runtime_epoch !== runtime.getRuntimeId() || !run || run.consumer_generation !== binding.consumer_generation || run.coordinator_handle !== invocation.scope.controller) throw new Error('The native input Worker, consumer or session identity changed')
+    if (!identity || identity.dispatchId !== binding.dispatch_id || binding.agent !== input.agent || binding.session_id !== input.sessionId || binding.operation_id !== input.clientMessageId || binding.runtime_fence !== input.fence || !isDeepStrictEqual(binding.body, input.body) || !isDeepStrictEqual(invocation.selection, original) || !record || record.lease.runtimeFence !== input.fence || record.lease.unreconciled || !record.lease.ownerProcess || record.lease.claimStatus !== 'live' || !dispatch || dispatch.run_id !== invocation.scope.run_id || !worker || !['starting', 'ready'].includes(worker.state) || worker.runtime_epoch !== runtime.getRuntimeId() || !run || run.consumer_generation !== binding.consumer_generation || run.coordinator_handle !== invocation.scope.controller) throw new Error('The native input Worker, consumer or session identity changed')
     await admitCurrentApproval(invocation)
     const fresh = await policySnapshot(input.sessionId, input.agent)
     await verifyPrivatePiAccount(fresh.snapshot)
@@ -169,7 +168,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const db = runtime.getOrchestrationDb()
       const run = db.getRun(invocation.scope.run_id)
       if (!identity?.dispatchId || !run || run.coordinator_handle !== invocation.scope.controller) throw new Error('The original native input Run association is unavailable')
-      const binding = inputBindingSchema.parse({ parent_request: parentRow.request_id, child_request: childRow.request_id, dispatch_id: identity.dispatchId, session_id: input.sessionId, operation_id: input.clientMessageId, runtime_fence: input.fence, consumer_generation: run.consumer_generation, body: input.body })
+      const binding = inputBindingSchema.parse({ parent_request: parentRow.request_id, child_request: childRow.request_id, dispatch_id: identity.dispatchId, agent: input.agent, execution_mode: 'structured', session_id: input.sessionId, operation_id: input.clientMessageId, runtime_fence: input.fence, consumer_generation: run.consumer_generation, body: input.body })
       db.db.exec('BEGIN IMMEDIATE')
       try { saveBinding(parentRow, binding); saveBinding(childRow, binding); db.db.exec('COMMIT') }
       catch (error) { db.db.exec('ROLLBACK'); throw error }
