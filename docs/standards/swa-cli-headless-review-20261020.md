@@ -1107,3 +1107,20 @@ build03退回hook `msg_7627dfe9b893`与main6883管理接受hook `msg_d2bdb411ad3
 构建store改为同任务已有`.verification/swa-cli-headless-20261020/pnpm-store`，mkdir后核最终lstat和整条realpath与实际仓库根下指定路径一致，重定向失败；仍由完整pnpm prod deploy建立新候选，candidate/temp独占创建，原pin/校验/后续VERSION条件保持。只读实际已装pnpm11.27.0的bin shim和dist/pnpm.mjs：verify-store-integrity为Boolean选项、普通配置默认true，store消费者传递该值；构建显式启用，没有复制node_modules或改变全局store。本Reviewer没有执行pnpm或重操作。
 
 `check-revision.ps1 -Previous e54d45489f54819cccb2d408474e6f885aac6970 -Candidate 8ebefec700781e9883a3bb3f905233e07f03e671`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。成熟解析额外识别§13未包代码的`Promise<AgentSessionAccountHome>`为HTML，该计划显示问题交同一Worker修正；它不改变两项构建修复的局部接受。N08尚未技术接受或冻结，不以本次决定授权实施新增native_launch；依赖安装、bundle、完整闭包、native/Go/TS、安装和全部真实调用继续未验。
+
+准确8ebe必要构建修复hook `msg_dc1694b21392`已获主控`msg_c98acfafff42`完整读取891准确新增、五文件差异及实际消费者的回复，实际唤起确认。主控随后仅交付dependencies/dependency03，其他tracked/Git冻结；本次N08审查不要求Worker在窗口内修改冻结文件。
+
+## 准确8ebefec7的N08正式技术计划审核
+
+结论：**退回准确`8ebefec700781e9883a3bb3f905233e07f03e671`的§13技术计划，补齐原生配置准入及有效期语义后再审。** 独立条件已在本报告“N08独立条件”列出；本轮完整读正式§13后，另核本机Pi1.0.1实际args/main/settings/sdk、auth-storage/runtime-credentials、pi-ai/auth/resolve/openai-codex provider、provider-composer/resolve-config-value和RPC分支。没有读取认证内容、运行CLI、制造配置或调用模型，必要构建修复的局部接受保持。
+
+| 条件 | 已覆盖范围及必须补充内容 |
+| --- | --- |
+| 原账号保全及真实认证 | 计划不交OAuth/refresh、不改变凭据类型，只允许原生provider实际支持的既有literal API key；默认Pi无条目限定准确。实际auth/resolve对stored类型和provider handler成对匹配，openai-codex只声明OAuth，与限制相符。私有API key格式和auth check ready仍不代表远程模型有效，当前没有可执行账号结论 |
+| N11 必要models和auth条目的原生投影不完整 | §13.3只写必要models声明、拒绝命令/未证环境形式认证，没有具体规定provider/model headers、models apiKey/oauth、modelOverrides及credential.env的逐类准入。实际provider-composer会在已有stored credential时继续解析provider headers，并对模型headers调用resolveHeadersOrThrow；resolve-config-value支持以!执行shell和环境插值，ReadOnlyAuthStorage也保留credential.env。空extraArgs和no-tools不能封闭这些消费者。须明确成熟结构解析后的允许/拒绝字段和原生literal判定、明确外发目标绑定、私有投影及每次输入前复核，并增加上述真实失败路径的计划；不能把任意原models块复制后交原生自行验证 |
+| N12 无TTL API key语义有歧义 | §13.5先写原生API key无TTL时保留unknown，后句又写未知或到期拒绝，没有说明后句适用于有期限的来源还是全部key。须明确无TTL来源的准入、当前批准和实际远程验证边界，有明确期限时的执行时限/安全余量以及过期拒绝。不能伪造有效期，也不能以原生格式没有TTL字段自动判定全部既有API key不能调用 |
+| 原生参数和设置 | 固定完整argv、空extraArgs、环境白名单、offline/no-approve和禁资源覆盖必要方向。实际args支持这些开关；no-approve映射projectTrusted=false，project scope返回空设置；私有compaction/retry/provider retry/cache warming的字段和sdk消费者相符，真实回执及autoCompactionEnabled可核。最终实现仍须完整比较实际part和私有文件，不能只看版本字符串 |
+| 原生状态与原身份 | 实际get_state提供model/sessionFile/sessionId和autoCompactionEnabled，没有fence或工具字段。§13.5应分别由真实Pi状态证明模型/会话、由原Native R/Dispatch记录及current consumer证明fence/归属，避免要求不存在的原生字段。首次和后续效果前当前批准、来源、停止/释放、Job、异步等待后重核及unknown保全均已覆盖 |
+| 私有账号、并发与测试 | 私有canonical根/ACL、原accountHome生产者、原R/checkpoint、同项目同来源不可变复用和未知副本拒绝覆盖必要条件。六项真实计划涵盖明确模型、人工批准、真实产出和工具效果、撤权/来源/ACL及同候选双Worker，没有要求伪造协议或无关自证；还须补N11逐类消费者边界和N12明确有效期场景，不能把未执行写成失败或通过 |
+
+§13的`Promise<AgentSessionAccountHome>`需要代码格式以正确显示。上述缺口已以`msg_13289c6f4c9f`交原Worker，修正由同一Worker在当前依赖窗口归还且冻结解除后提交准确版本。新增native_launch与accountHome签名本轮不冻结；主控SPEC定稿、全部直接消费者实施及真实运行仍按原顺序，工具/T11和原Codex/S3限制保持。
