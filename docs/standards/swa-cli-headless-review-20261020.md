@@ -1336,3 +1336,9 @@ ACP在等待附件及异步批准后，将同步函数放入原Send队列项；s
 Codex把同步函数沿dispatch/start及两次原steer分支传至connection.request的beforeWrite。等待turn打开及原生拒绝后的后续分支仍使用同一函数，实际sendLine前同步执行；只有该函数抛出才包装ProviderWriteAdmissionError并解除该echo。实际sendLine、超时或断开继续原传输错误处理，保留可能已经写入的关联和unknown。没有将原生拒绝后的既有分支改造成新重试能力，真实协议运行未执行。
 
 Worker的n19-static-01/syntax.log及syntax-exit.txt已完整读取，九份成熟TS parser检查为PASS/EXIT0，入口没有执行类型检查或产品正文；此结果保持Worker归属。本Reviewer实际`check-revision.ps1`准确56ffc3→7a0058为EXIT0，一Markdown/1本地链接及Git空白通过；全部只读检查BelowNormal、Node512MiB。N19已定位声明和消费的源码修复确认，不能据此宣称实际类型检查通过。N14—N18的真实分支、类型/生成/Node/native构建、全部模型、安装同候选双Worker仍未验，T12/recover/后台Job与通用TUI由同一Worker继续，当前窗口仍归restore-17的原S36744。
+
+## 准确68bc4d8c的必要开发声明配置
+
+结论：**局部静态接受准确`68bc4d8c5d182575fe6fe679a436033e8cdc6b36`相对7a0058的三文件差异。** 七项已审精确版本仅加入runtime devDependencies及既有依赖清单，原prod dependencies、scripts和其他包参数保持；文档正确记录产品paths优先匹配及TypeScript普通祖先查找，显式声明与尚未安装分别记录。pnpm权威锁没有修改，本次不具备frozen安装或实际类型通过结论，后继仅由主控安排原串行dependency Stage。
+
+本Reviewer完整读取三文件差异及两个实际JSON，以成熟JSON/YAML实际运行`node --max-old-space-size=512 .verification/review-type-plan.mjs 68bc4d8c5d182575fe6fe679a436033e8cdc6b36 7a0058fefb8499ffb37ffebc47e24866f0218ff7`，EXIT0：上游原锁版本、七项精确新增、完整manifest其余字段及清单56项逐项一致，变更集合只含这三文件。`check-revision.ps1`准确7a0058→68bc4d8c实际EXIT0，一Markdown/1本地链接及Git空白通过，BelowNormal/Node512MiB。没有安装依赖、创建Program或运行产品正文；T12/recover/后台Job仍为同Worker未完成范围，整体真实验收保持未通过。
