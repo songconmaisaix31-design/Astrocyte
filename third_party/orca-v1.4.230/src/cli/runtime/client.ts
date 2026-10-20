@@ -58,6 +58,7 @@ export class RuntimeClient {
     process.env
   )
   private readonly runtimeSourceFence: RuntimeSourceFence
+  private readonly swaOwnerCapability = process.env.SWA_OWNER_CAPABILITY || undefined
 
   // Why: browser commands trigger first-time session init (agent-browser connect +
   // CDP proxy setup) which can take 15-30s. 60s accommodates cold start without
@@ -93,12 +94,14 @@ export class RuntimeClient {
       terminalPromptPreflight?: { runtimeId: string | null }
     } & RuntimeOrchestrationEnvelope
   ): Promise<RuntimeRpcSuccess<TResult>> {
+    if (this.remote && this.swaOwnerCapability) throw new RuntimeClientError('scope_denied', 'The private product owner capability cannot be sent to a remote runtime')
     const effectiveTimeoutMs = options?.timeoutMs ?? this.resolveMethodTimeoutMs(method, params)
     const orchestrationMutation = isOrchestrationMutation(method, params)
     const terminalPromptMutation = isTerminalPromptMutation(method, params)
     const legacyTerminalPrompt = options?.legacyTerminalPrompt === true && terminalPromptMutation
     const durableMutation = !legacyTerminalPrompt && isDurableMutation(method, params)
-    if (orchestrationMutation) {
+    const carriesCompatibility = method.startsWith('orchestration.') || method === 'swa.workerSend'
+    if (orchestrationMutation || method === 'swa.workerSend') {
       await this.ensureOrchestrationContractCompatible(effectiveTimeoutMs)
     }
     const orchestrationRequestId = durableMutation
@@ -124,7 +127,7 @@ export class RuntimeClient {
       }
       return attachDurableMutationRecovery(error, orchestrationRequestId, originalCommand, method)
     }
-    const compatibilityEnvelope = method.startsWith('orchestration.')
+    const compatibilityEnvelope = carriesCompatibility
       ? {
           ...this.orchestrationCompatibility,
           compatibilityInvocationId:
@@ -132,8 +135,9 @@ export class RuntimeClient {
         }
       : {}
     const envelope = {
+      swaOwnerCapability: this.swaOwnerCapability,
       orchestrationCapability: options?.orchestrationCapability,
-      orchestrationContractVersion: method.startsWith('orchestration.')
+      orchestrationContractVersion: carriesCompatibility
         ? ORCHESTRATION_CONTRACT_VERSION
         : undefined,
       orchestrationRequestId,

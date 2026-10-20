@@ -13,7 +13,7 @@ import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { invocationSchema, helperReply, nativeObject, contextSchema, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
-import { discoverAgents, selectAgent } from './agent-discovery'
+import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource } from './task-result'
 
@@ -116,6 +116,7 @@ async function effect<T>(run: () => Promise<T>): Promise<T> {
 }
 
 export const SWA_METHODS = [
+  defineMethod({ name: 'swa.registeredAgent', permission: 'workspace', params: z.strictObject({ agent_id: z.string().min(1) }), handler: ({ agent_id }, { runtime }) => registeredAgent(runtime, agent_id) }),
   defineMethod({ name: 'swa.status', permission: 'workspace', params: null, handler: (_params, { runtime }) => ({
     native: runtime.getStatus(), authority_domain: authority(runtime),
     databases: runtime.getOrchestrationDb().db.pragma('database_list'),

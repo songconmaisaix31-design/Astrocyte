@@ -3,6 +3,7 @@ import {
   isStreamingMethod,
   type RpcAnyMethodDeclaration,
   type RpcEnvelopeMeta,
+  type RpcExecutionAdmission,
   type RpcMethod,
   type RpcRegistry,
   type RpcRequest,
@@ -37,6 +38,7 @@ export type DispatcherOptions = {
   methods?: readonly RpcAnyMethodDeclaration[]
   /** Pins every call to this scope, for in-process bridges that relay a non-owner caller. */
   callerScope?: RpcCallerScope
+  executionAdmission?: RpcExecutionAdmission
 }
 
 type AdmittedUnaryCall = {
@@ -52,10 +54,12 @@ export class RpcDispatcher {
   private readonly orchestrationMutations: OrchestrationMutationExecutor
   private readonly legacyOrchestration: OrchestrationLegacyCompatibility
   private readonly pinnedCallerScope: RpcCallerScope | undefined
+  private readonly executionAdmission: RpcExecutionAdmission | undefined
 
-  constructor({ runtime, methods = ALL_RPC_METHODS, callerScope }: DispatcherOptions) {
+  constructor({ runtime, methods = ALL_RPC_METHODS, callerScope, executionAdmission }: DispatcherOptions) {
     this.runtime = runtime
     this.pinnedCallerScope = callerScope
+    this.executionAdmission = executionAdmission
     this.registry = buildRegistry(methods)
     this.orchestrationMutations = getOrchestrationMutationExecutor(runtime)
     this.legacyOrchestration = new OrchestrationLegacyCompatibility(runtime)
@@ -172,6 +176,7 @@ export class RpcDispatcher {
   ): Promise<unknown> {
     const { runtime, orchestrationMutations, legacyOrchestration } = this
     const context = rpcContextFromTransport(runtime, request, options, caller)
+    await this.executionAdmission?.(request, params, context)
     // Why: test fakes of the runtime omit the client-hosted browser route.
     const clientHostedBrowser = await (runtime.routeClientHostedBrowserRpc?.(
       request.method,

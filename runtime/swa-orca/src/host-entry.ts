@@ -2,11 +2,14 @@ import { mkdirSync, realpathSync, lstatSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { format } from 'node:util'
 import { z } from 'zod'
+import { timingSafeEqual } from 'node:crypto'
 import { setAppEnvironment, type AppPathName } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
 import { setSecretStore } from '../../../third_party/orca-v1.4.230/src/shared/secret-store'
 
 for (const method of ['log', 'info', 'debug'] as const) console[method] = (...args: unknown[]) => { process.stderr.write(format(...args) + '\n') }
 if (process.env.SWA_LIFECYCLE_STDIN !== '1') throw new Error('SWA requires its real owning lifecycle pipe')
+const ownerCapability = Buffer.from(z.string().regex(/^[a-f0-9]{64}$/).parse(process.env.SWA_OWNER_CAPABILITY), 'hex')
+delete process.env.SWA_OWNER_CAPABILITY
 let ownerDisconnected = false
 process.stdin.once('end', () => { ownerDisconnected = true })
 process.stdin.resume()
@@ -96,8 +99,13 @@ async function main() {
     const { OrcaRuntimeRpcServer } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/runtime-rpc')
     const { ALL_RPC_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods')
     const { SWA_METHODS } = await import('./native-methods')
+    const { OrchestrationError } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
-    const rpc = new OrcaRuntimeRpcServer({ runtime, userDataPath: data, enableWebSocket: false, methods: [...ALL_RPC_METHODS.filter(method => allowed.has(method.name)), ...SWA_METHODS] })
+    const rpc = new OrcaRuntimeRpcServer({ runtime, userDataPath: data, enableWebSocket: false, methods: [...ALL_RPC_METHODS.filter(method => allowed.has(method.name)), ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
+      if (!request.method.startsWith('swa.') || request.method === 'swa.workerSend') return
+      const value = request.swaOwnerCapability
+      if (context.caller?.kind !== 'local-cli' || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value) || !timingSafeEqual(Buffer.from(value, 'hex'), ownerCapability)) throw new OrchestrationError('scope_denied', 'The private product owner capability is required')
+    } })
     registerCleanup(async () => {
       if (rpc.readClientActivity().requestsInFlight !== 0) throw new Error('SWA native requests remain in flight')
       const db = runtime.getOrchestrationDb()

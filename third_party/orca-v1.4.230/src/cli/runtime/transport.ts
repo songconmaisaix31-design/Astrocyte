@@ -209,6 +209,7 @@ export async function sendRequest<TResult>(
           orchestrationRequestId: envelope?.orchestrationRequestId,
           compatibilityInvocationId: envelope?.compatibilityInvocationId,
           orchestrationCompatibilityEvidence: envelope?.orchestrationCompatibilityEvidence,
+          swaOwnerCapability: envelope?.swaOwnerCapability,
           expectedRuntimeSource
         })}\n`
       )

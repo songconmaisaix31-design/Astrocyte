@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +31,7 @@ type Config struct {
 	DiscoveryClaudeHome   string
 	DiscoveryPiHome       string
 	ProtectedRoots        []string
+	OwnerCapability       string
 }
 
 type Runtime struct{ config Config }
@@ -95,6 +97,7 @@ func (r *Runtime) ChildEnvironment() []string { return r.environment() }
 
 type bridgeRequest struct {
 	Operation    string                          `json:"operation"`
+	AgentID      string                          `json:"agent_id,omitempty"`
 	ProjectID    string                          `json:"project_id,omitempty"`
 	Command      *app.OrcaCommand                `json:"command,omitempty"`
 	Invocation   *app.OrcaInvocation             `json:"invocation,omitempty"`
@@ -125,6 +128,7 @@ func (r *Runtime) environment() []string {
 		"PI_CODING_AGENT_DIR="+filepath.Join(r.config.DataRoot, "pi"),
 		"SWA_DATA_DIR="+r.config.DataRoot,
 		"SWA_INSTALL_ROOT="+r.config.InstallRoot,
+		"SWA_OWNER_CAPABILITY="+r.config.OwnerCapability,
 		"SWA_PROTECTED_ROOTS="+strings.Join(r.config.ProtectedRoots, string(filepath.ListSeparator)),
 		"SWA_EXECUTABLE="+filepath.Join(r.config.InstallRoot, "swa.exe"),
 		"SWA_AGENT_PROFILE="+r.config.AgentProfile,
@@ -164,7 +168,18 @@ func (r *Runtime) call(ctx context.Context, request bridgeRequest, mutation bool
 		return reply, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "the installed native RuntimeClient could not start", RequiredAction: "inspect_product_installation"}
 	}
 	waitErr := cmd.Wait()
-	if err := json.Unmarshal(stdout.Bytes(), &reply); err != nil {
+	decode := json.NewDecoder(bytes.NewReader(stdout.Bytes()))
+	if request.Operation == "registered_agent" {
+		decode.DisallowUnknownFields()
+	}
+	decodeErr := decode.Decode(&reply)
+	if decodeErr == nil {
+		var extra any
+		if err := decode.Decode(&extra); err != io.EOF {
+			decodeErr = errors.New("native client returned trailing data")
+		}
+	}
+	if decodeErr != nil {
 		code := apierrors.ProviderUnavailable
 		if mutation {
 			code = apierrors.DeliveryUnknown

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -89,6 +91,10 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_local_agent_home", 4)
 	}
+	ownerSecret := make([]byte, 32)
+	if _, err := rand.Read(ownerSecret); err != nil {
+		return output.failure("provider_unavailable", err.Error(), "inspect_private_owner_capability", 4)
+	}
 	native, err := orcaadapter.New(orcaadapter.Config{
 		InstallRoot: install, DataRoot: canonicalData,
 		NodeExecutable:        filepath.Join(install, "node", "node.exe"),
@@ -101,6 +107,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		DiscoveryClaudeHome:   os.Getenv("CLAUDE_CONFIG_DIR"),
 		DiscoveryPiHome:       os.Getenv("PI_CODING_AGENT_DIR"),
 		ProtectedRoots:        roots,
+		OwnerCapability:       hex.EncodeToString(ownerSecret),
 	})
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_installed_runtime", 4)

@@ -1,7 +1,12 @@
 package orca
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -27,22 +32,41 @@ func TestOrcaCLIRealPrivateRuntimeScope(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	scope, err := runtime.ResolveScope(ctx, project, app.OrcaCommand{Action: "controller.show", Controller: controller})
+	if err == nil {
+		t.Fatal("没有私有 owner 凭据的直接 Native 请求必须拒绝")
+	}
+	endpoint, token := os.Getenv("SWA_ENDPOINT"), os.Getenv("SWA_PROJECT_TOKEN")
+	if endpoint == "" || token == "" {
+		t.Fatal("需要已批准的实际项目 HTTP 入口")
+	}
+	body, err := json.Marshal(app.OrcaCommand{Action: "controller.show", Controller: controller})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if scope.ProjectID != project || scope.Controller != controller || scope.AuthorityDomain == "" {
-		t.Fatal("真实原生记录未证明当前项目和控制端")
-	}
-	agent, model := os.Getenv("SWA_REAL_AGENT"), os.Getenv("SWA_REAL_MODEL")
-	if agent == "" || model == "" {
-		t.Fatal("需要明确实际本机 Agent 与模型")
-	}
-	selection, err := runtime.ResolveSelection(ctx, project, app.OrcaCommand{Action: "worker.start", Agent: agent, Model: model})
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint+"/api/v1/local-projects/"+url.PathEscape(project)+"/orca/commands", bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if selection.AgentID != agent || selection.ExternalTarget != agent || selection.Model != model || selection.Provider == "" || selection.Version == "" || !filepath.IsAbs(selection.Executable) || selection.ConfigurationVersion == "" {
-		t.Fatal("原生选择没有证明所选真实本机 Agent、模型与外发目标")
+	request.Header.Set("Authorization", "Bearer "+token)
+	request.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	response, err := client.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	var reply struct {
+		OK     bool `json:"ok"`
+		Result struct {
+			Scope app.OrcaScope `json:"scope"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(io.LimitReader(response.Body, 2*1024*1024)).Decode(&reply); err != nil {
+		t.Fatal(err)
+	}
+	scope = reply.Result.Scope
+	if response.StatusCode != http.StatusOK || !reply.OK || scope.ProjectID != project || scope.Controller != controller || scope.AuthorityDomain == "" {
+		t.Fatal("实际 HTTP 批准与真实原生记录未证明当前项目和控制端")
 	}
 	config.ProtectedRoots = append(config.ProtectedRoots, data)
 	if _, err := New(config); err == nil {

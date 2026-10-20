@@ -2,9 +2,10 @@ import { stdin, stdout } from 'node:process'
 import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { RuntimeClientError, RuntimeRpcFailureError } from '../../../third_party/orca-v1.4.230/src/cli/runtime/types'
-import { commandSchema, invocationSchema, capabilityRequirementsSchema, agentSelectionSchema, nativeObject, nativeError, type Invocation } from './contracts'
+import { commandSchema, invocationSchema, capabilityRequirementsSchema, agentSelectionSchema, registeredAgentSchema, nativeObject, nativeError, type Invocation } from './contracts'
 
 const requestSchema = z.discriminatedUnion('operation', [
+  z.strictObject({ operation: z.literal('registered_agent'), agent_id: z.string().min(1) }),
   z.object({ operation: z.literal('scope'), project_id: z.string().min(1), command: commandSchema }),
   z.object({ operation: z.literal('capabilities'), project_id: z.string().min(1), requirements: capabilityRequirementsSchema }),
   z.object({ operation: z.literal('selection'), project_id: z.string().min(1), command: commandSchema }),
@@ -28,6 +29,12 @@ async function main() {
   const data = process.env.SWA_DATA_DIR, executable = process.env.SWA_EXECUTABLE
   if (!data || !executable) throw new Error('Explicit product runtime paths are required')
   const client = new RuntimeClient(data, 130_000, null, null, executable)
+  if (request.operation === 'registered_agent') {
+    const response = await client.call('swa.registeredAgent', { agent_id: request.agent_id })
+    const result = registeredAgentSchema.parse(response.result)
+    stdout.write(JSON.stringify({ envelope: { ok: true, runtime_id: response._meta.runtimeId, authority_domain: result.runtime.authority_domain, result } }) + '\n')
+    return
+  }
   if (request.operation === 'scope') {
     const response = await client.call('swa.scope', { project_id: request.project_id, controller: request.command.controller })
     stdout.write(JSON.stringify({ scope: response.result }) + '\n')

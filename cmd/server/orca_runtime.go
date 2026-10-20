@@ -24,7 +24,10 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
-func composeOrcaExecution(db *sqlite.DB, projects workspaceapp.LocalProjects) (workspaceapp.OrcaExecution, error) {
+func composeOrcaExecution(db *sqlite.DB, projects interface {
+	workspaceapp.LocalProjects
+	ConfigureExternalCLIRegistry(workspaceapp.ExternalCLIRegistry) error
+}) (workspaceapp.OrcaExecution, error) {
 	root := os.Getenv("SWA_INSTALL_ROOT")
 	if root == "" {
 		if os.Getenv("SWA_DATA_DIR") != "" {
@@ -44,8 +47,12 @@ func composeOrcaExecution(db *sqlite.DB, projects workspaceapp.LocalProjects) (w
 		DiscoveryClaudeHome:   os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"),
 		DiscoveryPiHome:       os.Getenv("SWA_DISCOVERY_PI_HOME"),
 		ProtectedRoots:        filepath.SplitList(os.Getenv("SWA_PROTECTED_ROOTS")),
+		OwnerCapability:       os.Getenv("SWA_OWNER_CAPABILITY"),
 	})
 	if err != nil {
+		return nil, err
+	}
+	if err := projects.ConfigureExternalCLIRegistry(runtime); err != nil {
 		return nil, err
 	}
 	return workspaceapp.NewOrcaExecutionService(db, agents.ProjectFiles{}, projects, runtime, db)

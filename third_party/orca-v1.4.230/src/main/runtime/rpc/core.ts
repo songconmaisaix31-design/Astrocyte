@@ -72,6 +72,7 @@ export type RpcRequest = {
   orchestrationRequestId?: string
   compatibilityInvocationId?: string
   orchestrationCompatibilityEvidence?: OrchestrationCompatibilityEvidence
+  swaOwnerCapability?: unknown
   // Why unknown: untrusted wire input; runtime-source-admission.ts validates it.
   expectedRuntimeSource?: unknown
   // Why unknown: phone-supplied routing target (`runtime:<env>`), validated where it is read.
@@ -85,6 +86,8 @@ export type LegacyCoordinatorAuthorityProof = Readonly<{
   paneKey: string
   consumerGeneration: number
 }>
+
+export type RpcExecutionAdmission = (request: Readonly<RpcRequest>, params: unknown, context: RpcContext) => Promise<void>
 
 export type RpcContext = {
   runtime: OrcaRuntimeService

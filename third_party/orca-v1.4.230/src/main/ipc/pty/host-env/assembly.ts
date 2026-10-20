@@ -46,6 +46,7 @@ export function buildPtyHostEnv(
   baseEnv: Record<string, string>,
   opts: BuildPtyHostEnvOptions
 ): Record<string, string> {
+  if (process.env.SWA_OWNER_CAPABILITY !== undefined || baseEnv.SWA_OWNER_CAPABILITY !== undefined) baseEnv.SWA_OWNER_CAPABILITY = ''
   mergePersistedWindowsPath(baseEnv)
   Object.assign(baseEnv, buildConfiguredProxyEnv(opts.networkProxySettings))
 

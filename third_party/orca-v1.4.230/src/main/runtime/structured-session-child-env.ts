@@ -71,6 +71,7 @@ import { resolveStructuredWorkerIdentityForSession } from './structured-worker-a
  * report for this session too; the structured session is its one status producer.
  */
 export const STRUCTURED_CHILD_ENV_TO_DELETE: readonly string[] = [
+  'SWA_OWNER_CAPABILITY',
   'ORCA_PANE_KEY',
   'ORCA_TAB_ID',
   'ORCA_WORKTREE_ID',

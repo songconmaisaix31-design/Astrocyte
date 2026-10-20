@@ -3,6 +3,22 @@
   "$id": "https://astrocyte.local/contracts/swa-cli.schema.json",
   "title": "SWA native execution command and response",
   "$defs": {
+    "registeredAgent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "id", "adapter", "execution_mode", "registered", "source", "source_revision", "registry", "runtime"],
+      "properties": {
+        "schema": {"const": "swa.registered-agent.v1"}, "id": {"type": "string", "minLength": 1}, "adapter": {"type": "string", "minLength": 1},
+        "execution_mode": {"enum": ["structured", "terminal"]}, "registered": {"const": true},
+        "source": {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"enum": ["structured-registry", "tui-launcher"]}}},
+        "source_revision": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "registry": {"type": "object", "additionalProperties": false, "required": ["orca_version", "artifact_sha256"], "properties": {"orca_version": {"const": "1.4.230"}, "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}},
+        "runtime": {"type": "object", "additionalProperties": false, "required": ["runtime_id", "authority_domain", "data_root", "install_root"], "properties": {"runtime_id": {"type": "string", "minLength": 1}, "authority_domain": {"type": "string", "minLength": 1}, "data_root": {"type": "string", "minLength": 1}, "install_root": {"type": "string", "minLength": 1}}}
+      },
+      "oneOf": [
+        {"properties": {"execution_mode": {"const": "structured"}, "source": {"properties": {"kind": {"const": "structured-registry"}}}}},
+        {"properties": {"execution_mode": {"const": "terminal"}, "source": {"properties": {"kind": {"const": "tui-launcher"}}}}}
+      ]
+    },
     "command": {
       "type": "object",
       "additionalProperties": false,

@@ -35,6 +35,16 @@ export type CapabilityRequirements = z.infer<typeof capabilityRequirementsSchema
 export const observationSchema = z.strictObject({
   status: z.enum(['available', 'unavailable', 'unknown']), reason: z.string().min(1), source: z.string().min(1), checked_at: z.string().optional()
 })
+export const registeredAgentSchema = z.strictObject({
+  schema: z.literal('swa.registered-agent.v1'), id: z.string().min(1), adapter: z.string().min(1),
+  execution_mode: z.enum(['structured', 'terminal']), registered: z.literal(true),
+  source: z.strictObject({ kind: z.enum(['structured-registry', 'tui-launcher']) }),
+  source_revision: z.string().regex(/^[a-f0-9]{40}$/),
+  registry: z.strictObject({ orca_version: z.literal('1.4.230'), artifact_sha256: z.string().regex(/^[a-f0-9]{64}$/) }),
+  runtime: z.strictObject({ runtime_id: z.string().min(1), authority_domain: z.string().min(1), data_root: z.string().min(1), install_root: z.string().min(1) })
+}).superRefine((value, context) => {
+  if ((value.execution_mode === 'structured') !== (value.source.kind === 'structured-registry')) context.addIssue({ code: 'custom', message: 'The registered execution mode and native source disagree' })
+})
 export const agentCapabilitiesSchema = z.strictObject({
   schema: z.literal('swa.capabilities.v1'), source_revision: z.string().regex(/^[a-f0-9]{40}$/),
   registry: z.strictObject({ orca_version: z.literal('1.4.230'), artifact_sha256: z.string().regex(/^[a-f0-9]{64}$/) }),

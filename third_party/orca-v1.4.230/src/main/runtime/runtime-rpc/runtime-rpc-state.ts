@@ -119,10 +119,11 @@ export class RuntimeRpcState {
     keepaliveIntervalMs = KEEPALIVE_INTERVAL_MS,
     longPollCap = LONG_POLL_CAP,
     metadataOwnershipPollMs = RUNTIME_METADATA_OWNERSHIP_POLL_MS,
-    methods
+    methods,
+    executionAdmission
   }: OrcaRuntimeRpcServerOptions) {
     this.runtime = runtime
-    this.dispatcher = new RpcDispatcher({ runtime, methods: methods ?? ALL_RPC_METHODS })
+    this.dispatcher = new RpcDispatcher({ runtime, methods: methods ?? ALL_RPC_METHODS, executionAdmission })
     this.userDataPath = userDataPath
     this.pid = pid
     this.platform = platform

@@ -1,5 +1,5 @@
 import type { OrcaRuntimeService } from '../orca-runtime'
-import type { RpcAnyMethodDeclaration } from '../rpc/core'
+import type { RpcAnyMethodDeclaration, RpcExecutionAdmission } from '../rpc/core'
 import type { DeviceRegistry } from '../device-registry'
 import type { E2EEKeypair } from '../e2ee-keypair'
 import type { MobileSocketTransportMetadata } from '../rpc/mobile-socket-wiring'
@@ -62,6 +62,7 @@ export type OrcaRuntimeRpcServerOptions = {
   metadataOwnershipPollMs?: number
   // Why: tests may inject inert protocol stages before production authorization registers them.
   methods?: readonly RpcAnyMethodDeclaration[]
+  executionAdmission?: RpcExecutionAdmission
 }
 
 export type PairingOfferUnavailableReason =

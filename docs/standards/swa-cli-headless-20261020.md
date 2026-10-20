@@ -865,7 +865,7 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 
 本次实际静态检查为两份变动TypeScript源码解析、JSON/YAML和两份任务Markdown/来源检查及`git diff --check`，均EXIT0；USAGE经marked18.1.0提取的14个PowerShell片段逐一通过原生Parser.ParseInput，只解析语法，没有运行任何human、安装、服务或模型正文。主控70ca0723当前总契约和be1完整新增审核段均已实际读取。
 
-## 12. 原生CLI外发批准消费者提案
+## 12. 原生CLI外发批准消费者
 
 主控`msg_31858f3b7b00`要求补齐真实注册→人工单CLI批准→选择→启动消费者，先由原Reviewer审核。本节只提案，尚未修改新写域或冻结接口。当前`SetProjectSettings`用旧`NativeRegistry.Adapter`校验ExternalModelCLI，而`agents/native.go`实际只注册codex/pi/claude/opencode；产品StructuredAgentRegistry还包含其他ACP Agent，不能向旧S3 Registry填空adapter或静态ID取得批准。
 
@@ -896,6 +896,14 @@ bridge请求及Native params均strict、agent_id非空；没有project批准、G
 
 Native读取本安装VERSION的完整40位source_revision和本安装runtime/host.cjs的SHA256，runtime字段取实际runtime ID、原SQLite authority及已核canonical私有data/install根。Node RuntimeClient保留真实响应_meta.runtimeId，将其填入既有envelope.runtime_id；authority_domain取同次Native结果，原RPC metadata/source fence保持。Go adapter严格解码并逐项要求：ok=true且无error；schema和registered精确匹配；id等于原请求CLI，adapter非空；execution_mode及source.kind成对；完整revision等于Config.InstallRoot下实际VERSION；artifact等于同根实际host.cjs；runtime.runtime_id等于真实RPC envelope的非空runtime_id，runtime.authority_domain等于非空外层authority_domain；canonical data_root/install_root分别等于本adapter的明确私有/安装根。任一字段缺失、未知、错误或不一致立即返回证据/依赖错误，只有全部通过才ValidateExternalCLI返回nil。它不执行全量发现或命令版本探测；文件摘要只核准确安装来源，不参与执行状态或另建Hash系统。
 
-申请新增窄写域为`internal/workspace/app/contracts.go`、`internal/workspace/app/projects.go`及新增`internal/workspace/app/external_cli_registry_real_test.go`；现有`cmd/server/orca_runtime.go`及相关真实测试、`internal/adapters/orca/**`、`runtime/swa-orca/**`、契约与本任务两文档沿原写域同步。不修改`internal/adapters/agents/native.go`，不增加公共HTTP身份或批准字段，不改变AllowedTools非空拒绝。
+main准确`3d82bfedf08af471c974461bf6ac008b9e1e5324`按独立`b64c90d0647e8c5ddd7478999818fc00e582fdd3`接受将接口定稿于SPEC §21.1.4，授予`internal/workspace/app/contracts.go`、`internal/workspace/app/projects.go`及新增`internal/workspace/app/external_cli_registry_real_test.go`窄写域；现有Composition、orca adapter、runtime、契约与本任务两文档沿原写域同步。HistoryRoots和旧S3 NativeAdapter继续使用原注册者；AllowedTools非空仍拒绝。
 
-必要检查为：实际安装Native registry中一个旧四CLI之外的已注册ID可通过注册端口且其来源对应同一候选；用户本人能以该实际ID更新单CLI批准并取得真实settings revision；旧批准CLI与另一真实选择不匹配时在模型前拒绝；真实未知ID/未绑定TUI/Native服务不可达拒绝且原设置未变；无Orca配置时原四CLI/未知ID行为及HistoryRoots/旧NativeAdapter消费者保持；非空AllowedTools、Agent bearer修改设置和旧revision继续拒绝。测试使用真实私有SQLite、实际HTTP/Native方法及公开项目，人工批准仍由用户本人完成；没有虚假adapter、协议或业务结果。当前只读来源与文档检查，不运行新服务、测试或模型；本提案等待原Reviewer接受及主控定稿/扩展写域，同时继续已授输入与T12实现。
+必要检查为：实际安装Native registry中一个旧四CLI之外的已注册ID可通过注册端口且其来源对应同一候选；用户本人能以该实际ID更新单CLI批准并取得真实settings revision；旧批准CLI与另一真实选择不匹配时在模型前拒绝；真实未知ID/未绑定TUI/Native服务不可达拒绝且原设置未变；无Orca配置时原四CLI/未知ID行为及HistoryRoots/旧NativeAdapter消费者保持；非空AllowedTools、Agent bearer修改设置和旧revision继续拒绝。测试使用真实私有SQLite、实际HTTP/Native方法及公开项目，人工批准仍由用户本人完成；没有虚假adapter、协议或业务结果。
+
+现有构造器保持，Composition只在明确配置Orca时将同一adapter一次注入项目服务。非空ExternalModelCLI经真实Native注册端口验证，传输或任何来源字段不匹配立即失败且不保存；Native方法不运行发现或命令版本探测。当前只有实际structured注册能通过；缺少真实terminal launcher绑定时明确拒绝。Go严格解码bridge和result，再核同安装VERSION、host.cjs、runtime/authority及canonical根。独立serve生成随机私有owner凭据，只经Go与Node的私有本地包络传递；Node host启动时将其从继承环境移除，SWA方法在进入既有receipt/replay之前核验。原生helper/current-consumer的完整T12准入仍在实施，本阶段没有授予真实执行能力。
+
+`TestExternalCLIRegistryRealHumanApproval`使用同安装服务中由用户实际批准的独立观察项目：`SWA_REAL_ENABLED=1`，`SWA_ENDPOINT`、`SWA_REAL_RUNTIME_ID`以及`SWA_REAL_REGISTRY_PROJECT_ID`、`SWA_REAL_REGISTRY_PROJECT_TOKEN`、`SWA_REAL_REGISTRY_AGENT`均取用户本人执行USAGE流程后的实际值。Agent ID必须在旧四CLI之外；检查实际保存的revision、工具关闭条件、同runtime实际registry及Agent bearer写入拒绝后的项目保全。获准窗口运行`go test ./internal/workspace/app -run '^TestExternalCLIRegistryRealHumanApproval$' -count=1 -v -p=4`，其余未知ID、无服务、旧产品和人工设置失败路径仍按前述计划运行。此测试不创建人类会话或替用户保存设置，当前正文NOT_RUN。
+
+N07静态消费者允许明确模型参与选择，不以缺少默认模型等同缺少账号。Pi使用原生`parsePiModelOptionId`的provider/model结构与对应provider的原生认证条目，OAuth条目同时要求access/refresh/有限expires；配置文件没有默认模型时capabilities保留unknown。Codex默认openai分支遵循pin来源的OAuth mirror约束，自定义provider缺少对应账号证明保持unknown；Claude文件API key和OAuth均记录anthropic协议来源。原始账号有效性、私有账户实际绑定及工具策略仍未通过，ACP配置适配继续保留unknown，不据这些静态观察宣布可启动。
+
+本次`.verification/swa-cli-headless-20261020/registry-static-01/`保留Go八文件gofmt-d、15份变动TS/JS语法及JSON/YAML解析的实际EXIT0；现有只读架构检查45包通过，两份Markdown、5条本地链接、24项Orca及11项Pi来源路径通过，差异空白检查通过。完整TypeScript检查、生成的web类型、编译、测试正文、安装和模型全部NOT_RUN；主控独立16ad的Go结果只属于其准确来源，不计本阶段Worker自测。原S按主控restore10恢复58620，原Orca保持，当前无Worker重操作授权。N08、N04/N05、T12、真实原生Job/完整成果及运行依赖整理由同一Worker继续。
