@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`53ad6e1479ef5cf3099372d2855087cf002513bb`已普通push，包含CLI/成果导出/打包及父持Job实现。原Reviewer接受F08关闭/创建屏障的静态修复，退回F09：已创建root的Job绑定失败仍可能过早成为tree exited，返修交原Worker。准确6168的F04—F07及父持Job方案/测试接受保持，全部后继动态结果尚未取得。第二次窗口准备在停服前因可用内存不足被拒，原S12800继续运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6`已普通push，原Reviewer接受F09静态修复：实际成功绑定且观察到root成员才允许全树结算，无PID的真实processless单独处理。F04—F08及已审方案接受保持；完整成果只读导出、候选安装入口/说明和实际验收脚本继续由原Worker完成。原S12800继续运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
@@ -34,6 +34,7 @@
 | 本次 M1 原入口 | 准确 `987811f417e92cd6f15961e60c279f616e3b21a8`，原依赖冻结安装与未补丁的 `pnpm check:contracts` 均 EXIT0；13项警告、264项示例及类型一致均实际完成。Node24.16.0、pnpm11.27.0、CLI2.60.0；历史崩溃未复现，未应用补丁，T02—T08未执行，完整修复因果证据不足 |
 | 首版CLI依赖准备 | pnpm11.27.0的`install --lockfile-only --ignore-scripts`及`install --frozen-lockfile --ignore-scripts`均EXIT0，私有store/TEMP/TMP/cache，两次新资源门限通过。实际入口签名拒绝、peer警告及镜像超时/原命令内建重试记录保留；尚未构建或调用模型，不能计为安装包和CLI功能通过 |
 | 第二次窗口准备 | 根忽略目录`prepare-02/backup-resources.json`记录UTC11:00:16、CPU7.2%、可用内存3.529GiB；低于4GiB门槛，prepare命令EXIT1，未备份完成、未停止原S、未交窗口。原件保留于`.verification/swa-cli-v1-control/prepare-02/`；依赖更新、实际类型生成和候选构建继续等待新资源准入 |
+| 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
 
