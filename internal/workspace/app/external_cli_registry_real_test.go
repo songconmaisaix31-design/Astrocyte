@@ -2,17 +2,22 @@ package app_test
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+	_ "modernc.org/sqlite"
 )
 
 func TestExternalCLIRegistryRealHumanApproval(t *testing.T) {
@@ -24,25 +29,42 @@ func TestExternalCLIRegistryRealHumanApproval(t *testing.T) {
 	if endpoint == "" || project == "" || token == "" || agent == "" || agent == "codex" || agent == "claude" || agent == "pi" || agent == "opencode" {
 		t.Fatal("需要旧四CLI之外实际注册ID及用户已批准项目的观察token")
 	}
+	root := os.Getenv("SWA_REAL_DATA_ROOT")
+	if !filepath.IsAbs(root) {
+		t.Fatal("需要同安装实际私有数据根")
+	}
+	root, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	databasePath, err := filepath.EvalSymlinks(filepath.Join(root, "workspace", "state.sqlite"))
+	if err != nil || filepath.Clean(databasePath) != filepath.Join(root, "workspace", "state.sqlite") {
+		t.Fatal("实际项目SQLite缺失或重定向")
+	}
+	path := filepath.ToSlash(databasePath)
+	if filepath.VolumeName(path) != "" {
+		path = "/" + path
+	}
+	uri := url.URL{Scheme: "file", Path: path, RawQuery: "mode=ro"}
+	database, err := sql.Open("sqlite", uri.String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+	database.SetMaxOpenConns(1)
 	client := &http.Client{Timeout: 130 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
 	readProject := func() domain.LocalProject {
-		request, err := http.NewRequest(http.MethodGet, endpoint+"/api/v1/local-projects", nil)
-		if err != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		var data string
+		if err := database.QueryRowContext(ctx, "SELECT data FROM local_agent_projects WHERE id=?", project).Scan(&data); err != nil {
 			t.Fatal(err)
 		}
-		request.Header.Set("Authorization", "Bearer "+token)
-		response, err := client.Do(request)
-		if err != nil {
-			t.Fatal(err)
+		var result domain.LocalProject
+		if err := json.Unmarshal([]byte(data), &result); err != nil || result.ID != project {
+			t.Fatal("实际只读SQLite项目记录不匹配")
 		}
-		defer response.Body.Close()
-		var result struct {
-			Items []domain.LocalProject `json:"items"`
-		}
-		if err := json.NewDecoder(io.LimitReader(response.Body, 2*1024*1024)).Decode(&result); err != nil || response.StatusCode != http.StatusOK || len(result.Items) != 1 || result.Items[0].ID != project {
-			t.Fatal("实际Agent只能观察其已批准项目")
-		}
-		return result.Items[0]
+		return result
 	}
 	before := readProject()
 	if before.Settings.ExternalModelCLI != agent || before.Settings.Revision < 2 || len(before.Settings.AllowedTools) != 0 {
@@ -104,6 +126,10 @@ func TestExternalCLIRegistryRealHumanApproval(t *testing.T) {
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusForbidden {
 		t.Fatal("实际Agent bearer修改批准必须拒绝")
+	}
+	var refusal apierrors.ErrorEnvelope
+	if err := json.NewDecoder(io.LimitReader(response.Body, 2*1024*1024)).Decode(&refusal); err != nil || refusal.SchemaVersion != 1 || refusal.Error == nil || refusal.Error.Code != apierrors.ScopeDenied || refusal.Error.Message != "Agent credential requires a current human project grant and permitted operation" {
+		t.Fatal("实际拒绝必须来自项目Agent操作权限，不得用依赖失败代替")
 	}
 	if !reflect.DeepEqual(before, readProject()) {
 		t.Fatal("拒绝后实际项目与设置必须保持")

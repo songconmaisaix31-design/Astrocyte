@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -32,8 +33,9 @@ func TestOrcaCLIRealPrivateRuntimeScope(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	scope, err := runtime.ResolveScope(ctx, project, app.OrcaCommand{Action: "controller.show", Controller: controller})
-	if err == nil {
-		t.Fatal("没有私有 owner 凭据的直接 Native 请求必须拒绝")
+	var refusal *app.OrcaNativeError
+	if !errors.As(err, &refusal) || refusal.Code != "scope_denied" || refusal.Message != "The private product owner capability is required" {
+		t.Fatal("没有私有 owner 凭据的直接 Native 请求必须明确因owner权限拒绝", err)
 	}
 	endpoint, token := os.Getenv("SWA_ENDPOINT"), os.Getenv("SWA_PROJECT_TOKEN")
 	if endpoint == "" || token == "" {

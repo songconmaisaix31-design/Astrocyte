@@ -3198,6 +3198,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SwaRegisteredAgentV1: components["schemas"]["registeredAgent"];
+        SwaAgentCapabilitiesV1: components["schemas"]["capabilities"];
+        SwaAgentSelectionV1: components["schemas"]["agentSelection"];
         OpenVikingStatusV1: {
             /** @constant */
             schema_version: 1;
@@ -7753,10 +7756,8 @@ export interface components {
             result_file?: string;
             output_dir?: string;
             name?: string;
-            /** @constant */
-            agent?: "pi";
-            /** @constant */
-            model?: "openai-codex/gpt-6.1-sol";
+            agent?: string;
+            model?: string;
             /** @constant */
             source?: "transcript";
             cursor?: string;
@@ -7782,6 +7783,139 @@ export interface components {
             dispatch_id?: string;
             result?: unknown;
             error?: components["schemas"]["nativeError"];
+        };
+        registeredAgent: {
+            /** @constant */
+            schema: "swa.registered-agent.v1";
+            id: string;
+            adapter: string;
+            /** @enum {unknown} */
+            execution_mode: "structured" | "terminal";
+            /** @constant */
+            registered: true;
+            source: {
+                /** @enum {unknown} */
+                kind: "structured-registry" | "tui-launcher";
+            };
+            source_revision: string;
+            registry: {
+                /** @constant */
+                orca_version: "1.4.230";
+                artifact_sha256: string;
+            };
+            runtime: {
+                runtime_id: string;
+                authority_domain: string;
+                data_root: string;
+                install_root: string;
+            };
+        } & ({
+            /** @constant */
+            execution_mode?: "structured";
+            source?: {
+                /** @constant */
+                kind?: "structured-registry";
+            };
+        } | {
+            /** @constant */
+            execution_mode?: "terminal";
+            source?: {
+                /** @constant */
+                kind?: "tui-launcher";
+            };
+        });
+        settingsSource: {
+            /** @enum {unknown} */
+            kind: "native" | "orca-profile";
+            path?: string;
+            revision?: number;
+        };
+        observation: {
+            /** @enum {unknown} */
+            status: "available" | "unavailable" | "unknown";
+            reason: string;
+            source: string;
+            checked_at?: string;
+        };
+        installedObservation: {
+            /** @enum {unknown} */
+            status: "available" | "unavailable" | "unknown";
+            reason: string;
+            source: string;
+            checked_at?: string;
+            executable?: string;
+            version?: string;
+        };
+        configuredObservation: {
+            /** @enum {unknown} */
+            status: "available" | "unavailable" | "unknown";
+            reason: string;
+            source: string;
+            checked_at?: string;
+            model?: string;
+            provider?: string;
+            account_source?: string;
+        };
+        requirements: {
+            settings_revision: number;
+            allow_directory: boolean;
+            allowed_subdirs: string[] | null;
+            allowed_actions: string[] | null;
+            allowed_tools: string[] | null;
+            grant_actions: string[] | null;
+            external_model_cli: string;
+            allow_agent_control: boolean;
+        };
+        capabilities: {
+            /** @constant */
+            schema: "swa.capabilities.v1";
+            source_revision: string;
+            registry: {
+                /** @constant */
+                orca_version: "1.4.230";
+                artifact_sha256: string;
+            };
+            discovery: {
+                /** @constant */
+                host: "local";
+                platform: string;
+                observed_at: string;
+                settings_source: components["schemas"]["settingsSource"];
+            };
+            agents: {
+                id: string;
+                adapter: string;
+                /** @constant */
+                execution_mode: "structured";
+                registered: components["schemas"]["observation"];
+                enabled: components["schemas"]["observation"];
+                installed: components["schemas"]["installedObservation"];
+                configured: components["schemas"]["configuredObservation"];
+                launchable: components["schemas"]["observation"];
+                control: {
+                    start: components["schemas"]["observation"];
+                    send: components["schemas"]["observation"];
+                    read: components["schemas"]["observation"];
+                    stop: components["schemas"]["observation"];
+                    resume: components["schemas"]["observation"];
+                    tools: components["schemas"]["observation"];
+                };
+                requirements: components["schemas"]["requirements"];
+            }[];
+        };
+        agentSelection: {
+            agent_id: string;
+            adapter: string;
+            /** @constant */
+            execution_mode: "structured";
+            executable: string;
+            version: string;
+            model: string;
+            provider: string;
+            external_target: string;
+            settings_source: components["schemas"]["settingsSource"];
+            settings_revision: number;
+            configuration_version: string;
         };
     };
     responses: {

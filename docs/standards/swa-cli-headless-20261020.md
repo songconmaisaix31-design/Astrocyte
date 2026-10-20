@@ -867,7 +867,7 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 
 ## 12. 原生CLI外发批准消费者
 
-主控`msg_31858f3b7b00`要求补齐真实注册→人工单CLI批准→选择→启动消费者，先由原Reviewer审核。本节只提案，尚未修改新写域或冻结接口。当前`SetProjectSettings`用旧`NativeRegistry.Adapter`校验ExternalModelCLI，而`agents/native.go`实际只注册codex/pi/claude/opencode；产品StructuredAgentRegistry还包含其他ACP Agent，不能向旧S3 Registry填空adapter或静态ID取得批准。
+本节接口按SPEC §21.1.4及独立b64技术接受实施。配置Orca时，`SetProjectSettings`通过同一真实adapter核实ExternalModelCLI的实际Native注册；产品StructuredAgentRegistry包含旧四CLI之外的ACP Agent。HistoryRoots和未配置Orca的产品继续使用旧NativeRegistry，两个注册来源各自保持原消费者。
 
 唯一方案是在Workspace App声明`ExternalCLIRegistry`只读端口`ValidateExternalCLI(ctx, cliID) error`。LocalProjectService保留原构造器，以一次性的`ConfigureExternalCLIRegistry(port) error`在Composition中绑定，nil或重复绑定立即失败。`SetProjectSettings`仅对非空ExternalModelCLI使用已绑定端口；未配置Orca的原产品继续调用既有NativeRegistry.Adapter。HistoryRoots、旧S3原生会话、NativeAdapter及其原验收维持原消费方；端口失败不改用旧registry。
 
@@ -902,8 +902,14 @@ main准确`3d82bfedf08af471c974461bf6ac008b9e1e5324`按独立`b64c90d0647e8c5ddd
 
 现有构造器保持，Composition只在明确配置Orca时将同一adapter一次注入项目服务。非空ExternalModelCLI经真实Native注册端口验证，传输或任何来源字段不匹配立即失败且不保存；Native方法不运行发现或命令版本探测。当前只有实际structured注册能通过；缺少真实terminal launcher绑定时明确拒绝。Go严格解码bridge和result，再核同安装VERSION、host.cjs、runtime/authority及canonical根。独立serve生成随机私有owner凭据，只经Go与Node的私有本地包络传递；Node host启动时将其从继承环境移除，SWA方法在进入既有receipt/replay之前核验。原生helper/current-consumer的完整T12准入仍在实施，本阶段没有授予真实执行能力。
 
-`TestExternalCLIRegistryRealHumanApproval`使用同安装服务中由用户实际批准的独立观察项目：`SWA_REAL_ENABLED=1`，`SWA_ENDPOINT`、`SWA_REAL_RUNTIME_ID`以及`SWA_REAL_REGISTRY_PROJECT_ID`、`SWA_REAL_REGISTRY_PROJECT_TOKEN`、`SWA_REAL_REGISTRY_AGENT`均取用户本人执行USAGE流程后的实际值。Agent ID必须在旧四CLI之外；检查实际保存的revision、工具关闭条件、同runtime实际registry及Agent bearer写入拒绝后的项目保全。获准窗口运行`go test ./internal/workspace/app -run '^TestExternalCLIRegistryRealHumanApproval$' -count=1 -v -p=4`，其余未知ID、无服务、旧产品和人工设置失败路径仍按前述计划运行。此测试不创建人类会话或替用户保存设置，当前正文NOT_RUN。
+`TestExternalCLIRegistryRealHumanApproval`使用同安装服务中由用户实际批准的独立观察项目：`SWA_REAL_ENABLED=1`，`SWA_ENDPOINT`、`SWA_REAL_RUNTIME_ID`、`SWA_REAL_DATA_ROOT`以及`SWA_REAL_REGISTRY_PROJECT_ID`、`SWA_REAL_REGISTRY_PROJECT_TOKEN`、`SWA_REAL_REGISTRY_AGENT`均取用户本人执行USAGE流程后的实际值。Agent ID必须在旧四CLI之外；以真实私有项目SQLite的mode=ro连接读取实际保存的revision、工具范围及拒绝后的项目保全，以合法项目内HTTP核同runtime实际registry和Agent bearer写入拒绝。获准窗口运行`go test ./internal/workspace/app -run '^TestExternalCLIRegistryRealHumanApproval$' -count=1 -v -p=4`，其余未知ID、无服务、旧产品和人工设置失败路径仍按前述计划运行。此测试不创建人类会话或替用户保存设置，当前正文NOT_RUN。
 
 N07静态消费者允许明确模型参与选择，不以缺少默认模型等同缺少账号。Pi使用原生`parsePiModelOptionId`的provider/model结构与对应provider的原生认证条目，OAuth条目同时要求access/refresh/有限expires；配置文件没有默认模型时capabilities保留unknown。Codex默认openai分支遵循pin来源的OAuth mirror约束，自定义provider缺少对应账号证明保持unknown；Claude文件API key和OAuth均记录anthropic协议来源。原始账号有效性、私有账户实际绑定及工具策略仍未通过，ACP配置适配继续保留unknown，不据这些静态观察宣布可启动。
 
-本次`.verification/swa-cli-headless-20261020/registry-static-01/`保留Go八文件gofmt-d、15份变动TS/JS语法及JSON/YAML解析的实际EXIT0；现有只读架构检查45包通过，两份Markdown、5条本地链接、24项Orca及11项Pi来源路径通过，差异空白检查通过。完整TypeScript检查、生成的web类型、编译、测试正文、安装和模型全部NOT_RUN；主控独立16ad的Go结果只属于其准确来源，不计本阶段Worker自测。原S按主控restore10恢复58620，原Orca保持，当前无Worker重操作授权。N08、N04/N05、T12、真实原生Job/完整成果及运行依赖整理由同一Worker继续。
+本次`.verification/swa-cli-headless-20261020/registry-static-01/`保留Go八文件gofmt-d、15份变动TS/JS语法及JSON/YAML解析的实际EXIT0；现有只读架构检查45包通过，两份Markdown、5条本地链接、24项Orca及11项Pi来源路径通过，差异空白检查通过。主控独立16ad的Go结果只属于其准确来源，不计本阶段Worker自测。N08、N04/N05、T12、真实原生Job/完整成果及运行依赖整理由同一Worker继续。
+
+原Run正式`msg_14fe3a424d2f`交付一次generate-02，准确33c5干净前置及原资源门限通过；实际Stage返回EXIT0，只生成web/src/api/schema.d.ts，三份新SWA组件及明确Agent/model类型同步。资源UTC17:28:02.235392/04.744076、CPU49.6/55.0%、可用11254743040/11278381056字节、单调2.508680秒；日志/resources/exit及两次新鲜定向CIM无所属生成进程保存在自有generate-02。实际exec38224已结束，并以`msg_8a60d5bf2146`立即交回主控恢复原S；没有执行其他Stage。完整TypeScript检查、编译、测试正文、安装和模型继续NOT_RUN。
+
+按独立`msg_b4d0f6632c93`，N09检查在真实私有SQLite的mode=ro连接读取项目，实际HTTP只用于合法的项目内capabilities和Agent写入拒绝；未开放全局管理接口或获取人工会话。§12当前接口及USAGE批准来源已同步。下一构建原入口仅将候选目录改为全新dist/swa-cli-install-20261020-02，拟EvidenceName build-03，必须另获一次窗口；build01/02及部分candidate01保持，固定Node来源与校验未改。
+
+后继`generate-followup-static-01`保留两个Go检查文件的gofmt-d、实际生成TS及JSON/YAML解析、两份文档来源/5本地链接及构建入口PowerShell语法通过；正文均未执行。拒绝检查要求原Native owner scope_denied及明确消息，HTTP Agent拒绝要求实际scope_denied及当前操作权限原因，其他依赖错误不计权限通过。主控`msg_2d38445cb876`通报原S在restore11的CodeGraph导出检查失败并由主控独占诊断，Worker不处理原依赖或启动服务，尚无build授权。
