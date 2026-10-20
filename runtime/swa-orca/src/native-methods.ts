@@ -160,7 +160,7 @@ export const SWA_METHODS = [
       const ancestors = new Set<number>()
       for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
       if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
-      return { project_id: invocation.project.id, controller, worktree_id: workspace, binding,
+      return { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, binding,
         process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, observation: observed.result }
     })
   } }),
@@ -173,7 +173,7 @@ export const SWA_METHODS = [
     return effect(async () => {
       const reply = nativeObject((await helperCall(context.runtime, c.controller!, requestId, c.action, invocation)).result)
       const run = nativeObject(reply.run), task = nativeObject(reply.task)
-      return { project_id: invocation.project.id, controller: c.controller, run_id: z.string().parse(run.id), root_task_id: z.string().parse(task.id), native: reply }
+      return { project_id: invocation.project.id, controller: c.controller, run_id: z.string().parse(run.id), root_task_id: z.string().parse(task.id), children: [`${requestId}/run-create`, `${requestId}/root-task`], native: reply }
     })
   } }),
   defineMethod({ name: 'swa.controllerDeliver', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
@@ -184,7 +184,7 @@ export const SWA_METHODS = [
     validateTaskAction(context.runtime, invocation, scope)
     if (c.action === 'worker.start') await admitWorkerResources()
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${c.request_id}/native`, stage: 'helper-input' })
-    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
+    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
     const c = invocation.command
@@ -211,7 +211,7 @@ export const SWA_METHODS = [
       if (remaining.some(row => row.id === owner.binding.ptyId)) throw new Error('controller_pty_still_present')
       const rows = await readWindowsProcessTableFresh()
       if (rows.some(row => [owner.process, owner.helper].some(old => old.pid === row.pid && old.creationTimeMs === row.creationTimeMs))) throw new Error('controller_process_exit_unproven')
-      return { project_id: invocation.project.id, controller: c.controller, close }
+      return { project_id: invocation.project.id, controller: c.controller, binding: owner.binding, process: owner.process, helper: owner.helper, close }
     })
   } })
 ]

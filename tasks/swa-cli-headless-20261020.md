@@ -69,3 +69,5 @@
 准确0c6及普通纳入main4b后的f2已push，主控已实际读取；原Reviewer提出F10—F12后，本Worker修正五项真实事件订阅的取得/存活检查/消费/清理、实际ownerProcess命名及按Pi1.0.1角色/内容块/entry的严格Zod校验。T13真实双Worker驱动、T07实际SDK原件的自有故障副本检查、本机Orca并发期间定向观察及服务所有后代退出检查已编写，后继仍待独立CR和真实运行。候选补齐原node-pty实际ConPTY文件及SDK实际xhigh核验；所有修改只完成git diff --check与PowerShell语法读取，JS/Go程序、SDK、安装、模型和资源窗口均未运行或授予。
 
 准确abdb07d31954b9e72f12bdaafdfe56406deb9004已普通push并经ls-remote核实；初两次TLS失败保留。原Reviewer a211b66接受F10—F12静态修复，F13/F14后继已按真实原生Stop目标turn/fold及成熟stringer正确边界和目标错误断言返修，继续同一模块复核。四包Go真实检查、无服务编译及实际服务执行分开的入口、T02真实拒绝用例和已跟踪资源采样器已编写；所有正文NOT_RUN。最近主控只读可用0.376GiB，未交新窗口，原S12800与本机Orca保持，整体首版没有通过动态验收。
+
+准确39cc967df6a71b2c0c22e3daa520ca08331db17e已普通push并经主控核实，F13/F14继续独立CR。T06发现同R任务创建会重新采样context ID/时间及解析创建后的scope；主控msg_5ff5b86bf277确认按既有语义修复。现有原生指纹规范化保留完整正文、实际context版本/内容/路径/权限、caller/project及scope的project/controller/authority，handler和首次固定原件保持；具体剔除字段及等价绑定见报告§3.3。真实非模型幂等脚本及T13写动作重放/两席拒绝已形成源码，断开/重启及不同R竞争保持待验证；最新资源观察可用0.247GiB，无新动态窗口，全部正文仍NOT_RUN。

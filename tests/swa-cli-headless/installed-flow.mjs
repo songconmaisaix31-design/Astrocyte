@@ -26,7 +26,7 @@ const environment = { ...process.env, SWA_ENDPOINT: values.endpoint, SWA_PROJECT
 const requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
 const processAPI = requireRuntime('@vscode/windows-process-tree')
 const { startJournalRowFold } = requireRuntime('./journal-open.cjs')
-const commands = [], observations = [], eventSources = new Map()
+const commands = [], observations = [], eventSources = new Map(), idempotency = []
 let commandNumber = 0, runtimeId, controller, rootTask, runId
 const request = () => randomUUID()
 const native = envelope => envelope.result.native
@@ -116,11 +116,17 @@ assert.ok(database && !relative(dataRoot, await realpath(database)).startsWith('
 const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', request()])
 controller = opened.controller
 assert.ok(controller)
-const created = await cli(['task', 'create', '--controller', controller, '--spec-file', join(inputDirectory, 'task.json'), '--request-id', request()])
+const createArgs = ['task', 'create', '--controller', controller, '--spec-file', join(inputDirectory, 'task.json'), '--request-id', request()]
+const created = await cli(createArgs)
 rootTask = created.task_id
 runId = created.run_id
 assert.ok(rootTask && runId)
-const started = await Promise.all(['A', 'B'].map(name => cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', name, '--agent', 'pi', '--model', 'openai-codex/gpt-6.1-sol', '--input-file', join(inputDirectory, `${name.toLowerCase()}.txt`), '--request-id', request()])))
+const repeatedCreate = await cli(createArgs)
+assert.equal(repeatedCreate.task_id, rootTask)
+assert.equal(repeatedCreate.run_id, runId)
+idempotency.push({ action: 'task.create', request: createArgs.at(-1), original: created, replay: repeatedCreate })
+const startArgs = ['A', 'B'].map(name => ['worker', 'start', '--controller', controller, '--task', rootTask, '--name', name, '--agent', 'pi', '--model', 'openai-codex/gpt-6.1-sol', '--input-file', join(inputDirectory, `${name.toLowerCase()}.txt`), '--request-id', request()])
+const started = await Promise.all(startArgs.map(args => cli(args)))
 const [dispatchA, dispatchB] = started.map(row => row.dispatch_id)
 assert.ok(dispatchA && dispatchB && dispatchA !== dispatchB)
 assert.notEqual(started[0].task_id, started[1].task_id)
@@ -166,9 +172,20 @@ while (Date.now() < firstTurnDeadline) {
 assert.equal(starts(firstTurnB).length, 1)
 assert.equal(ends(firstTurnB).length, 1, 'B did not finish its original actual turn before follow-up')
 assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentityB)
+for (let index = 0; index < startArgs.length; index++) {
+  const replay = await cli(startArgs[index])
+  assert.equal(replay.dispatch_id, started[index].dispatch_id)
+  assert.equal(replay.task_id, started[index].task_id)
+  idempotency.push({ action: 'worker.start', request: startArgs[index].at(-1), original: started[index], replay })
+}
+const repeatedStopA = await cli(stopCommandA.args)
+assert.equal(native(repeatedStopA).state, 'stopped')
+idempotency.push({ action: 'worker.stop', request: stopCommandA.args.at(-1), original: stopA, replay: repeatedStopA })
 const followupFile = join(inputDirectory, 'b-followup.txt')
 await writeFile(followupFile, 'A已按固定条件停止。请在当前同一会话根据下列实际A部分输出和准确公开原文，完成最终Median设计及验证说明；逐项覆盖原固定业务条件并引用文件位置。保持原Mean不变，禁止声称已运行程序测试。\n实际A读取回执：\n' + JSON.stringify(partialA) + '\n固定公开原文：\n' + JSON.stringify(source) + '\n', { flag: 'wx' })
-await cli(['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', request()])
+const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', request()]
+const originalSend = await cli(sendArgs), repeatedSend = await cli(sendArgs)
+idempotency.push({ action: 'worker.send', request: sendArgs.at(-1), original: originalSend, replay: repeatedSend })
 const finalDeadline = Date.now() + 600_000
 let finalEventsB
 while (Date.now() < finalDeadline) {
@@ -176,7 +193,8 @@ while (Date.now() < finalDeadline) {
   if (starts(finalEventsB).length >= 2 && ends(finalEventsB).length >= 2 && finalEventsB.some(row => delta(row) && Date.parse(row.observed_at) > stoppedAt)) break
   await setTimeout(1000)
 }
-assert.ok(starts(finalEventsB).length >= 2 && ends(finalEventsB).length >= 2)
+assert.equal(starts(finalEventsB).length, 2, 'The same approved follow-up was executed more than once')
+assert.equal(ends(finalEventsB).length, 2)
 assert.ok(finalEventsB.some(row => delta(row) && Date.parse(row.observed_at) > stoppedAt))
 assert.deepEqual(await events(initialA.source), eventsAAfterStop, 'A produced additional SDK events after its confirmed stop')
 assert.deepEqual(identity((await queryWorker(dispatchB)).source), initialIdentityB)
@@ -219,12 +237,22 @@ for (const worker of result.workers) {
 }
 await writeFile(join(evidence, 'B-final-output.txt'), fullText, { flag: 'wx' })
 await writeFile(join(evidence, 'actual-result.json'), JSON.stringify(exported, null, 2) + '\n', { flag: 'wx' })
+const thirdWorker = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'third-worker-quota-check', '--agent', 'pi', '--model', 'openai-codex/gpt-6.1-sol', '--input-file', join(inputDirectory, 'a.txt'), '--request-id', request()], 5)
+assert.equal(thirdWorker.error.code, 'resource_limit')
+const fleet = native(await cli(['worker', 'list', '--controller', controller, '--task', rootTask]))
+assert.deepEqual(fleet.workers.map(row => row.dispatchId).sort(), [dispatchA, dispatchB].sort())
+assert.equal(starts(await events(initialA.source)).length, 1)
+assert.equal(starts(await events(initialB.source)).length, 2)
 await cli(['worker', 'stop', '--controller', controller, '--dispatch', dispatchB, '--request-id', request()])
 const goneB = await requireRootGone(initialIdentityB)
-await cli(['worker', 'release', '--controller', controller, '--dispatch', dispatchA, '--request-id', request()])
-await cli(['worker', 'release', '--controller', controller, '--dispatch', dispatchB, '--request-id', request()])
+for (const dispatch of [dispatchA, dispatchB]) {
+  const args = ['worker', 'release', '--controller', controller, '--dispatch', dispatch, '--request-id', request()]
+  const original = await cli(args), replay = await cli(args)
+  assert.equal(native(replay).state, native(original).state)
+  idempotency.push({ action: 'worker.release', request: args.at(-1), original, replay })
+}
 await preserveOriginal('after_both_workers_released')
-const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, activeStop: { nativeStopA, beforeTurn, endedTurn, actualSDKAbort: actualSDKAbort ?? null }, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
+const preliminary = { candidate, source_revision: revision, runtime_id: runtimeId, controller, run_id: runId, root_task_id: rootTask, dispatchA, dispatchB, initialA, initialB, actualOverlap, partialA, stopA, activeStop: { nativeStopA, beforeTurn, endedTurn, actualSDKAbort: actualSDKAbort ?? null }, goneA, goneB, resultFile: join(evidence, 'actual-result.json'), commands, observations, idempotency, resource_quota: { thirdWorker, fleet }, provider_events: [...eventSources.values()], business_review: 'required', ordinary_terminal_invocation: 'requires_actual_evidence' }
 await writeFile(values.output, JSON.stringify(preliminary, null, 2) + '\n', { flag: 'wx' })
 process.stdout.write(JSON.stringify({ type: 'swa_actual_business_review_required', final_output: join(evidence, 'B-final-output.txt'), evidence: values.output, instruction: '核查真实B最终说明及固定业务条件，并从实际普通终端执行同候选查询后，输入一行JSON，含checked_result和ordinary_terminal_evidence绝对文件路径；该输入仅表示当前Agent控制端实际核查，不取得human身份。' }) + '\n')
 const input = createInterface({ input: process.stdin, crlfDelay: Infinity, terminal: false })

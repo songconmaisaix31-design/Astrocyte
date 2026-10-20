@@ -19,7 +19,8 @@ const CALLER_ORCA_SESSION_ID_KEY = '__orcaCallerOrcaSessionId'
 export function replayStableCallerParams(
   runtime: OrcaRuntimeService,
   params: unknown,
-  callerOrcaSessionId?: OrcaSessionId
+  callerOrcaSessionId?: OrcaSessionId,
+  method?: string
 ): unknown {
   if (!params || typeof params !== 'object' || Array.isArray(params)) {
     return params
@@ -29,6 +30,17 @@ export function replayStableCallerParams(
   const result: Record<string, unknown> = callerOrcaSessionId
     ? { ...source, [CALLER_ORCA_SESSION_ID_KEY]: callerOrcaSessionId }
     : { ...source }
+  if (method === 'swa.taskCreate') {
+    const invocation = source.invocation as Record<string, unknown>
+    const scope = invocation.scope as Record<string, unknown>
+    const fixed = { ...(invocation.context as Record<string, unknown>) }
+    // 采样标识和查询所得 scope 不属于用户请求；首次固定上下文仍原样传入 handler。
+    delete fixed.id
+    delete fixed.created_at
+    result.invocation = { ...invocation, context: fixed, scope: {
+      project_id: scope.project_id, controller: scope.controller, authority_domain: scope.authority_domain
+    } }
+  }
   delete result.waitSubmitMs
   for (const property of ['from', 'callerTerminalHandle', 'terminal'] as const) {
     const handle = source[property]

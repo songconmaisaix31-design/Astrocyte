@@ -1,7 +1,7 @@
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T03','T07','T09','T13','T15')][string]$Case,
+    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T03','T06','T07','T09','T13','T15')][string]$Case,
     [Parameter(Mandatory)][string]$SwaPath,
     [Parameter(Mandatory)][string]$InstallRoot,
     [Parameter(Mandatory)][string]$DataRoot,
@@ -46,7 +46,7 @@ New-Item -ItemType Directory -Path $env:TEMP | Out-Null
 $swaGate = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/resource-gate.py'
 & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'resources.log')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-if ($Case -in @('T00','T02','T03','T13','T15')) {
+if ($Case -in @('T00','T02','T03','T06','T13','T15')) {
     $swaTestDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless'
     Import-Module (Join-Path $swaTestDirectory 'OrcaPreservation.psm1') -Force
     $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds -ProbeDirectory $swaEvidence
@@ -90,7 +90,7 @@ if ($Case -in @('T00','T02','T03','T13','T15')) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'installation-scope.json'), (@{ installed_candidate = $InstallRoot; actual_port_conflict = 'rejected'; actual_protected_root = 'rejected'; actual_owned_junction = 'rejected'; actual_private_service_consumers = 'requires_T03_T13'; model_calls = 0 } | ConvertTo-Json))
                 $swaExit = 6
             }
-        } elseif ($Case -in @('T03','T13')) {
+        } elseif ($Case -in @('T03','T06','T13')) {
             if (-not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or -not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确认证/公开项目/端口/保护目录' }
             $swaStart = [Diagnostics.ProcessStartInfo]::new($SwaPath)
             $swaStart.UseShellExecute = $false
@@ -146,6 +146,13 @@ if ($Case -in @('T00','T02','T03','T13','T15')) {
                 } finally {
                     & $SwaPath controller close --controller $swaGoController.controller --request-id ([Guid]::NewGuid().ToString()) --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'go-controller-close.log')
                     if ($LASTEXITCODE -ne 0) { throw '实际 Go 检查控制端退出未确认，保留原请求和资源' }
+                }
+            } elseif ($Case -eq 'T06') {
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'native-idempotency.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --output (Join-Path $swaEvidence 'native-idempotency.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'native-idempotency.log')
+                $swaExit = $LASTEXITCODE
+                if ($swaExit -eq 0) {
+                    $swaIdempotency = Get-Content -LiteralPath (Join-Path $swaEvidence 'native-idempotency.json') -Raw | ConvertFrom-Json
+                    if ($swaIdempotency.remainingCases.Count -gt 0) { $swaExit = 6 }
                 }
             } else {
                 $swaObservationConfig = Join-Path $swaEvidence 'original-observation.json'

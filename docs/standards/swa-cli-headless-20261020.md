@@ -121,6 +121,17 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 同一公开R的所有controller/task组合步骤仅使用上述固定子请求名称，映射在原生receipt中保存，不放在CLI缓存。native caller fingerprint为同一私有runtime的真实local身份，因此同R更改project、主体、workdir、controller或正文会由原生payload比较得到`request_mismatch`，不能换clientIdentity回避冲突。并发同R由原生executor合并，已完成同R只回原receipt；PTY的in-flight去重另外使用原生clientMutationId，不把transport response ID当去重键。
 
+`swa.taskCreate`在既有`replayStableCallerParams`中按下表生成比较输入；既有`hashCanonical`、原生receipt和传给handler的实际invocation保持各自原有职责。其他原生方法的指纹输入不变。
+
+| 比较字段 | 稳定等价绑定 |
+| --- | --- |
+| `invocation.context.id/created_at` | 两字段由App每次读取实际上下文重新采样，仅从比较副本剔除；第一次实际ID、时间及全部上下文仍原样写入原生根Task spec。后继读取不能重写该固定原件 |
+| `invocation.scope.run_id/root_task_id/context` | 这些是查询同一controller后所得的派生状态，首次创建前为空，创建后来自该原生根Task；比较副本的scope保留`project_id/controller/authority_domain`。精确Run/root由原生完成receipt、controller单任务事务和真实Run/Task关联约束，不能由公开命令选择 |
+| 上下文内容与版本 | 比较保留`invocation.context`中除上述两项采样字段外的全部内容，包括schema/project/settings revision/mode、完整materials及files的path/version/text；固定请求的`spec.context`亦保留。实际内容、版本、引用、路径或权限变化继续不等价 |
+| 主体与作用域 | 完整command、caller、project及scope的project/controller/authority都进入原生比较。App仍先核当前批准和实际路径，实际scope仍经过原生controller/Run/Task关联检查；规范化不改变准入或handler输入 |
+
+完成后的open receipt保留实际clientIdentity/clientMutationId；task.create保留两个实际子请求；其他写动作保留`R/native`；close保留实际binding及两项进程身份。`request show`从这些原生记录直接查子receipt，不另建请求账本。
+
 open在PTY请求开始后抛出或失联时，产品handler将该已可能发生的效果返回`operation_unknown`，保留原生pending及checkpoint；不能让原executor的普通异常清理把它变成可重建。close及task create也在首次外部副作用前checkpoint，之后的异常保持相同unknown规则。此处错误转换保留具体cause/stage和已有身份，不捕获后继续执行。原executor对pending非release动作本就拒绝再次invoke，产品不增加自动恢复执行分支。
 
 响应丢失或runtime重启后，查询按原checkpoint只读核精确handle、真实daemon `listProcesses`、持久PTY/session归属及原生Run coordinator/子请求receipt。已创建PTY而尚无Run的状态保留该helper；Run已创建而根Task未确认时返回原Run及pending子请求。原生reconcile可核exact handle的既有PTY，但产品查询不得调用会在无匹配时spawn的`dedupeTerminalCreate(...,reconcileExisting=true,...)`。未知、无inventory、缺handle或多重匹配均不创建、不重发、不释放；单独absent不证明无副作用。需要新controller时先获得原精确helper和后代已退出的正向证明，再由新的明确请求创建；绑定已有Run仍按§3.2真实runUse及generation规则。
@@ -369,6 +380,8 @@ T06增加同一真实controller、不同R的两项task.create竞争：原生事�
 
 T06/T11补充不同R的controller.close与task.create/worker.start真实竞争：关闭与创建使用同一原生SQLite事务检查已有receipt，并在该事务内checkpoint关闭屏障。创建先保留且尚未物化时，关闭保持拒绝；关闭先保留时，之后所有创建和输入拒绝。关闭pending/unknown及完成后的receipt都继续阻止新创建，查询不撤除屏障。只有此前创建均结算且真实资源全部released时才允许关闭helper；重启后的未知创建继续保留占用。两种取得顺序均按真实receipt、Task/Dispatch和所属进程核对，未命中的交错保持INCONCLUSIVE。
 
+T06真实非模型入口为`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T06`及相同候选/私有D/公开项目/既有人类批准参数；`native-idempotency.mjs`使用实际CLI、PTY、Run/Task及read-only SQLite。它检查open/close同R并发和完成重放、真实不同workdir/controller拒绝、task.create同R并发后完成重放、同路径规格正文及自有实际context文件变化拒绝、首次固定context原件保持、唯一Run/根Task及实际子receipt。并发请求若在App先遇到原生pending，必须明确unknown且之后只查询原请求；该分支不会据此宣称已合并等待。脚本保留未命中的断开/重启和不同R竞争，Case返回证据不足。T13另在实际A/B执行后重放原start/stop/send/release请求，确认原身份及B恰有两次真实输入；两席仍占用时实际第三名必须在输入前拒绝，且真实Worker列表和SDK事件没有第三项。这些源码均待真实窗口运行。
+
 T09依现有入口`pwsh -File scripts/verify-swa-cli-headless.ps1 -Case T09 -SwaPath $swaBin -InstallRoot $installRoot -DataRoot $dataRoot -CaseRoot $caseRoot`执行分支；Node原生测试采用同候选Node和native运行`tests/swa-cli-headless/provider-job.test.mjs`。当前两入口的相应实现和真实结果均未完成，缺失或未命中场景如实保留。T13指定停止A时另保存A专有Job的实际root绑定、成员查询/退出观察和B专有Job中的原成员/身份，原生stop/release只有在全树条件满足后才结算。T12宿主重启丢失旧Job句柄的路径保持unknown，不重发输入，也不把该分支记录为恢复了存活模型进程。
 
 ### 7.3 同一安装候选的一次双Worker任务
@@ -485,3 +498,5 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 准确abdb07d3的F10—F12静态修复已获原Reviewer a211b66接受，F13/F14交回本Worker后已形成后继源码：T13复用实际evict Stop事件及其原生turnId，用准确上游journal fold读取停止标记前running和之后实际interrupted/真实SDK aborted取消结果，排除自然完成和空结束集合；不要求A产生完整SDK成果。B先完成原轮，再在同一PID/session/fence接受后续输入。T07成熟stringer显式suffix换行，加入有效往返对照，并对八类坏结构要求对应Zod错误路径或明确的不完整错误；共19项实际原件副本场景仍NOT_RUN。实时SDK事件观察读取实际append-only日志的有界完整前缀并比较历史前缀，完整SDK成果则继续严格要求读取前后文件身份/长度/时间一致；journal采用既有SQLite适配器的read-only/must-exist连接，不调用可能修复状态的host db getter。
 
 后继Go检查与串行编译入口、T02真实端口/保护根/junction拒绝及已跟踪的资源采样器均为静态源码。安装Case在私有服务消费者尚未验证时返回证据不足；T03仅Go范围完成同样保留其他分支。gofmt -d、PowerShell ParseFile及git diff --check实际通过；没有编译、执行测试正文或运行服务。abdb普通push初两次TLS握手失败，主控观察网络变化后再一次普通push及ls-remote均EXIT0，远端准确abdb07d31954b9e72f12bdaafdfe56406deb9004已核；未force或更改证书/全局配置。最新主控只读可用内存0.376GiB，无新窗口。
+
+准确39cc967df6a71b2c0c22e3daa520ca08331db17e已普通push并经主控再次核远端；F13/F14及四包Go检查源码待原Reviewer复核。T06核查发现App重新采样context和创建前后scope变化会使相同task.create请求指纹变化；当前按§3.3仅规范化比较副本，保留全部业务正文、版本、路径、权限及主体/作用域绑定，并补实际非模型CLI检查和T13重放/第三席拒绝。所有新JS/Go/SDK/模型、依赖同步/生成/构建/安装及测试正文仍NOT_RUN；主控最新只读可用0.247GiB，S12800和本机Orca保持，无动态窗口。
