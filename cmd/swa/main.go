@@ -23,7 +23,7 @@ import (
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
-const usage = `swa serve --data-dir D --port N --json
+const usage = `swa serve --data-dir D --port N --codex-auth-file F --protected-roots R --json
 swa status|capabilities --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close --controller C [--request-id UUID] --json
@@ -36,6 +36,8 @@ swa request show --controller C|--project P --request-id UUID --json
 查询和控制使用 SWA_ENDPOINT、SWA_PROJECT_ID、SWA_PROJECT_TOKEN。
 SWA_PROJECT_TOKEN 必须来自当前项目授权。后台启动不会发行项目授权。
 可用 --endpoint 明确指定已启动的回环 HTTP 服务；查询不会启动服务。
+serve 的 D、F 必须是绝对路径；R 是 Windows 分号分隔的本机 Orca/账户保护目录。
+安装及完整调用说明见安装目录 USAGE.md；使用独立目录，保持 serve 所属 stdin 开启。
 `
 
 var version = "development"

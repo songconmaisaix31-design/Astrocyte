@@ -72,7 +72,7 @@ func New(config Config) (*Runtime, error) {
 	return &Runtime{config: config}, nil
 }
 
-func (r *Runtime) Target() string { return r.config.PiEntry }
+func (r *Runtime) Target() string { return "pi" }
 
 func (r *Runtime) ChildEnvironment() []string { return r.environment() }
 

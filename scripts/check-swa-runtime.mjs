@@ -35,6 +35,7 @@ if (!values.native) {
   await walk(candidate)
   const actual = execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true }).trim()
   assert.equal(actual, expected)
+  for (const file of ['install-swa.ps1', 'USAGE.md', 'LICENSE', 'ORCA_LICENSE', 'THIRD_PARTY_SWA.md']) assert.ok((await readFile(join(candidate, file))).length > 0)
   const result = execFileSync(node, ['--max-old-space-size=1024', import.meta.filename, '--candidate', candidate, '--native'], { encoding: 'utf8', windowsHide: true, env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=1024' }, timeout: 30_000 })
   process.stdout.write(result)
   console.log(JSON.stringify({ candidate, source_revision: expected, closure_paths: seen.size, sdk_authentication: 'NOT_RUN', functional_acceptance: 'NOT_RUN' }))
