@@ -87,3 +87,5 @@
 本次唯一依赖/生成窗口已按原msg_36cd7da9f442串行执行一次dependency-02和一次generate-01，全部实际命令/资源退出文件为0，镜像内建重试及peer/deprecated原件保留；准确准备提交f08b52111d4860b5ef162987cce2f43f4a4e6ce0仅锁和生成API类型，普通push EXIT0。主控已收回窗口并确认原S同源恢复PID43068、原库/环境/配置及本机Orca通过；没有构建、安装或产品服务结果。main605f77a0的HANDOFF/STATUS已完整读取。后继§7.5静态源码加入serve实际所属EOF、单次输出、可重复观察的子进程完成，以及本次自有Win32 Job两次全后代退出观察；正常0另须真实原生资源released、无pending、controller关闭和daemon退休/cleanup成功。仅gofmt -d及差异检查通过，C01—C09驱动和T12契约继续由同一Worker处理，全部新功能正文NOT_RUN。
 
 实际静态架构命令首次EXIT1，发现App为JSON末尾校验引用io；原写域修正为json.Valid完整单JSON及原严格Decoder，不改架构规则。修正后同命令EXIT0，45个Go package通过，原件分别static-eof-01/02；Go单并发/256MiB、Node512、BelowNormal及私有TEMP。五份Go源码gofmt -d及git diff --check通过；没有编译或运行功能正文，后继仍须准确静态CR和完整真实验收。
+
+准确c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c已普通push。正式一次build-01在资源EXIT0后实际EXIT1，原因是dist父目录缺失使mkdir(output)报ENOENT；尚未deploy/native/TS/Go编译或Node下载，无候选VERSION，没有重试。实际Node48860已退出且两次定向CIM无在途匹配，原件完整保留；主控收回窗口并确认同源S45948及原库/环境/配置/Orca保持。构建脚本后继静态修正受控父目录创建和真实路径边界，候选仍独占创建，diffcheck通过，尚未重跑；T12完整契约与strict caller缺口计划继续交审。

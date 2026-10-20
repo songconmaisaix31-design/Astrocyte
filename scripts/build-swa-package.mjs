@@ -30,6 +30,13 @@ const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_
 const run = (program, args, cwd = root) => execFileSync(program, args, { cwd, env: environment, stdio: 'inherit', windowsHide: true, timeout: 20 * 60_000 })
 const capture = (program, args) => execFileSync(program, args, { cwd: root, env: environment, encoding: 'utf8', windowsHide: true, timeout: 60_000 }).trim()
 if (capture(process.execPath, [pnpm, '--version']) !== '11.27.0') throw new Error('The build requires pnpm 11.27.0')
+const distribution = join(root, 'dist')
+await mkdir(distribution, { recursive: true })
+const actualDistribution = await realpath(distribution)
+if ((await lstat(distribution)).isSymbolicLink() || actualDistribution.toLowerCase() !== join(await realpath(root), 'dist').toLowerCase()) throw new Error('The distribution root must be the actual repository directory')
+const parent = await realpath(dirname(output)), parentRelative = relative(actualDistribution, parent)
+if (parentRelative === '..' || parentRelative.startsWith('..\\') || isAbsolute(parentRelative)) throw new Error('The candidate parent escaped the actual distribution root')
+// 只创建受控父目录；候选目录仍独占创建，已有路径立即失败。
 await mkdir(output)
 const runtime = join(output, 'runtime')
 run(process.execPath, [pnpm, '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', runtime, '--store-dir', join(work, 'store')])
