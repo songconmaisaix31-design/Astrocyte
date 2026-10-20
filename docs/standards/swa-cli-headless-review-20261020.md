@@ -496,3 +496,32 @@ T13驱动固定同一候选Node/SDK/version、真实公开原文、原生项目�
 原S12800及无窗口保持。本轮没有编译、安装、运行Go/Node测试、SDK/模型、JSONL产品读取、HTTP/SQLite或服务，也未读取原认证秘密、环境或SQLite原件。所有适用动态检查仍待原Worker在主控授予真实窗口后执行。
 
 准确abdb退回hook为`msg_16d3b555e2f2`；主控在`msg_723b52740787`完整读取a211b66相对629e的四十行新增，逐项确认三项静态修复接受、F13/F14的源码及库因果、其余已读取范围和宿主调用失败/成功及动态未运行，确认问题交原Worker、既有接受及A正常分支保持。实际读取回复确认本次唤起，没有新增动态窗口。
+
+## 四包Go检查补充的独立条件
+
+收到准确39cc交付后，先于读取其§7.4及新增Go函数，沿H03—H06/H10—H15推导本次检查条件：
+
+- 实际测试针对本轮Go消费方及真实授权、所属、请求状态和资源生命周期，直接调用真实实现或同一候选服务；适用拒绝分支须核具体效果，不能由统一任意错误满足。未使用的旧S3/MCP/网页路径不新增为前置。
+- 无服务编译只代表编译结果；四个准确包、实际测试名称及匹配过滤可核，零匹配、SKIP及未运行不能计通过。真实执行使用同一安装候选和私有状态、实际HTTP/SQLite，不能借用原S/本机Orca或伪造服务/协议。
+- 本次补充不替代T13两个真实Worker并发、执行中停止和完整成果；纯Go调用、已创建PID、关闭回执和任意非空输出都不能代替对应事实。F13/F14仍按已写明的准确因果复核，A允许没有完整持久化输出。
+- 编译和实际服务检查按各自唯一窗口及既定资源门槛串行；实际身份/批准及错误保留，原件与其他进程保全。缺窗口/前提时保持NOT_RUN，计划不能通过静默跳过或降低门槛宣称通过。
+
+## 准确39cc967d的F13/F14及检查补充复核
+
+结论：**接受准确`39cc967df6a71b2c0c22e3daa520ca08331db17e`的F13/F14静态返修、四包Go补充计划及相应检查源码范围**。按原Worker`msg_941f578c27bc`及主控`msg_7a78cac25840`完整读取相对abdb的十七路径；本Reviewer真实ls-remote核远端同一准确SHA。以下为源码结论，整体产品与全部动态验收仍证据不足，原有接受范围保持。
+
+F13新增实际A journal中的唯一evict Stop行，要求原生turnId及客户端命令开始后的实际Stop时间，按同候选原生startJournalRowFold还原标记前全部行，要求无damage/newer且目标turn仍running。实际SDK agent_end若在该标记前已被观察即拒绝；最终要求该同一turn为原生interrupted且无其他outcome，或真实cancellation并有对应时间后的SDK assistant aborted事件。最终回执保存Stop行、前后turn及实际SDK中止证据，空结束集合本身不再满足接受条件。
+
+已独立读取原生host-lifetime、host-stop-event、journal Stop行构建、fold及turn-end规则：host先尝试在一秒内排空已收到的生命周期事件，失败/超时仍按当前工作事实判断，保存实际活动turn，行的at来自原生writer时间；新检查另核标记前的实际fold及SDK结束事件，空闲关闭本身不满足条件。evict保留原生中断事实，不自动改写为人的cancellation；提供方已有完成判据保持。新检查同时核标记前running及标记后中断事实，拒绝原F13“原生处理前已自然结束”的分支，没有把所有evict都称为模型取消，也不要求A生成完整SDK成果。B先结束原轮再在原身份接收后续输入，原PID/session/fence保全继续检查。实际A/B运行仍未发生。
+
+F14现以成熟stringer的suffix换行形成完整尾部，核尾字节及成熟parser往返；新增合法round_trip_valid必须取得complete并与真实原件entries相同。空最终内容要求准确不完整错误，其余七类要求ZodError及对应type/modelId/message timestamp/usage totalTokens/content text等路径。统一尾部拒绝或任意错误不能满足这些断言，原缺陷的库到产品检查因果已补；全部十九个实际归档副本场景仍未运行，原件来源及保全沿既定T07要求。
+
+四包方案与前节独立条件相符。安装CLI检查真实VERSION、controller/runtime；adapter检查真实原生ResolveScope及保护根重合拒绝；App检查当前真实项目批准取得同一runtime及私有根的实际PRAGMA database_list；HTTP检查缺凭据和禁止自行传human/runtime字段。没有伪造服务、provider、human或批准，没有将四函数扩大为全部T03，撤销后的安全停止、另一真实项目/Run和旧代仍明确未验。
+
+compile-go-tests在干净准确源码与候选VERSION一致时，以Go四并发/512MiB逐包test -c，temp/cache/module cache放在本项新目录；仅传输前的三个真实CLI拒绝函数在编译窗口执行。服务窗口由同一候选启动实际私有HTTP/原生后台，以真实批准创建controller后串行运行四个预编译二进制，逐项要求准确PASS、拒绝SKIP/零匹配，最后关闭该controller。无实际环境时普通Go的Skip明确不计验收；T03本入口完成局部范围后仍返回证据不足。计划没有编译/服务并发或凭编译结果宣布功能通过的缺口，未发现需要删除的无关检查。
+
+完整成果新增只读SQLite连接复用上游SyncDatabase，已核该适配器把readonly传给Node DatabaseSync.readOnly、fileMustExist先检查存在；不再访问可能修复/初始化的host db getter。原生replay及读取最终epoch/seq仍核，SDK读取新增当前路径文件身份检查。实时事件辅助仅取实际append日志在读取开始时的有界完整前缀，核当前/句柄身份、没有缩短及历史已观察行未变；完整SDK成果保持原严格读前后大小/时间条件。这里没有打开SQLite或运行JSONL产品读取。
+
+T02实际端口占用、保护目录及本项junction拒绝只形成源码：占用端口在serve的资源准入及子进程启动前被真实bind拒绝；保护根由真实privateDataDirectory在创建home/temp前校验。本项junction清理核本项绝对路径及ReparsePoint，仅删除该链接。安装后尚未验证的服务消费者继续标requires_T03_T13并返回证据不足，不能独自登记安装验收。资源采样器现在随源码跟踪，阻塞psutil CPU和可用内存双采样、单调2—5秒、85%/4GiB及局部资源参数符合RESOURCES；未采样或执行正文，测试Python不成为产品安装依赖。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous abdb07d31954b9e72f12bdaafdfe56406deb9004 -Candidate 39cc967df6a71b2c0c22e3daa520ca08331db17e` EXIT0，十七路径Git空白、两Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。仅执行Git/文档检查和只读源码追踪，没有运行Go/Node产品正文、编译、安装、SQLite、SDK/模型、服务或资源采样，原S12800和无窗口保持；无正式PR，COMMENT review仍待准确交付。
