@@ -71,4 +71,32 @@
 
 ## 实施审核
 
-尚未收到通过计划后形成的准确实现提交；实施与 A01 保持未验。
+准确候选为`7da19c06253d17384605fba4380ca136245a5a33`，PR #4，base为`songconmaisaix31-design/works-relay-integration`、head为`swa-m0-20261020`，真实PR元数据与远端HEAD一致。结论：**退回**，仅F03待修订；以下通过项不构成main或产品功能验收。
+
+| 独立条件 | 准确实现的实际结果 |
+| --- | --- |
+| R01 来源与当前事实 | 真实仓库ID和规范名称已核；再次ls-remote确认main仍3a02、产品仍32ab、候选为7da。报告区分快照与既有程序观察；改名不再是待办 |
+| R02 产品保全 | 独立Git对象检查确认原1446路径全部存在；145个差异路径均为md/txt，非文档变化0。程序、依赖、契约、迁移保持32ab，无需重复构建 |
+| R03 独有来源 | cf22新增文档全部存在；M0报告中122个独立cf22来源路径有120个完整文本相同。integration-audit只增加当前接续标题和说明，原文保留；总任务按9140最新目标接续，差异逐项已读。9140的CLI任务和M2延后任务完整相同 |
+| R04 依赖方向 | AGENTS、CODING、SPEC和角色统一Domain/App/Adapters/Composition，无“领域层调用数据层”残留；按实际边界检查，不修改既有架构脚本 |
+| R05 Python | P09、AT14、组件说明和当前角色同步允许明确工具依赖；底座及研究环境各按原范围，原历史文本留在准确Git或归档 |
+| R06 写域与分支 | 固定重叠百分比移除；实际写域、公共契约、生成物和资源决定并行；模块责任与任务分支分开，交付后普通集成 |
+| R07 真实未决项 | QUESTIONS及当前入口保留CLI独立运行选择和原S3未答项；SPEC §21.1有未限定的独立运行规则，见F03 |
+| R08 验证边界 | D01—D08按纯文档执行，复用程序S的原限定结果；未重新构建或运行功能、服务、模型。原契约FAIL及完整CI NOT_RUN保持 |
+| R09 唯一入口 | STATUS统一当前产品/研究/实验状态，TASKS维护排序及任务摘要，HANDOFF引用状态；docs/STATUS只为入口，产品原文完整归档。RESOURCES无差异，QUESTIONS原决定正文完整保留 |
+| R10 规则解释边界 | 九项修订和直接消费者已同步；当前SPEC仍需为F03明确旧产品与最新CLI的适用关系 |
+| R11 原权限 | AGENTS真实链路、固定公开项目、原生工具关闭、逐event_id及禁止主动视觉保留；QUESTIONS与9140完整来源比较只增加适用关系，未将S3拒绝、Known=false及未验改成通过 |
+| R12 M0及后续状态 | 最新首版CLI目标进入README/HANDOFF/STATUS/TASKS/SPEC及总任务；MCP/完整S3为后续，接口未定稿。main仍初始提交，A01待主控实际集成；没有发布验收声明 |
+| R13 文档解析 | 已安装marked@18.1.0独立解析123份准确提交Markdown，791个本地链接目标全部存在；本地锚点0。186个外部引用只计数，本轮核查直接依赖的准确Git来源，其余历史外链未重新联网验证；HTML token仅META_PLAN的模板占位符，无本地链接 |
+
+F03（中，`docs/SPEC.md:816`）：§21.1仍规定“新产品必须独立构建、启动和测试”，且同时写旧ORCA路线不成为新项目依赖。该现行规格没有把此要求限定到既有Go/TS产品；最新QUESTIONS、CLI任务及根STATUS明确将首版是否依赖已安装Orca保留未答。开发者按当前SPEC执行时会提前排除一个仍未决定的执行选择。原Worker应在该规格边界明确既有产品规则的适用范围，并引用CLI任务与QUESTIONS保留首版执行边界未决定；不选择任何待答选项。此项对应R07/R10及META_PLAN §7.4、§7.5。
+
+实际验证命令及结果：
+
+- `.verification/check-m0.ps1 -Candidate 7da19c06253d17384605fba4380ca136245a5a33`：EXIT0；Git空白、原文、产品路径、保护范围和Markdown链接检查通过。Node512MiB、BelowNormal，原件为`.verification/m0-sources-*.json`和`m0-links-*.json`。
+- `node --max-old-space-size=512 .verification/review-source-records.mjs 7da19c06253d17384605fba4380ca136245a5a33`：EXIT0；使用marked提取报告来源记录，120个相同、2个当前接续文件经人工差异复核。
+- 准确Git diff/show/grep、真实PR元数据及`git ls-remote`：确认治理语义、来源、原S3状态和准确候选；F03位置已定位。
+
+返修交原M0 Worker。当前未接受准确实现、main集成或首版CLI功能；没有运行重操作。
+
+针对准确7da的GitHub COMMENT review已发布为`5581817621`：https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581817621 。状态为COMMENTED，commit_id已核实。
