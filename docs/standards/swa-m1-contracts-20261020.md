@@ -81,14 +81,17 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 | T03 原入口成功 | `pnpm check:contracts`，原契约、原配置和未改脚本，保持与 T01 同一输出方式及额度 | EXIT0；Redocly 原规则输出有效与 13 警告，`Validated 264 OpenAPI examples and supported capability boundaries`、`OpenAPI generated types match source` 均实际出现；没有 native 断言、遗漏阶段或残留本次子进程 |
 | T04 CLI 规则失败 | E 内只复制真实 `contracts/redocly.yaml`，通过文件编辑工具把真实现存 13 项 unused component 对应规则 `no-unused-components` 的级别指定为 error；对原 `contracts/openapi.yaml` 调用真实 `node node_modules/@redocly/cli/bin/cli.js lint ... --config <E内配置>` | 实际规则错误、退出 1、诊断完整且没有 native 崩溃。随后在 E 的原文件副本中用该配置运行原 package 命令，确认两个后续阶段没有输出；保留这项故意拒绝结果 |
 | T05 CLI 配置错误 | 同一真实 CLI、原契约，`--config` 指向 E 内实际不存在的 yaml | 原错误 `Please provide a valid path to the configuration file.`，退出 2；没有成功信息或 native 崩溃 |
+| T05A 示例与能力边界失败 | E 内真实源码副本中，通过文件编辑工具把原 `GET /events` 的 403 响应完整 example 原样复制到该操作的 501 响应 example；其余契约、原配置和三个脚本及 package 命令保持。输入来自公开准确基线 `32ab1eec808a5848aabad40f11133735a1214e55:contracts/openapi.yaml` 的该 403 example，code 为既有 `scope_denied`，仍满足原 ErrorV1 Schema；不生成新值或调用业务服务。运行原 `pnpm check:contracts` | Redocly 完成原规则校验、退出成功，原示例验证器随后抛出 `Future operation get /events must document unsupported_capability`，原链整体退出 1。完整 stdout/stderr 中没有 `Validated 264 ...` 终态，也没有生成类型一致或 drift 终态；结合原样保留的 `&&` 命令及第二阶段实际未捕获错误，判定生成阶段未运行。原生成文件字节保持。故意拒绝结果单独保存 |
 | T06 类型漂移拒绝 | 在 E 的完整真实源码副本中，仅将 `web/src/api/schema.d.ts` 换成 Git 中真实 `f48122ba5eb4f469bf13cb0e27539942ceee3841` 的该文件；当前历史比较确认其与基线存在 100 行差异。使用成熟归档工具取得 Git 原文件，禁止改写生产文件；运行原 `pnpm check:contracts` | 前两阶段实际通过；原 `generate-client --check` 抛出 `Generated client schema drift: run pnpm generate and commit schema.d.ts`，整体非零退出；历史 schema 完整字节保持，证明 --check 未写文件 |
 | T07 干净冻结安装 | 用最终准确 Commit 的真实归档创建 E 内独立副本，包含原 package、workspace、lock、patch、contracts、scripts 和生成类型；副本初始无 node_modules。在唯一窗口内运行原 `pnpm install --frozen-lockfile`，随后原 `pnpm check:contracts`；不使用业务/CLI 替身 | 安装及命令均退出 0；三个阶段实际完成；同版精确依赖补丁可重建，锁文件无自动漂移。该步骤为 Windows 本地证据；未执行 Linux 时不扩写跨平台通过 |
-| T08 适用静态检查 | 准确最终差异核对；`git diff --check`、`node scripts/check-architecture.mjs`、`node scripts/check-dependencies.mjs`，按各自额度串行；两份 Markdown 通过已安装成熟解析器检查本地链接 | 命令退出 0；原规则和生成物未发生修改，依赖差异限定为该精确包的项目补丁；不触发完整默认 CI 中其他受阻路径 |
+| T08 适用静态检查 | 准确最终差异核对；`git diff --check`、`node scripts/check-dependencies.mjs`，按各自额度串行；两份 Markdown 通过已安装成熟解析器检查本地链接 | 命令退出 0；原规则和生成物未发生修改，依赖差异限定为该精确包的项目补丁；不触发完整默认 CI 中其他受阻路径 |
 | T09 同一 S 和原库恢复（主控） | Worker 确认所有本次子进程退出、交还窗口；主控按 T00 取得的当前 `running.json`、真实环境与配置，重新采样后启动原 `versions/ed543c12/astrocyte.exe`、同目录 Web 和当前原 SQLite，保持原 Q/媒体/CodeGraph 配置及 BelowNormal/额度；核实际健康和唯一监听，登记新的 PID/创建时间 | 程序仍为准确 S、Web/原库路径保持、真实配置可追溯；只有新进程身份、健康和唯一监听实际通过才更新运行记录并报告恢复。启动失败保存原件并报告；没有自动切换 c5、恢复旧数据库或重试 |
 
 T04 / T06 隔离副本使用真实原文件与原 package 命令；可以复用同一实际安装的 node_modules 链接，必须记录解析的实际 CLI 路径，T07 则独立安装。副本生成、历史文件取得、命令启动及原件保存脚本均只位于 E 内；脚本在独立接受后才编写并执行。测试执行不写真实 SQLite、不访问业务 HTTP、不产生模型调用。
 
 T04 的规则级别变化只在负向检查副本中使用，不进入生产配置。T06 的旧文件有真实 Git 来源；当前产品 schema 保持。T03 和 T07 以退出码及三个实际阶段输出共同判定通过，不能仅匹配 success 文案。原 CLI / pnpm / 检查器产生的非零结果逐项保存，测试报告明确区分预期拒绝与功能失败。
+
+T05A 的公开输入为[准确基线契约](https://github.com/songconmaisaix31-design/swarm-anything/blob/32ab1eec808a5848aabad40f11133735a1214e55/contracts/openapi.yaml)中 `#/paths/~1events/get/responses/403/content/application~1json/example`，只在隔离副本复制到同操作 `501` 的 example。原 `GET /events` 标记 `x-s0-supported: false`，没有 `x-s1-supported: true`；原 ErrorV1.enum 明确允许 `scope_denied`，故 Schema 检查可继续，随后原 supported capability 检查会拒绝该未来操作的 501 example。这个负向检查验证原脚本的真实契约边界，不表示业务接口曾返回该结果。验收同时保存两个 example 的来源、隔离文件实际差异、原脚本/命令未改的比较结果、整体实际退出及完整输出；若先在 Redocly 阶段拒绝或出现其他诊断，则 T05A 未覆盖目标，须报告并修订计划，不能按预期补写第二阶段已执行。
 
 ## 资源、审核与接续
 
