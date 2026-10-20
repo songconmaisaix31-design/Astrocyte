@@ -51,13 +51,15 @@ await buildSWARuntime(runtime)
 const nodeDirectory = join(output, 'node')
 await mkdir(nodeDirectory)
 const nodeAsset = NODE_RUNTIME_ASSETS['win32-x64']
+if (!process.env.ProgramFiles || !isAbsolute(process.env.ProgramFiles)) throw new Error('The installed PowerShell location is unavailable')
+const powershell = await realpath(join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe'))
+const downloader = join(root, 'scripts', 'download-swa-node.ps1')
+await access(downloader)
 
 async function fetchPinned(file, expected, target) {
-  const response = await fetch(nodeRuntimeReleaseUrl('official', file), { signal: AbortSignal.timeout(10 * 60_000) })
-  if (!response.ok) throw new Error(`Node distribution request returned HTTP ${response.status}`)
-  const body = Buffer.from(await response.arrayBuffer())
+  execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-File', downloader, '-Uri', nodeRuntimeReleaseUrl('official', file), '-WorkDirectory', work, '-OutputFile', target], { cwd: root, env: environment, stdio: 'inherit', windowsHide: true, timeout: 10 * 60_000 })
+  const body = await readFile(target)
   if (createHash('sha256').update(body).digest('hex') !== expected) throw new Error(`Pinned Node input differs: ${file}`)
-  await writeFile(target, body, { flag: 'wx' })
   return body
 }
 

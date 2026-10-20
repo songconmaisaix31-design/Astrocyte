@@ -1038,4 +1038,6 @@ build-swa-package用execFileSync的独立参数数组调用已安装pwsh的绝�
 | D04 失败及600秒 | 真实HTTP失败、TLS断开、取消/超时或文件写入失败发生时核非零及保留部分文件、全部所属进程退出；未实际命中的分支为INCONCLUSIVE，不制造HTTP服务、假响应、证书或时钟 |
 | D05 完整候选 | 实际全部bundle/metafile、四个native ABI及两Go程序、依赖/许可检查和最终VERSION条件都通过后才可继续安装；下载通过不能代表候选可安装 |
 
-本节只有方案与真实验证计划，脚本和下载调用尚未实施/运行；独立接受后由同一Worker实施并提交准确CR，实际网络/build仍需新的明确窗口。其他已批准的闭包、输入、恢复、Job和成果实现继续。
+独立准确f5dc49f7c5003e896d5ee90cc81e0211ddb787e8技术接受本节后，同一Worker已实施scripts/download-swa-node.ps1及原build-swa-package.mjs消费者。实际PowerShell来源固定在已安装ProgramFiles/PowerShell/7/pwsh.exe，以独立参数数组调用；三个官方URI、独占私有candidate工作目录与原文件名、逐级ReparsePoint拒绝、CreateNew流、同一600秒token、默认代理/TLS及安全异常类别均按上述计划实现。原Node读取实际文件并保持所有原pin校验；原网络错误及候选没有删除。脚本和下载正文尚未运行，后继准确CR和新实际窗口仍须通过。
+
+下一静态入口仅将候选改为全新dist/swa-cli-install-20261020-04，拟EvidenceName build-05；build04实际runner先存build-04/next-window-executed.ps1并核7755原摘要。新candidate04/build05尚未创建，不运行依赖、生成、安装、服务或模型。其他已批准的闭包、输入、恢复、Job和成果实现继续。

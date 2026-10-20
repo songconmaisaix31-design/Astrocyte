@@ -139,3 +139,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 真实host metafile发现6136扫描输入和五处全RPC直接导入，包括PTY kill经SSH legacy relay的两处。当前原程序修正这五条边，复用现有RPC类/原handlers/同一16方法及SSH五方法参数/回执；不按包名删除依赖，后继实际闭包和native/Go仍未运行。独立b009的N13退回已完整读取，正式§13补原model/override/内置合成samplingParams非空拒绝及每请求严格生产者/首次和后续条件，新稳定契约仍未实施。主控新增download-swa-node.ps1窄写域，报告§14提交Windows/.NET既有代理、单次600秒流式下载/原pin全校验和D01—D05真实验证计划；脚本尚未实施，等待原Reviewer独立技术审核，不重试旧下载或冻结其他静态工作。
 
 本次rpc-closure-static-01保留8份变动TS的成熟语法解析、JSON/YAML及两份Markdown/5本地链接/24Orca与11Pi来源路径的实际EXIT0，Git空白检查通过。语法解析不代表完整类型检查、原生功能、候选构建或安装验收；这些检查及真实双Worker仍未通过，不据静态提交创建完成PR。
+
+准确9e46579df4a073d1d67fc74c198274e0178e4147普通push0，独立f5dc局部接受RPC静态修正，并限定技术接受N13及Windows下载计划；N08新字段仍等主控SPEC。主控bcfec窄写域与独立接受条件满足后，同Worker实施download-swa-node.ps1及原构建调用：成熟.NET既有代理/默认TLS、准确三URI/私有新文件、600秒全流token及原Node所有pin校验，失败原件/安全原因保持。正文和后继实际构建尚未运行。原build04 runner已保存并核7755摘要，后继仅准备candidate04/build05；当前窗口仍归restore14原S55148，不执行新Stage。
