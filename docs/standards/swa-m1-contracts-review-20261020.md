@@ -61,3 +61,47 @@ F02已关闭：T08已删除架构扫描，保留与精确补丁直接相关的�
 首次准确5fc计划的退回hook为`msg_7c39ff86af0c`，主控在`msg_6f71eac94aa1`明确完整读取并交原Worker，唤起已确认。C13/C14在读取扩展T00/T09计划前补充。当前5cd修订已关闭该次F01/F02，接受只限测试计划及方案边界。
 
 修订接受hook为`msg_38a94c047d3d`，主控在`msg_298a8710f923`明确完整读取C01—C14及F01/F02关闭依据，唤起已确认。Worker先准备自有忽略目录控制脚本交主控静态审阅；正式依赖修改和重操作仍等待M0接受及主控窗口。
+
+## 接续窗口及准确最终记录
+
+主控授权在M0/A01接受后接续本轮，原Worker的新归属为`task_ceb3b3bb76be / ctx_8d6a6e1c0145`，工作树与分支均为`swa-m1-contracts-implementation-20261020`，基线main为`4132f28ecda414f2a1bd040d9eef50bbe1087cb6`。已完整读取准确`987811f417e92cd6f15961e60c279f616e3b21a8`的两份文档并与准确5cd比较，T00—T09及T05A输入和断言没有变化；程序、依赖和契约与S相同。主控将唯一窗口交该Worker，本Reviewer保持只读。
+
+结论：**接受准确`b112ab9e03d9ea82247e73b5cb578529ca529f9d`的调查及实际运行记录**。本次原入口完整通过已核实；历史故障原因及拟议补丁有效性为**证据不足**，没有接受M1缺陷修复。该范围不要求继续实施尚无因果对照的补丁或重复原检查。没有M1程序PR，本轮不发布程序CR。
+
+完整读取了准确fa536e80的任务和报告，以及其准确61e9、b112后继差异。61e9明确列出旧新运行条件，b112区分原PID45956与恢复后PID52040、已停止的实施范围及检查源码9878与文档后继，均符合原件。相对main4132只增加两份M1文档，未修改程序或依赖。原Worker普通保留调查历史，继续保留原失败和未运行项目。
+
+### 实际原件对照
+
+本树原件根为`C:/Users/DW/orca/workspaces/Astrocyte/swa-m1-contracts-implementation-20261020/.verification/swa-m1-contracts-20261020/`。已完整读取`baseline-install-01`及`t01-baseline-01`的命令日志、退出、资源、实际版本、调用记录及进程观察，并重新完整读取原产品树`delivery-candidate-20261020/run-contracts`和`run-redocly`的原始日志、退出、资源及原检查入口。
+
+| 项目 | 独立核实的事实 |
+| --- | --- |
+| 当前准确运行来源 | 987811f4，普通文档后继为b112；Git比较S→987的package、workspace、lock、contracts、scripts及schema均无差异 |
+| 原冻结安装 | 原`pnpm install --frozen-lockfile` EXIT0，UTC07:42:00.1772990—07:42:10.9296330，10.749932秒；355包复用、无下载；源和lock未修改 |
+| 原契约命令 | 原`pnpm check:contracts` EXIT0，UTC07:42:29.3471493—07:42:48.4786604，19.1292555秒；真实13警告、264示例和类型逐字一致三阶段均实际完成 |
+| 真实工具 | Node v24.16.0、pnpm11.27.0、Redocly2.60.0；完整Node versions及本树真实CLI路径已记录。Node priority10、PowerShell BelowNormal，heap_limit=1056964608字节，即1008MiB |
+| 实际资源 | 安装CPU4.6%/12.3%、可用内存10.9533/10.9142GiB，间隔3.0022342秒；契约CPU6.6%/7.1%、10.5914/10.5616GiB，间隔3.0021054秒；均符合启动额度 |
+| 原包未补丁 | 使用`fc.exe /b`比较两树实际`bin/cli.js`与`lib/index.js`，两项逐字节相同；原强制退出操作仍在，未登记或实施补丁 |
+| 历史失败 | 原S原入口与Redocly直调仍各为-1073740791，valid/13警告后UV_HANDLE_CLOSING断言；这两次原链后继未运行的事实保持 |
+| 进程与未运行范围 | 原件保存入口PID7840、观测到的pnpm Node PID18540及其创建/命令；后续对应查询为空。该范围只支持已记录进程观察，不能推导所有历史后代。T02—T08含T05A均NOT_RUN，无补丁、负向或独立动态复验结果 |
+
+历史脚本采用`NODE_OPTIONS=--max-old-space-size=1024`，只记录old-space参数，没有当次完整heap上限；新脚本为`--max-old-space-size=960 --max-semi-space-size=16`，实际上限1008MiB。此外，新工作树使用原锁重新安装，临时及编译缓存目录也不同。原命令、受检源码和包入口相同，尚不构成完全同条件因果比较。没有逐项控制这些差异，不能把未复现归因某项参数、目录、安装、缓存、telemetry或异步句柄。61e9已明确保留这些限制；无需为改变额度重跑。
+
+### 服务记录与当前管理入口
+
+主控报告T00于UTC07:40:57停止原PID45956并保全当前原库和私有环境，T09于UTC07:44:04恢复原S，新PID52040。已只读核原产品树本轮`service-before-01/{backup.json,stopped.json,running-before.json}`及`service-after-01/{restored.json,startup-resources.json}`：备份integrity为ok、停止身份吻合，恢复记录为S、原binary/Web/database/port及health ok；旧新记录中的Q reader/generation/完整pointer和媒体配置相同。启动CPU8.2%/7.0%、可用10.8258/10.8416GiB、单调间隔约3.001秒，符合额度。
+
+真实环境相同、启动前SQLite iterdump相同、主页字节及唯一监听由主控实际执行并通过消息`msg_92d779257991`报告；本Reviewer没有重新执行HTTP、SQLite或服务操作。恢复记录支持本轮已执行结果，后续服务操作仍需重新核实实际身份。私有环境值及数据库未进入Git。
+
+准确main管理提交`bb51d3eee8d638ade0c12e5be3c7ba2acb2dc2d4`已逐项读取，与4132仅五份状态/入口文档不同：限定接受CLI30b调查、M1原入口本次EXIT0、历史FAIL、补丁未实施及原S恢复均与实际来源一致，完整修复继续未接受，原S3未决项保持。真实远端main为bb51。
+
+实际只读验证：
+
+- `.verification/check-revision.ps1 -Previous 4132f28ecda414f2a1bd040d9eef50bbe1087cb6 -Candidate fa536e8048ac4c58636712bf0e3fd4d4929dc88f` EXIT0，两份准确Markdown、5本地链接、无锚点、Git空白通过；61e9差异已逐项读取，仅补充原件已有的运行条件限制。
+- `.verification/check-revision.ps1 -Previous fa536e8048ac4c58636712bf0e3fd4d4929dc88f -Candidate 61e9cf63ae7acd838e20e33393030ae8566921e8` EXIT0，两份Markdown、5本地链接、无锚点、Git空白通过；后继`.verification/check-revision.ps1 -Previous 61e9cf63ae7acd838e20e33393030ae8566921e8 -Candidate b112ab9e03d9ea82247e73b5cb578529ca529f9d` EXIT0，一份变动Markdown、2本地链接通过，未变报告复用前项结果。
+- `.verification/check-revision.ps1 -Previous 4132f28ecda414f2a1bd040d9eef50bbe1087cb6 -Candidate bb51d3eee8d638ade0c12e5be3c7ba2acb2dc2d4` EXIT0，五份Markdown、76本地链接、无锚点、Git空白通过。
+- 已安装marked@18.1.0、BelowNormal、Node512MiB；真实Git来源、原件及包字节比较均为只读。没有重跑原入口、安装、构建、负向测试、模型或服务。
+
+当前可接受的是完整命令本次通过及停止实施、同源恢复的如实记录。补丁尚未实施，原故障内部句柄与发生条件仍未知，未验证负向退出、跨平台及故障修复效果；这些范围保持未接受。当前没有形成可区分原因的新证据，因此没有提出盲目重试或额外补丁计划。
+
+准确b112的限定接受已通过原review-decision hook投递原Run，消息为`msg_4fa60d1d821f`；主控在`msg_5b91a0502f28`明确完整读取本报告，确认本次原入口EXIT0及同源恢复的记录获接受，历史故障原因和补丁有效性继续证据不足，未接受缺陷修复。本次唤起已实际读取并回复。
