@@ -525,3 +525,34 @@ compile-go-tests在干净准确源码与候选VERSION一致时，以Go四并发/
 T02实际端口占用、保护目录及本项junction拒绝只形成源码：占用端口在serve的资源准入及子进程启动前被真实bind拒绝；保护根由真实privateDataDirectory在创建home/temp前校验。本项junction清理核本项绝对路径及ReparsePoint，仅删除该链接。安装后尚未验证的服务消费者继续标requires_T03_T13并返回证据不足，不能独自登记安装验收。资源采样器现在随源码跟踪，阻塞psutil CPU和可用内存双采样、单调2—5秒、85%/4GiB及局部资源参数符合RESOURCES；未采样或执行正文，测试Python不成为产品安装依赖。
 
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous abdb07d31954b9e72f12bdaafdfe56406deb9004 -Candidate 39cc967df6a71b2c0c22e3daa520ca08331db17e` EXIT0，十七路径Git空白、两Markdown及5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。仅执行Git/文档检查和只读源码追踪，没有运行Go/Node产品正文、编译、安装、SQLite、SDK/模型、服务或资源采样，原S12800和无窗口保持；无正式PR，COMMENT review仍待准确交付。
+
+准确39cc接受hook为`msg_fd2dbcd8953b`；主控在`msg_768ba04e2f3b`完整读取2bd相对db704无界面报告二十九行新增，确认上述静态接受、独立条件及实际来源、未执行限制，9741及后继与新补充计划另审；实际读取回复确认唤起。
+
+## CLI输出及owner生命周期补充的独立条件
+
+先重读已审§6和实际main/serve/传输前测试，再于读取准确b3的§7.5前，按H05/H06/H08/H10/H11/H15/H17形成以下条件。主控和Worker报告的新缺陷仅作线索，后继具体方案尚未接受。
+
+- JSON调用在stdout仅发布一个完整、可解析且含实际ok/身份/结果或错误的envelope，stderr承载诊断；本地参数/编码/路径/缺批准、真实HTTP应用拒绝和原生结果均覆盖。保留原生错误字段及失败任务查询EXIT0的区别，不能把ErrorV1透传为另一种顶层契约。
+- 已知合法原R在失败和取消中保留并可用于原请求查询，未获知或坏R如实未知；HTTP trace只表示HTTP来源，不冒充mutation R。解析在任意阶段失败、读操作没有R或不同scope时，不猜测后台身份、不生成替代请求、不自动重发。
+- 实际网络响应不完整/断开、真实用户取消130及stdout管道关闭分别检查实际退出和未知效果。以真实连接和本项子进程制造条件，未命中保持证据不足；输出管道已坏时不能要求仍成功写JSON，也不能把写失败或客户端退出当后台已停止。
+- serve实际ready前失败只发布失败，ready已发布后不再写第二个stdout结果；其后诊断及实际退出仍须准确。readiness证明服务当时就绪，后继退出/错误和资源结算不能被既有ok覆盖。
+- 实际owner stdin EOF在启动前、启动中及ready后均受处理，明确正常关闭与用户取消/失败退出语义；已发生的自有node/server/后代须逐项证明退出。只有root退出、没有创建身份、清理超时或后代未知时继续占用，不终止原S/Orca/IDE或以其他进程补足证据。
+- Windows取消须先证明本项独立console、真实新组及成员PID/创建身份，定向到已证实的本项子组；仅CREATE_NEW_PROCESS_GROUP不足以证明console隔离。禁止组0广播、附着或修改原console；隔离、真实批准或窗口缺失时保持未运行，普通CLI取消不代替T13真实模型停止保全。
+
+## 准确b3f0e229的§7.5补充计划审核
+
+结论：**接受准确`b3f0e22919fbbfab155af0fa9990602f50922117`的CLI输出、原R及owner生命周期补充计划**。按原Worker`msg_2ead377afef8`及主控`msg_93123453bc57`完整读取相对8220的两文档差异和全部§7.5，独立条件先见前节；程序没有随本提交修改，8220及其他后继修复仍分别准确CR，不能由本次计划接受算作已实现。
+
+C01/C02/C03覆盖真实本地解析/缺批准、HTTP ErrorV1和原生结果。当前命令已解析且校验的R与真实HTTP trace分开，未知身份省略；既有CLI字段承载结果，完整ErrorV1保存在error.data，没有把HTTP trace用于mutation关联。已读当前apierrors结构的retryable默认false；计划仍保留真实HTTP原件字段及原生结果来源，实施时不得用统一错误覆盖真实code/result/data。成熟Decoder核恰好一个stdout对象及EOF，诊断留stderr，与§6相符。
+
+C04/C05/C09分别采用实际产品HTTP处理中的断开、本项定向CTRL_BREAK和真实stdout读管道关闭，不伪造HTTP响应、抛错Writer或协议。实际窗口未命中为INCONCLUSIVE，不自动重试；正常取消130保留原R及原查询方式，不改变后台Worker/资源状态。stdout确实不可写时不再要求成功输出JSON，保留已知关联及实际影响到stderr、非零退出，避免第二次发布或重发。
+
+C06—C08明确ready前/启动中owner EOF的取消启动130、未就绪失败envelope及未知6；ready之后仅保留原一次readiness，失败/关闭另记stderr与实际退出。空闲且真实Worker/helper已按原生流程退出/归档/释放后，owner EOF只有全部所属及已观察后代退出才为0，已知子进程失败7、未知6，残留记录和占用保持。阶段必须实际命中，不能把serve根退出或另一阶段当覆盖；未验的其他运行/重启边界仍沿原计划，不能由这组CLI用例代替T13模型保全。
+
+已完整只读本机Go1.27.2的VERSION、signal_windows_test.go及doc.go Windows节；真实官方测试用新组和目标PID发送CTRL_BREAK，Notify转为os.Interrupt，原测试没有建立独立console。本Reviewer另实际读取[GenerateConsoleCtrlEvent](https://learn.microsoft.com/en-us/windows/console/generateconsolectrlevent)、[GetConsoleProcessList](https://learn.microsoft.com/en-us/windows/console/getconsoleprocesslist)及[Process Creation Flags](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags)官方正文：信号目标须与调用者共享console，组0影响该console全部进程；GetConsoleProcessList返回零或缓冲不足不能当完整成员清单；CREATE_NEW_PROCESS_GROUP与CREATE_NEW_CONSOLE同次指定时前者被忽略，CREATE_NO_WINDOW也不代表存在可发信号的console。
+
+计划已区分本项隐藏console宿主与其中新组CLI，要求实际成员、创建身份及组的创建来源核实后才发送，符合上述API边界；实施不能仅凭创建flag或Go示例宣布隔离。缺console/成员/身份或原批准、窗口继续不发送，不能强制终止代替130。Worker此前网页失败仍保留，本Reviewer这次官方网页读取独立记录，没有把它改写为Worker已成功读取或实际信号通过。
+
+覆盖对应独立六条件，未发现本次计划剩余缺口或应删除的多余用例。所有C项仍NOT_RUN，Go helper仅可先在编译窗口串行形成同源二进制，真实服务期间不编译；不增加命令/公开字段、权限、模型任务或执行账本。当前无动态窗口，本Reviewer没有运行信号、进程、编译、HTTP/SQLite、模型或计划正文。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 8220d851dd998639a0ae3fbf4eff0212dd20ed7c -Candidate b3f0e22919fbbfab155af0fa9990602f50922117` EXIT0，两Markdown、5本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。本报告新增独立条件、对照及官方链接的成熟Markdown检查也通过。普通push/远端同SHA采用Worker准确交付回执，本轮主控未另查远端的事实保持。
