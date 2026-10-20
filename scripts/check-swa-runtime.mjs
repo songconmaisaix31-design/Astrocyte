@@ -44,7 +44,7 @@ if (!values.native) {
   const requireRuntime = createRequire(join(runtime, 'package.json'))
   const packageJSON = JSON.parse(await readFile(join(runtime, 'package.json'), 'utf8'))
   assert.equal(packageJSON.type, 'commonjs')
-  for (const file of ['host.cjs', 'client.cjs', 'controller-helper.cjs', 'native-cli-entry.cjs', 'strict-caller-probe.cjs', 'task-result.cjs', 'journal-open.cjs', 'swa-provider-process-tree.cjs', 'daemon-entry.js', 'profile-state-writer-worker-entry.js']) await readFile(join(runtime, file))
+  for (const file of ['host.cjs', 'client.cjs', 'controller-helper.cjs', 'native-cli-entry.cjs', 'strict-caller-probe.cjs', 'controller-inspection.cjs', 'controller-fault.exe', 'task-result.cjs', 'journal-open.cjs', 'swa-provider-process-tree.cjs', 'daemon-entry.js', 'profile-state-writer-worker-entry.js']) await readFile(join(runtime, file))
   const utils = requireRuntime('node-pty/lib/utils')
   const loaded = utils.loadNativeModule('conpty')
   const ptyRoot = dirname(requireRuntime.resolve('node-pty/package.json'))

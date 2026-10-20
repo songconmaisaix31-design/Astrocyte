@@ -23,6 +23,8 @@
 
 控制端接续阶段准确`7e09058776a06253c7134c60cc88868be27eefbd`已普通push EXIT0并交原Reviewer。后续原R/native的正文持久结算及查询关联实施见报告§17，真实T13驱动同步核child receipt与完整原文；其正文及全部动态验收仍NOT_RUN，没有重操作授权。
 
+准确efa31191的structured正文持久结算已获独立2666699e限定静态接受；N20完整pending观察包装准确c962bea7已普通push交原Reviewer复核。N21同句柄故障目标的Job/PTY/安装及父链检查见报告§19，服务前构建实际Go控制程序和原DaemonClient只读检查；当前仅源码，尚未编译或运行任何故障。完整T12及通用terminal正文继续同Worker，真实类型、生成、构建和同候选双Worker验收仍待准确串行窗口。
+
 完整方案及测试命令见[报告](../docs/standards/swa-cli-headless-20261020.md)。抽取原生Node runtime、SQLite、Run/Task/Dispatch、真实会话与进程控制，使用独立 `swa` 入口、安装根和私有数据根；产品composition不组装全局凭据迁移、全局hooks更新、账户迁移、自动化、云推送及桌面入口。必须保留真实控制端与Worker的身份、持久性、输入观察、输出和退出语义。
 
 主控通过本次Orca `ask` 明确批准：**产品私有Orca原生Run/Task/Dispatch为本首版唯一执行账本**，SWA Workspace复用适用项目、授权和固定上下文；旧Mission/Claim/Relay保持独立记录，同一首版任务不双写。主控在准确方案独立审核后更新SPEC，本Worker不修改公共事实源、既有接口或旧门禁。

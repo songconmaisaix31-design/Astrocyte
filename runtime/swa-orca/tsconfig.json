@@ -24,6 +24,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "../../tests/swa-cli-headless/controller-inspection.ts",
     "../../third_party/orca-v1.4.230/src/types/build-constants.d.ts"
   ],
   "exclude": ["node_modules"]

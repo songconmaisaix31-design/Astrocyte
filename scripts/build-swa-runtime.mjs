@@ -36,6 +36,7 @@ export async function buildSWARuntime(output) {
     'controller-helper.cjs': join(runtime, 'src', 'controller-helper.ts'),
     'native-cli-entry.cjs': join(runtime, 'src', 'native-cli-entry.ts'),
     'strict-caller-probe.cjs': join(root, 'tests', 'swa-cli-headless', 'strict-caller-probe.mjs'),
+    'controller-inspection.cjs': join(root, 'tests', 'swa-cli-headless', 'controller-inspection.ts'),
     'swa-provider-process-tree.cjs': join(upstream, 'src/main/provider-process/swa-provider-process-tree.ts'),
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
     'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),

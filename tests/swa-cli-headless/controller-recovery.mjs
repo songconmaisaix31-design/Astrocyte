@@ -24,7 +24,7 @@ assert.equal((await realpath(source.project_root)).toLowerCase(), project.toLowe
 const spec = JSON.parse(await readFile(join(inputs, 'task.json'), 'utf8'))
 const environment = { ...process.env, SWA_ENDPOINT: values.endpoint, SWA_PROJECT_ID: values['project-id'], NODE_OPTIONS: '--max-old-space-size=1024' }
 const swa = join(candidate, 'swa.exe'), requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
-const processAPI = requireRuntime('@vscode/windows-process-tree'), { readServiceJobMember } = requireRuntime('@orca/windows-security')
+const processAPI = requireRuntime('@vscode/windows-process-tree')
 const commands = [], checks = []
 let ordinal = 0, runtimeId
 async function cli(args, expected = 0) {
@@ -84,8 +84,12 @@ assert.equal(pidFiles[0], 'daemon-v49.pid')
 const daemon = JSON.parse(await readFile(join(daemonDirectory, pidFiles[0]), 'utf8'))
 assert.equal(daemon.swa_service_job.data_root.toLowerCase(), data.toLowerCase())
 assert.equal(daemon.swa_service_job.install_root.toLowerCase(), candidate.toLowerCase())
-for (const expected of [opened.result.process, opened.result.helper]) assert.equal(readServiceJobMember(daemon.swa_service_job.name, expected.pid).creationTimeMs, expected.creationTimeMs)
-execFileSync('pwsh', ['-NoProfile', '-File', join(dirname(import.meta.filename), 'stop-owned-controller.ps1'), '-OwnerFile', ownerFile, '-ProtectedProcessIds', values['protected-pids'], '-OutputFile', join(evidence, 'actual-controller-fault.json')], { windowsHide: true, timeout: 30_000 })
+execFileSync(join(candidate, 'runtime', 'controller-fault.exe'), ['--candidate', candidate, '--data-root', data, '--owner-file', ownerFile, '--database', dbPath, '--protected-pids', values['protected-pids'], '--inspection-output', join(evidence, 'actual-controller-held-inspection.json'), '--output', join(evidence, 'actual-controller-fault.json')], { windowsHide: true, timeout: 35_000 })
+const actualFault = JSON.parse(await readFile(join(evidence, 'actual-controller-fault.json'), 'utf8'))
+assert.equal(actualFault.actual_exit, true)
+assert.equal(actualFault.controller, controller)
+assert.equal(actualFault.service_job.name, daemon.swa_service_job.name)
+assert.equal(actualFault.actual_held_chains.length, 2)
 for (let attempt = 0; ; attempt++) {
   const rows = await new Promise((resolve, reject) => processAPI.getAllProcesses(result => result ? resolve(result) : reject(new Error('Actual process inventory unavailable')), 4))
   if (![opened.result.process, opened.result.helper].some(expected => rows.some(actual => actual.pid === expected.pid))) break

@@ -1130,7 +1130,7 @@ recover先在原SQLite的BEGIN IMMEDIATE中保留同一Run、旧owner及generati
 
 Go首次serve创建当前用户与SYSTEM受保护DACL的`Local\SWAService<UUID>`，不设置kill-on-close或breakaway；当前serve在启动子进程前加入该Job。既有daemon-v49.pid和真实authenticated hello携带同一个swa_service_job对象，包含源码/私有根、原serve及实际daemon PID/创建时间和session。Go严格读取固定v49记录，其他协议、重定向、缺损或重复记录拒绝；复开时核旧serve已退出、同候选/私有根、实际daemon成员、Job权限及其他serve，再把当前serve加入原Job。Node通过实际Windows addon核成员、创建时间及DACL，并交叉核真实hello与PID record；内部ownership只供Go核验，公开readiness保持原三个字段。native实现尚未编译，实际复开、嵌套与ABI能力未验。
 
-`controller-recovery.mjs`已形成R01/R03/R04/R05/R09的核心真实入口：同一准确干净候选和公开项目、实际完成子R的无helper调用拒绝、活旧helper明确无效果结算、精确结束本项root/helper、同Run接续、完成R重放、旧C与第二任务拒绝、历史读取及关闭。strict-caller-probe使用原Runtime transport和真实已有R，不造launch证明；故障脚本在已有私有Job成员核验后持有真实Process.SafeHandle，核创建时间/程序及受保护进程列表，只结束本项实际root/helper。构建先生成实际probe bundle，服务期间不编译。T12外围沿原服务/资源/Orca保全路径；输出remainingCases非空时返回6，不能登记完整T12通过。
+`controller-recovery.mjs`已形成R01/R03/R04/R05/R09的核心真实入口：同一准确干净候选和公开项目、实际完成子R的无helper调用拒绝、活旧helper明确无效果结算、精确结束本项root/helper、同Run接续、完成R重放、旧C与第二任务拒绝、历史读取及关闭。strict-caller-probe使用原Runtime transport和真实已有R，不造launch证明；故障入口使用§19服务前构建的Go控制程序及原生DaemonClient观察，在所持实际目标句柄上核完整归属后，只结束本项root/helper。构建先生成实际probe bundle和控制程序，服务期间不编译。T12外围沿原服务/资源/Orca保全路径；输出remainingCases非空时返回6，不能登记完整T12通过。
 
 真实剩余条件包括同库serve/runtime重启及同Job复开、recover各效果边界断开与pending/竞争屏障、真实restored证明及旧generation、另一真实项目/Run，以及同一活Worker会话与unknown资源保留。§7.6的全部条件和T13同候选双Worker验收保持；未命中细窗口记INCONCLUSIVE，未执行保持NOT_RUN。当前入口没有运行任何CLI、服务、原生故障或模型正文，完整T12其余入口继续由同一Worker完成，通用终端正文也继续实施。
 
@@ -1157,3 +1157,19 @@ Go首次serve创建当前用户与SYSTEM受保护DACL的`Local\SWAService<UUID>`
 N21同句柄故障归属由同一Worker继续：服务期间不编译，现有故障脚本在修复及实际验收前不运行。N20只运行两份TS成熟语法、JSON/YAML、文档来源/链接与空白检查，原件目录`n20-static-01/`；真实begin后/首checkpoint前中断、其他pending阶段及全部T12动态正文均NOT_RUN，原缺失checkpoint场景仍须自然命中和保存真实证据。
 
 当前完整pending包装再检查原件为`n20-static-02/`，使用成熟TypeScript parser仅解析该变动handler，未创建Program；文档及空白同时检查。N21源码保持互斥开发，不将其未提交结果计入本次N20返修。
+
+## 19. 故障目标同句柄的真实归属
+
+N21沿已审§7.6的普通预编译Windows控制helper实施。`tests/swa-cli-headless/controller-fault/main_windows.go`使用既有Go及golang.org/x/sys/windows，在候选构建的既有Go串行阶段生成`runtime/controller-fault.exe`；实际DaemonClient只读检查源构建为`runtime/controller-inspection.cjs`。原T12驱动调用同一候选的控制程序，构建闭包检查要求两项存在；服务期间没有编译、动态生成代码或故障钩子。该TS入口也进入原strict/noEmit类型配置，仍未创建Program或运行语义检查。
+
+控制程序先从实际open回执与固定v49 PID record取得目标及Job，再打开并持续持有root/helper和daemon的真实Windows句柄。目标句柄具备终止、同步和查询权限，daemon/其余父链只有同步与查询权限；核当前用户/SYSTEM受保护Job DACL、无breakaway/kill-on-close规则，逐一以同句柄核IsProcessInJob、GetProcessTimes及QueryFullProcessImageName。目标PID与原Orca保护列表或当前控制程序重合即拒绝，helper与daemon必须来自同一候选node.exe。
+
+持有目标句柄之后，控制程序仅启动同候选Node只读检查，子环境只给必要系统变量。检查使用实际私有SQLite的完成open/recover原R校验owner，并用上游DaemonClient真实token握手与listSessions，不复制或打印token，不使用模拟协议或自动启动daemon。authenticated hello须与原PID record的Job/source/session一致；真实PTY的sessionId/handle/incarnation/root PID及存活状态须匹配原owner。该新鲜观察返回后，Go以实际Toolhelp32 snapshot建立helper→root、root→daemon父链，持有链内每个真实句柄，核创建顺序、同Job及同候选/系统shell程序来源；再次核所有所持句柄仍活、创建时间及成员不变。观察缺失、过期、父链不完整、身份或来源变化均在任何终止前拒绝。
+
+完整证明后仅对原先持有的helper/root句柄调用TerminateProcess并等待同一句柄退出，不重新按PID打开、不结束daemon或整个Job。若第一个目标终止后第二个目标沿原链自然退出，使用该既有句柄的实际signaled状态确认。实际观察、持有父链、保护PID及退出结果保存原件；部分终止、等待或句柄关闭失败返回6并保存错误。Node只读检查最多15秒，超时仅结束本程序直接创建的检查子进程，原目标保持已有实际状态。
+
+当前仅形成源码、打包消费者与真实入口。原N21故障脚本已由该同句柄消费者替换；该控制程序、daemon观察、故障终止、接续与所有T12动态正文全部NOT_RUN。当前没有重操作授权，构建及类型诊断、真实Job嵌套/父链是否满足、实际ABI和全过程仍由同Worker在准确窗口验证，失败立即保留原件与unknown，不降低§7.6或同候选双Worker验收。
+
+本阶段静态入口为`.verification/swa-cli-headless-20261020/check-n21-static.ps1`，原件目录`n21-static-01/`，只执行变动TS/MJS与JSON/YAML成熟语法、该Go文件只读gofmt-d、类型配置解析/入口名、三份Markdown来源/本地链接及Git空白检查。
+
+该入口本次实际EXIT0：5份TS/MJS、JSON/YAML、Go格式、TypeScript6.0.3配置解析与20个真实根文件名、三份Markdown/7链接/24Orca及11Pi来源路径及空白检查通过。TypeScript Program未创建，Go控制程序及Node probe未构建或执行，全部原动态验收仍NOT_RUN。
