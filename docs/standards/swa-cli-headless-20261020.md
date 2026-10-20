@@ -847,6 +847,32 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 
 实际静态检查使用BelowNormal：`gofmt -d`覆盖本次七份Go源码与真实检查文件，无差异；已安装TypeScript解析本次18份TS/JS文件，JSON Schema及OpenAPI YAML解析通过；PowerShell只执行Parser.ParseFile，未运行脚本正文；`git diff --check`通过。现有`check-architecture.mjs`仅走原go-list及导入边界检查，Go单并发/256MiB、Node512MiB和本项私有TEMP，实际EXIT0，45个package通过，原件在`.verification/swa-cli-headless-20261020/discovery-static-01/`。上述检查不代表类型检查、编译或实际原生调用通过。
 
-真实剩余范围：ACP账号/模型来源尚未由此只读模块证明，通用原生账号读取、工具与私有运行隔离仍须按具体Agent和用户批准补齐；现有SDK事件/成果和Job驱动须按实际选定原生Agent继续调整并重新验收。N04/N05普通后续正文与TUI程序、T12恢复均未由本次静态契约授权实施。最终仍需新同源候选的依赖闭包、完整真实Go/Native检查及同安装双Worker并发、指定停止、后续输入和完整成果，不能以发现与拒绝代替调用交付。
+真实剩余范围：ACP账号/模型来源尚未由此只读模块证明，通用原生账号读取、工具与私有运行隔离仍须按具体Agent和用户批准补齐；现有SDK事件/成果和Job驱动须按实际选定原生Agent继续调整并重新验收。61a提交不含N04/N05普通后续正文与TUI程序及T12恢复；后继main a6f387ff已定稿SPEC §21.1.2/21.1.3并授予同一Worker在原写域静态实施，重操作继续未授予。最终仍需新同源候选的依赖闭包、完整真实Go/Native检查及同安装双Worker并发、指定停止、后续输入和完整成果，不能以发现与拒绝代替调用交付。
 
 主控`msg_76daae3c5a72`要求核首装人类批准入口：当前包未带Web资产、serve未提供SPA，新私有根也没有预置Grant；USAGE所列REST路径不能代替可完成的人类操作。Worker继续只读核现有会话/批准界面和打包路由，先提交准确既有资产、路径、完整操作与测试计划；未审前不创建新Web模块、伪造human会话或代用户批准。
+
+## 11. 首装人工授权流程与Pi实际launch消费者返修
+
+已完整读取现有`session.go`、`server.go`、`classification.go`、Attention的CommandMeta/CreateProjectSpace、LocalProjects的严格HTTP DTO和App设置/Grant/token实现。包无需增加Web资产即可保留现有用户REST入口：用户本人从同一安装服务`GET /api/v1/auth/session`取得真实cookie与CSRF，创建实际空间后使用space.id登记实际公开目录，按返回的settings.revision更新完整设置，再按实际project.id和调用端agent_id建立Grant并签发credential.token。所有写入仍要求既有schema_version、request_id、expected_version、Idempotency-Key和CSRF；项目设置另外使用expected_revision。HTTP正文没有actor字段，Agent bearer不能取得human session、修改设置或签发token。
+
+`runtime/swa-orca/USAGE.md`现提供完整PowerShell正文、真实响应变量、初始仅observe批准、实际status/capabilities、执行权限的单CLI/目录审阅与重新Grant/签发、实际一小时expires_at及未知创建/版本冲突处理。用户在普通独立窗口逐段运行，Worker与Reviewer不执行human bootstrap或代用户批准。工具和账号条件保持；当前AllowedTools非空拒绝及旧四CLI批准消费者缺口明确说明，不以文件中的权限示例声明原生工具已关闭。
+
+适用T02/T03检查：在新同源安装和新私有根，用户本人按随包USAGE取得真实会话，执行空间→项目→当前revision设置→Grant→token；Worker只接收用户签发的实际项目token，调用同一安装CLI的status/capabilities并逐项在实际SQLite定位space/project/settings/grant身份及版本，不输出秘密。必要负向为带Agent bearer的bootstrap、设置/Grant/token请求拒绝，缺CSRF/过期human会话拒绝，旧settings revision冲突，Grant替换/撤销和token重新签发使旧token失效；由合法当前身份和真实原件执行，不伪造会话。项目目录/CLI/tool请求保持已批准条件，失败即保留未验状态。程序/安装正文当前全部NOT_RUN；本轮仅核来源及解析文档内PowerShell语法。
+
+原Reviewer对61a指出的Pi消费者缺口已沿实际链返修：`rpc-session-adapter.acquire`所调用的导出`buildPiRpcLaunch`现在直接构造原生`--mode rpc`命令，拒绝sdkEntry；不再有未消费的另一个native builder。`piRpcLaunchPart`从真实record/permissionMode取得fullAccess，未明确fullAccess时保持Pi原生拒绝，不把原生factory恢复写成工具批准。实际Pi认证、模型、同session输入、Job与成果未运行，相关剩余范围保持。
+
+独立准确be1b18b7退回61a的N06—N09已完整读取。上述返修处理实际Pi builder；N07真实配置/defaults与N08实际record.accountHome、launch账号来源及工具策略仍未通过，不能把程序路径/重读发现配置当成账号和工具已绑定。N09由下节完整窄端口提案处理。后继需要改变稳定选择字段或跨模块签名时，先提交完整契约审核和主控定稿；未知来源/工具保持首次输入前拒绝条件，不设置原home为可写运行目录，不开放用户未答权限。
+
+本次实际静态检查为两份变动TypeScript源码解析、JSON/YAML和两份任务Markdown/来源检查及`git diff --check`，均EXIT0；USAGE经marked18.1.0提取的14个PowerShell片段逐一通过原生Parser.ParseInput，只解析语法，没有运行任何human、安装、服务或模型正文。主控70ca0723当前总契约和be1完整新增审核段均已实际读取。
+
+## 12. 原生CLI外发批准消费者提案
+
+主控`msg_31858f3b7b00`要求补齐真实注册→人工单CLI批准→选择→启动消费者，先由原Reviewer审核。本节只提案，尚未修改新写域或冻结接口。当前`SetProjectSettings`用旧`NativeRegistry.Adapter`校验ExternalModelCLI，而`agents/native.go`实际只注册codex/pi/claude/opencode；产品StructuredAgentRegistry还包含其他ACP Agent，不能向旧S3 Registry填空adapter或静态ID取得批准。
+
+唯一方案是在Workspace App声明`ExternalCLIRegistry`只读端口`ValidateExternalCLI(ctx, cliID) error`。LocalProjectService保留原构造器，以一次性的`ConfigureExternalCLIRegistry(port) error`在Composition中绑定，nil或重复绑定立即失败。`SetProjectSettings`仅对非空ExternalModelCLI使用已绑定端口；未配置Orca的原产品继续调用既有NativeRegistry.Adapter。HistoryRoots、旧S3原生会话、NativeAdapter及其原验收维持原消费方；端口失败不改用旧registry。
+
+SWA Composition在HTTP开放前构造明确安装/私有profile的同一orca adapter，将其注册验证端口注入项目服务，并复用该实例构造OrcaExecution。adapter新增只读bridge operation `registered_agent`，私有Native方法`swa.registeredAgent`从本产品实际StructuredAgentRegistry返回所请求ID及真实adapter/执行模式/来源；后继terminal只在真实TUI配置和已绑定PTY launcher/controller共同存在时可用。该校验不读原Orca RPC，不运行版本探测、会话或模型；未知ID、实际registry缺失、传输/元数据不匹配立即失败。它只证明注册，不证明安装、账号或可启动，启动继续按明确selection和当前批准核验。
+
+申请新增窄写域为`internal/workspace/app/contracts.go`、`internal/workspace/app/projects.go`及新增`internal/workspace/app/external_cli_registry_real_test.go`；现有`cmd/server/orca_runtime.go`及相关真实测试、`internal/adapters/orca/**`、`runtime/swa-orca/**`、契约与本任务两文档沿原写域同步。不修改`internal/adapters/agents/native.go`，不增加公共HTTP身份或批准字段，不改变AllowedTools非空拒绝。
+
+必要检查为：实际安装Native registry中一个旧四CLI之外的已注册ID可通过注册端口且其来源对应同一候选；用户本人能以该实际ID更新单CLI批准并取得真实settings revision；旧批准CLI与另一真实选择不匹配时在模型前拒绝；真实未知ID/未绑定TUI/Native服务不可达拒绝且原设置未变；无Orca配置时原四CLI/未知ID行为及HistoryRoots/旧NativeAdapter消费者保持；非空AllowedTools、Agent bearer修改设置和旧revision继续拒绝。测试使用真实私有SQLite、实际HTTP/Native方法及公开项目，人工批准仍由用户本人完成；没有虚假adapter、协议或业务结果。当前只读来源与文档检查，不运行新服务、测试或模型；本提案等待原Reviewer接受及主控定稿/扩展写域，同时继续已授输入与T12实现。

@@ -194,7 +194,7 @@ export function piRpcLaunchPart(
     return {
       launch: {
         command,
-        fullAccess: deps.resolveFullAccess?.() ?? true,
+        fullAccess: (basis.permissionMode ?? record.permissionMode) === 'fullAccess' && (deps.resolveFullAccess?.() ?? true),
         previous,
         ...(sessionFile ? { sessionFile } : {}),
         ...(forkFile ? { forkFile } : {}),

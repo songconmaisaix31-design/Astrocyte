@@ -57,21 +57,7 @@ export function piRpcSessionlessEnvironment(env: Readonly<Record<string, string>
 
 /** Pi stores its own sessions; an explicit session file is shared with terminal resumes. */
 export function buildPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLaunch {
-  if (!options.sdkEntry || options.fullAccess || options.extraArgs?.length || options.forkFile) {
-    throw new Error('SWA requires its fixed ToolsOff SDK entry')
-  }
-  return {
-    command: options.command,
-    cwd: options.cwd,
-    args: ['--max-old-space-size=1024', options.sdkEntry],
-    swaJobIPC: true,
-    env: { ...options.env },
-    envToDelete: [...(options.envToDelete ?? [])]
-  }
-}
-
-/** 上游 CLI 规则仅保留为来源，产品运行时不导出该入口。 */
-function buildUpstreamPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLaunch {
+  if (options.sdkEntry !== undefined) throw new Error('A native Pi launch cannot select an SDK entry')
   if (!options.fullAccess) {
     throw new Error('Pi structured chat supports full access only')
   }
