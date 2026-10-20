@@ -1097,3 +1097,13 @@ e549、e54d和main72f三个hook分别为`msg_f1a9fe13d2e4`、`msg_0e985fb2b815`�
 restore-12实际资源CPU16.0%/8.9%、可用10.413/10.462GiB、单调3.002029秒；launch/start-intent/source/database/restored及空stderr已核，原库记录ok/fk空/equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-12`于UTC18:02:27实际EXIT0：current/restored整份JSON一致，实际S56896/父52616、原ed543程序、创建UTC18:00:13.3731609/epoch1792519213.3731608相差0.0001毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源保留；本Reviewer未操作SQLite/HTTP或目标进程。
 
 下一prepare取restore-12/restored.json，c8源不改，当前窗口归原S；build03授权已消费，不授新重操作。两个旧构建失败及部分candidate01/02、restore11失败和诊断限制继续保留，全部真实Agent、输入/恢复、Job/完整成果、安装及同候选双Worker保持未通过。主控`msg_4a9851052cd9`只读默认Pi auth条目0及指定父环境未设置，仅限定该来源/时点；其他profile/Agent未知，本Reviewer没有读取认证内容，N08正式契约仍未定稿。
+
+build03退回hook `msg_7627dfe9b893`与main6883管理接受hook `msg_d2bdb411ad3c`已分别获主控`msg_43118ea4073a`、`msg_6dd65c489f89`完整读取de4准确新增全节、真实导入/原件及管理差异的回复，实际唤起确认。
+
+## 准确8ebefec7的必要依赖与私有store修正
+
+结论：**局部静态接受准确`8ebefec700781e9883a3bb3f905233e07f03e671`的两项必要依赖声明和构建私有store复用，N08技术计划另行审核。** 已完整读取相对e54d的五文件差异、§13正式计划及对应实际消费者。runtime/package与dependencies.lock.json同步声明Unicode11=0.10.0-beta.301、diff=8.0.4，与实际缺失导入及上游devDependencies准确pin一致，没有添加external绕过。pnpm-lock未手写，真实生成/安装仍待单独窗口。
+
+构建store改为同任务已有`.verification/swa-cli-headless-20261020/pnpm-store`，mkdir后核最终lstat和整条realpath与实际仓库根下指定路径一致，重定向失败；仍由完整pnpm prod deploy建立新候选，candidate/temp独占创建，原pin/校验/后续VERSION条件保持。只读实际已装pnpm11.27.0的bin shim和dist/pnpm.mjs：verify-store-integrity为Boolean选项、普通配置默认true，store消费者传递该值；构建显式启用，没有复制node_modules或改变全局store。本Reviewer没有执行pnpm或重操作。
+
+`check-revision.ps1 -Previous e54d45489f54819cccb2d408474e6f885aac6970 -Candidate 8ebefec700781e9883a3bb3f905233e07f03e671`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。成熟解析额外识别§13未包代码的`Promise<AgentSessionAccountHome>`为HTML，该计划显示问题交同一Worker修正；它不改变两项构建修复的局部接受。N08尚未技术接受或冻结，不以本次决定授权实施新增native_launch；依赖安装、bundle、完整闭包、native/Go/TS、安装和全部真实调用继续未验。

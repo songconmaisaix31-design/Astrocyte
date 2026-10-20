@@ -499,3 +499,5 @@ c8控制入口未改，下一prepare取实际restore-11-recovery-01/restored.jso
 原S22036退出后才运行一次build03；授权消费收回和两次所属退出观察分别保留主控/Worker实际覆盖。restore-12使用同一ed543、原库和原环境配置，原库保全记录ok/fk空/equal。UTC18:02:27只读核实际S56896的程序、创建时间、整份恢复/current记录及唯一监听符合，完整环境/health/Web和原Orca沿主控实际来源；后继prepare使用restore-12/restored.json并重新准入，当前窗口归原S。首次restore11与诊断失败/后继成功的限制没有删除，原原因继续未知。
 
 `check-revision.ps1 -Previous 72f27b3e4276ceb33cda87b403e4d6b45108de8a -Candidate 6883f16e1ebd8c016f064457e140ff99bc1c5a50`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有重新构建、诊断、启动服务、访问SQLite/HTTP或调用模型；真实程序、完整成果、安装及同候选双Worker仍未通过。
+
+准确6883管理接受hook `msg_d2bdb411ad3c`已获主控`msg_6dd65c489f89`完整读取de4准确新增及管理差异回复，实际唤起确认；同轮build03退回也已获准确读取回复。原Worker后继8ebe的必要依赖/store局部静态接受及N08独立技术审核分别记于headless报告，不改变主线运行状态或授予新窗口。
