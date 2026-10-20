@@ -1010,3 +1010,26 @@ prepare-10/stop-10实际原件均通过，S47228于UTC17:11:16.413051明确退�
 控制脚本仍为准确已审c8，后继prepare取实际restore-10/restored.json并新鲜准入。完整原环境/配置、health/Web、两次所属执行退出观察及原Orca38652/runtime49da保持主控实际来源；本Reviewer只读原件和进程/监听，没有访问SQLite/HTTP或采样。该结果属于主控独立检查，不能登记Worker自测；N07/N08、N09程序、新输入/恢复、四个runtime/live函数、Node/native/TS完整构建、安装及同候选双Worker均保持未验。
 
 N08另已独立完整读取本机Pi1.0.1的docs/cli.md及实际main/sdk/agent-session/RPC相关消费者：no-tools映射noTools=all，allowedToolNames和初始active为空，实际tool registry刷新按该允许集合过滤；显式tools可覆盖，资源禁用开关仍允许各自显式路径。真实get_state没有tools/activeTools/ToolsOff字段，不能沿旧SDK字段声明原生握手已核工具空集合。认证文件backend的锁/写入与只读发现类分别有消费者，源文件读取不等于运行不刷新。上述来源线索已交原Worker；没有读取本机认证文件内容，也没有启动Pi、会话或模型，N07/N08技术方案及效果仍待准确审核。
+
+准确16ad独立Go结果hook `msg_0ea2de6ec592`已获主控`msg_634d579c87f1`完整读取f367准确全节及实际原件回复，实际唤起确认。该次接受及后继源代码审查分别按自己的准确范围进行。
+
+## 准确33c5af4f的注册批准实现审核
+
+结论：**退回准确`33c5af4f941bb1252aa382623656612bb2e7c3cd`中的新真实检查及状态说明，修正后再审N09。** 已完整读取相对16ad的27文件差异，追踪App/Composition、Go bridge/严格来源、Node注册/owner、原dispatcher/transport及新增真实检查。N09主体实现与已定稿§21.1.4的静态结构相符；检查存在确定的请求准入问题，当前不能据此接受完整功能，全部动态仍未运行。
+
+| 问题 | 实际来源、影响与返修要求 |
+| --- | --- |
+| N10 新真实检查在读取前后项目时即被拒绝 | TestExternalCLIRegistryRealHumanApproval的readProject使用Agent bearer访问GET /api/v1/local-projects。实际session.scopedAgentRoute在目标项目路径分支之外返回false，relayScopedWorkspaceRoute也未放行该全局列表，因此在进入ListProjects之前返回403；增加discover Grant不能解决。原Worker须复用真实私有SQLite或已有合法项目内只读来源，保留当前设置/身份比较，不为检查开放新管理接口或获取human会话。缺失与错误身份应检查实际明确拒绝原因，不能将任意依赖错误计作权限保护通过 |
+| §12状态说明不一致 | 该节首段仍写只提案、未修改新写域或冻结接口，与后面的真实实施及已定稿SPEC21.1.4冲突；同一Worker同步为当前实际状态 |
+
+N10已以`msg_b4d0f6632c93`交原Worker，并通过`msg_fb5df4d5a6ef`通知主控。该问题不影响按原授权对准确源码进行生成或编译准备，也不授予新运行窗口；实际检查修复后仍须用户完成具体候选的真实人工批准。
+
+正向静态范围已核对：同一真实adapter在Composition中一次绑定，只替换非空ExternalModelCLI注册验证，原HistoryRoots/旧S3/工具约束保持；端口错误在SaveProject前返回。Native只取实际registration，strict请求/结果使用原envelope；Go核实际ID、schema、mode/source、同安装VERSION/host.cjs、内外runtime/authority及canonical根，缺失或不匹配失败，不进行完整发现/version probe或模型。新项目校验不消费已有Grant，未配置Orca保留原路径。
+
+owner由serve的crypto/rand生成，Go本地子进程环境传给Node host/client；host在启动其他组件前删除继承变量并在内存持有。真实RuntimeClient/transport包络传递该凭据，远程目标拒绝携带；PTY和structured子环境删除该值。新增dispatcher callback在legacy handling及mutation executor/完成重放前核SWA请求的本地caller与恒定时间secret比较，其他宿主无callback时保持原行为。已追踪原caller identity及本地request JSON接收字段；它不等于T12完整helper/current-consumer矩阵已经实现，后续workerSend仅有合同/兼容字段准备，实际方法仍按原任务继续。
+
+N07明确模型已送入configuration，Pi复用原parsePiModelOptionId及对应provider认证条目，OAuth格式要求access/refresh/有限expires；没有默认模型时发现仍如实unknown，明确选择可继续核配置。Codex仅对有相应来源的默认openai、Claude对已读账号格式提供当前静态来源；真实账号有效性、实际运行账户、外发目标/原禁令和工具仍按N08核准，ACP等未适配项没有得到可启动结论。该局部避免以缺默认模型直接判无账号，未证明实际模型或来源绑定成功。
+
+依赖方面，准确源除host-entry外，rpc/dispatcher及RuntimeRpcState也静态引用完整ALL_RPC_METHODS。主控已要求按真实消费者收窄并检查metafile/安装；本Reviewer将dispatcher的准确第二入口以`msg_d01dfdd755f1`和`msg_f755847b56ad`交主控/Worker。只过滤注册方法不能证明模块已经从bundle移除，尚未接受完整运行依赖闭包。
+
+`check-revision.ps1 -Previous 16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3 -Candidate 33c5af4f941bb1252aa382623656612bb2e7c3cd`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。生成类型、编译、测试正文、Native/HTTP服务、安装和模型均未由本Reviewer执行；Worker所报语法/格式/架构结果保留其原归属，不能替代本次未通过的真实检查或功能验收。

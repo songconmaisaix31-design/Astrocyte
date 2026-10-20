@@ -473,3 +473,5 @@ SPEC §21.1.4与已审16ad/b64相符：App只读ExternalCLIRegistry端口、HTTP
 prepare/stop-10、restore-10的实际资源与原服务身份已只读核对；当前S58620/创建epoch1792516500.6021516、完整恢复记录/原程序/唯一监听及原库保全记录符合。c8源未改动，后继用restore-10/restored.json，新鲜准入及唯一窗口规则保持。CLI参考将09次恢复记为该次历史时点，并指向STATUS当前身份，既有REA覆盖限制没有改变；旧构建失败和原Orca保全来源保持。
 
 `check-revision.ps1 -Previous 3d82bfedf08af471c974461bf6ac008b9e1e5324 -Candidate 374afc54d18959a0125e4773c2a63d31d080e2a3` EXIT0，四Markdown/44本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行编译、模型、安装、服务或原库操作；实际新检查仅覆盖主控所执行的准确源码范围。
+
+准确374接受hook `msg_a02385e04f4f`已获主控`msg_0022e75541da`完整读取f367准确新增全节及主线差异回复，实际唤起确认。后继33c5的新注册真实检查已交原Worker修正，结果见headless报告；生成、编译准备与完整功能接受分别保留实际来源和范围。
