@@ -350,3 +350,21 @@ f0的controllerClose通过与task.create/worker.start相同的reserve进入原�
 | 真实结算 | 导出保留A被停止等实际状态及B的原会话成果，不将文本内容当成功状态或用量。T13仍为同一安装候选、真实A/B重叠、停止A后B继续及完整成果；当前不登记通过 |
 
 已只读核已安装Pi SDK1.0.1的公开index及session-manager实现：SessionManager.open最终使用persist=true，旧版本可迁移并重写原文件；loadEntriesFromFile在尾部pending非空时会追加换行，且缺文件或坏行有宽松处理；公开parseSessionEntries只解析传入内容，但同样跳过损坏行。接口名称不足以证明只读或完整。上述来源事实与条件已通过`msg_2ec478e8ce85`及`msg_698e72686772`交原Worker，具体方案及实现继续由原Worker完成并交准确版本审核。
+
+主控在`msg_5a47a744a9c1`明确完整读取累计`f75bb5959bb409d116208c437600d4d8ce6f401a`两报告差异、真实预览及SDK来源和上述四项条件，确认仅静态依据、返修交原Worker、没有新接口/模型授权或动态窗口，原接受及F09退回范围保留。
+
+## 准确f8c69161的F09返修静态复核
+
+结论：**接受准确`f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6`对F09的静态修复**。按主控`msg_866051f4a56c`完整读取相对53ad的全部十二路径差异，真实远端分支同SHA；没有用原Worker继续编写的完整成果或测试文件替代这一准确提交。F08及此前接受范围保持，整体产品和全部动态结果仍证据不足。
+
+SwaProviderProcessTree只在native assign成功、实际查询assigned/root身份一致且成员含真实root后设置assignmentWitness。已创建root但无该见证时，reap直接返回unverifiable，保留外部对象及Job，后续空Job/root退出不能改变该结论；正常退出成功条件还同时要求当前assigned和已保存见证。JsonlRpcAgentConnection对这种已创建进程继续屏蔽单独root exit，Pi acquisition仍retainFailed并返回ExitUnproven，修复已覆盖原F09的调用及消费因果。
+
+真实processless沿原生spawn error加无PID的close事件证明从未创建进程。releaseProcessless再核无root/成员/既往身份、Job未分配后才清理空Job；ManagedProviderProcess返回root exited/tree null。连接与Pi只在自身实际processless时接受该无进程结算，未将其转换为已绑定Job全树证明；已创建root的分配失败不能使用该分支。
+
+文档§3.1现与CLI/adapter/构建一致使用平铺安装路径及真实controller-helper.cjs入口；安装器在复制前建立独占新目录、设置当前用户私有ACL，再复制随包内容。新增构建entry服务实际连接/认证检查，未改原上游、本机Orca、执行账本或权限规则。上述是静态一致性核查，安装ACL和可用性尚未实际验证。
+
+普通Node fixture新增：已真实退出再绑定的无成员见证保持unverifiable；不存在程序导致实际无PID/processless且tree为null；父宿主实际退出后两个新鲜进程身份快照及无关Job保全；缺conpty.node的真实私有候选副本在spawn前拒绝。父宿主失联记录明确保留oldJobTreeVerdict unknown，未以父退出代替旧Job证明。这些源码对应既定J/T09条件，未发现本次新增必须删除的无关检查，尚未运行，不能据断言内容登记通过。
+
+完整成果读取、真实SDK abort后关闭、其余T00/T02/T13/T15准备及全部构建/安装/模型结果均保持原Worker待办；阶段尚未完成不单独判失败。当前无正式PR，GitHub COMMENT review仍待正式PR及准确交付。
+
+`.verification/check-revision.ps1 -Previous 53ad6e1479ef5cf3099372d2855087cf002513bb -Candidate f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6` EXIT0，十二路径Git空白、两份Markdown和5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。没有编译、加载native、执行fixture/Go测试、启动SDK/模型/产品服务或安装；原S12800与无窗口保持。
