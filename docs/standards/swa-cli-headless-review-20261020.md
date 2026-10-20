@@ -903,3 +903,19 @@ N04/N05已以`msg_e527bd2d50de`交原Worker，主控已获`msg_d2e867af5ca6`说�
 结论：**接受控制脚本准确SHA256 `fea0faa051e6fe89674b2a4dfe3c53abb27990f959d7d0d6aa17cd4454bff57c`的两项恢复身份常量。** 内存逆置21300/UTC16:05:49.906991到57400/UTC15:33:20.748677，全文件精确得到已审1dc4。UTC16:08:08只读核restore-07 launch/restored/current与实际PID21300/父45632、原程序、创建UTC16:05:49.9069910及epoch1792512349.906991完全对应、差0毫秒，唯一127.0.0.1:64505监听。
 
 原库记录integrity ok、foreign_keys空、stopped_interval_comparison equal；启动资源CPU9.2%/11.7%、可用11.634/11.714GiB、BelowNormal、单调3.001725秒合规。`.verification/verify-restored-owner.ps1`以本次准确参数运行EXIT0，原件`.verification/window-fea0-readonly.json`；未执行控制脚本、SQLite、HTTP或采样。health/Web、完整原环境/配置及原Orca38652/runtime49da状态保留主控来源；当前窗口归原S21300，下次prepare仍须新鲜身份/环境/保全和资源，脚本接受不授予新窗口。
+
+准确740的独立发现接受hook `msg_ac171707a1d8`、输入分支退回hook `msg_d5756727a7cb`已分别获主控`msg_78bd22dfc244`和`msg_5c0ab07b0334`完整读取c3报告及准确差异回复；独立发现已按SPEC §21.1.1授同一Worker静态实施，实际读取唤起确认。fea0接受hook `msg_358ed21f4cca`及9c源码检查接受hook `msg_9e886939fb1a`已分别获主控`msg_1987104c919f`和`msg_0163867d64b0`完整读取bb5准确版本回复，实际唤起确认，各自局部结果及全部动态未验保持。
+
+## 准确d441703a的N04/N05技术计划复审
+
+结论：**接受准确`d441703a620f2e1bcca73edd50c7edc66dc92351`所含新workerSend异常结算及structured/terminal分流技术计划，N04/N05已覆盖。** 完整读取763相对740及d441相对763的两组准确差异，再对照c3的两项独立缺口、B01/B02与G07。主控通知d441已普通push；程序WIP只属于已授独立发现实现，本次只读取准确Git对象，不以WIP替代方案或功能结果。
+
+N04现明确child R/native自身先持久checkpoint实际模式、操作和正文来源，在input-submit/mark之后才进入一次真实host或terminal writer；该边界之后异常、失联、超时及journal/结算失败均使用operation_unknown保留原child/parent及占用。效果前只有正向证明尚未输入才持久完成原child的真实rejected/effects_applied=false，再由parent保存同一拒绝；存储失败继续unknown，不删除或重发。已核RpcContext真实recordMutationReceipt、原executor的recordReceipt完成路径、mutation-receipt-store的complete可更新准确已有记录且discard仅删除pending；handler先持久完成结果可以保留外层重复完成失败时的原件，单独mark不能承担该保证。
+
+N05现按固定execution_mode明确来源及全过程：structured来自真实registry/definition/adapter，以实际Dispatch/session/fence及原native operation进入原host队列；terminal只有真实TUI配置与已接入PTY launcher/controller共同绑定才登记，以原handle/PTY/incarnation/创建身份、正向Agent识别和readiness进入普通sendTerminalAgentPrompt。后续正文不用仅dispatch-preamble的terminal arm；实际mode变化不换模式继续输入。终端read明确原生transcript与显式有界terminal来源的区别，stop/release使用真实PTY custody及精确树退出，resume缺原生证据保持unknown/unavailable，不创建替代会话。
+
+已核真实terminal-input-dispatch的串行generation校验、terminal-agent-prompt及RuntimeTerminalWriter在实际写入/各chunk/提交前await beforeWrite的来源；计划要求产品异步授权在实际队列出队和写入前执行，等待后重新核身份/ownership，并保留原身份guard。structured继续在实际serialized handOver到adapter.dispatch前await授权，复核相同child/consumer/fence/工具；同步beforeRun不承担实际输入授权。DTO分别使用真实session或terminal关联，handed-to-terminal只表示PTY接受，不能当模型accepted/turn started。原receipt及实际模式原件承担持久关联和只读查询，不添加另一队列或请求账本。
+
+G07补效果前明确拒绝、效果后子receipt保全、真实存储失败、逐模式来源及mode冲突；未实际命中继续未验，没有注入假异常或伪造事件。成熟marked AST核763时G表缺独立G08行，d441已恢复G01—G08同一表，补说明在表外，原最终同候选双Worker条件完整保留。另以`msg_94aa1086713a`交原Worker在常规文档更新中同步查询摘要的逐模式措辞，准确DTO及详细查询契约已经分别规定实际来源，不阻塞本次技术结论。
+
+`check-revision.ps1 -Previous 740ccdf9a9dfa33901274fd8dccd37c4beacf1fd -Candidate d441703a620f2e1bcca73edd50c7edc66dc92351` EXIT0，两Markdown/5本地链接及Git空白通过；`.verification/inspect-plan-tables.mjs`使用marked18.1.0读取准确763/d441，确认d441八行同表，BelowNormal/Node512MiB。未发现剩余N04/N05计划缺口或新增多余检查；本次只接受技术方案，由主控定稿SPEC再授权实施，原生Agent/模型/工具范围、T11/T12及全部真实输入/恢复/安装/同候选双Worker结果继续未验，没有新增运行授权。
