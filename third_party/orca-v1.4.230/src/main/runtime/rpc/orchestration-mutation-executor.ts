@@ -38,6 +38,11 @@ type InFlightMutation = {
   promise: Promise<unknown>
 }
 
+function readPendingControllerRecovery(receipt: string | null): unknown {
+  try { return JSON.parse(receipt ?? 'null') }
+  catch { throw new OrchestrationError('operation_unknown', 'The original pending controller recovery checkpoint is unreadable') }
+}
+
 export class OrchestrationMutationExecutor {
   private readonly inFlight = new Map<string, InFlightMutation>()
 
@@ -229,7 +234,7 @@ export class OrchestrationMutationExecutor {
         markEffectPossible: () => {
           effectPossible = true
         },
-        ...(request.method === 'swa.controllerRecover' && begun.disposition === 'pending' ? { replayedReceipt: JSON.parse(begun.row.receipt ?? 'null') } : {})
+        ...(request.method === 'swa.controllerRecover' && begun.disposition === 'pending' ? { replayedReceipt: readPendingControllerRecovery(begun.row.receipt) } : {})
       })
     )
     this.inFlight.set(key, { method: request.method, payloadHash, promise: active })

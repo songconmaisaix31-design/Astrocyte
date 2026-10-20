@@ -12,7 +12,7 @@ import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
-import { invocationSchema, helperReply, nativeObject, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
+import { invocationSchema, helperReply, nativeObject, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, scopeSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
 import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
@@ -249,9 +249,23 @@ async function observeRecovery(context: RpcContext, receipt: Record<string, unkn
 async function recoverController(invocation: Invocation, context: RpcContext) {
   const { runtime } = context, db = runtime.getOrchestrationDb(), mutation = context.orchestrationMutation
   const command = invocation.command
-  if (command.action !== 'controller.recover' || !command.controller || !mutation || mutation.requestId !== command.request_id) return fail('request_mismatch', 'The exact public recovery request is required')
+  if (command.action !== 'controller.recover' || !command.controller || !mutation || mutation.requestId !== command.request_id) return fail(context.replayedMutationReceipt === undefined ? 'request_mismatch' : 'operation_unknown', 'The exact public recovery request is required')
   if (context.replayedMutationReceipt !== undefined) {
-    const receipt = nativeObject(context.replayedMutationReceipt)
+    let receipt: Record<string, unknown>
+    try {
+      receipt = nativeObject(context.replayedMutationReceipt)
+      const fields = {
+        project_id: z.string().min(1), prior_controller: z.string().min(1), prior_owner: controllerOwnerSchema,
+        prior_generation: z.number().int().nonnegative(), scope: scopeSchema, invocation: invocationSchema,
+        run_use_request: z.string().min(1), children: z.array(z.string().min(1)),
+        stage: z.enum(['scope-reserved', 'pty-spawn', 'helper-ready', 'run-use'])
+      }
+      const original = z.object(fields).parse(receipt)
+      if (original.stage === 'scope-reserved') z.strictObject(fields).parse(receipt)
+      if (original.project_id !== invocation.project.id || original.prior_controller !== command.controller || original.prior_owner.controller !== command.controller || original.prior_owner.project_id !== invocation.project.id || !isDeepStrictEqual(original.invocation, invocation) || !isDeepStrictEqual(original.scope, invocation.scope) || original.run_use_request !== `${mutation.requestId}/run-use` || !isDeepStrictEqual(original.children, [`${mutation.requestId}/controller-pty`, `${mutation.requestId}/run-use`])) throw new Error('The original pending recovery scope is incomplete or inconsistent')
+    } catch {
+      throw new OrchestrationError('operation_unknown', 'The original pending recovery checkpoint cannot be completely interpreted')
+    }
     if (receipt.stage === 'scope-reserved') {
       const scope = z.object({ run_id: z.string().min(1) }).parse(receipt.scope)
       const prior = controllerOwnerSchema.parse(receipt.prior_owner), run = db.getRun(scope.run_id)

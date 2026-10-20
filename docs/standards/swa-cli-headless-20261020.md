@@ -1149,3 +1149,9 @@ Go首次serve创建当前用户与SYSTEM受保护DACL的`Local\SWAService<UUID>`
 本阶段只运行成熟TS/MJS及JSON/YAML语法、三份Markdown的来源/本地链接与Git空白检查，入口为`.verification/swa-cli-headless-20261020/check-input-settlement-static.ps1`，原件目录`input-settlement-static-01/`；完整类型、生成、编译、host队列、真实SQLite正文、模型和安装验收未运行。
 
 该入口实际EXIT0，5份TS/MJS、JSON/YAML、三份Markdown/7个本地链接/24处Orca及11处Pi来源路径和空白检查通过。原Reviewer已对前序7e阶段发出N20/N21初步返修：pending缺失checkpoint保全及故障目标同句柄完整归属；由同一Worker后继处理，7e没有整体接受结论。
+
+## 18. pending接续的原checkpoint保全
+
+已完整读取原Reviewer准确`1aa3aa4bd5e646f942c073a51fc35950a5263ff5`两份正式报告。N20消费者现将pending原JSON解码错误直接转为operation_unknown；null、缺失或无法完整解释的checkpoint在recover handler中同样保持原R及屏障。schema和实际invocation、同项目/旧controller/Run-root/context、旧owner、generation、准确children及R/run-use关联须完整一致，stage仅接受真实现有四种checkpoint。只有严格完整的scope-reserved记录才能进入原先已审的明确无外部效果结算分支；pty-spawn及以后继续只观察并以unknown包装缺证。当前请求与原mutation关联无法确认的pending也不进入删除路径。
+
+N21同句柄故障归属由同一Worker继续：服务期间不编译，现有故障脚本在修复及实际验收前不运行。N20只运行两份TS成熟语法、JSON/YAML、文档来源/链接与空白检查，原件目录`n20-static-01/`；真实begin后/首checkpoint前中断、其他pending阶段及全部T12动态正文均NOT_RUN，原缺失checkpoint场景仍须自然命中和保存真实证据。
