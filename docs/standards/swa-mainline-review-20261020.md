@@ -279,3 +279,11 @@ UTC11:31:06可用1.774GiB采用主控管理记录中的单次只读观察，未�
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 1f99f64d59d578954fb943518e34e41cf2ab38ed -Candidate 4e7747647d9f262f596cef37c25e098c91164a59` EXIT0，两份Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异及远端核对通过；此前Windows PowerShell辅助调用的宿主策略/编码错误与后继PowerShell7成功已如实记入无界面报告，没有重复动态检查。
 
 准确4e管理接受hook为`msg_dbf5f70f228e`；主控在`msg_6a65a02c9856`完整读取a211b66相对629e的十四行新增，确认只接受两文档管理记录、程序单独适用静态接受/退回，原S/M1/S3/权限及无窗口保持；实际读取回复确认本次唤起。
+
+## 准确8ca93334的返修归属记录复核
+
+结论：**接受准确`8ca933340690ea61e018b22bfe10b522c411b68e`相对4e的管理记录**。按主控`msg_d9b85e93599c`完整读取STATUS及首版CLI任务两路径差异，准确记录abdb F10—F12静态接受、F13原生停止/目标turn证据和F14合法尾部/目标错误断言返修，同一Worker归属、成熟库及不增加A完成条件与独立报告一致；其余路径无差异。既有计划/接受与全部动态未运行保持。
+
+主控已实际读取两个hook的记录与本会话原消息相符；单次可用0.376GiB为主控历史只读观察，无新窗口，不替代实际启动准入。普通push采用主控准确交付记录，本Reviewer本轮ls-remote因schannel握手失败EXIT1，没有将该次远端核查写为成功；本地准确Git对象可完整审查。原S/M1/S3/权限及程序未纳入main保持。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 4e7747647d9f262f596cef37c25e098c91164a59 -Candidate 8ca933340690ea61e018b22bfe10b522c411b68e` EXIT0，两Markdown、16本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。两路径以外无差异通过，没有重复动态或资源检查。
