@@ -75,7 +75,7 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 
 ## 当前状态
 
-结论：**接受准确`396ed69b30890185bdade3ae23f8206cf18b9b82`的完整方案与T00—T15测试计划**。已独立核对5523→3162→396e的全部差异及相关真实源码，F01/F02的方案缺口已补，F03的内核采集前置已删除。此次接受限于方案、测试覆盖和模块边界，程序写域由主控授予。后继准确847ec阶段静态CR退回F04—F07，程序实现、模型认证和动态验收均未接受；停止强化方案尚待准确版本审核。
+结论：**接受准确`396ed69b30890185bdade3ae23f8206cf18b9b82`的完整方案与T00—T15测试计划**。已独立核对5523→3162→396e的全部差异及相关真实源码，F01/F02的方案缺口已补，F03的内核采集前置已删除。后继准确6168接受F04—F07静态修复及Job方案/测试补充，退回F08关闭竞争。接受限于所列静态范围；程序实现、模型认证和动态验收均未接受，原S12800运行且没有动态窗口。
 
 本方案首次归属为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`。主控在`msg_d2e2d0b64a50`确认该静态Task已结算，返修沿原终端/工作树/分支由`task_9f062888e786 / ctx_0d069056baff`负责；仍为同一个原Worker。正式意见通过`msg_e632a2126807`送该Dispatch。计划接受后，主控准确f7c97已授予逐文件程序写域及028迁移，Worker继续静态实现；后继两项依赖专用窗口已交回，原S同源恢复为PID12800，当前没有构建、模型或产品服务窗口。旧ctx_c9的启动未知及开发会话恢复不作为产品运行证据。本Reviewer没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务；后续动态操作仍需主控安排。
 
@@ -251,4 +251,41 @@ Microsoft明确kill-on-close在最后一个Job句柄关闭时作用于其成员�
 | J05 未知保全 | 只有真实root和完整目标树退出可写停止确认/释放；Job查询失败、原生证据缺失、身份改变、句柄丢失及残留保持unknown和占用，不关闭未知或非目标资源，不重发任务。重启不能把无记录当无后代 |
 | J06 真实检查 | T09使用真实自有Node进程/后代及实际安装的native能力检查正常与异常关闭，fixture不冒充Agent；T13仍用同一安装候选的真实A/B并发，停止A时B原进程/session继续执行并取得成果。补丁和能力必须属于该候选；不改本机Orca，不新增管理员、驱动或全机追踪前置 |
 
-尚未收到该强化方案的准确Commit、完整句柄设计及测试差异，本轮不作接受结论。当前原S12800运行、没有动态窗口；后继仅按实际来源和相应变动复审。
+上述条件已先于读取后继准确6168方案写入80ed37f6并普通push；该版本及新的范围结论见下文。当前原S12800运行、没有动态窗口；后继仅按实际来源和相应变动复审。
+
+## 准确6168的四项返修及Job方案复核
+
+准确来源为`6168b4ea19e3b5468403e71a77a279b4bc18adf3`，已普通push，真实远端同SHA。已读取847→6168全部五路径差异；来源副本和原有依赖没有变化，沿用前次来源核查，没有使用工作目录中仍在编写的保护、CLI或打包代码代替此提交。
+
+结论：**接受F04—F07的静态修复及§5.4/T03/T06/T08/T09/T12/T13的方案与测试补充；退回当前已成形代码的F08关闭竞争**。整体产品、native Job实现和全部动态结果仍证据不足。上述两项接受与该代码退回分别适用，不阻止原Worker继续已审方案的独立实现。
+
+| 原问题 | 静态复核结果与接受范围 |
+| --- | --- |
+| F04 controller单任务 | native-methods新增reserve，在原生BEGIN IMMEDIATE事务中重新读取controller原生状态、拒绝既有任务/占用并保存同一receipt checkpoint，提交后才向helper发送。没有事务内await；公开R与原生R须一致。两个不同R的单任务准入缺口已补；仍需T06实际竞争与重启结果 |
+| F05 两Worker配额 | 同一事务合并已创建子Task和pending worker.start receipt；借真实子请求、原生accepted/完成receipt及Dispatch识别已物化任务，避免重复计数。未知未物化继续占用，第三名在副作用前拒绝。已核原生getPendingWorkerStartRecovery与完成receipt的dispatchId来源，配额缺口已补；T08仍NOT_RUN |
+| F06 释放字段 | 按row.resource.release_state读取，缺resource仍拒绝，不默认released。对应原生返回结构一致；已释放与未知的实际分支尚未运行 |
+| F07 人类安全停止 | 只有已通过真实传输身份检查的human且permission=stop跳过执行批准与旧context settings_revision；项目所属继续核验。HTTP将真实human的project scope取自已解析路径，不接收正文提供的human身份。Agent撤销/过期门禁及其他动作保持原检查；T03真实人类停止仍待执行 |
+
+### Job方案对J01—J06的覆盖
+
+§5.4选择父runtime为每个Worker的唯一Job句柄持有者，SDK只继承成员资格。模型前原生Job限制与root绑定/成员查询成功，再通过Node原生IPC准入SDK加载；root退出后父仍持有确切句柄，可查询及终止实际残留。这给出了J01/J02/J04要求的所属和见证路径，没有把SDK自身退出当最后句柄关闭的证明。
+
+已独立核Node24.21.0的stdio/IPC文档及准确上游process-spec、spawn-resolution、run-process：真实PipedProcessSpec允许附加IPC，实际spawn将stdio和serialization传入nodeSpawn，未使用自写协议。Node send的成功回调可以早于子进程接收；方案由bootstrap实际收到准入后才加载SDK，后续实现不能以发送成功代替SDK已准入或模型已开始。[Node stdio/IPC](https://nodejs.org/download/release/v24.21.0/docs/api/child_process.html#optionsstdio)
+
+原生句柄不可由JSON构造、不可继承、不查询NULL/current Job，A/B独立且不触碰原Orca/IDE/daemon；分配及嵌套失败拒绝，所用CreateProcess路径禁止breakaway。已完整读取并核[AssignProcessToJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-assignprocesstojobobject)的分配和嵌套限制，实际环境仍须检查，不能从类型或文档直接判支持。J02/J03覆盖成立。
+
+正常、强制、root故障和宿主失联分别陈述：真实root exit、两次成功完整Job空查询与实际旧进程身份退出观察共同满足后才返回tree exited及关闭句柄；API返回成功单项不结算。旧句柄在重启后丢失仍unknown，不复原数值、不自动重发或启动替代者，满足J04/J05。测试T09以实际同候选Node/native和真实后代覆盖这些路径，T13仍为真实A/B并发、停止A且B原session继续；未发生的PID复用/嵌套拒绝保持未覆盖，fixture不冒充Agent。未发现本次补充应删除的无关测试，J06覆盖成立。
+
+这是方案和测试计划接受。6168没有相应native Job、bootstrap或生命周期实现，更没有二进制/安装/模型/全树退出结果；仍须以后继准确代码及实际T09/T13审核。没有重新运行已审来源、功能测试、SDK或服务。
+
+### F08：controller关闭与创建准入没有共同屏障
+
+严重程度：较高，影响H03/H06/H08及T06/T11。准确`native-methods.ts:193`的controllerClose只通过requireReleased检查已物化Worker行，忽略已由reserve保留但尚未生成Dispatch的task.create/worker.start。第199行保存关闭checkpoint后还会await身份观察；reserve在第220行也没有检查该controller的pending/completed关闭记录。
+
+存在这一交错：Worker创建已保留或正准备保留，close观察到零资源并通过；另一不同R的创建在实际PTY关闭前继续获得准入/创建Dispatch；close随后关闭helper并只观察其PTY/root/helper退出。准确上游`session-tabs/explicit-terminal-close-stops.ts:133`只停止所选PTY及相关surface，没有等待该Run全部独立Worker退出。结果可能为controller关闭成功而新Worker仍运行或启动未知，违反“所属全部Worker退出/归档/释放后才能关闭”。这是源码推导，没有动态复现声明。
+
+原Worker需将close的持久关闭标记、未决创建占用与新建准入放入同一原生事务屏障：创建先保留时关闭拒绝或等待明确结算，关闭先保留时后续创建拒绝，unknown保留屏障及实际资源。复用现有原生receipt，不新增执行状态账本。T06/T11补不同R的close对task.create/worker.start的真实竞争；分别核两种顺序，不把关闭helper当停止全部Worker。已通过`msg_08a9c85e2399`交原Worker。
+
+实际轻量检查：`.verification/check-revision.ps1 -Previous 847ec2687857b06430284aecdf81a6887f2f996f -Candidate 6168b4ea19e3b5468403e71a77a279b4bc18adf3` EXIT0；五路径Git空白、两份Markdown、5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。新增官方API/Node相关章节已读取，未进行动态验证、编译或安装。
+
+准确6168的决策hook为`msg_18d91715fa96`；主控在`msg_ef7d11edb358`明确完整读取四项静态修复、J01—J06/§5.4及测试补充的接受范围，并读取F08原生关闭作用域、交错及共同屏障要求，确认返修交原Worker、整体产品和动态未接受，实际读取回复确认本次唤起。
