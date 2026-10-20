@@ -71,9 +71,11 @@
 
 ## 实施审核
 
-准确候选为`7da19c06253d17384605fba4380ca136245a5a33`，PR #4，base为`songconmaisaix31-design/works-relay-integration`、head为`swa-m0-20261020`，真实PR元数据与远端HEAD一致。结论：**退回**，仅F03待修订；以下通过项不构成main或产品功能验收。
+当前准确候选为`6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`，PR #4，base为`songconmaisaix31-design/works-relay-integration`、head为`swa-m0-20261020`，真实PR元数据与远端HEAD一致。结论：**接受M0文档整合**。F03已关闭，原R01—R13在本次文档范围满足；main/A01及首版CLI功能仍待主控和后继任务实际验收。
 
-| 独立条件 | 准确实现的实际结果 |
+首轮准确`7da19c06253d17384605fba4380ca136245a5a33`曾因F03退回，主控在`msg_8b665a2ddcde`明确实际读取报告与准确SPEC位置，接受退回并交原Worker。该次hook唤起已确认。下表保留首轮实际检查及返修依据，未变化部分按准确差异复用。
+
+| 独立条件 | 首轮实际结果，未变化部分沿用 |
 | --- | --- |
 | R01 来源与当前事实 | 真实仓库ID和规范名称已核；再次ls-remote确认main仍3a02、产品仍32ab、候选为7da。报告区分快照与既有程序观察；改名不再是待办 |
 | R02 产品保全 | 独立Git对象检查确认原1446路径全部存在；145个差异路径均为md/txt，非文档变化0。程序、依赖、契约、迁移保持32ab，无需重复构建 |
@@ -89,7 +91,7 @@
 | R12 M0及后续状态 | 最新首版CLI目标进入README/HANDOFF/STATUS/TASKS/SPEC及总任务；MCP/完整S3为后续，接口未定稿。main仍初始提交，A01待主控实际集成；没有发布验收声明 |
 | R13 文档解析 | 已安装marked@18.1.0独立解析123份准确提交Markdown，791个本地链接目标全部存在；本地锚点0。186个外部引用只计数，本轮核查直接依赖的准确Git来源，其余历史外链未重新联网验证；HTML token仅META_PLAN的模板占位符，无本地链接 |
 
-F03（中，`docs/SPEC.md:816`）：§21.1仍规定“新产品必须独立构建、启动和测试”，且同时写旧ORCA路线不成为新项目依赖。该现行规格没有把此要求限定到既有Go/TS产品；最新QUESTIONS、CLI任务及根STATUS明确将首版是否依赖已安装Orca保留未答。开发者按当前SPEC执行时会提前排除一个仍未决定的执行选择。原Worker应在该规格边界明确既有产品规则的适用范围，并引用CLI任务与QUESTIONS保留首版执行边界未决定；不选择任何待答选项。此项对应R07/R10及META_PLAN §7.4、§7.5。
+F03已关闭：原Worker在6eb的SPEC §21.1明确独立构建、启动和测试的要求仅适用于既有Go/TypeScript/SQLite产品，并直接链接首版CLI任务与QUESTIONS；首版执行方式保持未决定。该准确后继只改变SPEC及M0任务/报告，未引入接口、程序或权限变化，R07/R10满足。
 
 实际验证命令及结果：
 
@@ -97,6 +99,10 @@ F03（中，`docs/SPEC.md:816`）：§21.1仍规定“新产品必须独立构�
 - `node --max-old-space-size=512 .verification/review-source-records.mjs 7da19c06253d17384605fba4380ca136245a5a33`：EXIT0；使用marked提取报告来源记录，120个相同、2个当前接续文件经人工差异复核。
 - 准确Git diff/show/grep、真实PR元数据及`git ls-remote`：确认治理语义、来源、原S3状态和准确候选；F03位置已定位。
 
-返修交原M0 Worker。当前未接受准确实现、main集成或首版CLI功能；没有运行重操作。
+返修复验命令为`.verification/check-revision.ps1 -Previous 7da19c06253d17384605fba4380ca136245a5a33 -Candidate 6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`，EXIT0；三份文档、136个本地链接、无锚点和Git空白检查通过。实际差异已逐项读取，原产品/来源/规则及原791个链接检查的未变化范围复用，没有重复构建或功能检查。真实PR与ls-remote再次确认6eb，main仍为3a02。
+
+接受仅覆盖本次M0文档整合；没有执行main集成、CLI实现验收或重操作。历史外部链接没有逐一重新联网验证，保留其原固定来源。
 
 针对准确7da的GitHub COMMENT review已发布为`5581817621`：https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581817621 。状态为COMMENTED，commit_id已核实。
+
+针对准确6eb的接受COMMENT review为`5581860208`：https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208 。状态为COMMENTED，commit_id已核实。
