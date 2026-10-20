@@ -14,13 +14,13 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f/ctx0d在原树接续已定稿独立发现/稳定选择、原生输入/模式和控制端恢复，见SPEC §21.1.1—§21.1.3；工具范围未答。独立9c的四包Go编译/三传输前函数通过；两次安装候选构建原ENOENT/TimeoutError失败保持，仍无可用候选。官方HEAD及后继默认Node fetch HEAD200只证明各次可达。原S占唯一窗口，无新运行授权；全部实际Agent调用、完整成果、安装和同候选双Worker仍未通过 |
+| 后继工作 | 同一Worker Task9f/ctx0d接续已定稿发现/选择、输入/恢复及注册批准，工具范围未答。准确e54的bundle前移获c5f3局部静态接受，build-03实际完成prod deploy后因两个缺失导入EXIT1；三个构建失败及部分candidate01/02均保留，仍无可用候选。原S已恢复并占唯一窗口，无新运行授权；全部实际Agent调用、完整成果、安装和同候选双Worker仍未通过 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支及两报告写域。旧ctx980已精确停止并原生释放，既有报告保留；新会话实际读到brief并获主控回复确认。后继6d693/97a/abc8/bad4/d442准确报告均已完整读取并回复对应hooks，局部接受和退回各按准确范围；当前继续同一Worker返修和T12复审 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar为6a9，两次限定JS分析的partial/truncated限制保持。按用户“将orca cli逆向后参考”，补当前orca.exe准确612b的PE/Rust静态证据及实际命令目录144e的20JS分析，三个入口均EXIT0；CLI图partial/222文件未选，原生函数未反编译，完整运行依赖仍未知，见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)。doctor原EXIT1/config_drift保持，无MCP/本机Orca配置修改 |
 | 独立 Go 检查结果 | 9c原四包/三函数结果保留。新增端口及消费者已在独立detached准确16ad工作树再次运行原已审入口，session49790实际EXIT0：四包test-c完成，三个CLI传输前函数逐项PASS/零SKIP，SOURCE=16ad且结束同一干净HEAD；全部实际runtime/live函数NOT_RUN、model_calls=0。原件在根swa-go-16ad-01与control/go-16ad-execution-01.log，主控检查不代替Worker自测、N07/N08返修或安装验收 |
-| 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.4实施；33c5真实N09端口/owner及明确模型阶段已提交，82d独立退回N10检查的全局项目读取和报告状态，N09主体/strict来源/owner与N07明确模型静态路径保留。后继e549修正为真实只读SQLite/明确权限拒绝并纳入生成类型，待准确复验；N08真实账户/工具、输入/恢复、完整Job/成果及全部实际调用仍未通过 |
+| 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.4实施；e549的真实只读SQLite/明确权限拒绝、当前说明及生成类型获准确c5f3局部静态接受，真实检查正文仍未运行。N08新增账号/工具政策待准确计划及SPEC；主控只读默认Pi auth条目0，当前父环境PI_CODING_AGENT_DIR/OPENAI_API_KEY/ANTHROPIC_API_KEY均未设置，仅限定这些来源，不代表全部Agent/profile无账号。N08、输入/恢复、完整Job/成果及全部实际调用仍未通过 |
 | 契约生成 | 原Worker在准确33c5干净前置下仅一次执行generate-02，实际exec38224 EXIT0，资源/生成退出均0，Node512及私有TEMP；只有web/src/api/schema.d.ts生成变化，已纳入e549，未手改生成文件。源码生成不代Node/native构建、安装或模型验证 |
 | 首装授权流程 | 原T02/T03及USAGE须完整覆盖新DataRoot和已安装资产的首次人工入口、实际session/CSRF、项目设置、Grant/token操作；同一Worker调查复用现有入口并补具体方案。尚无新安装运行结果，不由Agent代用户批准，不新增网页重构模块 |
 
@@ -28,11 +28,12 @@
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-11/`、`stop-11/`及`restore-11-recovery-01/`；首次`restore-11/`启动失败及两个诊断目录保留，详细结果见首版任务。后继恢复使用同一S、原库及原环境/配置，未以备份覆盖原库。原件包含真实环境及一致备份，不进入Git或安装包。此前各窗口及M1原件保留原位置，已有产品范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-12/`、`stop-12/`及`restore-12/`；首次`restore-11/`失败、两个诊断和后继恢复均保留，详细结果见首版任务。恢复使用同一S、原库及原环境/配置，未以备份覆盖原库。原件包含真实环境及一致备份，不进入Git或安装包。此前各窗口及M1原件保留原位置，已有产品范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | restore-11-recovery-01实际EXIT0，同一S22036/创建UTC2026-10-20T17:38:10.228409Z/epoch1792517890.2284093，原环境/配置/唯一监听/health/Web通过，原库integrity ok/fk空/equal。原Orca公开status仍app38652/runtime49da ready/reachable/connected及graph ready。唯一窗口归原S，无新构建/服务/Agent/模型授权；控制脚本仍为已审c8fdf318，下一次prepare使用实际restore-11-recovery-01/restored.json并新鲜准入 |
+| 当前服务与窗口 | restore-12实际EXIT0，同一S56896/创建UTC2026-10-20T18:00:13.373161Z/epoch1792519213.3731608，原环境/配置/唯一监听/health/Web通过，原库integrity ok/fk空/equal。原Orca公开status仍app38652/runtime49da ready/reachable/connected及graph ready。唯一窗口归原S，无新构建/服务/Agent/模型授权；控制脚本仍为已审c8fdf318，下一次prepare使用实际restore-12/restored.json并新鲜准入 |
+| 首次实际bundle | 准确e54d45489f54819cccb2d408474e6f885aac6970仅一次build-03，exec76466实际EXIT1；资源0、323项prod deploy完成，首host bundle因真实Unicode11与diff导入缺失失败。无host/metafile、Node下载/native/Go/VERSION；部分candidate02保留，授权已消费并收回。主控及Worker两次所属退出观察保留，恢复同一S后同Worker只继续静态返修 |
 | 最近恢复失败与诊断 | 首次restore-11中S43188在监听前退出，fatal仅原CodeGraph导出检查exit status1，原因未知。诊断01因环境名称大小写在目标启动前KeyError；修脚本的新02实际导出检查0/8.470091秒，Node512/45秒诊断上限，原服务15秒及原依赖/配置未改。核失败/诊断进程退出后才作一次新输出恢复并通过；全部失败保留，不把诊断成功写为旧失败根因 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
