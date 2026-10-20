@@ -251,9 +251,8 @@ async function recoverController(invocation: Invocation, context: RpcContext) {
   const command = invocation.command
   if (command.action !== 'controller.recover' || !command.controller || !mutation || mutation.requestId !== command.request_id) return fail(context.replayedMutationReceipt === undefined ? 'request_mismatch' : 'operation_unknown', 'The exact public recovery request is required')
   if (context.replayedMutationReceipt !== undefined) {
-    let receipt: Record<string, unknown>
-    try {
-      receipt = nativeObject(context.replayedMutationReceipt)
+    const observed = await effect(async () => {
+      const receipt = nativeObject(context.replayedMutationReceipt)
       const fields = {
         project_id: z.string().min(1), prior_controller: z.string().min(1), prior_owner: controllerOwnerSchema,
         prior_generation: z.number().int().nonnegative(), scope: scopeSchema, invocation: invocationSchema,
@@ -263,21 +262,23 @@ async function recoverController(invocation: Invocation, context: RpcContext) {
       const original = z.object(fields).parse(receipt)
       if (original.stage === 'scope-reserved') z.strictObject(fields).parse(receipt)
       if (original.project_id !== invocation.project.id || original.prior_controller !== command.controller || original.prior_owner.controller !== command.controller || original.prior_owner.project_id !== invocation.project.id || !isDeepStrictEqual(original.invocation, invocation) || !isDeepStrictEqual(original.scope, invocation.scope) || original.run_use_request !== `${mutation.requestId}/run-use` || !isDeepStrictEqual(original.children, [`${mutation.requestId}/controller-pty`, `${mutation.requestId}/run-use`])) throw new Error('The original pending recovery scope is incomplete or inconsistent')
-    } catch {
-      throw new OrchestrationError('operation_unknown', 'The original pending recovery checkpoint cannot be completely interpreted')
-    }
-    if (receipt.stage === 'scope-reserved') {
-      const scope = z.object({ run_id: z.string().min(1) }).parse(receipt.scope)
-      const prior = controllerOwnerSchema.parse(receipt.prior_owner), run = db.getRun(scope.run_id)
-      if (!run || run.coordinator_handle !== prior.controller || run.consumer_generation !== receipt.prior_generation) return fail('operation_unknown', 'The original pre-effect recovery consumer changed')
-      try { await observeControllerExited(runtime, prior) }
-      catch (error) {
-        if (error instanceof OrchestrationError && error.code === 'controller_unverifiable') throw error
-        throw new OrchestrationError('operation_unknown', 'The original pre-effect recovery exit observations are incomplete')
+      if (receipt.stage === 'scope-reserved') {
+        const scope = z.object({ run_id: z.string().min(1) }).parse(receipt.scope)
+        const prior = controllerOwnerSchema.parse(receipt.prior_owner), run = db.getRun(scope.run_id)
+        if (!run || run.coordinator_handle !== prior.controller || run.consumer_generation !== receipt.prior_generation) return fail('operation_unknown', 'The original pre-effect recovery consumer changed')
+        let exits: Awaited<ReturnType<typeof observeControllerExited>>
+        try { exits = await observeControllerExited(runtime, prior) }
+        catch (error) {
+          const proof = z.object({ effectsApplied: z.literal(false), observations: z.array(z.object({ observed_at: z.iso.datetime(), ptys: z.number().int().nonnegative(), processes: z.number().int().nonnegative() })).length(2) }).safeParse(error instanceof OrchestrationError ? error.data : undefined)
+          if (error instanceof OrchestrationError && error.code === 'controller_unverifiable' && proof.success && proof.data.observations.every(row => row.ptys > 0 || row.processes > 0)) return { kind: 'effect-free' as const, error }
+          throw error
+        }
+        return { kind: 'effect-free' as const, error: new OrchestrationError('controller_unverifiable', 'The original recovery stopped before controller creation and will not replay effects', { effectsApplied: false, stage: receipt.stage, observations: exits }) }
       }
-      throw new OrchestrationError('controller_unverifiable', 'The original recovery stopped before controller creation and will not replay effects', { effectsApplied: false, stage: receipt.stage })
-    }
-    return effect(() => observeRecovery(context, receipt))
+      return { kind: 'completed' as const, result: await observeRecovery(context, receipt) }
+    })
+    if (observed.kind === 'effect-free') throw observed.error
+    return observed.result
   }
   let reserved: Record<string, unknown>
   db.db.exec('BEGIN IMMEDIATE')
