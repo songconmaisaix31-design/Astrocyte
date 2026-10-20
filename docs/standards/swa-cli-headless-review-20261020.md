@@ -1033,3 +1033,51 @@ N07明确模型已送入configuration，Pi复用原parsePiModelOptionId及对应
 依赖方面，准确源除host-entry外，rpc/dispatcher及RuntimeRpcState也静态引用完整ALL_RPC_METHODS。主控已要求按真实消费者收窄并检查metafile/安装；本Reviewer将dispatcher的准确第二入口以`msg_d01dfdd755f1`和`msg_f755847b56ad`交主控/Worker。只过滤注册方法不能证明模块已经从bundle移除，尚未接受完整运行依赖闭包。
 
 `check-revision.ps1 -Previous 16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3 -Candidate 33c5af4f941bb1252aa382623656612bb2e7c3cd`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。生成类型、编译、测试正文、Native/HTTP服务、安装和模型均未由本Reviewer执行；Worker所报语法/格式/架构结果保留其原归属，不能替代本次未通过的真实检查或功能验收。
+
+准确33c5退回hook `msg_a0ef3d3dc524`已获主控`msg_b1076cff80e7`完整读取82d准确新增全节及真实请求准入的回复，实际唤起确认。原Worker按问题提交准确e549后继；技术实现的局部静态范围与整体未验状态分别保持。
+
+## 准确e5492b18的真实检查修正与类型生成
+
+结论：**接受准确`e5492b1898758d041bacadfabc5e0310fb87ae09`的N10检查修正、当前状态说明及已实际生成的类型同步；接受范围为静态代码和生成结果。** 已完整读取相对33c5的六文件差异和修后完整检查，核实际session/middleware、SQLite项目读写及私有服务数据库生产者。N09整体功能、权限真实正文及模型调用保持未验。
+
+修后检查使用成熟modernc SQLite库，以canonical私有DataRoot/workspace/state.sqlite构造file URI和mode=ro，只查询实际local_agent_projects及成熟JSON解码；该路径与runOrcaProduct实际打开路径一致，未为检查增加HTTP路由。合法项目内capabilities要求实际runtime、schema及注册ID，Agent设置写入要求403、schema_version=1及实际scope_denied/明确操作权限消息，前后实际项目深比较相同。无owner的直接Native检查同样要求准确OrcaNativeError/code/message，其他依赖错误不能计作权限通过。未知/无服务/旧行为及真实人工批准等原计划仍须运行，修后正文没有执行。
+
+报告§12与USAGE现已描述已实施的真实注册验证和其适用范围，不再将定稿接口写成提案。真实注册批准仍只核注册来源，账号、工具、可启动及不同执行模式不能据此通过；原HistoryRoots/S3、非空工具限制和人工批准职责保持。
+
+独立读取Worker generate-02的完整实际入口、generate日志、资源/退出文件及所属退出观察：实际日志只记录生成web/src/api/schema.d.ts，两个退出值均0；UTC17:28:02.235392/04.744076、CPU49.6%/55.0%、可用11254743040/11278381056字节、单调2.508680秒，符合当前门限。实际generate分支明确Node512MiB；入口中的其他Stage没有因本次授权运行。生成结果新增三个SWA类型及明确Agent/model字段，与准确33c5已定稿来源同步；UTC17:29:34.2865424/37.8930265两次所属进程为空记录保留。准确33c5干净前置及执行session/授权归属采用原Run实际消息，没有由本Reviewer重跑生成或编译。
+
+`check-revision.ps1 -Previous 33c5af4f941bb1252aa382623656612bb2e7c3cd -Candidate e5492b1898758d041bacadfabc5e0310fb87ae09`实际EXIT0，三Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。完整TypeScript、Go编译、真实测试正文、安装、Native/HTTP调用及模型均未由本Reviewer运行；两个既有构建失败、N07/N08、N04/N05、T12、所属Job和同候选双Worker继续按各自准确状态处理。
+
+## N08独立条件与未定稿草案反馈
+
+对照草案前，独立正确性条件包括：同一本机原生CLI和准确版本/模型；原账号来源只读、私有根canonical/互斥/受保护；不得从文件副本推断服务端账号保全；原生工具和全部资源/参数/环境关闭路径；真实accountHome生产者及原R/Dispatch/session关联；效果前当前Go批准、来源、TTL、consumer/session/fence重核；没有新增凭据、身份或执行账本；未知Agent与原禁令保持；同候选真实双Worker、准确停止A及B原会话后续/完整成果。真实get_state没有工具字段，静态方案和未执行场景分别保留。
+
+已完整读取原Worker互斥忽略目录`n08-native-account-tools-plan.md`，它尚无准确Git版本，**未接受或冻结新增native_launch契约**。正式计划须纳入原已授文档，提供准确提交，经独立审核和主控SPEC定稿后实施。当前反馈如下，全部交同一原Worker，不修改程序。
+
+| 条件 | 草案覆盖及缺口 |
+| --- | --- |
+| 真实账号及原账号保全 | 草案正确识别普通RPC使用可写FileAuthStorageBackend、auth check才有noRefresh只读分支，但第5项仍允许复制原refresh并实际刷新。当前安装的pi-ai/auth/oauth/openai-codex.js明确向token端点提交grant_type=refresh_token，并接收新的access/refresh/expiry；静态副本不能证明服务端原凭据保持有效。需要真实原生可成立的无刷新路径及过期边界，或由主控登记必要授权待定；禁止伪造refresh/协议。该项已以msg_cb77604f68c5交原Worker、msg_fe8d26f9d24a交主控 |
+| 私有根及并发 | canonical/ACL、明确record.accountHome和原R/checkpoint生产者方向覆盖必要条件；同项目共享副本还须明确来源变更、原生并发锁/生命周期、旧Worker未释放及已有未知副本的拒绝条件，不能覆盖原生刷新结果或暗中替换账号 |
+| 原生工具和资源 | 固定no-tools及资源禁用、拒绝冲突extraArgs和秘密环境、真实握手不造工具字段方向成立；须补准确offline、retry/compaction默认消费者和完整允许参数/环境集合，防止其他实际消费者改换资源或外发行为。版本字符串和缺少工具事件都不能单独证明关闭 |
+| 效果前准入 | 草案列出Go当前批准、异步serialized handOver后重核、原selection/current consumer/session/fence；须把来源/凭据有效期及安全余量明确到首次和每次真实输入前，unknown后仍保全原R/operation/Job，不重选或重放 |
+| 真实验证 | 同本机CLI、真实provider/model/session及自产JSONL、实际文件/命令效果检查和双Worker覆盖必要方向；不得通过修改原配置、假凭据/时钟/CLI制造失败。未命中与无可用安全原生路径如实记录NOT_RUN/INCONCLUSIVE，Pi局部结果不扩展成全部Agent通过 |
+
+上述条件来自当前需求和实际原生消费者，没有要求重复编译、另造协议或执行自证用例。当前只读反馈未运行Pi、认证、会话或模型，没有读取本机认证文件内容；通用工具、T11及原Codex/S3的各自限制保持。
+
+## restore-11失败、限定诊断与同源恢复
+
+首次restore-11实际PID43188在监听前退出，原stderr只记录CodeGraph SDK exports命令exit status 1，目录没有restored.json。准确ed543原config源码使用15秒ContextTimeout，错误消息不能单独说明原因；本次失败保留。主控通报诊断01因Windows环境键大小写KeyError在目标启动前失败，目录为空；该执行错误沿主控原输出保留，没有写成目标失败。
+
+独立完整读取诊断02脚本、launch/result/resources及空stdout/stderr：实际相同Node/SDK导出命令，私有原cwd、显式环境、禁下载/遥测、BelowNormal和Node512MiB，一次45秒诊断，实际PID14344、8.470091秒、exit0/timeout=false。资源CPU52.0%/45.6%、可用约10.498/10.387GiB、间隔3.012440秒。诊断未改变原服务15秒、原依赖或配置，也不能据后继成功认定首次失败原因。
+
+新restore-11-recovery-01使用同prepare-11/stop-11及原ed543，原件launch/start-intent/source/database/resources/restored已读。资源CPU45.0%/52.0%、可用约10.473/10.495GiB、单调3.012373秒；原库记录integrity ok、foreign_keys空、停止区间equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-11-recovery-01`于UTC17:45:08实际EXIT0：current/restored整份记录深比较相同，真实S22036/父23492、创建UTC17:38:10.2284094/epoch1792517890.2284093相差0.0002毫秒，原程序、BelowNormal和唯一127.0.0.1:64505监听符合。
+
+控制脚本仍为已审c8fdf3188ea97f1334b22bd261e578db2bf50a2f5039ddf944613753b42d1176，下一prepare取实际restore-11-recovery-01/restored.json并重新准入。完整原环境/health/Web、两次旧所属进程退出及原Orca38652/runtime49da按主控实际来源保留。本Reviewer只读原件及进程/监听，没有执行诊断、控制、SQLite、HTTP、服务或模型；当前窗口归原S，没有新Worker重操作授权。
+
+## 准确e54d4548的构建顺序调整
+
+结论：**接受准确`e54d45489f54819cccb2d408474e6f885aac6970`相对e549的构建顺序静态调整及两份对应记录。** 唯一程序差异把同一个await buildSWARuntime(runtime)移至prod deploy和准确干净源码检查后、固定Node下载/native编译前。已完整读取build-swa-package及build-swa-runtime实际消费者：esbuild来自source已安装依赖、输出使用已部署package.json、native项external，当前调用没有待下载Node/已编译ABI的运行前置。没有改变后续Node pin/校验/超时、native/Go构建或最终VERSION写入条件。
+
+前移可在后续窗口先获得实际bundle/metafile或明确导入失败，尚未执行构建，也没有证明依赖已收窄或全部动态资源可用。真实dispatcher/RuntimeRpcState的ALL_RPC_METHODS及其他闭包问题保持，不能以成功生成metafile替代导入、native/dynamic/assets和安装验证。忽略目录next-window入口的候选02输出与新目录规则一致，build03仍须主控另行交付一次窗口，旧候选和失败保留。
+
+`check-revision.ps1 -Previous e5492b1898758d041bacadfabc5e0310fb87ae09 -Candidate e54d45489f54819cccb2d408474e6f885aac6970`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行构建、安装、服务或模型。原Worker`msg_115a6219f739`已收到N08账号问题并继续形成无refresh权的正式计划；修后忽略文件没有被本次接受，完整原生可用路径和新增契约仍待准确提交及主控定稿。

@@ -475,3 +475,15 @@ prepare/stop-10、restore-10的实际资源与原服务身份已只读核对；�
 `check-revision.ps1 -Previous 3d82bfedf08af471c974461bf6ac008b9e1e5324 -Candidate 374afc54d18959a0125e4773c2a63d31d080e2a3` EXIT0，四Markdown/44本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行编译、模型、安装、服务或原库操作；实际新检查仅覆盖主控所执行的准确源码范围。
 
 准确374接受hook `msg_a02385e04f4f`已获主控`msg_0022e75541da`完整读取f367准确新增全节及主线差异回复，实际唤起确认。后继33c5的新注册真实检查已交原Worker修正，结果见headless报告；生成、编译准备与完整功能接受分别保留实际来源和范围。
+
+## 准确72f27b3e的真实生成、失败及当前恢复记录
+
+结论：**接受准确`72f27b3e4276ceb33cda87b403e4d6b45108de8a`相对374的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，独立核generate-02、prepare/stop-11、首次restore-11、诊断02和restore-11-recovery-01原件；详细结果见本Reviewer headless报告。准确33c5生成成功、82d对N10/状态的退回和e549待准确复审各按实际时点记录，没有把生成类型当程序调用或安装通过。
+
+prepare-11资源CPU47.9%/48.8%、可用11.092/10.909GiB、单调3.010684秒，实际prepared记录S58620/ready=true；一致备份integrity ok/foreign_keys空。stop-11实际UTC17:25:54.159052明确退出15，后续资源CPU47.9%/49.5%、可用10.584/10.516GiB、间隔3.015909秒及window-ready记录符合。generate-02实际退出0、Node512和两次所属进程为空记录保留其Worker归属，后继未自动运行其他Stage。
+
+首次恢复43188未监听退出且只有CodeGraph检查exit1，具体原因未知；诊断01预处理失败沿主控实际输出保留，诊断02实际8.470091秒退出0及其45秒/Node512条件分别记录，原服务15秒和原依赖/配置保持。后继新输出恢复使用原S和原库，不以备份覆盖；独立只读核当前22036的真实身份、原程序、完整current/restored记录及唯一监听相符，数据库保全记录ok/fk空/equal。原环境/health/Web及原Orca状态沿主控实际来源保留，未将后继成功改写成首次成功或原因证明。
+
+c8控制入口未改，下一prepare取实际restore-11-recovery-01/restored.json并重新准入；当前唯一窗口归原S，无新重操作授权。N08、输入/恢复、T12、完整Job/成果、原生调用和最终同候选双Worker保持未通过，通用工具/T11及旧Codex/S3各自限制保持。修后e549程序及e54d构建顺序的局部静态结论另记于headless报告，未扩大本次主线管理接受。
+
+`check-revision.ps1 -Previous 374afc54d18959a0125e4773c2a63d31d080e2a3 -Candidate 72f27b3e4276ceb33cda87b403e4d6b45108de8a`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行诊断、生成、编译、SQLite、HTTP、服务、安装或模型，也没有修改管理事实源或实现。
