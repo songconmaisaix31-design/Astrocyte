@@ -386,3 +386,27 @@ SwaProviderProcessTree只在native assign成功、实际查询assigned/root身�
 原Worker需明确：A保持真实停止状态及实际journal已有部分，SDK没有已持久化输出或不可用时保留可核事实和未知原因，同时允许读取同任务B的完整成果；根Task只按预先允许A停止的既定条件确认。B要求的成果缺失/损坏/截断仍失败，A已有坏源、错误归属或来源改变也不能归类为正常未持久化，不能自动换源、重放或生成占位成果。T07/T13须直接检查该正常A分支及相应错误边界。具体缺口已通过`msg_b1c6dc6b3c54`交原Worker，主控本轮要求与此边界一致。
 
 `.verification/check-revision.ps1 -Previous f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6 -Candidate f295f7c9360a31e6c1ac4ade2ab9c090c455ddae` EXIT0，两份Markdown、5本地链接及Git空白通过；marked18.1.0、BelowNormal、Node512MiB。库和原生接口只读源码核查，没有执行parser、SDK、SQLite、模型、fixture、安装或服务；无新动态窗口。
+
+旧准确f295的退回hook为`msg_d583c0bbc776`，明确只记录旧源，后继d7另行复审；主控在`msg_8d860ec22854`完整读取faaa报告的缺口、原生/成熟库来源及实际范围，确认未将旧源退回套用到新源，实际读取回复确认本次唤起。
+
+## 准确d7f21242的完整成果补充计划复核
+
+结论：**接受准确`d7f21242259739cfb49a4f68a19a1a8f28bcec32`的§5.5及T07/T13补充计划**。已按`msg_caba0e4d1b44`和`msg_d03579e2e05f`读取准确76e9→d7的唯一文档差异及修订后的完整§5.5；真实远端分支同d7。新增读取路径尚未实现，这一接受只允许原Worker按已审补充实施，尚无功能或动态接受。
+
+d7明确A真实计划停止时分别返回实际stopped/failed原因、Job/资源状态、journal已有部分和SDK可用性；SDK无完整assistant条目为incomplete，缺文件保留实际ENOENT及unavailable，未知原因继续unknown，不声称从未持久化。A这些限制可与B完整成果一起导出，B缺失、损坏、截断或不完整仍使最终成果验收失败；A已存在坏源、错误归属、读取期间消失及已观察来源改变也继续报错。它补上f295所列正常分支，没有新增A完成条件或占位完整成果。
+
+根Task仍要求实际计划停止A、B完整成果和固定业务判据，以及全部相关资源退出/归档/释放。T07/T13明确实际A未完整持久化时B仍可取得，以及坏源/来源变化不被归为正常未持久化；严格只读、成熟JSONL、原件绑定及12MiB完整导出门限保持。对应独立条件没有剩余计划缺口，也未发现应删除的多余用例；将来仍须按真实原件和准确代码审核，不能由计划接受登记通过。
+
+`.verification/check-revision.ps1 -Previous 76e9dafd12f4ff430a3082ff4a65ec543d1e02f8 -Candidate d7f21242259739cfb49a4f68a19a1a8f28bcec32` EXIT0，唯一Markdown、1本地链接、Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。未重跑已审库或产品检查，无动态窗口。
+
+## 准确76e9dafd的授权标识、安装入口与SDK检查源码
+
+结论：**接受准确`76e9dafd12f4ff430a3082ff4a65ec543d1e02f8`的相应静态修复及检查源码范围**。已完整读取相对f295的全部七路径差异；准确76e9是d7的父提交。完整成果方案与实现分别沿上一节和后继处理，整体产品、真实SDK与安装结果继续证据不足。
+
+Runtime.Target改为现有注册标识pi。已核同一准确代码：SetProjectSettings通过NativeRegistry.Adapter校验ExternalModelCLI，Registry实际注册pi，ValidateProjectActionScope随后要求target与批准值相同。原绝对PiEntry路径无法通过该设置准入，新标识使已有真实批准路径一致；它没有证明Pi已安装/可用，也没有签发Grant。执行仍使用配置的同候选Node/SDK绝对路径及固定provider/model，未从PATH挑选其他执行目标，原human/Agent权限规则保持。
+
+构建复制真实install-swa.ps1和USAGE.md到候选根，闭包检查要求这些交付文件存在；CLI help列出实际必需的auth/protected参数及stdin生命周期。USAGE说明新目录、保护根、既有human项目批准/token、pi标识、固定输入和原生request查询、停止及释放，不把服务启动当授权签发。源码形成了随候选安装和调用入口，实际构建、安装、私有HTTP项目授权和命令可用性尚未验证。
+
+新增SDK检查使用同候选Node、真实只读OAuth适配、真实受限SDK和实际Job；代码核准备会话的tools/cache/retry/compaction/认证操作、非法写回调不执行、真实get_state，以及仅允许get_state/abort时禁止prompt。已核真实JsonlRpcPeer成功响应解出data、Pi1.0.1 get_state字段与断言对应。该源码明确isStreaming=false、messageCount=0、model_calls=0，其abort为**空闲SDK的真实RPC关闭检查**，不能证明执行中模型取消、正向模型调用或双Worker停止；T13实际A/B仍须单独通过。
+
+verify入口在普通进程fixture后重新资源准入并调用该SDK检查，保留两个命令的实际退出及剩余分支；没有在源码阶段执行这些命令。`.verification/check-revision.ps1 -Previous f295f7c9360a31e6c1ac4ade2ab9c090c455ddae -Candidate 76e9dafd12f4ff430a3082ff4a65ec543d1e02f8` EXIT0，七路径Git空白及USAGE成熟Markdown解析通过，无本地链接/锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。当前无正式PR或动态窗口，所有测试、构建、安装、模型及服务仍NOT_RUN。

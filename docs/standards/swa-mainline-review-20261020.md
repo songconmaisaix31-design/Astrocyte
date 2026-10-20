@@ -229,3 +229,5 @@ SPEC §21.1引用准确6168的GitHub原文，明确每Worker父持独立Job、�
 UTC11:12:58可用内存2.49GiB和11:15:17非所属进程工作集11.62GiB采用主控`msg_afc9334326f4`实际只读观察回执。文档明确它们为单次历史观察，未替代双采样准入、未再次prepare，也没有操作该进程。本Reviewer未重复资源查询或独立确认当下值，原S12800、无窗口、M1修复因果不足及原S3/权限未决范围保持。
 
 `.verification/check-revision.ps1 -Previous 65bd699cffe9207f3504cb7744db2fdca0d483bb -Candidate a6b3898e893aa2488280fd0be8851485f1d663ab` EXIT0，三份Markdown、22本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA检查通过，没有动态重验。
+
+准确a6接受hook为`msg_37681cf6a7cc`；主控在`msg_51af50a56c88`完整读取faaa主线报告新增管理范围、历史只读观察的来源及实际轻量结果，确认只接受管理文档、原程序依赖未纳入main及无窗口保持；实际读取回复确认本次唤起。
