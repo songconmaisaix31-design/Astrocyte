@@ -13,19 +13,19 @@
 | 产品基线 | `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`；原 PR #2 已普通合入 |
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
-| 后继工作 | 首版来源调查准确30b已独立接受，实施边界与可执行计划待定，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；M1 修复 Worker 已在独立工作树接续已接受计划，动态窗口尚未交付；后续排序见 [TASKS](docs/TASKS.md) |
+| 后继工作 | 首版来源调查准确30b已独立接受，实施边界与可执行计划待定，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；M1 修复 Worker 已取得唯一动态窗口，沿已接受计划实施；后续排序见 [TASKS](docs/TASKS.md) |
 
-当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。本轮没有停止服务、修改程序或数据库，也没有将 M0 的接受计为首版 CLI 功能通过。
+当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 尚未实现。
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。以下运行信息继承 2026-10-20 交付记录，本次纯文档工作没有重新查询进程、HTTP 或数据库；后续操作前须重新核实。原件、准确命令与独立接受范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。主控于 `2026-10-20T07:40:57Z` 为 M1 串行验证重新核实并停止原服务，当前服务暂停。真实当前 SQLite 一致备份、完整环境、Q、媒体和 CodeGraph 配置已保全，备份完整性及外键检查通过。原件位于旧前端工作树 `.verification/swa-m1-contracts-20261020/service-before-01/`；窗口结束后由主控恢复同一 S 与原库。既有验收范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 最近实际应用观察 | `http://127.0.0.1:64505/`，PID45956，启动 UTC `2026-10-19T19:47:04.657217Z`，BelowNormal；所属终端 `term_c043b5a9-d4f4-41d0-b387-866ed544ca6d` |
+| 当前服务 | 原 PID45956 已按真实路径、创建时间、唯一监听和 S 核实后停止，退出15；端口64505已空闲。唯一重操作窗口交付 `ctx_8d6a6e1c0145`；T09 恢复尚未执行 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
-| 原库与配置 | `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；原库、Q、媒体配置保全，准确027迁移与原启动观察分别核查 |
+| 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份及原配置已保全，窗口内不修改原业务数据 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
 | 已通过的限定检查 | 构建、DAG9函数、OpenViking4函数、前端53项、DAG双视口4项、页面8项、架构/依赖、264项契约示例及生成一致性 |
 | 独立运行核验 | 准确 S 的49项 GET（含5项403）、真实资料/项目 ID 与原 SQLite 对应、33件 Web 字节、原业务和 Q 保全 |

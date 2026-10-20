@@ -25,7 +25,7 @@ M0 已完成文档交付；首版 CLI 来源调查及设计提案已独立接受
 | M0 Worker | 独立产品基线工作树；AGENTS、CODING、SPEC、角色文档、README/CONTRIBUTING、文档目录、M0 记录、整合清单、当前状态与决定；需要迁入的主控文档及原件 | 修订 §7.5、保留有效决定和历史来源、确定 main 纳入范围；文档与本地链接检查 | 先交测试计划独立审核；只修改文档；不改变程序、冻结实验、数据或发布状态 |
 | Reviewer | 独立工作树；`docs/standards/swa-mainline-review-20261020.md`、相关独立报告；`.verification/` | 自行推导验收、审核计划、对准确提交发布 CR，执行已有 review-decision hook | 不修改被审实现；发现领域问题交原 Worker |
 | M1 只读阶段 | 原产品 Worker 工作树的两份M1文档及自有忽略目录；已普通 push `80d4f8d1e323982ef73d880ce9927f4bc5c58340` | 根因与测试计划已独立接受，实际修复尚未实施；原 FAIL 保留 | Task 已结算、终端已释放；实际修复需重新授予程序写入范围及唯一窗口 |
-| M1 修复 Worker | 新独立工作树；`pnpm-workspace.yaml`、`pnpm-lock.yaml`、`patches/@redocly__cli@2.60.0.patch`、两份 M1 文档及自有忽略目录 | 沿用已接受的准确5cd测试计划；实际修复与正负检查 | 当前静态准备；主控负责原服务保全/停止/恢复，明确交付唯一窗口后开始动态检查 |
+| M1 修复 Worker | 新独立工作树；`pnpm-workspace.yaml`、`pnpm-lock.yaml`、`patches/@redocly__cli@2.60.0.patch`、两份 M1 文档及自有忽略目录 | 沿用已接受的准确5cd测试计划；实际修复与正负检查 | T00 已完成，已明确交付唯一窗口；主控负责 T09 恢复同一 S 与原库 |
 | 首版 CLI 执行 Worker | [首版任务](swa-cli-v1-20261020.md) 登记的两份方案/报告及忽略目录；程序写域尚未授予 | 准确30b的调查、设计提案及覆盖框架已独立接受 | 依赖用户未答边界的接口未定稿；可执行计划和程序实现尚未获准 |
 | 后续工作包 | M2、M3、M4、M5、M6 的范围按 META_PLAN 依赖派生 | 公共契约、真实 CLI/MCP、安装后候选与既定 S3 验收 | 共享契约先确定；不依赖未决项的工作继续 |
 
