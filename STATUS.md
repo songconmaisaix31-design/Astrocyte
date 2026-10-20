@@ -20,7 +20,7 @@
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar为6a9，两次限定JS分析的partial/truncated限制保持。按用户“将orca cli逆向后参考”，补当前orca.exe准确612b的PE/Rust静态证据及实际命令目录144e的20JS分析，三个入口均EXIT0；CLI图partial/222文件未选，原生函数未反编译，完整运行依赖仍未知，见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)。doctor原EXIT1/config_drift保持，无MCP/本机Orca配置修改 |
 | 独立 Go 检查结果 | 主控独立detached准确9c工作树运行原已审c4入口，session81611实际EXIT0，四包test-c及三个CLI传输前函数逐项PASS/零SKIP，SOURCE=9c且结束干净。Worker明确没有执行原已撤销指令，原树WIP保留后提交5fc并普通push0。主控检查不代替Worker后续自测；实际服务/live函数、Node/native构建、安装和模型均未通过 |
-| 注册 Agent 后继方案 | 已审740/d441/079契约按SPEC §21.1.1—§21.1.3由原Worker实施；程序准确61a获be1退回N06—N09：实际Pi builder、可证配置/默认、真实账号/工具与启动绑定、人工批准的真实注册消费者。后继7f422已普通push，修Pi实际消费者、完整人工步骤并提N09窄端口，待准确复审；其他返修和输入/恢复继续，全部实际调用未验 |
+| 注册 Agent 后继方案 | 已审740/d441/079契约按SPEC §21.1.1—§21.1.3由原Worker实施；程序61a整体退回保留。准确16ad获b64局部接受：N06实际Pi CLI builder/合法权限枚举、完整人工USAGE及N09真实注册批准端口技术计划。后者已定稿§21.1.4并授同一Worker三个窄路径实施；N07/N08账号/配置/工具绑定及其余输入/恢复继续，全部实际调用未验 |
 | 首装授权流程 | 原T02/T03及USAGE须完整覆盖新DataRoot和已安装资产的首次人工入口、实际session/CSRF、项目设置、Grant/token操作；同一Worker调查复用现有入口并补具体方案。尚无新安装运行结果，不由Agent代用户批准，不新增网页重构模块 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。

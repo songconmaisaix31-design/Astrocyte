@@ -890,6 +890,18 @@ G07按原计划覆盖效果前拒绝、效果后child保全、真实存储失败
 
 recover全链路使用既有2/3/4/5/6/7/130退出语义：明确效果前依赖失败为4，可能已产生效果的网络或stdout失败为6，实际取消为130；只输出一个JSON，保留原R/C_old及实际已知C_new/Run/root。R01—R10在准确安装候选和真实条件下逐项执行；未命中的取消/失联阶段保持INCONCLUSIVE，不加入暂停、延迟或伪造hook，不重放未知输入。
 
+#### 21.1.4 真实注册与项目单CLI批准
+
+准确`16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3`的[方案§12](https://github.com/songconmaisaix31-design/swarm-anything/blob/16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3/docs/standards/swa-cli-headless-20261020.md)已获独立b64c90d0技术接受。本节定稿其接口，同一Worker补齐注册、人工单CLI批准及稳定选择的直接消费者；只证明注册，不据此判定安装、账号、工具或可启动。
+
+Workspace App声明`ExternalCLIRegistry.ValidateExternalCLI(ctx context.Context, cliID string) error`，项目服务沿原构造器创建，通过`ConfigureExternalCLIRegistry(port ExternalCLIRegistry) error`在HTTP开放前一次绑定；nil或重复绑定立即失败。配置Orca时，仅非空ProjectSettings.ExternalModelCLI使用同一真实orca adapter的注册验证端口，端口失败不换来源、不保存设置；未配置Orca的原产品保持原NativeRegistry.Adapter校验。HistoryRoots、旧S3会话及NativeAdapter仍使用原注册者，AllowedTools限制保持，不填空adapter或静态ID放行。
+
+新增只读bridge请求`{operation:'registered_agent',agent_id:string}`及私有Native方法`swa.registeredAgent({agent_id})`，字段均strict且ID非空。此方法进入私有owner只读白名单，不接受调用者、批准、Grant或可转发方法；新项目设置校验不以已有ExternalModelCLI或Agent Grant为前置。Native从实际registration(id)取得definition/adapter；terminal仅在真实TUI配置和已绑定PTY launcher/controller存在时登记。不调用原Orca RPC、不执行全量发现、命令version probe、会话或模型，未知注册明确失败。
+
+原OrcaEnvelope.result内的`RegisteredAgent`固定为`{schema:'swa.registered-agent.v1',id,adapter,execution_mode:'structured'|'terminal',registered:true,source:{kind:'structured-registry'|'tui-launcher'},source_revision,registry:{orca_version:'1.4.230',artifact_sha256},runtime:{runtime_id,authority_domain,data_root,install_root}}`。bridge返回`{envelope:OrcaEnvelope}`；Native读取同安装VERSION和runtime/host.cjs来源，runtime及authority来自实际运行与原SQLite，根路径为实际canonical路径。原RPC metadata和source fence保持，外层runtime_id取真实响应_meta.runtimeId。
+
+Go严格解码并逐项核ok且无error、schema/registered、Agent ID与原请求CLI一致、非空adapter、成对mode/source、同安装完整40位VERSION/host.cjs来源、内外实际runtime/authority及Config的canonical私有data/install根；任一字段缺失、不匹配或传输失败立即返回，全部通过才允许设置验证。来源摘要只核既有安装身份，不另建执行状态或Hash系统。适用真实检查包括旧四CLI之外注册ID的人工批准、未知ID/未绑定模式/不可达失败且设置不变、选择与批准不符时模型前拒绝，以及无Orca旧行为、HistoryRoots/S3、身份/工具/revision回归；全部动态结果按实际执行记录。
+
 ### 21.2 已采用的工程决策
 
 | ADR | 决策 | 改动边界 |
