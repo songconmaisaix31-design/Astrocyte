@@ -117,13 +117,16 @@ async function observeCompetition() {
         entry.request_id = competingRequest
         await writeFile(join(evidence, `actual-competing-${stage}-before.json`), JSON.stringify(original, null, 2) + '\n', { flag: 'wx' })
         const reply = await cli(['controller', 'recover', '--controller', controller, '--request-id', competingRequest], [3, 6])
+        const after = row(request), afterCheckpoint = after?.receipt ? JSON.parse(after.receipt) : null
+        await writeFile(join(evidence, `actual-competing-${stage}-after.json`), JSON.stringify(after ?? null, null, 2) + '\n', { flag: 'wx' })
         assert.ok(['operation_in_progress', 'scope_denied'].includes(reply.error.code))
         assert.equal(row(competingRequest), undefined)
         assert.deepEqual(counts(), before)
         assert.equal(row(`${competingRequest}/run-use`), undefined)
         entry.actual_error = reply.error
-        entry.status = reply.error.code === 'operation_in_progress' ? 'OBSERVED' : 'INCONCLUSIVE'
-        entry.reason = reply.error.code === 'operation_in_progress' ? 'original_pending_recovery_prevented_the_distinct_request' : 'original_recovery_completed_before_the_competing_request_was_admitted'
+        const sameStage = after?.method === 'swa.controllerRecover' && after.state === 'pending' && after.payload_hash === original.payload_hash && afterCheckpoint?.stage === stage
+        entry.status = reply.error.code === 'operation_in_progress' && sameStage ? 'OBSERVED' : 'INCONCLUSIVE'
+        entry.reason = entry.status === 'OBSERVED' ? 'the_original_pending_checkpoint_remained_at_the_named_stage_across_competing_admission' : 'the_named_stage_was_not_proven_to_span_competing_admission'
       }
     }
     await setTimeout(10)

@@ -29,7 +29,7 @@
 
 独立b8c8e780已限定静态接受c962的完整pending包装并确认3c4的N21源码修正，N22准确5110a888已push交复核。报告§21限定私有组装关闭上游默认自动daemon respawn，使pending清单失败保持原R及所属；没有修改本机Orca或授予新运行窗口。
 
-独立d34cf1ce已限定静态接受5110的N22，N23准确26cf55a5已普通push交原Reviewer。报告§22补R05真实scope-reserved/pty-spawn自然竞争、不同payload和完整PTY集合检查；未命中保留INCONCLUSIVE及remainingCases，新增正文未运行，完整T12与实际安装继续由同Worker完成。
+独立d34cf1ce已限定静态接受5110的N22，N23准确26cf55a5已普通push交原Reviewer。报告§22补R05真实scope-reserved/pty-spawn自然竞争、不同payload和存活PTY标识集合检查；竞争前后原R须仍在同一指定pending阶段才登记OBSERVED，不能证明时保留INCONCLUSIVE及remainingCases，新增正文未运行。报告§23的新窗口入口只完成Parser及原件核查，没有运行任何Stage，完整T12与实际安装继续由同Worker完成。
 
 完整方案及测试命令见[报告](../docs/standards/swa-cli-headless-20261020.md)。抽取原生Node runtime、SQLite、Run/Task/Dispatch、真实会话与进程控制，使用独立 `swa` 入口、安装根和私有数据根；产品composition不组装全局凭据迁移、全局hooks更新、账户迁移、自动化、云推送及桌面入口。必须保留真实控制端与Worker的身份、持久性、输入观察、输出和退出语义。
 
