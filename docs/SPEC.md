@@ -834,6 +834,10 @@ CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码
 
 完整成果依准确d7已审[方案 §5.5](https://github.com/songconmaisaix31-design/swarm-anything/blob/d7f21242259739cfb49a4f68a19a1a8f28bcec32/docs/standards/swa-cli-headless-20261020.md)及T07/T13实施。`worker read`保留原生有界预览与游标；`task result`从核实所属的原生journal和Pi自产session只读取得完整内容，采用成熟严格解析，检查原件身份、格式、读取一致性及12MiB上限，不迁移、修补或换源。计划停止A时分别返回实际状态、journal部分及SDK的incomplete/unavailable/unknown；已有坏源或来源变化明确失败。B的完整成果、固定业务判据和全部相关资源退出/归档/释放仍为根Task完成条件，不追加A完成条件。项目执行目标使用既有注册标识`pi`，实际执行入口仍为安装候选内的固定Node/SDK；新数据根不预置Grant，服务启动不签发token。候选携带实际安装入口及必要使用说明，真实结果按同一安装候选核验。
 
+CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实施。`--json`在stdout只发布一个完整结果，stderr保存诊断；已成功解析并校验的原请求ID及实际selector须在失败或取消时保留，未知身份省略。真实HTTP ErrorV1转换为既有CLI envelope，完整HTTP原件保存在既有`error.data`，HTTP trace与命令原请求ID各保留其来源；原生结果及错误数据保持。真实网络效果未知时只查询原请求，不重发；取消当前CLI等待返回130，不据此停止Worker。stdout实际不可写时将已知关联和实际影响保留到stderr并非零退出，不再次发布结果。
+
+`serve`须处理自身所属stdin的EOF：readiness之前取消启动按130及一次未就绪失败结果收尾，退出无法确认时保留6；readiness之后只保留原一次readiness，后续诊断和实际关闭结果写stderr。真实Worker/helper已退出、归档/释放及关闭的空闲条件下，全部自有node/server及已观察后代明确退出才允许EOF正常返回0，已知子进程失败保留7、未知或残留保留6及占用。Windows取消验证使用本项独立隐藏console宿主及其中另行创建的新组CLI，核实际成员和创建身份后才定向发送控制事件；不能将组合创建标志当成新组证明，不广播到组0或附着原Orca控制台。缺少隔离、真实批准或资源窗口时保持未运行。
+
 新代码遵守 §3 的 App 端口、adapter 和入口组装关系；来源副本与产品 composition 位于各自独立目录。需要改变上述动作、权限、状态拥有者、公开错误或模型范围时先修订本节及方案并重新审核相关测试。实际构建、安装及 T00—T15 的结果由任务和报告登记，计划接受不表示功能通过。
 
 ### 21.2 已采用的工程决策
