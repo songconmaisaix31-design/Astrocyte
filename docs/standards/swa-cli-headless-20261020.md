@@ -1092,9 +1092,9 @@ N17在host现有精确白名单中显式加入唯一`ORCHESTRATION_WORKER_LIST_M
 
 按主控`msg_1b67c830af5a`补足T01的具体类型入口；原parser和esbuild结果只保留其语法/转译范围。本次准备`pnpm typecheck:swa`，准确展开为`node --max-old-space-size=1024 runtime/swa-orca/node_modules/typescript/bin/tsc --project runtime/swa-orca/tsconfig.json --pretty false`，使用已安装TypeScript6.0.3和实际Node25.9.5声明。当前只写入入口与计划，未运行tsc；须经原Reviewer核本补充及主控单次窗口后执行。
 
-范围为全部`runtime/swa-orca/src/**/*.ts`及其真实传递imports，包含原RPC/structured adapter/Pi/stdio队列和其实际调用者；原build-constants.d.ts沿真实来源纳入。编译器使用strict、noEmit、无incremental、skipLibCheck=false和实际JSX/Node声明，检查所有实际类型诊断，非零即失败，不筛掉语义错误、伪造模块声明或将模块改为any。`@orca/process-host`沿原orca-source同一真实TS文件，Windows addons使用其实际index.d.ts；其他bare imports只解析本产品已安装node_modules。没有为本项加入原桌面入口、全量历史测试、科研或web工程的独立roots；真实imports带入的声明和消费者仍须处理。
+范围为全部`runtime/swa-orca/src/**/*.ts`及其真实传递imports，包含原RPC/structured adapter/Pi/stdio队列和其实际调用者；原build-constants.d.ts沿真实来源纳入。编译器使用strict、noEmit、无incremental、skipLibCheck=false和实际JSX/Node声明，检查所有实际类型诊断，非零即失败，不筛掉语义错误、伪造模块声明或将模块改为any。`@orca/process-host`沿原orca-source同一真实TS文件，Windows addons使用其实际index.d.ts；其他bare imports优先解析本产品已安装node_modules，未匹配时仍按TypeScript正常规则查找祖先依赖，实际解析来源与缺失须由真实检查及诊断确认。没有为本项加入原桌面入口、全量历史测试、科研或web工程的独立roots；真实imports带入的声明和消费者仍须处理。
 
-静态读取准确上游package.json及多文档pnpm-lock.yaml，使用YAML2.9.1成熟parseAllDocuments选择实际产品importer，核得下列必要类型来源；本次没有执行安装或修改锁，缺失来源保持真实缺失。拟在独立接受后的必要dependency窗口，把七项未安装的真实声明依赖显式加入runtime devDependencies和现有依赖清单，以原lockfile-only/frozen ignore-scripts流程串行取得；Electron只使用原包内声明，ignore-scripts不运行其二进制下载/安装脚本，产品prod deploy不包含该开发依赖。
+静态读取准确上游package.json及多文档pnpm-lock.yaml，使用YAML2.9.1成熟parseAllDocuments选择实际产品importer，核得下列必要类型来源。原Reviewer准确a54f0efac37837e293c34ce67ab1f5f3cbddbf60技术接受该计划后，七项真实声明已按原锁精确版本显式加入runtime devDependencies与现有依赖清单；本次没有执行安装或修改pnpm锁，缺失来源保持真实缺失。取得主控必要dependency窗口后，以原lockfile-only/frozen ignore-scripts流程串行取得；Electron只使用原包内声明，ignore-scripts不运行其二进制下载/安装脚本，产品prod deploy不包含该开发依赖。
 
 | 声明来源 | 原锁实际版本 | 当前产品安装状态 |
 | --- | --- | --- |
