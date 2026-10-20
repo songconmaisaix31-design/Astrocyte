@@ -39,7 +39,7 @@ async function cli(args, expected = 0) {
   await writeFile(join(evidence, `recovery-${index}.stderr.log`), Buffer.concat(stderr), { flag: 'wx' })
   const reply = JSON.parse(text)
   commands.push({ args, pid: child.pid, ...actual, request_id: reply.request_id })
-  assert.equal(actual.exit, expected, `Actual CLI failed; preserve recovery-${index}`)
+  assert.ok((Array.isArray(expected) ? expected : [expected]).includes(actual.exit), `Actual CLI failed; preserve recovery-${index}`)
   assert.equal(actual.signal, null)
   assert.equal(reply.ok, expected === 0)
   if (runtimeId) assert.equal(reply.runtime_id, runtimeId)
@@ -101,7 +101,37 @@ assert.equal(unavailable.error.code, 'controller_unverifiable')
 const historical = await cli(['task', 'show', '--controller', controller, '--task', root])
 assert.ok(historical.result.native.tasks.some(task => task.id === root))
 const request = randomUUID(), args = ['controller', 'recover', '--controller', controller, '--request-id', request]
-const recovered = await cli(args)
+let recoverySettled = false
+const recovery = cli(args)
+void recovery.then(() => { recoverySettled = true }, () => { recoverySettled = true })
+const competingStages = new Map(['scope-reserved', 'pty-spawn'].map(stage => [stage, { stage, status: 'INCONCLUSIVE', reason: 'the_original_pending_stage_was_not_observed' }]))
+async function observeCompetition() {
+  const deadline = Date.now() + 140_000
+  while (!recoverySettled && Date.now() < deadline) {
+    const original = row(request)
+    if (original?.state === 'pending' && original.receipt) {
+      assert.equal(original.method, 'swa.controllerRecover')
+      const checkpoint = JSON.parse(original.receipt), stage = checkpoint.stage, entry = competingStages.get(stage)
+      if (entry && !entry.request_id) {
+        const competingRequest = randomUUID()
+        entry.request_id = competingRequest
+        await writeFile(join(evidence, `actual-competing-${stage}-before.json`), JSON.stringify(original, null, 2) + '\n', { flag: 'wx' })
+        const reply = await cli(['controller', 'recover', '--controller', controller, '--request-id', competingRequest], [3, 6])
+        assert.ok(['operation_in_progress', 'scope_denied'].includes(reply.error.code))
+        assert.equal(row(competingRequest), undefined)
+        assert.deepEqual(counts(), before)
+        assert.equal(row(`${competingRequest}/run-use`), undefined)
+        entry.actual_error = reply.error
+        entry.status = reply.error.code === 'operation_in_progress' ? 'OBSERVED' : 'INCONCLUSIVE'
+        entry.reason = reply.error.code === 'operation_in_progress' ? 'original_pending_recovery_prevented_the_distinct_request' : 'original_recovery_completed_before_the_competing_request_was_admitted'
+      }
+    }
+    await setTimeout(10)
+  }
+}
+const recoveryChecks = await Promise.allSettled([recovery, observeCompetition()])
+for (const result of recoveryChecks) if (result.status === 'rejected') throw result.reason
+const recovered = recoveryChecks[0].value
 assert.ok(recovered.controller && recovered.controller !== controller)
 assert.equal(recovered.run_id, fixedRun)
 assert.equal(recovered.task_id, root)
@@ -114,11 +144,24 @@ assert.equal(replay.controller, recovered.controller)
 assert.equal(replay.result.consumer_generation, recovered.result.consumer_generation)
 assert.deepEqual(row(request), completedRecovery)
 assert.deepEqual(counts(), before)
+const changedPayload = await cli(['controller', 'recover', '--controller', recovered.controller, '--request-id', request], 2)
+assert.equal(changedPayload.error.code, 'request_mismatch')
+assert.deepEqual(row(request), completedRecovery)
+checks.push({ case: 'distinct_recovery_requests_at_actual_pending_stages', stages: [...competingStages.values()] })
+const recoveredOwner = join(evidence, 'actual-recovered-controller-owner.json'), recoveredInspection = join(evidence, 'actual-recovered-controller-inspection.json')
+await writeFile(recoveredOwner, JSON.stringify(recovered, null, 2) + '\n', { flag: 'wx' })
+execFileSync(process.execPath, ['--max-old-space-size=1024', join(candidate, 'runtime', 'controller-inspection.cjs'), '--candidate', candidate, '--data-root', data, '--owner-file', recoveredOwner, '--database', dbPath, '--output', recoveredInspection], { windowsHide: true, timeout: 15_000 })
+const currentInventory = JSON.parse(await readFile(recoveredInspection, 'utf8')), priorInventory = JSON.parse(await readFile(join(evidence, 'actual-controller-held-inspection.json'), 'utf8'))
+const expectedPtys = priorInventory.inventory.filter(session => session.isAlive && session.sessionId !== opened.result.binding.ptyId).map(session => session.sessionId)
+expectedPtys.push(recovered.result.binding.ptyId)
+assert.deepEqual(currentInventory.inventory.filter(session => session.isAlive).map(session => session.sessionId).sort(), expectedPtys.sort())
 const stale = await cli(['controller', 'recover', '--controller', controller, '--request-id', randomUUID()], 3)
 assert.equal(stale.error.code, 'scope_denied')
 const duplicateTask = await cli(['task', 'create', '--controller', recovered.controller, '--spec-file', join(inputs, 'task.json'), '--request-id', randomUUID()], 2)
 assert.equal(duplicateTask.error.code, 'request_mismatch')
 await cli(['controller', 'close', '--controller', recovered.controller, '--request-id', randomUUID()])
 checks.push({ case: 'same_run_root_context_new_helper_and_completed_replay', request_id: request, prior_controller: controller, controller: recovered.controller, run_id: fixedRun, root_task_id: root, consumer_generation: recovered.result.consumer_generation })
-await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, runtime_id: runtimeId, model_calls: 0, commands, checks, same_native_counts: before, remainingCases: ['runtime_and_serve_restart_same_named_job_and_authenticated_daemon', 'real_response_loss_each_recovery_effect_boundary', 'pending_recovery_observation_and_competing_request_barrier', 'real_restored_helper_attestation_and_old_generation', 'other_real_project_and_run_scope', 'same_live_worker_session_and_unknown_resource_preservation'] }, null, 2) + '\n', { flag: 'wx' })
+const remainingCases = ['runtime_and_serve_restart_same_named_job_and_authenticated_daemon', 'real_response_loss_each_recovery_effect_boundary', 'pending_recovery_observation_after_restart', 'real_restored_helper_attestation_and_old_generation', 'other_real_project_and_run_scope', 'same_live_worker_session_and_unknown_resource_preservation']
+for (const entry of competingStages.values()) if (entry.status !== 'OBSERVED') remainingCases.push(`distinct_request_competition_${entry.stage}`)
+await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, runtime_id: runtimeId, model_calls: 0, commands, checks, same_native_counts: before, remainingCases }, null, 2) + '\n', { flag: 'wx' })
 database.close()

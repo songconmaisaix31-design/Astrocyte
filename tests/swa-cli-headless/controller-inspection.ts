@@ -47,7 +47,7 @@ async function main() {
     assert.equal(session.pid, envelope.result.process.pid)
     assert.equal(session.isAlive, true)
     assert.ok(session.wslDistro == null)
-    await writeFile(required('output'), JSON.stringify({ observed_at: new Date().toISOString(), source_revision: ownership.source_revision, actual_native_owner: envelope.result, daemon, service_job: ownership, session, database: databasePath }, null, 2) + '\n', { flag: 'wx' })
+    await writeFile(required('output'), JSON.stringify({ observed_at: new Date().toISOString(), source_revision: ownership.source_revision, actual_native_owner: envelope.result, daemon, service_job: ownership, session, inventory: sessions, database: databasePath }, null, 2) + '\n', { flag: 'wx' })
   } finally { client.disconnect() }
 }
 main().catch(error => { process.stderr.write(String(error) + '\n'); process.exitCode = 1 })

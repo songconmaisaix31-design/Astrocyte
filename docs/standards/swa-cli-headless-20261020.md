@@ -1189,3 +1189,11 @@ pending接续继续使用当前真实daemon的authenticated inventory；读取�
 已完整读取原Reviewer准确`b8c8e780c9848a75d7e8d690e583153e38fa595f`两报告：c962完整pending包装获得限定静态接受，3c4的N21源码修正确认，实际运行均未验；5110的N22另交复核。本阶段仅修改私有host组装、原daemon init及现有launch policy类型，必要真实验证是在本项已证所属daemon退出/端点不可达条件下，核pending原R保留、没有替代daemon和没有重发。该故障条件及全部T12正文仍NOT_RUN，没有新增运行授权。
 
 本阶段原件目录`daemon-failure-policy-static-01/`，只解析三份变动TS、文档来源/本地链接及Git空白；未创建Program、运行服务、控制进程或执行任何模型。
+
+## 22. R05自然pending竞争与真实PTY清单入口
+
+T12核心真实入口继续沿同一公开任务、同一准确候选和原一次recover。驱动在实际R为pending且SQLite已出现scope-reserved或pty-spawn时，分别仅提交一次不同R的真实CLI请求，保存当时原receipt和实际返回。只有真实operation_in_progress、竞争R已由原生无效果规则结算、没有竞争子R/run-use且原Run/Task数量未增，才登记该阶段屏障已观察；若原接续在竞争请求准入前已完成而拒绝旧C，保存实际scope_denied并记INCONCLUSIVE。没有命中的阶段同样保留INCONCLUSIVE，进入remainingCases；不延迟产品、不写业务库、不加暂停钩子或自动重试。驱动等待所有已启动的实际CLI结算后才处理失败。
+
+完成原接续后，以同一R及不同真实controller payload验证request_mismatch且原完成receipt不变；原同payload重放和旧C新R拒绝保持。实际只读DaemonClient检查现保留完整原inventory，驱动比较故障前与接续后的真实存活PTY集合：仅移除旧PTY并加入实际C_new对应PTY，其余原件须不变，用实际来源检查没有多建helper。该只读源仍核原owner/SQLite、authenticated hello、准确安装与私有根，不构造原生响应。
+
+剩余条件继续明确包含重启后的pending观察、各效果边界丢失、同库/同Job复开、restored/旧generation、跨项目/Run及同一活Worker/unknown资源，R10等既有全量条件也保持未验。当前R05新增正文及所有CLI、SQLite、PTY、故障和模型均NOT_RUN，没有新重操作授权；源码入口不代表命中两个自然窗口或T12通过。本阶段原件目录`t12-r05-static-01/`，只执行两份TS/MJS成熟语法、JSON/YAML、文档来源/本地链接及Git空白检查。
