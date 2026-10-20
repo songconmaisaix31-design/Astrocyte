@@ -19,7 +19,8 @@
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55已改为原生合法status枚举，获da2e局部静态接受；实际structured只发送check提示，ToolsOff的Pi无法取得正文，完整能力仍未实现。2f1完整正文提案先独立审核，结合注册Agent新要求再定稿；真实消息/原队列/operation/fence、当前授权、同PID/session实际正文及后续成果要求保持 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar实际SHA256为6a9bd9614a884f6172aa22029227a95dde1f25cd86651dfbb7998f25a81d6077。REA6.5.0限定CLI静态分析EXIT0，Evidence ev_7003a444cd2970c2d3ace2427c883c461f6a1ec67b9dfdbe9be6528e775726d3；7来源/6JS/5051文件未选，图与语义覆盖partial，未证明注册Agent实际调用或完整依赖闭包。旧6d2/0c17原件保持原版本。doctor实际EXIT1/config_drift，未修改MCP/配置；CLI分析独立可用，详细原件和失败见首版任务 |
-| 独立 Go 检查入口 | 准确c4d1c140d8d231058c42c455bd8433de0fc256c2获af666597局部静态接受，主控已完整读报告和四路径差异并回复hook。移除候选前置、原四包/三函数和最终VERSION=SOURCE=准确干净源码保持；尚未编译或执行函数，暂无运行窗口。当前仅本地准确提交，普通push回执待补 |
+| 独立 Go 检查入口 | 准确c4d1c140d8d231058c42c455bd8433de0fc256c2获af666597局部静态接受，主控已完整读报告和四路径差异并回复hook。移除候选前置、原四包/三函数和最终VERSION=SOURCE=准确干净源码保持；尚未编译或执行函数。后继bf996两文档提案已一次普通push EXIT0，包含此前c2/2f/c4；原TLS失败保持，新的运行窗口尚未交付 |
+| 注册 Agent 后继方案 | bf996两文档63行框架已完整读取；每次发现/启动依赖原Orca runtime RPC，与独立安装不依赖原桌面IPC的要求冲突，具体注册schema及消费者/各Agent执行矩阵待同一Worker补齐。发现与安装、配置、启动和控制保持区别；首版通用原生工具范围已询问用户、未答前保持当前限制，独立发现及依赖技术设计继续 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
