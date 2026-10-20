@@ -11,17 +11,23 @@ import { controllerOwnerSchema } from '../../runtime/swa-orca/src/controller-sco
 import { swaDaemonServiceJobSchema } from '../../third_party/orca-v1.4.230/src/main/daemon/swa-service-job'
 
 async function main() {
-  const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'owner-file', 'database', 'output'].map(key => [key, { type: 'string' as const }])), allowPositionals: false })
-  const required = (key: string) => { const value = z.string().refine(isAbsolute).parse(values[key]); return value }
+  const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'data-root', 'owner-file', 'request-show-file', 'database', 'output'].map(key => [key, { type: 'string' as const }])), 'inventory-only': { type: 'boolean', default: false } }, allowPositionals: false })
+  const required = (key: string) => z.string().refine(isAbsolute).parse(values[key])
+  assert.equal([!!values['owner-file'], !!values['request-show-file'], !!values['inventory-only']].filter(Boolean).length, 1)
   const candidate = await realpath(required('candidate')), data = await realpath(required('data-root'))
   assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, 'node', 'node.exe').toLowerCase())
-  const envelope = z.object({ ok: z.literal(true), request_id: z.uuid(), authority_domain: z.string().min(1), result: controllerOwnerSchema }).parse(JSON.parse(await readFile(required('owner-file'), 'utf8')))
+  const responseFile = values['inventory-only'] ? null : values['owner-file'] ? required('owner-file') : required('request-show-file')
+  const envelope = responseFile ? z.object({ ok: z.literal(true), request_id: z.uuid(), authority_domain: z.string().min(1), result: z.unknown() }).parse(JSON.parse(await readFile(responseFile, 'utf8'))) : null
+  const owner = envelope ? values['owner-file'] ? controllerOwnerSchema.parse(envelope.result) : z.object({ method: z.literal('swa.controllerRecover'), state: z.literal('completed'), receipt: controllerOwnerSchema }).parse(envelope.result).receipt : null
   const databasePath = await realpath(required('database')), rel = relative(data, databasePath)
   assert.ok(rel && rel !== '..' && !rel.startsWith('..\\') && !isAbsolute(rel))
   const db = new Database(databasePath, { readonly: true, fileMustExist: true })
   try {
-    const row = z.object({ method: z.enum(['swa.controllerOpen', 'swa.controllerRecover']), state: z.literal('completed'), receipt: z.string() }).parse(db.prepare('SELECT method, state, receipt FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').get(envelope.authority_domain, envelope.request_id))
-    assert.deepEqual(controllerOwnerSchema.parse(JSON.parse(row.receipt)), envelope.result)
+    if (envelope && owner) {
+      const row = z.object({ method: z.enum(['swa.controllerOpen', 'swa.controllerRecover']), state: z.literal('completed'), receipt: z.string() }).parse(db.prepare('SELECT method, state, receipt FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').get(envelope.authority_domain, envelope.request_id))
+      if (values['request-show-file']) assert.equal(row.method, 'swa.controllerRecover')
+      assert.deepEqual(controllerOwnerSchema.parse(JSON.parse(row.receipt)), owner)
+    }
   } finally { db.close() }
   const directory = join(data, 'daemon'), pidPath = getDaemonPidPath(directory)
   assert.equal((await realpath(pidPath)).toLowerCase(), pidPath.toLowerCase())
@@ -38,16 +44,18 @@ async function main() {
     assert.equal(ownership.source_revision, (await readFile(join(candidate, 'VERSION'), 'utf8')).trim())
     const inventory = await client.request<ListSessionsResult>('listSessions', undefined, 5000)
     const sessions = z.array(z.looseObject({ sessionId: z.string(), incarnationId: z.string().optional(), terminalHandle: z.string().optional(), pid: z.number().nullable(), isAlive: z.boolean(), wslDistro: z.string().nullable().optional() })).parse(inventory.sessions)
-    const matches = sessions.filter(session => session.sessionId === envelope.result.binding.ptyId || session.terminalHandle === envelope.result.controller)
-    assert.equal(matches.length, 1)
-    const session = matches[0]!
-    assert.equal(session.sessionId, envelope.result.binding.ptyId)
-    assert.equal(session.incarnationId, envelope.result.binding.processIncarnation)
-    assert.equal(session.terminalHandle, envelope.result.controller)
-    assert.equal(session.pid, envelope.result.process.pid)
-    assert.equal(session.isAlive, true)
-    assert.ok(session.wslDistro == null)
-    await writeFile(required('output'), JSON.stringify({ observed_at: new Date().toISOString(), source_revision: ownership.source_revision, actual_native_owner: envelope.result, daemon, service_job: ownership, session, inventory: sessions, database: databasePath }, null, 2) + '\n', { flag: 'wx' })
+    const matches = owner ? sessions.filter(session => session.sessionId === owner.binding.ptyId || session.terminalHandle === owner.controller) : []
+    if (owner) {
+      assert.equal(matches.length, 1)
+      const session = matches[0]!
+      assert.equal(session.sessionId, owner.binding.ptyId)
+      assert.equal(session.incarnationId, owner.binding.processIncarnation)
+      assert.equal(session.terminalHandle, owner.controller)
+      assert.equal(session.pid, owner.process.pid)
+      assert.equal(session.isAlive, true)
+      assert.ok(session.wslDistro == null)
+    }
+    await writeFile(required('output'), JSON.stringify({ observed_at: new Date().toISOString(), source_revision: ownership.source_revision, actual_native_owner: owner, actual_response_file: responseFile, daemon, service_job: ownership, session: matches[0] ?? null, inventory: sessions, database: databasePath }, null, 2) + '\n', { flag: 'wx' })
   } finally { client.disconnect() }
 }
 main().catch(error => { process.stderr.write(String(error) + '\n'); process.exitCode = 1 })

@@ -8,7 +8,8 @@ import { dirname, isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 
-const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'protected-pids', 'output'].map(key => [key, { type: 'string' }])), allowPositionals: false })
+const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'protected-pids', 'output', 'fault-case'].map(key => [key, { type: 'string' }])), allowPositionals: false })
+assert.ok(values['fault-case'] === undefined || ['cancel', 'stdout-close'].includes(values['fault-case']))
 for (const key of ['candidate', 'data-root', 'project', 'output']) assert.ok(values[key] && isAbsolute(values[key]), `Actual absolute ${key} is required`)
 assert.ok(values['project-id'] && process.env.SWA_PROJECT_TOKEN && values['protected-pids'])
 const candidate = await realpath(values.candidate), data = await realpath(values['data-root']), project = await realpath(values.project), evidence = dirname(values.output)
@@ -100,6 +101,21 @@ const unavailable = await cli(['controller', 'show', '--controller', controller]
 assert.equal(unavailable.error.code, 'controller_unverifiable')
 const historical = await cli(['task', 'show', '--controller', controller, '--task', root])
 assert.ok(historical.result.native.tasks.some(task => task.id === root))
+if (values['fault-case']) {
+  const stateFile = join(evidence, 'actual-recovery-fault-state.json'), faultOutput = join(evidence, 'actual-recovery-cli-fault.json')
+  const protectedPIDs = values['protected-pids'].split(',').map(value => { assert.match(value, /^[1-9][0-9]*$/); return Number(value) })
+  await writeFile(stateFile, JSON.stringify({ candidate, data_root: data, database: dbPath, evidence_directory: evidence, source_directory: codeRoot, source_revision: sourceRevision, prior_owner_file: ownerFile, project_id: values['project-id'], prior_controller: controller, run_id: fixedRun, root_task_id: root, authority_domain: fingerprint, runtime_id: runtimeId, endpoint: values.endpoint, protected_process_ids: protectedPIDs }, null, 2) + '\n', { flag: 'wx' })
+  const child = spawn(process.execPath, ['--max-old-space-size=1024', join(codeRoot, 'tests', 'swa-cli-headless', 'cli-failure.mjs'), '--state', stateFile, '--action', values['fault-case'], '--output', faultOutput], { env: environment, cwd: project, windowsHide: true, stdio: ['ignore', 'inherit', 'inherit'] })
+  const actual = await new Promise((resolve, reject) => { child.once('error', reject); child.once('close', (exit, signal) => resolve({ pid: child.pid, exit, signal })) })
+  await writeFile(join(evidence, 'actual-cli-failure-driver-exit.json'), JSON.stringify(actual, null, 2) + '\n', { flag: 'wx' })
+  assert.ok([0, 6].includes(actual.exit) && actual.signal === null)
+  const fault = JSON.parse(await readFile(faultOutput, 'utf8'))
+  assert.equal(fault.source_revision, sourceRevision)
+  assert.equal(fault.prior_controller, controller)
+  const remainingCases = [...fault.remainingCases, 'other_original_T12_recovery_cases_require_their_own_actual_evidence']
+  await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, runtime_id: runtimeId, model_calls: 0, commands, checks, actual_cli_fault: fault, remainingCases }, null, 2) + '\n', { flag: 'wx' })
+  process.exitCode = 6
+} else {
 const request = randomUUID(), args = ['controller', 'recover', '--controller', controller, '--request-id', request]
 let recoverySettled = false
 const recovery = cli(args)
@@ -167,4 +183,5 @@ checks.push({ case: 'same_run_root_context_new_helper_and_completed_replay', req
 const remainingCases = ['runtime_and_serve_restart_same_named_job_and_authenticated_daemon', 'real_response_loss_each_recovery_effect_boundary', 'pending_recovery_observation_after_restart', 'real_restored_helper_attestation_and_old_generation', 'other_real_project_and_run_scope', 'same_live_worker_session_and_unknown_resource_preservation']
 for (const entry of competingStages.values()) if (entry.status !== 'OBSERVED') remainingCases.push(`distinct_request_competition_${entry.stage}`)
 await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, runtime_id: runtimeId, model_calls: 0, commands, checks, same_native_counts: before, remainingCases }, null, 2) + '\n', { flag: 'wx' })
+}
 database.close()

@@ -33,6 +33,8 @@
 
 完整方案及测试命令见[报告](../docs/standards/swa-cli-headless-20261020.md)。抽取原生Node runtime、SQLite、Run/Task/Dispatch、真实会话与进程控制，使用独立 `swa` 入口、安装根和私有数据根；产品composition不组装全局凭据迁移、全局hooks更新、账户迁移、自动化、云推送及桌面入口。必须保留真实控制端与Worker的身份、持久性、输入观察、输出和退出语义。
 
+准确4ceff1ad的N24已获独立c22e085b限定静态接受。报告§24接入真实R10取消/stdout断开控制程序、原安装入口及PTY/runUse集合检查，按原Reviewer两项草案缺口补同R重放后的完整实际PTY身份核验；尚待准确正式CR。原资源问题msg_991a51a62cc3三次等待超时仍待主控，后继窗口应使用本阶段提交后的准确源码；没有任何新重操作或正文执行，全部安装验收继续同一Worker。
+
 主控通过本次Orca `ask` 明确批准：**产品私有Orca原生Run/Task/Dispatch为本首版唯一执行账本**，SWA Workspace复用适用项目、授权和固定上下文；旧Mission/Claim/Relay保持独立记录，同一首版任务不双写。主控在准确方案独立审核后更新SPEC，本Worker不修改公共事实源、既有接口或旧门禁。
 
 主控明确禁止使用当前Claude的Aliyun配置或修改本机Agent配置，允许静态核查现有非AliyunCodex认证和Pi的兼容性。Python3.13的 `tomllib` 与标准JSON解析确认当前Codex两处配置均为默认OpenAI、`gpt-6.1-sol`、`auth_mode=chatgpt`，存在OAuth tokens、无API key；检查只输出白名单非秘密字段。已安装Pi1.0.1的源码包含相同原生provider/模型及CredentialStore接口。建议采用真实Pi SDK和其原生RPC，凭据只读适配在刷新回调之前拒绝修改，全部工具/扩展/上下文发现关闭。主控已接受此静态兼容调查方向；认证成功及受限正向均未验证。

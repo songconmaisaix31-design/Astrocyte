@@ -124,6 +124,7 @@ for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/ser
   run(go, [...args, '-o', join(output, name), entry])
 }
 run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'controller-fault.exe'), './tests/swa-cli-headless/controller-fault'])
+run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'cli-fault-control.exe'), './tests/swa-cli-headless/cli-fault-control'])
 for (const [source, target] of [['LICENSE', 'LICENSE'], ['THIRD_PARTY_SWA.md', 'THIRD_PARTY_SWA.md'], ['third_party/orca-v1.4.230/LICENSE', 'ORCA_LICENSE'], ['scripts/install-swa.ps1', 'install-swa.ps1'], ['runtime/swa-orca/USAGE.md', 'USAGE.md']]) await copyFile(join(root, source), join(output, target))
 await writeFile(join(output, 'VERSION'), revision + '\n', { flag: 'wx' })
 console.log(JSON.stringify({ source_revision: revision, candidate: output, node: NODE_RUNTIME_PIN.version, native_modules_built: ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry'] }))

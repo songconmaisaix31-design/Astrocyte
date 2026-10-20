@@ -21,7 +21,8 @@ param(
     [string]$OwnedProcessEvidence,
     [string]$FlowEvidence,
     [string]$GoTestDirectory,
-    [ValidateSet('idempotency','disconnect')][string]$NativeCase = 'idempotency'
+    [ValidateSet('idempotency','disconnect')][string]$NativeCase = 'idempotency',
+    [ValidateSet('core','cancel','stdout-close')][string]$RecoveryCase = 'core'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -178,7 +179,8 @@ if ($Case -in @('T00','T02','T03','T06','T08','T12','T13','T15')) {
                     if ($swaIdempotency.remainingCases.Count -gt 0) { $swaExit = 6 }
                 }
             } elseif ($Case -eq 'T12') {
-                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'controller-recovery.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --protected-pids ($OriginalProcessIds -join ',') --output (Join-Path $swaEvidence 'controller-recovery.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'controller-recovery.log')
+                $swaRecoveryArgs = if ($RecoveryCase -eq 'core') { @() } else { @('--fault-case',$RecoveryCase) }
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'controller-recovery.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --protected-pids ($OriginalProcessIds -join ',') --output (Join-Path $swaEvidence 'controller-recovery.json') @swaRecoveryArgs 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'controller-recovery.log')
                 $swaExit = $LASTEXITCODE
                 if ($swaExit -eq 0) {
                     $swaRecovery = Get-Content -LiteralPath (Join-Path $swaEvidence 'controller-recovery.json') -Raw | ConvertFrom-Json

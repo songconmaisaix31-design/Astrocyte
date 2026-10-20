@@ -1205,3 +1205,17 @@ T12核心真实入口继续沿同一公开任务、同一准确候选和原一�
 本次只做PowerShell Parser及路径/原件只读核查，Parser零错误；没有执行该runner或任何Stage。原next-window.ps1与build-06/next-window-executed.ps1的实际SHA256均保持`bae62ff4c1eee443f0efafabf87f814f4a47f6177b9e0812a0ed9622cd087522`，原build06已经消费且不再执行；旧candidate05及全部失败原件保留。新candidate06尚不存在，7份已审开发声明的锁/安装、Program、生成、全构建和全部动态验收仍未完成；正式窗口须由主控精确停止当前原S后交付，当前准备不构成授权。
 
 本次N24及N23文档返修和后继入口的实际静态原件在`window04-n24-static-01/`：一份变动MJS、JSON/YAML、三Markdown/7链接/24Orca及11Pi来源路径和空白检查通过；runner最终Parser及准确三份摘要另存final原件，正文全部NOT_RUN。原Reviewer797e已限定静态接受26cf的N23代码，当前文档按实际void后台函数语义描述；N24前后checkpoint及PTY标识集合范围同步当前源码，仍需原Reviewer复核与真实阶段命中。
+
+## 24. R10实际取消与输出断开验收入口
+
+原R10计划已独立接受，本阶段将其中真实取消和stdout断开子范围接入原安装检查入口。`scripts/verify-swa-cli-headless.ps1 -Case T12`新增`-RecoveryCase core|cancel|stdout-close`，默认core沿原核心路径；其余两种在同一准确候选、固定公开项目及真实旧helper退出后，将实际源码、原open回复、Run/root、当前runtime/authority、私有DB和保护PID传给`tests/swa-cli-headless/cli-failure.mjs`。这些文件均为真实已有来源的测试参数，未构造CLI、Orca或模型回复。当前全部新正文NOT_RUN。
+
+`tests/swa-cli-headless/cli-fault-control/main_windows.go`由原build脚本在服务启动前编译为候选`runtime/cli-fault-control.exe`，闭包检查要求此文件存在。普通控制程序先创建自身隐藏独立console，再以CREATE_NEW_PROCESS_GROUP启动真实候选swa recover。发送前持有真实CLI句柄，核完整程序路径、创建时间、保护PID及当前console只有本项两个进程；取消只对真实CLI group发送CTRL_BREAK_EVENT，stdout断开只关闭该真实子进程pipe读端。相同句柄确认退出，实际CLI退出码、Wait/pipe/control错误和超时均保存，控制程序成功不能替代130或6实际结果。未命中等待窗口保留INCONCLUSIVE，不自动重试或改变产品时序。
+
+Windows选项和group语义已完整读取Microsoft官方[Process Creation Flags](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags)、[Console Process Groups](https://learn.microsoft.com/en-us/windows/console/console-process-groups)、[GetConsoleProcessList](https://learn.microsoft.com/en-us/windows/console/getconsoleprocesslist)、[GenerateConsoleCtrlEvent](https://learn.microsoft.com/en-us/windows/console/generateconsolectrlevent)及[Creation of a Console](https://learn.microsoft.com/en-us/windows/console/creation-of-a-console)。方案据此分两次创建；NEW_CONSOLE与NEW_PROCESS_GROUP不同时用于实际CLI，原Orca和原console不执行AttachConsole/FreeConsole。已核实际安装Go的HideWindow和SIGINT处理源码，真实本机console/group、130及输出6仍未运行。
+
+独立原Reviewer的msg_d856cb2ad7c1及msg_02eb5a9aff89均已完整读取并ack，本阶段补其要求的真实完整PTY库存和原生runUse集合。`controller-inspection.ts`增加互斥的真实owner、真实request.show完成回复及inventory-only读取方式，继续原DaemonClient认证hello、原PID record/Job、准确候选和私有DB核验。驱动保存前后完整库存，原C须已退出，新增PTY最多一个并与原R checkpoint/final owner对应；完成时新增PTY和原R/run-use各恰为一个。相同authority的全部原runUse条目保持，新增只能是原R/run-use；原Run/root/spec和实际generation另行核验。
+
+完成后实际调用同R recover，再核原receipt、runUse集合、完整PTY标识和存活集合不变，并逐项比较新旧全部PTY的sessionId、terminalHandle、incarnationId、pid、isAlive、wslDistro。其他PTY的消失或身份改变均失败；真实owner检查仍对最终新PTY核实际原绑定。此处库存和集合只描述实际快照覆盖，不能据此声称未观察到的瞬态分支。request.show只读原件，pending recover观察继续由原R08单独验证；pending、未命中、网络连接失败4及处理中断开6尚未覆盖时均保留remainingCases，驱动及外围退出6。
+
+本阶段仅允许语法、格式、文档来源及差异检查；实际静态原件目录为`r10-source-static-01/`。没有依赖安装、TypeScript Program、Go/C++构建、生成、服务、故障或模型执行，尚无可用的新安装候选。原问题msg_991a51a62cc3连续三次等待600000ms超时仍待主控，静态实施继续；后继正式窗口须指定随后准确源码，不能沿用4ce作为新源码的ExpectedSource。原build06已消费、原S及本机Orca保持原资源归属；整体T12、通用terminal及同候选双Worker验收继续由同一Worker完成。
