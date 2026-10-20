@@ -363,6 +363,10 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 结果仍在原OrcaEnvelope.result，DTO固定为`{schema:"swa.capabilities.v1", source_revision, registry:{orca_version,artifact_sha256}, discovery:{host:"local",platform:"win32",observed_at,settings_source:{kind:"native"|"orca-profile",path?,revision?}}, agents:[{id,adapter,execution_mode,registered,enabled,installed,configured,launchable,control,requirements}]}`。registered/enabled/installed/configured/launchable和control中的start/send/read/stop/resume/tools各使用`{status:"available"|"unavailable"|"unknown",reason,checked_at?,source}`；installed正向才带executable/version，configured仅带已证model/provider及非秘密account-source类型，不填造账号/认证。requirements保留当前批准工具/目录/外发要求及该Agent的缺口；声明capability与本次观察通过source区分。
 
+现有Go runtime的Target()实际硬编码返回pi，App把该值传入ProjectActionScope.ExternalTargets，真实适配器检查也断言pi；这三个消费者必须一起改。新增只读`ResolveSelection(ctx, projectID, command)`返回非秘密`AgentSelection{agent_id,adapter,execution_mode,executable,version,model,provider,external_target,settings_source,settings_revision,configuration_version}`，来源仅为当前真实注册/必要配置及命令解析。`external_target`使用现有批准所针对的真实CLI ID，不能仍为pi或由HTTP正文填写；模型/提供方同时绑定实际选择，未证来源立即返回能力/配置不足，不启动Agent。
+
+App先按observe核项目并解析selection，再按既有start/目录/工具和selection.external_target执行authorize/ValidateProjectActionScope，才把selection加入严格invocation交Native。ProjectSettings.ExternalModelCLI继续现有明确批准的单CLI语义，不扩成默认允许所有Agent；不同选择不匹配时拒绝，用户明确更改批准后再执行。worker.send从该实际Dispatch的原启动receipt/session取得原selection并复核当前来源，不能用新CLI参数换Agent/模型。selection进入既有R的比较/原checkpoint，只含稳定源revision及实际程序/模型信息，不包含observed_at、凭据或另建hash/快照账本；spawn前再核相同事实。CLI解析/HTTP strict schema、Go interface/authorize/adapter Target消费者、runtime invocation/helper/Native parent及真实检查的固定pi断言均按同一契约更新，停止/释放和人类安全停止仍沿其原权限语义。
+
 | CLI/当前App动作 | 产品Native方法、真实caller及持久来源 |
 | --- | --- |
 | controller open / task create | 保持swa.controllerOpen,R及真实helper launch；task.create保持swa.taskCreate,R→helper自身runCreate R/run-create、root taskCreate R/root-task。同一Run/root/context和strict caller保持 |
