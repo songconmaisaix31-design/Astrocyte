@@ -864,3 +864,30 @@ G01—G08及既有D/T覆盖了来源、状态区分、原生调用、权限、�
 `check-revision.ps1 -Previous c4d1c140d8d231058c42c455bd8433de0fc256c2 -Candidate bf996c3465a8a4efb06e9e2a598dd6aab3ec6c2f` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。所有G/D/T12真实Agent/协议、注册查询、安装、模型与新接口仍未执行；没有重跑REA、采样、服务、控制端或网络探测。
 
 准确1dc4接受hook `msg_eb869aeebe1c`已获主控`msg_0c5569d36751`完整读取60b无界面报告新增回复，实际唤起确认；主控仅在接受及新鲜身份/环境依据下启动prepare-07，尚未返回或交付Go窗口的实际时点保持。准确bf退回hook为`msg_b30e747ca85f`，该回复确认N01—N03已完整读取并由原Worker返修；正式bf线程回复尚待取得，不把脚本接受扩大为方案或动态接受。
+
+准确bf退回hook已获主控`msg_bc3f2574082a`完整读取60b该节并正式回复，实际唤起确认。主线1b管理接受hook `msg_a6e45f5a75cc`亦获主控`msg_8a98651ebe6c`完整读取a58报告回复，累计c9管理范围及各自时点保持。
+
+## 准确9c0b62a3来源及独立源码检查目录
+
+完整读取准确`9c0b62a39b04cdd3fc3d210ced200277824a4e75`相对bf两文档的5增1删；当前REA6a9/ev7003、选定6JS/5051未选/partial及后继普通push记录，与已独立读到的准确原件一致。库存chunk只标后继核查候选，没有当已分析或实际调用通过。c4至9c的scripts/tests/cmd/runtime/internal/go.mod/go.sum差异为空；已审入口及程序未变，bf的具体方案退回继续有效。对应两Markdown/5本地链接及Git空白EXIT0。
+
+原Worker连接错误后，主控`msg_9000137ae158`明确撤回其全部Go/重操作授权，保留原树两文档WIP；没有实际运行回执或输出目录，不把网络错误当程序退出。主控另在根忽略目录`.verification/swa-go-9c-01`创建独立detached准确9c，仅执行同一已审四包/三函数检查，不修改程序或冒充Worker自测。初次只读看到locked initializing和检出中间状态，已以`msg_5c27d5bbf73d`通知等实际检出完成，没有删除、解锁或判源码失败。
+
+收到主控`msg_2e25586799de`的checkout EXIT0回执后，使用`git --no-optional-locks`独立重核该目录HEAD为准确9c、status条目0、两脚本相对已审c4无差异，命令EXIT0；结果已通过`msg_d2e867af5ca6`回复。实际Go资源/下载尚在途采用主控来源，没有运行第二套编译或将原Worker未运行登记为通过。原S57400按stop-07停止，本机Orca保全，执行结束后由主控恢复同次原库与环境。
+
+## 准确740ccdf9的独立发现及选择契约审核
+
+结论：**接受准确`740ccdf9a9dfa33901274fd8dccd37c4beacf1fd`所含独立发现、明确设置源、capabilities DTO和AgentSelection/现行外发批准的技术方案；新增输入及普通TUI路由仍退回补齐。** 完整读取5fc相对9c及740相对5fc的两文档差异，按G01—G08、N01—N03和B01/B02核查，并重读原Profile只读API、原mutation executor及既有Go外发消费者。实际Agent支持/工具适用范围和全部动态验证保持未决定或未验，不由本次技术方案接受推断执行授权。
+
+N01已解决：注册来自产品实际definition/adapter构造的StructuredAgentRegistry，本机命令与配置在产品进程检测，原Orca不构成发现/选择/调用前提。标准native源和显式可选`--agent-profile`分别规定；明确源缺失/损坏即失败。已核classifyProfileStateStorage只读分类，openProfileStateDatabaseReadOnly使用readonly/fileMustExist且不迁移，readProfileStateDomains在同一只读snapshot返回settings/revision并区分unreadable；legacy并存时仍须核原acceptance，禁止Store/migrate/marker写入。JSON-only使用成熟JSON流筛选，不读取或复制原会话。
+
+capabilities经既有HTTP/App observe、只读Capabilities端口和私有swa.capabilities取得实际注册、安装、配置、可启动及各控制能力的独立状态，缺来源保持unknown；不调用模型刷新或接受HTTP身份/授权声明。740补齐ResolveSelection及稳定AgentSelection，把真实CLI ID、程序/配置版本、model/provider及external_target绑定至原R；App先核observe再按实际单CLI批准和当前Grant核start/目录/工具/外发，send沿原Dispatch选择复核。既有Target=pi及适配器/真实检查的固定断言明确纳入同一更新范围，未扩大ExternalModelCLI单CLI语义。原controller/父子R、strict caller、native队列及完整成果消费者列明，B01实际handover异步复核与B02固定原receipt/journal关联已有明确方向。
+
+| 仍需补齐 | 准确原生依据及要求 |
+| --- | --- |
+| N04 新swa.workerSend的异常结算 | 新方法是非prompt durable mutation。原executor在普通异常且非operation_unknown时会discard pending，markEffectPossible和checkpoint本身不能保留该receipt。方案须明确首次可能host输入前后的边界：效果前已证拒绝如何结算，checkpoint后发送/输入结算/存储异常或证明不足如何保留同一R/native、session/operation和占用。不能只由外层parent的unknown代替子receipt，也不能在子receipt丢失后再次mint；G07须覆盖该真实边界，未具备条件保持未验 |
+| N05 结构化与普通TUI的路由 | 当前worker.send表统一Dispatch→私有session→StructuredHost，但其余TUI表描述原生PTY且可能没有该session；StructuredAgentRegistry本身也只登记真实definition/structured adapter。须按execution_mode明确普通TUI的真实注册来源及start/send/read/stop/resume路由、父子R和输入结算/未知语义，或者准确标明哪些能力未实现；不能给无session的目标套StructuredHost，也不能用TUI常量补造注册或把终端尾部当完整成果 |
+
+N04/N05已以`msg_e527bd2d50de`交原Worker，主控已获`msg_d2e867af5ca6`说明独立发现可单独接受；新输入方法及模式适配不得据此提前实施。readonly发现和稳定选择契约不依赖工具范围待答，可由主控先写SPEC并授权相应原写域；实际启动/模型、原生工具及账号写入条件仍由当前决定和准确Agent能力核实。G/D/T验收没有删除，未发现额外无关检查。
+
+`check-revision.ps1 -Previous 9c0b62a39b04cdd3fc3d210ced200277824a4e75 -Candidate 5fc799e1dd9beda8f2978d4a04f1a1f8f9f2ffd3`及以5fc为基线、740为Candidate的检查均EXIT0，各两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有访问原profile数据库、实际注册配置、启动Agent/服务/模型、编译或运行新REA。
