@@ -501,3 +501,13 @@ c8控制入口未改，下一prepare取实际restore-11-recovery-01/restored.jso
 `check-revision.ps1 -Previous 72f27b3e4276ceb33cda87b403e4d6b45108de8a -Candidate 6883f16e1ebd8c016f064457e140ff99bc1c5a50`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有重新构建、诊断、启动服务、访问SQLite/HTTP或调用模型；真实程序、完整成果、安装及同候选双Worker仍未通过。
 
 准确6883管理接受hook `msg_d2bdb411ad3c`已获主控`msg_6dd65c489f89`完整读取de4准确新增及管理差异回复，实际唤起确认；同轮build03退回也已获准确读取回复。原Worker后继8ebe的必要依赖/store局部静态接受及N08独立技术审核分别记于headless报告，不改变主线运行状态或授予新窗口。
+
+## 准确fa0a1141至fc842eb4的依赖结果及新创建身份
+
+结论：**接受准确`fc842eb4d4c9d1b777a5c53b32bbb0a1a27fd10e`相对6883、含前序`fa0a1141940b7ca07015171aae23f906c36f6b24`的累计三文档管理范围。** 完整读取两组差异，独立核dependency-03日志/四个子阶段退出/资源与观察、prepare/stop-13及restore-13实际原件，详细结果见headless报告。依赖锁由原pnpm生成及lock/install子阶段退出0与实际日志一致，尚未将未提交锁的内容计为准确代码审查或新bundle通过。
+
+fc842明确外层exec27025最终回执未取得、后继Unknown process id的真实限制；初始空running快照不能提供运行期子树，两个后继所属为空各按覆盖保留。子阶段结果不能补作外层EXIT0。必要依赖/store局部接受、N08 N11/N12技术退回、冻结解除后同Worker返修及新字段未定稿准确分开，纯构建不会因计划待审而冻结。
+
+原S56896旧创建身份退出后才运行一次dependencies，restore-13使用同一ed543、原库和原环境配置。当前56896创建UTC18:17:05.651634/epoch1792520225.651634，与原PID数值相同但身份不同；UTC18:20:09已只读核整份记录、真实程序、创建时间及唯一监听符合，原库记录ok/fk空/equal。后继prepare取restore-13/restored.json并新鲜准入，c8不改、窗口归原S；原环境/health/Web和原Orca沿主控实际来源，旧失败和全部实际原生/安装双Worker未验保持。
+
+主控通报fa0首次普通push因GitHub443连接失败，后继独立ls-remote实际0且远端仍6883，随后fc842累计普通push实际0；未将首次失败记为推送成功，没有覆盖历史。本Reviewer没有重复远端操作。两次`check-revision.ps1`分别核6883→fa0及fa0→fc842，实际EXIT0，前者三Markdown/42本地链接、后者两Markdown/18本地链接，Git空白均通过，marked18.1.0、BelowNormal、Node512MiB。后者命令以唯一前缀fc842eb4解析至上述准确SHA。本Reviewer没有运行依赖安装、生成、编译、SQLite/HTTP、服务或模型。

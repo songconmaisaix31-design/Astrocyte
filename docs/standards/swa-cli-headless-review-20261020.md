@@ -1124,3 +1124,15 @@ build03退回hook `msg_7627dfe9b893`与main6883管理接受hook `msg_d2bdb411ad3
 | 私有账号、并发与测试 | 私有canonical根/ACL、原accountHome生产者、原R/checkpoint、同项目同来源不可变复用和未知副本拒绝覆盖必要条件。六项真实计划涵盖明确模型、人工批准、真实产出和工具效果、撤权/来源/ACL及同候选双Worker，没有要求伪造协议或无关自证；还须补N11逐类消费者边界和N12明确有效期场景，不能把未执行写成失败或通过 |
 
 §13的`Promise<AgentSessionAccountHome>`需要代码格式以正确显示。上述缺口已以`msg_13289c6f4c9f`交原Worker，修正由同一Worker在当前依赖窗口归还且冻结解除后提交准确版本。新增native_launch与accountHome签名本轮不冻结；主控SPEC定稿、全部直接消费者实施及真实运行仍按原顺序，工具/T11和原Codex/S3限制保持。
+
+准确8ebe N08退回hook `msg_d3cda884fcdb`已获主控`msg_f9c663e6cf86`完整读取67b准确新增及实际消费者依据的回复，实际唤起确认。纯dependencies窗口独立继续，N08不得先行实施。
+
+## dependency-03实际子阶段结果与restore-13
+
+已完整读取准确8ebe一次授权下dependency-03的lock/install日志、各自资源和四个退出文件：实际pnpm11.27.0的lock-only为36.4秒、frozen-install为4.8秒，两个执行及两个资源退出均0。原peer及弃用警告保留，生成锁的准确源码审查待原Worker提交；没有执行generate/build/测试或模型，不能由依赖安装推出可安装候选。
+
+lock资源UTC18:14:44.580157/47.086692，CPU62.0%/46.9%、可用9000308736/9069203456字节、单调2.506547秒；install资源UTC18:15:25.575968/28.077254，CPU33.4%/21.0%、可用8904908800/8882749440字节、间隔2.501296秒，符合当前门限。UTC18:15:35.9239104的空running快照已经在阶段结束后，不能证明运行期完整子树；UTC18:18:16.6197410/19.0326939两次root60728及所属为空另按实际记录保留。外层exec27025最终回执未取回、后继poll为Unknown process id沿主控/Worker真实来源保留，**未取得外层EXIT0**，不因四个子阶段退出值或进程为空补造该回执。
+
+prepare-13/stop-13及一致备份原件已读，原库integrity ok/foreign_keys空；原S56896旧epoch1792519213.3731608于UTC18:12:35.908098明确退出15。prepare资源CPU30.4%/16.0%、可用8.283/8.382GiB、单调3.002656秒；stop资源CPU26.4%/19.1%、可用8.503/8.613GiB、单调3.003143秒。restore-13使用同一ed543、原库及该次prepare/stop，资源CPU15.8%/19.8%、可用8.231/8.440GiB、间隔3.002350秒，数据库保全记录ok/fk空/equal。
+
+`.verification/inspect-restored-owner.ps1 -RestoreName restore-13`于UTC18:20:09实际EXIT0：current/restored整份记录一致，实际S56896/父9948、原程序、创建UTC18:17:05.6516341/epoch1792520225.651634相差0.0002毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。该PID数值与旧者相同，创建身份不同；下一prepare取restore-13/restored.json，c8不变。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源保留，本Reviewer没有执行SQLite/HTTP、资源采样、控制或服务。当前窗口归原S，新build/模型未授，全部原生执行及安装双Worker仍未通过。
