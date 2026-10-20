@@ -9,11 +9,13 @@
 | 用户首版目标 | 抽取 Orca CLI 对应执行能力，交付用户从原有 Agent 或终端调用的可控 Swarm CLI；[首版任务](tasks/swa-cli-v1-20261020.md)记录具体范围与验收，尚未实现 |
 | 首版执行边界 | 是否脱离 Orca 桌面独立运行已询问、未答；执行接口保持未决定，继续真实源码及依赖调查 |
 | 规范仓库 / 默认分支 | GitHub 仓库 ID `1410836101`，`songconmaisaix31-design/swarm-anything` / `main` |
-| 默认分支核查快照 | `3a02ce38481d1885adee2e051a1b524d78376897`，为产品32ab祖先；本轮未推进 main |
+| main 的产品与治理集成来源 | `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；已从初始 main 普通快进并 push，完整包含产品32ab历史与接受后的M0文档；后继当前事实记录沿 main 维护 |
 | 产品基线 | `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`；原 PR #2 已普通合入 |
-| M0 任务分支 | `swa-m0-20261020`；独立测试计划已接受，文档实现与验证见 [M0 任务](tasks/swa-m0-20261020.md)和[报告](docs/standards/swa-mainline-m0-20261020.md)；实现准确提交待独立 CR |
+| M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
-| 后继工作 | 主控核实 Orca 实现与可抽取范围；原 M1 契约测试计划已接受、尚未运行；[META_PLAN](docs/META_PLAN.md) M2—M6 保留后续规划，MCP 与完整 S3 不自动成为首版 CLI 前置，见 [TASKS](docs/TASKS.md) |
+| 后继工作 | 首版执行 Worker 调查准确 Orca v1.4.230 源码并编写方案和测试计划，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；原 M1 只读阶段已交付，动态修复尚未运行；后续排序见 [TASKS](docs/TASKS.md) |
+
+当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。本轮没有停止服务、修改程序或数据库，也没有将 M0 的接受计为首版 CLI 功能通过。
 
 ## 已有产品验证与最近运行观察
 

@@ -4,11 +4,11 @@
 
 ## 当前顺序
 
-用户最新确认首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。主控先核实真实实现和可抽取范围，具体派发另行记录；M0 不定稿新接口。下方原 M2—M6 保留后续规划，MCP 与完整 S3 不自动成为该首版前置。现有权限及未验范围按 QUESTIONS/STATUS 保持。
+用户最新确认首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。执行 Worker 正在核实准确上游与可抽取范围，归属及写入范围见首版任务；新接口尚未定稿。下方原 M2—M6 保留后续规划，MCP 与完整 S3 不自动成为该首版前置。现有权限及未验范围按 QUESTIONS/STATUS 保持。
 
 当前实施与验收以[首版 CLI 任务](../tasks/swa-cli-v1-20261020.md)为准。独立运行或依赖已安装 Orca 的选择尚未回答，继续源码与依赖调查，相关执行接口保持未决定。
 
-0. [SWA 主线整理](../tasks/swa-mainline-20261020.md)：完成 M0 规则及文档整合，由主控将当前产品历史纳入默认 main。首版按最新可控 Swarm CLI 目标派发；原 M1 计划已独立接受但尚未运行，原 [M2 建议](../tasks/swa-m2-public-contracts-20261020.md)及 M2—M6 保留后续规划，原 S3 未决项保持。
+0. [SWA 主线整理](../tasks/swa-mainline-20261020.md)：M0 规则及文档整合已独立接受，产品历史及有效文档已普通快进进入默认 main。当前优先[首版 CLI](../tasks/swa-cli-v1-20261020.md) 的完整方案、测试计划及实现；原 M1 只读阶段已交付，动态修复未实施，原 [M2 建议](../tasks/swa-m2-public-contracts-20261020.md)及 M2—M6 保留后续规划，原 S3 未决项保持。
 
 1. [已有产品交付收敛](../tasks/delivery-candidate-20261020.md) 已完成：产品32ab、构建/运行S、真实原库和独立审查对应，原PR #2已合入。原 M1 负责 Windows 契约检查进程崩溃，使原 `pnpm check:contracts` 完成；测试计划已独立接受，检查尚未运行。完整CI、S3及发布门禁按原范围保持。
 2. [全仓文档冲突检查与归档](../tasks/documentation-conflicts-20261020.md) 已完成，后续只维护当前任务、状态及必要引用。
