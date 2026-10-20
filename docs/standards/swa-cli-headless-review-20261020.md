@@ -677,3 +677,11 @@ UTC14:20:26的独立只读查询确认原程序、PID45948、父PID55664和唯�
 - surviving Worker、daemon、session及工具关闭范围分别核原身份；缺原生进程句柄或恢复证明保持unknown及占用。新helper不能仅凭可查询就重建原Worker或宣布原SDK连续存活，旧会话的状态和部分结果仍可按授权读取。
 - CLI/HTTP/App/helper端到端接口、错误/退出、幂等及状态消费者须完整对应；只读原请求查询在不调用helper、不创建或发送的路径上继续可用，输出前核project/controller所属，缺证与拒绝不泄漏其他项目原件。
 - 测试必须使用同一真实候选/私有runtime、原生SQLite/PTY及自产session，实际命中重启、恢复/新helper、generation变化和旧代拒绝。权限、缺恢复证明、未知副作用及重复请求均按原要求保留；无真实材料或未命中分支继续未验。当前不授权模型、重启或服务；T11人工入口待答不由T12代答。
+
+## F16：原生runShow参数错配阻断完整成果
+
+结论：**退回准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所含task.result完整成果路径，严重程度高。** 此为等待T12准确计划确认期间，独立追踪既有原生契约发现的继承缺陷；c29/f08/c0先前明确限定的新增局部静态接受保持，整体功能从未登记通过。
+
+准确`runtime/swa-orca/src/controller-helper.ts:74`的collectTaskResult调用`orchestration.runShow`传入`{ run }`。同一准确第三方`src/shared/rpc-contract/orchestration-runs-params.ts:23`将RunShowParams定义为必填`id`及可选`from`；`src/main/runtime/rpc/methods/orchestration/runs/runs.ts:144`处理器直接读取params.id，RuntimeClient.call将params原样送入transport，没有run到id的转换。实际task.result在前序task/fleet读取后必然缺id，原生schema拒绝使helper返回错误，无法进入native-methods中的completeTaskResult或CLI成果导出。bc217与897531只改脚本/文档，继承这条调用。
+
+已分别通过`msg_298441a32b13`及`msg_31b270bc84ec`交原Worker和主控：按真实契约修正现有helper消费者，保持上游schema、真实所属与完整成果要求；后继准确提交独立复核，T07/T13的真实task.result及完整成果验证继续必需。本Reviewer没有运行原生schema、HTTP、模型或产品正文，没有使用mock或伪造原生调用；静态因果来自准确双方契约，实际运行结果仍未验。
