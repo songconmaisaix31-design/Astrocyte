@@ -75,6 +75,7 @@ export async function exactController(runtime: OrcaRuntimeService, owner: Contro
   if (matches.length !== 1) return fail('worker_identity_changed', 'The exact controller PTY incarnation is not present')
   const binding = runtime.getTerminalPromptRequestBinding(owner.controller)
   if (binding.ptyId !== owner.binding.ptyId || binding.processIncarnation !== owner.binding.processIncarnation) return fail('worker_identity_changed', 'The controller binding changed')
+  if (runtime.getTerminalProcessIncarnation(owner.controller) !== owner.caller_authority.processIncarnation) return fail('worker_identity_changed', 'The controller caller process incarnation changed')
   const rows = await readWindowsProcessTableFresh()
   for (const identity of [owner.process, owner.helper]) {
     const row = rows.find(item => item.pid === identity.pid)

@@ -1173,3 +1173,9 @@ N21沿已审§7.6的普通预编译Windows控制helper实施。`tests/swa-cli-he
 本阶段静态入口为`.verification/swa-cli-headless-20261020/check-n21-static.ps1`，原件目录`n21-static-01/`，只执行变动TS/MJS与JSON/YAML成熟语法、该Go文件只读gofmt-d、类型配置解析/入口名、三份Markdown来源/本地链接及Git空白检查。
 
 该入口本次实际EXIT0：5份TS/MJS、JSON/YAML、Go格式、TypeScript6.0.3配置解析与20个真实根文件名、三份Markdown/7链接/24Orca及11Pi来源路径及空白检查通过。TypeScript Program未创建，Go控制程序及Node probe未构建或执行，全部原动态验收仍NOT_RUN。
+
+## 20. 原始PTY与完整调用者incarnation分别核验
+
+已完整读取原生`orca-runtime-agent-prompt-request-correlation.ts`、`terminal-interactive-wait.ts`及`terminal-orchestration-authority.ts`的实际生产者。`getTerminalPromptRequestBinding`的processIncarnation沿原daemon incarnationId，与真实PTY inventory的incarnationId比较；`getOrchestrationDispatchAuthority`的processIncarnation则沿原`getTerminalProcessIncarnation(controller handle)`取得完整调用者身份。创建open/recover helper时分别核原始PTY绑定、同一ptyId、完整原生调用者身份及实际launch commitment，owner中分别保留binding和caller_authority的实际原值，不自行拼接、解析或转换它们。exactController继续核原始binding与真实kernel创建身份，并单独核当前原生完整process incarnation仍等于原owner。
+
+N22返修限定上述两份产品TS消费者，原controller-inspection对raw session.incarnationId与binding的核验保持。当前只做成熟TS语法、文档来源/本地链接和空白检查，原件目录`n22-static-01/`；Program、正常实际helper启动、recover及全部动态正文仍NOT_RUN。c962的完整pending包装和3c4的同句柄故障消费者均已交原Reviewer，原T12范围与安装验收保持，互斥R05测试入口继续开发。

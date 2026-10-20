@@ -130,8 +130,9 @@ async function createController(context: RpcContext, project: string, workspace:
   for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
   if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
   const live = runtime.getOrchestrationDispatchAuthority(controller)
-  if (!live?.launchTokenHash || !live.paneKey || live.hostScope.kind !== 'local' || live.processIncarnation !== binding.processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
-  const caller_authority = { terminalHandle: controller, paneKey: live.paneKey, processIncarnation: live.processIncarnation, launchTokenHash: live.launchTokenHash, hostScope: live.hostScope }
+  const processIncarnation = runtime.getTerminalProcessIncarnation(controller)
+  if (!live?.launchTokenHash || !live.paneKey || !processIncarnation || live.hostScope.kind !== 'local' || live.ptyId !== binding.ptyId || live.processIncarnation !== processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
+  const caller_authority = { terminalHandle: controller, paneKey: live.paneKey, processIncarnation, launchTokenHash: live.launchTokenHash, hostScope: live.hostScope }
   const owner = { ...fixed, controller, binding, process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority }
   save({ ...owner, stage: 'helper-ready' })
   const current = await helperCall(runtime, controller, requestId, 'observe')
