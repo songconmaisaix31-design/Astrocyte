@@ -1312,3 +1312,27 @@ N18将异步准入得到的同步finalAdmission沿structured turns、adapter、P
 ACP/Codex仍有旧的显式beforeDispatch声明，需按真实调用与返回值使用核对；不据名称增加无关UI或历史测试范围。原package提供typecheck:tsc:node及config/tsconfig.node.json，该原配置还包含非产品入口，不能直接把整个范围当成本任务要求；runtime/swa-orca本身也须由实际受检入口覆盖。必要类型检查应覆盖产品源码、修改的共享接口、所有实际直接消费者和真实依赖声明，保持既定严格程度。缺依赖或未执行均如实记录，不能把13份parser检查改称类型检查。此范围已通过`msg_9900739dff10`、`msg_151bc0023353`交主控和原Worker，主控已要求同Worker准备具体真实入口，当前没有新运行授权。
 
 `check-revision.ps1 -Previous 1b782b49f530a32c255a9a042e3299cb799fe5b5 -Candidate 319272c8852d7992923fa235206aec22335e1d42`实际EXIT0，一Markdown/1本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Go owner capability在清除环境变量前已保存至adapter Config，runtime.go再显式传给Node，此准确源码链保持；没有发现本次清除导致传递丢失。N14/N15局部接受保持，N16/N17/N18的实际分支、类型/生成/Node/native构建、所有模型及安装双Worker继续未验；T12/recover/后台Job与通用TUI仍由同一Worker实施。
+
+准确3192退回hook `msg_44446c835081`已获主控`msg_7628e94e93fb`完整读取1db70两报告新增、准确十四文件和共享类型问题的回复，实际唤起确认。后继源码与测试入口分别按以下准确提交审核。
+
+## 准确56ffc3a8的T01类型检查入口与声明计划
+
+结论：**接受准确`56ffc3a86d74ae4b4d84043d061afd4b9605f1d8`的T01具体类型检查技术计划及七项真实开发声明来源；未执行类型检查正文，未取得任何运行窗口。** 完整读取相对3192的三文件差异、实际上游配置和process-host导出，以及Worker的配置解析入口和原件。`pnpm typecheck:swa`实际展开为Node1024MiB、已安装TypeScript6.0.3对runtime/swa-orca/tsconfig.json运行tsc；Node声明为实际25.9.5。配置覆盖全部产品src/**/*.ts和真实传递imports、原build-constants声明，strict/noEmit开启、incremental/skipLibCheck关闭，保留所有诊断并按非零失败。原桌面/历史测试/科研/web的独立roots未加入，真实imports的消费者和声明仍在范围内。
+
+process-host沿真实orca-source入口及子路径映射，两个Windows addon沿实际index.d.ts。通配paths只优先查找产品node_modules；缺失匹配仍可能进入TypeScript普通模块查找，不能据该配置宣称隔绝其他祖先node_modules或证明运行依赖闭包。此准确边界已通过`msg_e8726522f1d9`交原Worker修正文档措辞；后继真实解析、完整诊断及必要依赖来源继续按原要求检查，不增加自研resolver、假模块、any、断言或诊断过滤。
+
+本Reviewer实际运行`node --max-old-space-size=512 .verification/review-type-plan.mjs 56ffc3a86d74ae4b4d84043d061afd4b9605f1d8`，EXIT0；成熟YAML读取上游锁的两个文档，在第二文档唯一实际根importer与同一package.json逐项比较，核得electron43.7.8、@types/proper-lockfile4.1.4、@types/qrcode1.5.6、@types/react19.2.18、@types/react-dom19.2.7、@types/ssh2 1.15.6及@types/ws8.18.1，保留原peer限定。七项真实声明尚未加入或安装；后继按已接受必要依赖规则显式记录devDependencies与清单，取得主控独占dependency窗口后串行锁定/ignore-scripts安装。Electron声明用途不运行其二进制安装脚本，prod deploy保持原规则。
+
+Worker的19个实际root配置解析结果只证明配置可读及入口存在，没有创建Program。本Reviewer同样没有创建Program或运行tsc、生成器、安装、构建或模型。`check-revision.ps1`准确3192→56ffc3实际EXIT0，一Markdown/1本地链接及Git空白通过。入口接受不等于语义类型、HTTP生成声明、完整构建或功能接受；后继真实缺失项按实际来源处理，不能放宽严格程度。
+
+## 准确7a0058fe的N19共享回调消费修复
+
+结论：**局部静态接受准确`7a0058fefb8499ffb37ffebc47e24866f0218ff7`的N19源码修复，整体运行验收未通过。** 完整读取相对56ffc3的九份TS及报告差异，核对共享签名、实际队列、转交位置、拒绝与晚到结果消费者。三条路径均保留回调返回的同步检查函数，未增加其他Agent的账号、模型、工具或执行权限。
+
+Claude的dispatch、connection及SDK queue同步为Promise返回void或同步函数；authorize在实际arm后传回该函数，输入队列等待批准后、iterator交出消息前执行。此时拒绝包装原unwritten类型，dispatch释放对应waiter；已经交出消息后的写入失败仍保留unknown，没有以新包装覆盖该路径。该源码检查止于真实SDK消费边界，没有取得实际SDK或原生消息写入结果。
+
+ACP在等待附件及异步批准后，将同步函数放入原Send队列项；steer等前一prompt/cancel结束后，start在开启本次prompt前执行。拒绝以neverReachedAgent结算本项并继续原队列，未调用本次prompt。实际host的journal pending先于dispatch，admitted分支不追加覆盖结算，原late settlement消费者保留。真实取消、拒绝及并发队列未运行。
+
+Codex把同步函数沿dispatch/start及两次原steer分支传至connection.request的beforeWrite。等待turn打开及原生拒绝后的后续分支仍使用同一函数，实际sendLine前同步执行；只有该函数抛出才包装ProviderWriteAdmissionError并解除该echo。实际sendLine、超时或断开继续原传输错误处理，保留可能已经写入的关联和unknown。没有将原生拒绝后的既有分支改造成新重试能力，真实协议运行未执行。
+
+Worker的n19-static-01/syntax.log及syntax-exit.txt已完整读取，九份成熟TS parser检查为PASS/EXIT0，入口没有执行类型检查或产品正文；此结果保持Worker归属。本Reviewer实际`check-revision.ps1`准确56ffc3→7a0058为EXIT0，一Markdown/1本地链接及Git空白通过；全部只读检查BelowNormal、Node512MiB。N19已定位声明和消费的源码修复确认，不能据此宣称实际类型检查通过。N14—N18的真实分支、类型/生成/Node/native构建、全部模型、安装同候选双Worker仍未验，T12/recover/后台Job与通用TUI由同一Worker继续，当前窗口仍归restore-17的原S36744。
