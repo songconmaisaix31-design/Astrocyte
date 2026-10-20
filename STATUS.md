@@ -2,6 +2,8 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
+当前窗口归restore-16恢复的原S60656；build-06已实际EXIT1且授权收回，tracked/Git冻结解除。准确b75的Python3.13.13/VS2022选择和三官方Node输入通过，首node-pty/conpty编译在新增Job头文件17行失败，candidate05不可安装。原Worker继续真实编译修复及已定稿账号/工具、输入、恢复、Job与完整成果实施；没有新重操作、安装、服务、Agent或模型授权。
+
 ## 当前主线与 M0
 
 | 项目 | 当前事实 |
@@ -14,7 +16,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f/ctx0d接续已定稿发现/选择、原生账号/工具、输入/恢复及完整Job/成果。2c下载实现获d1ba局部静态接受；build-05三官方输入/Node原校验已通过，首node-pty configure未发现现有Python而EXIT1，五次失败及部分candidate01—04保留，无可用候选。原S已恢复占唯一窗口，无新运行授权；全部真实调用、完整成果、安装及同候选双Worker仍未通过 |
+| 后继工作 | 同一Worker Task9f/ctx0d接续已定稿发现/选择、原生账号/工具、输入/恢复及完整Job/成果。b75 Python修正获4b99局部静态接受；build-06实际Python3.13.13/VS2022/三官方输入及原校验通过，首node-pty/conpty的Job头文件C++编译失败。六次失败及部分candidate01—05保留，无可用候选。原S60656已恢复占唯一窗口，无新运行授权；全部真实调用、完整成果、安装及同候选双Worker仍未通过 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支及两报告写域。旧ctx980已精确停止并原生释放，既有报告保留；新会话实际读到brief并获主控回复确认。后继6d693/97a/abc8/bad4/d442准确报告均已完整读取并回复对应hooks，局部接受和退回各按准确范围；当前继续同一Worker返修和T12复审 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
@@ -28,11 +30,12 @@
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-15/`、`stop-15/`及`restore-15/`；此前恢复失败、诊断与各次结果均保留，详细结果见首版任务。恢复使用同一S、原库及原环境/配置，未以备份覆盖原库。原件包含真实环境及一致备份，不进入Git或安装包。此前各窗口及M1原件保留原位置，已有产品范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-16/`、`stop-16/`及`restore-16/`；此前恢复失败、诊断与各次结果均保留，详细结果见首版任务。恢复使用同一S、原库及原环境/配置，未以备份覆盖原库。原件包含真实环境及一致备份，不进入Git或安装包。此前各窗口及M1原件保留原位置，已有产品范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | restore-15实际EXIT0，同源S68128/创建UTC2026-10-20T19:00:53.019423Z/epoch1792522853.0194235，原环境/配置/唯一监听/health/Web通过，原库integrity ok/fk空/equal；原Orca公开status仍app38652/runtime49da ready/reachable/connected及graph ready。唯一窗口归原S，无新构建/服务/Agent/模型授权；c8未改，下次prepare取restore-15/restored.json并新鲜准入 |
+| 当前服务与窗口 | restore-16实际EXIT0，同源S60656/创建UTC2026-10-20T19:21:16.750635Z/epoch1792524076.7506354，原环境/配置/唯一监听/health/Web通过，原库integrity ok/fk空/equal；原Orca公开status仍app38652/runtime49da ready/reachable/connected及graph ready。唯一窗口归原S，无新构建/服务/Agent/模型授权；c8未改，下次prepare取restore-16/restored.json并新鲜准入 |
+| 已有Python与首次C++编译实际结果 | 准确b75仅一次build-06，实际exec65865及内外退出均1；Python预检/实际node-gyp选择为C:/Python313/python.exe 3.13.13、VS2022 17.14.37710.0。324项部署、21bundle与三官方Node输入/原校验完成，VoidTaskResult不再输出；首node-pty/conpty在swa_provider_job.h:17报C2059/C2143及C4819/936，具体编译原因由同Worker核查。其余native/Go/VERSION未完成，candidate05保留不可安装；全部真实功能仍未验 |
 | 固定Node与导入收窄实际结果 | 准确2c仅一次build-05，三项HTTP200及原archive/header/lib SHA、exe大小/SHA/v24.21.0通过。21metafile中host完整RPC index已不存在，正输入5650/实际20957928字节；只确认这次静态变化，其他依赖/native/dynamic/assets仍未验。首node-pty/node-gyp配置未发现Python而失败，内外退出均1，未完成native/Go/VERSION。已有C:/Python313来源及唯一force选择由同Worker静态修复，不装新Python或改PATH；candidate04保留不可安装 |
 | 实际bundle与依赖记录 | 准确449仅一次build-04，exec86069同步EXIT1及内外退出文件均1；324项prod deploy和363项供应链核查完成，21份bundle/metafile已得，host为22483367字节。首Node下载TLS前ECONNRESET，空node及部分candidate03保留；无native/Go/VERSION/swa.exe。host图6136扫描inputs、6120个正bytesInOutput输入，完整方法表实际有五条直接导入，包含SSH legacy-relay路径；完整闭包和实际运行仍未通过 |
 | 必要依赖实际安装 | 准确8ebe只交一次dependency-03，lock-only 36.4秒/frozen-install 4.8秒及两次资源gate退出均0；原peer/弃用警告保持，仅pnpm生成锁15行变化。主控已读实际退出文件/日志及Worker UTC18:18:16/19两次所属为空；外层exec27025的final因上下文截断未取回，后继poll为Unknown process id，不能声明取得外层EXIT0。授权收回/解除冻结后原S已恢复，没有新bundle/编译/安装候选或模型 |
