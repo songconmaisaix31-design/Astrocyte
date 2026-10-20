@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "customConditions": ["orca-source"],
+    "strict": true,
+    "noEmit": true,
+    "incremental": false,
+    "skipLibCheck": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "paths": {
+      "@orca/process-host": ["../../third_party/orca-v1.4.230/src/packages/process-host/src/run-process.ts"],
+      "@orca/process-host/*": ["../../third_party/orca-v1.4.230/src/packages/process-host/src/*"],
+      "@orca/windows-security": ["../../third_party/orca-v1.4.230/native/windows-security/index.d.ts"],
+      "@orca/windows-registry": ["../../third_party/orca-v1.4.230/native/windows-registry/index.d.ts"],
+      "*": ["./node_modules/*"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "../../third_party/orca-v1.4.230/src/types/build-constants.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

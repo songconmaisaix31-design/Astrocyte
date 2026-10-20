@@ -1087,3 +1087,27 @@ N18使用Go原回包中与原invocation一致的实际grant_expires_at。异步�
 N17在host现有精确白名单中显式加入唯一`ORCHESTRATION_WORKER_LIST_METHOD`，保留message-methods中的真实Task消费者和原数量/唯一性完整性检查。没有注册全表、制造列表或放宽缺失检查。此项只完成源码修复，原生后台启动尚未运行；T12严格caller与recover另行继续。
 
 实际静态入口`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n16-n18-static.mjs`读取本次13份TS源码的成熟parser语法，日志与退出码保留在`n16-n18-static-01/`；另执行文档来源/本地链接及git diff --check。程序正文、类型检查、编译、真实Grant自然到期、真实Pi身份变化和全部安装/模型用例保持`NOT_RUN`，后继须准确CR及主控单次动态窗口。
+
+### 15.3 T01真实TypeScript类型检查补充
+
+按主控`msg_1b67c830af5a`补足T01的具体类型入口；原parser和esbuild结果只保留其语法/转译范围。本次准备`pnpm typecheck:swa`，准确展开为`node --max-old-space-size=1024 runtime/swa-orca/node_modules/typescript/bin/tsc --project runtime/swa-orca/tsconfig.json --pretty false`，使用已安装TypeScript6.0.3和实际Node25.9.5声明。当前只写入入口与计划，未运行tsc；须经原Reviewer核本补充及主控单次窗口后执行。
+
+范围为全部`runtime/swa-orca/src/**/*.ts`及其真实传递imports，包含原RPC/structured adapter/Pi/stdio队列和其实际调用者；原build-constants.d.ts沿真实来源纳入。编译器使用strict、noEmit、无incremental、skipLibCheck=false和实际JSX/Node声明，检查所有实际类型诊断，非零即失败，不筛掉语义错误、伪造模块声明或将模块改为any。`@orca/process-host`沿原orca-source同一真实TS文件，Windows addons使用其实际index.d.ts；其他bare imports只解析本产品已安装node_modules。没有为本项加入原桌面入口、全量历史测试、科研或web工程的独立roots；真实imports带入的声明和消费者仍须处理。
+
+静态读取准确上游package.json及多文档pnpm-lock.yaml，使用YAML2.9.1成熟parseAllDocuments选择实际产品importer，核得下列必要类型来源；本次没有执行安装或修改锁，缺失来源保持真实缺失。拟在独立接受后的必要dependency窗口，把七项未安装的真实声明依赖显式加入runtime devDependencies和现有依赖清单，以原lockfile-only/frozen ignore-scripts流程串行取得；Electron只使用原包内声明，ignore-scripts不运行其二进制下载/安装脚本，产品prod deploy不包含该开发依赖。
+
+| 声明来源 | 原锁实际版本 | 当前产品安装状态 |
+| --- | --- | --- |
+| TypeScript | 6.0.3 | 已安装，未运行类型正文 |
+| @types/node | 25.9.5 | 已安装 |
+| electron | 43.7.8 | 未安装 |
+| @types/proper-lockfile | 4.1.4 | 未安装 |
+| @types/qrcode | 1.5.6 | 未安装 |
+| @types/react | 19.2.18 | 未安装 |
+| @types/react-dom | 19.2.7 | 未安装 |
+| @types/ssh2 | 1.15.6 | 未安装 |
+| @types/ws | 8.18.1 | 未安装 |
+
+类型、生成、候选构建及真实服务仍分别占用主控交付的串行Stage，不能从本入口推导运行许可。真实诊断若定位其他缺失必要声明，记录实际模块和来源后按同一规则处理；若涉及未消费的原历史源码，先核其是否被真实产品链带入，再由原Worker修复范围或交主控，不放宽检查。生成`web/src/api/schema.d.ts`仍只由既有生成器完成；当前源码没有可安装、类型通过或全部功能接受结论，T12/后台Job继续。
+
+本次实际执行`check-typecheck-plan.mjs`，仅用TypeScript6.0.3读取、解析配置和真实入口文件名，未创建Program，EXIT0；成熟YAML原锁读取、实际声明包存在性检查、文档与空白检查通过，原件在`typecheck-plan-static-01/`。原Reviewer新提N19为共享beforeDispatch的实际Claude直接消费者及ACP/Codex声明，本Worker按真实调用继续同步，不扩大为无关UI任务；该消费者修复及类型检查正文尚未登记通过。
