@@ -713,3 +713,15 @@ P03为方案未规定的状态分支，不宣称现有源码已经产生永久�
 结论：**退回准确`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所含worker.send路径，严重程度高。** 对F16同一helper的直接消费者继续核查，准确controller-helper.ts的worker.send分支把`type: 'message'`送入`orchestration.send`；同准确第三方`src/main/runtime/rpc/methods/orchestration/schemas.ts:96`的SendParams.type使用`z.enum(MESSAGE_TYPES)`，其`src/main/runtime/orchestration/types.ts:3`定义的真实枚举没有message。RuntimeClient不转换这个字段，合法项目/Worker/输入也会在原生schema处被拒绝，T13要求的同session后续输入不能由当前实现完成。bc217/897531继承；没有运行产品或模型复现。
 
 已通过`msg_1dacccd77c30`及`msg_518dd0cfda7f`交原Worker与主控，要求在当前build-02结束解除冻结后，与F16按原helper写域依据真实协议返修；不修改在途准确897531、不扩充上游枚举、不伪造消息或以新Worker代替后续一轮。后继准确提交独立复核，原真实send、B的同session后续输入及无重复效果验证继续必需。既有局部静态接受保持，完整输入/成果与首版动态验收从未登记通过。
+
+F17正式hook `msg_b216a6dae3f1`已获主控`msg_8e18be67c949`完整读取回复，主控核实际枚举并要求原Worker核全部既有RPC消费者及真实成功语义，实际读取唤起已确认。原Worker后继`msg_778f4556e8f4`报告合法原生消息仍只投递mailbox pointer，ToolsOff Pi无法自行读取正文，正另行形成正文投递方案；本Reviewer尚未读取该新方案，其接受范围仍未知，枚举修复不能单独证明后续输入可用。
+
+## build-02实际失败及准确03c64恢复身份
+
+已读build-02最终日志、build-exit=1和processes-after-01/02两次实际空进程表原件：PNPM部署已返回，随后固定Node首归档下载命中原10分钟AbortSignal TimeoutError，尚无headers/native/TS/Go/VERSION。部分candidate01及失败/警告保留，没有重复执行本阶段；本Reviewer没有下载或执行构建。主控实际确认原Node18536/9272及所属执行退出后收回窗口并解除源码冻结，同一Worker负责后续参数/语义和计划返修。
+
+结论：**接受控制脚本准确SHA256 `03c64ef6922af3e4ce00763159377c26a03d8d065eb36e0b32e20b65ba577ceb`的两项恢复身份常量，其他流程沿已审6d7不变。** 只在内存把PID18944/UTC14:49:56.491641恢复到旧45948/14:14:47.360557，全文件精确得到已审`6d7bed3576ade7b9522738ba741a55eade309f9c8b9de93a869b3150562d6870`。沿既有两字段/真实恢复/当前所属独立条件核查，无额外流程修订。
+
+UTC14:52:33独立只读确认restore-05 launch/restored/current running、原程序、PID18944/父50264、Get-Process创建UTC14:49:56.4916412和唯一127.0.0.1:64505监听；实际创建epoch与原件1792507796.4916413数值对应，沿既有owner小于1毫秒判据差为0。database-check原件为integrity ok、foreign_keys空、stopped_interval_comparison equal；恢复启动资源CPU15.3%/11.4%、可用10.364/10.406GiB、BelowNormal、单调3.002259秒，符合门限。当前原S已恢复并占用唯一窗口，主控原配置/health/Web及原Orca状态观察保留其实际来源。
+
+`.verification/verify-restored-owner.ps1`以本次准确hash、前后PID/UTC和restore-05参数运行EXIT0，原件`.verification/window-03c64-readonly.json`；标准JSON明确保持日期字符串，并以原件epoch核真实进程创建时间，没有隐式日期格式比较。该检查只读文件、进程和监听，未执行控制脚本、SQLite、HTTP或资源采样。准确脚本可供主控下次prepare使用，仍须重新核实际身份/环境、新保全目录和资源准入；本次不授予新重操作窗口或功能接受。
