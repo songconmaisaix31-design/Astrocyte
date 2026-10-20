@@ -523,3 +523,11 @@ fc842明确外层exec27025最终回执未取得、后继Unknown process id的真
 restore-14同源S55148/创建UTC18:33:26.874753/epoch1792521206.8747532已于UTC18:35:18只读核真实身份、原程序、整份current/restored记录及唯一监听相符，原库记录ok/fk空/equal。完整原环境/health/Web及原Orca沿主控实际来源，下一prepare取restore-14/restored.json并新鲜准入，c8不改、窗口归原S；四次构建失败和旧恢复/诊断限制均保持。全部真实原生调用、输入/恢复、Job/完整成果、安装双Worker仍未通过。
 
 `check-revision.ps1 -Previous fc842eb4d4c9d1b777a5c53b32bbb0a1a27fd10e -Candidate 646014d8`实际EXIT0，唯一前缀解析至上述准确SHA，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer只读实际metafile与进程/监听，没有执行候选、构建、下载、SQLite/HTTP、服务或模型，也没有修改实现及管理事实源。
+
+准确646管理接受hook `msg_0f72418da2c6`已获主控`msg_e72a4374d103`完整读取9ff准确两报告新增和实际差异的回复，实际唤起确认；同轮449构建证据不足也已收到准确回复，范围保持。
+
+## 准确72ee2e98的构建窄写域
+
+结论：**接受准确`72ee2e98434189b1f638a74837fc8d97534887ea`相对646的一份任务文档管理范围。** 已完整读取差异。Windows/.NET现有代理单一路径保持官方URL、原Node pin及全部哈希、600秒和不重试，不修改系统代理/证书/本机Orca或输出代理凭据；精确缓存和环境/WinINET观察均保留来源限制，未推出旧TLS根因。新增scripts/download-swa-node.ps1仅属原Worker既有构建模块，先交具体方案/真实计划独立审核，再实施和准确CR，实际网络窗口另授；没有新的公开身份或权限接口。
+
+`check-revision.ps1 -Previous 646014d8d298a068692a14a15dd1490381951114 -Candidate 72ee2e98`实际EXIT0，唯一前缀解析至上述准确SHA，一Markdown/4本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。后继9e的下载/N08技术计划及RPC静态结论另记于headless报告，当前无真实网络修复、完整依赖、原生调用或安装双Worker通过。本Reviewer没有实施下载脚本或运行重操作。

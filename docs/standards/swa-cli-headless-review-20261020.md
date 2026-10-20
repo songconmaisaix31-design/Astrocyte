@@ -1176,3 +1176,21 @@ build资源UTC18:28:32.431690/34.933581，CPU22.1%/19.5%、可用9068683264/9124
 restore-14使用同一ed543、原库及该次prepare/stop，资源CPU45.5%/48.4%、可用8.697/8.688GiB、单调3.011225秒。`.verification/inspect-restored-owner.ps1 -RestoreName restore-14`于UTC18:35:18实际EXIT0：current/restored整份JSON相同，实际S55148/父61516、原程序、创建UTC18:33:26.8747532/epoch1792521206.8747532相差0毫秒、BelowNormal及唯一127.0.0.1:64505监听符合；原库记录ok/fk空/equal。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源，本Reviewer没有访问SQLite/HTTP、采样或运行服务。
 
 后继prepare取restore-14/restored.json并新鲜准入，c8不改，全部已消费授权收回，当前窗口归原S；没有新Stage/模型授权。原Worker继续真实闭包、已定稿输入/恢复/Job/成果及N13返修；账号、原生工具、完整成果、安装和同候选双Worker保持未通过。
+
+准确449构建证据不足hook `msg_469085a11abd`与main646接受hook `msg_0f72418da2c6`已分别获主控`msg_5e31833c4e22`、`msg_e72a4374d103`完整读取9ff两报告新增、实际输出及准确管理差异的回复，实际唤起确认。
+
+## 准确9e46579d的RPC静态修正与两份技术计划
+
+结论：**局部静态接受准确`9e46579df4a073d1d67fc74c198274e0178e4147`的五条RPC导入边修正，技术接受§13修后N08限定契约及§14下载计划；实现、效果和完整闭包仍须后继验证。** 完整读取相对449的十文件差异、全部修后计划，追踪原声明分组、现有构造调用/继承、SSH调度及回执消费者，以及实际Pi请求生产链。没有执行类型检查、bundle、网络、服务或模型。
+
+RPC产品host直接使用原RuntimeRpcShutdown，显式组合并验证原同一16个方法及SWA方法；公共OrcaRuntimeRpcServer负责原完整默认选择。dispatcher/RuntimeRpcState改为显式methods，原桌面唯一隐式构造已补ALL，既有IPC/bridge及其他生产调用保留原明确方法表；中间继承链没有新增构造器丢失该字段。SSH的server和call-limits共享原五项声明，dispatcher参数、callerScope、原schema/handler、owner admission及receipt规则保持。当前改动消除已定位的五条全表静态入口，尚无后继metafile或真实运行，不能宣布所有浏览器/账户/旧SDK及native/dynamic/assets依赖已经移除或回归通过。
+
+N13计划现要求原model定义、override、内置和合成model的samplingParams仅缺省或空对象，非空整源拒绝，禁止删掉后继续。限制只覆盖已完整核过最终参数生成的openai-responses、openai-completions及azure-openai-responses，其他实际API保持unknown。Pi真实RPC返回完整模型，首次及后续输入前复核模型/API/baseUrl和samplingParams；产品逐命令strict DTO封闭每请求samplingParams、provider/options/onPayload透传。已核本机RPC prompt仅把message/images/streamingBehavior交session.prompt、Agent.createLoopConfig显式字段不含samplingParams、agent-loop到sdk/ModelRuntime的实际链；无扩展、固定私有设置及资源封闭用户请求变换生产者，源码条件无法证明时拒绝。新增真实场景覆盖四类模型来源和每请求透传、首次/后续输入及unknown保全，原N11/N12、无refresh、原R/ACL/并发和同候选双Worker条件保持，没有多余自证用例。
+
+§14在阅读前已有独立条件清单`msg_37c751eb51fc`。计划固定官方HTTPS和原pin三项资产，独立参数数组调用固定绝对pwsh/script，仅私有canonical工作目录/新文件，逐级拒绝重定向并CreateNew流式写入；单一600秒token覆盖SendAsync和正文复制，无应用重试/换源，非2xx与redirect失败，原Node仍做archive/header/lib/exe大小及SHA/version验证，失败不能进入后续native/Go/VERSION。现有系统代理及默认TLS仅作用于子进程，不修改全局代理、证书或账号，代理/凭据及原始网络异常不输出，失败部分文件与安全类别保留。
+
+Firecrawl CLI在本会话不可用，没有安装；已通过只读网页工具完整读取计划的三份Microsoft官方文档。Windows的默认代理会优先读取代理环境，缺省时使用用户代理设置，与本方案的默认选择相符；现有元数据仍不能证明旧TLS失败原因。[DefaultProxy官方说明](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient.defaultproxy?view=net-10.0)。关闭自动重定向会把3xx交回应用，符合固定URL失败规则。[AllowAutoRedirect官方说明](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclienthandler.allowautoredirect?view=net-10.0)。ResponseHeadersRead的HttpClient时限只覆盖收到头部前，正文必须另传取消条件，计划全流使用同一token与此一致。[HttpCompletionOption官方说明](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpcompletionoption?view=net-10.0)。
+
+D01—D05与独立条件相符：真实目录/已有输入在网络前拒绝，单次获准窗口中的三项官方资产及原哈希、当前系统代理/TLS、不伪造HTTP的真实失败/取消保全及完整候选顺序；未命中为INCONCLUSIVE，未执行保持NOT_RUN。下载脚本尚未实施，后继准确CR和实际窗口不可省略。N08所有新字段须主控SPEC定稿后同Worker实施，限定技术接受不代表当前Pi账号、全部Agent或模型可用；其他已定稿功能继续。
+
+`check-revision.ps1 -Previous 449184b826ae64de99d73476147d64967ef31667 -Candidate 9e46579df4a073d1d67fc74c198274e0178e4147`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。Worker八TS语法/来源检查保持原归属；本Reviewer只读官方网页和准确源码，没有安装工具、执行下载或把静态语法结果记为真实功能通过。
