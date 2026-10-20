@@ -998,3 +998,15 @@ N09先独立提出新项目批准不能循环依赖既有Grant/CLI批准、真�
 三项实际REA exit均0，原resources及summary资源已读，BelowNormal、间隔约3.002—3.009秒，CPU最高19.4%、可用内存最低约11.369GiB；静态关系、未选取关系与完整动态闭包各保留其限制。prepare-09/stop-09实际原件表明S41264在UTC16:57:54.831364明确退出15后才分析；恢复资源CPU5.6%/12.0%、可用11.327/11.404GiB、间隔3.001976秒，通过当前门限。
 
 `.verification/inspect-restored-owner.ps1 -RestoreName restore-09`于UTC17:05:43实际EXIT0：恢复/current整份JSON深比较相同，实际S47228/父54112、原程序、创建UTC16:59:21.6222126及epoch1792515561.6222126差0毫秒、BelowNormal及唯一127.0.0.1:64505监听符合；数据库记录integrity ok、foreign_keys空、stopped_interval_comparison equal。控制脚本仍为已审c8，无恢复常量修改。该命令只读记录和进程/监听，没有执行SQLite、HTTP、资源采样或控制正文；完整环境/配置、health/Web及原Orca38652/runtime49da保留主控实际来源。下次prepare取实际restore-09/restored.json并重新准入，当前窗口归原S，无新Worker运行授权。
+
+## 准确16ad的独立Go结果与restore-10
+
+结论：**接受准确`16ad5ef6fdbef17b54d8ce04224f0dca3abfafc3`的主控独立四包Go源码编译和三个传输前函数实际结果。** 主控新建detached目录`.verification/swa-go-16ad-01`，使用已审且相对c4无差异的原compile入口；本Reviewer独立核该目录准确HEAD、status条目0、实际SOURCE/tests.json、四个非空测试二进制、完整执行日志、函数及五份资源日志。主控实际session49790 EXIT0，本Reviewer没有重复执行编译或二进制。
+
+实际命令为`pwsh -NoProfile -File tests/swa-cli-headless/compile-go-tests.ps1 -OutputRoot C:/Users/DW/orca/Astrocyte/.verification/swa-go-16ad-01/.verification/swa-cli-headless-20261020/go-source-01`。原四包test-c完成；TestOrcaCLIRejectsAuthorityArgumentsBeforeTransport、TestOrcaCLIRejectsUnknownActionAndIrrelevantInput、TestOrcaCLIMissingCurrentGrantIsDenied逐项真实RUN/PASS、无SKIP。成功后SOURCE完整等于16ad、同一源码仍干净；实际摘要保留runtime tests executed=false、model_calls=0。Go4/-p4/512MiB、私有缓存/TEMP及原依赖下载日志保留；五阶段passed=true、CPU最高18.9%、可用内存最低11586949120字节、单调间隔2.500929—2.502002秒符合当前门限。
+
+prepare-10/stop-10实际原件均通过，S47228于UTC17:11:16.413051明确退出15后才运行检查。restore-10启动资源CPU11.1%/10.8%、可用11.029/11.013GiB、单调3.002088秒、BelowNormal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-10`于UTC17:17:27 EXIT0，恢复/current整份记录相同，实际S58620/父27260、原程序、创建UTC17:15:00.6021515/记录epoch1792516500.6021516相差0.0001毫秒，唯一127.0.0.1:64505监听；原库记录integrity ok、foreign_keys空、停止区间equal。
+
+控制脚本仍为准确已审c8，后继prepare取实际restore-10/restored.json并新鲜准入。完整原环境/配置、health/Web、两次所属执行退出观察及原Orca38652/runtime49da保持主控实际来源；本Reviewer只读原件和进程/监听，没有访问SQLite/HTTP或采样。该结果属于主控独立检查，不能登记Worker自测；N07/N08、N09程序、新输入/恢复、四个runtime/live函数、Node/native/TS完整构建、安装及同候选双Worker均保持未验。
+
+N08另已独立完整读取本机Pi1.0.1的docs/cli.md及实际main/sdk/agent-session/RPC相关消费者：no-tools映射noTools=all，allowedToolNames和初始active为空，实际tool registry刷新按该允许集合过滤；显式tools可覆盖，资源禁用开关仍允许各自显式路径。真实get_state没有tools/activeTools/ToolsOff字段，不能沿旧SDK字段声明原生握手已核工具空集合。认证文件backend的锁/写入与只读发现类分别有消费者，源文件读取不等于运行不刷新。上述来源线索已交原Worker；没有读取本机认证文件内容，也没有启动Pi、会话或模型，N07/N08技术方案及效果仍待准确审核。

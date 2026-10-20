@@ -463,3 +463,13 @@ SPEC §21.1.4与已审16ad/b64相符：App只读ExternalCLIRegistry端口、HTTP
 16ad局部接受、61a整体退回及N07/N08继续返修的状态准确；502提交时记录7f等待复审，后继3d已记录准确16ad接受，时点及范围一致。原S47228和restore-09与实际只读复核一致，已审c8控制入口取实际恢复原件继续准入；原库/环境/配置/原Orca保全范围和两次构建失败保留，未把CLI分析记成产品调用或安装成功。
 
 `check-revision.ps1`以70ca→502及502→3d分别EXIT0，前者五Markdown/86本地链接，后者三Markdown/24本地链接，Git空白均通过；marked18.1.0、BelowNormal、Node512MiB。没有重跑REA、启动目标程序/服务/Agent/模型、编译、安装或操作原库；实际调用、账号/工具绑定、输入/恢复及同候选双Worker仍须原Worker完成并准确复审。
+
+准确3d累计管理接受hook `msg_5bd93b8c0293`已获主控`msg_3018b184a896`完整读取84d两份报告新增及两组主线差异回复，实际唤起确认。主控独立Go检查使用后继实际窗口，与管理/REA接受各按自己的范围记录。
+
+## 准确374afc54的实际源码检查与当前恢复
+
+结论：**接受准确`374afc54d18959a0125e4773c2a63d31d080e2a3`相对3d的四文档范围。** 已完整读取HANDOFF、STATUS、CLI参考及首版任务差异。独立准确16ad四包Go编译、三个传输前函数逐项PASS/无SKIP、SOURCE及末尾同一干净HEAD，与本Reviewer读取的实际原件一致；没有把主控检查计为Worker自测、runtime/live或模型结果，N07/N08及全部功能验收保持。
+
+prepare/stop-10、restore-10的实际资源与原服务身份已只读核对；当前S58620/创建epoch1792516500.6021516、完整恢复记录/原程序/唯一监听及原库保全记录符合。c8源未改动，后继用restore-10/restored.json，新鲜准入及唯一窗口规则保持。CLI参考将09次恢复记为该次历史时点，并指向STATUS当前身份，既有REA覆盖限制没有改变；旧构建失败和原Orca保全来源保持。
+
+`check-revision.ps1 -Previous 3d82bfedf08af471c974461bf6ac008b9e1e5324 -Candidate 374afc54d18959a0125e4773c2a63d31d080e2a3` EXIT0，四Markdown/44本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行编译、模型、安装、服务或原库操作；实际新检查仅覆盖主控所执行的准确源码范围。
