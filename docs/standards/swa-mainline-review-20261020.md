@@ -339,3 +339,13 @@ F15静态修复接受、c29首次TLS失败及后续普通push成功、dependency
 T11人工接管范围在QUESTIONS明确待答，原测试条件保持未验，未开放伪人类事件；T12按已审要求补完整契约/计划，在主控定稿及独立审核前不冻结新增参数。strict helper caller须在native mutation executor前覆盖当前及已完成R重放，恢复缺真实证明拒绝或unknown；当前方法白名单及declared-handle边界未被描述为完成。M1补丁因果证据不足、旧S3/权限/实际采用和正式发布限制保持。
 
 `check-revision.ps1 -Previous 30cd759f -Candidate 87c532d97ff69e2d2e1b1144445ffb9b51874900` EXIT0，四Markdown/80本地链接、无锚点/HTML或空白错误；87c至7b没有新链接，沿用这次成熟marked18.1.0检查，并执行准确累计空白和四路径外无变化核查。全部检查为BelowNormal、Node512MiB，只读Git、文档、非秘密JSON与已述当前进程身份；没有执行重操作或修改业务代码。普通push采用主控准确成功回执，本轮未新增远端核查成功声明；没有正式PR，未公开新评论。
+
+准确7b接受hook为`msg_cbe8a654b910`；主控`msg_cbf21db8eda8`完整读取报告6d693df7的主线新增，确认四文档、真实窗口及全部未验/未决边界，实际读取回复确认唤起。
+
+## 准确9195f3a9的实际构建失败与恢复记录
+
+结论：**接受准确`9195f3a9cc0c440c8a85ca882551419c38342631`相对7b三文档的管理范围。** 已完整读取HANDOFF、STATUS和首版任务差异，并核三路径外全部已跟踪内容没有变化。build-01实际EXIT1的mkdir ENOENT、未进入deploy/Node下载/native/TS/Go、无候选VERSION、保留原MODULE_TYPELESS警告及没有自动重试，均与独立读过的准确c0入口和实际log/exit/processes-after原件相符。主控记录其实际核查退出后收回窗口，真实构建失败没有被先前局部静态接受覆盖。
+
+restore-04非秘密launch/restored/database-check和真实资源原件已读，当前PID45948/原程序及唯一监听由本Reviewer独立只读核实；原件created_seconds与Get-Process创建时间精确相同，datetime/CIM显示精度见同次无界面报告。主控完整环境、health/Web及原Orca公开status的实际观察保留其来源，未补写Reviewer动态通过；备份没有覆盖原库。准确6d7两身份常量另有独立结论，不能把管理接受当新窗口。
+
+`git diff --check 7b4ac4104cf0202735d654f007138ce5c173f006 9195f3a9cc0c440c8a85ca882551419c38342631`及三路径外无差异均EXIT0，BelowNormal。差异没有新增链接，沿用已审80本地链接的成熟Markdown检查；本轮两报告实际Markdown及空白检查另行执行。构建脚本返修准确bc217只接受静态范围，实际修复效果、安装、功能、双Worker及T11/T12/strict准入仍未通过。当前窗口属于原S，没有授予本Reviewer重操作或公开评论；后继由原Worker及主控继续。

@@ -650,3 +650,30 @@ serve在创建子进程前加入新独立Job；初始核自身成员及active=1�
 App任务规格使用成熟json.Valid先核完整单JSON，再用原DisallowUnknownFields Decoder和原业务字段校验；连续JSON或坏结构不能通过，移除io没有降低该校验。已读static-eof-01实际架构失败及static-eof-02的45包通过原件，检查规则没有改动。`check-revision.ps1 -Previous f08b52111d4860b5ef162987cce2f43f4a4e6ce0 -Candidate c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。
 
 C01—C09安装驱动/console helper尚未交付；T03/T12已审strict helper caller准入尚未实施，当前host的方法白名单不能证明真实caller，原生verify=null仍允许declared-handle的边界保持待修。强核验必须位于native mutation executor前并覆盖已完成R重放；恢复证明须单独核实，缺attestation拒绝或保留unknown，不能沿当前launch豁免。T12完整契约/计划须由主控定稿并独立审核，T11真实人类入口范围待答；本轮不冻结新参数，不计这些范围通过。没有正式PR，本轮未发布GitHub review；仅通过原Run交付。当前仅原Worker获主控的一次build窗口，本Reviewer没有编译、产品测试、安装、服务、SQLite、信号或模型调用；后继实际构建和动态结果另审。
+
+三个准确hook为`msg_e1e98224f02a/msg_9da61336bef0/msg_d41f49127830`，主控在`msg_c227f4c799b8/msg_8e0f825991a9/msg_ec1406eec1e5`逐项完整读取报告6d693df7并回复，分别确认局部接受、实际来源及全部未验限制；本轮实际读取唤起已确认。
+
+## build-01实际失败、bc217返修及准确6d7控制脚本
+
+已完整读取准确c0的构建入口和build-01实际log/exit/processes-after原件：资源检查EXIT0，构建EXIT1，Node48860在第33行mkdir候选目录时因dist父目录不存在发生ENOENT；原MODULE_TYPELESS警告保留。该退出发生在部署、Node下载及native/TS/Go编译之前，没有候选VERSION。主控已核实际退出和所属进程后收回窗口，restore-04真实结果及恢复身份见下文；本Reviewer没有重新执行构建。
+
+先核定返修条件：入口自身建立获准仓库中的dist父目录，现存重定向或越界仍拒绝；候选目录继续独占创建；不手工补目录后绕过原入口，不改变上游或把失败计作编译通过。结论：**接受准确本地提交`bc217de88f4bb4b8af1ab63f3c281f4c2f649aea`相对c0三路径的局部静态返修。** 完整读取七行脚本及两份说明；mkdir仅为dist父目录递归创建，lstat/realpath要求它是实际仓库的dist，候选的实际parent必须仍位于其中，候选自身继续非递归mkdir，已有路径会失败。未改变后续部署/编译行为；修复效果及完整构建仍未验。本次只取得主控本地准确干净提交交付，尚未取得该提交普通push成功回执，不补写远端成功。
+
+`check-revision.ps1 -Previous c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c -Candidate bc217de88f4bb4b8af1ab63f3c281f4c2f649aea` EXIT0，两Markdown/5本地链接与Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有运行脚本或创建业务目录；原Worker负责后继实际验证。
+
+结论：**接受控制脚本准确SHA256 `6d7bed3576ade7b9522738ba741a55eade309f9c8b9de93a869b3150562d6870`的两项恢复身份常量，可供主控下次prepare使用，仍须新鲜身份/环境/保全和资源准入。** 按已审8e066的相同独立条件，仅在内存逆置PID45948和UTC14:14:47.360557为原43068/13:41:49.053571，得到全文件准确8e066，其他流程字节未变。已核restore-04 launch/restored/current running及原S、原库保全JSON，实际integrity ok、foreign_keys空、停止区间equal；恢复双样本CPU4.8%/9.8%、可用10.709/10.650GiB、BelowNormal/3.001706秒，符合既有门限。
+
+UTC14:20:26的独立只读查询确认原程序、PID45948、父PID55664和唯一127.0.0.1:64505监听；Get-Process原生创建时间为UTC14:14:47.3605568，与原件created_seconds换算精确相同。原件datetime四舍五入为360557，CIM截断为360556；只读检查先前按字符串比较及DateTime隐式转字符串丢失小数两次EXIT1，已按实际epoch数值核对，沿被审owner原有小于1毫秒判据，当前差为0，没有修改控制脚本或原件。`pwsh -NoProfile -File .verification/verify-window-6d7.ps1`最终EXIT0，证据`.verification/window-6d7-readonly.json`保留真实精度与来源。没有执行控制脚本、SQLite、HTTP、资源采样或重操作；当前窗口继续归原S，后继尝试由主控安排。
+
+## T12补充计划读取前的独立条件
+
+以下条件依据已审§3.2/3.3及T03/T12、SPEC §21.1和H03/H06/H10/H11/H17形成；尚未读取后继T12草案，不冻结新参数或公开接口。
+
+- 接续明确区分原helper仍可证、原helper已真实退出、原helper归属或退出未知。只有前两类能分别进入已核恢复或新helper路径；未知保持占用且不创建竞争控制端。runtime/host变化不单独证明旧进程退出。
+- 读写前核当前project主体、适用Grant及动作权限，核原Run/root Task、controller、固定context、原authority和实际持久关联。另一真实项目/Run、撤销/过期批准、旧context与缺关联各自拒绝；可信人类自有安全停止仍沿原适用例外。
+- 产品strict admission必须在原生mutation executor及完成R重放之前执行。无hook/verify=null、declared handle、外传PID/actor/correlation或只在handler内核验均不能证明当前helper；当前launch和重启恢复证明分别核实。
+- 新helper须有自身真实PTY/进程创建身份和原生准入，再由真实runUse取得原Run并推进consumer generation。旧helper/旧generation即使持原R、已完成receipt或旧环境也不能继续写入；原Run/root/context不复制为新任务。
+- 原请求、checkpoint和固定子请求仍是效果来源；接续或超时不重发未知输入。原receipt/SDK/Run原件保留，跨generation对重复R、不同正文及pending的处理须明确，不能换fingerprint或request ID重复副作用，不能另建恢复账本。
+- surviving Worker、daemon、session及工具关闭范围分别核原身份；缺原生进程句柄或恢复证明保持unknown及占用。新helper不能仅凭可查询就重建原Worker或宣布原SDK连续存活，旧会话的状态和部分结果仍可按授权读取。
+- CLI/HTTP/App/helper端到端接口、错误/退出、幂等及状态消费者须完整对应；只读原请求查询在不调用helper、不创建或发送的路径上继续可用，输出前核project/controller所属，缺证与拒绝不泄漏其他项目原件。
+- 测试必须使用同一真实候选/私有runtime、原生SQLite/PTY及自产session，实际命中重启、恢复/新helper、generation变化和旧代拒绝。权限、缺恢复证明、未知副作用及重复请求均按原要求保留；无真实材料或未命中分支继续未验。当前不授权模型、重启或服务；T11人工入口待答不由T12代答。
