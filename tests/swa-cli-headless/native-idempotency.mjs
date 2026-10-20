@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { spawn, execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
-import { readFile, realpath, writeFile } from 'node:fs/promises'
+import { readFile, realpath, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
@@ -204,13 +204,19 @@ async function verifyIdempotency() {
   for (const child of taskReceipt.receipt.children) receipt(child, child.endsWith('/run-create') ? 'orchestration.runCreate' : 'orchestration.taskCreate')
   await writeFile(specPath, JSON.stringify({ ...spec, goal: spec.goal + ' 请同时报告准确公开来源。' }) + '\n')
   try { await mismatch(taskArgs) } finally { await writeFile(specPath, JSON.stringify(spec) + '\n') }
+  assert.equal((await cli(taskArgs)).envelope.task_id, replay.task_id)
+  const beforeContextChange = await stat(contextPath, { bigint: true })
   await writeFile(contextPath, Buffer.concat([originalContext, Buffer.from('\n来源：' + source.source + '\n')]))
   try { await mismatch(taskArgs) } finally { await writeFile(contextPath, originalContext) }
-  assert.equal((await cli(taskArgs)).envelope.task_id, replay.task_id)
+  const restoredContext = await stat(contextPath, { bigint: true })
+  assert.deepEqual(await readFile(contextPath), originalContext)
+  assert.equal(restoredContext.size, beforeContextChange.size)
+  assert.notEqual(restoredContext.mtimeNs, beforeContextChange.mtimeNs)
+  await mismatch(taskArgs)
   assert.deepEqual(JSON.parse(database.prepare('SELECT spec FROM tasks WHERE id=?').get(replay.task_id).spec).context, fixedContext)
   assert.equal(database.prepare('SELECT COUNT(*) AS total FROM coordinator_runs WHERE coordinator_handle=?').get(controller).total, 1)
   assert.equal(database.prepare('SELECT COUNT(*) AS total FROM tasks WHERE run_id=? AND parent_id IS NULL').get(replay.run_id).total, 1)
-  checks.push({ case: 'task_create_same_request_concurrent_completed_and_changed_spec_or_real_context', request: taskR, receipt: taskReceipt, fixedContext, concurrentUnknownResponses: created.filter(row => row.exit === 6).length })
+  checks.push({ case: 'task_create_same_request_concurrent_completed_and_changed_spec_or_real_context', request: taskR, receipt: taskReceipt, fixedContext, contextVersionChange: { before_mtime_ns: beforeContextChange.mtimeNs.toString(), restored_mtime_ns: restoredContext.mtimeNs.toString(), size: restoredContext.size.toString(), restored_bytes: 'equal', expected_after_restore: 'request_mismatch' }, concurrentUnknownResponses: created.filter(row => row.exit === 6).length })
 
   const closeR = randomUUID(), closeArgs = ['controller', 'close', '--controller', controller, '--request-id', closeR]
   await Promise.all([cli(closeArgs), cli(closeArgs)])

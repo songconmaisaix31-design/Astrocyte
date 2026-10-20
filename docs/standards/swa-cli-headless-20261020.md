@@ -442,7 +442,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 ### 7.5 CLI错误输出、原请求关联与所属stdin的补充测试计划
 
-本节是主控msg_34756d70dc45、msg_e18403c22437要求的实现前补充审核对象；程序基线为准确8220d851dd998639a0ae3fbf4eff0212dd20ed7c。本次只修改两份任务/报告，不实施本节程序，独立接受后由同一Worker返修。此前各准确Commit的审查范围保持。
+本节准确b3f0e229计划已由原Reviewer d7fbcfb097275c27255a8ab4a77a3d517c25c81a独立接受，主控msg_d7ccfb662bde授予同一Worker在原CLI写域静态实施，main30cd759f已将条件纳入SPEC §21.1。计划的程序基线为准确8220d851dd998639a0ae3fbf4eff0212dd20ed7c，后继实施和真实结果记于§9；编译、信号和所有正文仍需动态窗口。此前各准确Commit的审查范围保持。
 
 实际缺口：`cmd/swa/main.go:report`把本地失败写到stderr，未保留已解析的原R；CLI又直接输出既有HTTP ErrorV1，缺少统一的ok。`serve`没有读取自身stdin/EOF，只有ctx/node/server分支，正常所属EOF无法进入code0。`waitOwnedService`只等待直接子进程，不能单独证明后代已退出。这些影响§6输出规则、T06原请求恢复及T02/T15服务关闭，不涉及新产品命令、执行账本或权限。
 
@@ -551,3 +551,5 @@ Windows控制信号只允许在本项新建的隐藏console内执行：普通验
 准确72c7b8961a5677c7291967448507d3fc64340a4b普通push和Worker ls-remote EXIT0；后继修正App在`request.show --controller`之前解析pending任务而阻断原请求观察的问题。当前查询仍核当前项目批准及原receipt的project/controller，错配明确scope_denied；真实非模型用例补project/controller查询等价及另一实际controller拒绝。gofmt -d和git diff --check通过，pending/重启分支及全部程序正文未运行；主控最近只读可用0.396GiB，窗口未交。
 
 主控要求的§7.5已按准确8220基线补充CLI输出/原R、真实ErrorV1、网络unknown、取消130及serve自身EOF/后代关闭测试计划，待原Reviewer独立接受；当前只改两份文档。没有实施该补充的程序或验证正文，没有向任何console发送信号，动态窗口仍未交付。
+
+准确b3f0e229的§7.5计划已获原Reviewer d7fbcfb097275c27255a8ab4a77a3d517c25c81a独立接受，主控msg_d7ccfb662bde授予原CLI写域静态实施；准确39cc的F13/F14和四包Go计划/源码已由2bd10d21接受。它们均不表示动态通过。原Reviewer提出F15后，T06用例将成功重放控制放在实际context文件变化之前；文件恢复原字节后仍核实际mtime已变、size/字节相等，并继续要求request_mismatch。实际ContextFile.Version包含mtime纳秒和size，首次原生固定context仍逐项不变；没有重写mtime、剔除version或创建替代任务。所有正文NOT_RUN，§7.5程序接续实施但尚未运行。
