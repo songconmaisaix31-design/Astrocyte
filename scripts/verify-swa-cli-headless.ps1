@@ -18,7 +18,8 @@ param(
     [string]$ProjectId,
     [string]$OwnedProcessEvidence,
     [string]$FlowEvidence,
-    [string]$GoTestDirectory
+    [string]$GoTestDirectory,
+    [ValidateSet('idempotency','disconnect')][string]$NativeCase = 'idempotency'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -148,7 +149,7 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                     if ($LASTEXITCODE -ne 0) { throw '实际 Go 检查控制端退出未确认，保留原请求和资源' }
                 }
             } elseif ($Case -in @('T06','T08')) {
-                $swaNativeCase = if ($Case -eq 'T08') { 'storage' } else { 'idempotency' }
+                $swaNativeCase = if ($Case -eq 'T08') { 'storage' } else { $NativeCase }
                 & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'native-idempotency.mjs') --case $swaNativeCase --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --output (Join-Path $swaEvidence 'native-idempotency.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'native-idempotency.log')
                 $swaExit = $LASTEXITCODE
                 if ($swaExit -eq 0) {

@@ -9,7 +9,7 @@ import { setTimeout } from 'node:timers/promises'
 import { parseArgs } from 'node:util'
 
 const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'output', 'case'].map(key => [key, { type: 'string' }])), allowPositionals: false })
-assert.ok(values.case === undefined || ['idempotency', 'storage'].includes(values.case))
+assert.ok(values.case === undefined || ['idempotency', 'storage', 'disconnect'].includes(values.case))
 for (const key of ['candidate', 'data-root', 'project', 'output']) assert.ok(values[key] && isAbsolute(values[key]))
 assert.ok(values['project-id'] && values.endpoint && process.env.SWA_PROJECT_TOKEN)
 const candidate = await realpath(values.candidate), dataRoot = await realpath(values['data-root']), project = await realpath(values.project)
@@ -26,23 +26,35 @@ const processAPI = requireRuntime('@vscode/windows-process-tree')
 const commands = [], checks = []
 let ordinal = 0, runtimeId, database
 
-async function cli(args, allowed = [0]) {
+function launchCLI(args, allowed = [0]) {
   const index = ++ordinal, started = new Date().toISOString()
   const child = spawn(swa, [...args, '--json'], { cwd: project, env: environment, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
   const stdout = [], stderr = []
-  let length = 0
-  child.stdout.on('data', bytes => { length += bytes.length; if (length > 16 * 1024 * 1024) child.stdout.destroy(new Error('Actual CLI output exceeds its declared bound')); else stdout.push(bytes) })
+  const state = { finished: false, interruptionRequested: false, stdoutBytes: 0 }
+  child.stdout.on('data', bytes => { state.stdoutBytes += bytes.length; if (state.stdoutBytes > 16 * 1024 * 1024) child.stdout.destroy(new Error('Actual CLI output exceeds its declared bound')); else stdout.push(bytes) })
   child.stderr.on('data', bytes => { if (Buffer.concat(stderr).length < 256 * 1024) stderr.push(bytes) })
-  const outcome = await new Promise((resolve, reject) => { child.once('error', reject); child.stdout.once('error', reject); child.once('close', (exit, signal) => resolve({ exit, signal })) })
-  const text = Buffer.concat(stdout).toString('utf8')
-  await writeFile(join(evidence, `idempotency-${index}.stdout.json`), text, { flag: 'wx' })
-  await writeFile(join(evidence, `idempotency-${index}.stderr.log`), Buffer.concat(stderr), { flag: 'wx' })
-  const envelope = text.trim() ? JSON.parse(text) : null
-  commands.push({ ordinal: index, args, started, ended: new Date().toISOString(), pid: child.pid, ...outcome, request_id: envelope?.request_id ?? null })
-  assert.ok(envelope && allowed.includes(outcome.exit) && !outcome.signal, `Actual CLI failed; preserve idempotency-${index} and the original request`)
-  if (outcome.exit === 0) { assert.equal(envelope.ok, true); if (runtimeId) assert.equal(envelope.runtime_id, runtimeId) }
-  return { envelope, ...outcome }
+  const exited = new Promise(resolve => {
+    const fail = error => { state.finished = true; resolve({ error }) }
+    child.once('error', fail)
+    child.stdout.once('error', fail)
+    child.once('close', (exit, signal) => { state.finished = true; resolve({ exit, signal }) })
+  })
+  return { child, state, async result() {
+    const outcome = await exited
+    if (outcome.error) throw outcome.error
+    const text = Buffer.concat(stdout).toString('utf8')
+    await writeFile(join(evidence, `idempotency-${index}.stdout.json`), text, { flag: 'wx' })
+    await writeFile(join(evidence, `idempotency-${index}.stderr.log`), Buffer.concat(stderr), { flag: 'wx' })
+    const envelope = state.interruptionRequested || !text.trim() ? null : JSON.parse(text)
+    commands.push({ ordinal: index, args, started, ended: new Date().toISOString(), pid: child.pid, ...outcome, request_id: envelope?.request_id ?? null, interruptionRequested: state.interruptionRequested, stdoutBytes: state.stdoutBytes })
+    if (!state.interruptionRequested) {
+      assert.ok(envelope && allowed.includes(outcome.exit) && !outcome.signal, `Actual CLI failed; preserve idempotency-${index} and the original request`)
+      if (outcome.exit === 0) { assert.equal(envelope.ok, true); if (runtimeId) assert.equal(envelope.runtime_id, runtimeId) }
+    }
+    return { envelope, ...outcome, stdoutBytes: state.stdoutBytes }
+  } }
 }
+async function cli(args, allowed) { return await launchCLI(args, allowed).result() }
 
 function receipt(request, method) {
   const rows = database.prepare('SELECT request_id, method, state, receipt FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').all(authority, request)
@@ -109,8 +121,49 @@ try {
     assert.equal(after.result.native.liveLeafCount, status.result.native.liveLeafCount)
     assert.deepEqual(counts(), before)
     await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, actual_lock: { database: dbPath, statement: 'BEGIN IMMEDIATE', acquired_at: acquiredAt }, request: refusedR, refused, queried, before, after: counts(), commands, model_calls: 0, remainingCases: ['two_slots_and_third_worker_refusal_in_T13', 'post_effect_result_storage_failure', 'actual_natural_low_resources'], scope: 'actual_private_sqlite_write_lock_refusal_before_receipt_and_pty_only' }, null, 2) + '\n', { flag: 'wx' })
-  } else await verifyIdempotency()
+  } else if (values.case === 'disconnect') await verifyDisconnect()
+  else await verifyIdempotency()
 } finally { database.close() }
+
+async function verifyDisconnect() {
+  const request = randomUUID(), args = ['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', request]
+  const launched = launchCLI(args), clientBirth = processAPI.getProcessCreationTime(launched.child.pid)
+  await writeFile(join(evidence, 'disconnect-started.json'), JSON.stringify({ request, args, client: { pid: launched.child.pid, creation_time_ms: clientBirth }, created_at: new Date().toISOString(), acceptance: 'not_yet_observed' }, null, 2) + '\n', { flag: 'wx' })
+  const deadline = performance.now() + 150_000
+  let accepted, attempted, interrupted = false
+  while (performance.now() < deadline && !launched.state.finished) {
+    const row = database.prepare('SELECT method, state, receipt FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?').get(authority, request)
+    if (row?.state === 'completed') {
+      assert.equal(row.method, 'swa.controllerOpen')
+      accepted = { observed_at: new Date().toISOString(), ...row, receipt: JSON.parse(row.receipt) }
+      for (const owner of [accepted.receipt.process, accepted.receipt.helper]) {
+        assert.ok(owner.pid > 0 && owner.creationTimeMs > 0)
+        assert.equal(processAPI.getProcessCreationTime(owner.pid), owner.creationTimeMs)
+      }
+      const currentBirth = processAPI.getProcessCreationTime(launched.child.pid)
+      attempted = { utc: new Date().toISOString(), client: { pid: launched.child.pid, creation_time_ms: clientBirth, observed_creation_time_ms: currentBirth }, stdout_bytes_before: launched.state.stdoutBytes }
+      if (clientBirth > 0 && currentBirth === clientBirth && !launched.state.finished && launched.state.stdoutBytes === 0) {
+        launched.state.interruptionRequested = true
+        interrupted = launched.child.kill()
+      }
+      break
+    }
+    await setTimeout(10)
+  }
+  if (!launched.state.finished && !attempted) {
+    await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, request, client: { pid: launched.child.pid, creation_time_ms: clientBirth }, scope: 'actual_owned_client_unsettled_at_observation_deadline', remainingCases, acceptance: 'INCONCLUSIVE', required_action: 'inspect_original_request_and_exact_owned_client' }, null, 2) + '\n', { flag: 'wx' })
+    throw new Error('The real controller open did not reach an observable effect boundary; preserve the live owned client and original request')
+  }
+  const response = await launched.result()
+  const queried = await inspect(request), actual = receipt(request, 'swa.controllerOpen')
+  assert.equal(queried.receipt.controller, actual.receipt.controller)
+  const confirmed = (await cli(['controller', 'show', '--controller', actual.receipt.controller])).envelope
+  assert.deepEqual(confirmed.result.owner.binding, actual.receipt.binding)
+  const matched = Boolean(accepted && interrupted && response.stdoutBytes === 0 && (response.exit !== 0 || response.signal))
+  const close = await cli(['controller', 'close', '--controller', actual.receipt.controller, '--request-id', randomUUID()])
+  const exited = await gone(actual.receipt)
+  await writeFile(values.output, JSON.stringify({ candidate, source_revision: revision, runtime_id: runtimeId, request, accepted: accepted ?? null, attempted: attempted ?? null, interrupted, response, queried, actual, confirmed, close, exited, commands, model_calls: 0, coveredCases: matched ? ['actual_completed_pty_effect_before_empty_response_client_disconnect_and_read_only_original_request_query'] : [], inconclusive: matched ? [] : ['The actual effect-before-response-loss window was not observed; no repeated attempt was made'], remainingCases: ['task_create_run_and_root_effect_boundaries', 'worker_start_send_stop_effect_boundaries', 'runtime_restart_pending_queries', 'different_request_close_create_start_interleavings'], scope: 'one_actual_owned_client_disconnect_attempt_only' }, null, 2) + '\n', { flag: 'wx' })
+}
 
 async function verifyIdempotency() {
   const openR = randomUUID(), openArgs = ['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', openR]
