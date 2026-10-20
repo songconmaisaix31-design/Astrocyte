@@ -2,7 +2,7 @@ import type { SDKUserMessage } from '@anthropic-ai/claude-agent-sdk'
 
 type QueuedMessage = {
   message: SDKUserMessage
-  beforeDispatch?: () => Promise<void>
+  beforeDispatch?: () => Promise<void | (() => void)>
   resolve: () => void
   reject: (error: Error) => void
 }
@@ -35,7 +35,7 @@ export type ClaudeUserMessageQueue = {
   /** The SDK's streaming-input prompt; it stays open until `end`. */
   messages: AsyncIterable<SDKUserMessage>
   /** Resolves once the SDK has finished writing the frame to the child. */
-  push: (message: SDKUserMessage, beforeDispatch?: () => Promise<void>) => Promise<void>
+  push: (message: SDKUserMessage, beforeDispatch?: () => Promise<void | (() => void)>) => Promise<void>
   /** Reject every unsettled frame; an in-flight frame carries an ambiguous write outcome. */
   fail: (error: Error) => void
   end: () => void
@@ -69,9 +69,10 @@ export function createClaudeUserMessageQueue(): ClaudeUserMessageQueue {
       if (next) {
         inFlight = next
         handedOff = false
+        let finalAdmission: void | (() => void) = undefined
         if (next.beforeDispatch) {
           try {
-            await next.beforeDispatch()
+            finalAdmission = await next.beforeDispatch()
           } catch (error) {
             inFlight = null
             next.reject(error instanceof Error ? error : new Error('claude dispatch refused'))
@@ -82,6 +83,12 @@ export function createClaudeUserMessageQueue(): ClaudeUserMessageQueue {
             next.reject(claudeUnwrittenUserMessageError(failure))
             continue
           }
+        }
+        try { if (typeof finalAdmission === 'function') finalAdmission() }
+        catch (error) {
+          inFlight = null
+          next.reject(claudeUnwrittenUserMessageError(error instanceof Error ? error : new Error('claude dispatch refused before SDK handoff')))
+          continue
         }
         let written = false
         try {

@@ -23,7 +23,7 @@ export type CodexAppServerConnection = {
   request: (
     method: string,
     params?: Record<string, unknown>,
-    options?: { timeoutMs?: number; onReply?: () => void }
+    options?: { timeoutMs?: number; onReply?: () => void; beforeWrite?: () => void }
   ) => Promise<unknown>
   notify: (method: string, params?: Record<string, unknown>) => void
   respond: (id: number | string, result: unknown) => void

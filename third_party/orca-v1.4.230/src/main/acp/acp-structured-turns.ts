@@ -34,7 +34,7 @@ export type AcpDispatchSettlement = { clientMessageId: string } & (
   | { state: 'unknown'; reason: string }
 )
 
-type Send = { clientMessageId: string; prompt: ContentBlock[]; requestedAt: number }
+type Send = { clientMessageId: string; prompt: ContentBlock[]; requestedAt: number; beforeEffect?: () => void }
 
 export type AcpStructuredTurnsDeps = {
   connection: Pick<AcpStructuredConnection, 'prompt' | 'cancel'>
@@ -184,6 +184,12 @@ export class AcpStructuredTurns {
 
   private start(send: Send): void {
     const { lane } = this.deps
+    try { send.beforeEffect?.() }
+    catch {
+      this.reject(send.clientMessageId, agentSessionFailureFact('hostFault', { neverReachedAgent: true }))
+      this.finish(send)
+      return
+    }
     this.active = send
     const opened = lane.translator.openPrompt(send.clientMessageId, send.requestedAt)
     lane.apply(opened.events)

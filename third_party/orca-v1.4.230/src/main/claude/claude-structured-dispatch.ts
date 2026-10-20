@@ -116,7 +116,7 @@ export async function dispatchClaudeTurn(
     /** The frame's uuid, for a caller that correlates the provider's answer to it. */
     sentUuid?: string
   },
-  beforeDispatch?: () => Promise<void>
+  beforeDispatch?: () => Promise<void | (() => void)>
 ): Promise<AgentSessionDispatchOutcome> {
   let content: unknown[]
   try {
@@ -154,11 +154,12 @@ export async function dispatchClaudeTurn(
   const pending = { replay: beforeDispatch ? undefined : arm() }
   const authorize = beforeDispatch
     ? async () => {
-        await beforeDispatch()
+        const finalAdmission = await beforeDispatch()
         if (session.dispatchWaiters.length >= MAX_ACTIVE_DISPATCH_WAITERS) {
           throw claudeUnwrittenUserMessageError(new Error(DISPATCH_REJECTED_QUEUE_FULL))
         }
         pending.replay = arm()
+        return finalAdmission
       }
     : undefined
   try {

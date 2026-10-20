@@ -1111,3 +1111,9 @@ N17在host现有精确白名单中显式加入唯一`ORCHESTRATION_WORKER_LIST_M
 类型、生成、候选构建及真实服务仍分别占用主控交付的串行Stage，不能从本入口推导运行许可。真实诊断若定位其他缺失必要声明，记录实际模块和来源后按同一规则处理；若涉及未消费的原历史源码，先核其是否被真实产品链带入，再由原Worker修复范围或交主控，不放宽检查。生成`web/src/api/schema.d.ts`仍只由既有生成器完成；当前源码没有可安装、类型通过或全部功能接受结论，T12/后台Job继续。
 
 本次实际执行`check-typecheck-plan.mjs`，仅用TypeScript6.0.3读取、解析配置和真实入口文件名，未创建Program，EXIT0；成熟YAML原锁读取、实际声明包存在性检查、文档与空白检查通过，原件在`typecheck-plan-static-01/`。原Reviewer新提N19为共享beforeDispatch的实际Claude直接消费者及ACP/Codex声明，本Worker按真实调用继续同步，不扩大为无关UI任务；该消费者修复及类型检查正文尚未登记通过。
+
+### 15.4 N19实际共享回调消费者
+
+原Reviewer正式`1db70be01e6422355cc2884d5a6a21df93b48509`局部确认3192的N16/N17/N18 Pi源码修复，并退回共享回调的直接消费者；本Worker沿实际调用修改九份Claude/ACP/Codex源码。Claude dispatch、connection及SDK输入队列使用同一回调返回契约，异步批准后的同步guard在SDK iterator交出消息前执行，拒绝保留实际unwritten。ACP将同步guard保存在原steer队列项，等待前一prompt/cancel后、启动实际prompt前执行；拒绝不创建新的输入。Codex在等待实际turn打开及原steer/start分支后，把同步guard传至原connection.request的实际sendLine前，写入前拒绝沿真实unwritten类型解除本次echo关联，其他超时/断开保持原unknown。
+
+上述修改只同步实际共享契约及其真实消费，未使用cast、假声明或丢弃guard消除类型问题，不授予其他Agent原生ToolsOff、账号、模型或执行权限。类型入口§15.3包含这些真实传递imports；真实Claude/ACP/Codex及Pi执行结果均未据此登记通过。当前只执行`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n19-static.mjs`的九份成熟TS语法检查，文档来源/本地链接及空白检查；原件位于`n19-static-01/`，类型正文、构建及实际队列/模型检查保持`NOT_RUN`。T12其他文件继续开发，后台接续Job未完成，没有新重操作授权。

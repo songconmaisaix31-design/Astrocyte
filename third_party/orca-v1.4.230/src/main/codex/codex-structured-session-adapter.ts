@@ -218,13 +218,13 @@ export class CodexStructuredSessionAdapter implements StructuredAgentSessionAdap
     body: AgentJournalMessageItem
     fence: number
     requestedAt?: number
-    beforeDispatch?: () => Promise<void>
+    beforeDispatch?: () => Promise<void | (() => void)>
   }): Promise<AgentSessionDispatchOutcome> {
     const session = this.session(input.sessionId)
     session.dispatchPending = true
     try {
-      await input.beforeDispatch?.()
-      return await dispatchCodexTurn(session, input, this.deps.requestTimeoutMs)
+      const finalAdmission = await input.beforeDispatch?.()
+      return await dispatchCodexTurn(session, { ...input, ...(typeof finalAdmission === 'function' ? { beforeEffect: finalAdmission } : {}) }, this.deps.requestTimeoutMs)
     } finally {
       session.dispatchPending = false
     }

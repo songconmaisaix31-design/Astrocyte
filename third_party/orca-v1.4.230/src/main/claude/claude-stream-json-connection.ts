@@ -106,7 +106,7 @@ export type ClaudeStreamJsonConnection = ClaudeControlSurface & {
   readonly executableMissing?: boolean
   pauseReading?: () => void
   resumeReading?: () => void
-  send: (message: Record<string, unknown>, beforeDispatch?: () => Promise<void>) => Promise<void>
+  send: (message: Record<string, unknown>, beforeDispatch?: () => Promise<void | (() => void)>) => Promise<void>
   /** Resolves true after processless settlement, or root exit plus observed tree exit. */
   close: () => Promise<boolean>
 }

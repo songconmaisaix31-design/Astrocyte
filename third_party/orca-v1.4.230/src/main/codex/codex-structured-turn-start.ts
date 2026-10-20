@@ -6,6 +6,7 @@ import type {
 } from '../../shared/agent-session-journal-types'
 import type { NativeChatBlock } from '../../shared/native-chat-types'
 import type { AgentSessionDispatchOutcome } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
+import { ProviderWriteAdmissionError } from '../provider-process/provider-stdio-write-queue'
 import {
   isCodexAppServerRequestError,
   type CodexAppServerConnection
@@ -83,6 +84,7 @@ async function steerCodexTurn(
     body: AgentJournalMessageItem
     timeoutMs?: number
     onReply?: () => void
+    beforeEffect?: () => void
   }
 ): Promise<{ turnId: string; via: 'steer' } | null> {
   try {
@@ -94,7 +96,7 @@ async function steerCodexTurn(
         clientUserMessageId: input.clientMessageId,
         input: turnInputFor(input.body)
       },
-      { timeoutMs: input.timeoutMs, onReply: input.onReply }
+      { timeoutMs: input.timeoutMs, onReply: input.onReply, beforeWrite: input.beforeEffect }
     )
     return { turnId: readCodexTurnId(answer) ?? expectedTurnId, via: 'steer' }
   } catch (error) {
@@ -119,6 +121,7 @@ export async function startCodexTurn(
     timeoutMs?: number
     /** Stamped as each reply is read (`CodexDispatchEchoes.tick`); the last is this send's. */
     onReply?: () => void
+    beforeEffect?: () => void
   }
 ): Promise<{ turnId: string | null; via: AgentJournalTurnJoin } | false> {
   // Armed before the write: the echo and `turn/started` can both land while the
@@ -149,7 +152,7 @@ export async function startCodexTurn(
       // Codex omits a tier the model does not list.
       ...Object.fromEntries(host.options)
     },
-    { timeoutMs: input.timeoutMs, onReply: input.onReply }
+    { timeoutMs: input.timeoutMs, onReply: input.onReply, beforeWrite: input.beforeEffect }
   )
   return { turnId: readCodexTurnId(answer), via: 'start' }
 }
@@ -167,6 +170,7 @@ export async function dispatchCodexTurn(
     clientMessageId: string
     body: AgentJournalMessageItem
     requestedAt?: number
+    beforeEffect?: () => void
   },
   timeoutMs: number | undefined
 ): Promise<AgentSessionDispatchOutcome> {
@@ -179,6 +183,10 @@ export async function dispatchCodexTurn(
   try {
     answer = await startCodexTurn(session, { ...input, timeoutMs, onReply })
   } catch (error) {
+    if (error instanceof ProviderWriteAdmissionError) {
+      session.dispatchEchoes.disarm(input.clientMessageId)
+      return { state: 'rejected', ...codexDispatchRejection(agentSessionFailureFact('hostFault', { neverReachedAgent: true })) }
+    }
     if (isCodexAppServerRequestError(error) || isCodexAppServerUnsupportedError(error)) {
       // Codex answered and declined, so no echo for this write can arrive.
       session.dispatchEchoes.disarm(input.clientMessageId)

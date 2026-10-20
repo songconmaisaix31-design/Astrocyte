@@ -158,7 +158,7 @@ export class AcpStructuredSessionAdapter implements StructuredAgentSessionAdapte
     body: AgentJournalMessageItem
     fence: number
     requestedAt?: number
-    beforeDispatch?: () => Promise<void>
+    beforeDispatch?: () => Promise<void | (() => void)>
   }): Promise<AgentSessionDispatchOutcome> {
     const lost = this.sessions.get(input.sessionId)
     if (lost && lost.journalClosed !== null) {
@@ -174,11 +174,12 @@ export class AcpStructuredSessionAdapter implements StructuredAgentSessionAdapte
       // The child ended while its attachments were read: nothing left Orca.
       return rejectedAcpDispatch(session)
     }
-    await input.beforeDispatch?.()
+    const finalAdmission = await input.beforeDispatch?.()
     session.turns.dispatch({
       clientMessageId: input.clientMessageId,
       prompt,
-      requestedAt: input.requestedAt ?? this.now()
+      requestedAt: input.requestedAt ?? this.now(),
+      ...(typeof finalAdmission === 'function' ? { beforeEffect: finalAdmission } : {})
     })
     // The write is the admission; the agent's first event for the turn settles it.
     return { state: 'admitted' }

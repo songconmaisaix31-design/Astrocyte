@@ -1,4 +1,5 @@
 import type { PipedProcessSpawner } from '@orca/process-host/process-spec'
+import { ProviderWriteAdmissionError } from '../provider-process/provider-stdio-write-queue'
 import { spawnProcess } from '@orca/process-host'
 import { spawnManagedProviderProcess } from '../provider-process/managed-provider-process'
 import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
@@ -151,7 +152,7 @@ export async function openCodexAppServerConnection(
   function request(
     method: string,
     params?: Record<string, unknown>,
-    options: { timeoutMs?: number; onReply?: () => void } = {}
+    options: { timeoutMs?: number; onReply?: () => void; beforeWrite?: () => void } = {}
   ): Promise<unknown> {
     if (closing) {
       return Promise.reject(new Error(`codex app-server connection is closed (${method})`))
@@ -173,6 +174,8 @@ export async function openCodexAppServerConnection(
       }, timeoutMs)
       dispatcher.addPending(id, { method, resolve, reject, timer, onReply: options.onReply })
       try {
+        try { options.beforeWrite?.() }
+        catch (error) { throw new ProviderWriteAdmissionError(error) }
         sendLine(params === undefined ? { method, id } : { method, id, params })
       } catch (error) {
         dispatcher.deletePending(id)
