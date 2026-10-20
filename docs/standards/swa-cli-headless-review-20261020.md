@@ -1183,7 +1183,7 @@ restore-14使用同一ed543、原库及该次prepare/stop，资源CPU45.5%/48.4%
 
 结论：**局部静态接受准确`9e46579df4a073d1d67fc74c198274e0178e4147`的五条RPC导入边修正，技术接受§13修后N08限定契约及§14下载计划；实现、效果和完整闭包仍须后继验证。** 完整读取相对449的十文件差异、全部修后计划，追踪原声明分组、现有构造调用/继承、SSH调度及回执消费者，以及实际Pi请求生产链。没有执行类型检查、bundle、网络、服务或模型。
 
-RPC产品host直接使用原RuntimeRpcShutdown，显式组合并验证原同一16个方法及SWA方法；公共OrcaRuntimeRpcServer负责原完整默认选择。dispatcher/RuntimeRpcState改为显式methods，原桌面唯一隐式构造已补ALL，既有IPC/bridge及其他生产调用保留原明确方法表；中间继承链没有新增构造器丢失该字段。SSH的server和call-limits共享原五项声明，dispatcher参数、callerScope、原schema/handler、owner admission及receipt规则保持。当前改动消除已定位的五条全表静态入口，尚无后继metafile或真实运行，不能宣布所有浏览器/账户/旧SDK及native/dynamic/assets依赖已经移除或回归通过。
+RPC产品host直接使用原RuntimeRpcShutdown，声明16项allowlist并保留方法数量与唯一性检查；公共OrcaRuntimeRpcServer负责原完整默认选择。dispatcher/RuntimeRpcState改为显式methods，原桌面唯一隐式构造已补ALL，既有IPC/bridge及其他生产调用保留原明确方法表；中间继承链没有新增构造器丢失该字段。SSH的server和call-limits共享原五项声明，dispatcher参数、callerScope、原schema/handler、owner admission及receipt规则保持。当前改动消除已定位的五条全表静态入口，尚无后继metafile或真实运行，不能宣布所有浏览器/账户/旧SDK及native/dynamic/assets依赖已经移除或回归通过。
 
 N13计划现要求原model定义、override、内置和合成model的samplingParams仅缺省或空对象，非空整源拒绝，禁止删掉后继续。限制只覆盖已完整核过最终参数生成的openai-responses、openai-completions及azure-openai-responses，其他实际API保持unknown。Pi真实RPC返回完整模型，首次及后续输入前复核模型/API/baseUrl和samplingParams；产品逐命令strict DTO封闭每请求samplingParams、provider/options/onPayload透传。已核本机RPC prompt仅把message/images/streamingBehavior交session.prompt、Agent.createLoopConfig显式字段不含samplingParams、agent-loop到sdk/ModelRuntime的实际链；无扩展、固定私有设置及资源封闭用户请求变换生产者，源码条件无法证明时拒绝。新增真实场景覆盖四类模型来源和每请求透传、首次/后续输入及unknown保全，原N11/N12、无refresh、原R/ACL/并发和同候选双Worker条件保持，没有多余自证用例。
 
@@ -1258,3 +1258,39 @@ restore-16实际exec77870 EXIT0沿主控来源，资源CPU18.5%/8.9%、可用7.1
 `check-revision.ps1 -Previous b75cf8ffeedffd244934dfac078b4926e865eb15 -Candidate 653cfff7bc8c23e467a9f233fcb8f332aaae082b`实际EXIT0，两Markdown/5本地链接及Git空白通过；准确MJS管道交Node `--check --input-type=module`实际EXIT0，未执行模块正文。全部检查BelowNormal、marked18.1.0、Node512MiB。Worker首次普通push被远端拒绝、确认远端仍b75后普通push成功沿其来源保留，本Reviewer没有将首次失败记为成功或重复远端操作。
 
 本次只接受准确静态修复，没有新的构建窗口或后继编译结果，不能宣布C++问题已消失。N08与其他已定稿实现继续，全部真实原生、完整成果、安装及同候选双Worker保持未通过。
+
+准确b75完整退回、653c静态接受及main bc66管理接受的三个hook `msg_1684846da095`、`msg_9564668427e8`、`msg_0815b6efb659`，已分别获主控`msg_dd7f181dafe6`、`msg_3c3a70abe497`、`msg_66ffe80bd8f3`完整读取cfbd两报告新增和准确差异的回复，实际唤起确认。
+
+## 准确3590bf11的原生Pi及结构化输入阶段
+
+结论：**退回准确`3590bf11043a2e95cb00b319d4a44a44c2e5c784`的本阶段源码；局部静态接受后继准确`1b782b49f530a32c255a9a042e3299cb799fe5b5`的N14/N15返修，整体仍须完成N16/N17/N18。** 已读取相对653c的阶段差异、报告§15、SPEC21.1.2/21.1.4/21.1.5，以及原生配置、父子receipt、host/journal、Pi RPC、真实stdio队列、Job与成果的实际消费者。继续同一Worker返修，未提交T12修改不作为准确实现。没有运行产品、制造协议或调用模型。
+
+本阶段确实移除产品SDK会话入口，改由父Job准入后的bootstrap启动已选本机Pi命令，独立记录实际CLI PID/创建身份及Job成员。NativeLaunchPolicy在Go/Node/Zod/JSON Schema/OpenAPI声明同步；Windows安全模块新增owner SID读取，私有账号使用成熟DACL API和原格式投影。严格RPC参数、工具/资源关闭、真实model/API/baseUrl与空samplingParams检查、原host及stdio队列异步准入、原R与R/native绑定保留均有对应源码。源码存在不证明这些功能已运行；HTTP生成类型仍待生成，完整闭包、类型、Node/native ABI、认证、模型及安装双Worker未通过。
+
+**N14，严重程度中：原models不存在时仍制造私有models.json。** 3590的inspectNativePiPolicy始终返回models对象，materialize与verify均无条件处理该文件；与已接受§13.3的来源不存在则私有不存在条件不符。建议动作：将不存在状态贯穿投影、独占写入及每次实际核查，拒绝出现、消失和重定向。准确1b已用null表示不存在、跳过创建并以lstat要求缺失；存在来源仍要求实际投影相同，本项源码修正已确认，真实分支未运行。
+
+**N15，严重程度高：Go等待后继续使用先前读取的来源。** 3590的beforeInput先policySnapshot，再await当前Go批准，之后只核私有文件及原生身份；最终stdio beforeWrite也沿此序列。原auth/models/CLI在Go等待期间变化时，最后写入没有重读该来源版本。建议动作：等待返回后重新核原selection/完整来源，在后续异步私有检查结束后核准确来源及不存在状态。准确1b已在materialize、environment、tools、Job launcher、reserveInput及beforeInput的Go等待后重读policySnapshot，并在效果前同步核canonical路径/文件身份/版本和models缺失；没有在writer回调递归提交本队列RPC。本项源码修正已确认，真实变化场景仍未运行。
+
+**N16，严重程度高：未固定并复核实际Pi会话身份。** rpc-session.ts的start仅返回首次state.sessionFile，checkPolicyState只要求sessionId非空及compaction关闭；后继实际get_state没有比较首次真实sessionId/sessionFile，也没有将这两个实际值与原provider link作持续绑定。已有Native session/fence和Job检查不能补作Pi自身会话相同的证明。建议动作：保存首次真实原生身份，后续实际状态逐项比较并核原关联，失配在效果前拒绝，可能输入后保全原operation及unknown。此项属于已交付N08声称的真实会话身份范围，未将T12恢复列为本阶段完成条件；没有观察到实际错误会话运行。
+
+**N17，严重程度高：host缺少实际workerList定义，会被现有完整性检查拒绝。** 原Worker先报告遗漏，本Reviewer独立核准确源：orchestration.workerList唯一声明为worker-list-method.ts的ORCHESTRATION_WORKER_LIST_METHOD；host只拼接的ORCHESTRATION_WORKER_METHODS包含start/control/stop/release四组，没有该独立定义。allowlist要求它存在，方法集合无法满足原数量/唯一性条件。3590及1b均保持此缺口，当前不能启动该host。建议动作：明确加入原生单独方法，保留现有完整性检查和MESSAGE组的实际Task方法，后继准确提交再审；没有执行host或采用完整方法表替代。
+
+**N18，严重程度高：异步等待结束后缺少真实Agent Grant到期检查。** Go的checkOriginalOrcaGrant在回包前使用真实时间检查原ExpiresAt，Node的grant_expires_at目前仅用于回包值相同的比较。beforeInput随后还会等待来源/私有检查，最后写入前没有按当前实际时间拒绝已经到期的Grant；1b增加的来源复核也不包含该时限条件。建议动作：在最后异步条件完成后的实际效果入口同步核原Agent批准期限，适用时同样覆盖账号复制与启动；不伪造时钟、增加账本或递归RPC。该期限来自真实项目Grant，与原生API key没有TTL而允许其余条件满足后请求的政策分别处理。当前只确认源码边界缺失，未声称实际命中过期场景。
+
+N14/N15已通过`msg_26a78f9cd9bc`、`msg_76bf311f86cc`交主控/原Worker，主控`msg_c9cbeff4ac68`独立核准确代码并回复；其余三项已通过`msg_6978c87325db`、`msg_eb39950544c7`交回。§13.6对应的缺失/出现、等待期间来源变化、原生身份、真实期限及原operation保全检查须保持，未命中的真实分支按INCONCLUSIVE，未执行按NOT_RUN。T13继续要求真实双Worker模型活动重叠、停止A、B同会话后续输入及完整成果；T09复用同一实际原件，没有增加模型调用，普通进程fixture的范围没有扩大。
+
+本Reviewer的两次check-revision分别核653c→3590及3590→1b，实际EXIT0；前者两Markdown/6本地链接，后者一Markdown/1本地链接，Git空白均通过，marked18.1.0、BelowNormal、Node512MiB。§15本地锚点与实际标题一致。Worker报告的39份语法、JSON/YAML、五Go格式、三PS及来源路径检查保持原执行归属；本Reviewer未重跑这些入口。全部实际HTTP准入、私有ACL、原生身份、来源变化、期限、模型及完整功能检查仍未完成，T12严格caller/recover/后台Job和通用TUI继续同Worker实施。
+
+## 准确3590的主控独立Go检查与restore-17
+
+结论：**接受准确3590本次四包Go编译及三个传输前函数的限定实际结果，源码阶段退回保持。** 已只读核SOURCE、四包产物、完整执行日志、三函数逐项PASS/零SKIP、五项资源、运行及两次退出原件；结束HEAD与SOURCE均为完整3590。主控实际exec2414最终EXIT0，未将该结果归为Worker自测。原已审入口及resource-gate相对准确16ad5ef6无差异。实际cwd为`C:/Users/DW/orca/Astrocyte/.verification/swa-go-3590-01`，核心命令为：
+
+```powershell
+& 'C:/Program Files/PowerShell/7/pwsh.exe' -NoProfile -File tests/swa-cli-headless/compile-go-tests.ps1 -OutputRoot C:/Users/DW/orca/Astrocyte/.verification/swa-go-3590-01/.verification/swa-cli-headless-20261020/go-source-01
+```
+
+外层实际设置BelowNormal并Tee至control/go-3590-execution-01.log后传播LASTEXITCODE。四包为cmd/swa、internal/adapters/orca、internal/workspace/app、internal/adapters/httpapi；实际运行仅TestOrcaCLIRejectsAuthorityArgumentsBeforeTransport、TestOrcaCLIRejectsUnknownActionAndIrrelevantInput、TestOrcaCLIMissingCurrentGrantIsDenied。tests.json列出的四个live/runtime函数没有执行，模型调用0。五项CPU10.1%—21.5%、可用7550619648—7849086976字节、单调2.501329—2.501747秒，passed均true，Go4/-p4/512MiB及私有缓存沿该实际入口保持。
+
+运行记录保留根21508/创建UTC20:15:08.809810及子65804，UTC20:17:29.9163235/46.1954802两次所属为空。prepare-17资源CPU17.5%/18.8%、可用7.043/6.915GiB、单调3.001633秒，stop-17资源CPU10.0%/8.7%、可用7.216/7.311GiB、单调3.002028秒；原S60656/epoch1792524076.7506354于UTC20:14:51.179275退出15。该窗口不冻结Worker树，没有给Reviewer或Worker新增运行权限。
+
+restore-17实际exec92929 EXIT0沿主控来源，资源CPU12.7%/11.8%、可用7.286/7.329GiB、单调3.002327秒，原库记录ok/fk空/equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-17`于UTC20:20:38实际EXIT0：整份current/restored相同，实际S36744/父58404、原ed543程序、创建UTC20:17:53.6968189/epoch1792527473.6968188相差0.0001毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web和原Orca38652/runtime49da沿主控实际来源；本Reviewer没有执行Go、SQLite、HTTP、控制脚本、服务或模型。下一prepare取restore-17/restored.json、c8不改，当前窗口归原S，六次失败和全部部分候选保留。

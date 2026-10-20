@@ -569,3 +569,15 @@ restore-15使用原ed543/原库和原环境配置，UTC19:03:14只读核实际S6
 tracked/Git冻结解除后，同一Worker直接继续已定稿账号/工具、输入、恢复、Job和完整成果实现；技术计划及局部修复没有成为整体停止条件。原权限/T11和Codex/S3未决范围保持，全部真实调用、完整成果、安装及同候选双Worker仍未通过。
 
 `check-revision.ps1 -Previous 68eff5b0293552305c7fae532d7cdd82ca7bd5aa -Candidate bc66bf9e3f9673fb7cc3f036d4821aa729a772e0`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行编译、下载、解释器、SQLite/HTTP、控制脚本、服务或模型，也没有修改实现和管理事实源。
+
+准确bc66管理接受hook `msg_0815b6efb659`已获主控`msg_66ffe80bd8f3`完整读取cfbd新增及三文档的回复，实际唤起确认；同轮b75/653c两项也各获准确读取回复。
+
+## 准确783203c3的阶段源码与独立Go结果
+
+结论：**接受准确`783203c341aef0c015741a1eaed84f0c4a318b6b`相对bc66的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，独立核准确3590阶段源、N14/N15、主控Go原件及prepare/stop-17、restore-17。该版本明确完整CR未结、修复交同一Worker和全部真实功能未验，没有将Go编译登记为阶段或安装接受。后继1b的两项源码修正及N16/N17/N18详见headless报告，不能补作该版本已经记录的功能通过。
+
+独立detached树的SOURCE、结束HEAD和实际日志均为完整3590，四包test-c及三个传输前函数逐PASS/零SKIP，exec2414最终EXIT0沿主控实际回执，五项资源passed通过。实际runtime/live函数与模型均未执行，该限定结果与管理记录一致；既有16ad/9c结果保持各自准确来源。当前真实Node host还缺独立workerList定义，阶段Go结果不覆盖该启动条件。
+
+原S60656明确退出后才运行本次主控独立检查，运行及两次所属为空记录已读。restore-17使用同一ed543和原库/环境配置，UTC20:20:38只读核实际S36744/创建UTC20:17:53.6968189/epoch1792527473.6968188、原程序、整份current/restored及唯一64505监听符合，原库记录ok/fk空/equal；完整health/Web及原Orca沿主控来源。下一prepare取restore-17/restored.json并新鲜准入，c8不改，所有重窗口已收回，六次失败及部分候选保留。
+
+`check-revision.ps1 -Previous bc66bf9e3f9673fb7cc3f036d4821aa729a772e0 -Candidate 783203c341aef0c015741a1eaed84f0c4a318b6b`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer未运行编译或产品，权限/T11、Codex/S3未决范围保持；全部真实调用、完整成果、安装同候选双Worker仍未通过，T12/Job/通用终端输入由同一Worker继续。
