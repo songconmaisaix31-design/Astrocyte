@@ -805,3 +805,24 @@ F16参数错配及F17非法枚举的静态原因已消除；真实task.result、
 B01已通过`msg_0d0472dcf593`、B02通过`msg_f7a1c12ab6a5`交原Worker按原写域补计划；已以`msg_f959d9bd7555`回复主控暂停定稿，新内部HTTP路由及结果消费者保持未定稿，后继须结合注册Agent要求完整审核。此处不指定另一队列或新权限系统。T12独立接受和Go源码检查顺序可按各自范围继续，F17完整功能、T11与所有动态结果保持未验。
 
 `check-revision.ps1 -Previous c2d4b62d64eef73eb3c83064a8354696b6e623c7 -Candidate 2f1eceaf3d5ad872339a2efba7fdbaa1178dbc78` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。只读真实源码和准确Git对象，没有调用新路由、操作数据库、创建消息、启动服务、SDK、模型、编译或执行D项；普通push实际失败的范围保持。
+
+## 注册Agent要求的后继方案读取前条件
+
+依据主控`msg_fc6fe552ac5b`转达的最新用户要求、首版任务当前前五阶段、原隔离/工具授权及最终同候选双Worker条件，先独立形成下表，再读取Worker后继完整方案。注册来源和具体支持范围尚未定稿，不从固定Pi路径推导其他本机Agent可用。
+
+已读取reverse-engineer-anything的SKILL及连接指引。本会话没有REA MCP，公开`rea`与`rea-agents`解析到已安装npm入口；没有安装、修复配置或启动新分析。根`.verification/rea-orca/evidence-summary.json`是既有两份完整Evidence的派生摘要：focused `ev_c9cc8212af2b3b0ceb94199bac8fcec4775269e7f04272593e2e4d321d6ada8c`只分析12个所选JS、1963文件未选，ASAR边界`ev_0159c976d48ea721c101a8d95acbb071c4b0ad25a39e2b09e755f06729e5c43e`未选4280文件。已完整读取startup trace `ev_15961175dc22bbd52cec2f8d701c88f6c232b155b78282b0bdeac817167c9ba1`，只有一个startup IPC seed、无后继边；其自身保留partial及执行未知。未读取43MiB/182MiB完整应用Evidence，不声称摘要已经独立证明注册发现、完整调用闭包或无依赖；后继应复用准确目标Evidence并针对缺口补充。
+
+准确2f源码的TUI定义和detection commands列出支持的命令/别名及运行平台；agent-command-detection核PATH存在及安装目录，尚未验证账号配置或实际启动。StructuredAgentRegistry从真实definition/adapter组成并核声明能力所需方法；当前产品STRUCTURED_AGENT_RUNTIME_CATALOG只有Pi。structured launch support另按settings/账号home/实际命令和version检查；完整读取的composition前半部显示provider/session/account及执行宿主须匹配。上述是普通Git源码观察，不能标为REA产物或本机动态调用结果。
+
+| 条件 | 正确实现及必要真实验证 |
+| --- | --- |
+| G01 准确交付物及REA来源 | 固定用户本机Orca交付物的实际版本/路径/摘要及对应准确源码，REA从真实注册/发现入口沿CLI命令到原生启动、身份、输入、输出、停止及资源消费者追踪。保留选取范围、动态边和unknown；上游同版本源码或partial静态图不能证明交付物执行及依赖不存在 |
+| G02 注册与本机状态分别可查 | 定义并定稿注册事实源、发现范围及刷新语义，分别报告定义/注册、命令实际安装、配置、可启动和原生控制能力；未知与已拒绝分开。命令别名/override、准确可执行路径、平台和版本依据真实来源，命令存在不代表登录或调用成功。发现不触发未授权WSL/远端、安装、账号设置或配置迁移，不输出凭据 |
+| G03 选择结果进入真实调用 | Swarm CLI明确选择的已发现Agent须沿其真实命令和原生adapter启动，实际argv/cwd/env、账号来源、provider/model、Run/root/Dispatch/session和原生文件可对应。不得默换Pi、另一个Agent/账号/模型或执行宿主；未注册、缺程序、缺配置及不支持的真实能力立即拒绝。实际Agent自产会话/SQLite/事件逐项可定位，SDK模型可调用不代表该本机Agent已经被调用 |
+| G04 每Agent的权限及能力 | 每条实际启动/后续输入/停止/恢复路径重新核当前项目、Grant、设置版本、目录和外发目标；当前工具限制继续适用。分别证明该Agent能关闭原生文件/命令工具及扩展/MCP，或报告真实不支持并保留依赖决定；不为满足发现要求默认开放工具。Pi原六项RPC仅约束该路径，其他原生协议/模型的准确允许范围先定稿；原strict caller/generation/fence与已完成R重放检查保持 |
+| G05 完整依赖与独立安装 | 按准确执行闭包说明保留及裁剪的程序、动态import、native ABI、PTY/daemon、必要worker/sidecar、资源和许可，成熟库实际保留。不能以静态未连边判定可删，也不自行设依赖数量目标。最终安装目录在独立位置完整运行；对本机Agent程序及允许账号读取的外部依赖明确来源，不隐式依赖原开发树、原Orca资源、桌面IPC或原后台 |
+| G06 原Orca及账号隔离 | 产品profile、配置/SQLite、缓存、端口/IPC、controller、Job与后代身份独立；发现可以按已定范围读取必要本机来源，不能覆盖原Orca/Agent、PATH、自动启动、账号/原配置或接管现有会话。安装前后、真实双Worker并发与指定停止后核原Orca公开CLI及实际进程/数据归属，秘密不进入日志、receipt或发布物；只改目录名不足以验收 |
+| G07 失败、异步与未知 | 覆盖真实发现刷新/命令变化、无配置/权限撤销、错误项目/旧consumer、启动部分失败、busy/held、断开/超时/取消、输出失败、停止失败/未知和资源未释放。沿原R/operation保存已有效果及真实拒绝，未知不重发、不换目标或结束其他进程。B01真实handover授权和B02持久关联在适用的后续输入路径继续检查，注册发现不取消其业务条件 |
+| G08 最终同候选任务 | 每条声称可调用的适用Agent路径有真实安装/配置/启动/控制证据，未验Agent明确保留状态。最终仍用安装后的同一准确候选完成原任务的至少两个真实Worker并发、分别查询身份/输出、只停止指定一个并核实际退出及另一Worker保全，取得符合固定业务判据的完整成果；覆盖选择的真实Agent及原件来源，不按两个模型回复或替代Worker通过。是否要求不同Agent类型不自行增加，按用户明确目标与后继定稿范围验收 |
+
+这些条件直接来自新发现/调用目标及已有权限、隔离、输入和最终验收，不增加自我证明检查。注册的具体含义、可支持Agent集合、账号读取和各Agent工具/协议能力在准确方案定稿前保持未决定；不冻结选择或降低原验收。编译、安装、实际probe/Agent/服务/模型与新REA分析均未执行，没有取得重操作窗口。
