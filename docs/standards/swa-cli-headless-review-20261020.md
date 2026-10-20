@@ -1430,3 +1430,13 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 新入口以正式邮件ExpectedSource核准确工作树、分支及干净HEAD，唯一新EvidenceName保留原件；dependencies/build逐级核私有CAS至本树无重定向。每条重命令前重新使用原资源采样，dependencies串行lock-only和frozen ignore-scripts/verify-store-integrity，typecheck使用实际TS6严格入口，generate使用原生成器/Node512，build只指向新candidate06并沿原构建器独占创建；其余Node1024、Go4/-p4/512MiB及BelowNormal保持。入口每次只执行一个选定Stage，不能据技术接受取得窗口；主控仍须新鲜核原S/所属、停止和资源，正式给定准确来源及单次Stage，结束后沿原保全流程恢复。当前代码继续开发，尚未冻结或执行任何Stage。
 
 实际`check-revision.ps1`准确e328d739→4ceff1ad EXIT0，两Markdown/7本地链接及Git空白通过，原锚点保持。window04-n24-static-01的一MJS/JSON/YAML、文档日志及两项退出0已读，保持Worker归属；本Reviewer的Parser及摘要核查同为只读。Program、依赖锁/安装、生成、构建、竞争/恢复/停止、服务及模型均未执行或仍未通过，全部T12余项、通用terminal和最终同安装候选双Worker继续同Worker，主控实际读取回执仍待答。
+
+## 准确616eab31的R10真实CLI故障入口
+
+结论：**退回准确`616eab312cfb0741fc89cf8ae65027aceac2748b`的N25输出契约检查，全部新增正文NOT_RUN。** 根据main783203c3的SPEC21.1.3及079bd计划C05/C09/R10，先独立推导实际取消须130及单一失败envelope、stdout关闭须6及已知原R查询诊断、原请求与唯一PTY/runUse保持、缺证不登记命中，再完整读取相对4ce的九文件差异和实际消费者。没有增加模型调用、故障目标或运行窗口。
+
+原构建入口在服务前用实际Go预编译cli-fault-control，闭包检查要求该文件。控制程序分两次创建隐藏console及真实CLI独立group，在所持句柄的创建身份、完整程序、保护PID和两个实际console成员核实后定向发送CTRL_BREAK；stdout关闭使用真实StdoutPipe。驱动要求实际130或6、同一句柄退出、无控制错误及非超时，未命中保留INCONCLUSIVE。其原始流、真实request.show、私有SQLite及authenticated daemon库存均有明确来源；初次及重放后比较全部PTY六身份字段，原Run/root/spec、全部runUse集合及唯一原R子请求另行核查。pending观察和网络两项继续列入remainingCases，驱动和外围保持6；两项草稿覆盖缺口在本次准确源码中已补充。
+
+**N25，严重程度中：输出缺证仍可登记取消或stdout失败命中。** cli-failure.mjs先计算hit/status，再解析实际stdout；空流保持cliReply=null，坏JSON或多份JSON仅记录parseError，取消130仍可能登记OBSERVED，未验证C05明确要求的单一失败envelope。Go控制程序将实际管道读取/保存错误写入actual_pipe_read_error，该取消判定同样未检查。stdout-close允许真实部分输出，但驱动没有读取或断言实际CLI stderr中的已知原R及查询诊断，退出6单项不足以覆盖C09。建议动作：取消场景核完整保存的单一真实JSON、失败结果及原关联；stdout关闭按真实部分输出和stderr核原R及查询信息，缺证不能OBSERVED，不要求其stdout为完整JSON。使用成熟JSON解析和真实流，不新增Writer、响应替身或时序钩子。本项已通过`msg_2fd8345dcf4f`交原Worker。
+
+实际`check-revision.ps1 -Previous 4ceff1aded43eca345c9d14729d51697baf23069 -Candidate 616eab312cfb0741fc89cf8ae65027aceac2748b` EXIT0，两Markdown/7本地链接及Git空白通过，既有§15/§16锚点保持。Worker的r10-source-static-01五份TS/MJS语法、JSON/YAML、Go格式、PS Parser、文档来源日志及四项退出0已完整读取，保持Worker归属。全部只读检查BelowNormal、Node512MiB；本Reviewer未执行Program、Go构建、安装、SQLite/HTTP正文、console、故障或模型。类型/生成/完整构建、R06/R08与其余T12、通用terminal及同安装候选双Worker继续未验；后继Stage须主控指定本次之后的准确源码，原Run实际读取回复仍待答。
