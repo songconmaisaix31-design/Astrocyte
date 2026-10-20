@@ -1420,3 +1420,13 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 **N24，严重程度中：发出竞争请求前的阶段不能证明实际准入时仍处于该阶段。** observeCompetition先读取原R的scope-reserved/pty-spawn，再await真实CLI；随后仅凭operation_in_progress把先前阶段登记OBSERVED。原R可在CLI准入前推进到后续阶段，即使这次确实命中共同竞争屏障，现有记录仍不足以证明两个指定阶段分别命中。建议动作：同时保存竞争返回后的原R真实checkpoint，仅在状态/阶段证据足以证明指定阶段时登记OBSERVED，发生推进、完成或缺证时保留INCONCLUSIVE及remainingCases，不增加暂停/延迟钩子、重试或业务库写入。此项已通过`msg_43dacadda1e1`交原Worker。
 
 当前PTY断言比较故障前后存活sessionId集合，只能证明指定旧标识移除、实际新标识加入及其他标识集合保持；报告对其他原件全部不变的表述须据该实际范围修正，原进程/会话身份保全继续相应真实用例。实际`check-revision.ps1`准确26cf55a5→e328d739 EXIT0，两Markdown/7本地链接及Git空白通过；t12-r05-static-01两TS/MJS/JSON/YAML、文档日志及两个退出0已读。所有检查BelowNormal、Node512MiB，Program、竞争CLI、SQLite正文、PTY故障、服务及模型均NOT_RUN；R05实际命中、其余T12、通用terminal、类型/生成/构建和同候选安装双Worker继续未验。
+
+## 准确4ceff1ad的N24返修与后继Stage入口
+
+结论：**局部静态接受准确`4ceff1aded43eca345c9d14729d51697baf23069`的N24源码判定、文档修正及所述新窗口技术入口。** 完整读取相对e328的三文件差异。竞争返回后另存同一原R的实际checkpoint，OBSERVED同时要求真实operation_in_progress、原R前后均pending、相同原payload及同一指定stage；推进、完成、缺失或缺证继续INCONCLUSIVE并加入remainingCases。原每阶段一次竞争、原生无效果结算、无竞争run-use及数量检查保持，不增加控制产品进度的钩子或重试。文档准确描述存活sessionId集合，§21后台void恢复函数的返回语义也已修正。N24已定位判定修正确认，实际两个阶段是否自然命中仍NOT_RUN。
+
+已完整读取Worker自有next-window-04.ps1，并仅运行PowerShell Parser.ParseFile及Get-FileHash，未执行脚本。新入口SHA256实际为`05b0bf24bca39ba075a683063ab26e19f50ac09d39974516b00705a06ff420a1`，Parser错误0；原next-window.ps1和build-06/next-window-executed.ps1均仍为`bae62ff4c1eee443f0efafabf87f814f4a47f6177b9e0812a0ed9622cd087522`。新candidate06本次只读观察不存在，旧构建入口与失败候选未改变。
+
+新入口以正式邮件ExpectedSource核准确工作树、分支及干净HEAD，唯一新EvidenceName保留原件；dependencies/build逐级核私有CAS至本树无重定向。每条重命令前重新使用原资源采样，dependencies串行lock-only和frozen ignore-scripts/verify-store-integrity，typecheck使用实际TS6严格入口，generate使用原生成器/Node512，build只指向新candidate06并沿原构建器独占创建；其余Node1024、Go4/-p4/512MiB及BelowNormal保持。入口每次只执行一个选定Stage，不能据技术接受取得窗口；主控仍须新鲜核原S/所属、停止和资源，正式给定准确来源及单次Stage，结束后沿原保全流程恢复。当前代码继续开发，尚未冻结或执行任何Stage。
+
+实际`check-revision.ps1`准确e328d739→4ceff1ad EXIT0，两Markdown/7本地链接及Git空白通过，原锚点保持。window04-n24-static-01的一MJS/JSON/YAML、文档日志及两项退出0已读，保持Worker归属；本Reviewer的Parser及摘要核查同为只读。Program、依赖锁/安装、生成、构建、竞争/恢复/停止、服务及模型均未执行或仍未通过，全部T12余项、通用terminal和最终同安装候选双Worker继续同Worker，主控实际读取回执仍待答。
