@@ -15,7 +15,7 @@
 | Orca | Run `run_62ada397a104`；Task `task_ceb3b3bb76be`；Dispatch `ctx_8d6a6e1c0145` |
 | Worker / 主控 | `term_e9753d8f-70d9-4acd-8cc4-b98a61328b1b` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
 | 实际客户端与模型 | Orca 1.4.230 / Codex；本 Dispatch 的 `worker-show` 实际 projection 为 `gpt-6.1-sol`，实际终端预览为 `GPT-6.1-Sol xhigh fast`；请求参数中的 model 为 null，没有子 Agent |
-| 前置条件 | 准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 计划已接受，M0/A01 已接受，实现写域已授权；当前只允许静态准备，重操作窗口尚未交付 |
+| 前置条件 | 准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 计划已接受，M0/A01 已接受；主控交付窗口后已完成原依赖安装与 T01，T01 未复现原崩溃，补丁实施暂停等待原 Reviewer |
 
 原调查的规格与来源保留在报告。本次已读取本树 HANDOFF、STATUS、AGENTS、CODING、RESOURCES、相关规格、根主控当前首版 CLI 任务与 QUESTIONS、两份准确 M1 Git 原文和独立审核报告。实际 Git 比较确认本树 package、workspace、lock、contracts、scripts 和生成类型与 `32ab1eec808a5848aabad40f11133735a1214e55`、S 均无差异；`80d4` 相对于 `32ab` 仅新增本任务和报告，`5cd8` 后没有修改已接受的测试表。首版独立运行问题仍未回答，本任务不选择执行组件或扩大 S3 工具、预算与数据权限。
 
@@ -54,8 +54,8 @@
 
 ## 当前结果与接续
 
-独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）；接受 hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次主控已确认 M0/A01 接受并授权程序写域，当前尚未交付重操作窗口。
+独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）；接受 hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次主控消息 `msg_17851dde26c8` 明确 T00 保全与停止成功并交付唯一窗口，原件位于原产品树 `E/service-before-01`；本树准确程序仍为 `987811f417e92cd6f15961e60c279f616e3b21a8`。
 
-本树自有 `E=.verification/swa-m1-contracts-20261020/` 准备 `run-check.ps1`、`runtime-info.mjs`、`resources.py` 与 `CONTROL.md`。已完整读取原树同名检查脚本及其资源脚本，使用文件编辑工具按本树路径准备；原树服务控制脚本只由主控执行，本树不复制或执行服务控制。旧 Task `task_261b4dab6d89 / ctx_958a2bf0ae27` 已结算，原件继续保留。历史两次崩溃保持 FAIL；本树实际安装和修复结果均为 NOT_RUN。
+本树自有 `E=.verification/swa-m1-contracts-20261020/` 已准备 `run-check.ps1`、`runtime-info.mjs`、`resources.py` 与 `CONTROL.md`。原树服务控制只由主控执行，本树不复制或执行。原冻结安装退出 0，T01 原 `pnpm check:contracts` 退出 0，完整保留原 13 警告并实际完成 264 项示例和生成一致性；本次未复现崩溃。依已接受计划，因果判断为证据不足，T02—T08 未运行，没有编写或登记补丁，也没有自动重复复现。历史两次崩溃继续保持 FAIL。
 
-本树初始没有 node_modules。窗口交付后先用原锁文件冻结安装到本树，再执行 T01；该准备不改变依赖或已接受输入及断言。T02 后保存准确补丁源码 Commit，再继续冻结安装及 T03—T08，T07 使用准确程序 Commit 的干净归档。每条命令采用新的独立输出目录，命令与目录映射见报告。所有原命令、故意拒绝输入与失败原件保持。通过后普通提交、push 并创建针对 main 的新 M1 PR，交原独立 Reviewer；原 PR #2/#4 保持原状态，主控负责最终恢复和集成。
+已通过 `msg_596d46c36d91` 报告 T01 真实结果并交还唯一窗口，已观察的命令和进程退出。主控 `msg_7d11251e5e36` 报告 T09 成功，原 S、Web、原库、完整环境和 Q/媒体/CodeGraph 配置恢复，新 PID52040、创建 UTC `2026-10-20T07:44:04.137854Z`，健康与唯一监听核查通过，原件在原树 E/service-after-01。实际命令、输出目录、版本、采样与耗时见报告。当前只普通提交、push 调查记录，等待原 Reviewer 的范围结论；取得对应决定和新窗口前不实施 T02。修复有效性仍未验，不创建新 M1 修复 PR。

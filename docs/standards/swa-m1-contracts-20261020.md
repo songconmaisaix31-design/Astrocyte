@@ -1,18 +1,18 @@
 # M1 Windows 契约检查：根因调查、接受计划与实施记录
 
-本报告支持[本轨任务](../../tasks/swa-m1-contracts-20261020.md)的实施与独立审核。准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）已接受；本树当前完成静态准备，运行验证尚未执行。
+本报告支持[本轨任务](../../tasks/swa-m1-contracts-20261020.md)的实施与独立审核。准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案与 T00—T09（含 T05A）已接受；本树原依赖安装与 T01 实际退出 0，未复现历史崩溃，补丁因果判断为证据不足。
 
 ## 需求与准确来源
 
 主控工作树为 `C:/Users/DW/orca/Astrocyte`；其 `docs/META_PLAN.md` §5.1 明确原有三个串行阶段，§9.1 M1 要求原始命令完整成功，§12 A03 要求契约一致。主控 `tasks/swa-mainline-20261020.md` 要求 M0 后实施，本轮允许先独立只读调查。现产品 [TASKS](../TASKS.md)、[交付报告](delivery-candidate-20261020.md)和主控 `tasks/delivery-candidate-20261020.md` 共同规定保留真实退出和失败原件，先审核方案与测试计划。
 
-源码基线为 `32ab1eec808a5848aabad40f11133735a1214e55`；原实际运行源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。当前 Node 路径 `C:/Program Files/nodejs/node.exe` 的文件版本为 `24.16.0.0`；package 要求 Node `24.16.0`、pnpm `11.27.0`。PATH 上 `pnpm.ps1` 经 Corepack 入口调用 Node；其本地已缓存 `pnpm/11.27.0/package.json` 确认为 `11.27.0`。本轮没有启动 Node 或 pnpm 以获取运行结果，实际运行版本将在获准窗口中记录。
+源码基线为 `32ab1eec808a5848aabad40f11133735a1214e55`；原实际运行源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。Node 路径 `C:/Program Files/nodejs/node.exe` 的文件版本为 `24.16.0.0`；package 要求 Node `24.16.0`、pnpm `11.27.0`。PATH 上 `pnpm.ps1` 经 Corepack 入口调用 Node；其本地已缓存 `pnpm/11.27.0/package.json` 确认为 `11.27.0`。原调查阶段只读取文件，本次实际运行版本已在窗口记录中核实。
 
 当前实际依赖文件及锁文件均为 `@redocly/cli@2.60.0`；其 engines 允许当前 Node 范围。官方 npm 元数据返回 `gitHead=d7177a33a7dde5a4058744dfdfd0000a592998dc`，包完整性与现有锁文件记录一致：`sha512-/xzlR+FGbo2pblWlgIZ92nrLwHgnpE6Ri8kCQm+LaizgijdwMYetly/pv4vdeZ4Hv8S6Zdw/+2fRBlhucbC9qw==`。没有预选或安装其他依赖版本。
 
 ## 原始失败与已知成功的边界
 
-原件根 `E0=.verification/delivery-candidate-20261020/`；本轮只读取，未覆盖任何原件。
+原件根 `E0=C:/Users/DW/orca/workspaces/Astrocyte/frontend-observatory-20261018/.verification/delivery-candidate-20261020/`；本次只读取，未覆盖任何原件。
 
 | 原件 | 实际命令及事实 |
 | --- | --- |
@@ -34,7 +34,7 @@
 6. `validate-examples.mjs` 使用现有 yaml、Ajv2020 和 ajv-formats，遍历原组件及请求/响应示例并检查 supported capability 边界。`generate-client.mjs --check` 使用原 openapi-typescript 生成结果，与提交类型逐字比较，不一致抛出既有 drift 错误。
 7. 已安装 pnpm 的 `verifyPatches` 对未应用补丁默认抛出 `UNUSED_PATCH`，`applyPatchToDir` 对缺失、无效及应用失败分别抛出 `PATCH_NOT_FOUND` / `INVALID_PATCH` / `PATCH_FAILED`。方案使用既有失败语义，不开启容错配置。
 
-官方 Redocly 的 wrapper、lint、telemetry 三份对应源码已完整读取并保存到自有忽略目录 `E=.verification/swa-m1-contracts-20261020/sources/`；其他官方来源通过只读 HTTP 核查，下表分别说明用途：
+原调查已完整读取官方 Redocly 的 wrapper、lint、telemetry 三份对应源码，保存在原产品树 `.verification/swa-m1-contracts-20261020/sources/`；本次仍从原路径只读使用。其他官方来源由原调查通过只读 HTTP 核查，下表分别说明用途：
 
 | 来源 | 支持的判断 |
 | --- | --- |
@@ -53,7 +53,7 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 
 现有事实把故障定位到“校验已经完成后的进程退出阶段”。最有依据的修改边界是 Redocly 命令包装器的强制退出：原规则通过后得出 code=0，但它在自然退出事件里再次调用同步 `process.exit`。官方 Node 文档说明可以保留 code 并自然退出，Windows 上游记录与当前断言相符。
 
-判断仍有两项未知：本机具体异步句柄的创建方、只改变该退出操作是否足以消除当前崩溃。测试将固定其他条件，仅修改该依赖包的这一处操作。如果相同条件下改前成功、改后仍崩溃或出现其他退出异常，当前因果判断保留为证据不足或被否定，先更新计划后继续。没有把网络失败、pnpm、资源或契约内容直接认定为根因。
+判断仍有两项未知：本机具体异步句柄的创建方、只改变该退出操作是否足以消除崩溃。测试将固定其他条件，仅修改该依赖包的这一处操作。如果相同条件下改前成功、改后仍崩溃或出现其他退出异常，当前因果判断保留为证据不足或被否定，先更新计划后继续。本次 T01 改前成功，已停止补丁实施并交原 Reviewer。没有把网络失败、pnpm、资源或契约内容直接认定为根因。
 
 ## 一个修复方案与具体影响
 
@@ -71,7 +71,7 @@ Node 原件的断言行号为 94，本次取得的对应 tag 源码断言位于 
 
 ## 已接受测试计划
 
-本轮所有条目均为 **NOT_RUN**。测试使用真实原契约、原 CLI 和真实历史生成文件，不构造协议、CLI 替身或业务数据。修改依赖退出行为的相关边界由真实子进程检查；不为这一修改添加只复述实现的纯函数测试。原命令集成与干净副本安装分别覆盖项目调用和交付后的依赖复现。
+下表保留准确 `5cd8` 接受的输入和断言，实际状态单列于本树实施记录。测试使用真实原契约、原 CLI 和真实历史生成文件，不构造协议、CLI 替身或业务数据。修改依赖退出行为的相关边界由真实子进程检查；不为这一修改添加只复述实现的纯函数测试。原命令集成与干净副本安装分别覆盖项目调用和交付后的依赖复现。
 
 | 编号 / 覆盖要求 | 具体输入与操作 | 必须观察的结果 |
 | --- | --- | --- |
@@ -105,9 +105,9 @@ T05A 的公开输入为[准确基线契约](https://github.com/songconmaisaix31-
 
 | 阶段 | 本树实际命令 / 输入 | 独立输出目录（E 内） | 当前结果 |
 | --- | --- | --- | --- |
-| T00 | 主控执行原树已审服务控制脚本；停止当前同 S 服务并保全原库与环境 | 主控登记原树实际路径 | NOT_RUN |
-| 准备 | `pnpm install --frozen-lockfile`，原 workspace/lock | `baseline-install-01` | NOT_RUN |
-| T01 | 原 `pnpm check:contracts`，未补丁依赖 | `t01-baseline-01` | NOT_RUN |
+| T00 | 主控执行原树已审服务控制脚本；停止当前同 S 服务并保全原库与环境 | 原树 E/service-before-01 | 主控报告 PASS，消息 msg_17851dde26c8 |
+| 准备 | `pnpm install --frozen-lockfile`，原 workspace/lock | `baseline-install-01` | EXIT0 |
+| T01 | 原 `pnpm check:contracts`，未补丁依赖 | `t01-baseline-01` | EXIT0；本次未复现历史崩溃，补丁因果证据不足 |
 | T02 | `pnpm patch @redocly/cli@2.60.0 --edit-dir <本E/package-edit>`；文件编辑工具修改准确包；`pnpm patch-commit <本E/package-edit>`；`pnpm install --frozen-lockfile` | `t02-prepare-01`、`t02-register-01`、`t02-install-01` | NOT_RUN |
 | T03 | 原 `pnpm check:contracts` | `t03-contracts-01` | NOT_RUN |
 | T04 | 真实 CLI + 原规范 + E 内 error 配置；隔离副本中的原 `pnpm check:contracts` | `t04-cli-01`、`t04-chain-01` | NOT_RUN |
@@ -116,24 +116,52 @@ T05A 的公开输入为[准确基线契约](https://github.com/songconmaisaix31-
 | T06 | 隔离副本采用准确历史 schema；原 `pnpm check:contracts` | `t06-drift-01` | NOT_RUN |
 | T07 | 准确程序 Commit 的独立归档；原冻结安装及原契约命令 | `t07-install-01`、`t07-contracts-01` | NOT_RUN |
 | T08 | `git diff --check`、`node scripts/check-dependencies.mjs`、成熟 Markdown 解析器本地链接检查 | `t08-dependencies-01`、文档检查原件 | NOT_RUN |
-| T09 | 本次子进程全部结束后交还窗口；主控恢复同 S、Web、原库和配置 | 主控登记实际路径 | NOT_RUN |
+| T09 | 本次命令结束后交还窗口；主控恢复同 S、Web、原库和配置 | 原树 E/service-after-01 | 主控报告 PASS，消息 msg_7d11251e5e36 |
 
-上述目录只作为执行位置，尚无相应运行结果。每次以独立 PowerShell 进程调用本 E 的 run-check，填写准确完整 ExpectedSource、新 OutputName 和明确窗口标记；副本使用 CheckRoot，CLI 负向配置使用 ConfigPath。原 `pnpm check:contracts` 字符串保持。实际 stdout/stderr 合并保存到 check.log，另存 run.log、invocation.json、resources.json、runtime.json、pnpm-version.txt、result.json；实际负向退出保留，不覆盖为通过。每个安装/检查启动前重新采样，原服务恢复期间不运行检查。
+每次以独立 PowerShell 进程调用本 E 的 run-check，填写准确完整 ExpectedSource、新 OutputName 和明确窗口标记；副本使用 CheckRoot，CLI 负向配置使用 ConfigPath。原 `pnpm check:contracts` 字符串保持。实际 stdout/stderr 合并保存到 check.log，另存 run.log、invocation.json、resources.json、runtime.json、pnpm-version.txt、result.json；实际负向退出保留，不覆盖为通过。每个安装/检查启动前重新采样，原服务恢复期间不运行检查。
+
+### 首次实际窗口结果
+
+主控 `msg_17851dde26c8` 明确 T00 于 `2026-10-20T07:40:57Z` 完成，原 PID45956 已退出、64505 空闲；当前原库一致备份和环境/Q/媒体配置保全成功。窗口只用于已接受计划；本 Worker 没有停止或恢复服务。
+
+实际执行命令如下，均由本 E 的 run-check 原样调用目标命令：
+
+```powershell
+pwsh -NoLogo -NoProfile -File .verification/swa-m1-contracts-20261020/run-check.ps1 -Phase install -ExpectedSource 987811f417e92cd6f15961e60c279f616e3b21a8 -OutputName baseline-install-01 -CoordinatorWindow
+pwsh -NoLogo -NoProfile -File .verification/swa-m1-contracts-20261020/run-check.ps1 -Phase contracts -ExpectedSource 987811f417e92cd6f15961e60c279f616e3b21a8 -OutputName t01-baseline-01 -CoordinatorWindow
+```
+
+| 项目 | 原依赖冻结安装 | T01 原命令 |
+| --- | --- | --- |
+| 实际退出与耗时 | 0，10.749932 秒 | 0，19.1292555 秒 |
+| 目标命令 UTC | 07:42:00.1772990 至 07:42:10.9296330 | 07:42:29.3471493 至 07:42:48.4786604 |
+| 资源样本 UTC | 07:41:56.388392 / 07:41:59.390621 | 07:42:25.801555 / 07:42:28.803656 |
+| CPU / 可用内存 | 4.6% / 10.9533 GiB；12.3% / 10.9142 GiB | 6.6% / 10.5914 GiB；7.1% / 10.5616 GiB |
+| 实际单调间隔 | 3.0022342 秒 | 3.0021054 秒 |
+| 结果 | 355 个包复用，无下载；原 lock 无变化 | Redocly valid、13 warnings；`Validated 264 OpenAPI examples and supported capability boundaries`；`OpenAPI generated types match source` |
+
+两次均为 Node `v24.16.0`、pnpm `11.27.0`、实际 CLI `2.60.0`，Node 路径 `C:/Program Files/nodejs/node.exe`；实际 heap 为 `1056964608` 字节（1008 MiB），Node priority=10 与 PowerShell BelowNormal 相符，资源采样进程 priority=16384。T01 的实际 CLI 路径为本树 `node_modules/.pnpm/@redocly+cli@2.60.0/node_modules/@redocly/cli/bin/cli.js`。完整 versions 保存在 runtime.json。调用保留 pipe 输出和原 telemetry 行为，没有改动 package 命令、规范、规则、脚本、生成类型、workspace 或 lock。
+
+T01 入口 PID7840，采样中观察到真实子进程 Node PID18540、创建本地时间 `2026-10-20 15:42:29`；实际命令行保存在 children-snapshot.json。命令返回后实际进程查询确认这两个 PID 及其当前直接子进程均不存在，查询结果保存在 residual-processes.json。原服务仍由主控管理，未对业务 HTTP 或 SQLite 运行检查。
+
+T01 未复现原失败，已接受计划中“改前成功则因果证据不足，先更新计划”的条件触发。没有实施 T02、没有生成补丁、没有自动重复原命令；T02—T08 保持 NOT_RUN。已通过 `msg_596d46c36d91` 报告并交还唯一窗口，主控已将实际结果交原 Reviewer。两次历史 FAIL 与本次 EXIT0 分别保留；本次 EXIT0 不能证明退出补丁有效。
+
+主控 `msg_7d11251e5e36` 报告 T09 已完成：新 PID52040、创建 UTC `2026-10-20T07:44:04.137854Z`，原 S 程序、同目录 Web、原 cwd、完整环境、原库及 Q/媒体/CodeGraph 配置保持。主控核实停止期间当前原库与 T00 备份 iterdump 逐字相同，启动资源合法、健康成功、主页字节与同源 Web 一致，唯一 loopback 监听、实际进程身份/优先级/环境通过，running.json 已按新身份更新。原件在原产品树 `E/service-after-01`；本 Worker 未执行这些服务/数据库检查。原服务重新占用窗口，后续动态操作停止；本次只提交、push 真实调查文档，不创建修复 PR。
 
 ## 资源、审核与接续
 
-主控继续管理原 64505 服务；当前只读调查没有取得重操作窗口。每个实际安装、测试或命令验收前，先取得主控授予的独占窗口，确认服务已由主控按授权处理；随后两次真实 CPU/可用内存采样，UTC 与单调计时记录齐全，间隔 2—5 秒、CPU 均小于 85%、内存均至少 4 GiB。进程采用 BelowNormal、Node heap 不超过 1024 MiB；本次检查的临时目录和缓存限定 E，原服务恢复沿真实配置。已有窗口或采样不复用为下一重操作的额度。静态审查与文档检查遵守现有 RESOURCES 专用范围。
+主控继续管理原 64505 服务；本次窗口已交还并由主控恢复服务。每个实际安装、测试或命令验收前，先取得主控授予的独占窗口，确认服务已由主控按授权处理；随后两次真实 CPU/可用内存采样，UTC 与单调计时记录齐全，间隔 2—5 秒、CPU 均小于 85%、内存均至少 4 GiB。进程采用 BelowNormal、Node heap 不超过 1024 MiB；本次检查的临时目录和缓存限定 E，原服务恢复沿真实配置。已有窗口或采样不复用为下一重操作的额度。静态审查与文档检查遵守现有 RESOURCES 专用范围。
 
-主控 `msg_656f36f44f3e` 补充的服务事实已读取：当前 PID45956、创建 UTC `2026-10-19T19:47:04.6572166Z`、S 路径和唯一 loopback 监听已由主控核实。本轮只读 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，其 source 仍为准确 S；静态读取旧 `candidate-service.py` 已确认 `original_identity` 和 start 前置绑定 c5。它与旧 `restart-product/restore-service.ps1` 不能直接用于本次同源恢复，S 目录没有旧工具要求的 stage 元数据。
+原调查期间主控 `msg_656f36f44f3e` 核实的服务身份为 PID45956、创建 UTC `2026-10-19T19:47:04.6572166Z`、S 路径和唯一 loopback 监听；该进程在本次 T00 已停止。原只读 running.json 的 source 为准确 S；旧 `candidate-service.py` 的 original_identity 和 start 前置仍绑定 c5，与旧恢复脚本均不用于本次同源恢复。当前新身份以本节 T09 实际记录为准。
 
 T00/T09 若需要新控制工具，限 `E/service-window.py` 等自有文件，先审核后编写，再交主控审阅执行。工具依当前实际记录限定程序、Web、原库、端口及进程身份，成熟 psutil 读取真实进程环境，成熟 SQLite backup API 保全原库，不直接写业务表；缺少权限或配置立即失败。保全 Q 的完整指针及原媒体/CodeGraph 配置，禁止输出秘密值。停止与恢复均由主控执行；保存失败或资源拒绝时保留原状态，不使用旧库覆盖当前业务，不编造 stage.json，不修改旧已验脚本。服务自身正常启动的既有观察更新时间按真实启动区间保留；出现业务值变化交主控核查。
 
 各项前后记录准确 Commit、工具版本、输入、命令、stdout/stderr、实际退出、采样、时长及实际残留进程。改后与改前同条件比较，没有以成功结果覆盖失败。出现资源不足、非预期包变动、不同警告/规则集合、崩溃或错误码变化时立即报告，未验范围继续保留；不自动恢复数据或停止其他进程。
 
-独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案和全部 T00—T09（含 T05A）；独立报告为 `swa-mainline-review-20261020/docs/standards/swa-m1-contracts-review-20261020.md`，hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次 M0/A01 前置已完成，实现写域已授权；当前仅静态准备，等待主控明确交付窗口。
+独立 Reviewer 已接受准确 `5cd8dbdfa59a0cabe8191e9343ca43122c8afa51` 的方案和全部 T00—T09（含 T05A）；独立报告为 `swa-mainline-review-20261020/docs/standards/swa-m1-contracts-review-20261020.md`，hook `msg_38a94c047d3d` 已由主控完整读取并回复 `msg_298a8710f923`。本次按其停止条件保留 T01 未复现结果；补丁方案需要原 Reviewer 处理证据不足后才能继续。
 
 原调查 Task `task_261b4dab6d89 / ctx_958a2bf0ae27` 已正式结算，原脚本和证据仍在原产品树。主控已完整静态审阅该树 `service-window.py`、`CONTROL.md` 和检查入口，并核旧 PowerShell Parser 通过；服务控制只由主控执行。原当前 S、Web、原库与环境的停止/恢复仍按 T00/T09，不沿用旧 c5 控制脚本。
 
-本次已执行文件与 Git 核查、普通文档合并、Orca 状态/消息核查和文件编辑工具准备；本树 PowerShell `Language.Parser.ParseFile` 只读解析通过，`git diff --check` 退出 0，本地 resources.py 与原资源入口逐字比较无差异。这些检查在 BelowNormal 下逐项执行。没有执行本树脚本正文、复现、安装、编译、测试或业务检查，没有操作服务、修改依赖或系统环境。原调查保存的外部原始来源仍在原树 E/sources。普通提交、push 与针对 main 的新 M1 PR 已授权，须在实际自测通过后交准确 Commit；独立实施审查仍交 `task_1cd8014750f9 / ctx_980a3282c339`。
+本次静态准备中的 PowerShell `Language.Parser.ParseFile` 只读解析通过，`git diff --check` 退出 0，本地 resources.py 与原资源入口逐字比较无差异，逐项 BelowNormal 执行。随后在明确窗口中运行一次原冻结安装与一次 T01，实际结果如上，没有实施依赖补丁、编译、其他功能检查或系统环境修改。文档静态检查使用已安装 `marked@18.1.0`，`node .verification/swa-m1-contracts-20261020/check-docs.mjs` 退出 0，核两份文档 5 个本地链接和已接受测试表原文保持，实际 heap `520093696` 字节（496 MiB）、priority=10；原件为 E/doc-check-01.log。该检查只覆盖文档，T08 的依赖程序检查仍未执行。主控已要求本次准确调查文档普通提交、push 后回传 SHA，等待原独立 Reviewer `task_1cd8014750f9 / ctx_980a3282c339` 的范围结论；不创建修复 PR。
 
-当前程序修复有效性为 NOT_RUN；两次原始崩溃保持 FAIL。没有创建或更新 PR，不宣称契约、首版 CLI、完整 CI 或 S3 已通过。发现因果否定或测试/方案实质变化先交原 Reviewer；主控负责最终服务恢复、检查与集成。
+当前程序修复有效性为 NOT_RUN；两次原始崩溃保持 FAIL，本次准确源原契约命令 EXIT0 单列保留。没有创建或更新 PR，不宣称历史故障已修复、首版 CLI、完整 CI 或 S3 已通过。原 Reviewer 处理补丁因果证据不足，主控负责最终检查与集成。
