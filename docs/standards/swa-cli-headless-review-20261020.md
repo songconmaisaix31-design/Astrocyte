@@ -75,7 +75,7 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 
 ## 当前状态
 
-结论：**接受准确`396ed69b30890185bdade3ae23f8206cf18b9b82`的完整方案与T00—T15测试计划**。已独立核对5523→3162→396e的全部差异及相关真实源码，F01/F02的方案缺口已补，F03的内核采集前置已删除。此次接受限于方案、测试覆盖和拟申请的模块边界，程序写域由主控授予；程序实现、模型认证和动态验收均未接受。
+结论：**接受准确`396ed69b30890185bdade3ae23f8206cf18b9b82`的完整方案与T00—T15测试计划**。已独立核对5523→3162→396e的全部差异及相关真实源码，F01/F02的方案缺口已补，F03的内核采集前置已删除。此次接受限于方案、测试覆盖和模块边界，程序写域由主控授予。后继准确847ec阶段静态CR退回F04—F07，程序实现、模型认证和动态验收均未接受；停止强化方案尚待准确版本审核。
 
 本方案首次归属为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`。主控在`msg_d2e2d0b64a50`确认该静态Task已结算，返修沿原终端/工作树/分支由`task_9f062888e786 / ctx_0d069056baff`负责；仍为同一个原Worker。正式意见通过`msg_e632a2126807`送该Dispatch。计划接受后，主控准确f7c97已授予逐文件程序写域及028迁移，Worker继续静态实现；后继两项依赖专用窗口已交回，原S同源恢复为PID12800，当前没有构建、模型或产品服务窗口。旧ctx_c9的启动未知及开发会话恢复不作为产品运行证据。本Reviewer没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务；后续动态操作仍需主控安排。
 
@@ -195,3 +195,60 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 主控`msg_9d3fef7a4e0e`仅将窗口脚本的停前期望改为12800及创建UTC09:43:52.279923，准确SHA256为`0742a46eb64d399ed8171b5a9f426a0a5bfb53e1561442428d7484b46df22424`。已只读核两个常量，并在内存中仅替换回先前两个值，所得全部文件字节的SHA256与已审28433c完全相同；没有写入文件或执行脚本。**接受这两处身份常量的静态同步**，其余流程沿用已审范围。该同步不代表下一次prepare、停止或窗口交付已发生；执行前仍须核实际PID、创建时间、路径、环境、所属及唯一监听。
 
 本次两常量同步hook为`msg_992fef6a0e30`；主控在`msg_9c7ecc38bfe7`明确完整读取准确0742a46e与两处变化，确认其余流程保持、下次重核及未作动态通过，实际读取回复确认本次唤起。
+
+## 准确847ec阶段代码的独立静态CR
+
+结论：**退回准确`847ec2687857b06430284aecdf81a6887f2f996f`中F04—F07所列已成形代码**。整体功能与动态结果仍证据不足；CLI、成果导出、安装、停止保护和真实测试是原Worker明确声明的阶段待办，不因阶段尚未完成单独判定失败。396e方案接受和此前所有接受范围保持。
+
+依据主控`msg_14fa15fafb20`、`msg_b3ec74ef5115`和`msg_a47d578c243e`只读准确Git对象，其父提交为已审f7c97；没有读取正在修改的工作文件代替该提交，没有运行Go/Node功能检查、SDK、模型或服务。847ec已普通push，但没有正式PR，当前不发布GitHub COMMENT review；待真实PR及准确后继再按相应范围CR。
+
+### F04：同一controller的两项task.create可共同通过唯一性检查
+
+严重程度：较高，影响H03/H04/H06。准确`runtime/swa-orca/src/native-methods.ts:163`的taskCreate在第167行检查已有task receipt，随后第168行await exactController，直到第169行才保存带controller的checkpoint。两个不同R可在await期间都通过检查，然后各自向helper交付task.create。原生mutation executor只按caller/R去重，没有按controller合并不同R；helper串行也没有重新检查单任务约束。准确上游`rpc/methods/orchestration/runs/runs.ts`的runCreate每次调用都会createRun并更新该调用者当前Run，因此存在创建两个Run/root Task及改变绑定的执行交错。
+
+原Worker需在首次可能创建Run之前完成同一controller的原子准入，复用已有原生持久状态；pending/unknown继续保留占用。T06补不同R、同一controller的真实竞争及重启未知情况，只有同一Run/root Task可被接受。这里是源码推导的可行交错，没有宣称动态复现。
+
+### F05：固定两Worker上限没有原子占位
+
+严重程度：较高，影响H07/H11及T08。准确`native-methods.ts:178`的controllerDeliver在await身份观察之后调用validateTaskAction；第228行只计算已经创建的子Task数量，随后异步向helper发送真正workerStart。多个不同R可以在子Task尚未创建时都看到少于2而通过，helper以后逐项调用真实workerStart即可超过上限。准确原生workerStart/local-worker-start没有该SWA root Task的max_workers=2约束；原Coordinator的maxConcurrent属于另一条自动协调入口，此处没有使用该入口。
+
+需要把同一root的创建接受与配额占用合并为原子准入，unknown请求保持额度，不以等待helper或同R去重代替异R竞争保护。按已审T08使用真实请求/原生SQLite检查竞争，禁止模拟接收器；未命中竞争保留INCONCLUSIVE。
+
+### F06：释放判据读取了不存在的外层字段
+
+严重程度：较高，影响H08/H09及T11/T13。准确`native-methods.ts:213`的requireReleased在第216行读取row.release_state。准确上游`orchestration/db/worker-terminal/worker-terminal-listing.ts:listWorkerTerminalResources`返回的外层行含resource，release_state位于真实WorkerTerminalResourceRow内；外层没有该字段。有任意Worker行时，该表达式即使对已released资源也得到undefined并拒绝controller.close/task.complete，静态类型也不匹配。
+
+原Worker需按实际原生资源/退出状态结构判断，resource缺失或unknown不能默认released。T11/T13核真实已释放资源允许完成/关闭、未释放或未知仍拒绝。未运行类型检查，不将源码定位写成已获得编译器错误。
+
+### F07：合法人类安全停止被执行批准与旧上下文阻断
+
+严重程度：较高，影响原权限规则、H08及T03/T10。准确`internal/workspace/app/orca_execution.go:207`的authorize在合法human通过AuthorizeProjectActionCaller后仍无条件调用ValidateProjectActionScope，第279—290行还对所有controller动作拒绝旧context settings_revision。因此关闭AllowAgentControl、撤销AllowedActions或更新设置后，合法已认证人类也不能停止仍属自己的Worker。
+
+既有`internal/workspace/app/projects.go:66`对合法human只核身份返回，StopNativeSession在第742行核实际会话所属后调用stopOwned；`project_policy.go:91`也明确人类安全停止不依赖执行批准。新消费方应保留该规则，安全停止仍须严格核真实native所属、PID/创建时间及退出证据；Agent的过期/撤销准入保持拒绝，不构造human凭据。使用已有真实人类认证核撤销执行批准及设置变化后的自有停止，不扩大到其他主体或未知进程。
+
+### 原始来源与产品适配的边界
+
+已用原生Git树跨只读对象库比较准确b287与847ec中的来源子树，原件为自有`.verification/orca-source-847ec268.json`：10处内容适配、1个新增swa-sdk-launch、31个100755→100644的文件模式变化；另有314个原始已跟踪路径未进入该子树，范围为docs/audits及其他文档/审查工具和7个tests/tools。LICENSE及根package/锁等对象与原来源相同。全部10处内容适配及新增SDK launch均已读取；31个模式变化不计为产品行为适配。
+
+这些缺路径尚未发现运行时源码缺失，不能据此认定Windows功能失败；原Worker应说明实际抽取及模式边界，不能把该子树称为全部原始源码逐项相同。安装闭包仍按计划待验，不追加运行全部上游fixture或修改原始终端文本的要求。真实完整来源空白检查的EXIT1由Worker记录保留，本Reviewer没有重复该检查。
+
+实际检查：产品路径`git diff --check f7c97d36 847ec268 -- . ':!third_party/**'`通过；已安装marked18.1.0只检查本次三份产品Markdown，6本地链接通过；BelowNormal、Node512MiB。只读来源比较使用Git原生diff及两个已有对象库，不执行上游程序，不安装或编译。F04—F06已通过`msg_0e341cd05d66`交原Worker，F07及来源边界通过`msg_5aceb2713a1d`补充；修复均由原Worker完成。
+
+准确847ec退回hook为`msg_dacb32984985`，已持久入队；本次实际读取回复尚待主控确认，入队不作为唤起完成的证据。
+
+## 停止强化方案的独立条件
+
+主控`msg_461d9f9b6f74`要求复核后继Windows Job方案。以下J01—J06在收到准确方案版本前形成，沿H08/H10/H17及T09/T13，不替代原测试或扩大为全机隔离验收。
+
+Microsoft明确kill-on-close在最后一个Job句柄关闭时作用于其成员；Job查询必须核API成功返回，空句柄会查询调用者当前Job。上述细节使句柄所属和见证路径成为必要条件。依据为[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[QueryInformationJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-queryinformationjobobject)和[TerminateJobObject](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-terminatejobobject)，已完整读取。这些是API事实，以下为根据本任务自行推导的验收条件。
+
+| 条件 | 必须满足的行为、边界与失败路径 |
+| --- | --- |
+| J01 模型前准入 | 实际随包native能力、Job创建/限制/分配及SDK真实root绑定在首次模型请求和可生成后代的加载之前成功；缺API、原生装载错误、分配拒绝或身份不明时立即失败，不只报告能力标志或切回宽松启动 |
+| J02 精确所属 | 每个Worker使用可解释的自有Job、PID/创建时间和session/Dispatch；不得把原Orca、IDE、daemon共享Job或B当A的终止对象。说明句柄创建者、持有者、继承/复制/关闭和重启后如何核所属；空句柄或当前Job不自动代表自有 |
+| J03 实际后代范围 | 核已采用启动调用中的嵌套Job、breakaway和句柄继承，实际模型子进程及其已用后代创建路径都进入获准范围；适用环境拒绝嵌套时失败。只审本产品实际路径，不要求证明恶意同用户或全部Windows进程创建接口 |
+| J04 生命周期与见证 | 分别说明正常stdin关闭、abort、强制停止、root异常退出及宿主失联/重启。kill-on-close依赖最后句柄，额外见证句柄可能延后其生效；必须给出真实句柄生命周期和独立退出观察，不能以设置flag成功、root退出、API调用成功或一次空枚举判全树退出 |
+| J05 未知保全 | 只有真实root和完整目标树退出可写停止确认/释放；Job查询失败、原生证据缺失、身份改变、句柄丢失及残留保持unknown和占用，不关闭未知或非目标资源，不重发任务。重启不能把无记录当无后代 |
+| J06 真实检查 | T09使用真实自有Node进程/后代及实际安装的native能力检查正常与异常关闭，fixture不冒充Agent；T13仍用同一安装候选的真实A/B并发，停止A时B原进程/session继续执行并取得成果。补丁和能力必须属于该候选；不改本机Orca，不新增管理员、驱动或全机追踪前置 |
+
+尚未收到该强化方案的准确Commit、完整句柄设计及测试差异，本轮不作接受结论。当前原S12800运行、没有动态窗口；后继仅按实际来源和相应变动复审。
