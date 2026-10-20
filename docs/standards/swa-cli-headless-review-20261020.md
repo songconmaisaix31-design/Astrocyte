@@ -399,6 +399,8 @@ d7明确A真实计划停止时分别返回实际stopped/failed原因、Job/资�
 
 `.verification/check-revision.ps1 -Previous 76e9dafd12f4ff430a3082ff4a65ec543d1e02f8 -Candidate d7f21242259739cfb49a4f68a19a1a8f28bcec32` EXIT0，唯一Markdown、1本地链接、Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。未重跑已审库或产品检查，无动态窗口。
 
+准确d7计划接受hook为`msg_2348de1f3c82`；主控在`msg_071202f7e0e4`确认完整读取99d084新增报告，逐项核A限制/B完整成果、错误分支、原生结算及严格只读来源，确认只接受补充计划，仍无动态结果或窗口；实际读取回复确认本次唤起。原Worker收到`msg_90d477914ad6`接续实施通知。
+
 ## 准确76e9dafd的授权标识、安装入口与SDK检查源码
 
 结论：**接受准确`76e9dafd12f4ff430a3082ff4a65ec543d1e02f8`的相应静态修复及检查源码范围**。已完整读取相对f295的全部七路径差异；准确76e9是d7的父提交。完整成果方案与实现分别沿上一节和后继处理，整体产品、真实SDK与安装结果继续证据不足。
@@ -410,3 +412,5 @@ Runtime.Target改为现有注册标识pi。已核同一准确代码：SetProject
 新增SDK检查使用同候选Node、真实只读OAuth适配、真实受限SDK和实际Job；代码核准备会话的tools/cache/retry/compaction/认证操作、非法写回调不执行、真实get_state，以及仅允许get_state/abort时禁止prompt。已核真实JsonlRpcPeer成功响应解出data、Pi1.0.1 get_state字段与断言对应。该源码明确isStreaming=false、messageCount=0、model_calls=0，其abort为**空闲SDK的真实RPC关闭检查**，不能证明执行中模型取消、正向模型调用或双Worker停止；T13实际A/B仍须单独通过。
 
 verify入口在普通进程fixture后重新资源准入并调用该SDK检查，保留两个命令的实际退出及剩余分支；没有在源码阶段执行这些命令。`.verification/check-revision.ps1 -Previous f295f7c9360a31e6c1ac4ade2ab9c090c455ddae -Candidate 76e9dafd12f4ff430a3082ff4a65ec543d1e02f8` EXIT0，七路径Git空白及USAGE成熟Markdown解析通过，无本地链接/锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。当前无正式PR或动态窗口，所有测试、构建、安装、模型及服务仍NOT_RUN。
+
+准确76e9接受hook为`msg_4a9a79825778`；主控在`msg_fe6bcb71dc35`确认完整读取同一99d084报告的七路径、target及安装入口和空闲SDK检查范围，确认只接受静态修复与检查源码、未宣布SDK或安装可用；实际读取回复确认本次唤起。

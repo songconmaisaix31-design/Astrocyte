@@ -231,3 +231,13 @@ UTC11:12:58可用内存2.49GiB和11:15:17非所属进程工作集11.62GiB采用�
 `.verification/check-revision.ps1 -Previous 65bd699cffe9207f3504cb7744db2fdca0d483bb -Candidate a6b3898e893aa2488280fd0be8851485f1d663ab` EXIT0，三份Markdown、22本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA检查通过，没有动态重验。
 
 准确a6接受hook为`msg_37681cf6a7cc`；主控在`msg_51af50a56c88`完整读取faaa主线报告新增管理范围、历史只读观察的来源及实际轻量结果，确认只接受管理文档、原程序依赖未纳入main及无窗口保持；实际读取回复确认本次唤起。
+
+## main后继准确4b40495c的完整成果规格登记
+
+结论：**接受准确`4b40495cdab7eb9ffe98d1f30a89b895b33e13dd`的三份管理/规格增量**。按`msg_bb06a6138c18`完整读取a6→4b的STATUS、SPEC及首版任务差异，真实远端main同SHA；三路径以外全部已跟踪内容无差异，原程序、依赖、方案副本及既有报告保持。
+
+SPEC §21.1引用准确d7的§5.5原文，该内容已按同一准确Git对象完整读取并独立接受。当前登记的原件所属、成熟严格解析及只读/一致性/12MiB边界，A计划停止的真实限制与B完整成果/固定判据/原生资源结算，均与d7接受范围一致。worker read仍为原生预览，task result新增完整读取由同一Worker在原写域实施，计划接受未被描述为功能通过。
+
+pi注册标识及固定同候选执行入口、包内安装器/说明和空闲SDK检查仅静态接受，真实Grant仍由既有人类批准路径提供；服务启动不签发token。两次hook实际读取回复、全部动态未运行及无窗口状态准确，未新增权限、公开接口或执行状态。M1调查接受/修复因果不足和原S3/权限未决范围保持。
+
+`.verification/check-revision.ps1 -Previous a6b3898e893aa2488280fd0be8851485f1d663ab -Candidate 4b40495cdab7eb9ffe98d1f30a89b895b33e13dd` EXIT0，三份Markdown、22本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。真实远端及三路径以外无差异检查通过；没有访问产品服务、数据库或执行新的功能检查。
