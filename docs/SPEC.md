@@ -819,6 +819,17 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码、控制端身份、请求去重、工具关闭和安装接口依独立审核后的方案实施。原生调用的真实身份及退出证据不能由外部传入的 handle、actor 或模型自述替代。模型接入不修改本机 Agent 配置和认证，权限与资料范围按适用任务核实。
 
+准确396e的[执行方案与测试计划](standards/swa-cli-headless-20261020.md)已独立接受，其 §3—§7 为本首版接口与安装边界：
+
+| 模块与显式接口 | 状态与权限边界 |
+| --- | --- |
+| `cmd/swa`、HTTP → Workspace App 的 Orca execution 用例 | `serve/status/capabilities`、`controller open/show/close`、`task create/show/list/result/complete`、`worker start/show/list/read/send/stop/release`、`request show`；参数、JSON envelope、退出码和未知效果按方案 §6；传输层不访问业务数据库 |
+| Workspace App → Orca execution adapter | App 声明消费方端口及 DTO，每次核项目主体、适用 Grant 与动作；原生关联仅保存 project/grant/Run/root Task，迁移使用028。adapter 以随包 Node 入口调用真实 RuntimeClient；执行状态保留在原生存储 |
+| 产品 Node composition → 原生 runtime/controller/Worker | 仅注册获准方法；真实 PTY helper 的 launch/current consumer 执行 Run 与 Worker 操作。公开请求映射到原生 mutation receipts、确定 PTY 创建身份及固定子请求；副作用未知保留 pending，只读查询，不重发输入 |
+| Worker → Pi SDK 1.0.1 | 固定真实 `openai-codex/gpt-6.1-sol`、显式只读认证来源、空工具及资源集合；私有 SDK 子进程 home/agent/session，随包 SDK；只允许已审六项原生 RPC，关闭隐式重试、压缩和缓存预热 |
+
+新代码遵守 §3 的 App 端口、adapter 和入口组装关系；来源副本与产品 composition 位于各自独立目录。需要改变上述动作、权限、状态拥有者、公开错误或模型范围时先修订本节及方案并重新审核相关测试。实际构建、安装及 T00—T15 的结果由任务和报告登记，计划接受不表示功能通过。
+
 ### 21.2 已采用的工程决策
 
 | ADR | 决策 | 改动边界 |
