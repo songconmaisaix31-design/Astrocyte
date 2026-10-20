@@ -38,6 +38,17 @@ if ($Case -eq 'T02') {
     $swaNode = Join-Path $PackageRoot 'node/node.exe'
 }
 if (-not (Test-Path -LiteralPath $swaNode -PathType Leaf)) { throw '同候选 Node 不存在' }
+if ($Case -eq 'T03') {
+    if (-not [IO.Path]::IsPathFullyQualified($GoTestDirectory)) { throw '真实T03需要原编译输出的绝对路径' }
+    $swaSourceRoot = Split-Path $PSScriptRoot -Parent
+    $swaSourceRevision = (& git -C $swaSourceRoot rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or $swaSourceRevision -notmatch '^[0-9a-f]{40}$') { throw '真实T03缺少准确源码提交' }
+    $swaSourceDirty = & git -C $swaSourceRoot status --porcelain
+    if ($LASTEXITCODE -ne 0 -or $swaSourceDirty) { throw '真实T03需要准确干净源码' }
+    $swaCompiledRevision = (Get-Content -LiteralPath (Join-Path $GoTestDirectory 'SOURCE') -Raw).Trim()
+    $swaInstalledRevision = (Get-Content -LiteralPath (Join-Path $InstallRoot 'VERSION') -Raw).Trim()
+    if ($swaSourceRevision -cne $swaCompiledRevision -or $swaSourceRevision -cne $swaInstalledRevision) { throw '候选VERSION、编译SOURCE与准确源码必须相同' }
+}
 $swaEvidenceParent = Join-Path $CaseRoot '.verification/swa-cli-headless'
 $swaEvidence = Join-Path $swaEvidenceParent ($Case.ToLowerInvariant() + '-' + [Guid]::NewGuid().ToString())
 New-Item -ItemType Directory -Path $swaEvidence -Force | Out-Null
@@ -115,7 +126,6 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'approval-required.json'), (@{ ok = $false; required_action = 'human_register_public_project_review_settings_grant_agent_issue_project_token'; endpoint = "http://127.0.0.1:$Port"; project_root = $ProjectRoot; instructions = (Join-Path $InstallRoot 'USAGE.md'); automatic_human_session = $false } | ConvertTo-Json))
                 $swaExit = 3
             } elseif ($Case -eq 'T03') {
-                if (-not [IO.Path]::IsPathFullyQualified($GoTestDirectory) -or (Get-Content -LiteralPath (Join-Path $GoTestDirectory 'SOURCE') -Raw).Trim() -ne (Get-Content -LiteralPath (Join-Path $InstallRoot 'VERSION') -Raw).Trim()) { throw '实际 Go 测试二进制必须预先串行编译自同一候选源码' }
                 $env:SWA_ENDPOINT = "http://127.0.0.1:$Port"
                 $env:SWA_PROJECT_ID = $ProjectId
                 $swaStatusText = & $SwaPath status --json

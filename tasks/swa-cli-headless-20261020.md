@@ -101,3 +101,5 @@
 准确ebf55ac024a618d1ad32a741eb4eefcfc5dae77b的F16/F17参数修正已普通push EXIT0，等待局部独立CR，正文语义仍未修复。主控msg_e9b05ba6d40b要求先推进不依赖Node候选的四包Go编译；报告§7.4现提出原脚本移除Candidate前置条件、只核真实干净HEAD/新私有输出、成功后写既有SOURCE，并保留最终候选VERSION=SOURCE=准确源码及实际四函数PASS/零匹配/SKIP拒绝。该计划先审后改，脚本未修改，未编译或执行测试；无新重操作授权。
 
 报告§4.4/§7.7按原Reviewer1b295七条件补F17完整正文投递提案：私有host策略沿真实原生MessageRow/单封SQL顺序、R/native完成回执与parent批准全文关联、原operation及fence、原structured queue和真正Pi RPC投递原样body；不开放工具。当前授权在提交/排队/实际消费分别核，拟复用同一Go HTTP服务的私有owner只读admission及App authorize，能力仅内存传入Node/server并从helper/SDK删除，内部路由和结果消费者共同待审。原pointer重启/后续turn可mint通知ID的规则在产品正文策略中禁止用于已存在operation；未知不重发。D01—D05包含真实输入文件—消息—journal—同PID/session的SDK user逐字一致、最终业务结果、重复R、当前授权/所属拒绝、队列/断开/编码边界；全部未编码/未执行，等待主控定稿及独立审核。c2独立Go计划普通push实际TLS失败1，准确本地提交保留，未改全局网络或pin。
+
+原Reviewer7c6d接受079bd的T12计划，da2e接受ebf的参数局部静态修复，48385383接受c2独立Go计划；所有相关真实验收仍未运行。主控msg_8daabc14f03b仅授原compile-go-tests.ps1及现有T03消费者静态调整，当前已移除Candidate前置、补三函数资源准入/SKIP拒绝和结束时同一干净HEAD检查，T03在服务创建前核实际VERSION=SOURCE=准确源码；源码待CR，未运行编译或函数。最新本机注册Agent范围先补完整方案，T12及正文新接口继续未实施；主控负责当前交付物的限定REA分析，Worker不另跑REA、网络或重操作。
