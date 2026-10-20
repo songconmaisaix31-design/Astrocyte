@@ -725,3 +725,19 @@ F17正式hook `msg_b216a6dae3f1`已获主控`msg_8e18be67c949`完整读取回复
 UTC14:52:33独立只读确认restore-05 launch/restored/current running、原程序、PID18944/父50264、Get-Process创建UTC14:49:56.4916412和唯一127.0.0.1:64505监听；实际创建epoch与原件1792507796.4916413数值对应，沿既有owner小于1毫秒判据差为0。database-check原件为integrity ok、foreign_keys空、stopped_interval_comparison equal；恢复启动资源CPU15.3%/11.4%、可用10.364/10.406GiB、BelowNormal、单调3.002259秒，符合门限。当前原S已恢复并占用唯一窗口，主控原配置/health/Web及原Orca状态观察保留其实际来源。
 
 `.verification/verify-restored-owner.ps1`以本次准确hash、前后PID/UTC和restore-05参数运行EXIT0，原件`.verification/window-03c64-readonly.json`；标准JSON明确保持日期字符串，并以原件epoch核真实进程创建时间，没有隐式日期格式比较。该检查只读文件、进程和监听，未执行控制脚本、SQLite、HTTP或资源采样。准确脚本可供主控下次prepare使用，仍须重新核实际身份/环境、新保全目录和资源准入；本次不授予新重操作窗口或功能接受。
+
+## F17正文语义的来源核查与计划读取前条件
+
+已独立读取准确c0的structured-mailbox-pointer-delivery、formatter、structured-mail-source及Pi rpc-prompt实际调用链：原生队列把formatMessagePointer的check提示写入AgentJournalMessageItem.blocks；source只携带mailbox/Dispatch/message ID和sender引用，未携带正文；preparePiRpcPrompt只把text blocks连接为SDK的prompt.message，没有按source回查MessageRow。关闭工具的Pi不能自行执行check取得正文。因此把非法message换成合法枚举只能消除参数拒绝，现有正文语义仍不足以证明worker.send完成；该继承限制并入F17，不以重复问题另计结果。
+
+在读取后继正文投递方案前，依据用户控制目标、H03/H05/H06/H08/H09/H11/H12/H14及真实T13形成以下条件：
+
+- 实际发送必须从准确原生MessageRow取得已授权正文及来源，进入同一目标Worker的真实SDK输入；仅通知check、ID来源或回执不能代表正文已到。调用者正文保持文本，不成为shell、原始SDK RPC或新的权限参数。
+- 只在明确属于本产品及当前Run/root/Dispatch/session的Pi路径接入；其他原生宿主和本机Orca保持原行为。固定provider/model、ToolsOff、六项RPC和资源关闭条件继续覆盖后续输入，不能为读取mail开放命令工具。
+- 保持当前项目主体/Grant、controller consumer及原生session/runtime fence；发送、排队和实际消费各按其原生边界核验。停止、释放、user_owned、旧代或目标变化不能被正文投递绕过，不向替代Worker发送来完成原请求。
+- 继续使用同一原生消息、delivery/operation及公开R的持久来源，说明正文快照、排序和批次对应关系；重复R/重连不得重建消息、改读后来正文或产生第二prompt，不建设另一队列/请求账本。
+- 区分写前明确拒绝、原生队列已接受、实际SDK输入及副作用未知。断开、超时、busy/held、重启与输入后存储失败保留真实状态；未知继续查原R及原operation，不重发或用新R/新模型隐藏原效果。
+- 按声明的编码、大小和批次边界真实处理换行、引号、Unicode及类似JSON的文本；超限或坏源在实际边界失败，不截断为成功或拼接其他项目邮件。完整来源及未知用量按当前原件返回。
+- 测试须在最终同一安装候选的T13中证明B接收实际后续正文、同一PID/session/Dispatch及正确原生操作/turn来源，按固定业务判据产出真实后续结果，A及其他Worker保全。核自产SDK输入与准确MessageRow正文对应，并覆盖真实重复请求/断开和必要拒绝；schema接受、另一会话、仅消息ID或模型自述均不满足这些条件。
+
+这些是现有首版输入能力的必要条件，尚未选择或接受新接口。后继完整方案及测试计划由原Worker准确提交、主控定稿并独立审核后实施；当前无新的运行窗口，本Reviewer没有运行任何消息、SDK、模型或业务正文。
