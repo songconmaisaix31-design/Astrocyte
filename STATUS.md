@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确396e方案及T00—T15已独立接受并纳入main。阶段源码`847ec2687857b06430284aecdf81a6887f2f996f`已普通push，原生来源、App/关联/HTTP/SDK和后台基础交原Reviewer静态CR；CLI/成果导出/打包/停止保护继续实现。依赖准备EXIT0、原S已恢复；当前无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确396e方案及T00—T15已独立接受并纳入main。阶段源码`847ec2687857b06430284aecdf81a6887f2f996f`已普通push；原Reviewer静态CR退回F04—F07：异R重复任务、非原子Worker配额、释放字段错误及合法人类安全停止受批准/旧上下文阻断，原Worker返修。CLI/成果导出/打包/停止保护继续实现，强化停止方案待审；依赖准备EXIT0、原S12800运行，无新动态窗口，构建/模型/安装包/双Worker及隔离验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 尚未实现。
 
