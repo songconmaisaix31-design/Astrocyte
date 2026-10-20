@@ -278,13 +278,15 @@ Pi原生`requested-close`生命周期及worker stop/release的消费方必须在
 
 本节为实施前补充审核对象。准确上游的`workerRead`是有界预览：每条消息至多六个block，每个block至多1200字符；分页不能恢复已经裁剪的内容。`worker read`继续复用其实际游标语义，`task result`统一从已验证的原生journal和Pi自产session原件读取完整内容，不从预览拼接成果。
 
-读取在私有runtime内进行，先核controller、Run、根Task、子Task、Dispatch及实际structured process incarnation，再从实际StructuredAgentSessionHost store取得对应record。record的workspace必须属于controller；Pi providerHandleChainHead必须是`jsonl-rpc/pi`，原件绝对路径只取自该已验证record，并位于该session的私有`workers/<sessionId>/sessions`真实目录。文件header的session身份和cwd须与真实record及原生workspace解析端口相符，调用者不能指定原件路径。缺记录、缺端口、缺原件、其他provider或其他私有根均明确失败。
+读取在私有runtime内进行，先核controller、Run、根Task、子Task、Dispatch及实际structured process incarnation，再从实际StructuredAgentSessionHost store取得对应record。record的workspace必须属于controller；Pi providerHandleChainHead必须是`jsonl-rpc/pi`，原件绝对路径只取自该已验证record，并位于该session的私有`workers/<sessionId>/sessions`真实目录。文件header的session身份和cwd须与真实record及原生workspace解析端口相符，调用者不能指定原件路径。缺记录、缺端口、错误归属、其他provider或其他私有根均明确失败；SDK内容可用性按后文已计划停止A和最终成果B分别返回。
 
 Pi的`SessionManager.open`和`loadEntriesFromFile`含迁移或补写行为，不用于读取。公开`parseSessionEntries`会忽略坏行，单独使用不能证明完整；采用已固定依赖`stream-json 3.7.0`的JSONL parser严格模式，先以Node标准`TextDecoder`的fatal UTF-8检查实际字节，再逐项验证Pi session/version/header及实际entry标识。缺换行截断、坏JSON、无效UTF-8、重复entry身份、缺父entry或未知格式明确失败。读取不启动SDK、不刷新认证、不发现用户资源、不修补原件。
 
-原生journal使用既有`replayJournal/renderJournalState`读取完整消息，同时保留对应真实SQLite session/epoch/seq/ts及原生row内容；damage/newer schema/缺行不通过。SDK原件和journal均保留，usage只引用实际字段，未知保持unknown。针对SDK文件读取前后核同一文件身份/长度/修改时间和实际record link/fence；针对journal核同一epoch及序列范围。运行中的一致读取若来源变化即失败，由调用者明确再次查询，不自动更换来源。导出总大小上限12MiB，达到上限明确失败，不裁剪、不输出部分成功；文件数量和大小在读取前检查。
+原生journal使用既有`replayJournal/renderJournalState`读取完整消息，同时保留对应真实SQLite session/epoch/seq/ts及原生row内容；damage/newer schema/缺行不通过。SDK原件和journal分别保留，usage只引用实际字段，未知保持unknown。针对SDK文件读取前后核同一文件身份/长度/修改时间和实际record link/fence；针对journal核同一epoch及序列范围。运行中的一致读取若来源变化即失败，由调用者明确再次查询，不自动更换来源。导出总大小上限12MiB，达到上限明确失败，不裁剪；文件数量和大小在读取前检查。
 
-T07增加同一真实SDK会话输出超过1200字符的完整导出检查，逐项比对SDK原件和journal内容；仅在自有已归档原件副本执行真实缺失、损坏、截断、无效UTF-8、路径替换及超限输入，全部明确拒绝且原候选原件字节不变。T13中A被停止时，保留实际journal已有部分和SDK已持久化内容的区别，B最后结果必须完整可读取。所有补充当前`NOT_RUN`；原Reviewer接受前不实现该新增读取路径。
+固定成功条件允许A在真实执行中被计划停止。A的实际stopped/failed原因、整Job退出/资源状态、已存在的原生journal部分和SDK原件可用性分别返回；SDK没有完整assistant条目时标记`incomplete`，文件未存在时标记`unavailable`及实际ENOENT，原因未知时明确`unknown`，不声称从未持久化、不填空完整成果。该分支允许导出同任务B的完整最终成果，整体明确列A的限制；原生journal部分不替代SDK完整记录。A已存在原件的坏行/截断、错误归属、已观察来源改变及读取期间文件消失属于错误，不能解释成正常未持久化。B为成功条件要求的最终成果，其原件缺失、损坏、截断或不完整均使本次最终成果验收失败。根Task完成仍要求真实计划停止A、完整B成果、固定业务条件和全部相关资源已退出/归档/释放，不增加A完成或生成完整SDK输出的条件。
+
+T07增加同一真实SDK会话输出超过1200字符的完整导出检查，逐项比对SDK原件和journal内容；仅在自有已归档原件副本执行真实缺失、损坏、截断、无效UTF-8、路径替换及超限输入，按上述规则返回明确错误且原候选原件字节不变。T07/T13必须覆盖A真实计划停止且SDK未持久化完整assistant内容，验证A限制如实返回且B完整成果仍可取得；并验证A已有坏源或来源变化不会被登记为正常未持久化。B最后结果必须完整可读取并通过固定业务判据。所有补充当前`NOT_RUN`；原Reviewer接受前不实现该新增读取路径。
 
 ## 6. 最少完整CLI规则
 
