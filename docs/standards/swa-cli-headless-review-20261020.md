@@ -1294,3 +1294,21 @@ N14/N15已通过`msg_26a78f9cd9bc`、`msg_76bf311f86cc`交主控/原Worker，主
 运行记录保留根21508/创建UTC20:15:08.809810及子65804，UTC20:17:29.9163235/46.1954802两次所属为空。prepare-17资源CPU17.5%/18.8%、可用7.043/6.915GiB、单调3.001633秒，stop-17资源CPU10.0%/8.7%、可用7.216/7.311GiB、单调3.002028秒；原S60656/epoch1792524076.7506354于UTC20:14:51.179275退出15。该窗口不冻结Worker树，没有给Reviewer或Worker新增运行权限。
 
 restore-17实际exec92929 EXIT0沿主控来源，资源CPU12.7%/11.8%、可用7.286/7.329GiB、单调3.002327秒，原库记录ok/fk空/equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-17`于UTC20:20:38实际EXIT0：整份current/restored相同，实际S36744/父58404、原ed543程序、创建UTC20:17:53.6968189/epoch1792527473.6968188相差0.0001毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web和原Orca38652/runtime49da沿主控实际来源；本Reviewer没有执行Go、SQLite、HTTP、控制脚本、服务或模型。下一prepare取restore-17/restored.json、c8不改，当前窗口归原S，六次失败和全部部分候选保留。
+
+准确3590退回hook `msg_281c2a76979a`、1b局部接受hook `msg_ed987f6379c8`及main7832接受hook `msg_d5dbdcd67a7a`，已分别获主控`msg_ec69c3f1cbfe`、`msg_da18278169cc`、`msg_6d938539cbff`完整读取bc970新增和准确差异的回复，实际唤起确认。
+
+## 准确319272c8的会话、writer及共享类型消费者
+
+结论：**准确`319272c8852d7992923fa235206aec22335e1d42`已修正Pi路径的N16/N17/N18对应源码；共享接口修改退回N19，阶段运行验收继续未通过。** 已完整读取相对1b的差异和报告§15.2，逐层核对返回值的真实消费者，以及实际host图中的Claude直接调用。没有运行类型检查器、host、模型或自然到期场景。
+
+N16现由首次真实get_state固定UUID sessionId及绝对sessionFile，每次实际get_state检查准确相同值；adapter用同一返回文件生成原Pi provider link并调用bindProviderLink关联。异步等待后还比较record的accountHome、options和providerHandleChain，原session/fence/consumer及Job检查保持。本次确认这些源码条件，真实Pi身份变化拒绝和同会话运行仍待验证。
+
+N17显式导入并加入唯一原生ORCHESTRATION_WORKER_LIST_METHOD，保持MESSAGE组Task消费者及原数量/唯一性检查，补齐此前已定位的遗漏；没有重引完整方法表。尚未实际启动host，不能据本次源码改变登记入口运行通过。
+
+N18将异步准入得到的同步finalAdmission沿structured turns、adapter、Pi turns/prompt delivery、connection和peer传入原stdio writer。writer在output.write前调用它，中间没有await；来源、原身份/consumer及实际Grant期限由该函数再次读取，Pi外层同步核Job成员及连接状态。源/身份/期限拒绝在尚未调用output.write时单独包装ProviderWriteAdmissionError；实际write及其callback失败继续走普通错误/unknown，未被并入无效果拒绝。账号材料/launch各阶段也补真实期限判断。API-key无TTL政策保持，不在占用中的writer递归提交RPC，不增加队列或执行账本。
+
+**N19，严重程度高：共享beforeDispatch返回类型扩大，Claude直接消费者仍使用旧声明。** structured-agent-session-adapter.ts:297现在声明回调返回`Promise<void | (() => void)>`。claude-structured-session-adapter.ts:166—167按该共享dispatch类型取得input，直接将input.beforeDispatch传给dispatchClaudeTurn；后者claude-structured-dispatch.ts:119仍只接收返回`Promise<void>`的回调。这两个实际参数声明没有同步，现有parser与esbuild不能检验这条语义类型关系。Claude路径在实际host依赖图中，属于变更接口的直接消费者。建议动作：同Worker同步必要的声明和实际返回值消费，保留同步guard；不能以cast、假模块/声明、丢弃guard或放宽错误代替修正。本Reviewer未取得实际类型检查错误码，也未声称该旧路径发生了模型输入。
+
+ACP/Codex仍有旧的显式beforeDispatch声明，需按真实调用与返回值使用核对；不据名称增加无关UI或历史测试范围。原package提供typecheck:tsc:node及config/tsconfig.node.json，该原配置还包含非产品入口，不能直接把整个范围当成本任务要求；runtime/swa-orca本身也须由实际受检入口覆盖。必要类型检查应覆盖产品源码、修改的共享接口、所有实际直接消费者和真实依赖声明，保持既定严格程度。缺依赖或未执行均如实记录，不能把13份parser检查改称类型检查。此范围已通过`msg_9900739dff10`、`msg_151bc0023353`交主控和原Worker，主控已要求同Worker准备具体真实入口，当前没有新运行授权。
+
+`check-revision.ps1 -Previous 1b782b49f530a32c255a9a042e3299cb799fe5b5 -Candidate 319272c8852d7992923fa235206aec22335e1d42`实际EXIT0，一Markdown/1本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Go owner capability在清除环境变量前已保存至adapter Config，runtime.go再显式传给Node，此准确源码链保持；没有发现本次清除导致传递丢失。N14/N15局部接受保持，N16/N17/N18的实际分支、类型/生成/Node/native构建、所有模型及安装双Worker继续未验；T12/recover/后台Job与通用TUI仍由同一Worker实施。
