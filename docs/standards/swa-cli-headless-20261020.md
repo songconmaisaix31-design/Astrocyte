@@ -325,11 +325,11 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 #### 4.5.2 发现事实源、输出及刷新
 
-继续使用现有`swa capabilities --json`提供agents清单。权威注册来自产品进程中由抽取的原生definition及真实adapter实例构造的StructuredAgentRegistry；这证明本产品实际注册的控制实现，独立于原Orca是否运行。实际本机命令、原生配置与可选只读启动设置分别提供安装和选择事实，静态命令目录不补造注册。原Orca runtime只作可选对照，不成为发现、选择或执行前提。每行保留真实Agent ID、注册来源版本/宿主、可核命令定位和以下独立观察，使用available/unavailable/unknown及实际原因/时间，不合并成一个就绪布尔值。
+继续使用现有`swa capabilities --json`提供agents清单。structured注册来自产品进程中由抽取的原生definition及真实adapter实例构造的StructuredAgentRegistry；terminal注册仅在该真实TUI配置键及本产品已接入的原生PTY launcher/controller同时存在时列出，source分别标明structured-registry或tui-launcher，TUI常量本身不产生结构化注册。这证明本产品实际注册的控制实现，独立于原Orca是否运行。实际本机命令、原生配置与可选只读启动设置分别提供安装和选择事实。原Orca runtime只作可选对照，不成为发现、选择或执行前提。每行保留真实Agent ID、注册来源版本/宿主、可核命令定位和以下独立观察，使用available/unavailable/unknown及实际原因/时间，不合并成一个就绪布尔值。
 
 | 观察 | 事实源与判据 |
 | --- | --- |
-| registered | 私有runtime真实StructuredAgentRegistry.registrations及每个definition/adapter，原生构造器仍检查重复ID和声明能力所需方法。公开来源明确为本产品抽取版本/当前私有runtime；原Orca的可选只读对照另标来源，不混成当前注册。用户启用/禁用/override来自下述明确设置源，disabled不当可选，不从Go List补造 |
+| registered | structured取私有runtime真实StructuredAgentRegistry.registrations及definition/adapter，原构造器仍核重复ID和所需方法；terminal取实际TUI配置与已接入原生PTY launcher/controller的共同绑定。公开来源明确标本产品抽取版本/私有runtime及两种registry类型，原Orca可选对照另列。用户启用/禁用/override来自下述明确设置源，disabled不当可选，不从Go List或TUI常量补造adapter |
 | installed | 在产品自己的探测进程复用准确TUI检测/命令解析，核真实Windows PATH/已知安装目录、命令别名和override的实际可执行路径及版本来源。不得修改系统或原Orca PATH，不启动WSL/SSH、安装程序或模型。文件存在仅证明安装 |
 | configured | 该Agent实际必要的本机原生配置/账号来源和明确选择的启动设置；可选Orca profile按只读settings domain及真实revision取得，再用projectAgentLaunchSettings投影，不创建Store或调用update/migrate/authority-marker写入。environmentNames仅证明名称声明；缺值/模型/端点/账号正向证据继续unknown，认证有效性由真实原生握手或获准模型调用分别确认，秘密不进入清单 |
 | launchable | 对明确选择且满足当前权限的该Agent，在私有profile/workdir中执行真实命令与原生协议握手后记录；不由版本/help或另一个SDK成功推导。尚未启动时unknown，ToolsOff/隔离无法满足时明确unavailable及原因 |
@@ -378,7 +378,21 @@ App先按observe核项目并解析selection，再按既有start/目录/工具和
 
 当前RuntimeClient只对orchestration.*自动附兼容调用证明；因此本产品fork须将准确`swa.workerSend`加入同一envelope/contract-version路径及durable方法集合，沿constructor捕获的真实helper launch证据生成compatibilityInvocationId=R/native。没有新caller参数或信任布尔值。Native dispatcher的产品callback在任何executor/完成R重放前对该确切方法执行helper强核验，父R、当前consumer、真实launch/恢复证明及Dispatch目标全部匹配；不能把它按普通helperless swa.*端口放行。其他宿主未注册此方法时仍无该入口，本机Orca不修改。
 
-worker.send结果明确为`{native_receipt, input:{request_id,native_request_id,dispatch_id,agent,session_id,operation_id,client_message_id?,state,turn_id?,source}}`；request.show保持原state/receipt，并增加同结构的只读`delivery`投影。state只取`journaled|queued|accepted|rejected|unknown`：前两者分别要求原journal接收/实际host队列的正向证据，accepted要求实际adapter/SDK输入接受，rejected要求明确未输入拒绝，缺失/断开/输入结算不足为unknown。source指明原receipt/journal/原生事件，不由envelope.ok推断开始或完成。关联固定保留在既有R/native receipt和session journal，邮件指针删除、其他输入或宿主重启都不能改mint第二operation；同R重放只返回原件/观察，未知不重发。
+swa.workerSend是非prompt原生mutation，现有executor对普通异常会discard pending，即使已经markMutationEffectPossible。因此本方法必须在child自身包住首次可能输入效果及后继结算，不只依赖parent的effect包装。先在原R/native的receipt持久保存精确execution_mode/目标/实际Native operation及正文来源，再checkpoint stage=input-submit，markMutationEffectPossible，才进入一次host.send或一次terminal writer；任何该边界之后的异常、失联、超时、journal/回执写失败均转换为operation_unknown，保留原child checkpoint/operation与parent占用，不重mint或重发。外层executor再次完成回执失败时，handler已通过现有recordMutationReceipt先持久完成实际结果，不能让普通异常删除唯一关联；持久失败本身亦沿operation_unknown退出。
+
+效果之前的明确拒绝单独结算：已正向证明目标/权限/能力不符合且尚未进入input-submit时，使用既有recordMutationReceipt完成该原R/native的真实`state=rejected,effects_applied=false`拒绝结果，再立即返回该拒绝，parent保留同一拒绝原件并完成；CLI据实际code输出失败，不进入host/PTY、不释放Worker资源。该拒绝的存储失败保持unknown/pending，不自行清除。读取失败或缺少“尚未输入”的正向事实不能按effect-free拒绝结算。进入input-submit后即使原生返回明确refused，也保留原operation及真实拒绝结果，不删除关联或改发新请求。前executor的真实拒绝沿其原错误语义；不能借伪造effects_applied绕过caller或原生结算。
+
+execution_mode固定为原生的structured或terminal，并进入selection及Native receipt。产品按实际create-support与声明模式解析；原agent-launch-mode的设置偏好可降为terminal，产品在输入前必须核最终实际mode仍等于selection，不能沿降级改变模式。具体控制路由如下。
+
+| 模式 | 真实注册、输入/观察/停止及接续 |
+| --- | --- |
+| structured | 原StructuredAgentRegistry与真实definition/adapter；workerSend从Dispatch取准确session/fence，原生mint operation写R/native后经sendAgentTurn的structured-session arm及同一host队列。原session journal/provider原件读输出，stop/release核该实际provider与Job，resume只按原definition的真实支持/原session来源。实际serialized handOver异步授权后再adapter.dispatch |
+| terminal | 原TUI配置与实际原生PTY launcher/controller共同绑定；workerSend取Dispatch准确terminal handle、PTY/incarnation/创建身份、原Agent识别/正向readiness，经原runtime.sendTerminalAgentPrompt的普通agent-prompt路径及原R/native固定write关联发送。sendAgentTurn的terminal arm只有dispatch-preamble purpose，后续正文不冒用该purpose。复用既有串行/bracketed-paste/提交观察，在真实写队列出队后与每次实际PTY写入前执行产品异步授权，等待后重新核原generation/Agent/ownership；原beforeWrite同步身份guard保持。不解析为shell，不用structured session ID替代PTY，不在未知Agent/阻塞交互中写入 |
+| terminal的read/stop/resume | read只取实际同Agent原生transcript或显式terminal输出，后者标有界/不完整且source=terminal，缺transcript不自动替换。stop/release沿实际Native worker/PTy custody及精确后代退出，不能套SDK Job证明；无法证明树退出保持unknown/占用。resume仅该真实Agent已有会话协议/原件可证时提供，否则该项unknown/unavailable，不新建PTY冒充原session |
+
+terminal在PTY接收正文但没有原生模型接受证明时只报告`handed-to-terminal`，不计structured accepted或turn started；input DTO的state因此包含原生该字面值。两种模式都只在真实已批准范围内执行，最终业务验收要求的完整成果/并发/指定停止仍须被实际所选模式满足。
+
+worker.send结果明确为`{native_receipt, input:{request_id,native_request_id,dispatch_id,agent,execution_mode,session_id?,terminal_handle?,operation_id,client_message_id?,state,turn_id?,source}}`；structured只填实际session_id，terminal只填实际terminal_handle/原件来源，request.show保持原state/receipt并增加同结构只读delivery。state取`journaled|queued|accepted|handed-to-terminal|rejected|unknown`：前两者要求原journal接收/实际host队列的正向证据，accepted要求实际adapter/SDK输入接受，handed-to-terminal仅为实际PTY接受，rejected须有实际明确拒绝，缺失/断开/输入结算不足为unknown。source指明原receipt/journal/原生事件或terminal关联，不由envelope.ok推断开始或完成。关联固定保留在既有R/native receipt及实际模式原件，邮件指针删除、其他输入或宿主重启都不能改mint第二operation；同R重放只返回原件/观察，未知不重发。
 
 真实输入的异步授权扩展在产品composition向原生delivery-loop注入可选`authorizeDispatch(input):Promise<verdict>`，由serialized handOver在等待provider/applyMessageOptions之后、handOverSubmission写交付事实及adapter.dispatch之前await；原同步beforeRun只保留held规则。该hook经同一Go HTTP服务的私有owner只读delivery-admission调用App当前authorize/ValidateProjectActionScope；owner能力仅本次内存传给Node/server并从所有helper/Agent env删除，普通token不能调用。复核以原R/native的真实caller/项目/selection/正文/Dispatch/session/operation为源，不能信任HTTP声明的human；Go反查Native原件使用只读非serialized查询，不持Native事务或等待同一delivery lane，避免循环等待。await返回后重新读取并核相同child generation/ready、consumer、session/fence、真实model/工具策略、未停止/释放或人工接管；变化明确拒绝或unknown，不能调adapter。未配置该hook的其他宿主保持原行为。
 
@@ -700,6 +714,8 @@ R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑�
 | G05 依赖及独立安装 | 完成原构建/native装载和闭包检查，在新独立安装目录运行同候选；实际依赖与资源来自包内或明确声明的本机Agent程序/只读账号，不来自开发树、原Orca资源或桌面运行通道。缺失动态资源在获准自有副本做真实负向，不能伪造成功模块或以静态metafile代替运行 |
 | G06 原Orca保全 | 安装前、发现后、双Worker并发中、指定停止后及产品退出后，重复原绝对CLI公开status、解析、进程创建身份/监听、配置与认证内存字节/ACL、定向通知及实际产品写端检查。原Orca和原Agent会话不被迁移/接管，未解释变化及通知溢出仍证据不足 |
 | G07 失败/异步/未知 | 对适用Agent保留真实启动部分失败、忙碌/queued、断开/超时/取消130、stdout失败、停止失败/树未知及资源占用；沿原R/native checkpoint和实际session operation不重发不换目标。在journal已接收但SDK尚未输入的真实窗口撤销/改变当前批准，serialized handOver在实际adapter.dispatch前await新授权，等待后重新核child/consumer/fence/工具策略；未命中保留INCONCLUSIVE。原R完成但仍queued、旧mailbox指针不存在或后续输入到达时，request.show仍从固定原receipt/journal返回同一原operation及真实state，不造Native事件或操作业务库 |
+
+G07还逐模式覆盖：明确效果前拒绝保留原child/parent真实rejected结果、无host/PTY写入；实际输入/排队后断开和原生结算失败必须保留R/native checkpoint/operation，不能只在parent保留unknown。原生存储失败仅在真实条件命中时登记，不注入假错误。structured核同session操作/journal；terminal核准确PTY/incarnation、原R/write receipt及handed-to-terminal与实际turn证据的区别，禁止把dispatch-preamble当后续输入。原生模式解析未命中降级/冲突时保持未验，不造TUI注册或SDK会话。
 | G08 最终同安装候选 | 使用同一准确已安装候选及所选真实本机Agent，完成原固定公开任务的至少两个真实Worker，不等前一结果即提交；核真实模型活动重叠、分别查询身份/输出，只停止指定A并取得全树退出/B保全，B在同一原生session接受真实后续正文并取得符合业务判据的完整成果。是否要求不同Agent类型不自行增加；每个声称可调用的Agent仍须有G03证据，未通过的范围明确保留 |
 
 普通终端与原有Agent真实命令工具调用、当前项目批准、真实成果/事件来源及最终关闭继续原验收。注册发现、依赖缩减、源码编译或局部方案接受均不计整体完成；原生ToolsOff/账号冲突由主控处理，其他已授静态开发与独立Go准备继续。
