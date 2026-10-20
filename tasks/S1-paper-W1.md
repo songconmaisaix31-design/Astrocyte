@@ -1,5 +1,7 @@
 # W1 论文提取与容量
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 Branch `s1-sync-attention-1010`; exact published root baseline `087127d30fc505f8fe25c52142a174f5842e2bef` consumed by ordinary merge. Client: Orca Codex; current session model inherited from dispatched runtime, no paid model/media replays.
 
 Own paths follow `S1-paper-project-board-plan.md`. Pending search/currentpage and extension permission/action decisions block final routes, manifest and application identity. Independent DOM/core/capacity work continues; W0 owns contracts/entry/locks, W3 isolated browser slot.

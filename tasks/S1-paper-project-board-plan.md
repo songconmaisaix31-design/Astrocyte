@@ -1,5 +1,7 @@
 # S1 扩容、论文与项目总览
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 22:31 本轮已交付并验收可独立部分：512KiB完整输入实际联合模型一次成功、跨Agent项目看板及人类字段SQLite/刷新/新API进程、真实三尺寸交互和最终全局导入入口。主控独立check/build/7DOM例PASS；个人预览71组/111目录/17已知活动、104原来源元数据保留，备份及012迁移见STATUS。W0最终SOURCE99b7e8e / REPORT42e1941普通集成；W3入口返修SOURCE3b9b491 / REPORTb925782已消费，实际4/fixture4/能力拦截8分开16PASS。所有实际owned Worker均结算release，原分支/worktree保持；W1总体Search/插件范围未答failed受限交接，不改写成功。论文Search可用流程、安装manifest与权限、进度来源仍待用户三项决定，不称四项整体或完整S1已完成。
 
 22:26 最终个人预览发现侧栏全局“添加资料”因当前不在Attention页而禁用，服务imports能力实际已开。这属于人类交互逻辑返修，沿W3原工作树/分支新Task/Dispatch处理，独占write_paths仅web/src/components/Nav.tsx、web/e2e/navigation.spec.ts、tasks/S1-paper-W3.md；移除页面位置这一非权限条件，保留fixture/服务能力/stale限制。原owner完成定向真实导航检查、类型/构建、commit+push；主控只验收和普通合并。不新增权限、接口、正文读取或模型任务，不重跑广泛E2E或发现扫描。

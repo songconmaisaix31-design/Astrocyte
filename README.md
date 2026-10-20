@@ -1,10 +1,10 @@
-# Astrocyte
+# SWA（Swarm Anything）
 
-个人研究与创造工作台。使用 Go、React、TypeScript、Vite 和 SQLite；开发规则见 [AGENTS](AGENTS.md)，当前来源与接续见 [STATUS](STATUS.md)、[TASKS](docs/TASKS.md) 和[交付报告](docs/standards/delivery-candidate-20261020.md)。
+SWA 首版目标：抽取 Orca CLI 对应的执行能力，交付一个用户能从原有 Agent 或终端调用的可控 Swarm CLI。该目标已确认，具体抽取范围和接口由后续任务核实；当前产品能力及未验范围见 [STATUS](STATUS.md)。资料导入与 Attention Engine 提供可选的研究和经验支持。
 
-当前[应用入口](http://127.0.0.1:64505/)的程序与 Web 均来自 `ed543c12106c2dbb3e181cb9bc1647b626455179`（S），PID45956，使用原 SQLite、Q 和媒体配置。主控已完成原库保全与准确027迁移；独立 Reviewer 核实了真实资料/项目ID、33件Web内容、49项GET及权限拒绝。Windows普通交付目录为 `dist/delivery-candidate-20261020/`。产品开发主线为 `songconmaisaix31-design/works-relay-integration`，原 PR #2 按独立审查由主控普通推进。
+本仓库从已接受的 Astrocyte 产品历史接续。已有网页、HTTP、认知 MCP 与 SQLite 数据路径继续使用原程序标识。[META_PLAN](docs/META_PLAN.md) 保留原 v2.1 规划，M2—M6 为后续规划；MCP 和完整 S3 不自动成为首版 CLI 的前置条件，现有任务的权限和验收限制保持。最新目标及适用关系见 [QUESTIONS](docs/QUESTIONS.md)。仓库规范名称为 `songconmaisaix31-design/swarm-anything`，默认分支为 `main`；当前产品历史进入 main 由主控安排，M0 文档 PR 的目标仍为产品集成分支。
 
-新版页面连接现有资料、项目、批准、作品与认知接口，使用26件官方品牌资源。蜂群页按真实WorkItem依赖显示人工任务增长、来源、授权和停止历史，支持键盘与双视口；DAG按需加载，实际缺分块时显示错误并由人工重新加载恢复。OpenViking可选，未配置时核心页面可用。完整默认CI当前NOT_RUN，契约检查进程仍有真实崩溃FAIL；原生/S3、实际采用及正式Release未通过，具体结果与限制见交付报告。
+现有页面连接资料、项目、批准、作品与认知接口。蜂群页显示真实 WorkItem 依赖、来源、授权和停止历史；DAG 按需加载，分块加载失败时显示错误并允许人工重新加载。OpenViking 为可选配置。安装与检查见 [CONTRIBUTING](CONTRIBUTING.md)，接管先读 [HANDOFF](HANDOFF.md)、[AGENTS](AGENTS.md) 和[文档目录](docs/README.md)；已验来源、实际运行观察及失败记录统一见 STATUS 和[交付报告](docs/standards/delivery-candidate-20261020.md)。
 
 ## Attention Engine 与作品册
 
@@ -27,7 +27,7 @@ Workspace 的作品册读取真实持久化缓存，提供平台/分组/时间�
 
 Sleep 命令每次执行一个明确日期，无任务调度器或模型调用。必须提供 `--day YYYY-MM-DD`、`--timezone`、`--decay`、`--initial-confidence` 和 `--fact-projection none|facts-map-v1`；另可提供 `--data-dir` 及成功/冲突策略参数。`none` 保持关键事实召回不可计算；`facts-map-v1` 只解析明确已知格式的字面 `raw.facts` 字符串。当天回执、图、fluid、候选与指标一起提交；相同日周期返回原结果。字节缩减指标计量工作表示，原始事件保留，不表示 SQLite 文件缩小。迟到且早于已有图时间的新 Signal 显式拒绝，不能通过修改时间静默回放。
 
-工程参数、原生会话读取范围及具体资料权限按[当前决定](docs/QUESTIONS.md)处理。检索使用 topic/keyword 与已观察关联的相关度；工程检查、真实原生回放和正式用户对照分别验收。产品状态见 [STATUS](STATUS.md)，正式研究与实验由[主控状态](https://github.com/songconmaisaix31-design/Astrocyte/blob/validation/v1-20261012/STATUS.md)维护，早期独立原件见[历史验收记录](docs/acceptance/AttentionEngine-baseline.md)。
+工程参数、原生会话读取范围及具体资料权限按[当前决定](docs/QUESTIONS.md)处理。检索使用 topic/keyword 与已观察关联的相关度；工程检查、真实原生回放和正式用户对照分别验收。产品、研究与正式实验的当前限制由 [STATUS](STATUS.md) 统一索引，早期独立原件见[历史验收记录](docs/acceptance/AttentionEngine-baseline.md)。
 
 ## 环境
 

@@ -1,5 +1,7 @@
 # Attention Engine W0 · M0 契约锁定 · 迁移 · 存储基础 · HTTP 关口
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 单 spec Windows E2E 限定返修（2026-10-12，新 Dispatch）
 
 Task `task_e337d98251d3` / Dispatch `ctx_87396a08fb27`；原 Codex --yolo 终端/工作树/分支 `songconmaisaix31-design/attention-engine-w0-core`，无新 Agent。先普通 fast-forward merge root `92a2ded59921608f5b6e718531128c4586dc1aee`，本次 SOURCE `28459de60c1726a6a5119562900d73348309a615` 已 commit+push。唯一修改 `web/e2e/s1-projects.spec.ts` 与本报告，生产 CanonicalRoot、agents、UI、shared helper、契约、其他 spec 均未改。

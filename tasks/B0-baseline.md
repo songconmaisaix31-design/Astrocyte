@@ -1,11 +1,9 @@
-# B0 文档基线
+# B0 文档基线（归档入口）
 
-- 目标：将用户两份 v0.1 文档纳入当前仓库，建立开发入口、实际起点与待确认问题。
-- 可改路径：`AGENTS.md`、`STATUS.md`、`docs/SPEC.md`、`docs/TASKS.md`、`docs/QUESTIONS.md`、`tasks/B0-baseline.md`。
-- 依赖：用户提供的两份文件、通用执行协议与本次基线请求。
-- 验收：两份源文档逐字节一致；文档本地链接和路径可解析；`git diff --cached --check` 通过；按白名单提交并 push 基线分支，远端提交与本地一致。
-- 停止点：关键节点及歧义先向用户提问；依赖这些回答的实现等待决定。
+文档基线入口由当前文档目录与 S0 记录承接。
 
-SOURCE_SHA：`3a02ce38481d1885adee2e051a1b524d78376897`。
+历史正文完整保存在 [原文归档](../docs/archive/superseded-20261020/tasks/B0-baseline.txt)，来源为清理基线 `9648e18663f9dff1c444e2fe8ceb842d07cf5edd`；原文中的相对路径以原文件位置解释。
 
-执行环境与检查结果统一记录于 [STATUS.md](../STATUS.md)。此任务交付文档基线；S0 的可启动、可构建和契约生成验收保持 NOT_RUN。
+后续执行先读 [当前接续文档](../docs/README.md)、[AGENTS](../AGENTS.md) 和 [RESOURCES](../docs/RESOURCES.md)。归档保留原检查、失败和未验记录，不据归档操作登记功能完成。
+
+完整处置依据见 [文档检查报告](../docs/documentation-audit-20261020.md)。

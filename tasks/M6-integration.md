@@ -1,5 +1,7 @@
 # M6 V4 Windows CI 串行资源修复交接（2026-10-13）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 **新精确 SOURCE `4727f7a02a9b0fdfa1f12917f388d08da1c5ed84` 已普通 push；root 于 04:12:35+08 通知 CI38300750305 精确对应该 SOURCE，Windows/Ubuntu 两个完整 job 均 completed/SUCCESS。** 本轮仅把 Windows 原完整 E2E 改为一个 worker，Linux 原入口保持；这是本次精确 CI 实证通过，不宣称资源错误永不复现。本机首轮原全套串行诊断按 root 后续明确指示停止，实际 **PARTIAL：149 PASS /17 SKIP /0 已完成项失败 /90 未完成，退出码1**，不能写成本机全量 PASS。旧两次完整 Windows RED 和原截图/trace 保留。
 
 V1/V1R 用户已 PASS/关账、V2 完整2006证据技术 PASS；V3/V4 工具交付与正式七日结果分列。完整1003消息 B 启动门禁和既有模型/预算接受保持，本轮没有模型调用、重发 B、锁协议、填 day0 或启用日程；最终普通合并、协议权威锁及日程由 root 负责。

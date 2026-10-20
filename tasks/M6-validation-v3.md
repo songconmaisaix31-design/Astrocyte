@@ -1,5 +1,7 @@
 # Astrocyte 验证期 v3.0（2026-10-12）
 
+> 适用范围：本文保留验证期 v3.0 的独有业务要求；锁前准备与用户确认的历史状态以原记录日期理解，实际锁、day0 和后续日流程见 M6-V4-daily-operation。开发角色和资源按当前 AGENTS、RESOURCES 执行。
+
 用户裁决：McPet仍在开发，是实验窗口内活跃源；授权maimai-monster仓git log。沿`validation/v1-20261012`继续，冻结引擎、schema、v2.2参数及权重表。首次V1产物保留，不覆盖。
 
 ## V1R 补源重放

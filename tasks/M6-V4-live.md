@@ -1,5 +1,7 @@
 # W1 V4：生产增量采集接缝
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 V1用户已关账，W2实际检查确认cmd/validation仅诊断/冻结回放，缺少每日live入口。本轨复用原W1工作树、分支、Codex --yolo终端，不重开V1或修改历史。固定write_paths：`cmd/validation/**`、`events/**`、`internal/adapters/events/**`、`scripts/validation/**`、`tests/validation/ingest/**`、`tasks/M6-W1.md`。优先仅CLI/脚本/测试胶水；公共语义表、引擎/schema/参数/权重零改。
 
 用户授权原生源`~/.claude/projects/`含subagents、`~/.codex/sessions/`两布局、Morphogenesis/Astrocyte/McPet三仓git。显式源根、窗口和输出目录，原生header继承及wrapper分类复用公共mapper；git提交事实以仓git log为准。全源捕获后按真实ts及固定稳定ID逐条生产Recorder，s=1/w按kind绑定、种子confidence=.5，去重不重复贡献；每日生产Sleep，849历史无标仍按原冻结规则。迟到事件及错误如实计数，不静默丢弃或重写历史。

@@ -1,5 +1,7 @@
 # S1 同步 W2：本地项目与原生会话续作
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 2026-10-10 架构边界返修（最新）
 
 W2 SOURCE **`0cd2c97b6f3b3b372649ff5045b1f58bb4dfa486`** 已普通 commit/push 到 `origin/s1-local-agents-1010`。只移除 workspace app 的 `log/slog` import/直接 Warn，并将原始 clone error 加入既有 `errors.Join`（安全 ServiceError 在首位，随后原始 clone cause、保存失败 cause）；不改公共接口、迁移、HTTP transport、架构 checker 或其他轨道。数据库安全 LastError/状态及 HTTP `errors.As` + `apierrors.Wrap` 封装保持；原始诊断可通过 error chain 与 `errors.Is` 取得。

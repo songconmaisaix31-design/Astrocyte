@@ -1,5 +1,7 @@
 # AttentionEngine-W2 · 动力学引擎里程碑设计（M2）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源：任务书 `tabbit-code (2).md` §5.1–5.5、§8 M2；`tasks/AttentionEngine-plan.md` W2 行。
 分支：`songconmaisaix31-design/attention-engine-w2-engine`，基线 `dab8fea`。
 

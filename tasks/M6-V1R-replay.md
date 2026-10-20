@@ -1,5 +1,7 @@
 # W1：v3.0 McPet补源与V1R
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 固定owner W1、worktree`C:/Users/DW/orca/workspaces/Astrocyte/validation-v1-ingest`、branch`songconmaisaix31-design/validation-v1-ingest`，Codex`--yolo`。先读HANDOFF/STATUS、`M6-validation-v3.md`、v2.2及首次`M6-V1-replay.md`。普通合本轮root文档基线，保留原SOURCE67cc8f6与REPORTb4243e4。
 
 唯一write_paths：`events/**`、`internal/adapters/events/**`、`cmd/validation/**`、`scripts/validation/**`、`tests/validation/ingest/**`、`tasks/M6-W1.md`。本轮app/domain/runtime/store/schema/参数/UI零写入，boost旧豁免不开放。跨域必需改动先Handoff，不自行改。

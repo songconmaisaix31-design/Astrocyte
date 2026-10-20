@@ -8,7 +8,7 @@
 
 现有代码使用 `internal/<context>/domain`、`internal/<context>/app`、`internal/adapters` 与 `cmd/server`，前端位于 `web`，进程外契约位于 `contracts`。现有模块继续遵守 SPEC §3 的 Domain 无 I/O、app 定义消费方端口、adapter 实现端口和入口组装约束。
 
-新增代码和新模块按新版 AGENTS 的职责组织：接口层处理协议与输入输出，服务层编排用例，领域层承载业务规则与数据结构，数据层访问数据库与外部存储。调用顺序为接口层 → 服务层 → 领域层 → 数据层，禁止反向依赖与跨层调用。保持现有模块的包边界，具体调用接口在对应任务中定义并审核。简单存取模块只保留必要层次，不建立只有转发作用的层次，不为同一功能过度拆分文件。
+新增和修改代码统一采用 SPEC §3 的 Domain/App/Adapters/Composition 依赖关系。Domain 无 I/O；App 声明所需端口并调用 Domain；Adapters 实现端口；Composition 创建具体实现并注入依赖。CLI/MCP/HTTP 只负责协议边界，共用 App 的业务语义。保持现有包边界，不为分层整理重构已有模块；简单存取只保留必要层次，不建立只有转发作用的层次。
 
 ## 命名和接口
 
@@ -32,15 +32,15 @@
 ## 注释、格式与变更
 
 - 新增和修改的说明性注释使用中文，术语及标识符保留英文；注释解释必要的规则和原因，避免重复代码含义。
-- Python 文件开头不添加 docstring 或 shebang。新平台继续遵守 SPEC 的语言约束，既有实验及获准外部依赖沿各自任务处理。
+- Python 文件开头不添加 docstring 或 shebang。底座保持 Go/TypeScript/SQLite；summarize 等外部工具可以使用所需 Python 依赖，Morphogenesis Python 研究环境独立保留，具体范围见 QUESTIONS。所需依赖直接 import，不使用条件 import。
 - Go 使用 gofmt；TypeScript 使用现有 lint、类型检查和项目约定，不引入另一套格式规则。
 - 通过文件编辑工具修改代码；长脚本先写文件，临时文件放入仓库已忽略的专用目录。
 - 禁止 mock、虚假数据、伪造协议与仅为通过检查而增加的 workaround。已有冻结范围的限制按真实情况记录。
 
 ## 实现与检查顺序
 
-Worker 先依据规格、验收和业务样例编写测试计划，覆盖所需的单元、集成和端到端路径。Reviewer 或用户审核通过后开始实现；遗漏场景补充并重新审核。Worker 实际运行适用检查，失败后修复并复验，提交 PR 时附命令、结果和真实限制。
+Worker 先依据规格、验收、业务样例与变更边界编写测试计划，选择必要的相关检查，说明关键失败路径和受影响消费者。普通命名与已批准范围内的局部组织由负责人决定；影响目标、验收或授权的未决项按 QUESTIONS 处理。Reviewer 或用户审核通过后实现；遗漏场景补充并重新审核。Worker 实际运行选定检查，失败后修复并复验，PR 附命令、结果和真实限制。
 
-提交 PR 前执行现有 `scripts/check-architecture.mjs` 的适用边界检查；分层越界先返修。该脚本当前检查既有 Domain/app/context/transport 的导入边界，尚未覆盖全部新增模块的逻辑调用顺序。新增模块必须在其实现任务中补充并验证规则，检查结果按实际覆盖报告。
+涉及依赖边界的改动提交 PR 前执行现有 `scripts/check-architecture.mjs`；越界先返修。该脚本检查 Domain/app/context/transport 的导入边界，业务调用与动态注册还需对应验证。新增模块在其任务中补充必要规则，检查结果按实际覆盖报告。
 
 构建、测试和 Go vet 遵守 RESOURCES 的运行窗口。没有业务代码修改的管理文档清理执行文档核对和链接检查；不把文档检查结果写为功能验收通过。

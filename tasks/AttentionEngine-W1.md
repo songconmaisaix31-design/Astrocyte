@@ -1,5 +1,7 @@
 # AttentionEngine-W1 · 事件流与归一化（M1）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## 限定 CI 路径修复交接（Task task_153a01e3d7ee / Dispatch ctx_d533ec61be20）
 
 本次只处理 CI38152009091 的公开 native-format fixture 路径问题，原真实 M1 Task

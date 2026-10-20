@@ -1,21 +1,66 @@
-# 产品开发任务
+# 开发规划与当前任务
 
-当前主线为 `songconmaisaix31-design/works-relay-integration`，模块开发、PR和独立CR按 [AGENTS](../AGENTS.md) 及[角色说明](agents/README.md)执行。运行源码S与报告后继分列；当前来源、验证和服务见[交付报告](standards/delivery-candidate-20261020.md)及根 [STATUS](../STATUS.md)。
+执行规则见 [AGENTS](../AGENTS.md)，代码约定见 [CODING](CODING.md)，资源额度见 [RESOURCES](RESOURCES.md)。当前版本、已验范围和真实限制由根 [STATUS](../STATUS.md) 统一维护，具体接续步骤见 [HANDOFF](../HANDOFF.md)。
 
-## 当前候选收敛
+## 当前顺序
 
-目标为准确S的程序、Web、真实检查与原64505服务可对应。构建和必要自测原件已保存；主控使用原库启动S，独立Reviewer已接受同源产物、迁移副本和实际原库运行范围。准确Commit审查见[原PR #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2)，普通合入见[主控交付记录](https://github.com/songconmaisaix31-design/Astrocyte/blob/validation/v1-20261012/tasks/delivery-candidate-20261020.md)。业务与构建输入保持S，不为报告重复构建。
+用户最新确认首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。主控先核实真实实现和可抽取范围，具体派发另行记录；M0 不定稿新接口。下方原 M2—M6 保留后续规划，MCP 与完整 S3 不自动成为该首版前置。现有权限及未验范围按 QUESTIONS/STATUS 保持。
 
-完整默认CI、原生/S3、两Agent闭环、实际采用、完整新便携模型包和正式Release仍按各自条件判断；本次有限候选不改变这些门禁。
+0. [SWA 主线整理](../tasks/swa-mainline-20261020.md)：完成 M0 规则及文档整合，由主控将当前产品历史纳入默认 main。首版按最新可控 Swarm CLI 目标派发；原 M1 计划已独立接受但尚未运行，原 [M2 建议](../tasks/swa-m2-public-contracts-20261020.md)及 M2—M6 保留后续规划，原 S3 未决项保持。
 
-## 下一项：修复Windows契约检查进程崩溃
+1. [已有产品交付收敛](../tasks/delivery-candidate-20261020.md) 已完成：产品32ab、构建/运行S、真实原库和独立审查对应，原PR #2已合入。原 M1 负责 Windows 契约检查进程崩溃，使原 `pnpm check:contracts` 完成；测试计划已独立接受，检查尚未运行。完整CI、S3及发布门禁按原范围保持。
+2. [全仓文档冲突检查与归档](../tasks/documentation-conflicts-20261020.md) 已完成，后续只维护当前任务、状态及必要引用。
+3. 科研沿 [原预印本任务](../tasks/research-preprint-20261019.md)、[重启续行任务](../tasks/restart-product-research-20261019.md) 及 [十轮计划](../tasks/s3-paper-ten-cycles-20261019.md) 继续。完整安装、论文构建和现有服务共用资源窗口，待答并发例外保持未决定。
+4. 正式实验沿 [V4 日运行](../tasks/M6-V4-daily-operation.md) 单独处理原根、权威锁与真实原件缺失；没有恢复事实前不启动依赖这些条件的操作。
 
-依据为 `.verification/delivery-candidate-20261020/run-contracts/` 与 `run-redocly/` 的真实FAIL：Redocly输出valid与13警告后Node在 `src/win/async.c:94` 抛出 `UV_HANDLE_CLOSING` 断言，退出 `-1073740791`。单独264项示例验证与生成一致性已通过，原链式入口仍失败。
+产品集成目标、候选、实际运行程序和验包来源分别见 [STATUS](../STATUS.md) 与 [当前收敛任务](../tasks/delivery-candidate-20261020.md)。接管前的全量分支与 Task 清单保留在 [集成清单](integration-audit-20261020.md)。
 
-目标为定位真实退出原因，修复实际项目入口或必要项目工具依赖，使原 `pnpm check:contracts` 完成。保留Redocly全部原规则、264项示例、生成一致性、fast-fail及真实退出；不改业务/API/S3门禁或系统全局配置。
+## SWA 工作包
 
-入口为根 `package.json` 的 `check:contracts`、实际 `@redocly/cli`、`scripts/validate-examples.mjs`、`scripts/generate-client.mjs` 及上述原件。原模块Worker先提交根因方案、具体可改路径及测试计划，经独立审核后实现；当前不预选版本或开始修改。
+本表索引 [META_PLAN §9](META_PLAN.md) 的工作包，详细边界和完成证据沿原文；本轮仅实施 M0。
 
-验收为原 `pnpm check:contracts` EXIT0、三个原组成检查均实际完成，并由独立Reviewer复验正常与失败退出。默认CI中的旧替身、真实来源和权限前置另外按实际清单接续；原生/六步待答条件保持。
+| 工作包 | 结果与依赖 |
+| --- | --- |
+| M0 | [基线、规则与文档整合](../tasks/swa-m0-20261020.md)，保留产品32ab，主控安排产品历史进入 main |
+| M1 | 原 Windows 契约命令修复与已验证产品历史进入 main，分别推进；原契约计划已独立接受、尚未运行 |
+| M2 | 公共任务契约，明确主体、批准、状态、错误及入口共用服务 |
+| M3 | 真实任务 CLI/MCP，与 HTTP 使用相同应用服务和权限；依赖对应 M2 契约 |
+| M4 | 获准原生 Agent 路径，真实控制器、事件、SQLite 和会话文件；未决 S3 条件保持 |
+| M5 | 可安装运行的候选包、配置及使用说明；依赖实际入口和必要检查 |
+| M6 | 真实任务闭环、成果消费与验收；按原 S3 条件和规划 A01—A10 判定 |
 
-产品原有规格与任务历史见[准确S的开发规划](https://github.com/songconmaisaix31-design/Astrocyte/blob/ed543c12106c2dbb3e181cb9bc1647b626455179/docs/TASKS.md)；主控、科研与正式实验任务见[主控任务入口](https://github.com/songconmaisaix31-design/Astrocyte/blob/validation/v1-20261012/docs/TASKS.md)。
+## S0–S6 范围
+
+本表继承 [SPEC §19](SPEC.md) 的业务切片，只定义验收范围；具体完成状态按当前 STATUS 和准确来源报告判断。
+
+| 切片 | 交付范围 | 验收出口 |
+| --- | --- | --- |
+| S0 基座与契约 | 独立 Go/TypeScript 项目、页面、OpenAPI、SQLite 迁移、检查与构建入口 | 可启动、可构建、契约生成与依赖检查；已验基座来源见 [S0 记录](../tasks/S0-plan.md) |
+| S1 资料到候选 | 真实资料导入、来源、沉淀、关联、反馈与版本 | 收藏不启动任务；重复导入与继续沉淀可操作，真实来源与处理路径分别验证 |
+| S2 候选到批准 | 项目、准入、提案、批准/撤销和上下文包 | 模型无批准入口；版本冲突和撤销正确处理 |
+| S3 两 Agent 工作闭环 | 真实绑定、原生接续、交接、认领、提交与采用 | 一个真实改进完成，来源、执行与实际采用可回查；预算、权限与原生工具门禁满足 |
+| S4 仓库上下文 | 仓库索引、查询、增量与快照校验 | 两个工作树结果隔离，过期索引可恢复 |
+| S5 判断委托 | Jev/Laya、路由与按题型委托 | 本地模型断网可用，拒答和截断不自动准入；具体语言与权限遵守用户决定 |
+| S6 局部协作与继承 | 局部选择、并行工作项、停止、经验复用和拓扑 | 后续任务实际引用既有成果并记录适用性 |
+
+S3 的原生/S3、两 Agent 完成与采用尚未通过。界面、人工 DAG、构建或分范围检查的接受不能替代完整切片验收。需求中的业务样例和 SPEC §20 的 AT01–AT16 进入对应 Worker 的测试计划；不降低原验收。
+
+## 派发与验证
+
+- 按功能模块安排长期 Worker，同一功能的实现、测试、文档和返修由同一 Worker 负责；主 Agent 管理共享契约、范围和资源。
+- 并行前先确认跨模块契约与实际互斥 write_paths；同一功能保留一个负责实现、测试、文档和返修的 Worker。模块负责人可以连续负责，任务分支按交付结束。
+- Worker 先提交测试计划，Reviewer 或用户依据需求与验收独立审核；通过后实现、自测并提交 PR。
+- Reviewer 使用独立会话核准确 Commit、真实来源、权限、失败路径及前后效果，给出接受、退回或证据不足；按原 hook 流程通知主 Agent。
+- 同时只合并一个分支，按依赖顺序进行；合并、部署和发布各自遵守已有授权与验收。
+- 任务记录问题、建议、基线、预期效果、write_paths、依赖、验收、停止条件、实际客户端和模型。状态使用 PASS / FAIL / NOT_RUN / BLOCKED，进度按已验收功能判断。
+- 重操作按 RESOURCES 串行安排；没有资源或真实前置时保留未执行状态，继续不依赖这些条件的工作。
+
+## 未启动与冻结范围
+
+[v0.2 发现与分裂](../tasks/v0.2-discovery-split.md)、[裁决](../tasks/v0.2-discovery-split-review.md) 及 [候选实施安排](../tasks/v0.2-discovery-split-plan.md) 保留独有需求。正式 V4 结束、评分与对账完成、冻结实际解除前不启动实现；原候选分工需要按新版模块规则重新检查。
+
+[v0.3 能力板](../tasks/v0.3-capability-board.md)、[L1–L4 计划](../tasks/cognitive-stack-L1-L4.md) 和 [L2 实验草案](../tasks/L2-work-experiment-draft.md) 保留各自状态。草案、冻结设计和已接受工程检查不自动成为新的接口、实验参数或执行授权。
+
+## 历史规划
+
+2026-10-09 的工作类型分组、人数和日期估算已由当前模块分工及任务安排覆盖，完整原文见 [旧 TASKS](archive/superseded-20261020/docs/TASKS.txt)。旧任务和历史验收按 [逐份处置报告](documentation-audit-20261020.md) 阅读，已归档路径提供原文和当前入口。

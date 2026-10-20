@@ -1,5 +1,7 @@
 # Works Relay v1.3 · L1 会话采集增补与一页执行计划
 
+> 适用范围：本文保留 L1 来源与会话采集的独有要求，原人员和接口交付日期为阶段记录；后续由当前模块 Worker 与独立 Reviewer 按 AGENTS、RESOURCES 和集成计划执行，原生权限门禁继续保持。
+
 事实源：[认知栈 L1–L4 原文](cognitive-stack-L1-L4.md) §2、§7；用户指定接入层主控终端 `term_d7f7e173-a64c-43fe-981a-dbe57124de87`。本会话主控 `term_23fa4b37-e887-4848-8d1e-c52dd88cab52` 负责增补计划、验收和最终 Git；原 Works Relay 的 R/H/F/I owner 保持，不接管其 Run 或重派任务。
 
 ## 基线与范围

@@ -1,5 +1,7 @@
 # Attention Engine W7 · 本地作品聚合（AI 作品寻回册）+ 链1事件源
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 ## Windows CI 定向返修（2026-10-11，本轮新 Dispatch）
 
 任务 `task_46b94cb91958` / `ctx_fe6ac3090f92`，继续原 Codex --yolo Worker，不创建 Agent。唯一写域 `internal/adapters/worksscan/**` 与本报告；W0 同时独占 agents 返修。本轨先普通合入 root 最终树 `0e49301734549a02b9b1b9078aaef96fd6422742`，merge `82aa0d01a6c0039f42cbfe23de03a21ca7cd80e7`，没有 cherry-pick/squash/force。SOURCE `38c5bdeeb5fcec7b2f0a3097ef3730ab1a30d9c4` 已 push 至 `songconmaisaix31-design/attention-engine-w7-works`。

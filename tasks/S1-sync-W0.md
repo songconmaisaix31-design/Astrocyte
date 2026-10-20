@@ -1,5 +1,7 @@
 # W0 本轮仓库与浏览器契约（2026-10-10）
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 Task `task_8bcdaec3c1db` / Dispatch `ctx_6390663d09e5`。实际客户端 Orca Codex 0.162.0 / GPT-6.1-Sol high fast（主控核实屏幕）；工作树/分支 `s1-sync-contract-1010`。
 
 ## 最终受限交接（W0 检查/构建通过，整体 S1 未完成）

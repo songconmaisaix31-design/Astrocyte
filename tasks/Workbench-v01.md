@@ -1,5 +1,7 @@
 # Astrocyte Workbench v0.1 · 修订执行单
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 事实源：用户2026-10-13只读工作台任务书与分支/结构修订。修订取代独立workbench/frontend工程及独立Go服务方案，旧workbench/v0.1和两轨WIP保留为历史，不合入本目标。
 
 目标分支workbench/v0.1-workbench从attention-engine/v1-20261011建立，实际起点6b2b91086d87e2173122c3c9f53a36332acffff2；该点相对CI绿基线100f00cb6945c96a7f3bd3f100f7ff65efc61197仅四份交接/验收文档变动，业务源码完全一致。既有React/Vite web、server、鉴权、构建与Playwright复用；Nav新增认知一级页，四视图子路由/cognition/today、/cognition/focus、/cognition/agents、/cognition/evidence。
@@ -32,6 +34,7 @@ Focus拼接历史safe A(t)与每次成功快照取得的确证节点标量点，
 开发周期D1快照/Today、D2Focus/Agents、D3Evidence/部署；可在一次会话推进全部实现，时间验收仍按真实日期。validation分支、V4协议/日程/参数/正式库零修改；v0.2仍冻结。解冻后validation与本分支统一向主线收敛，一次合并；当前不向main合并。
 
 2026-10-13T16:22+08:00：旧backend task634f/ctxe5a和frontend task1ec/ctx446已按scope_replaced_by_user失败结算，WIP SOURCE0fa17aa6/REPORT3b123fcd与SOURCEf9477f46/REPORT7335ce54均已push并独立核对clean；不算实现失败或验收通过，不进入新分支。原owner/工作树/终端复用为backend branch workbench/v0.1-backend task8922bfc4a097/ctx607328b4cef6，frontend branch workbench/v0.1-frontend task0e13b2d2c00e/ctx8e65c15392e9。换branch后首次preflight agent_unconfigured拒绝未建立新Task/Dispatch；再次派发输入已接受但turn_start_unobserved原回执保留。实读屏幕确认文本停在composer，各仅一次bare Enter提交，backend已观察Working；不重发任务或启重复owner。实际生成器目标schema.d.ts已校正写域，旧schema.ts计划名不创建。
+
 
 ## Backlog（研究情报登记，2026-10-14）
 

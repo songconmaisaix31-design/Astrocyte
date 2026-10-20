@@ -1,5 +1,7 @@
 # S1 Attention integration contract
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 Owner W0, branch `s1-contract-1009`. The Go boundary is `internal/attention/app/contracts.go`; HTTP schemas are `contracts/openapi.yaml`, generated TS is `web/src/api/schema.d.ts`. Keep prior required fields; all new fields on existing resources are optional in v1.
 
 ## Summarize project integration (2026-10-09)

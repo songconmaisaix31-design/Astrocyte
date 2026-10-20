@@ -1,5 +1,7 @@
 # S1 Attention 一页执行计划
 
+> 文档用途：需求与历史记录。保留本文件独有业务条款、来源、实际检查和未验限制；原日期的人员分工、资源额度与操作安排只适用于当时阶段。后续执行读取 [AGENTS](../AGENTS.md)、[RESOURCES](../docs/RESOURCES.md) 和 [当前任务目录](../docs/TASKS.md)，独立 Reviewer 按准确来源验收；归档与入口调整不改变功能完成状态。
+
 2026-10-09。基线 `d6c1bf2`（S0 + 已交付新布局），主控分支 `s1/attention-materials-20261009`。本轮用户明确授权 S1 完整功能、多 Agent 并行开发、主控验收和最终 push。
 
 2026-10-10 更新：用户已允许 Python，下面旧阶段的无 Python 限制已撤销；当前 summarize 0.25.1 公开链接与媒体依赖接入见 [接入计划](S1-summarize-plan.md)。Go/TS/SQLite、原写域与权限边界继续沿用。完整 S1 真实验收尚未通过，最新源与主控结果见 STATUS 顶部。
