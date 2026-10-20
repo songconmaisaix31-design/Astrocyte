@@ -594,3 +594,13 @@ T08只在真实私有Orca库持有BEGIN IMMEDIATE锁，实际controller.open要�
 absent只返回原生absent，不能推断无副作用；已checkpoint的pending和完成记录都先核所属再输出原件及子receipt。pending尚无可核receipt时，成熟schema拒绝并沿既有nativeError保留operation_unknown，不输出未核业务内容；没有把这种情况登记为成功查询。源码用例仅补完成后project/controller两selector相同和另一真实controller拒绝，pending/重启实际命中仍未验，F15继承及b3计划尚未实施范围保持。
 
 四段`git diff --check`逐项EXIT0；`node --max-old-space-size=512 .verification/check-markdown.mjs 8220d851dd998639a0ae3fbf4eff0212dd20ed7c 39cc967df6a71b2c0c22e3daa520ca08331db17e`在BelowNormal下EXIT0，累计两Markdown、5本地链接及无锚点/HTML待审通过，marked18.1.0。没有类型/功能、编译、SQLite、CLI/进程、SDK/模型或服务检查，所有动态仍证据不足，当前无正式PR及动态窗口，原S12800/Orca保持。
+
+四个准确决策hook分别为`msg_34fa3d66dcb3/msg_282494a27c66/msg_18b6a95d5f58/msg_648e4acd75df`。主控在`msg_5192424ceb6e/msg_68719f80a5ba/msg_190a9123fe49/msg_9ce998174d1e`逐项完整读取a9相对d7f的三十八行新增，确认每项局部静态范围、F15沿各准确版本继承退回、原生/实际来源及全部动态未运行，c35另审。四次实际读取回复确认本轮唤起，没有授予新窗口。
+
+## 准确c35ec0d9的F15检查返修复核
+
+结论：**接受准确`c35ec0d9003d0052f0a1ee9e5da5d1b8f9efb279`对F15的静态返修**。按原Worker`msg_c3b0bcb67a99`及主控`msg_87b05dc293bb`完整读取相对b3的全部三路径，只有测试及两份说明；产品规范化、真实ContextFile.Version及原handler均未改。
+
+成功重放控制现放在contextPath实际改写之前；改写并恢复字节后，真实stat核size及原字节相同、mtimeNs确已变化，再要求原R得到request_mismatch，实际前后mtime记录进入结果。没有观察到mtime变化时该断言失败，不能计版本变化通过。首次原生固定context和唯一Run/root仍检查，不回填旧mtime、不删除version或生成替代任务，原F15的预期矛盾已消除。运行结果仍NOT_RUN，原有局部静态接受和整体动态证据不足保持。
+
+本段`git diff --check b3f0e22919fbbfab155af0fa9990602f50922117 c35ec0d9003d0052f0a1ee9e5da5d1b8f9efb279`在BelowNormal下EXIT0。说明仅更新接受归属/事实及原件版本检查，没有新增或修改链接，沿用两文档成熟Markdown结果，没有运行测试或资源采样；推送及远端同SHA采用Worker成功回执，主控本轮未另核远端保持。§7.5仍由原Worker静态实施；T11新增真实人类入口待用户范围回答，T12后继契约及测试计划待准确交审，均未被本次接受登记通过或冻结接口。
