@@ -219,3 +219,13 @@ SPEC §21.1引用准确6168的GitHub原文，明确每Worker父持独立Job、�
 `.verification/check-revision.ps1 -Previous 13974f10041d2f8e846b951418172433751798c8 -Candidate 65bd699cffe9207f3504cb7744db2fdca0d483bb` EXIT0：三份Markdown、22本地链接、无断链/锚点/HTML和Git空白错误，marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA核对通过；没有进行新的动态验收。
 
 准确65bd接受hook为`msg_419ed6d5d75a`；主控在`msg_ad2fde2e9860`明确完整读取42dc09的管理审核、非秘密原件与主控回执的不同来源、F08/F09和M1/S3范围及实际轻量结果，确认只接受三份管理文档，原S与无窗口保持；实际读取回复确认本次唤起。
+
+## main后继准确a6b3898e的静态修复与未验范围
+
+结论：**接受准确`a6b3898e893aa2488280fd0be8851485f1d663ab`的三份管理增量**。按`msg_1f2f9e8c2c87`完整读取相对65bd的STATUS、首版任务及总任务差异，真实远端main同SHA；三路径以外无差异，程序、依赖及原有来源未纳入本次main。
+
+管理记录与独立cc4d报告一致：准确f8的F09仅静态修复接受，保留F04—F08及原方案范围；正确报告的实际读取及两次通知回复均有原Run记录。完整成果读取、候选安装入口/必要说明及T00/T02/T13/T15继续由同一Worker完成，实际构建、模型、安装、双Worker及隔离均未验收。
+
+UTC11:12:58可用内存2.49GiB和11:15:17非所属进程工作集11.62GiB采用主控`msg_afc9334326f4`实际只读观察回执。文档明确它们为单次历史观察，未替代双采样准入、未再次prepare，也没有操作该进程。本Reviewer未重复资源查询或独立确认当下值，原S12800、无窗口、M1修复因果不足及原S3/权限未决范围保持。
+
+`.verification/check-revision.ps1 -Previous 65bd699cffe9207f3504cb7744db2fdca0d483bb -Candidate a6b3898e893aa2488280fd0be8851485f1d663ab` EXIT0，三份Markdown、22本地链接及Git空白通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA检查通过，没有动态重验。

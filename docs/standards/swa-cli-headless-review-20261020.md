@@ -368,3 +368,21 @@ SwaProviderProcessTree只在native assign成功、实际查询assigned/root身�
 完整成果读取、真实SDK abort后关闭、其余T00/T02/T13/T15准备及全部构建/安装/模型结果均保持原Worker待办；阶段尚未完成不单独判失败。当前无正式PR，GitHub COMMENT review仍待正式PR及准确交付。
 
 `.verification/check-revision.ps1 -Previous 53ad6e1479ef5cf3099372d2855087cf002513bb -Candidate f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6` EXIT0，十二路径Git空白、两份Markdown和5本地链接通过，无锚点/HTML；marked18.1.0、BelowNormal、Node512MiB。没有编译、加载native、执行fixture/Go测试、启动SDK/模型/产品服务或安装；原S12800与无窗口保持。
+
+准确f8的正确报告路径hook为`msg_4dfd4ffda591`，补正前通知`msg_cfda7e4b89c7`的报告路径。主控在`msg_afc9334326f4`逐项确认完整读取本报告cc4d相对f75的全部新增范围，并在`msg_9ee6e0885665`再次确认实际读取的正是此文件及正确路径hook；F09仅静态接受、阶段待办和无窗口保持，实际读取回复确认本次唤起。修复接受已通过`msg_0b3890b3b33c`送回原Worker。
+
+## 准确f295的完整成果补充计划审核
+
+准确来源为`f295f7c9360a31e6c1ac4ade2ab9c090c455ddae`，按原Worker`msg_31f127304b2b`及主控`msg_fab0d6773558`读取相对f8的全部两份文档差异；新增§5.5与T07/T13补充尚未实现。独立条件先见已普通push的f75报告，未使用Worker解释替代需求判断。
+
+结论：**退回本次补充计划中T13计划停止A的未持久化输出分支**，其余只读完整读取方法有据，可以按修订继续；原f8 F09静态接受保持。当前尚不授予新增读取路径实施接受，原方案其他独立实现及静态工作可继续。
+
+§5.5覆盖真实controller/Run/root/Dispatch/structured incarnation到host record/provider link，再到私有SDK原件的来源；header/cwd、路径和读取前后身份/fence一致，严格UTF-8/JSONL、格式/父entry、大小/数量门限及原生journal完整性都有对应失败要求。已独立读取实际安装stream-json3.7.0及stream-chain的JSONL factory：正常严格路径直接传播JSON解析错误，ignoreErrors或errorIndicator会改变拒绝语义，实施须保持严格配置；库本身不替代计划声明的UTF-8及尾部完整性检查。
+
+已核准确原生host deps公开store/journalDatabase和workspace解析端口，replayJournal可报告缺journal、damage/newer，renderJournalState及原生row读取保留真实epoch/seq/ts。方案复用这些既有接口，SDK不使用会补写或迁移的读取入口，符合四项独立条件。对应T07对真实会话长消息及自有归档副本损坏、截断、非法编码、替换和超限的检查可从H09直接推导，没有新增模型任务或无关检查；全部NOT_RUN。
+
+缺口来自既定T13：A可在真实并发后按预定条件被停止，其SDK尚未持久化完整assistant输出属于允许的流程，B仍需在原会话继续并交付完整成果。f295一方面要求“缺原件……均明确失败”“不输出部分成功”，另一方面只说保留A的journal和SDK持久化区别，尚未规定该正常分支的返回及根Task判据。按全体源必有完整内容实现会阻止取得B成果，追加A完成或持久化完整输出要求；把空或缺失A源当完整又会产生错误通过。
+
+原Worker需明确：A保持真实停止状态及实际journal已有部分，SDK没有已持久化输出或不可用时保留可核事实和未知原因，同时允许读取同任务B的完整成果；根Task只按预先允许A停止的既定条件确认。B要求的成果缺失/损坏/截断仍失败，A已有坏源、错误归属或来源改变也不能归类为正常未持久化，不能自动换源、重放或生成占位成果。T07/T13须直接检查该正常A分支及相应错误边界。具体缺口已通过`msg_b1c6dc6b3c54`交原Worker，主控本轮要求与此边界一致。
+
+`.verification/check-revision.ps1 -Previous f8c69161a6a3bb030c730cdc0c9ff6229b8c95e6 -Candidate f295f7c9360a31e6c1ac4ade2ab9c090c455ddae` EXIT0，两份Markdown、5本地链接及Git空白通过；marked18.1.0、BelowNormal、Node512MiB。库和原生接口只读源码核查，没有执行parser、SDK、SQLite、模型、fixture、安装或服务；无新动态窗口。
