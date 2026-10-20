@@ -35,11 +35,11 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 | H17 本机Orca保全 | 产品使用独立命令和安装目录、私有profile/配置/状态、端口/IPC、控制身份和所属进程；安装前后及双Worker并发、指定停止后通过公开CLI核本机Orca正常查询和归属保全 | 核实际命令解析及RPC/profile来源，不能只比较目录名或产品调用成功。禁止覆盖本机orca、修改PATH解析/账号/自启、停止或接管现有后台/会话；冲突端点、锁或遗留状态在产品范围内失败，不借用本机Orca完成验收，不终止非所属进程。检查既有配置及数据的适用保全，不要求读取秘密原文 | e149最新用户要求、主控msg_f572017d3cc2 |
 | H18 凭据保全与真实模型路径 | 所选原生Agent/SDK及provider/model身份明确；复用原凭据时保持原账户可用，短期/过期/未知有效性在任何刷新HTTP前拒绝，原认证及配置只读 | 使用成熟库或原生接口核有效性；只读store的modify/delete在调用传入回调前拒绝，不能在刷新后仅拒绝写回。私有agentDir、model配置及资源加载不能静默改provider、引入未批准上下文、重启工具或额外重放输入；需要的支持与拒绝路径按真实实现验证 | H12/H17、主控msg_c3ead5926d05、独立SDK源码 |
 
-这些条件没有冻结公共命令名、持久字段、供应方或具体任务输入。产品自带抽取后台及不妨碍本机Orca是当前确认方向，其实际机制仍须核实。收到准确Worker计划后，依据实际提案判断覆盖、缺口与多余检查；需要新增条件时先说明其需求依据，避免将旧提案的实现选择当作当前要求。
+这些独立条件没有预选公共命令名、持久字段、供应方或具体任务输入。产品自带抽取后台及不妨碍本机Orca是当前确认方向。后续方案对照及返修结论见下文；新增条件按实际需求及已核源码判断，旧提案的实现选择不自动成为当前要求。
 
 ## 准确上游的隔离与身份核查
 
-依据主控`msg_f20e7ba11db0`的来源线索，独立读取准确b287的实际调用路径；再次核实本地上游HEAD为b287且工作区干净。已完整读取`src/main/orcad/orcad-entry.ts`、相关路径/launcher/凭据准备与迁移/托管hooks/账号组装/daemon监督模块，以及原生身份和headless PTY注册入口。以下为源码事实，产品方案尚未到达，实际闭包及运行均未验证。
+依据主控`msg_f20e7ba11db0`的来源线索，在方案到达前独立读取准确b287的实际调用路径；再次核实本地上游HEAD为b287且工作区干净。已完整读取`src/main/orcad/orcad-entry.ts`、相关路径/launcher/凭据准备与迁移/托管hooks/账号组装/daemon监督模块，以及原生身份和headless PTY注册入口。以下为源码事实，实际闭包及运行均未验证。
 
 | 来源与调用关系 | 独立核实的事实 | 对H17和必要能力的影响 |
 | --- | --- | --- |
@@ -53,7 +53,7 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 | `orchestration-session-caller.ts`、CLI terminal/session caller helpers及`rpc-caller-identity.ts` | session调用者核真实本机记录、租约及声明绑定；session ID本身不构成凭据。传输身份区分local-cli、desktop和paired-device，声明字段与会话身份分别处理；原无身份structured调用会拒绝猜测其他pane | 控制端身份方案需要准确说明信任范围、真实登记和任务归属。不能从当前开发terminal复制handle充当产品控制端，也不能将同机用户模型夸大成操作系统账户隔离 |
 | `orcad-daemon-supervision.ts`及daemon路径解析 | 原实现含启动重试及不可用时转用进程内PTY的行为，能力按真实状态声明；stopOrcadDaemon只断开，daemon可继续存在。Windows端点还须核命名管道来源 | 如果方案声明持久性、退出或资源已回收，必须提供选定路径的真实事实；不能把断开当退出或把降级当原能力成功。当前未启动任何上游后台或检查实际端点 |
 
-这些核查说明产品组装需要封闭的全局消费者和必须保留的能力边界，没有形成全部provider依赖闭包，也没有给出可运行或隔离通过结论。后续将对照Worker的具体源码清单、产品composition和可执行测试计划判断覆盖。
+这些核查说明产品组装需要封闭的全局消费者和必须保留的能力边界，没有形成全部provider依赖闭包，也没有给出可运行或隔离通过结论。具体源码清单、产品composition和可执行测试计划的对照见后文。
 
 主控`msg_00f28da43226`允许Worker提出产品私有Orca原生Run/Task/Dispatch为唯一执行账本的方案，Workspace仅复用适用项目/批准/固定上下文，不双写旧Mission/Claim/Relay；此项仍需准确方案审核及相应SPEC更新。Claude当前经Aliyun、当前Codex工具关闭拒绝及Pi尚无正向认证是主控报告的核查起点，本Reviewer没有调用这些模型。允许的只读认证/支持格式核查不代表已批准配置、转写协议、迁入秘密或调用模型；最终按真实配置与所选路径审核。
 
@@ -67,7 +67,7 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 | pi-ai `dist/auth/resolve.js`、`dist/models.js`及CredentialStore | 请求认证默认至少提前5分钟判为短期，刷新在credentials.modify接收的回调内部执行；目录网络刷新另有过期后进入modify的路径。readonly modify若入口立即拒绝且不执行回调，会阻止这两条源码路径调用refresh；回调执行后再拒绝持久化会留下远端凭据已旋转的可能。expiry的类型/有限值/单位及当前时间需要真实成熟解析与校验，不能用未知值绕过比较 |
 | coding-agent `dist/core/model-runtime.js`、`runtime-credentials.js`及`pi-ai/dist/auth/resolve.js` | ModelRuntime可注入CredentialStore；默认可创建AuthStorage并读默认models配置。RuntimeCredentials将modify/delete转发原store。已有stored认证解析失败不会静默回到env；仍须核私有配置覆盖、明确model选择、目录网络/创建刷新和每次请求路径，不能把只读文件当成已证明无远端刷新 |
 | coding-agent `dist/core/sdk.js`、`agent-session.js` | noTools=all或tools=[]建立固定空allowlist，工具注册及激活按该表过滤。未提供resourceLoader时会建立并reload默认加载器；未提供model时可按历史或默认寻找模型。计划需要固定真实模型与资源来源，不能从参数名推断完整隔离 |
-| coding-agent `dist/core/resource-loader.js` | noExtensions仍保留显式additional extension路径，inline factories有自己的加载流程；extensionsOverride在扩展实际加载后应用。noContextFiles只关闭AGENTS上下文，SYSTEM/APPEND仍可自动发现。skills/templates也有显式附加路径。私有agentDir需与明确空附加资源及实际加载规则一起核查；只把加载结果清空不能阻止已执行的扩展 |
+| coding-agent `dist/core/resource-loader.js` | noExtensions仍保留显式additional extension路径，inline factories有自己的加载流程；extensionsOverride在扩展实际加载后应用。noContextFiles关闭loadProjectContextFiles路径，SYSTEM/APPEND仍可自动发现。skills/templates也有显式附加路径。私有agentDir需与明确空附加资源及实际加载规则一起核查；只把加载结果清空不能阻止已执行的扩展 |
 | coding-agent `dist/core/agent-session-runtime.js`及`dist/modes/rpc/rpc-mode.js` | createAgentSessionRuntime调用真实运行时factory并供原生RPC使用。原runRpcMode另有bash命令直接调用session.executeBash，不经过模型工具选择。产品在ToolsOff路径下须只发送获准的原生操作并把文本按原协议编码，不能向用户暴露该直接命令能力或将输入拼成RPC；无需伪造或改写Pi原生协议 |
 | coding-agent `settings-manager.js`、`cache-warmer.js`及sdk调用 | cache warming默认streaming，其实现具备按条件重新发送模型请求的能力；provider重试参数也来自设置。不能推断当前模型一定触发了预热或重试，本轮没有运行。计划需核选定配置和真实额外请求边界，以满足未知输入不重发及准确模型调用记录的要求 |
 
@@ -75,4 +75,64 @@ MCP、网页重构、完整旧S3及全部历史分支清理属于后续整合。
 
 ## 当前状态
 
-独立条件H01—H18已形成，尚未读取新Worker计划，没有方案或实施接受结论。实际新Worker为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`，依据主控消息及Orca ask回复；旧ctx_c9的启动未知及开发会话恢复不当作产品运行证据。本轮没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务。现有S服务恢复记录为PID52040，运行窗口归该服务；后续动态操作仍需主控安排。
+结论：**退回准确`5523564f2d76ee992b8ffe00d590dbc3b24a4f85`的完整方案与测试计划**，需要原Worker修订F01/F02，并删除F03所列的多余采集前置。来源事实、唯一执行账本方向及五阶段目标可继续使用；本次没有接受程序实现或动态验收。
+
+本方案首次归属为`task_4501441a2f59 / ctx_dc2fe5ba5526`，工作树/分支为`swa-cli-headless-20261020`。主控报告该静态Task已结算，正在沿原终端、工作树和分支接续返修；新Task/Dispatch待主控登记。旧ctx_c9的启动未知及开发会话恢复不作为产品运行证据。本Reviewer没有修改程序、安装、运行模型、进程测试、HTTP、SQLite或服务。现有S服务恢复记录为PID52040，运行窗口归该服务；后续动态操作仍需主控安排。
+
+## 准确5523的独立对照
+
+已完整读取准确8964的两份文档及8964→5523全部后继差异，合计原方案391行；后继只补实际工具/权限查询及采集前置。真实远端`swa-cli-headless-20261020`为5523。H01—H18在本次读取前已形成，SDK和原生身份事实均独立追踪，不以Worker说明代替源码判断。
+
+| 条件 | 覆盖及独立判断 |
+| --- | --- |
+| H01/H02 来源与无界面 | §2/§3/§5及T01/T02保留准确b287、Node24.21.0、真实Store/SQLite、必要native/children和构建metafile；源码族及动态闭包检查方向成立。尚未构建不表示已通过，也不单独构成计划缺陷 |
+| H03 控制身份 | §3.2/T03/T12提出真实PTY helper、当前launch证明和严格拒绝未验证调用者。已核agentLaunchTokenFor仅在launchConfig存在时mint，terminal-create实际注入token并保存原生归属，currentRuntimeLaunchSufficient仅适用精确当前绑定。没有发现伪造human的设计；helper创建的请求幂等和恢复映射仍有F02缺口 |
+| H04 唯一状态 | §1保留私有Orca原生Run/Task/Dispatch为唯一执行账本，Workspace复用适用项目/批准/上下文，旧Mission/Claim/Relay不双写；符合主控已允许的提案边界。SPEC和程序写域仍待主控接续 |
+| H05 CLI消费 | §6给出命令、退出、JSON及未知结果，T03/T06/T07/T14对应真实参数、权限和错误。控制端open/close等组合动作与底层请求的映射尚需按F02补清，不能仅靠统一envelope描述幂等 |
+| H06 重复与部分失败 | T05/T06/T10覆盖Worker首输入、重复R、断开和unknown不重发；原生workerStart本身支持同次请求内的spec/parent任务创建。尚未覆盖controller open的同键并发、同键异正文以及PTY已创建而Run绑定未完成的边界，见F02 |
+| H07/H14 同候选并发 | §7.3/T13明确同一安装、同一Run/根Task、真实A/B模型执行区间及双方流事件重叠，停止时A仍在执行、B原session继续；开发会话、空闲PID、串行输入均不算通过。覆盖本次用户要求 |
+| H08 停止保全 | T09/T10/T11/T13要求精确PID/创建身份、实际全树退出和非目标保全，unknown不释放。普通Node生命周期fixture仅代表进程，真实Agent停止单独验证，范围适当 |
+| H09 真实成果 | 已另读准确da3bdddb的README/go.mod/stats.go/stats_test.go：现有Mean真实实现和Median要求与固定输入吻合。T13目标明确为设计及检查说明，保留A实际停止事实和B真实输出，不宣称代码已实现Median或旧S3通过；输出来源、游标和未知用量有覆盖 |
+| H10/H11 接续及资源 | T08—T12区分真实竞争、接管、重启、断开、退出及释放；未命中竞争保持INCONCLUSIVE，未验证structured存活时不声明恢复不中断。quota/双Worker资源窗口不扩大宿主额度 |
+| H12/H18 Agent和认证 | §4、T04明确Pi SDK身份、原生provider、只读原账户、空allowlist、原生RPC白名单、关闭cache/retry/compaction；关键方向成立。SDK服务工厂仍触发全provider刷新，F01使固定provider与认证来源范围尚不成立 |
+| H13 安装闭包 | §5/T01/T02保留Node/native/SDK及资源，不依赖全局node_modules或本机Orca；未验平台不扩写。最终准确metafile、产物装载和安装效果按计划动态检验，当前全部NOT_RUN |
+| H15/H16 测试与范围 | 原生SQLite/HTTP/SDK/Agent分别验证；纯fixture未冒充Agent；Go/Node/契约/架构检查与本轮新增消费方相关。完整旧S3、MCP、网页、历史分支清理均未追加为前置。F03指出的自选内核采集前置需要删除，其余未发现应删的无关检查 |
+| H17 本机Orca保全 | §3明确全局凭据迁移/hooks/账号等不组装、私有根/端点/进程身份、原Orca公开查询和配置保全。实际写入边界需按已组装消费者验证；全量WPR/Kernel-File并非本条件指定的方法，现计划将其变成T02/T15采集执行者前置，需按F03修订 |
+
+### F01：SDK服务工厂仍遍历全部provider
+
+严重程度：较高。影响H12/H17/H18及方案§4.2—§4.3/T04。
+
+准确Pi1.0.1 `dist/core/agent-session-services.js:createAgentSessionServices`在资源加载后无条件执行`await modelRuntime.refresh({allowNetwork:false})`。`model-runtime.js:refresh`在未限定providers时重建所有provider，并调用queueAvailabilityRefresh；后者对所有provider执行getAvailable/checkAuth及credentials.list。`refreshOnCreate:false`只抑制ModelRuntime.create中的初次刷新，不会抑制这条后续调用。因此现选服务工厂不能兑现“不枚举其他provider环境/认证”的承诺。这里尚未执行，未认定已有秘密读取或额外网络请求。
+
+原Worker需选择真实SDK公开接口形成只触及固定provider的完整组装顺序，明确资源加载、auth snapshot、session/runtime factory和原生RPC消费方。原ModelRuntime支持带providers集合的refresh，但createAgentSessionServices未传该限定；不能仅重复创建参数或将所有provider的读取结果填成undefined来宣称无枚举。T04须核实际调用的provider集合与真实模型/认证来源，在首次prompt前确认没有未批准来源探测；保留原生SDK及只读modify/delete的刷新前拒绝。
+
+### F02：controller创建的幂等与恢复映射缺失
+
+严重程度：较高。影响H03/H05/H06，方案§3.2/§6及T03/T06/T12。
+
+方案把全部写命令的request-id归入原生orchestration receipt，但controller open先创建真实PTY/helper，之后才能用该helper创建或绑定Run。准确b287的`shared/orchestration-rpc-contract.ts:isDurableMutation`没有将terminal.create列入orchestration durable mutation；`rpc/orchestration-mutation-executor.ts`对不适用方法直接invoke。原生另有`terminal-create-deduplication.ts:dedupeTerminalCreate(clientIdentity,worktreeSelector,clientMutationId,reconcileExisting,...)`，需要明确调用、命名空间和现有reconcile证明，不能由correlation ID自动获得。
+
+需要补充controller open/close的实际原生调用顺序、公开R到原生请求/创建身份的稳定映射及保存位置，说明同键异正文如何冲突、PTY已创建但响应或Run绑定丢失时如何查询和保留占用，以及后台重启后从何处恢复。复用已有原生操作及状态，不新增第二任务账本。T06补同键并发open、同键异项目/目录及真实创建后的响应丢失；确认只有同一个可解释的helper/Run，未证不存在时不能再创建。当前测试只检查原生Task/Dispatch/输入去重，不能覆盖bootstrap阶段。
+
+### F03：删除自选内核采集前置，采用足够的定向证据
+
+这是测试方法调整，不要求新增提权、性能组或驱动。H17规定隔离与本机Orca保全结果，没有指定WPR/全量Kernel-File采集。已只读核本进程非提升，权限列表没有SeSystemProfilePrivilege，wpr/logman文件存在，PATH没有Procmon入口；这些只说明当前观察，不能推导全机没有其他工具，也不能证明可采集。
+
+5523将T02/T15绑定到另行安排的有权限采集执行者，属于自选方法增加的前置，应移除。当前固定候选及声明路径的最小充分证据可以由以下组合取得，无须强制全量内核追踪：
+
+1. 对实际组装的每个可写消费者核来源和私有根：profile/SQLite、metadata/lock/key、daemon/history、launcher、session/journal及SDK状态；源码调用闭包关闭全局迁移、hooks和账号写入，必要端口用真实路径/reparse/所属验证及写入准入约束。模型认证另按H18验证，不以本机文件未变单项证明没有远端刷新。
+2. 同一安装候选实际运行，核真实profile/DB文件、端点、CLI解析、runtime/daemon/helper/Worker的PID、创建时间和所属；以原Orca根、重合/reparse目录、占用端点及非所属进程作为真实拒绝输入，确认在写入/终止前拒绝。对已审消费者使用现权限可执行的定向观察，具体工具/API、路径、范围及判据写入计划。
+3. 在安装前后、A/B并发、停止A后及最终退出时，用本机原CLI公开查询并核原runtime/daemon/会话归属，定向比较受保护配置/认证文件的内容与ACL；结合产品实际写入准入和源路径证明其保全。原客户端自然写入或认证变化需要按实际来源解释，无法解释的具体范围保留证据不足，不回写旧状态。
+4. 只关闭本产品已核所属的进程与资源，错误或unknown保留实际占用；原S服务按主控窗口处理。不得为观测安装驱动、修改全局审计策略、取消其他trace或终止非所属进程。
+
+这些要求覆盖本次实际风险；没有要求整棵活跃Orca目录逐字节不变或恶意同用户隔离证明。原Worker需给出当前可执行的具体检查并更新T02/T15。缺少某一必要事实时明确该具体未验范围，不把自选工具的缺失改成全体实现必须等待提权。其他源码和接口准备可继续。
+
+## 实际静态验证及返修边界
+
+- `.verification/check-revision.ps1 -Previous 4e6e8ed4fa52521c2232dd770eb98297d8713785 -Candidate 8964f0df4569c82aa90d8f4fed85c1f8928e7e8a` EXIT0，两份Markdown、4本地链接、Git空白通过。
+- `.verification/check-revision.ps1 -Previous 8964f0df4569c82aa90d8f4fed85c1f8928e7e8a -Candidate 5523564f2d76ee992b8ffe00d590dbc3b24a4f85` EXIT0，一份变动Markdown、1本地链接通过；未变任务沿前项结果。实际差异只有工具与权限记录，没有修订SDK组装和controller请求映射。
+- 已安装marked18.1.0、BelowNormal、Node512MiB。真实`git -c http.sslBackend=schannel ls-remote origin refs/heads/swa-cli-headless-20261020`为准确5523；没有修改全局TLS配置。原默认TLS失败由Worker/主控保留，本Reviewer本次远端查询成功。
+- SDK服务工厂、auth/refresh、工具与资源加载、RPC直接bash、SSE maxRetries路径、原生launch证明/receipt/terminal去重及公开固定项目四份原文均已按实际源码只读核查。没有运行SDK、创建认证、调用模型或执行测试脚本。
+
+返修交原Worker沿原会话、工作树及分支完成。F01/F02影响依赖的模型/控制路径，修订后重新审核准确方案；F03不新增运行权限前置。原M0、八份文档集成及M1调查的接受范围保持。程序实现、安装、实际隔离、ToolsOff认证、同候选双Worker及全部动态测试仍NOT_RUN，当前不作通过结论。

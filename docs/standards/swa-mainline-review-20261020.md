@@ -157,3 +157,5 @@ A01接受hook为`msg_94e5b0d5268a`，主控在`msg_c5b7dc996cdb`明确实际读�
 已完整读取四份差异，准确记录八份文档进入main、M1 b112调查记录接受与修复因果证据不足、已结算任务，以及最新无界面Worker的实际归属。原生start_unknown回执与实际终端开始/heartbeat分别保留，没有将开发会话恢复作为产品验收；产品隔离方向和同一安装候选双Worker验收保持。主控报告原S服务未改变，本Reviewer没有执行动态验证。
 
 `.verification/check-revision.ps1 -Previous fac75c7f963d16c7f112e8e90ad30e36510d4738 -Candidate 4e6e8ed4fa52521c2232dd770eb98297d8713785` EXIT0，四份Markdown、47本地链接、无锚点/HTML、Git空白通过；marked18.1.0、BelowNormal、Node512MiB。真实`git ls-remote origin refs/heads/main`相同，fac75祖先检查EXIT0。原来源保全检查沿已接受fac75的未变化范围复用。
+
+准确4e6接受hook为`msg_fed5032cba31`，主控在`msg_58fd00165ab1`明确完整读取四份管理文档、47本地链接、真实main及祖先保全结果，确认首版未实现、M1故障修复证据不足的范围准确，回复确认本次唤起。
