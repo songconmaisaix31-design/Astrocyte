@@ -665,3 +665,16 @@ R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑�
 准确897531d5d2978e3a51a043063a26e254b3d0f766的T12提案已由bad4d7c55249e310286a946e4a3eb603ef7060b3退回。当前§3.4.1—3.4.3和§7.6补齐P01—P03：recover的全部写动作/输出/取消消费者及真实R10，合法bootstrap与completed重放的前executor矩阵，scope-reserved/pty-spawn边界及明确无效果拒绝的原生结算；R03/R04连续同lineage和R05竞争保留。主控尚未定稿，原Reviewer尚未接受，不实施T12程序或执行新测试正文。
 
 主控msg_c1bdd050117d授予准确897531的一次build-02，实际资源检查0、构建1。UTC14:29:15.977114/14:29:18.478317的CPU32.9/5.0%、可用11693080576/11724275712字节、单调2.5012121秒符合门限；实际PNPM deploy完成323项依赖，原慢镜像警告保留。固定Node24.21.0首归档fetch触发原10分钟AbortSignal，build-exit.txt最后写入UTC14:47:59，日志原始TimeoutError及实际Node v24.16.0保留。候选仅runtime及空node目录，私有work无归档，无headers/native/TS/Go或VERSION。session82066已实际退出1；UTC14:49:02.0811535及14:49:27.8535268两次新鲜CIM的原Node18536/子9272及其直接后代均为空。完整原件和部分candidate01保留，没有重试、删除、修改超时/来源或执行版本/安装检查。主控msg_e00d82c78306收回窗口并解除tracked/Git冻结，msg_a7130df1a33c确认restore-05 EXIT0、同源原S18944及原库/环境/配置/Orca保持；Worker未操作原S。
+
+F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: run})；F17参数按真实MESSAGE_TYPES及原生send默认值修正为type=status，上游枚举不变。当前仅消除两处参数错配，真实完整成果和后续正文尚未通过。RuntimeClient.call直接发送params，并仅在第三参数的orchestrationRequestId形成原生durable R；各写动作固定子R保持。
+
+| 现有helper调用 | 本次真实schema及直接消费者核查 |
+| --- | --- |
+| runCurrent/runCreate/runShow | from、objective/from、id/from分别对应真实runs参数；observe使用自身controller，task.create创建唯一Run，成果按真实id读取 |
+| taskCreate/taskList/taskUpdate | 首根Task用spec/taskTitle/callerTerminalHandle/run；明确run的taskList可观察，taskUpdate使用id/status=completed/result/run/callerTerminalHandle。固定spec/context和原R/root-task、R/native保持 |
+| workerStart | 真实spec/from/run/parent/worktree/name/taskTitle/agent/model/effort/timeoutMs，task与spec的原生互斥条件保持；使用pi、openai-codex/gpt-6.1-sol及xhigh，不改原生模型解释 |
+| workerShow/workerRead/workerList | dispatch、source=transcript及limit/cursor对应schema；workerList显式run/paginate/limit100，真实ORCHESTRATION_FLEET_PAGE_MAX=100。成果遇page.hasMore继续拒绝不完整清单，workerShow真实投影assigneeHandle用于准确收件人 |
+| workerStop/workerRelease | 真实WorkerDispatchParams的必填dispatch及准确R/native；没有from字段仍须后继§3.4真实caller强准入，不把schema可接收计作权限成立 |
+| send | 真实from/to/subject/body/type=status/run及R/native；to来自该Dispatch实际assigneeHandle。参数修正不能改变structured投递仅包含check提示的既有语义 |
+
+已完整读取structured-mailbox-pointer-delivery、structured-mail-source和Pi rpc-prompt链：当前实际AgentJournalMessageItem.blocks只有formatMessagePointer提示，source只有原生ID引用，Pi仅把text blocks连接为SDK输入，不回查MessageRow。ToolsOff Worker无法自行取正文；原Reviewer1b2954d9已提出七项独立条件，主控msg_0458b95cccf2同意完整方案先审后实现。正文语义未编码，不把合法枚举或消息回执登记为worker.send完成。T07/T13的实际task.result、完整成果及同session真实后续输入仍为必要验收。

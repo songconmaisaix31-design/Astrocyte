@@ -95,3 +95,5 @@
 准确897531的T12提案被原Reviewer bad4d7c5退回P01—P03。报告§3.4.1—3.4.3及§7.6现补recover写动作/输出/取消分类和真实R10、合法bootstrap与completed重放的强准入矩阵、原生reservation与首次外部效果及effect-free结算边界，并补同lineage的R03拒绝后显式R04和两阶段R05竞争。提案继续待主控定稿及原Reviewer独立复审，相关程序和全部新增正文均未执行。
 
 准确897531只执行一次主控msg_c1bdd050117d授予的build-02：资源0，实际PNPM deploy完成，固定官方Node首归档按原10分钟AbortSignal超时，构建EXIT1，无headers/native/TS/Go或候选VERSION。实际session82066退出及两次新鲜定向CIM无原18536/9272或其直接后代后，通过msg_b12eef9d323c交回窗口；build-02原件和部分candidate01完整保留，无重试或删除。主控已解除tracked/Git冻结并确认restore-05 EXIT0、原S18944及原库/环境/配置/Orca保持，后继无重操作授权。详细资源、时间、原件及失败范围见报告§9。
+
+准确079bd958260ac3edb9fda6c13bb9e28a0a08cd56的T12 P01—P03补充及真实build-02记录已普通push EXIT0，交主控定稿和原Reviewer复审。后继helper按F16/F17原schema修正runShow的id及合法status消息类型，并逐项核已有方法、必填参数、枚举、子R和直接返回消费者，详情见报告§9；T07/T13仍未执行。F17继续存在正文语义缺口：原生structured投递仅提供check提示，Pi只接收text blocks，关闭工具后无法取得邮件正文。新增完整方案与真实输入一致性测试先交独立审核，不开放工具或绕过原生队列直接prompt。

@@ -49,7 +49,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
       const observed = nativeObject(await call('orchestration.workerShow', { dispatch: c.dispatch_id }))
       const dispatch = nativeObject(observed.dispatch)
       if (!invocation.input || typeof dispatch.assigneeHandle !== 'string') throw new Error('exact_worker_recipient_missing')
-      return call('orchestration.send', { from: controller, to: dispatch.assigneeHandle, subject: 'SWA approved follow-up', body: invocation.input.text, type: 'message', run }, `${requestId}/native`)
+      return call('orchestration.send', { from: controller, to: dispatch.assigneeHandle, subject: 'SWA approved follow-up', body: invocation.input.text, type: 'status', run }, `${requestId}/native`)
     }
     default: throw new Error('unsupported_controller_action')
   }
@@ -71,7 +71,7 @@ async function collectTaskResult(invocation: Invocation) {
     const observation = await call('orchestration.workerShow', { dispatch: worker.dispatchId })
     outputs.push({ worker, observation })
   }
-  return { run: await call('orchestration.runShow', { run }), tasks, workers: outputs }
+  return { run: await call('orchestration.runShow', { id: run }), tasks, workers: outputs }
 }
 
 async function main() {
