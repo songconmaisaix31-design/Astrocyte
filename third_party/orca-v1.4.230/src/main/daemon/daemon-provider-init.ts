@@ -98,7 +98,7 @@ export async function initDaemonPtyProvider(
     packagedAppVersion: resolvePackagedDarwinAppVersion(),
     historyPath: getHistoryDir(),
     // Why: on daemon death, ensureConnected() detects the dead socket and calls this to fork a replacement before retrying.
-    respawn: async (reason: DaemonRespawnReason) => {
+    respawn: options.automaticRespawn === false ? undefined : async (reason: DaemonRespawnReason) => {
       // Why: attribute rather than emit — the launcher below is the one that completes the
       // replacement, and emitting here would fire before the outcome is known.
       // Caveat: a wedged-but-alive daemon (#8689) can still report died_respawn here and

@@ -80,6 +80,7 @@ function createPreservedDaemonHandle(
 }
 
 export type DaemonLaunchPolicy = {
+  automaticRespawn?: boolean
   macosLoginSessionWatch?: boolean
   startupTimeoutMs?: number
   spawnAdmission?: 'observe' | 'enforce'

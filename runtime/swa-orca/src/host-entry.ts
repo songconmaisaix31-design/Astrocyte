@@ -58,7 +58,7 @@ async function main() {
     store.updateSettings({ agentStatusHooksEnabled: false, workspaceDir: privatePath('workspaces'), browserClientHostedRemoteEnabled: false, browserSshWorkspaceRoutingEnabled: false })
     const { initDaemonPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-init')
     const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement, listLiveDaemonPtyIds, getDaemonProvider, readDaemonPidRecord } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
-    await initDaemonPtyProvider(undefined, { macosLoginSessionWatch: false, startupTimeoutMs: 30_000 })
+    await initDaemonPtyProvider(undefined, { macosLoginSessionWatch: false, startupTimeoutMs: 30_000, automaticRespawn: false })
     let daemonOwnershipConfirmed = false
     registerCleanup(async () => {
       if (daemonOwnershipConfirmed) {

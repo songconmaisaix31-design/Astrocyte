@@ -27,6 +27,8 @@
 
 准确3c4e0364的N21阶段已普通push交原Reviewer，当前N22按报告§20分别消费真实raw PTY和完整caller process incarnation；不自行拼接或放宽身份。R05实际pending竞争及唯一PTY观察在互斥测试路径继续，正文全部NOT_RUN，尚无新的重操作授权。
 
+独立b8c8e780已限定静态接受c962的完整pending包装并确认3c4的N21源码修正，N22准确5110a888已push交复核。报告§21限定私有组装关闭上游默认自动daemon respawn，使pending清单失败保持原R及所属；没有修改本机Orca或授予新运行窗口。
+
 完整方案及测试命令见[报告](../docs/standards/swa-cli-headless-20261020.md)。抽取原生Node runtime、SQLite、Run/Task/Dispatch、真实会话与进程控制，使用独立 `swa` 入口、安装根和私有数据根；产品composition不组装全局凭据迁移、全局hooks更新、账户迁移、自动化、云推送及桌面入口。必须保留真实控制端与Worker的身份、持久性、输入观察、输出和退出语义。
 
 主控通过本次Orca `ask` 明确批准：**产品私有Orca原生Run/Task/Dispatch为本首版唯一执行账本**，SWA Workspace复用适用项目、授权和固定上下文；旧Mission/Claim/Relay保持独立记录，同一首版任务不双写。主控在准确方案独立审核后更新SPEC，本Worker不修改公共事实源、既有接口或旧门禁。
