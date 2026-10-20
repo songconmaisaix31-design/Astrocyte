@@ -828,6 +828,10 @@ CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码
 | 产品 Node composition → 原生 runtime/controller/Worker | 仅注册获准方法；真实 PTY helper 的 launch/current consumer 执行 Run 与 Worker 操作。公开请求映射到原生 mutation receipts、确定 PTY 创建身份及固定子请求；副作用未知保留 pending，只读查询，不重发输入 |
 | Worker → Pi SDK 1.0.1 | 固定真实 `openai-codex/gpt-6.1-sol`、显式只读认证来源、空工具及资源集合；私有 SDK 子进程 home/agent/session，随包 SDK；只允许已审六项原生 RPC，关闭隐式重试、压缩和缓存预热 |
 
+准确6168的方案补充见[执行方案 §5.4](standards/swa-cli-headless-20261020.md)：每个SDK Worker由私有runtime创建并唯一持有其不可继承的独立Win32 Job句柄，核实际root身份、分配及完整成员查询成功后，才通过Node原生IPC准入SDK加载。原生root退出、两次间隔至少50毫秒的成功完整Job空查询及两次新鲜旧进程身份退出观察共同满足后，才允许确认全树退出并关闭句柄；查询失败、身份不明或宿主重启丢失句柄继续保持unknown及占用。实际native缺失或必要嵌套被拒绝时在模型请求前失败，原Orca及非目标Job保持原所属，测试依T09/T13执行。
+
+合法已认证人类的自有安全停止保留原规则：严格核项目和原生进程所属，执行批准撤销及旧上下文版本不阻断安全停止；Agent的执行与撤销准入保持。关闭控制端与创建任务/Worker的准入必须共同核原生持久占用：创建先保留时，关闭须拒绝或等待其明确结算；关闭先保留时，新建及输入拒绝，unknown保持原屏障。关闭helper不能代替停止所属独立Worker。
+
 新代码遵守 §3 的 App 端口、adapter 和入口组装关系；来源副本与产品 composition 位于各自独立目录。需要改变上述动作、权限、状态拥有者、公开错误或模型范围时先修订本节及方案并重新审核相关测试。实际构建、安装及 T00—T15 的结果由任务和报告登记，计划接受不表示功能通过。
 
 ### 21.2 已采用的工程决策
