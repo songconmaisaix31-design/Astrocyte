@@ -154,7 +154,8 @@ func orcaAction(action string) (permission string, mutation bool, ok bool) {
 	}
 }
 
-func validateOrcaCommand(c OrcaCommand) error {
+// CLI 与 HTTP 共享字段及动作准入，调用者身份继续由实际服务核验。
+func ValidateOrcaCommand(c OrcaCommand) error {
 	_, mutation, known := orcaAction(c.Action)
 	if !known {
 		return projectError(apierrors.ValidationFailed, "unknown Swarm CLI action")
@@ -280,7 +281,7 @@ func (s *OrcaExecutionService) readInput(ctx context.Context, p domain.LocalProj
 
 func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Caller, command OrcaCommand) (OrcaEnvelope, error) {
 	var reply OrcaEnvelope
-	if err := validateOrcaCommand(command); err != nil {
+	if err := ValidateOrcaCommand(command); err != nil {
 		return reply, err
 	}
 	permission, _, _ := orcaAction(command.Action)

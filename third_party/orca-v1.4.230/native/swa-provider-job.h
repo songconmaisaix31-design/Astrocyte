@@ -103,6 +103,12 @@ static Napi::Value SwaAssignProviderJob(const Napi::CallbackInfo& info) {
   try { creation = SwaProcessCreation(process, env); }
   catch (...) { CloseHandle(process); throw; }
   if (static_cast<double>(creation) != expected) { CloseHandle(process); throw Napi::Error::New(env, "SWA child creation identity changed"); }
+  for (const auto* other : swaProviderJobs) {
+    if (other != value && other->root && other->rootPid == pid && other->rootCreationMs == creation) {
+      CloseHandle(process);
+      throw Napi::Error::New(env, "SWA root already belongs to another owned Provider Job");
+    }
+  }
   HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   if (snapshot == INVALID_HANDLE_VALUE) { CloseHandle(process); throw Napi::Error::New(env, "SWA child parent observation failed"); }
   PROCESSENTRY32W row{};

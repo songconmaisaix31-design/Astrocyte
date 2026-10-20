@@ -19,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
@@ -78,7 +79,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	command := workspaceapp.OrcaCommand{Action: action}
 	flags := flag.NewFlagSet("swa", flag.ContinueOnError)
-	flags.SetOutput(stderr)
+	flags.SetOutput(io.Discard)
 	project := flags.String("project", "", "项目 ID")
 	endpoint := flags.String("endpoint", os.Getenv("SWA_ENDPOINT"), "明确的回环 HTTP 服务")
 	asJSON := flags.Bool("json", false, "输出 JSON")
@@ -96,13 +97,21 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	flags.StringVar(&command.Model, "model", "", "已批准的 provider/model")
 	flags.StringVar(&command.Source, "source", "", "明确原件来源")
 	flags.StringVar(&command.Cursor, "cursor", "", "原来源 cursor")
-	flags.IntVar(&command.Limit, "limit", 0, "读取上限，worker read 默认为 100")
+	defaultLimit := 0
+	if action == "worker.read" {
+		defaultLimit = 100
+	}
+	flags.IntVar(&command.Limit, "limit", defaultLimit, "读取上限，worker read 默认为 100")
 	if err := flags.Parse(rest); err != nil || flags.NArg() != 0 {
 		return report(stderr, "validation_failed", "命令参数无效", "read_swa_help", 2)
 	}
 	command.ProjectID = *project
-	if command.Action == "worker.read" && command.Limit == 0 {
-		command.Limit = 100
+	if err := workspaceapp.ValidateOrcaCommand(command); err != nil {
+		var service *apierrors.ServiceError
+		if errors.As(err, &service) {
+			return report(stderr, string(service.Code), service.Message, service.RequiredAction, failureExit(string(service.Code)))
+		}
+		return report(stderr, "validation_failed", err.Error(), "read_swa_help", 2)
 	}
 	projectID := *project
 	if projectID == "" {
