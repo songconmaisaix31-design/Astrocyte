@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，本地准确`9741fccb8f705b057b913e617d9ae522536c1e88`干净，Worker报告普通push及远端核对EXIT0；主控本次独立ls-remote因连接GitHub:443超时EXIT1，未计为远端核实成功。T06原生指纹规范化/真实重放源码交原Reviewer精确CR，39cc的F13/F14及Go检查独立审查继续，全部正文未运行。d7、76e9及F04—F12既有静态接受保持，整体程序与全部动态未接受。原S与无新动态窗口保持，构建/模型/安装包/双Worker及隔离验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，本地准确`72c7b8961a5677c7291967448507d3fc64340a4b`干净，Worker报告本提交及前序2c普通push/远端核对EXIT0；主控完整读取两段准确差异并检查空白，本轮未另核远端。2c保留产品真实原生拒绝code与既有未知退出语义、补T08真实写锁检查源码；72c补T06一次真实所属CLI断开尝试及原请求查询源码。两者追加交原Reviewer，39cc/9741精确CR继续，全部正文未运行。d7、76e9及F04—F12既有静态接受保持，整体程序与全部动态未接受。UTC12:27:56单次只读可用0.396GiB，S12800实际身份及64505监听保持，无新动态窗口；构建/模型/安装包/双Worker及隔离验收均未通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
