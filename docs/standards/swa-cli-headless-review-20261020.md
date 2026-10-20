@@ -685,3 +685,23 @@ UTC14:20:26的独立只读查询确认原程序、PID45948、父PID55664和唯�
 准确`runtime/swa-orca/src/controller-helper.ts:74`的collectTaskResult调用`orchestration.runShow`传入`{ run }`。同一准确第三方`src/shared/rpc-contract/orchestration-runs-params.ts:23`将RunShowParams定义为必填`id`及可选`from`；`src/main/runtime/rpc/methods/orchestration/runs/runs.ts:144`处理器直接读取params.id，RuntimeClient.call将params原样送入transport，没有run到id的转换。实际task.result在前序task/fleet读取后必然缺id，原生schema拒绝使helper返回错误，无法进入native-methods中的completeTaskResult或CLI成果导出。bc217与897531只改脚本/文档，继承这条调用。
 
 已分别通过`msg_298441a32b13`及`msg_31b270bc84ec`交原Worker和主控：按真实契约修正现有helper消费者，保持上游schema、真实所属与完整成果要求；后继准确提交独立复核，T07/T13的真实task.result及完整成果验证继续必需。本Reviewer没有运行原生schema、HTTP、模型或产品正文，没有使用mock或伪造原生调用；静态因果来自准确双方契约，实际运行结果仍未验。
+
+主控`msg_c817596bd488`完整读取准确abc8fc98相对97a八行新增并实际核双方契约，回复F16 hook `msg_d0ebbd3cc707`，确认退回范围及原Worker后继返修，实际读取唤起已确认；当时Worker仅执行已授build-02，源码冻结，未运行成果获取。
+
+## 准确897531d5的T12提案审核
+
+结论：**退回准确`897531d5d2978e3a51a043063a26e254b3d0f766`的完整T12提案，补齐P01—P03后复审。** 本会话八条独立条件已在97a写入并普通push，随后通过原Orca ask取得主控对准确版本、唯一recover方向及尚未定稿/不授权实施的确认，再完整读取相对bc217两文档的§3.4/7.6及R01—R09。主控`msg_fe106620a3f2`明确新增动作需覆盖CLI副作用分类及真实C04/C05/C09、helperless bridge不能放行任何原生写入。bc217/897的普通push成功采用Worker后继实际回执，主控`msg_b78b1ff1e625`已确认收到；先前未取得回执的事实范围保持。
+
+已覆盖的需求：R01/R02核真实caller与当前权限，R03/R04核活旧helper拒绝及真实同Run接续，R05/R08核竞争、重复R及checkpoint后只观察，R06/R07核同库重启和原Job复开，R09核历史只读、完整原件及最终关闭。真实runUse改变原consumer_generation，原Run/root/context不复制；缺恢复attestation、SDK父Job丢失、未知输入和资源不被写成连续运行或已释放。没有发现应删除的无关检查，全部实际场景仍NOT_RUN。
+
+已独立读取准确原生run-binding、strict launch验证、legacy路由、RuntimeClient及mutation executor，确认currentRuntimeLaunchSufficient只适用于真实当前launch commitment，restored仍需要原生恢复证明；完成R在executor中可能直接返回，前置准入位置必须保留。命名Job复开方向有[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[CreateJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-createjobobjectw)及[OpenJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-openjobobjectw)官方正文依据：旧对象有存活关联进程时可继续存在，Open只取得既有对象句柄，名字及成功打开不能证明实际成员或合法接管。该API依据不表示本机嵌套/重开已通过，提案的kernel成员、实际daemon来源与握手共同核验仍必需。
+
+| 缺口 | 来源与具体影响 | 原Worker需补充的方案及真实覆盖 |
+| --- | --- | --- |
+| P01 recover的CLI失败边界 | H05/H06/H11、SPEC §21.1及主控明确要求。现有outputFailure按硬编码动作分类；新recover创建helper和改变consumer，不能沿默认只读输出失败7，也不能只用普通新动作正常退出检查代替 | 明确在CLI所有副作用/取消/输出失败处归入recover；复用C04/C05/C09的真实连接、受控130及stdout关闭条件，核原R、实际已知旧/新selector、6/130、一次结果和无第二副作用，未命中保留INCONCLUSIVE |
+| P02 严格准入的合法bootstrap | H03/H06和既有controller open/task create功能。提案要求全部helper写入/带caller查询同时比较原receipt和当前Run consumer，但pending open的首次runCurrent/首runCreate尚无Run，首次taskCreate及新helper ready/runUse亦处于不同阶段；尚无按方法/阶段的完整判据 | 列出这些真实bootstrap、后续current consumer及已完成R重放的准入矩阵，明确每项真实launch及准确parent/子请求证据；恢复缺证继续拒绝。helperless只读白名单不能推导任何orchestration写入豁免。R01必须经真实open、taskCreate和recover分别覆盖，不以修改上游宽松分支代替 |
+| P03 无副作用拒绝与unknown结算 | H06/H10/H11。提案先在事务内保留lineage再异步观察旧helper，同R pending禁止create/send/runUse、不同R被屏障阻止；尚未明确已证旧helper仍活等未产生外部副作用的拒绝，如何结算reservation并允许以后显式合法接续。将其全部保留为unknown会使正常R03拒绝影响后继R04 | 定稿内部保留范围与首次可能外部副作用的分界。仅明确证明无外部效果的拒绝按原生结算；可能已创建/发送/绑定、证明不足及中断继续保留原R和占用。补同一真实lineage的连续场景：R03拒绝后，旧helper随后真实退出，再以明确请求完成合法R04；同时保留R05竞争与R08未知不能重发的反向条件 |
+
+P03为方案未规定的状态分支，不宣称现有源码已经产生永久阻塞。原生executor会按错误类型等条件结算pending；补充方案须明确如何使用其真实规则，不能在实现时猜测。P02同样不预先指定新的公开字段或额外身份系统，要求原已审能力的真实启动过程能够通过严格验证。
+
+已通过`msg_6dc0bb0e151b`交原Worker三项补充；接口仍为提案，由主控定稿后才实施，T11待答不阻断本项，F16另行准确返修。`check-revision.ps1 -Previous bc217de88f4bb4b8af1ab63f3c281f4c2f649aea -Candidate 897531d5d2978e3a51a043063a26e254b3d0f766` EXIT0，两Markdown/5本地链接和Git空白通过，marked18.1.0、BelowNormal、Node512MiB；没有编译、原生调用、重启、服务、Job创建/复开、模型或计划正文执行。
