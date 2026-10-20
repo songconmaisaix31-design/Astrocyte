@@ -138,6 +138,41 @@ open在PTY请求开始后抛出或失联时，产品handler将该已可能发生
 
 响应丢失或runtime重启后，查询按原checkpoint只读核精确handle、真实daemon `listProcesses`、持久PTY/session归属及原生Run coordinator/子请求receipt。已创建PTY而尚无Run的状态保留该helper；Run已创建而根Task未确认时返回原Run及pending子请求。原生reconcile可核exact handle的既有PTY，但产品查询不得调用会在无匹配时spawn的`dedupeTerminalCreate(...,reconcileExisting=true,...)`。未知、无inventory、缺handle或多重匹配均不创建、不重发、不释放；单独absent不证明无副作用。需要新controller时先获得原精确helper和后代已退出的正向证明，再由新的明确请求创建；绑定已有Run仍按§3.2真实runUse及generation规则。
 
+### 3.4 T12控制端接续及严格调用者校验提案
+
+本节及§7.6为待主控定稿、原Reviewer独立审核的完整提案，新增动作/内部契约尚未冻结或实施。程序来源为准确c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c；后继bc217de88f4bb4b8af1ab63f3c281f4c2f649aea仅修正构建输出父目录及实际记录。依据已接受§3.2第6项、T03/T06/T12/T15及主控msg_d934de992f8b、msg_5df6a6277414；T11人工入口仍待用户决定，不阻塞本项。接续保留同一原生Run/根Task、固定context和现有Worker/Dispatch，不新增任务或执行账本。
+
+已完整读取实际`runs.ts/run-scope.ts/run-receipt.ts`、`db/runs/run-binding.ts`、`rpc/core.ts/dispatcher.ts/orchestration-mutation-executor.ts/orchestration-mutation-receipt.ts/orchestration-legacy-compatibility.ts`、`terminal-authority/verify-orchestration-compatibility-caller.ts`及本项helper/client/contracts/native-methods和Go消费方。真实runUse经db.bindRun在原生事务改变coordinator、consumer_generation和mailbox delivery fence，不创建新Run。旧helper死亡属于产品准入。当前产品没有显式strict helper admission；上游run-scope在verify返回null时仍可使用声明handle，当前源码不能宣称§3.2第4项已经实现。completed R也可能先于handler返回，严格校验必须放在native executor之前。
+
+唯一新增公开动作建议为`swa controller recover --controller C_old --request-id R --json`。复用既有command字段、项目/endpoint环境与当前token；不增加Run、generation、from、consumer、actor、pane、PID或launch-token参数。R须canonical UUID并与Idempotency-Key一致。创建真实新helper及改变控制权使用现有start授权、当前settings revision、目录与外发目标准入；人类安全stop的既有授权例外不授予recover。缺少完成的taskCreate、固定Run/root/context或原authority即拒绝。成功外层controller只填实际C_new，run_id/task_id仍为原Run/root，result保留真实owner和runUse receipt/generation；expected身份只留checkpoint，不填造外层。验证2、权限/旧consumer/身份失配3、依赖4、资源5、controller_unverifiable/operation_unknown等未知6、真实内部错误7，不自动重试或重发。
+
+同项目授权下，request.show继续不依赖活helper。helper无法核验时，controller.show返回实际观察及6；task.show/list/result、worker.show/list/read通过明确原生Run/Dispatch的真实只读RPC观察，先核项目和原receipt关联，省略虚构caller。已核taskList显式run使用requireCurrentConsumer=false，可直接复用真实返回；其余观察复用既有原生方法及完整成果读取，来源缺失如实unavailable/incomplete。此路径不输入旧helper、不绑定Run、不执行prompt/stop/release/complete。历史controller可用于合法只读定位，新的写入必须使用当前C_new。
+
+产品composition向原生RPC server注入显式admission callback，沿options交给dispatcher，在schema/transport准入之后、任何legacy route及native executor/重放之前执行；本产品注册方法均为unary。其他宿主未配置时保留上游行为，不修改本机Orca。所有helper发起的orchestration写入及带helper caller的查询，必须从实际请求compatibility evidence取得非空authority，比较真实handle/pane/process incarnation/host与原receipt及当前Run consumer。当前launch只在实际native dispatch authority确有当前launch commitment时使用currentRuntimeLaunchSufficient；restored分支使用原生restored receipt及真实attestation。本产品helper缺少真实hook证明时拒绝，不复制token、从旧文件重建authority或用launch选项代替恢复证明。已完成的Native R也先执行此校验。
+
+无helper的私有bridge只读方法明确限定为既有requestShow/runShow/显式run的taskList/workerShow/list/read，项目scope继续由真实Go App和receipt核实。swa.*写入仍先经实际HTTP/App当前主体与批准检查；真正helper native写入再作前置强校验。公开同R返回既有完成open/close receipt只表示历史原件，不授予旧helper新写入权限或伪装活owner。runUse仅接受实际C_new和准确R/run-use：callback核pending swa.controllerRecover,R checkpoint、同一原Run/root、旧generation及真实新launch证据；其他Run、controller或子R拒绝。不启用legacy takeover，不由用户提供from。
+
+复用现有orchestration.db/local caller fingerprint/native executor，增加私有durable方法swa.controllerRecover。payload保留原caller/project/settings、公开旧C/R、authority及原固定Run/root/context完整比较；新helper身份和generation只写实际checkpoint，不在重放时重新采样成payload，不新增hash规范化。
+
+| 顺序 | 准入、副作用及原生回执 |
+| --- | --- |
+| 保留接续范围 | handler先同步取得原open/taskCreate或完成recover的owner及同一Run/root/context，在原生BEGIN IMMEDIATE内排除同一controller lineage的竞争接续，checkpoint原R的project/prior_controller/Run/root/旧owner/旧generation/stage并提交；发生在异步观察和新PTY之前。pending接续阻止不同R创建竞争helper |
+| 原helper退出 | 两次独立新鲜Windows进程表与真实daemon PTY清单共同确认原root/helper精确PID+创建时间已退出、原PTY/incarnation不存在。任一仍活、查询失败、PID复用/身份变化、daemon来源不明均拒绝/6，不终止它们。能够提供全部原生恢复证明的旧helper可沿原身份工作，recover仍拒绝竞争创建 |
+| 新helper创建 | 重核原Run仍为旧generation，先checkpoint真实worktree、固定clientIdentity、clientMutationId=R/controller-pty及原生derive所得expected handle。首次started分支仅一次调用现有dedupeTerminalCreate/reconcileExisting=false和真实createTerminal/launchConfig；取得C_new实际PTY/pane/host/incarnation/root/helper PID+创建时间和ready后checkpoint。不调用runCreate或taskCreate |
+| 同一Run绑定 | 仅向C_new一次发送版本化内部helper动作，内部目标必须匹配自身真实环境；公开command仍保留C_old。helper仅执行orchestration.runUse({id: 原Run, from: 自身handle}, requestId=R/run-use)，强准入匹配parent checkpoint。保存真实子receipt后核同一Run/root/context、coordinator=C_new及generation严格增加，完成原outer R |
+| 同R in-flight/完成 | 复用原executor同payload join与completed receipt；当前HTTP授权和Native caller前置校验保持，不同payload拒绝。request.show对本次recover receipt允许准确C_old或已证C_new，其他controller拒绝；其余历史R仍按原controller/project查询 |
+| 同R pending | 仅对swa.controllerRecover扩展现有executor的pending观察分支，沿已有replayedMutationReceipt传原checkpoint。该分支禁止createTerminal/dedupe、terminal.send、runUse、taskCreate和prompt。只有R/run-use明确completed、实际Run/generation及C_new完整当前证明一致、旧owner已退出、root/context不变，才能确认同一个outer R完成；其他保持6/占用。checkpoint之前的unknown也不能用新R替代 |
+
+controllerScope分别解析完成的新owner、历史只读owner和pending接续，不改写首次taskCreate/context。旧controller的新写入拒绝，真实Native consumer fence同时保留；新controller不能task.create第二项用户任务。接续只改变控制权，SDK父Job句柄丢失、资源unknown、输入pending、会话不完整继续保持，不启动替代Worker、重新prompt、释放资源或完成Task。最终close/serve idle检查认可准确completed recover证明的旧owner退出，每个最终新owner仍须completed close；pending recover不能当退休或合法新owner。人类安全stop仍核其原有授权和精确原生资源，无法证明身份的具体停止结果保持unknown。
+
+重启后的daemon可能不属于新serve创建的匿名Job，必须恢复同一个可观察的Job。建议首次serve在spawn前创建Local命名空间的SWAService加随机UUID对象名，ACL限当前用户/SYSTEM，并绑定自身；不设kill-on-close、breakaway或全局限制。实际daemon的既有PID record增加swa_service_job对象，保存name、serve_pid/serve_created_at_ms、data_root/install_root/source_revision和实际session定位值；不新增文件/数据库表。daemon发布字段前用native API核自身成员；内部生命周期公告增加ownership供Go核实际daemon PID/创建身份及Job名，Go不转发ownership到公开stdout，公开readiness三个字段及外层结构保持。
+
+新serve先从规范私有D的实际daemon PID record以标准JSON严格解码；验证旧PID/创建时间、私有来源/session、原serve已退出、同一DataRoot及kernel成员，再OpenJobObject打开原Job并把当前serve加入该同一个Job，随后以真实daemon token/协议握手交叉核authenticated daemon身份。名字只定位，不替代membership/来源/握手。原record精确文件名沿pin的daemon protocol version，Node与Go消费方须检查同一固定版本；不扫描后任选其他代际。记录缺损、对象缺失、权限/嵌套失败、旧serve仍活或身份失配即拒绝并保留原daemon，不改建新Job接管未知状态。只有实际进程和endpoint均新鲜证实私有D没有存活旧daemon/对象成员时，才允许明确的全新启动。node/server/daemon都以真实句柄核在该Job中；关闭沿§7.5原生释放、准确owner关闭、daemon退休/cleanup、直接子进程exit和整个Job两次只剩serve的共同条件，失败保持6/7。
+
+已完整读取Microsoft [Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)、[CreateJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-createjobobjectw)和[OpenJobObjectW](https://learn.microsoft.com/en-us/windows/win32/api/jobapi2/nf-jobapi2-openjobobjectw)：对象直到最后handle关闭且关联进程全部终止后才销毁，命名对象可重新打开。此为静态API依据，本机实际复开/嵌套仍须§7.6真实测试；失败即真实限制，不提权、装驱动或操作原Orca对象。
+
+待准确接口定稿及独立计划接受后，在已有write_paths实施CLI、Go App/adapter及HTTP契约、runtime/swa-orca、pin的dispatcher/options/receipt/daemon PID写读消费方、OpenAPI/CLI schema、测试入口及tests/swa-cli-headless。API类型仍只由生成器在明确窗口更新；主控SSOT只交Handoff，不自行修改。
+
 ## 4. 当前Agent与非Aliyun受限正向方案
 
 ### 4.1 实际静态观察
@@ -474,6 +509,26 @@ Windows控制信号只允许在本项新建的隐藏console内执行：普通验
 已完整读取本机工具链目录`C:/Users/DW/AppData/Local/Programs/go/VERSION`（记录go1.27.2）、`src/os/signal/signal_windows_test.go`及`doc.go`的Windows节：官方测试使用新process group及GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT,pid)，Windows Notify将其交为os.Interrupt。该测试没有创建独立console；本计划的隐藏console隔离是另外必须真实核查的条件。官方网页本次连接失败，未记为已读取或验证；没有执行Go官方测试、console信号、服务或其他本节正文。
 
 所有C项均保存同候选VERSION、准确源码、实际args（不含token）、stdout/stderr原件、退出码/信号、已知原R及真实所属/来源；捕获内容持久化之前核当前token没有泄漏，不把认证字节写到文件。JSON使用标准成熟Decoder判断唯一对象及EOF，文本/退出映射与同一真实结果比较。启动/取消/EOF/unknown沿实际发生顺序记录，不以最终一条结果推断中间窗口；缺Grant保持真实授权阻塞。编译、服务、实际模型与原S窗口继续串行，CPU/内存/BelowNormal/Go/Node额度沿RESOURCES，无额外Agent、提权、驱动或内核采集。
+
+### 7.6 T12接续与strict caller的独立覆盖提案
+
+本节随§3.4待主控和原Reviewer接受，全部新增正文NOT_RUN。建议真实入口为verify-swa-cli-headless.ps1 -Case T12 -RecoveryScenario caller|live|handoff|restart|pending，参数尚未实施或冻结；普通Windows控制helper和真实RuntimeClient测试bundle在服务启动前按同一源码SHA串行构建，服务期间不编译。沿同一准确安装候选、当前真实Grant及固定公开项目，逐R保存实际native Run/Task/Dispatch、generation/receipt/checkpoint、进程句柄/创建时间、Job成员和实际SDK来源。不伪造hook/launch evidence/进程表，不改写Native业务库或加入暂停/延迟故障钩子。
+
+| 条件 | 真实操作与判断 |
+| --- | --- |
+| R01 真实caller | 真实controller open/task create取得当前launch和consumer。另用没有launch环境的实际普通子进程及真实RuntimeClient，针对已有Run/准确方法/真实R调用及重放已完成R，须在executor之前拒绝；不拼造wire evidence。原helper当前launch正常通过，缺restored attestation不得通过 |
+| R02 当前批准及范围 | 使用实际另一项目/controller、按既有人工入口实际撤销的批准/Grant和真实settings变化，核拒绝且无第二Run/helper或generation变化。不伪造human；未具备真实条件的分支保持未执行 |
+| R03 旧helper仍活 | 对真实活C_old执行recover，必须拒绝/6，原helper/PTY、Run/root/context和generation保持，原R查询可用，没有竞争C_new，其他Worker不被停止/释放 |
+| R04 完整接续 | 对同一真实任务，在旧root/helper及PTY精确退出后一次recover，核C_new实际launch、同Run的R/run-use与generation增加，root/context/原Dispatch-session引用不变；新controller可真实观察并执行批准的既有任务动作，旧C_old新写入拒绝。新controller不允许创建第二用户任务 |
+| R05 重放及竞争 | 同R同payload返回同一C_new/原receipt，不多建PTY/runUse；不同payload拒绝。两次不同真实R并发接续同一个旧controller，原生事务只许一项取得范围，另一项拒绝/unknown，最终唯一current consumer。不改后台或加入屏障 |
+| R06 同库重启 | 至少一个真实Worker输入已接受后，只精确停止本项runtime/所属服务，保留私有daemon/session文件及实际原R/SDK事件/Job成员。重启同候选/同D，复开同Job并核原daemon同身份，原请求/任务/Worker观察可用。原helper须全部真实恢复证明；缺attestation拒绝。SDK父Job丢失保持unknown/占用，不重发或替代，不假称模型不中断 |
+| R07 原handle关闭后复开 | 保存serve真实退出、原用户handle关闭及Job剩余实际成员，再由新serve真实Open同一个命名Job并加入，与kernel成员及daemon握手互核。对象缺失/权限/嵌套/来源失败必须拒绝，不用新Job空计数登记成功。自然PID复用未命中则不伪造该分支 |
+| R08 checkpoint断开 | 一次真实recover中观察SQLite实际checkpoint/PTY/runUse receipt后，只精确终止本项CLI或runtime，分别保存实际命中的边界；查原R及同R只读恢复，不再create/send/runUse。只有completed子R及完整当前proof可完成原outer，其他保持6/占用。未命中细窗口记INCONCLUSIVE，不合成延迟或自动重试 |
+| R09 只读及关闭 | 在helper无法核验/pending/已换consumer时，合法project/历史controller的原R和明确原生来源观察可用，跨项目/controller拒绝，成果缺失如实不完整。最终新owner close、Worker归档释放、daemon退休后，全Job两次仅剩serve及已观察旧身份两次退出，才允许EOF正常0；unknown资源仍在时不能0。重复原Orca CLI/进程/监听/配置/认证/ACL及通知观察 |
+
+R04/R06需要结束旧helper时，预编译普通控制helper只对本项已记录root/helper取得真实进程句柄，逐项核PID+创建时间、私有Job membership、Native PTY/安装及父链，再对同一句柄TerminateProcess并等待真实退出；不按PID重新寻找，不终止整个服务Job或其他进程，不把强制退出计为130。随后两次新鲜进程/PTY查询确认旧身份退出，任何缺项或实际PTY未消失即停止该分支并保留unknown。原生controller close满足全部既有资源条件时优先使用该动作。
+
+R04正常接续与R06真实SDK重启未知分别报告，不把非模型Run绑定当作模型不中断。T13最终双Worker并发/指定停止/成果仍须同候选实际完成，不因本节条件降低。当前无新增运行授权；CPU/内存、BelowNormal、Go/Node、原服务及单窗口按RESOURCES，实际窗口由主控重新交付。原失败及INCONCLUSIVE保留，漏项重新交审。
 
 ## 8. 审核、实施和真实限制
 

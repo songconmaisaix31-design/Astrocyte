@@ -89,3 +89,5 @@
 实际静态架构命令首次EXIT1，发现App为JSON末尾校验引用io；原写域修正为json.Valid完整单JSON及原严格Decoder，不改架构规则。修正后同命令EXIT0，45个Go package通过，原件分别static-eof-01/02；Go单并发/256MiB、Node512、BelowNormal及私有TEMP。五份Go源码gofmt -d及git diff --check通过；没有编译或运行功能正文，后继仍须准确静态CR和完整真实验收。
 
 准确c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c已普通push。正式一次build-01在资源EXIT0后实际EXIT1，原因是dist父目录缺失使mkdir(output)报ENOENT；尚未deploy/native/TS/Go编译或Node下载，无候选VERSION，没有重试。实际Node48860已退出且两次定向CIM无在途匹配，原件完整保留；主控收回窗口并确认同源S45948及原库/环境/配置/Orca保持。构建脚本后继静态修正受控父目录创建和真实路径边界，候选仍独占创建，diffcheck通过，尚未重跑；T12完整契约与strict caller缺口计划继续交审。
+
+准确bc217de88f4bb4b8af1ab63f3c281f4c2f649aea的受控构建父目录修正已普通push EXIT0，未重跑。报告§3.4/§7.6现提交T12完整提案：唯一controller recover动作、严格helper校验先于native executor及completed重放、原生同Run/generation接续、旧helper真实退出、同R pending只读恢复和不同R竞争拒绝；未知Worker/输入继续保留。命名Job及已有daemon PID record保存非秘密对象定位，重启必须真实Open同Job/成员/握手互核，不以新Job漏掉旧daemon；R01—R09覆盖当前批准、caller、真实重启/断开/只读及关闭。本提案等待主控定稿和新Reviewer ctx6339独立接受，未冻结参数或编写相关程序，T11保持待用户回答。仅文档与差异检查，当前没有新增动态窗口。
