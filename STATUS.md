@@ -18,17 +18,18 @@
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支及两报告写域。旧ctx980已精确停止并原生释放，既有报告保留；新会话实际读到brief并获主控回复确认。后继6d693/97a/abc8/bad4/d442准确报告均已完整读取并回复对应hooks，局部接受和退回各按准确范围；当前继续同一Worker返修和T12复审 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55已改为原生合法status枚举，获da2e局部静态接受；实际structured只发送check提示，ToolsOff的Pi无法取得正文，完整能力仍未实现。2f1完整正文提案先独立审核，结合注册Agent新要求再定稿；真实消息/原队列/operation/fence、当前授权、同PID/session实际正文及后续成果要求保持 |
-| REA 来源核查 | 现有REA两份静态原件来自2026-10-14，摘要绑定6d2cbf63及0c17a376；当前本机app.asar已实际计算为SHA256 6a9bd9614a884f6172aa22029227a95dde1f25cd86651dfbb7998f25a81d6077，旧分析不能代表当前交付物。已安装REA CLI可用路径存在，本会话未提供REA MCP工具，按CLI继续，不修改MCP或Agent配置；准确新分析尚未执行 |
+| REA 来源核查 | 当前Orca1.4.230/app.asar实际SHA256为6a9bd9614a884f6172aa22029227a95dde1f25cd86651dfbb7998f25a81d6077。REA6.5.0限定CLI静态分析EXIT0，Evidence ev_7003a444cd2970c2d3ace2427c883c461f6a1ec67b9dfdbe9be6528e775726d3；7来源/6JS/5051文件未选，图与语义覆盖partial，未证明注册Agent实际调用或完整依赖闭包。旧6d2/0c17原件保持原版本。doctor实际EXIT1/config_drift，未修改MCP/配置；CLI分析独立可用，详细原件和失败见首版任务 |
+| 独立 Go 检查入口 | 准确c4d1c140d8d231058c42c455bd8433de0fc256c2获af666597局部静态接受，主控已完整读报告和四路径差异并回复hook。移除候选前置、原四包/三函数和最终VERSION=SOURCE=准确干净源码保持；尚未编译或执行函数，暂无运行窗口。当前仅本地准确提交，普通push回执待补 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
 ## 已有产品验证与最近运行观察
 
-程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。两次CLI依赖窗口均已完成原S保全、停止和同源恢复。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-03/`、`stop-03/`及`restore-03/`；首次原件`prepare-01/stop-01/restore-01`继续保留。原件含实际环境、Q/媒体/CodeGraph配置、原库一致备份及停止区间内容相同结果；备份包含真实数据，不进入Git或安装包。M1原件保留原位置，其已验范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
+程序和 Web 的已验源码 S 为 `ed543c12106c2dbb3e181cb9bc1647b626455179`。历次CLI依赖、构建及限定REA窗口均按实际结果完成原S保全、停止和同源恢复。最近原件位于根忽略目录`.verification/swa-cli-v1-control/prepare-06/`、`stop-06/`及`restore-06/`；此前原件继续保留。原件含实际环境、Q/媒体/CodeGraph配置、原库一致备份及停止区间内容相同结果；备份包含真实数据，不进入Git或安装包。M1原件保留原位置，其已验范围见[产品交付报告](docs/standards/delivery-candidate-20261020.md)及[交付任务](tasks/delivery-candidate-20261020.md)。
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | restore-05已恢复同一准确S为PID18944、创建UTC `2026-10-20T14:49:56.491641Z`，实际程序/环境/配置、唯一127.0.0.1:64505监听、health与原Web字节通过。原库integrity ok、外键为空、停止区间内容equal，恢复使用同一原库；build-02实际执行结束后窗口已收回，当前归原S。恢复后原绝对Orca CLI实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
+| 当前服务与窗口 | restore-06已恢复同一准确S为PID57400、创建UTC `2026-10-20T15:33:20.748677Z`，实际程序/环境/配置、唯一127.0.0.1:64505监听、health与原Web字节通过。原库integrity ok、外键为空、停止区间内容equal，恢复使用同一原库；限定REA执行已结束，当前窗口归原S。恢复后原绝对Orca CLI公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
@@ -46,6 +47,7 @@
 | prepare-05 与第二次构建 | prepare-05 EXIT0：UTC14:26:20/23 CPU14.8%/10.1%、可用10.887/10.931GiB、间隔3.003秒/BelowNormal，真实环境/配置/一致备份通过。stop-05 EXIT0，停止后UTC14:26:48/51 CPU17.5%/18.0%、可用10.930/10.979GiB、间隔3.004秒。仅一次`next-window.ps1 -Stage build -EvidenceName build-02`交原Worker，准确897531干净、build-02及candidate01不存在已核，tracked/Git冻结；原build-01及部分输出保留，没有重试或删除候选 |
 | 第二次构建实际结果 | build-02资源EXIT0，UTC14:29:15/18 CPU32.9%/5.0%、可用11693080576/11724275712字节、间隔2.501212秒。受控目录与PNPM deploy实际通过，323项依赖复制及慢镜像/原MODULE_TYPELESS警告保留；首个固定Node归档下载在原10分钟AbortSignal处TimeoutError，命令实际EXIT1。无归档、headers、native/TS/Go编译或VERSION；Node18536/9272及后代两次新鲜CIM为空，实际exec82066退出后交回。candidate01的runtime与空node完整保留，不能安装或作为可用候选 |
 | restore-05 原服务恢复 | restore-05 EXIT0，UTC14:49:51/54 CPU15.3%/11.4%、可用10.364/10.406GiB、间隔3.002秒/BelowNormal。原库integrity ok/fk空/equal，同一原S18944及实际环境/配置/health/Web、原Orca公开status核查通过。控制脚本两身份字段SHA256为`03c64ef6922af3e4ce00763159377c26a03d8d065eb36e0b32e20b65ba577ceb`，独立a5ff2245已接受，主控完整读取并实际回复；下次仍须新鲜身份/环境/备份与资源准入。当前只有静态返修及只读调查，无新重操作窗口 |
+| 限定REA窗口及restore-06 | prepare-06/stop-06均EXIT0，准确原S18944退出15，实际资源门限和一致备份通过。当前交付物inventory及限定REA分析均EXIT0；doctor EXIT1及首次摘要处理EXIT1保留，成熟stream-json修正后的摘要提取EXIT0，无重复应用分析。restore-06 EXIT0，CPU6.2%/5.7%、可用11.967/11.985GiB、间隔3.002秒/BelowNormal，原库/环境/配置/health/Web及原Orca保持。控制脚本仅两身份字段更新为实际57400/epoch1792510400.7486773，SHA256为1dc4cb5e5d35555a474792540535fcb081021cfe562b77427c07f870413290ab，待独立准确复核后才允许下次prepare |
 | 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
