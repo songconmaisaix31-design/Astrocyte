@@ -333,3 +333,5 @@ f0的controllerClose通过与task.create/worker.start相同的reserve进入原�
 产品差异`git diff --check 6168b4ea f0ba5503 -- . ':!third_party/**'`及`git diff --check f0ba5503 53ad6e14`通过。已安装marked18.1.0分别检查f0三份产品Markdown、5本地链接，以及53ad两份Markdown、5本地链接，均无断链、锚点或HTML待审项；Node512MiB、BelowNormal。f0合入的五份主控文档与准确13974对象比较通过。
 
 主控`msg_548c85fec44e`记录prepare-02因当时可用内存3.529GiB在停服前拒绝，原S12800继续运行，未交依赖/生成/构建窗口。本Reviewer没有运行prepare、资源采样、原生fixture、Go测试、构建、安装、SDK、模型、HTTP或服务；所有功能、并发、停止和成果动态验收保持NOT_RUN。
+
+本轮报告`f911c36c12a6eab0415a973d453b307ae89b7873`已普通push；f0和53ad的决策hook分别为`msg_ce3651740f1a`及`msg_2b097b9e4660`。主控在`msg_577f0cbfcd21`明确完整读取新增准确报告、F08接受/F09退回的源码因果及静态与动态范围，确认修复交原Worker、processless分别处理、原S和无窗口保持；`msg_d5ed76bd51bf`另对53ad hook确认完整读取同一报告及九路径范围，两次实际读取回复确认本轮唤起。

@@ -205,3 +205,15 @@ SPEC §21.1引用准确6168的GitHub原文，明确每Worker父持独立Job、�
 `.verification/check-revision.ps1 -Previous e4df5158b67227993110784d5b1a70d36a76d375 -Candidate 13974f10041d2f8e846b951418172433751798c8` EXIT0，四份Markdown、45本地链接，无锚点/HTML或空白错误；marked18.1.0、BelowNormal、Node512MiB。四路径以外无差异及远端SHA核对通过；6168链接的内容已按同一准确Git对象读取，没有重新运行功能检查或访问服务。
 
 准确13974接受hook为`msg_3cdf21ee3e26`；主控在`msg_c35b916a78b5`明确完整读取四份累计管理/接口、45链接、真实main及路径保全结果，确认6168原文与Job/安全停止/F08要求及静态/动态范围一致，实际读取回复确认本次唤起。
+
+## main后继准确65bd的程序CR与资源拒绝记录
+
+结论：**接受准确`65bd699cffe9207f3504cb7744db2fdca0d483bb`的三份管理文档记录**。按`msg_95decc719021`及`msg_c2805eafcc6a`完整读取13974→1f231→65bd的STATUS、首版任务和总任务差异，真实远端main同65bd。三路径以外全部已跟踪内容无差异，Worker程序、依赖、方案副本、旧报告和归档未在本次纳入main。
+
+当前记录与独立f911报告一致：F04—F07静态修复及父持Job方案/测试接受保留，f0/53ad的F08共同关闭屏障静态接受，F09未绑定Job退出结算退回并交原Worker；全部真实CLI/native/安装/模型/并发停止验收未通过。两个准确源码hook已实际完整读取并回复，范围见无界面审核报告。本项管理接受不改变程序退回结论。
+
+已独立读取`prepare-02/backup-resources.json`的非秘密采样：UTC11:00:16.068366、CPU7.2%、可用3789418496字节（3.5291709899902344GiB），低于4GiB门槛，与管理记录一致。prepare命令EXIT1及未停止原S12800采用主控实际回执，未重复执行prepare、服务或资源检查；原件目录仍保留。本Reviewer没有读取其中private-environment、private-configurations或原SQLite，第二窗口保持未交付。
+
+1f231所存STATUS旧“尚未实现”与总任务“根因已接受”已通过`msg_6c0a520413d3`交主控；65bd当前明确为程序实现中未验收、M1调查/测试计划接受及b112修复因果证据不足。原FAIL、M1未实施补丁与T02—T08未运行、S3及原权限未决范围保留。
+
+`.verification/check-revision.ps1 -Previous 13974f10041d2f8e846b951418172433751798c8 -Candidate 65bd699cffe9207f3504cb7744db2fdca0d483bb` EXIT0：三份Markdown、22本地链接、无断链/锚点/HTML和Git空白错误，marked18.1.0、BelowNormal、Node512MiB。三路径以外无差异和真实远端SHA核对通过；没有进行新的动态验收。
