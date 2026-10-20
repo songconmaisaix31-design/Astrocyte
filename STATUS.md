@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`普通CLI输出、`f08b52111d4860b5ef162987cce2f43f4a4e6ce0`锁/真实生成类型及`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所属EOF/Job后代/原生关闭源码均已交独立准确CR。Worker报告普通push EXIT0，主控已读准确差异；架构检查首次App io失败，成熟JSON修正后45包通过，Go格式及空白检查通过，均为静态检查。依赖同步、冻结安装和类型生成实际EXIT0，窗口已收回，原S恢复PID43068并通过保全/健康检查。C01—C09安装驱动/console helper继续静态实施；T12先补接续契约/计划，包含已审要求中尚未实施的strict helper caller准入，缺恢复证明须拒绝，不能因已完成R重放绕过当前核验。T11真实人工入口待用户范围回答；编译、功能测试、构建、安装和模型尚未执行，整体程序及双Worker/隔离动态验收均未通过 |
+| 后继工作 | 同一无界面Worker以Task9f/ctx0d接续，准确`c29e5af7dd8fa1c578ba7499564365f692dd8a9d`普通CLI输出、`f08b52111d4860b5ef162987cce2f43f4a4e6ce0`锁/真实生成类型及`c0ab15e50d230a93a0aca17ea12e1f5c132ccb5c`所属EOF/Job后代/原生关闭源码均已交独立准确CR。Worker报告普通push EXIT0，主控已读准确差异；架构检查首次App io失败，成熟JSON修正后45包通过，Go格式及空白检查通过，均为静态检查。依赖同步、冻结安装和类型生成EXIT0；首次build-01因dist父目录不存在在mkdir处EXIT1，尚未进入部署或native/TS/Go编译，无候选。窗口已收回，原S恢复PID45948并通过保全/健康检查，原Worker静态修正构建脚本。C01—C09安装驱动/console helper及T12接续契约继续，已审strict helper caller准入尚未实施，缺恢复证明须拒绝，不能因完成R重放绕过当前核验。T11真实人工入口待用户范围回答；功能测试、安装、模型及实际编译未执行，整体程序及双Worker/隔离动态验收均未通过 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`以原生retry-of恢复到Dispatch `ctx_6339d8beeb73`、terminal `term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，同一`swa-mainline-review-20261020`工作树/分支，两份原报告写域保持。旧ctx980的前台Agent已返回PowerShell，提醒被shell拒绝；原生精确stop确认PTY退出后才重启，新preamble实际turn_started。既有27f报告保留；新邮件已入队，实际读取确认及新结论待回执，不将启动当成审查通过 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
@@ -25,7 +25,7 @@
 
 | 范围 | 记录的结果 |
 | --- | --- |
-| 当前服务与窗口 | 原S43068已按prepare-04保全，于UTC `2026-10-20T14:10:08.237348Z`在stop-04精确退出15，当前停止。停止后新双样本及原库一致备份/window-ready通过，唯一窗口只交原Worker对干净c0源码执行一次build；结束后使用prepare-04/stop-04同一原库/配置恢复准确S。原绝对Orca CLI实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
+| 当前服务与窗口 | restore-04已将同一准确S恢复为PID45948、创建UTC `2026-10-20T14:14:47.360557Z`，实际程序/环境/配置、唯一127.0.0.1:64505监听、health与原Web字节通过。原库integrity ok、外键为空、停止区间内容equal，恢复使用同一原库；build-01窗口已收回，当前归原S。恢复后原绝对Orca CLI实际公开status仍ready/reachable/connected、graph ready，app PID38652及runtime `49da37c6-51eb-4061-b225-00ce0e551430`保持；本次没有启动产品候选服务 |
 | 同源产物 | 程序和 Web 同一 S；`D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/ed543c12/` |
 | 原库与配置 | 原运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/` 下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；当前备份完整性/外键及停止期间内容一致性通过，恢复使用该原库和原配置 |
 | Windows 普通交付 | `dist/delivery-candidate-20261020/`，三个 Go 程序、Web 与启动入口；完整新便携模型包未验 |
@@ -38,7 +38,8 @@
 | 第三次窗口准备 | UTC13:22:33/36的prepare-03两次真实阻塞采样为CPU19.0%/5.2%、可用15.719/15.746GiB，单调间隔3.005秒、BelowNormal；命令EXIT0，准确S12800及实际环境/配置核实、原库一致备份完整性/外键和prepared标记通过；随后精确停止并交付两Stage，本机Orca保持原运行 |
 | 本次依赖/生成窗口 | stop-03实际EXIT0，S12800于UTC13:29:19退出15；停止后双样本CPU43.2%/16.6%、可用12.918/12.808GiB、间隔3.003秒/BelowNormal。原Worker串行执行`next-window.ps1 -Stage dependencies -EvidenceName dependency-02`和`-Stage generate -EvidenceName generate-01`，锁同步/冻结安装/真实类型生成及各自资源检查均EXIT0；pnpm原命令内建镜像超时重试及peer警告保留。仅锁/生成类型提交f08，实际原件在Worker自有忽略目录。没有构建、功能测试、安装或模型调用 |
 | 本次同源恢复 | restore-03实际EXIT0，启动前双样本CPU18.7%/6.8%、可用10.369/10.485GiB、间隔3.002秒/BelowNormal；原库integrity为ok、外键为空、stopped_interval_comparison为equal，恢复使用同一原库。实际S43068及原Orca核查通过。控制脚本两项实际进程身份更新SHA256为`8e06639aa6c0bf635b037fb82a8b745540ed0dd3a754b15e8220d098652b606d`，已获准确报告ebd7880d独立接受，主控完整读取并实际回复hook；没有据此授予产品功能通过 |
-| 第四次构建窗口 | prepare-04实际EXIT0：UTC14:09:55/58 CPU16.4%/49.2%、可用10.706/10.627GiB、间隔3.004秒/BelowNormal；准确环境/配置及原库一致备份通过。stop-04 EXIT0，停止后UTC14:10:09/12 CPU7.7%/7.3%、可用10.684/10.677GiB、间隔3.003秒。原Worker准确干净c0、build-01及候选目录不存在已核；仅授予`next-window.ps1 -Stage build -EvidenceName build-01`一次及成功后的真实版本核对，tracked文件/Git冻结。实际build结果待回执，不含功能测试、安装、服务、信号或模型；原件在根prepare-04/stop-04和Worker自有build-01 |
+| 第四次构建窗口 | prepare-04实际EXIT0：UTC14:09:55/58 CPU16.4%/49.2%、可用10.706/10.627GiB、间隔3.004秒/BelowNormal；准确环境/配置及原库一致备份通过。stop-04 EXIT0，S43068于UTC14:10:08退出15，停止后双样本及备份/window-ready通过。干净c0仅执行一次`next-window.ps1 -Stage build -EvidenceName build-01`；资源EXIT0，构建EXIT1/ENOENT。mkdir候选目录时缺dist父目录，未执行部署/Node下载/native/TS/Go编译，无VERSION；Node48860实际退出1、同步版本命令已返回及两次定向进程核查完成后交回窗口。原失败与MODULE_TYPELESS警告保留，未自动重试 |
+| 第四次同源恢复 | restore-04 EXIT0，UTC14:14:43/46 CPU4.8%/9.8%、可用10.709/10.650GiB、间隔3.002秒/BelowNormal；实际同源S45948和原库/环境/配置/health/Web及本机Orca核查通过。控制脚本仅更新两项真实身份，新SHA256为`6d7bed3576ade7b9522738ba741a55eade309f9c8b9de93a869b3150562d6870`，已交同一独立Reviewer复核，接受前不再prepare；构建脚本修正及后继尝试由原Worker负责 |
 | 后继只读资源观察 | UTC11:12:58的系统只读查询显示可用2.49GiB；UTC11:15:17的进程查询显示StartMenuExperienceHost/PID15952工作集11.62GiB。这两项为单次观察，未代替双样本准入，也未再次执行prepare或操作该非所属进程；原服务及本机Orca保持运行 |
 
 完整默认浏览器、真实原生/S3、带 Worker 停止退出、未知用量对账和释放、两 Agent 闭环、成果采用、OpenViking 真实远端正向均未通过完整验收。正式 Release 未创建。原生控制器工具关闭、真实事件逐项定位、预算与权限证据门禁保持。
