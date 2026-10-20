@@ -826,3 +826,11 @@ B01已通过`msg_0d0472dcf593`、B02通过`msg_f7a1c12ab6a5`交原Worker按原�
 | G08 最终同候选任务 | 每条声称可调用的适用Agent路径有真实安装/配置/启动/控制证据，未验Agent明确保留状态。最终仍用安装后的同一准确候选完成原任务的至少两个真实Worker并发、分别查询身份/输出、只停止指定一个并核实际退出及另一Worker保全，取得符合固定业务判据的完整成果；覆盖选择的真实Agent及原件来源，不按两个模型回复或替代Worker通过。是否要求不同Agent类型不自行增加，按用户明确目标与后继定稿范围验收 |
 
 这些条件直接来自新发现/调用目标及已有权限、隔离、输入和最终验收，不增加自我证明检查。注册的具体含义、可支持Agent集合、账号读取和各Agent工具/协议能力在准确方案定稿前保持未决定；不冻结选择或降低原验收。编译、安装、实际probe/Agent/服务/模型与新REA分析均未执行，没有取得重操作窗口。
+
+## 准确c4d1c140的Go源码检查入口静态审核
+
+结论：**接受准确`c4d1c140d8d231058c42c455bd8433de0fc256c2`相对2f的四路径局部静态修改。** 按已接受c2计划及先前六条件完整读取差异、整个compile-go-tests.ps1及实际T03消费者。原入口移除Candidate/VERSION前置，只接收本项全新绝对私有输出；真实40位干净HEAD在创建输出前核查，四包逐一`go test -c -p=4`、私有TEMP/Go缓存、Go4/512MiB及BelowNormal保持。三项传输前真实函数前补资源准入，逐函数PASS和任意SKIP拒绝；任一命令失败立即退出，最终再次核同一干净HEAD后才写原SOURCE/tests.json。
+
+T03在创建验证目录、资源检查或实际服务之前，核同一安装路径、真实Node、绝对Go目录及实际`VERSION=SOURCE=准确干净源码`。原四个live函数的逐项PASS、零匹配/SKIP拒绝及原controller关闭保持，没有用源码编译代替安装服务。原T03缺失的人类撤销安全停止、不同项目/Run及旧代范围、T12/正文和新增注册Agent要求仍各自未验。未发现六条已审条件的剩余静态缺口；此修改不接受继承2f的新接口或产品功能。
+
+对准确Git对象的两个PowerShell脚本使用已安装`System.Management.Automation.Language.Parser.ParseInput`在内存解析，均PARSE_PASS/EXIT0，没有执行脚本。`check-revision.ps1 -Previous 2f1eceaf3d5ad872339a2efba7fdbaa1178dbc78 -Candidate c4d1c140d8d231058c42c455bd8433de0fc256c2` EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。原Worker`msg_8bbc73a957da`报告按主控要求暂不另跑网络，c4仅本地提交、尚未push；没有编译、函数、probe、服务、Agent或模型结果，本Reviewer没有取得运行窗口。
