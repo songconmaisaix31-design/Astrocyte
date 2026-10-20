@@ -14,7 +14,7 @@
 
 ## 执行轨道与文件归属
 
-同一时刻使用一名开发 Worker 和一名独立 Reviewer；主 Agent 管理范围、状态、决定、资源与最终检查。按实际文件和服务依赖串行推进，保持任务分支在交付后结束。
+M0 文档整合与 M1 契约故障的只读调查可以并行，分别由一名 Worker 负责，合用一名独立 Reviewer；其余实现按实际依赖安排。两条轨道分别修改治理文档和契约工具，任务文件互斥；共享状态由主 Agent 维护。主 Agent 管理范围、状态、决定、资源与最终检查，保持任务分支在交付后结束。
 
 | 轨道 | 写入范围 | 结果与验收 | 依赖与停止条件 |
 | --- | --- | --- | --- |
@@ -39,3 +39,11 @@
 - Orca Run：`run_62ada397a104`，主控 handle：`term_3209681a-faa5-4161-a2f3-9563e1451a33`。
 - 主 Agent 客户端：当前 Codex；模型由当前会话提供。Worker/Reviewer 通过 Orca 启动，实际模型与工作树在启动后登记，不从请求参数推断。
 - 当前状态：规划入仓，M0 基线已核，准备提交测试计划与独立审核；尚未改变 main 或程序。
+
+| 执行者 | 工作树与分支 | Task / Dispatch | 实际客户端与模型 |
+| --- | --- | --- | --- |
+| M0 Worker | `swa-m0-20261020`，由产品32ab创建的任务分支 | `task_76639dc0a8b8` / `ctx_3d6edcaf3e8b` | Orca / Codex，实际状态报告 `gpt-6.1-sol` |
+| 独立 Reviewer | `swa-mainline-review-20261020`，独立审查分支 | `task_1cd8014750f9` / `ctx_980a3282c339` | Orca / Codex，实际状态报告 `gpt-6.1-sol` |
+| M1 契约 Worker | 原 `frontend-observatory-20261018` 工作树及分支 | `task_261b4dab6d89` / `ctx_958a2bf0ae27` | Orca / Codex，实际模型待会话状态报告 |
+
+根主控已将 Git remote 更新为经实际仓库 ID 核实的规范地址 `https://github.com/songconmaisaix31-design/swarm-anything.git`。没有改变 Go module、数据目录、协议标识或已有客户端配置。

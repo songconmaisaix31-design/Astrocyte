@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 本轮主线重构
+
+用户已确认按 [META_PLAN v2.1](docs/META_PLAN.md) 重构 SWA 主线。M0 文档与规则整合、M1 契约故障只读调查已派发，独立 Reviewer 正在准备验收条件；本轮尚未修改 main、程序或数据。执行信息与写入范围见 [当前任务](tasks/swa-mainline-20261020.md)，产品、服务及未验范围继续按下列准确来源记录。
+
 ## 状态来源
 
 本页依据 2026-10-20 [交付候选与实际运行收敛](tasks/delivery-candidate-20261020.md) 更新。当前交付候选已完成源码、验证记录和实际运行对应，并普通推送到产品主线。原全量分支与旧任务事实见 [接管核查](docs/integration-audit-20261020.md)，接续步骤见 [HANDOFF](HANDOFF.md)。
