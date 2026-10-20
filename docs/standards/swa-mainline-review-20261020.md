@@ -513,3 +513,13 @@ fc842明确外层exec27025最终回执未取得、后继Unknown process id的真
 主控通报fa0首次普通push因GitHub443连接失败，后继独立ls-remote实际0且远端仍6883，随后fc842累计普通push实际0；未将首次失败记为推送成功，没有覆盖历史。本Reviewer没有重复远端操作。两次`check-revision.ps1`分别核6883→fa0及fa0→fc842，实际EXIT0，前者三Markdown/42本地链接、后者两Markdown/18本地链接，Git空白均通过，marked18.1.0、BelowNormal、Node512MiB。后者命令以唯一前缀fc842eb4解析至上述准确SHA。本Reviewer没有运行依赖安装、生成、编译、SQLite/HTTP、服务或模型。
 
 准确fc842管理接受hook `msg_16a6ba0e7237`已获主控`msg_4dd1a326b9ad`完整读取994准确两报告新增及累计三文档差异的回复，实际唤起确认。后继449的生成锁和新构建入口局部静态结论另记于headless报告，N08技术审核保持独立，不改变实际程序或安装状态。
+
+## 准确646014d8的实际bundle及失败记录
+
+结论：**接受准确`646014d8d298a068692a14a15dd1490381951114`相对fc842的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，独立核build-04完整日志/资源/内外退出/观察、21实际bundle/metafile、prepare/stop-14和restore-14原件，详见headless报告。准确449真实锁和入口的局部静态接受、N11/N12覆盖及N13技术退回分别记录，没有将技术计划当运行或整体停止点。
+
+首固定Node下载在TLS建立前ECONNRESET，内外退出均1；prod deploy/供应链核查及bundle生成按实际阶段保留，candidate03不具备Node/native/Go/VERSION/swa.exe交付条件。完整依赖图尚未收窄，实际输出中五个全registry直接导入含SSH legacy-relay两条路径，不能只处理原三处。路径分组只描述来源，未据名称决定删包或宣称完整动态闭包；后继固定下载问题先依据实际来源/缓存/既有配置调查，没有擅自改pin、校验或盲重试。
+
+restore-14同源S55148/创建UTC18:33:26.874753/epoch1792521206.8747532已于UTC18:35:18只读核真实身份、原程序、整份current/restored记录及唯一监听相符，原库记录ok/fk空/equal。完整原环境/health/Web及原Orca沿主控实际来源，下一prepare取restore-14/restored.json并新鲜准入，c8不改、窗口归原S；四次构建失败和旧恢复/诊断限制均保持。全部真实原生调用、输入/恢复、Job/完整成果、安装双Worker仍未通过。
+
+`check-revision.ps1 -Previous fc842eb4d4c9d1b777a5c53b32bbb0a1a27fd10e -Candidate 646014d8`实际EXIT0，唯一前缀解析至上述准确SHA，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer只读实际metafile与进程/监听，没有执行候选、构建、下载、SQLite/HTTP、服务或模型，也没有修改实现及管理事实源。

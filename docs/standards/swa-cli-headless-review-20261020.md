@@ -1158,3 +1158,21 @@ N11已明确auth仅原生literal type/key、拒绝非空credential.env及models 
 因此该路径支持覆盖实际model、input/messages、tools及其他请求字段；get_state中的model_target一致和原生no-tools空工具集合不能封闭最终参数覆盖。此结论来自实际消费者，未声称本机模型配置具有此类值或已经发生调用。技术计划须明确按真实API消费者准入/拒绝及最终请求条件，覆盖来源model、override、合成内置model和每请求options，不能只核表面selection，也不能删除原字段改变来源后继续。补充首次与后续真实输入的对应失败/保全场景，未命中仍按INCONCLUSIVE记录。
 
 N13已以`msg_0b85f81894d2`交主控、`msg_580bfac00d99`交原Worker；修正由同一Worker在当前build冻结解除后提交准确计划。原无refresh、私有ACL/accountHome/原R及并发、固定argv/env/原生设置、效果前批准、unknown保全和同候选双Worker条件保持。必要构建不依赖本次技术接受，本Reviewer没有增加运行阶段；实际原生账号/工具/调用和安装双Worker继续未通过。
+
+准确449 N08退回hook `msg_551561658c55`已获主控`msg_6e93b9e548ee`完整读取b009准确新增及修后§13的回复，实际唤起确认。N11/N12覆盖保留，N13交同Worker，不冻结新字段，也不作为已定稿输入/恢复/Job/成果代码的停止条件。
+
+## 准确449的实际bundle、TLS失败及restore-14
+
+结论：**准确`449184b826ae64de99d73476147d64967ef31667`的完整构建、安装和动态运行证据不足；实际bundle静态结果已确认，候选03不能安装。** 已完整读取build-04的7802字节日志、内外退出文件、资源、运行及两次退出观察，核实际21组bundle/metafile和部分输出目录，没有执行候选或重新构建。原一次授权与准确source/grant/根8800身份在实际命令记录中一致，实际exec86069同步退出1沿Worker/主控来源保留，build-exit和outer-exit均1。
+
+build资源UTC18:28:32.431690/34.933581，CPU22.1%/19.5%、可用9068683264/9124237312字节、单调2.501891秒，通过当前门限；原Node1024MiB/Go4/私有TEMP和BelowNormal保持。完整prod deploy及供应链核查后21输出已生成，随后首个固定Node归档fetch在TLS建立前ECONNRESET/fetch failed；没有据该日志确定具体网络根因或重试。candidate03保留runtime和空node，native/Go/VERSION/swa.exe未完成；原慢请求及模块类型警告保留，四次构建失败和全部部分候选继续保存。
+
+`.verification/inspect-build-metafiles.mjs`使用成熟JSON逐项读取21份原metafile并比较每一实际输出尺寸，BelowNormal/Node512MiB实际EXIT0，当前结果保存在`.verification/build04-metafiles-review-02.json`。实际host为22483367字节，扫描6136输入，其中6120个在输出中bytesInOutput大于0。输出明确包含runtime/rpc/methods下browser-core/browser-profile/Linear/Jira/SSH/mobile-web-bundle/updater等代码；这是实际静态输出来源，不能当作执行结果，也不能仅按名称删除原生必需消费者。
+
+已完整读Worker标准JSON分析脚本及实际来源/限制/五个registry importer路径，再以真实host输入核其存在。除host-entry、dispatcher及RuntimeRpcState，图中还有SSH legacy-relay-cli-server和legacy-relay-cli-call-limits的两个实际全方法表导入；准确源码直接import已核，最短静态路径经headless PTY的kill消费者到legacy-relay registry。完整方法过滤、旧SDK和native/dynamic/assets仍须同Worker按实际消费者处理，本轮没有接受运行依赖闭包；静态输出或21metafile存在不等于全部原生ABI和子入口可用。
+
+运行记录含根8800及conhost36768、pwsh40088、Node61684/62384，均保留实际创建身份。UTC18:31:09.3250354/12.6708658两次所属及此前身份为空记录已读。prepare-14/stop-14原件和一致备份记录通过，原库integrity ok/foreign_keys空；原S56896/epoch1792520225.651634于UTC18:27:27.516680明确退出15。prepare资源CPU19.4%/14.9%、可用8.501/8.496GiB、间隔3.001809秒，stop资源CPU54.5%/52.8%、可用8.583/8.602GiB、间隔3.010869秒。
+
+restore-14使用同一ed543、原库及该次prepare/stop，资源CPU45.5%/48.4%、可用8.697/8.688GiB、单调3.011225秒。`.verification/inspect-restored-owner.ps1 -RestoreName restore-14`于UTC18:35:18实际EXIT0：current/restored整份JSON相同，实际S55148/父61516、原程序、创建UTC18:33:26.8747532/epoch1792521206.8747532相差0毫秒、BelowNormal及唯一127.0.0.1:64505监听符合；原库记录ok/fk空/equal。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源，本Reviewer没有访问SQLite/HTTP、采样或运行服务。
+
+后继prepare取restore-14/restored.json并新鲜准入，c8不改，全部已消费授权收回，当前窗口归原S；没有新Stage/模型授权。原Worker继续真实闭包、已定稿输入/恢复/Job/成果及N13返修；账号、原生工具、完整成果、安装和同候选双Worker保持未通过。
