@@ -954,3 +954,13 @@ N06已通过`msg_dba72e4e9ac0`通知主控、`msg_0c9771247145`交原Worker；�
 `check-revision.ps1 -Previous d441703a620f2e1bcca73edd50c7edc66dc92351 -Candidate 61a172264d7d3784c63ab8a100af6382ebe78c85`实际EXIT0，三个Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。Worker所报gofmt/TS语法/架构检查只作为其静态结果，不当作本Reviewer执行或功能通过。生成、类型检查、编译、HTTP/SQLite/Native正文、安装及同候选双Worker均未执行；新输入/T12准确技术计划已接受，程序按各自准确提交另审。
 
 首装实际入口另已核：`server.go`在LocalProjects服务存在时注册`GET /api/v1/auth/session`，与SPA资产无依赖；session guard在无Authorization且Origin合法时建立真实cookie/CSRF，写路由继续验证它们。准确61a的USAGE只列项目/设置/Grant/token路径，缺初始session获取及完整合法正文、实际响应ID/revision的人工步骤；已交原Worker补在既有T02/T03及说明，无需由包内缺Web推断无授权入口。本Reviewer未执行human bootstrap、签发token或代用户批准。
+
+61a退回hook `msg_b118bbad9a61`已获主控`msg_9c01fff3163f`完整读取be1准确全节及实际消费者源码的回复，实际唤起确认。N06—N09交原Worker继续，独立发现技术方向和既有计划保持，程序/实际调用未接受。
+
+## 准确c8fdf318的恢复原件身份准入
+
+结论：**接受控制脚本准确SHA256 `c8fdf3188ea97f1334b22bd261e578db2bf50a2f5039ddf944613753b42d1176`的实际恢复原件参数准入。** 已完整读取18384字节当前脚本并核准确摘要。prepare必须显式提供`--expected-owner`，路径严格存在，resolve后父目录的父目录须为脚本所属control根，文件名须为restored.json；省略、越界、错误文件名或其他phase携带该参数均在控制正文前拒绝。prepare读取当前RUNNING并与所选既有恢复原件整份JSON相等后，才调用实际owner、环境/配置、源码、资源及一致备份检查，不从输入文件声明跳过真实进程。
+
+原PID/创建时间固定常量已由该实际原件替代。owner仍核准确S、程序/Web/数据库实际路径、创建时间差小于1毫秒、BelowNormal及唯一127.0.0.1:64505监听；prepare重复核环境/配置及身份，stop仍要求实际prepared基线，恢复仍核正向退出、端口、原库完整性/外键/停止区间内容及同次原环境。start/reconcile的原有创建与只读观察区别、恢复元数据冲突拒绝保持，没有新增状态账本或自动重试执行。
+
+静态`ast.parse`当前Python源码EXIT0，只解析语法，没有运行脚本正文；Node512MiB以成熟JSON和isDeepStrictEqual读取restore-08/restored.json及当前running.json，整份相等，实际记录仍为S41264/epoch1792513419.495409。上述只读查询没有重复资源采样、访问SQLite/HTTP或操作服务。该次源码接受允许主控按新参数准备后继具体窗口；实际prepare仍须新鲜身份、环境、资源及保全全部通过，当前窗口仍归原S。

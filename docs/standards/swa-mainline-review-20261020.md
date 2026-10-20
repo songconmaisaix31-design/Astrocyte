@@ -439,3 +439,13 @@ restore-08的实际S41264/创建UTC16:23:39.495409/epoch1792513419.495409、092b
 首装要求位于既有T02/T03及USAGE，复用实际human session/CSRF与项目设置/Grant/token完整人工流程；不依赖开发树、原服务或原Orca，未代用户批准。准确61a实施提交已由原Worker随后提供，其程序问题独立记录于另一报告，不改变a6f在提交时记录的准确静态事实和授权范围。
 
 `check-revision.ps1 -Previous ff2a08615fedfeda0a11e46c0157796cdd84c979 -Candidate a6f387ff480d7fa9f5314319e014ba7eb77f13e0` EXIT0，四Markdown/45本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行编译、服务、SQLite、Agent或模型，也没有修改主线实现或管理文档。
+
+准确a6f接受hook `msg_da1eae72a3d6`已获主控`msg_a9e50630f1af`完整读取be1准确主线审核全节的回复，实际唤起确认。程序61a退回及原Worker返修另按准确决策继续，没有以技术定稿替代实现验收。
+
+## 准确70ca0723的当前执行契约整理
+
+结论：**接受准确`70ca072309f9f646835b19eedaa276285daeb75b`相对a6f的三文档范围。** 已完整读取SPEC、QUESTIONS及TASKS差异。总表以实际注册Agent的原生adapter/CLI、稳定AgentSelection和明确execution_mode描述当前实施契约，controller recover同步已审§21.1.3；保留真实账户来源、私有写入及当前批准，历史方案和验证记录继续作为来源。
+
+完整所属树的Job创建、输入前成员/身份准入、停止后两次完整空查询、至少50毫秒间隔及两次新鲜旧身份退出条件保持，原生structured/terminal消费者仍须按T09/T13实际验证。完整成果使用对应Agent自产transcript，保留12MiB上限、身份/格式/一致性、坏源失败及有界terminal不得当完整成果；B完整成果及相关退出/归档/释放、最终同候选双Worker条件没有降低。QUESTIONS工具问题继续未答，三份已审技术计划只更新定稿状态，未声明程序、安装或调用通过。
+
+`check-revision.ps1 -Previous a6f387ff480d7fa9f5314319e014ba7eb77f13e0 -Candidate 70ca072309f9f646835b19eedaa276285daeb75b`实际EXIT0，三个Markdown/77本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。没有新运行授权或实际程序执行；准确61a的N06—N09独立退回保持，后继仍由原Worker返修。
