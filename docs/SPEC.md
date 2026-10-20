@@ -846,7 +846,7 @@ CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实�
 
 #### 21.1.1 本机 Agent 的独立发现与稳定选择契约
 
-准确`740ccdf9a9dfa33901274fd8dccd37c4beacf1fd`的[方案§4.5.2—§4.5.5及§7.8](https://github.com/songconmaisaix31-design/swarm-anything/blob/740ccdf9a9dfa33901274fd8dccd37c4beacf1fd/docs/standards/swa-cli-headless-20261020.md)已由独立c3fca056局部接受。本节定稿其中的只读发现、设置源、capabilities DTO、稳定AgentSelection及现有批准的技术契约；程序实施仍须准确CR及实际运行。新workerSend、普通TUI模式路由与工具待答分支各按原任务继续，不能由本节推断其接受或执行授权。
+准确`740ccdf9a9dfa33901274fd8dccd37c4beacf1fd`的[方案§4.5.2—§4.5.5及§7.8](https://github.com/songconmaisaix31-design/swarm-anything/blob/740ccdf9a9dfa33901274fd8dccd37c4beacf1fd/docs/standards/swa-cli-headless-20261020.md)已由独立c3fca056局部接受。本节定稿其中的只读发现、设置源、capabilities DTO、稳定AgentSelection及现有批准的技术契约；程序实施仍须准确CR及实际运行。输入与模式路由见§21.1.2，控制端恢复见§21.1.3；用户工具范围仍按QUESTIONS中的实际决定执行。
 
 `swa capabilities --json`沿既有项目token及POST `/api/v1/local-projects/{id}/orca/commands`的`{action:"capabilities"}`进入App observe准入。App的现有执行端口增加`Capabilities(ctx, projectID, requirements)`，由orca adapter调用私有只读`swa.capabilities`。requirements来自当前App项目设置及适用批准，HTTP正文不能提供身份或工具授权。发现只访问产品实际注册、必要本机配置及命令解析，无controller helper、模型请求或原Orca运行前提。
 
@@ -859,6 +859,36 @@ serve可显式接受`--agent-profile <既有原Orca profile绝对路径>`。省�
 现有执行端口增加只读`ResolveSelection(ctx, projectID, command)`，返回稳定`AgentSelection{agent_id,adapter,execution_mode,executable,version,model,provider,external_target,settings_source,settings_revision,configuration_version}`。App先核observe并取得实际选择，再按真实external_target、现有ProjectSettings.ExternalModelCLI单CLI批准、当前Grant、目录、工具和外发目标核动作；不继续硬编码pi，不接受HTTP声明的外发身份。实际选择进入既有原R的比较/原checkpoint，排除observed_at和凭据，不另建Hash或选择账本。spawn前再次核相同来源，变化拒绝，未知不换目标。后续输入只能从实际Dispatch的原receipt/session取得原选择，禁止用新参数更换Agent或模型。
 
 当前接受范围包括上述端口、DTO及固定pi消费者的同步调整和对应G02/G03/G04/G05/G06必要检查；实际启动、输入和所选Agent支持能力仍遵守其准确方案及当前权限。首版最终同一安装候选、至少两个真实Worker、并发、指定停止和完整成果条件保持。
+
+#### 21.1.2 实际 Agent 输入、模式与效果结算
+
+准确`d441703a620f2e1bcca73edd50c7edc66dc92351`的[完整输入及模式方案](https://github.com/songconmaisaix31-design/swarm-anything/blob/d441703a620f2e1bcca73edd50c7edc66dc92351/docs/standards/swa-cli-headless-20261020.md)已由独立73946fd2接受N04/N05技术计划。本节定稿其接口和执行边界；同一Worker按原写域实施，实际调用与失败处理仍须验证。
+
+后续正文使用私有durable方法`swa.workerSend`，固定为原`swa.controllerDeliver`请求R的原生子请求`R/native`。RuntimeClient版本包络及durable方法表同步登记。真正controller helper的兼容invocation ID必须来自实际启动证明；进入原executor和重放completed子请求之前，核当前parent R、项目、Run/root、Dispatch、consumer、launch证明及fence。无helper桥接只提供显式只读白名单，不能执行该写入。
+
+structured模式使用真实StructuredAgentRegistry的definition/adapter及实际Dispatch/session/fence；将原生`mintAgentSessionOperationId`写入既有child checkpoint后，完整正文作为一个text block进入原`sendAgentTurn` structured分支和StructuredHost原队列。terminal模式须同时具备真实TUI配置和实际绑定的PTY launcher/controller，使用原`sendTerminalAgentPrompt`普通输入路径；核真实handle、PTY、incarnation、创建身份、正向Agent识别及readiness。选择中的execution_mode固定，实际模式不符立即拒绝，不切换模式或另建会话。
+
+structured异步授权位于真实serialized handOver中、等待provider/options之后、handOverSubmission及adapter.dispatch之前；等待App当前批准后，再核同一child、consumer、session、fence、模型、工具及未停止/未释放。terminal在实际串行写队列出队后、每个chunk和submit前await beforeWrite，等待后重核实际身份和ownership，保留原同步身份guard。同步beforeRun只承担其原有规则。内部只读delivery-admission沿既有Go服务和App授权，内存capability仅在Go/Node间持有，不进入helper或Agent环境；普通token不能替代内部身份，反向查询不得形成Native事务或输入队列死锁。
+
+child自身先持久记录实际模式、operation及正文关联，进入`input-submit`并markEffectPossible后才发生第一次host或PTY输入。此后异常、超时、失联、journal或receipt存储失败均返回`operation_unknown`，保留原child、parent、operation及占用，禁止重新生成或重发。效果前只有正向证明尚未输入，才能持久完成原child的真实`rejected/effects_applied=false`结果；结算失败继续unknown。handler先持久完成原receipt，再交外层完成，不能仅用mark或内存判断保全结果，不添加另一队列或账本。
+
+结果关联使用`request_id,native_request_id,dispatch_id,agent,execution_mode,session_id?或terminal_handle?,operation_id,client_message_id?,state,turn_id?,source`。`journaled|queued|accepted|handed-to-terminal|rejected|unknown`必须分别来自真实原件；handed-to-terminal只表示PTY接受。request.show按原receipt及实际模式的journal/write关联只读查询，其他输入、指针变化或重启不改变原请求归属，不借查询重放正文。读取structured原生transcript；terminal来源有界或不完整时显式标明。stop/release核真实PTY custody及完整所属树退出；resume缺少原生证据时保持unknown/unavailable，不启动替代会话。
+
+G07按原计划覆盖效果前拒绝、效果后child保全、真实存储失败、逐模式来源及模式冲突；没有实际命中的分支保持未验，不注入虚假异常。G08仍为安装后的同一候选、同一任务至少两个真实Worker、真实并发、指定停止、其他Worker保全和完整成果获取。技术契约不授予用户尚未确认的工具权限。
+
+#### 21.1.3 控制端恢复与严格调用者校验
+
+准确`079bd958260ac3edb9fda6c13bb9e28a0a08cd56`的[方案§3.4及§7.6](https://github.com/songconmaisaix31-design/swarm-anything/blob/079bd958260ac3edb9fda6c13bb9e28a0a08cd56/docs/standards/swa-cli-headless-20261020.md)已由独立7c6d3973接受P01—P03完整技术计划。本节定稿其全部12阶段准入矩阵、恢复边界及R01—R10覆盖，同一Worker继续实施。T11真实人类接管入口仍按独立待答项处理，不由恢复流程取得人类权限。
+
+公开动作固定为`swa controller recover --controller C_old --request-id R --json`，复用现有项目token、endpoint和command字段，R使用canonical UUID并与Idempotency-Key一致；不接受调用者自报Run、generation、from、actor、PID或launch-token。只恢复同一实际原Run/root/context及现有Worker/Dispatch，使用当前start授权、设置版本、目录及外发批准；旧helper/root/PTY须有正向退出证明。以实际新helper执行固定`R/controller-pty`和`R/run-use`，新consumer_generation禁止旧身份继续写入。
+
+私有durable方法`swa.controllerRecover`复用既有executor、receipts及checkpoints。原SQLite事务以BEGIN IMMEDIATE保留project/旧C/Run/root/旧owner及generation归属，然后才允许异步PTY效果；不新增数据库、Hash或请求账本。同R已完成仅返回原结果，pending只观察原checkpoint/子receipt，禁止再创建PTY、输入或执行runUse；不同R不能绕过未知占用。只有原run-use明确完成、实际新owner和Run/generation完整证明、旧owner退出及root/context不变，才能完成原outer R。
+
+`scope-reserved`阶段明确无外部效果时，只有旧owner存活等正向证明及原生无效果拒绝结算成功才释放保留；结算未知继续保留。第一次可能createTerminal之前持久进入`pty-spawn`并markEffectPossible，此后异常统一operation_unknown并保留原R/占用，不能依赖原executor对普通异常的默认删除。严格身份检查位于legacy RPC、原executor及completed重放之前；pending open、首次run-create/root taskCreate、pending recover ready/run-use、普通写入、restored及completed请求逐项按上述准确12阶段矩阵校验，unknown caller无声明handle回退，无helper桥接不能写入或接管。
+
+所属daemon使用原PID记录扩展的真实Job名称、PID/创建时间、root、安装来源和session关联。Windows使用当前用户/SYSTEM ACL的随机命名Local Job，daemon在派生前加入，不设置kill-on-close或breakaway；只有原serve已退出且实际内核成员及协议/token握手一致才重新打开同一Job，不新建Job冒充接续或接管无法证明的进程。空闲退出要求全部Worker释放、无pending、所有controller关闭或已证明恢复、daemon退休，并经两次完整Job查询确认只剩所属daemon。
+
+recover全链路使用既有2/3/4/5/6/7/130退出语义：明确效果前依赖失败为4，可能已产生效果的网络或stdout失败为6，实际取消为130；只输出一个JSON，保留原R/C_old及实际已知C_new/Run/root。R01—R10在准确安装候选和真实条件下逐项执行；未命中的取消/失联阶段保持INCONCLUSIVE，不加入暂停、延迟或伪造hook，不重放未知输入。
 
 ### 21.2 已采用的工程决策
 

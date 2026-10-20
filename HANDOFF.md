@@ -10,9 +10,9 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。准确396e完整方案及测试计划已接受，接口按SPEC §21.1，由同一Worker实现。M1调查已结束：原入口本次通过，历史故障未复现，补丁未实施，修复因果证据不足。原v2.1 M2—M6保留后续规划，MCP和完整S3按各自任务处理，入口见 [TASKS](docs/TASKS.md)。默认CI、受限Codex、S3预算与权限证据、经验准入及实际采用继续按原范围验收，未答项不推断授权。
 
-用户进一步明确首版必须发现本机注册的Agent，并用Swarm CLI调用这些真实Agent；使用REA逆向抽取Orca CLI能力，减少运行依赖并保持隔离环境。固定Pi SDK路径尚未满足完整要求，主控已通过msg_b71b0529001c要求原Worker先补注册来源/调用/依赖/隔离完整方案和测试计划，通过msg_fc6fe552ac5b通知原Reviewer独立核查。尚未定稿的T12/正文新接口暂停实施，准确079计划及ebf参数局部接受保留；原服务和Orca继续运行，动态窗口单独交付。已有REA静态原件与当前app.asar的实际SHA不同，不能直接当当前版本分析。
+用户进一步明确首版必须发现本机注册的Agent，并用Swarm CLI调用这些真实Agent；使用REA逆向抽取Orca CLI能力，减少运行依赖并保持隔离环境。独立发现/稳定选择、真实输入/模式及控制端恢复按SPEC §21.1.1—§21.1.3定稿，由同一Worker在原写域继续静态实现。REA当前6a9交付物已有两个限定静态分析，覆盖限制和原件统一见STATUS及首版任务；旧原件保留原版本，不能混用。原服务和Orca继续运行，动态窗口单独交付。
 
-当前独立发现/明确只读设置源/capabilities DTO及稳定AgentSelection契约已按准确740获c3fca056局部接受，主控完整读取报告和准确5fc/740差异，定稿于SPEC §21.1.1，同一Worker在原写域静态实施。发现和选择不依赖原Orca正在运行；新workerSend效果后异常与普通TUI路由仍按N04/N05补齐，工具范围待用户回答，实际启动/模型不由本次契约接受取得授权。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
+独立发现与稳定AgentSelection按准确740/c3fca056接受，发现和选择不依赖原Orca正在运行；准确d441的N04/N05输入与模式技术计划已获73946fd2接受，准确079的T12计划已获7c6d3973接受。主控完整读取相应准确差异和报告并回复原hooks，技术契约定稿于SPEC §21.1.1—§21.1.3，同一Worker继续实现。工具范围待用户回答，技术计划接受不授予实际启动或模型窗口。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户要求不妨碍本机Orca CLI并集成产品，产品采用独立后台，准确396e方案及测试计划已接受，SPEC §21.1明确接口与隔离边界。准确30b来源事实及此前提案保留，其Mission/Claim旧待决项按适用任务处理。程序已开始静态实现，CLI动态验收未通过。
 
@@ -22,8 +22,8 @@ M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementati
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
-当前执行源码、构建修正和T12提案的准确提交及审查范围统一见STATUS与首版任务。C01—C09/helper、T12及F16/F17真实验证继续由同一Worker负责；079的T12 P01—P03完整计划已独立接受，SPEC接口待结合注册Agent新要求定稿。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新会话已实际读到接续说明，后续邮件只发新Dispatch。完整接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持，主控须完整读取每项正式报告再回复原hook。
+当前执行源码、构建修正和技术计划的准确提交及审查范围统一见STATUS与首版任务。C01—C09/helper、T12及F16/F17真实验证继续由同一Worker负责；已定稿接口按SPEC执行。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新会话已实际读到接续说明，后续邮件只发新Dispatch。完整接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持，主控须完整读取每项正式报告再回复原hook。
 
-构建接续：build-01的dist父目录ENOENT/EXIT1及build-02固定Node归档TimeoutError/EXIT1原件均保留，无可用候选。bc217受控父目录修正已静态接受；主控独立9c工作树的原四包Go编译/三个传输前函数实际通过，原Worker没有执行旧撤销命令。限定官方HEAD三项200，仅证明该次Handler可达；完整Node下载、native/TS构建和安装仍未验。准确控制脚本、当前服务与保全目录统一读取STATUS；每次只运行明确交付的Stage，完成后核所属执行结束并归还窗口，再用该次prepare/stop原件恢复同一S/原库/环境/配置，不以备份覆盖原库。
+构建接续：build-01的dist父目录ENOENT/EXIT1及build-02固定Node归档TimeoutError/EXIT1原件均保留，无可用候选。bc217受控父目录修正已静态接受；主控独立9c的原四包Go编译/三个传输前函数实际通过。限定官方HEAD三项200及后继默认Node fetch单项200分别只证明各次可达；完整Node下载、native/TS构建和安装仍未验。首装T02/T03还须从新DataRoot和已安装资产完成真实human session/CSRF、项目设置、Grant/token用户流程；原Worker先提交可复用入口和完整操作，不代用户批准。准确控制脚本、当前服务与保全目录统一读取STATUS；每次只运行明确交付的Stage，完成后核所属执行结束并归还窗口，再用该次prepare/stop原件恢复同一S/原库/环境/配置，不以备份覆盖原库。
 
 科研沿[预印本任务](tasks/research-preprint-20261019.md)、[重启任务](tasks/restart-product-research-20261019.md)和[研究反馈](docs/research/research-product-decisions.md)接续；V4 沿[日运行任务](tasks/M6-V4-daily-operation.md)及[实验目录](docs/experiment/README.md)接续。外部权威锁、原件、正式研究数据、TeX 技术交付和作者许可各按原条件处理。历史管理记录见[归档说明](docs/archive/20261020/README.md)，准确 S 的交接保留在 [Git 原文](https://github.com/songconmaisaix31-design/swarm-anything/blob/ed543c12106c2dbb3e181cb9bc1647b626455179/HANDOFF.md)。
