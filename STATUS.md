@@ -14,7 +14,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 首版来源调查准确30b已独立接受，实施边界与可执行计划待定，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；M1 未打补丁的原入口本次通过，历史故障未复现，补丁因果证据不足；后续排序见 [TASKS](docs/TASKS.md) |
+| 后继工作 | 首版来源调查准确30b已独立接受；同一无界面Worker以Task9f/ctx0d接续，准确3162方案返修已普通push并交原Reviewer，程序及动态未开始。SPEC §21.1明确首版私有原生执行状态及Workspace消费边界，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；M1原入口本次通过，补丁因果证据不足 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 尚未实现。
 

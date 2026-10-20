@@ -813,7 +813,11 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 产品底座使用 Go/TypeScript/SQLite，旧 Python 执行内核保持独立研究来源。[H2，第 1 节] summarize 等工具可使用所需 Python 依赖；机制按完整业务意义、来源和验证迁入，保持单一任务执行权威。现行语言决定见 QUESTIONS，早期绝对禁令不再作为当前接入条件。
 
-既有 Go/TypeScript/SQLite 产品继续按原工程边界独立构建、启动和测试，其迁移不引入旧 ORCA 二开运行时；旧源码和资料保持原位，只复制获准参考内容。该规则的适用范围限于既有产品。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)需要抽取 Orca CLI 对应执行能力，是否由 Swarm CLI／后台独立运行，或依赖已安装 Orca 的公开执行接口，按 [QUESTIONS](QUESTIONS.md) 保持未决定。具体抽取、构建、启动与执行接口待该决定及源码调查后确定，本节不代选执行方式。
+既有 Go/TypeScript/SQLite 产品保持现有模块与数据。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)集成抽取出的 Orca 无界面执行后台，采用独立 `swa` 命令、安装根、profile、数据库、端点及所属进程；本机 Orca 保持原安装、配置、账户及会话。用户决定与隔离验收见 [QUESTIONS](QUESTIONS.md) 和首版任务。
+
+首版 CLI 的唯一执行状态由产品私有 Orca 原生 Run/Task/Dispatch、会话及进程记录维护。Workspace 复用项目、适用授权和固定上下文，通过 App 的消费方端口访问执行适配器；同一 CLI 任务不另外建立 Mission/Claim/Relay 记录。旧 S3 保持自己的规格和验收记录，其他用例仍按原章节执行。
+
+CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码、控制端身份、请求去重、工具关闭和安装接口依独立审核后的方案实施。原生调用的真实身份及退出证据不能由外部传入的 handle、actor 或模型自述替代。模型接入不修改本机 Agent 配置和认证，权限与资料范围按适用任务核实。
 
 ### 21.2 已采用的工程决策
 

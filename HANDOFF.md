@@ -14,7 +14,7 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，实际客户端为 Orca / Codex `gpt-6.1-sol`。准确 `987811f417e92cd6f15961e60c279f616e3b21a8` 原冻结安装及未补丁的完整契约命令均 EXIT0，历史崩溃本次未复现。依已接受计划停止补丁实施；程序/依赖未改，T02—T08 未执行，因果证据不足。主控已完成 T09，恢复同一 S、原库和原配置，实际 PID52040，准确结果见 STATUS；当前不具备其他动态窗口。最终记录 `b112ab9e03d9ea82247e73b5cb578529ca529f9d` 已独立接受并普通push，原hook由主控实际读取回复；本次调查Task已结算、终端released，完整修复保持未接受。
 
-无界面执行由 `task_4501441a2f59 / ctx_dc2fe5ba5526` 在独立 `swa-cli-headless-20261020` 工作树/分支负责，当前仅授权两份同名任务/报告和自有忽略目录，固定抽取范围、必要依赖、控制端身份、CLI规则和完整真实测试计划。主控已观察实际终端开始及heartbeat，原生启动回执仍为start_unknown，保留该差异；未据此宣称产品运行已验。原Reviewer在读取该Worker计划前已形成无界面独立条件，并按最新隔离要求接续；没有程序写入授权或动态窗口。
+无界面执行由 `task_9f062888e786 / ctx_0d069056baff` 沿同一真实Codex会话、`swa-cli-headless-20261020` 工作树/分支继续负责，原静态Task450/ctxdc已结算。当前仅授权两份同名任务/报告和自有忽略目录；准确3162返修已普通push并交原Reviewer。SPEC §21.1明确产品私有原生Run/Task/Dispatch为首版唯一执行状态，Workspace复用项目/适用授权/固定上下文。程序写域和动态窗口尚未授予；同一Worker在准确计划接受后继续实现及安装后的双Worker验收。
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
