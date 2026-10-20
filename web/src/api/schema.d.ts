@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/local-projects/{id}/orca/commands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Execute one authorized command against the installed private Orca runtime
+         * @description Uses current project grants and fixed context. Mutations require the same canonical UUID in request_id and Idempotency-Key. Native Run, Task, Dispatch, receipt and transcript remain authoritative; unknown operations are never resent automatically. Authenticated human safety stops recheck exact native ownership and remain available after execution approval changes.
+         */
+        post: operations["executeOrcaCommand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/openviking/status": {
         parameters: {
             query?: never;
@@ -7717,6 +7737,52 @@ export interface components {
             expected_revision: number;
             hidden: boolean;
         };
+        /** @description Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here. */
+        command: {
+            /** @enum {unknown} */
+            action: "status" | "capabilities" | "controller.open" | "controller.show" | "controller.close" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
+            project_id?: string;
+            controller?: string;
+            task_id?: string;
+            dispatch_id?: string;
+            /** Format: uuid */
+            request_id?: string;
+            workdir?: string;
+            spec_file?: string;
+            input_file?: string;
+            result_file?: string;
+            output_dir?: string;
+            name?: string;
+            /** @constant */
+            agent?: "pi";
+            /** @constant */
+            model?: "openai-codex/gpt-6.1-sol";
+            /** @constant */
+            source?: "transcript";
+            cursor?: string;
+            limit?: number;
+        };
+        nativeError: {
+            code: string;
+            message: string;
+            /** @constant */
+            retryable: false;
+            required_action: string;
+            data?: unknown;
+        };
+        /** @description Result preserves actual native records and provenance. HTTP transport success is insufficient for mutation success; unknown outcomes retain the original request and resource ownership. */
+        envelope: {
+            ok: boolean;
+            request_id?: string;
+            runtime_id?: string;
+            authority_domain?: string;
+            controller?: string;
+            run_id?: string;
+            task_id?: string;
+            dispatch_id?: string;
+            result?: unknown;
+            error?: components["schemas"]["nativeError"];
+        };
     };
     responses: {
         /** @description Invalid command, current permission denial, version conflict or unavailable dependency. No execution retry. */
@@ -7747,6 +7813,53 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    executeOrcaCommand: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Required for mutation and original request lookup */
+                "Idempotency-Key"?: string;
+                /** @description Required for an authenticated human POST; project Agent bearer requests use their current scoped grant */
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["command"];
+            };
+        };
+        responses: {
+            /** @description Actual native result and identities */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["envelope"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            /** @description Actual native refusal or unknown outcome */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["envelope"] | components["schemas"]["ErrorV1"];
+                };
+            };
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
     getOpenVikingStatus: {
         parameters: {
             query?: never;
