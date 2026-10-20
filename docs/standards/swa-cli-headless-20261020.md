@@ -325,6 +325,10 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 当前待独立审核的事项是本报告的准确方案与T00—T15；主控已批准唯一原生账本及Pi静态调查方向，未授予程序写入或动态窗口。未回答的新权限问题只阻塞依赖部分，普通命名和组织沿此方案处理。没有把后台安装归属旧选项保留成整体阻塞。
 
+主控要求提前核查文件追踪的现成条件，本次只读结果为：系统自带`C:/Windows/system32/wpr.exe`、`logman.exe`、`wevtutil.exe`存在；`wpr -profiles`列出FileIO，`logman query providers Microsoft-Windows-Kernel-File`返回真实provider及WRITE/DELETE/RENAME等keywords、EXIT0。当前Windows token的ElevatedAdministrator=false，PerformanceLogUsers/PerformanceMonitorUsers均false，当前权限列表未发现SeSystemProfilePrivilege；未发现Procmon可调用入口或进程。工具存在和provider查询成功不能证明当前token可以采集，未启动WPR/ETW，未提权或安装驱动。
+
+因此T02/T15所需隔离证据在动态开始前仍有明确准入条件：主控须安排获准且实际具备权限的采集执行者，并先核采集范围、现有trace会话及产品PID/创建时间过滤；当前Worker token没有实际采集证明，不能直接把全机FileIO默认采集作为获准范围。使用WPR时需要独立instance、专属recordtempto和输出根，只停止自己创建的trace，不能取消其他会话。没有满足这些条件时T02/T15必要隔离验收保持阻塞，不能豁免、降低标准或以配置快照单项代替全部证据；主控可继续独立审核及其他不依赖该条件的工作。
+
 实际尚未证明：最终构建闭包与native装载、严格controller helper及其恢复、Pi SDK只读认证的真实成功和ToolsOff、真实双Worker模型活动重叠、指定停止的全树退出/保全、安装及原Orca文件I/O隔离。发现SDK或原生接口不能提供必要证明时明确失败并提交主控，不能把unknown改成pass或采用当前Claude配置。`jose 6.2.3`来源pin已找到，产品依赖尚未安装；短期凭据与部分真实故障窗口可能无法在一次运行命中，对应分支保持未覆盖。
 
 完整旧S3、MCP、网页重构、历史分支清理、正式实验、用户采用和正式发布均保留各自任务的决定及验收。本报告只交付本首版静态方案与真实测试计划。
@@ -339,6 +343,7 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 | `orca skills get orchestration`、`orca skills get orca-cli`、`orca terminal show --terminal <本Worker> --json` | 真实CLI指南、当前Dispatch及开发客户端/模型观察；不作为产品能力验收 |
 | `python .verification/swa-cli-headless-20261020/inspect-provider.py <明确两处Codex home>` | BelowNormal；标准TOML/JSON解析，仅输出provider/model/协议与认证字段存在性；两处默认OpenAI/gpt-6.1-sol/chatgpt OAuth，无凭据值输出 |
 | `git -C <公开验证项目原件> rev-parse HEAD/remote -v/show <准确SHA>:<四文件>` | 准确da3bdddb、固定origin及四份公开原文已读；本轮未核互联网可读状态 |
+| `wpr -profiles`、`wpr -help start`、`logman query providers Microsoft-Windows-Kernel-File`、WindowsPrincipal/当前权限只读查询 | FileIO profile和Kernel-File provider存在，查询EXIT0；当前token未提权、两个性能组均false、未见SystemProfile privilege。未开始采集，实际采集权限及范围尚未通过 |
 | `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接及16个关键源码引用存在，EXIT0/PASS；不触发业务程序 |
 | `git diff --cached --check` | BelowNormal；两份文档最终暂存检查EXIT0/PASS，无空白错误 |
 | install/build/model/service、产品CLI、T00—T15 | 全部NOT_RUN；未取得窗口，未修改程序/依赖/全局Agent配置 |
