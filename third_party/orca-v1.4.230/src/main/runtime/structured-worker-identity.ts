@@ -40,6 +40,7 @@ export const STRUCTURED_WORKER_INCARNATION_PREFIX = 'structured:'
 
 export type StructuredWorkerIdentity = {
   handle: string
+  dispatchId?: string
   /**
    * The session minted for the worker: its conversation id and `/clear` lineage root, which keys
    * the handle, pane key and incarnation. Not necessarily the session running it now; worker-level

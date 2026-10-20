@@ -9,7 +9,8 @@
 import { requireLegacyAgentSessionAccountHome } from '../../shared/agent-session-account-home'
 import { agentSessionProviderHandleChainHead } from '../../shared/agent-session-provider-handle'
 import { resolveCodexCommand } from '../codex-cli/command'
-import { resolveAgainAfterRefreshOnMissingProgram } from '../native-chat/structured-agent-command-resolution'
+import { resolveAgainAfterRefreshOnMissingProgram, resolveStructuredAgentCommand } from '../native-chat/structured-agent-command-resolution'
+import { hasExplicitTuiLaunchCommand } from '../../shared/tui-agent-launch-command-override'
 import type { StructuredAgentLaunchPartResolver } from '../runtime/structured-agent-launch-composition'
 import type { CodexStructuredLaunch } from './codex-structured-session-adapter'
 import { codexStructuredPermissionPolicy } from './codex-structured-permission-policy'
@@ -82,8 +83,11 @@ export function codexStructuredLaunchPart(
   return async (basis) => {
     const { record } = basis
     const accountHome = requireLegacyAgentSessionAccountHome(record.accountHome)
+    const commandSettings = basis.commandSettings()
     const { command } = await resolveCodexStructuredInvocation({
-      ...(deps.resolveCommand ? { resolveCommand: deps.resolveCommand } : {}),
+      ...(hasExplicitTuiLaunchCommand(commandSettings, 'codex')
+        ? { resolveCommand: (options?: { pathEnv?: string | null; homePath?: string }) => resolveStructuredAgentCommand('codex', commandSettings, options) }
+        : deps.resolveCommand ? { resolveCommand: deps.resolveCommand } : {}),
       refreshEnvironmentAfterMiss: basis.refreshAfterMissingProgram,
       resolveWorkingDirectory: basis.launchDirectory,
       resolveEnvironment: basis.environment

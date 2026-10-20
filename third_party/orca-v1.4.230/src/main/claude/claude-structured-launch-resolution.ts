@@ -26,6 +26,8 @@ import {
 } from './claude-structured-launch-home'
 import type { StructuredAgentLaunchPartResolver } from '../runtime/structured-agent-launch-composition'
 import { claudeSessionIdForOrcaSession } from './claude-structured-session-id'
+import { resolveStructuredAgentCommand } from '../native-chat/structured-agent-command-resolution'
+import { hasExplicitTuiLaunchCommand } from '../../shared/tui-agent-launch-command-override'
 
 export { claudeSessionIdForOrcaSession }
 
@@ -179,8 +181,11 @@ export function claudeStructuredLaunchPart(
         )
     const continuesChain = head !== null
     const cwd = await basis.launchDirectory()
+    const commandSettings = basis.commandSettings()
     const envDeps: ClaudeEnvDeps & Pick<ClaudeStructuredLaunchPartDeps, 'resolveAuthPolicy'> = {
-      ...(deps.resolveCommand ? { resolveCommand: deps.resolveCommand } : {}),
+      ...(hasExplicitTuiLaunchCommand(commandSettings, 'claude')
+        ? { resolveCommand: (options?: { pathEnv?: string | null; homePath?: string }) => resolveStructuredAgentCommand('claude', commandSettings, options) }
+        : deps.resolveCommand ? { resolveCommand: deps.resolveCommand } : {}),
       resolveEnv: () => basis.launchEnv(),
       resolveInheritedEnv: basis.baseEnvironment,
       refreshEnvironmentAfterMiss: basis.refreshAfterMissingProgram,

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -57,13 +58,45 @@ type OrcaScope struct {
 }
 
 type OrcaInvocation struct {
-	Command OrcaCommand           `json:"command"`
-	Caller  OrcaExecutionCaller   `json:"caller"`
-	Project domain.LocalProject   `json:"project"`
-	Scope   OrcaScope             `json:"scope"`
-	Spec    *OrcaTaskSpec         `json:"spec,omitempty"`
-	Context *domain.ContextPacket `json:"context,omitempty"`
-	Input   *domain.ContextFile   `json:"input,omitempty"`
+	Command   OrcaCommand           `json:"command"`
+	Caller    OrcaExecutionCaller   `json:"caller"`
+	Project   domain.LocalProject   `json:"project"`
+	Scope     OrcaScope             `json:"scope"`
+	Spec      *OrcaTaskSpec         `json:"spec,omitempty"`
+	Context   *domain.ContextPacket `json:"context,omitempty"`
+	Input     *domain.ContextFile   `json:"input,omitempty"`
+	Selection *OrcaAgentSelection   `json:"selection,omitempty"`
+}
+
+type OrcaCapabilityRequirements struct {
+	SettingsRevision  int      `json:"settings_revision"`
+	AllowDirectory    bool     `json:"allow_directory"`
+	AllowedSubdirs    []string `json:"allowed_subdirs"`
+	GrantActions      []string `json:"grant_actions"`
+	AllowedActions    []string `json:"allowed_actions"`
+	AllowedTools      []string `json:"allowed_tools"`
+	ExternalModelCLI  string   `json:"external_model_cli"`
+	AllowAgentControl bool     `json:"allow_agent_control"`
+}
+
+type OrcaAgentSettingsSource struct {
+	Kind     string `json:"kind"`
+	Path     string `json:"path,omitempty"`
+	Revision *int64 `json:"revision,omitempty"`
+}
+
+type OrcaAgentSelection struct {
+	AgentID              string                  `json:"agent_id"`
+	Adapter              string                  `json:"adapter"`
+	ExecutionMode        string                  `json:"execution_mode"`
+	Executable           string                  `json:"executable"`
+	Version              string                  `json:"version"`
+	Model                string                  `json:"model"`
+	Provider             string                  `json:"provider"`
+	ExternalTarget       string                  `json:"external_target"`
+	SettingsSource       OrcaAgentSettingsSource `json:"settings_source"`
+	SettingsRevision     int64                   `json:"settings_revision"`
+	ConfigurationVersion string                  `json:"configuration_version"`
 }
 
 type OrcaExecutionCaller struct {
@@ -98,7 +131,8 @@ type OrcaEnvelope struct {
 }
 
 type OrcaExecutionRuntime interface {
-	Target() string
+	Capabilities(context.Context, string, OrcaCapabilityRequirements) (OrcaEnvelope, error)
+	ResolveSelection(context.Context, string, OrcaCommand) (OrcaAgentSelection, error)
 	ResolveScope(context.Context, string, OrcaCommand) (OrcaScope, error)
 	Execute(context.Context, OrcaInvocation) (OrcaEnvelope, error)
 }
@@ -218,8 +252,8 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 			return projectError(apierrors.ValidationFailed, "task_id is required")
 		}
 	}
-	if c.Action == "worker.start" && (c.Agent != "pi" || c.Model != "openai-codex/gpt-6.1-sol" || c.Name == "" || c.InputFile == "") {
-		return projectError(apierrors.UnsupportedCapability, "worker start requires a named Pi SDK worker, fixed approved model and input file")
+	if c.Action == "worker.start" && (strings.TrimSpace(c.Agent) == "" || strings.TrimSpace(c.Model) == "" || c.Name == "" || c.InputFile == "") {
+		return projectError(apierrors.ValidationFailed, "worker start requires an explicit Agent, model, name and input file")
 	}
 	if c.Action == "worker.send" && c.InputFile == "" {
 		return projectError(apierrors.ValidationFailed, "input_file is required")
@@ -233,7 +267,7 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 	return nil
 }
 
-func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Caller, projectID, permission string, roots []string, model bool) (domain.LocalProject, error) {
+func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Caller, projectID, permission string, roots []string, externalTarget string) (domain.LocalProject, error) {
 	p, err := s.projects.LoadProject(ctx, projectID)
 	if err != nil {
 		return p, err
@@ -253,8 +287,8 @@ func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Call
 		return p, nil
 	}
 	scope := ProjectActionScope{ProjectID: p.ID, SettingsRevision: p.Settings.Revision, Action: permission, Roots: roots}
-	if model {
-		scope.ExternalTargets = []string{s.runtime.Target()}
+	if externalTarget != "" {
+		scope.ExternalTargets = []string{externalTarget}
 	}
 	return p, ValidateProjectActionScope(p, scope)
 }
@@ -293,17 +327,74 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		return reply, projectError(apierrors.ScopeDenied, "a current project-scoped caller is required")
 	}
 	model := command.Action == "worker.start" || command.Action == "worker.send"
-	p, err := s.authorize(ctx, caller, projectID, permission, nil, model)
+	initialPermission := permission
+	if model {
+		initialPermission = "observe"
+	}
+	p, err := s.authorize(ctx, caller, projectID, initialPermission, nil, "")
 	if err != nil {
 		return reply, err
 	}
 	invocation := OrcaInvocation{Command: command, Project: p, Caller: OrcaExecutionCaller{ID: caller.ID, Kind: caller.Kind, ProjectID: projectID, SettingsRevision: p.Settings.Revision}}
+	if command.Action == "capabilities" {
+		requirements := OrcaCapabilityRequirements{SettingsRevision: p.Settings.Revision, AllowDirectory: p.Settings.AllowDirectory, AllowedSubdirs: p.Settings.AllowedSubdirs, AllowedActions: p.Settings.AllowedActions, AllowedTools: p.Settings.AllowedTools, ExternalModelCLI: p.Settings.ExternalModelCLI, AllowAgentControl: p.Settings.AllowAgentControl}
+		if caller.Kind == "agent" {
+			grant, err := s.projects.LoadGrant(ctx, projectID, caller.ID)
+			if err != nil {
+				return reply, err
+			}
+			requirements.GrantActions = grant.Actions
+		}
+		reply, err := s.runtime.Capabilities(ctx, projectID, requirements)
+		if err != nil {
+			return reply, err
+		}
+		current, err := s.authorize(ctx, caller, projectID, permission, nil, "")
+		if err != nil {
+			return reply, err
+		}
+		if current.Settings.Revision != p.Settings.Revision {
+			return reply, projectError(apierrors.ContextStale, "project settings changed during native discovery")
+		}
+		if caller.Kind == "agent" {
+			grant, err := s.projects.LoadGrant(ctx, projectID, caller.ID)
+			if err != nil {
+				return reply, err
+			}
+			if !slices.Equal(requirements.GrantActions, grant.Actions) {
+				return reply, projectError(apierrors.ContextStale, "project grant changed during native discovery")
+			}
+		}
+		if !reply.OK || reply.RuntimeID == "" || reply.AuthorityDomain == "" || reply.Error != nil {
+			return reply, projectError(apierrors.EvidenceMissing, "native discovery omitted its runtime provenance")
+		}
+		return reply, nil
+	}
+	var externalTarget string
+	if model {
+		selection, err := s.runtime.ResolveSelection(ctx, projectID, command)
+		if err != nil {
+			return reply, err
+		}
+		if selection.AgentID == "" || selection.ExternalTarget != selection.AgentID || selection.Executable == "" || selection.Version == "" || selection.Model == "" || selection.Provider == "" || selection.ConfigurationVersion == "" || command.Action == "worker.start" && (selection.AgentID != command.Agent || selection.Model != command.Model) {
+			return reply, projectError(apierrors.EvidenceMissing, "native selection does not prove the requested Agent and model")
+		}
+		externalTarget = selection.ExternalTarget
+		current, err := s.authorize(ctx, caller, projectID, permission, nil, externalTarget)
+		if err != nil {
+			return reply, err
+		}
+		if current.Settings.Revision != p.Settings.Revision {
+			return reply, projectError(apierrors.ContextStale, "project settings changed during native selection")
+		}
+		invocation.Selection = &selection
+	}
 	if command.Action == "controller.open" {
 		root, err := s.files.CanonicalRoot(command.Workdir)
 		if err != nil {
 			return reply, err
 		}
-		p, err = s.authorize(ctx, caller, projectID, permission, []string{root}, false)
+		p, err = s.authorize(ctx, caller, projectID, permission, []string{root}, "")
 		if err != nil {
 			return reply, err
 		}
@@ -354,7 +445,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		if filepath.Base(command.OutputDir) == "." || filepath.Base(command.OutputDir) == ".." || filepath.Clean(command.OutputDir) == filepath.Dir(filepath.Clean(command.OutputDir)) {
 			return reply, projectError(apierrors.ValidationFailed, "result export requires a new named directory")
 		}
-		if _, err := s.authorize(ctx, caller, projectID, permission, []string{parent}, false); err != nil {
+		if _, err := s.authorize(ctx, caller, projectID, permission, []string{parent}, ""); err != nil {
 			return reply, err
 		}
 		outputRoot = parent
@@ -376,7 +467,7 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 	if outputRoot != "" {
 		finalRoots = []string{outputRoot}
 	}
-	current, err := s.authorize(ctx, caller, projectID, permission, finalRoots, model)
+	current, err := s.authorize(ctx, caller, projectID, permission, finalRoots, externalTarget)
 	if err != nil {
 		return reply, err
 	}

@@ -8,7 +8,7 @@ import {
   structuredAgentLaunchSources
 } from '../runtime/structured-agent-launch-composition'
 import { PI_RPC_AGENT } from './rpc-agent-definition'
-import { swaPiLaunchPart } from './swa-sdk-launch'
+import { piRpcLaunchPart } from './rpc-launch-resolution'
 import { PiRpcSessionAdapter } from './rpc-session-adapter'
 import { PI_RPC_RUNTIME_METADATA } from './rpc-runtime-metadata'
 
@@ -18,7 +18,7 @@ function createPiRpcAdapter(context: StructuredAgentAdapterContext): StructuredA
     resolveLaunch: composeStructuredLaunch(
       PI_RPC_AGENT,
       structuredAgentLaunchSources(context),
-      swaPiLaunchPart
+      piRpcLaunchPart({})
     ),
     ...(deps.openPiConnection ? { openConnection: deps.openPiConnection } : {}),
     ...(deps.readProcessStartTime ? { readProcessStartTime: deps.readProcessStartTime } : {}),

@@ -4,6 +4,7 @@
 // sealed environment; it only adds what is that agent's.
 
 import type { AgentSessionJournalIdentity } from '../../shared/agent-session-journal-types'
+import { z } from 'zod'
 import type { AgentChatPermissionMode } from '../../shared/agent-chat-permission-mode'
 import type { AgentSessionRecord } from '../../shared/agent-session-record'
 import { isNativeLocalLocation } from '../../shared/execution-host'
@@ -19,6 +20,20 @@ import { resolveAgentSessionLaunchDirectory } from './agent-session-launch-direc
 import type { AgentSessionRecordStore } from './agent-session-record-store'
 import type { StructuredAgentAdapterContext } from './structured-agent-runtime-registrations'
 import { sealStructuredSessionChild } from './structured-session-child-env'
+
+export type StructuredAgentLaunchAdmission = {
+  commandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
+  validate(sessionId: string, agent: string, command: string): Promise<void>
+}
+
+let launchAdmission: StructuredAgentLaunchAdmission | null = null
+
+// 独立后台在开放 RPC 前安装准入，原生 adapter 仍负责构造和启动协议。
+export function installStructuredAgentLaunchAdmission(admission: StructuredAgentLaunchAdmission): () => void {
+  if (launchAdmission) throw new Error('Structured Agent launch admission is already installed')
+  launchAdmission = admission
+  return () => { if (launchAdmission === admission) launchAdmission = null }
+}
 
 /** Where a launch's shared inputs come from. */
 export type StructuredAgentLaunchSources = {
@@ -140,6 +155,7 @@ async function composedPart<L>(
   permissionMode?: AgentChatPermissionMode
 ): Promise<StructuredAgentLaunchPart<L> & { cwd: string }> {
   const record = admittedRecord(definition, sources.store, identity.sessionId)
+  const selectedCommands = launchAdmission ? await launchAdmission.commandSettings(identity.sessionId, definition.agent) : undefined
   const launchEnv = once(() => sources.resolveAgentLaunchEnv?.(definition.agent) ?? {})
   const readEnvironments = () => ({
     base: once(sources.resolveBaseEnvironment),
@@ -154,7 +170,7 @@ async function composedPart<L>(
     launchEnv,
     environment: () => environments.agent(),
     visuals: once(async () => (await sources.prepareVisuals?.(record.sessionId)) ?? null),
-    commandSettings: once(() => sources.resolveCommandSettings?.() ?? {}),
+    commandSettings: once(() => selectedCommands ?? sources.resolveCommandSettings?.() ?? {}),
     ...(refresh
       ? {
           refreshAfterMissingProgram: async (askedAt) => {
@@ -182,6 +198,7 @@ export function composeStructuredLaunch<L>(
       identity,
       permissionMode
     )
+    if (launchAdmission) await launchAdmission.validate(identity.sessionId, definition.agent, cliRuntimeCommand ?? z.object({ command: z.string().min(1) }).parse(launch).command)
     const child = sealStructuredSessionChild({
       sessionId: identity.sessionId,
       spawnToken,

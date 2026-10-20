@@ -81,7 +81,44 @@ async function resolveCodexAccountHomePath(
 
 // One roster supplies both metadata readers and the host's synchronous adapter factories.
 export const STRUCTURED_AGENT_RUNTIME_CATALOG: readonly StructuredAgentRuntimeCatalogEntry[] = [
-  { kind: 'pi', metadata: PI_RPC_RUNTIME_METADATA }
+  { kind: 'pi', metadata: PI_RPC_RUNTIME_METADATA },
+  {
+    kind: 'codex',
+    metadata: {
+      definition: CODEX_STRUCTURED_AGENT,
+      modelCatalog: codexModelCatalogDiscovery,
+      ...CODEX_CLI_CONVERSATIONS,
+      supportsLocation: (location) => supportsCodexStructuredLocation(location),
+      resolveAccountHome: async (request, services) =>
+        agentSessionAccountHome(
+          CODEX_STRUCTURED_AGENT,
+          await resolveCodexAccountHomePath(request, services)
+        )
+    }
+  },
+  {
+    kind: 'claude',
+    metadata: {
+      definition: CLAUDE_STRUCTURED_AGENT,
+      modelCatalog: claudeModelCatalogDiscovery,
+      ...CLAUDE_CLI_CONVERSATIONS,
+      supportsLocation: supportsClaudeStructuredLocation,
+      resolveAccountHome: async ({ launchEnv, location }, services) =>
+        agentSessionAccountHome(
+          CLAUDE_STRUCTURED_AGENT,
+          resolveStructuredClaudeAccountHomePath({
+            launchEnv,
+            wslDistro: location?.wslDistro ?? null,
+            getClaudeConfigDirectory: services.getClaudeConfigDirectory
+          })
+        )
+    }
+  },
+  ...ACP_LAUNCH_SPECS.map((spec): StructuredAgentRuntimeCatalogEntry => ({
+    kind: 'acp',
+    metadata: acpMetadata(spec),
+    spec
+  }))
 ]
 
 export const STRUCTURED_AGENT_RUNTIME_METADATA: readonly StructuredAgentRuntimeMetadata[] =

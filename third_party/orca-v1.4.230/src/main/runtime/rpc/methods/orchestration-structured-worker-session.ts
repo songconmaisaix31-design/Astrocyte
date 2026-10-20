@@ -104,6 +104,7 @@ export async function createStructuredWorkerSession(args: {
   // session that resolves anywhere else is discarded.
   const identity = structuredWorkerIdentities.register({
     handle: mintStructuredWorkerHandle(),
+    dispatchId: args.dispatchId,
     sessionId,
     agent: args.agent,
     paneKey: mintStructuredWorkerPaneKey(sessionId),

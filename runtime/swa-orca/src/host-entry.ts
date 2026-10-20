@@ -79,6 +79,9 @@ async function main() {
       getLocalProvider: () => getLocalPtyProvider(), canRecoverPersistentLocalPtys: () => daemonOwnsFreshPersistentPtys(),
       getDesktopWindowStatus: () => 'blocked'
     })
+    const { installAgentLaunchAdmission } = await import('./agent-launch-admission')
+    registerCleanup(installAgentLaunchAdmission(runtime))
+    await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
     const { registerHeadlessPtyRuntime } = await import('../../../third_party/orca-v1.4.230/src/main/ipc/pty/register-headless-runtime')
     await registerHeadlessPtyRuntime(runtime, undefined, () => store.getSettings(), undefined, store)
     await runtime.refreshRestoredOrchestrationAuthority()

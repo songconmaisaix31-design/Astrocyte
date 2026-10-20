@@ -216,7 +216,7 @@ export abstract class OrcaRuntimeWithGetWorktreePs extends OrcaRuntimeWithWorktr
    * builds the chat host. The record store it sits on may already be open, from
    * a launch's admission.
    */
-  async ensureStructuredAgentSessionHost(): Promise<void> {
+  async ensureStructuredAgentSessionHost(options: { prewarmModelCatalog?: boolean } = {}): Promise<void> {
     const logger = createStructuredAgentSessionLogger()
     const nameChat = createStructuredChatNamingHandler(
       structuredChatNamingDeps(
@@ -237,6 +237,7 @@ export abstract class OrcaRuntimeWithGetWorktreePs extends OrcaRuntimeWithWorktr
     )
     await installStructuredAgentSessionHost({
       stateDirectory: getProfileUserDataPath(),
+      prewarmModelCatalog: options.prewarmModelCatalog,
       hostId: LOCAL_EXECUTION_HOST_ID,
       claimKeyId: this.agentSessionClaimSigner.keyId,
       // The host's local trace file (the desktop's or orcad's own), plus the console.

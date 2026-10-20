@@ -11,19 +11,30 @@ import { PI_TRANSCRIPT_IMPORT } from './pi-transcript-import'
 
 export const PI_RPC_RUNTIME_METADATA: StructuredAgentRuntimeMetadata = {
   definition: PI_RPC_AGENT,
-  modelCatalog: () => ({ kind: 'unavailable', reason: 'SWA selects its fixed SDK model at session construction' }),
+  modelCatalog: (context) => ({
+    kind: 'probe',
+    listingNamesConfiguredModel: false,
+    probe: createPiModelCatalogProbe({
+      resolveEnvironment: () => context.environment.resolveAgentEnvironment('pi'),
+      refreshEnvironmentAfterMiss: context.environment.refreshAfterMissingProgram,
+      ...(context.deps.resolveAgentCommandSettings
+        ? { resolveCommandSettings: context.deps.resolveAgentCommandSettings }
+        : {})
+    })
+  }),
   transcriptImport: PI_TRANSCRIPT_IMPORT,
   sessionHistory: PI_SESSION_HISTORY,
   supportsLocation: supportsSupervisedProviderChildLocation,
+  launchCheck: {
+    resolveLaunch: (env, commandSettings) => ({
+      command: resolvePiRpcCommand(env, commandSettings),
+      env
+    }),
+    supportsVersion: (launch) => piRpcVersionSupported(launch)
+  },
   resolveAccountHome: async ({ launchEnv }) =>
     agentSessionAccountHome(
       PI_RPC_AGENT,
-      requiredPrivateAccount(launchEnv)
+      launchEnv.PI_CODING_AGENT_DIR?.trim() || join(homedir(), '.pi', 'agent')
     )
-}
-
-function requiredPrivateAccount(env: NodeJS.ProcessEnv): string {
-  const path = env.PI_CODING_AGENT_DIR
-  if (!path) throw new Error('SWA Pi account directory is required')
-  return path
 }

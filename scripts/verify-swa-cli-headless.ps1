@@ -8,6 +8,9 @@ param(
     [Parameter(Mandatory)][string]$CaseRoot,
     [string]$ProjectRoot,
     [string]$CodexAuthFile,
+    [string]$AgentProfile,
+    [string]$Agent,
+    [string]$Model,
     [string]$PackageRoot,
     [string[]]$ProtectedRoots,
     [string]$OrcaPath,
@@ -27,6 +30,11 @@ $ErrorActionPreference = 'Stop'
 $env:NODE_OPTIONS = '--max-old-space-size=1024'
 $env:GOMAXPROCS = '4'
 $env:GOMEMLIMIT = '512MiB'
+$swaReadOnlySourceArgs = @()
+if ($AgentProfile) {
+    if (-not [IO.Path]::IsPathFullyQualified($AgentProfile)) { throw '显式只读 Agent profile 必须是绝对路径' }
+    $swaReadOnlySourceArgs = @('--agent-profile', $AgentProfile)
+}
 foreach ($path in @($SwaPath,$InstallRoot,$DataRoot,$CaseRoot)) {
     if (-not [System.IO.Path]::IsPathFullyQualified($path)) { throw '验证路径必须是明确的绝对路径' }
 }
@@ -79,19 +87,19 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 $swaExit = $LASTEXITCODE
             }
             if ($swaExit -eq 0) {
-                if ($Port -lt 1 -or $Port -gt 65535 -or -not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or $ProtectedRoots.Count -lt 1) { throw '安装隔离负向检查需要明确端口、只读认证及实际保护目录' }
+                if ($Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '安装隔离负向检查需要明确端口及实际保护目录' }
                 $swaOccupied = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,$Port)
                 $swaOccupied.Start()
                 try {
-                    & $SwaPath serve --data-dir $DataRoot --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-port-conflict.log')
+                    & $SwaPath serve --data-dir $DataRoot --port $Port @swaReadOnlySourceArgs --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-port-conflict.log')
                     if ($LASTEXITCODE -ne 5) { throw '真实占用端口没有按 EXIT5 拒绝' }
                 } finally { $swaOccupied.Stop() }
-                & $SwaPath serve --data-dir $ProtectedRoots[0] --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-root.log')
+                & $SwaPath serve --data-dir $ProtectedRoots[0] --port $Port @swaReadOnlySourceArgs --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-root.log')
                 if ($LASTEXITCODE -ne 3) { throw '真实保护目录没有在写入前拒绝' }
                 $swaJunction = Join-Path $swaEvidence 'owned-protected-root-junction'
                 New-Item -ItemType Junction -Path $swaJunction -Target $ProtectedRoots[0] | Out-Null
                 try {
-                    & $SwaPath serve --data-dir $swaJunction --port $Port --codex-auth-file $CodexAuthFile --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-junction.log')
+                    & $SwaPath serve --data-dir $swaJunction --port $Port @swaReadOnlySourceArgs --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-junction.log')
                     if ($LASTEXITCODE -ne 3) { throw '实际本项 junction 没有在目标写入前拒绝' }
                 } finally {
                     $swaLinkAbsolute = [IO.Path]::GetFullPath($swaJunction)
@@ -103,14 +111,15 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 $swaExit = 6
             }
         } elseif ($Case -in @('T03','T06','T08','T13')) {
-            if (-not [IO.Path]::IsPathFullyQualified($CodexAuthFile) -or -not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确认证/公开项目/端口/保护目录' }
+            if (-not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确公开项目/端口/保护目录' }
+            if ($Case -eq 'T03' -and ([string]::IsNullOrWhiteSpace($Agent) -or [string]::IsNullOrWhiteSpace($Model))) { throw '真实选择检查需要明确本机 Agent 和模型' }
             $swaStart = [Diagnostics.ProcessStartInfo]::new($SwaPath)
             $swaStart.UseShellExecute = $false
             $swaStart.CreateNoWindow = $true
             $swaStart.RedirectStandardInput = $true
             $swaStart.RedirectStandardOutput = $true
             $swaStart.RedirectStandardError = $true
-            foreach ($argument in @('serve','--data-dir',$DataRoot,'--port',[string]$Port,'--codex-auth-file',$CodexAuthFile,'--protected-roots',($ProtectedRoots -join ';'),'--json')) { $swaStart.ArgumentList.Add($argument) }
+            foreach ($argument in (@('serve','--data-dir',$DataRoot,'--port',[string]$Port,'--protected-roots',($ProtectedRoots -join ';'),'--json') + $swaReadOnlySourceArgs)) { $swaStart.ArgumentList.Add($argument) }
             $swaService = [Diagnostics.Process]::new()
             $swaService.StartInfo = $swaStart
             if (-not $swaService.Start()) { throw '实际安装服务不能启动' }
@@ -140,7 +149,10 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 $env:SWA_REAL_DATA_ROOT = $DataRoot
                 $env:SWA_REAL_CONTROLLER = $swaGoController.controller
                 $env:SWA_REAL_RUNTIME_ID = $swaStatus.runtime_id
-                $env:SWA_REAL_CODEX_AUTH_FILE = $CodexAuthFile
+                $env:SWA_REAL_AGENT_PROFILE = $AgentProfile
+                $env:SWA_REAL_DISCOVERY_HOME = [Environment]::GetFolderPath('UserProfile')
+                $env:SWA_REAL_AGENT = $Agent
+                $env:SWA_REAL_MODEL = $Model
                 $env:SWA_REAL_PROTECTED_ROOTS = $ProtectedRoots -join ';'
                 try {
                     $swaTests = Get-Content -LiteralPath (Join-Path $GoTestDirectory 'tests.json') -Raw | ConvertFrom-Json

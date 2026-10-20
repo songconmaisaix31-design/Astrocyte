@@ -321,7 +321,7 @@ owner capability只用于同一私有HTTP服务的授权查询，不授予调用
 
 现有b2879bd5准确源码只作为已知静态来源，后继逐项核新交付物的CLI/RPC注册、Agent发现、原生启动/身份/输入/输出/停止和动态依赖，差异在原抽取写域返修，不以同版本号推断等价。当前库存中已核确实存在`out/main/chunks/structured-agent-runtime-registrations-2J5v5KAv.js`、`out/main/chunks/tui-agent-config-YahPkHxK.js`及shared的agent-session-registered-agents/capabilities/account-home、tui-agent-launch-command/override/defaults、agent-detection和rpc-contract/preflight-params/agent-launch-params。它们是后继限定核查注册→配置→实际启动/账号/协议的具体候选，不把文件名或存在性当已分析结论；具体再选由主控安排。
 
-已核的源码边界：`agentSession.agents`从真实STRUCTURED_AGENT_RUNTIME_METADATA返回definition/adapter声明，不核安装或登录；原O catalog含Pi/Codex/Claude/ACP，当前产品catalog只有Pi。`settings.getAgentLaunch`只读调用projectAgentLaunchSettings，返回default/disabled/command override/default args及environmentNames，明确不返回环境值。`preflight.detectAgents`沿真实平台、PATH/安装目录检测，不能证明配置或启动；其shell hydration可能改变被调用宿主的进程PATH，发现方案不在原Orca调用该刷新入口。现有workerStart→resolveWorkerConfiguredAgentParams→原生launcher负责所选Agent与命令别名，不用自写字符串parser。产品Go Registry.List的四个adapter同样只是程序注册，不等于本机四个Agent均可调用。
+已核的源码边界：`agentSession.agents`从真实STRUCTURED_AGENT_RUNTIME_METADATA返回definition/adapter声明，不核安装或登录；原O与本次静态产品catalog包含Pi/Codex/Claude/ACP，尚未由新安装候选运行核实。`settings.getAgentLaunch`只读调用projectAgentLaunchSettings，返回default/disabled/command override/default args及environmentNames，明确不返回环境值。`preflight.detectAgents`沿真实平台、PATH/安装目录检测，不能证明配置或启动；其shell hydration可能改变被调用宿主的进程PATH，发现方案不在原Orca调用该刷新入口。现有workerStart→resolveWorkerConfiguredAgentParams→原生launcher负责所选Agent与命令别名，不用自写字符串parser。产品Go Registry.List的四个adapter同样只是程序注册，不等于本机四个Agent均可调用。
 
 #### 4.5.2 发现事实源、输出及刷新
 
@@ -374,7 +374,7 @@ App先按observe核项目并解析selection，再按既有start/目录/工具和
 | worker send | 复用parent swa.controllerDeliver,R及当前实际helper；helper以准确R/native调用私有durable swa.workerSend，schema只接受原invocation及准确Dispatch。准入在executor前核真实helper/current consumer、parent原R批准text和目标。handler按固定execution_mode分支：structured从Dispatch取实际私有session/fence及原生mint operation，terminal取实际handle/PTY/incarnation及R/native write关联；先在原receipt checkpoint持久保存实际模式/操作/正文来源，再各调用一次原native host queue或普通terminal writer。不经mailbox pointer、不直接SDK、不另建队列，无session的目标不进入StructuredHost |
 | worker show/list/read / task result | 先核项目和Run/root/Dispatch真实所属，再用既有native worker观察及所选definition的sessionHistory/transcriptImport/native journal提供原件。完整成果按实际provider原schema读取，来源缺失/截断明确incomplete；不把Pi解析器套到其他协议，不回到terminal tail声称完整 |
 | worker stop/release / task complete | 沿现有orchestration.workerStop/workerRelease/taskUpdate及R/native；依实际adapter/Job/树退出/ownership结算。当前helper原生证明、当前Grant、安全人类stop例外及释放条件保持 |
-| request show | 现有原R只读查询，不调用helper写入。worker.send从原R/native checkpoint/完成receipt取得唯一session/operation，再读该session原journal；历史receipt原样保留，动态delivery观察另列，不将completed R当再次发送许可 |
+| request show | 现有原R只读查询，不调用helper写入。worker.send从原R/native checkpoint/完成receipt取得固定执行模式及操作关联；structured读取唯一session/operation与原journal，terminal读取原R/write receipt及实际终端关联。历史receipt原样保留，动态delivery观察另列，不将completed R当再次发送许可 |
 
 当前RuntimeClient只对orchestration.*自动附兼容调用证明；因此本产品fork须将准确`swa.workerSend`加入同一envelope/contract-version路径及durable方法集合，沿constructor捕获的真实helper launch证据生成compatibilityInvocationId=R/native。没有新caller参数或信任布尔值。Native dispatcher的产品callback在任何executor/完成R重放前对该确切方法执行helper强核验，父R、当前consumer、真实launch/恢复证明及Dispatch目标全部匹配；不能把它按普通helperless swa.*端口放行。其他宿主未注册此方法时仍无该入口，本机Orca不修改。
 
@@ -833,3 +833,20 @@ F16按准确原生RunShowParams及runs handler修正现有helper为runShow({id: 
 已完整读取structured-mailbox-pointer-delivery、structured-mail-source和Pi rpc-prompt链：当前实际AgentJournalMessageItem.blocks只有formatMessagePointer提示，source只有原生ID引用，Pi仅把text blocks连接为SDK输入，不回查MessageRow。ToolsOff Worker无法自行取正文；原Reviewer1b2954d9已提出七项独立条件，主控msg_0458b95cccf2同意完整方案先审后实现。正文语义未编码，不把合法枚举或消息回执登记为worker.send完成。T07/T13的实际task.result、完整成果及同session真实后续输入仍为必要验收。
 
 原Reviewer准确7c6d39732d8779fdc8a49aa887aa0a9f04a2388b接受079bd的T12 P01—P03完整补充及R01—R10计划，准确da2e7268c66eb3c3f0d9c7de9c4935b4fd5519d1接受ebf的F16/F17参数局部静态返修，准确48385383接受c2独立Go源码检查顺序。主控尚未冻结T12或2f正文接口，相关程序保持未实施。按msg_8daabc14f03b仅静态修改原compile入口及现有T03消费者：移除候选前置，三函数前新增真实资源准入，拒绝SKIP，结束重核同一干净HEAD后才写原SOURCE；T03在任何服务启动前核真实VERSION=SOURCE=准确干净源码。仅PowerShell语法与差异检查，编译/函数/服务均未执行。
+
+## 10. 独立发现与明确选择的静态实施
+
+本节实施依据为独立c3fca056对准确740的局部接受，以及main `ff2a08615fedfeda0a11e46c0157796cdd84c979` SPEC §21.1.1和主控`msg_7e45c71a05be`的原写域静态程序授权。当前阶段没有重操作窗口，全部生成、编译、运行测试、服务、Agent和模型正文仍为NOT_RUN；原S由主控维护，旧build-01/build-02均已消费，原件和失败结果保留，不重复Stage。
+
+- `serve`读取非秘密的本机home、AppData和Agent配置目录定位，传给本产品后台作只读发现；实际子进程继续使用私有HOME/TEMP。显式`--agent-profile`固定既有原目录，产品启动不再要求Pi SDK入口或Codex OAuth文件。配置定位不赋予账号写入、原生工具或模型调用权限。
+- Go App增加`Capabilities`及`ResolveSelection`端口。发现沿当前observe、ProjectSettings和实际Grant；返回前重新核设置revision与Grant动作。模型动作先observe解析选择，再按真实CLI ID核现有`ExternalModelCLI`单CLI批准，选择进入严格invocation与原R。
+- Native capabilities使用实际host的StructuredAgentRegistry和真实adapter。产品catalog及Pi factory恢复原生Pi/Codex/Claude/ACP调用定义；产品host显式关闭模型catalog预热。安装观察使用原生命令解析和实际`--version`，序列执行，不建立Agent会话或模型请求。configured只输出已证模型、提供方和非秘密账号来源类型；可启动、完整读取、恢复和工具策略缺证时保持unknown，声明能力有单独source。
+- 只读profile入口复用原生存储分类、read-only数据库和同snapshot中的settings/revision。JSON-only由现有`@streamparser/json`只保留settings；并存时以原生acceptance marker核实际JSON字节和同数据库revision，不读其他数据库业务域，不迁移或写入原源。原生`projectAgentLaunchSettings`提供启用/命令投影。Codex/Claude/Pi的必要JSON/TOML配置由成熟解析器读取，原生托管账号选择及显式目录分别核；缺失配置保持未知，显式损坏立即失败。
+- `swa.resolveSelection`只解析明确Agent/model或实际Dispatch原启动receipt/session，不接受新的后续选择参数。原生Worker identity保留已有Dispatch关联；产品安装的launch准入从原parent/child receipt取选择，实际原生command resolver采用该明确程序，并在返回launch前重新核配置、原session/model与实际解析程序。此处没有新执行账本或SDK替代调用。
+- JSON Schema、OpenAPI组件、CLI帮助、随包USAGE及现有真实Go检查消费者同步。registry的artifact_sha256取本次实际安装`runtime/host.cjs`，source_revision取同安装VERSION；当前本机原Orca ASAR的6a9只保留为REA对照来源。生成的Web类型继续等待独立窗口，未手改生成文件。
+
+实际静态检查使用BelowNormal：`gofmt -d`覆盖本次七份Go源码与真实检查文件，无差异；已安装TypeScript解析本次18份TS/JS文件，JSON Schema及OpenAPI YAML解析通过；PowerShell只执行Parser.ParseFile，未运行脚本正文；`git diff --check`通过。现有`check-architecture.mjs`仅走原go-list及导入边界检查，Go单并发/256MiB、Node512MiB和本项私有TEMP，实际EXIT0，45个package通过，原件在`.verification/swa-cli-headless-20261020/discovery-static-01/`。上述检查不代表类型检查、编译或实际原生调用通过。
+
+真实剩余范围：ACP账号/模型来源尚未由此只读模块证明，通用原生账号读取、工具与私有运行隔离仍须按具体Agent和用户批准补齐；现有SDK事件/成果和Job驱动须按实际选定原生Agent继续调整并重新验收。N04/N05普通后续正文与TUI程序、T12恢复均未由本次静态契约授权实施。最终仍需新同源候选的依赖闭包、完整真实Go/Native检查及同安装双Worker并发、指定停止、后续输入和完整成果，不能以发现与拒绝代替调用交付。
+
+主控`msg_76daae3c5a72`要求核首装人类批准入口：当前包未带Web资产、serve未提供SPA，新私有根也没有预置Grant；USAGE所列REST路径不能代替可完成的人类操作。Worker继续只读核现有会话/批准界面和打包路由，先提交准确既有资产、路径、完整操作与测试计划；未审前不创建新Web模块、伪造human会话或代用户批准。

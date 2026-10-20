@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { realpath } from 'node:fs/promises'
 import { join } from 'node:path'
-import { stripVTControlCharacters } from 'node:util'
+import { isDeepStrictEqual, stripVTControlCharacters } from 'node:util'
 import { z } from 'zod'
 import { defineMethod, type RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
@@ -12,7 +12,8 @@ import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
-import { invocationSchema, helperReply, nativeObject, contextSchema, type Invocation, type Scope } from './contracts'
+import { invocationSchema, helperReply, nativeObject, contextSchema, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
+import { discoverAgents, selectAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource } from './task-result'
 
@@ -118,9 +119,10 @@ export const SWA_METHODS = [
   defineMethod({ name: 'swa.status', permission: 'workspace', params: null, handler: (_params, { runtime }) => ({
     native: runtime.getStatus(), authority_domain: authority(runtime),
     databases: runtime.getOrchestrationDb().db.pragma('database_list'),
-    configured: { provider: 'openai-codex', model: 'gpt-6.1-sol', tools: 'off', rpcCommands: ['get_state', 'get_messages', 'get_session_stats', 'get_last_assistant_text', 'prompt', 'abort'] },
-    sdk_validation: 'requires_actual_worker_session'
+    agent_discovery: 'swa.capabilities', execution_validation: 'requires_actual_selected_native_agent_session'
   }) }),
+  defineMethod({ name: 'swa.capabilities', permission: 'workspace', params: z.object({ project_id: z.string().min(1), requirements: capabilityRequirementsSchema }), handler: ({ requirements }, { runtime }) => discoverAgents(runtime, requirements) }),
+  defineMethod({ name: 'swa.resolveSelection', permission: 'workspace', params: z.object({ project_id: z.string().min(1), command: commandSchema }), handler: ({ project_id, command }, { runtime }) => resolveSelection(runtime, project_id, command) }),
   defineMethod({ name: 'swa.scope', permission: 'workspace', params: lookup, handler: (params, { runtime }) => controllerScope(runtime, params.project_id, params.controller).scope }),
   defineMethod({ name: 'swa.controllerShow', permission: 'workspace', params: lookup, handler: async (params, { runtime }) => {
     const owned = controllerScope(runtime, params.project_id, params.controller)
@@ -182,9 +184,13 @@ export const SWA_METHODS = [
     const { scope, owner } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
     validateTaskAction(context.runtime, invocation, scope)
+    if (c.action === 'worker.start' || c.action === 'worker.send') {
+      const selected = await resolveSelection(context.runtime, invocation.project.id, c)
+      if (!invocation.selection || !isDeepStrictEqual(selected, invocation.selection)) return fail('request_mismatch', 'The exact selected Agent configuration changed before native execution')
+    }
     if (c.action === 'worker.start') await admitWorkerResources()
-    const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${c.request_id}/native`, stage: 'helper-input' })
-    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
+    const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${c.request_id}/native`, stage: 'helper-input' })
+    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
     const c = invocation.command
@@ -215,6 +221,30 @@ export const SWA_METHODS = [
     })
   } })
 ]
+
+async function resolveSelection(runtime: OrcaRuntimeService, project: string, command: Invocation['command']): Promise<AgentSelection> {
+  if (command.action === 'worker.start') {
+    if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
+    return selectAgent(runtime, command.agent, command.model)
+  }
+  if (command.action !== 'worker.send' || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
+  const { scope } = controllerScope(runtime, project, command.controller)
+  validateTaskAction(runtime, { command }, scope)
+  const db = runtime.getOrchestrationDb()
+  const rows = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
+    WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='completed'
+    AND json_valid(receipt)=1 AND json_extract(receipt, '$.project_id')=?
+    AND json_extract(receipt, '$.controller')=? AND json_extract(receipt, '$.action')='worker.start'
+    AND json_extract(receipt, '$.native.dispatchId')=?`).all(authority(runtime), project, command.controller, command.dispatch_id))
+  if (rows.length !== 1) return fail('operation_unknown', 'The exact original Worker start selection is unavailable')
+  const original = agentSelectionSchema.parse(nativeObject(JSON.parse(rows[0]!.receipt)).selection)
+  const dispatch = db.getDispatchContextById(command.dispatch_id)
+  const record = dispatch?.assignee_orca_session_id && runtime.openedAgentSessionRecordStore()?.getRecord(dispatch.assignee_orca_session_id)
+  if (!record || record.provider !== original.agent_id || record.options?.model !== original.model) return fail('worker_identity_changed', 'The actual Worker session does not match its original Agent selection')
+  const current = await selectAgent(runtime, original.agent_id, original.model)
+  if (!isDeepStrictEqual(original, current)) return fail('request_mismatch', 'The original Worker Agent source changed; preserve the original selection')
+  return original
+}
 
 function requireReleased(runtime: OrcaRuntimeService, scope: Scope) {
   if (!scope.run_id) return
@@ -270,7 +300,7 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
   }
 }
 
-function validateTaskAction(runtime: OrcaRuntimeService, invocation: Invocation, scope: Scope) {
+function validateTaskAction(runtime: OrcaRuntimeService, invocation: Pick<Invocation, 'command' | 'input'>, scope: Scope) {
   const c = invocation.command, db = runtime.getOrchestrationDb()
   if (!scope.run_id || c.task_id && c.task_id !== scope.root_task_id) fail('scope_denied', 'The command must name its exact root task')
   if (c.dispatch_id) {

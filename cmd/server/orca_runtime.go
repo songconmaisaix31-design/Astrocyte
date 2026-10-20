@@ -34,11 +34,16 @@ func composeOrcaExecution(db *sqlite.DB, projects workspaceapp.LocalProjects) (w
 	}
 	runtime, err := orcaadapter.New(orcaadapter.Config{
 		InstallRoot: root, DataRoot: os.Getenv("SWA_DATA_DIR"),
-		NodeExecutable: filepath.Join(root, "node", "node.exe"),
-		ClientEntry:    filepath.Join(root, "runtime", "client.cjs"),
-		PiEntry:        filepath.Join(root, "runtime", "pi-entry.mjs"),
-		CodexAuthFile:  os.Getenv("SWA_CODEX_AUTH_FILE"),
-		ProtectedRoots: filepath.SplitList(os.Getenv("SWA_PROTECTED_ROOTS")),
+		NodeExecutable:        filepath.Join(root, "node", "node.exe"),
+		ClientEntry:           filepath.Join(root, "runtime", "client.cjs"),
+		AgentProfile:          os.Getenv("SWA_AGENT_PROFILE"),
+		DiscoveryHome:         os.Getenv("SWA_DISCOVERY_HOME"),
+		DiscoveryAppData:      os.Getenv("SWA_DISCOVERY_APPDATA"),
+		DiscoveryLocalAppData: os.Getenv("SWA_DISCOVERY_LOCALAPPDATA"),
+		DiscoveryCodexHome:    os.Getenv("SWA_DISCOVERY_CODEX_HOME"),
+		DiscoveryClaudeHome:   os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"),
+		DiscoveryPiHome:       os.Getenv("SWA_DISCOVERY_PI_HOME"),
+		ProtectedRoots:        filepath.SplitList(os.Getenv("SWA_PROTECTED_ROOTS")),
 	})
 	if err != nil {
 		return nil, err

@@ -29,12 +29,12 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	data := flags.String("data-dir", "", "明确的私有数据目录")
 	port := flags.Int("port", 0, "明确的回环 HTTP 端口")
 	asJSON := flags.Bool("json", false, "输出实际 readiness")
-	auth := flags.String("codex-auth-file", os.Getenv("SWA_CODEX_AUTH_FILE"), "已配置的只读 Codex OAuth 文件")
+	agentProfile := flags.String("agent-profile", "", "既有原 Orca profile 的只读绝对路径")
 	protected := flags.String("protected-roots", os.Getenv("SWA_PROTECTED_ROOTS"), "本机 Orca 及账户受保护目录列表")
 	parseError := flags.Parse(args)
 	output.pretty = !*asJSON
-	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || !filepath.IsAbs(*auth) || *port < 1 || *port > 65535 || *protected == "" {
-		return output.failure("validation_failed", "需要明确的数据目录、端口、只读认证来源及受保护目录", "correct_serve_configuration", 2)
+	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || *agentProfile != "" && !filepath.IsAbs(*agentProfile) || *port < 1 || *port > 65535 || *protected == "" {
+		return output.failure("validation_failed", "需要明确的数据目录、端口、受保护目录和绝对路径的可选只读来源", "correct_serve_configuration", 2)
 	}
 	ownerEOF := errors.New("所属 stdin 已结束")
 	ownerError := errors.New("所属 stdin 读取失败")
@@ -85,7 +85,23 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 			return output.failure("storage_failed", err.Error(), "inspect_private_data_root", 7)
 		}
 	}
-	native, err := orcaadapter.New(orcaadapter.Config{InstallRoot: install, DataRoot: canonicalData, NodeExecutable: filepath.Join(install, "node", "node.exe"), ClientEntry: filepath.Join(install, "runtime", "client.cjs"), PiEntry: filepath.Join(install, "runtime", "pi-entry.mjs"), CodexAuthFile: *auth, ProtectedRoots: roots})
+	discoveryHome, err := os.UserHomeDir()
+	if err != nil {
+		return output.failure("provider_unavailable", err.Error(), "inspect_local_agent_home", 4)
+	}
+	native, err := orcaadapter.New(orcaadapter.Config{
+		InstallRoot: install, DataRoot: canonicalData,
+		NodeExecutable:        filepath.Join(install, "node", "node.exe"),
+		ClientEntry:           filepath.Join(install, "runtime", "client.cjs"),
+		AgentProfile:          *agentProfile,
+		DiscoveryHome:         discoveryHome,
+		DiscoveryAppData:      os.Getenv("APPDATA"),
+		DiscoveryLocalAppData: os.Getenv("LOCALAPPDATA"),
+		DiscoveryCodexHome:    os.Getenv("CODEX_HOME"),
+		DiscoveryClaudeHome:   os.Getenv("CLAUDE_CONFIG_DIR"),
+		DiscoveryPiHome:       os.Getenv("PI_CODING_AGENT_DIR"),
+		ProtectedRoots:        roots,
+	})
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_installed_runtime", 4)
 	}

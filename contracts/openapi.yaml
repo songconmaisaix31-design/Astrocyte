@@ -9340,6 +9340,10 @@ components:
   responses:
     S2CommandError: {description: 'Invalid command, current permission denial, version conflict or unavailable dependency. No execution retry.', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
   schemas:
+    SwaAgentCapabilitiesV1:
+      $ref: './swa-cli.schema.json#/$defs/capabilities'
+    SwaAgentSelectionV1:
+      $ref: './swa-cli.schema.json#/$defs/agentSelection'
     OpenVikingStatusV1:
       type: object
       additionalProperties: false

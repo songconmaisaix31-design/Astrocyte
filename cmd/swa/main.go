@@ -23,7 +23,7 @@ import (
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
-const usage = `swa serve --data-dir D --port N --codex-auth-file F --protected-roots R --json
+const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] --json
 swa status|capabilities --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close --controller C [--request-id UUID] --json

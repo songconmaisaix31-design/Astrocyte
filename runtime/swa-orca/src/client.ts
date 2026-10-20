@@ -2,10 +2,12 @@ import { stdin, stdout } from 'node:process'
 import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { RuntimeClientError, RuntimeRpcFailureError } from '../../../third_party/orca-v1.4.230/src/cli/runtime/types'
-import { commandSchema, invocationSchema, nativeObject, nativeError, type Invocation } from './contracts'
+import { commandSchema, invocationSchema, capabilityRequirementsSchema, agentSelectionSchema, nativeObject, nativeError, type Invocation } from './contracts'
 
 const requestSchema = z.discriminatedUnion('operation', [
   z.object({ operation: z.literal('scope'), project_id: z.string().min(1), command: commandSchema }),
+  z.object({ operation: z.literal('capabilities'), project_id: z.string().min(1), requirements: capabilityRequirementsSchema }),
+  z.object({ operation: z.literal('selection'), project_id: z.string().min(1), command: commandSchema }),
   z.object({ operation: z.literal('execute'), invocation: invocationSchema })
 ])
 
@@ -31,6 +33,17 @@ async function main() {
     stdout.write(JSON.stringify({ scope: response.result }) + '\n')
     return
   }
+  if (request.operation === 'selection') {
+    const response = await client.call('swa.resolveSelection', { project_id: request.project_id, command: request.command })
+    stdout.write(JSON.stringify({ selection: agentSelectionSchema.parse(response.result) }) + '\n')
+    return
+  }
+  if (request.operation === 'capabilities') {
+    const status = await client.call('swa.status')
+    const response = await client.call('swa.capabilities', { project_id: request.project_id, requirements: request.requirements })
+    stdout.write(JSON.stringify({ envelope: { ok: true, runtime_id: response._meta.runtimeId, authority_domain: z.string().min(1).parse(nativeObject(status.result).authority_domain), result: response.result } }) + '\n')
+    return
+  }
   const invocation = request.invocation, command = invocation.command
   const status = await client.call('swa.status')
   const authority = z.string().min(1).parse(nativeObject(status.result).authority_domain)
@@ -44,7 +57,7 @@ async function main() {
     let result: unknown
     switch (command.action) {
       case 'status':
-      case 'capabilities': result = status.result; break
+        result = status.result; break
       case 'controller.open': result = (await client.call('swa.controllerOpen', { invocation }, mutationOptions)).result; break
       case 'controller.show': result = (await client.call('swa.controllerShow', { project_id: invocation.project.id, controller: command.controller })).result; break
       case 'controller.close': result = (await client.call('swa.controllerClose', { invocation }, mutationOptions)).result; break

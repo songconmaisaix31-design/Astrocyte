@@ -18,13 +18,18 @@ import (
 )
 
 type Config struct {
-	InstallRoot    string
-	DataRoot       string
-	NodeExecutable string
-	ClientEntry    string
-	PiEntry        string
-	CodexAuthFile  string
-	ProtectedRoots []string
+	InstallRoot           string
+	DataRoot              string
+	NodeExecutable        string
+	ClientEntry           string
+	AgentProfile          string
+	DiscoveryHome         string
+	DiscoveryAppData      string
+	DiscoveryLocalAppData string
+	DiscoveryCodexHome    string
+	DiscoveryClaudeHome   string
+	DiscoveryPiHome       string
+	ProtectedRoots        []string
 }
 
 type Runtime struct{ config Config }
@@ -41,10 +46,10 @@ func contains(root, path string) bool {
 
 // 只接受已经安装的明确路径，缺失时不会启动本机 Orca 或选择其他入口。
 func New(config Config) (*Runtime, error) {
-	if len(config.ProtectedRoots) == 0 || !filepath.IsAbs(config.CodexAuthFile) {
-		return nil, errors.New("explicit protected roots and read-only OAuth source are required")
+	if len(config.ProtectedRoots) == 0 || !filepath.IsAbs(config.DiscoveryHome) {
+		return nil, errors.New("explicit protected roots and local Agent discovery home are required")
 	}
-	for _, item := range []*string{&config.InstallRoot, &config.DataRoot, &config.NodeExecutable, &config.ClientEntry, &config.PiEntry} {
+	for _, item := range []*string{&config.InstallRoot, &config.DataRoot, &config.NodeExecutable, &config.ClientEntry} {
 		if !filepath.IsAbs(*item) {
 			return nil, errors.New("Orca runtime paths must be absolute")
 		}
@@ -54,8 +59,22 @@ func New(config Config) (*Runtime, error) {
 		}
 		*item = actual
 	}
-	if !contains(config.InstallRoot, config.NodeExecutable) || !contains(config.InstallRoot, config.ClientEntry) || !contains(config.InstallRoot, config.PiEntry) || contains(config.InstallRoot, config.DataRoot) || contains(config.DataRoot, config.InstallRoot) {
+	if !contains(config.InstallRoot, config.NodeExecutable) || !contains(config.InstallRoot, config.ClientEntry) || contains(config.InstallRoot, config.DataRoot) || contains(config.DataRoot, config.InstallRoot) {
 		return nil, errors.New("product code and private writable roots must be disjoint")
+	}
+	if config.AgentProfile != "" {
+		if !filepath.IsAbs(config.AgentProfile) {
+			return nil, errors.New("read-only Agent profile must be absolute")
+		}
+		actual, err := filepath.EvalSymlinks(config.AgentProfile)
+		if err != nil {
+			return nil, fmt.Errorf("resolve read-only Agent profile: %w", err)
+		}
+		info, err := os.Stat(actual)
+		if err != nil || !info.IsDir() || contains(config.DataRoot, actual) || contains(actual, config.DataRoot) {
+			return nil, errors.New("read-only Agent profile must be an existing directory disjoint from private state")
+		}
+		config.AgentProfile = actual
 	}
 	for _, protected := range config.ProtectedRoots {
 		if !filepath.IsAbs(protected) {
@@ -72,21 +91,21 @@ func New(config Config) (*Runtime, error) {
 	return &Runtime{config: config}, nil
 }
 
-func (r *Runtime) Target() string { return "pi" }
-
 func (r *Runtime) ChildEnvironment() []string { return r.environment() }
 
 type bridgeRequest struct {
-	Operation  string              `json:"operation"`
-	ProjectID  string              `json:"project_id,omitempty"`
-	Command    *app.OrcaCommand    `json:"command,omitempty"`
-	Invocation *app.OrcaInvocation `json:"invocation,omitempty"`
+	Operation    string                          `json:"operation"`
+	ProjectID    string                          `json:"project_id,omitempty"`
+	Command      *app.OrcaCommand                `json:"command,omitempty"`
+	Invocation   *app.OrcaInvocation             `json:"invocation,omitempty"`
+	Requirements *app.OrcaCapabilityRequirements `json:"requirements,omitempty"`
 }
 
 type bridgeResponse struct {
-	Scope    *app.OrcaScope       `json:"scope,omitempty"`
-	Envelope *app.OrcaEnvelope    `json:"envelope,omitempty"`
-	Error    *app.OrcaNativeError `json:"error,omitempty"`
+	Scope     *app.OrcaScope          `json:"scope,omitempty"`
+	Envelope  *app.OrcaEnvelope       `json:"envelope,omitempty"`
+	Error     *app.OrcaNativeError    `json:"error,omitempty"`
+	Selection *app.OrcaAgentSelection `json:"selection,omitempty"`
 }
 
 func (r *Runtime) environment() []string {
@@ -108,10 +127,14 @@ func (r *Runtime) environment() []string {
 		"SWA_INSTALL_ROOT="+r.config.InstallRoot,
 		"SWA_PROTECTED_ROOTS="+strings.Join(r.config.ProtectedRoots, string(filepath.ListSeparator)),
 		"SWA_EXECUTABLE="+filepath.Join(r.config.InstallRoot, "swa.exe"),
-		"SWA_CODEX_AUTH_FILE="+r.config.CodexAuthFile,
+		"SWA_AGENT_PROFILE="+r.config.AgentProfile,
+		"SWA_DISCOVERY_HOME="+r.config.DiscoveryHome,
+		"SWA_DISCOVERY_APPDATA="+r.config.DiscoveryAppData,
+		"SWA_DISCOVERY_LOCALAPPDATA="+r.config.DiscoveryLocalAppData,
+		"SWA_DISCOVERY_CODEX_HOME="+r.config.DiscoveryCodexHome,
+		"SWA_DISCOVERY_CLAUDE_HOME="+r.config.DiscoveryClaudeHome,
+		"SWA_DISCOVERY_PI_HOME="+r.config.DiscoveryPiHome,
 		"SWA_NODE_EXECUTABLE="+r.config.NodeExecutable,
-		"SWA_PI_ENTRY="+r.config.PiEntry,
-		"SWA_PI_PACKAGE_DIR="+filepath.Join(r.config.InstallRoot, "runtime", "node_modules", "@earendil-works", "pi-coding-agent"),
 		"HOME="+filepath.Join(r.config.DataRoot, "home"),
 		"USERPROFILE="+filepath.Join(r.config.DataRoot, "home"),
 		"APPDATA="+filepath.Join(r.config.DataRoot, "home"),
@@ -166,6 +189,28 @@ func (r *Runtime) ResolveScope(ctx context.Context, projectID string, command ap
 		return app.OrcaScope{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "native controller scope is unavailable", RequiredAction: "inspect_controller_and_original_request"}
 	}
 	return *response.Scope, nil
+}
+
+func (r *Runtime) Capabilities(ctx context.Context, projectID string, requirements app.OrcaCapabilityRequirements) (app.OrcaEnvelope, error) {
+	response, err := r.call(ctx, bridgeRequest{Operation: "capabilities", ProjectID: projectID, Requirements: &requirements}, false)
+	if err != nil {
+		return app.OrcaEnvelope{}, err
+	}
+	if response.Envelope == nil {
+		return app.OrcaEnvelope{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "native capabilities result is unavailable", RequiredAction: "inspect_product_discovery"}
+	}
+	return *response.Envelope, nil
+}
+
+func (r *Runtime) ResolveSelection(ctx context.Context, projectID string, command app.OrcaCommand) (app.OrcaAgentSelection, error) {
+	response, err := r.call(ctx, bridgeRequest{Operation: "selection", ProjectID: projectID, Command: &command}, false)
+	if err != nil {
+		return app.OrcaAgentSelection{}, err
+	}
+	if response.Selection == nil {
+		return app.OrcaAgentSelection{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "native Agent selection is unavailable", RequiredAction: "inspect_selected_agent"}
+	}
+	return *response.Selection, nil
 }
 
 func (r *Runtime) Execute(ctx context.Context, invocation app.OrcaInvocation) (app.OrcaEnvelope, error) {

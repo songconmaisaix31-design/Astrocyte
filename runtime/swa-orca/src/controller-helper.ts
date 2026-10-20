@@ -33,10 +33,10 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     case 'task.result': return collectTaskResult(invocation)
     case 'task.complete': return call('orchestration.taskUpdate', { id: c.task_id, status: 'completed', result: invocation.input?.text, run, callerTerminalHandle: controller }, `${requestId}/native`)
     case 'worker.start': {
-      if (!invocation.input || c.agent !== 'pi' || c.model !== 'openai-codex/gpt-6.1-sol') throw new Error('fixed_worker_input_required')
+      if (!invocation.input || !invocation.selection || invocation.selection.agent_id !== c.agent || invocation.selection.model !== c.model) throw new Error('selected_native_worker_input_required')
       return call('orchestration.workerStart', {
         from: controller, run, parent: invocation.scope.root_task_id, worktree: 'current', name: c.name,
-        taskTitle: c.name, agent: 'pi', model: c.model, effort: 'xhigh', timeoutMs: 90_000,
+        taskTitle: c.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000,
         spec: `${invocation.input.text}\n\n固定公开上下文：\n${JSON.stringify(invocation.scope.context)}`
       }, `${requestId}/native`)
     }

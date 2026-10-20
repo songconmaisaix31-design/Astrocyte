@@ -85,6 +85,7 @@ export function hasPersistedStructuredAgentSessionStore(
 export type StructuredAgentSessionRuntimeDeps = StructuredAgentSessionTransportOverrides & {
   /** Host state root. The record store and the journal database both hang off it. */
   stateDirectory: string
+  prewarmModelCatalog?: boolean
   /** Execution host this runtime *is*. A record pinned elsewhere is not ours to
    *  probe and not ours to spawn for. */
   hostId: string
@@ -345,7 +346,7 @@ async function installOnJournal(
   setStructuredAgentSessionHost(host)
   // The host starts with its runtime, local or remote, so this is the runtime-start listing.
   const modelCatalog = host.deps.modelCatalog
-  void modelCatalog?.prewarm()
+  if (deps.prewarmModelCatalog !== false) void modelCatalog?.prewarm()
   installAgentSessionAttachments({
     stateDirectory: deps.stateDirectory,
     store,
