@@ -14,7 +14,7 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 独立发现与稳定AgentSelection按准确740/c3fca056接受，发现和选择不依赖原Orca正在运行；准确d441的N04/N05输入与模式技术计划已获73946fd2接受，准确079的T12计划已获7c6d3973接受。主控完整读取相应准确差异和报告并回复原hooks，技术契约定稿于SPEC §21.1.1—§21.1.3，同一Worker继续实现。工具范围待用户回答，技术计划接受不授予实际启动或模型窗口。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
 
-用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。实际21metafile确认完整RPC index已移除；准确b75的build-06已通过已有Python3.13.13/VS2022及三官方Node输入/原校验，首node-pty/conpty在新增Job头文件17行出现C++编译错误并EXIT1，candidate05不可安装。同Worker沿真实编译原因修复，N08/输入/恢复/完整Job/成果按SPEC21.1.1—21.1.5直接继续实施；tracked/Git冻结已解除，没有新重操作授权。当前原S60656来自restore-16，创建UTC19:21:16.750635/epoch1792524076.7506354，原库和配置保持；c8未改，下次prepare取restore-16/restored.json并新鲜准入。六次失败及全部部分候选保留，真实原生/成果/安装双Worker未验保持。
+用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。实际21metafile确认完整RPC index已移除；完整包仍六次失败，无可安装候选。准确3590bf11已提交原生Pi账号/CLI/Go批准/结构化输入与成果阶段，主控独立四包Go编译及三个传输前函数实际通过；独立CR已核N14私有models存在状态、N15等待后来源复核问题，同Worker返修，完整CR继续。T12严格caller/recover/后台Job及通用终端输入继续由同Worker负责，不等待旧冻结；源码技术契约按SPEC21.1.1—21.1.5。当前原S36744来自restore-17，创建UTC20:17:53.696819/epoch1792527473.6968188，原库和配置保持；c8未改，下次prepare取restore-17/restored.json并新鲜准入。重窗口已收回，真实原生/成果/安装双Worker仍未验。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户要求不妨碍本机Orca CLI并集成产品，产品采用独立后台，准确396e方案及测试计划已接受，SPEC §21.1明确接口与隔离边界。准确30b来源事实及此前提案保留，其Mission/Claim旧待决项按适用任务处理。程序已开始静态实现，CLI动态验收未通过。
 
