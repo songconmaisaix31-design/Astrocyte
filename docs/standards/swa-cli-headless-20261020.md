@@ -918,13 +918,19 @@ N07静态消费者允许明确模型参与选择，不以缺少默认模型等�
 
 原Run正式`msg_bf9fe8b9d2ee`仅一次build03已消费：准确e54d干净、runner77d及新candidate02前置通过，资源UTC17:54:01.542113/04.043874、CPU5.3/8.4%、可用10962219008/10999603200字节、单调2.501772秒。实际prod deploy323完成，原镜像慢下载及命令内建重试保留；首个host bundle因真实缺少@xterm/addon-unicode11和diff而EXIT1。没有host.cjs/metafile、Node目录/下载、native/Go编译或VERSION，部分candidate02/runtime保留，不可安装。实际exec76466同步结束，原运行快照含根30428、59088、20260、25984及conhost24240；UTC18:00:05.6984119/08.0245030两次新鲜定向CIM均空，原件在build-03，以`msg_c11e95aaf0c3`立即交回主控同次恢复原S，未重试。
 
-主控`msg_04f529cb428c`收回全部重操作并解除tracked/Git冻结。两项必要依赖按实际pin package.json补声明：@xterm/addon-unicode11=0.10.0-beta.301用于真实daemon/headless-emulator，diff=8.0.4用于真实ACP tool timeline。runtime/package与dependencies.lock.json保持同一声明；pnpm-lock及实际安装尚待明确dependencies窗口由原pnpm生成，没有手写lock或external隐藏缺失。全RPC三处实际导入和旧SDK入口闭包继续返修，尚未取得metafile，其他依赖、native/dynamic/assets和安装均未证明。
+主控`msg_04f529cb428c`收回全部重操作并解除tracked/Git冻结。两项必要依赖按实际pin package.json补声明：@xterm/addon-unicode11=0.10.0-beta.301用于真实daemon/headless-emulator，diff=8.0.4用于真实ACP tool timeline。runtime/package与dependencies.lock.json保持同一声明；原pnpm在下述dependency03窗口实际生成lock并安装，没有手写lock或external隐藏缺失。全RPC三处实际导入和旧SDK入口闭包继续返修，尚未取得metafile，其他依赖、native/dynamic/assets和安装均未证明。
 
 按主控`msg_89ea6e20c990`，后继build使用同任务已有私有pnpm-store，核canonical路径且拒绝重定向；临时目录与新候选仍独占创建，完整prod deploy保持。真实已装pnpm11.27源码将verify-store-integrity声明为Boolean、默认true，构建显式传该选项；不复制node_modules、不修改全局store、不绕过pnpm完整性。该静态变化尚未运行。声明检查初次取错原package依赖分组而EXIT1，原件保留；改读实际devDependencies后的两项pin校验EXIT0，MJS语法/JSON/YAML及两文档来源/5本地链接通过，正文/安装/编译均NOT_RUN。主控通知restore12同源S56896恢复通过，原失败和当前窗口归属由主控维护。
 
+原Run正式`msg_aede2b74b4f7`的一次dependency03已消费。准确8ebefec700781e9883a3bb3f905233e07f03e671干净前置、runner77d及新证据目录核实后，原命令于UTC18:14:40启动，exec27025、根60728/UTC18:14:40.1256339Z。lock-only原pnpm11.27于36.4秒完成，随后的frozen install于4.8秒完成；四份子阶段/资源门禁exit均0，真实lock仅增加两项必要importer及Unicode11 resolution/snapshot。两次门禁CPU分别62.0/46.9%和33.4/21.0%，可用内存均超过4GiB，单调间隔2.5065475/2.501296秒，均通过。原命令内记录的peer/deprecated提示保留，没有另跑依赖检查或重复Stage。
+
+原执行结果在工具输出截断后未取回外层final，恢复poll仅返回Unknown process id 27025；不能写成已取得外层EXIT0。四份真实exit/日志与UTC18:18:16.6197410、18:18:19.0326939的两次新鲜CIM空结果保存在dependency-03，支持实际lock/install结束；以`msg_c9b567e69c05`立即交回。主控`msg_15e46e88379b`撤销已消费授权并解除tracked/Git冻结；`msg_68e6a449742c`确认restore13实际EXIT0，当前S56896/UTC18:17:05.651634为新创建身份，原Orca38652/runtime49da、原库/环境/health/Web由主控核实。下次prepare使用restore13/restored.json，不按PID数值复用旧身份。
+
+下一build静态入口仅改为全新dist/swa-cli-install-20261020-03，拟EvidenceName build-04；实际执行过的77d runner先保存到build-03/next-window-executed.ps1且SHA一致。旧candidate01/02和失败原件保留，新candidate03及build-04仍不存在。构建须先独立审核准确后继及另获正式一次窗口，不重复已通过dependencies/generate，不执行模型。
+
 ## 13. 原生账号与关闭工具的实施计划
 
-本节为N08新增稳定契约及直接消费者的完整技术计划，等待原Reviewer独立技术接受和主控SPEC定稿；当前没有实施native_launch字段或执行新账号/工具方法。依据实际本机Pi CLI1.0.1的main、auth-storage、resource-loader、settings-manager、agent-session-services、sdk、model-runtime、virtual-models、rpc-mode及pi-ai/auth/resolve/provider源码，使用真实CLI和原生格式，沿原Native状态与R运行。
+本节为N08新增稳定契约及直接消费者的完整技术计划，等待原Reviewer独立技术接受和主控SPEC定稿；当前没有实施native_launch字段或执行新账号/工具方法。依据实际本机Pi CLI1.0.1的main、auth-storage、resource-loader、settings-manager、agent-session-services、sdk、model-runtime、virtual-models、rpc-mode、model-config、provider-composer、resolve-config-value及pi-ai/auth/resolve/provider源码，使用真实CLI和原生格式，沿原Native状态与R运行。
 
 ### 13.1 账号与当前来源
 
@@ -946,20 +952,33 @@ type NativeLaunchPolicy = {
     auth_source: { path: string; version: string }
     models_source: { path: string; version: string } | null
     private_home: string
+    model_target: { model_id: string; api: string; base_url: string }
   }
   tools: { mode: 'disabled'; native_contract: 'pi-cli-1.0.1' }
 }
 ```
 
-路径均为实际canonical来源，version沿现有配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后续出现也视作变化。source_home、provider、原source/revision及configuration_version共同固定所选原生来源，不包含凭据。实际native_contract规定下述完整argv、环境、原生设置和握手，版本字符串本身不证明能力。其他Agent的真实注册/发现继续，尚无已审原生政策的控制动作返回明确unknown/不支持，不能扩展Pi结果为全部Agent通过。
+路径均为实际canonical来源，version沿现有配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后续出现也视作变化。source_home、provider、原source/revision及configuration_version共同固定所选原生来源，不包含凭据。model_target固定实际合成的明确modelId、原生API和最终baseUrl；URL使用成熟URL解析，拒绝账号信息、秘密查询参数、动态模板及未经当前批准的目标。它属于同一selection及其版本，不能由公开HTTP传入或在启动时重新选择。实际native_contract规定下述完整argv、环境、原生设置和握手，版本字符串本身不证明能力。其他Agent的真实注册/发现继续，尚无已审原生政策的控制动作返回明确unknown/不支持，不能扩展Pi结果为全部Agent通过。
 
 private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open只创建空私有目录，发现不复制账号；不同项目不共用副本。Windows成熟安全API在秘密写入前设置并读取验证当前用户及SYSTEM的保护DACL，拒绝重定向、未知owner、其他写入主体和与原Orca/账号/安装根重叠；不提权、不改变原目录ACL。
 
-现有StructuredAgentLaunchAdmission增加内部accountHome(sessionId,agent,currentHome):Promise<AgentSessionAccountHome>。createStructuredWorkerSession在create前已有含dispatchId的实际identity；产品从该identity与原父子R取准确项目/selection。prepareStructuredAgentSessionCreateForWorktree在resolve intent之后、attach fingerprint之前确定账号，原生agentSessionAccountHome helper产生{variable:'PI_CODING_AGENT_DIR',path:private_home}并由attach写入原record。非产品宿主沿原生产者；产品Worker缺少真实R关联即拒绝。实际launch part完成后复核command/accountHome/env/argv，仍用原CLI、provider-process和seal。
+现有StructuredAgentLaunchAdmission增加内部`accountHome(sessionId,agent,currentHome):Promise<AgentSessionAccountHome>`。createStructuredWorkerSession在create前已有含dispatchId的实际identity；产品从该identity与原父子R取准确项目/selection。prepareStructuredAgentSessionCreateForWorktree在resolve intent之后、attach fingerprint之前确定账号，原生agentSessionAccountHome helper产生{variable:'PI_CODING_AGENT_DIR',path:private_home}并由attach写入原record。非产品宿主沿原生产者；产品Worker缺少真实R关联即拒绝。实际launch part完成后复核command/accountHome/env/argv，仍用原CLI、provider-process和seal。
 
 ### 13.3 账号材料与并发
 
-在当前项目Grant/CLI/model/tool批准成功后，成熟JSON读取实际所选provider的literal API key条目和必要原生models声明，只将同一来源交私有auth/models文件；命令或未证明环境形式认证明确拒绝，原设置不整体迁入。原生ModelRuntime继续验证原格式，当前Native provider支持及账号实际有效性分别由真实原生检查/执行证明，JSON类型不能替代该证据。
+在当前项目Grant/CLI/model/tool批准成功后，使用成熟JSON读取auth，沿真实ModelConfig.load的JSONC/schema读取models；结构错误、原生error及未知有效字段立即拒绝，不把任意原models块交给子进程。仅投影明确provider及明确model所需声明，其余provider、model、设置和账号不写入私有根。逐类规则如下。
+
+| 实际消费者 | 准入及私有投影 |
+| --- | --- |
+| auth所选provider条目 | 只允许原生`type: 'api_key'`与非空key；env缺省或空对象才准入，非空credential.env明确拒绝，不把它并入子进程或header环境。OAuth及其他类型拒绝。私有auth只含该provider的原生type/key，不能交未消费的额外字段 |
+| 原生配置值 | 对key及每一层header value先用同版本原生isCommandConfigValue和getConfigValueEnvVarNames作只读分类；命令或任何环境引用均拒绝，不调用其执行/环境解析路径。只有两者均未命中时才沿原生literal语义解析，保留`$$`及`$!`的原生转义；私有原格式保存同一已验证表达式，不能把解码后的前导`!`重新当配置表达式写入。秘密不输出或进入错误文本 |
+| models provider apiKey/oauth | 所选provider含apiKey或oauth即拒绝，即使另有stored key也不忽略；这两个字段可参与真实认证组合，不迁入私有文件。只有实际原生provider的API key handler与原auth条目匹配才继续，不能依赖composer生成新登录能力 |
+| provider/model/modelOverrides headers | 三层逐项按上行检查literal，使用成熟Headers检查名称和值；认证或账号替换字段Authorization、Proxy-Authorization、X-Api-Key、Api-Key、Cookie、Set-Cookie按大小写不敏感拒绝。其他已存在的literal声明按原composer优先级保留，不能丢弃某层改变语义。私有投影只保留原已验证层次，不执行命令，不带credential.env |
+| provider与明确model | 只保留原生schema已验证的name、baseUrl、api、headers、compat、authHeader及所选model的原生声明；provider authHeader仅允许缺省或false。model定义保留id/name/api/baseUrl、reasoning/thinkingLevelMap、input/inputLimits、cost/promptCache、contextWindow/maxTokens、samplingParams、headers/compat。未选择model不投影，不以原生defaults替换无法唯一确定的目标 |
+| modelOverrides与路由 | 只保留准确modelId对应、经原生ModelOverrideSchema验证的声明及上述header检查；其他model override不进入副本。provider/model/override的compat中allowedFallbackModels、openRouterRouting、vercelGatewayRouting只要具有实际候选或路由配置即拒绝，不删掉后继续。虚拟模型api为pi-virtual、扩展provider、动态router或无法确定最终物理目标时拒绝，不换model/provider |
+| 最终原生目标 | 依照同版本composer的实际顺序合成provider/model/override，结果必须与selection.model_target的modelId/API/baseUrl逐项一致，并重新经过当前Go批准。模型级baseUrl覆盖、provider级baseUrl覆盖、API或headers变化均使原selection失效；静态声明不代表远程账号有效 |
+
+原生ModelRuntime继续验证私有原格式；所选provider支持、账号ready与真实请求有效性分别由原生检查及实际执行证明。源models不存在时私有models保持不存在，仍固定并复核实际内置provider/model/API/baseUrl；存在时必须按上述规则生成唯一投影，不在错误时退回内置配置。
 
 首次写入前在原父R/native checkpoint保存政策与私有根，文件独占创建。已有同项目原生Worker只有来源、版本、provider和政策完全相同才可复用；不同来源或未知副本且原资源尚未释放时拒绝，不能覆盖文件换账号。实际record固定私有accountHome；源目录只读，文件锁与运行写入仅涉及私有根，子进程不持refresh token。两个同项目Worker使用原生文件锁和相同不可变来源，关联只用原R/Dispatch/session，不能另建账号或执行账本。
 
@@ -975,9 +994,9 @@ private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open�
 
 ### 13.5 首次及每次效果前条件
 
-实际get_available_models/get_state必须证明exact provider/model/session及原fence，拒绝api='pi-virtual'路由模型、模糊或不唯一匹配。在serialized handOver等待和选项变化之后、adapter.dispatch之前立即重读源文件版本与私有accountHome/settings，重核原selection、current consumer/session/fence、停止/释放、完整所属Job及Go当前批准。Go沿原selection消费政策，仅已审disabled模式映射为空required tools；空ProjectActionScope.Tools本身不证明Native关闭工具。
+实际get_available_models/get_state证明准确provider/model/API/baseUrl与Pi sessionId/sessionFile，拒绝api='pi-virtual'路由模型、模糊或不唯一匹配；原fence及归属分别由原Native R/Dispatch/session记录、expectedRuntimeFence与current consumer证明，get_state不承担不存在的fence字段。在serialized handOver等待和选项变化之后、adapter.dispatch之前，首次和每次后续输入均重新核源文件身份/版本/存在状态，重新按§13.3解析所选条目和逐层投影，并读取私有auth/models/settings逐项比较当前原生表达式、结构与预期投影。私有新字段、不同key/env/headers/路由、缺失文件或权限/重定向变化立即拒绝；不得以源未改代替私有文件复核。秘密只作内存比较，不写日志或新增凭据账本。同时重核原selection及model_target、current consumer/session/fence、停止/释放、完整所属Job及Go当前批准。Go沿原selection消费政策，仅已审disabled模式映射为空required tools；空ProjectActionScope.Tools本身不证明Native关闭工具。
 
-真实API key格式没有TTL字段时保留unknown，不臆造有效期；有明确期限的真实来源必须在每次输入前保留大于该输入已批准最长执行时间的余量，未知或到期拒绝。共享OAuth不进入此政策。原输入一旦可能生效，超时、断开及来源变化继续保全原R/native operation/Job，不重选或重放，首次与后续正文均复用已审N04异步批准及T12身份条件。
+真实原生API key没有TTL字段时，其有效期记录为unknown；它可以在其他来源/政策/当前批准条件全部满足后进入真实请求，不因格式没有TTL字段自动拒绝，也不承诺该key远程有效或永不过期。auth check ready仅说明原生就绪，最终认证和实际模型权限由真实请求结果证明。有实际明确期限的来源则每次输入前重新读取并要求`expires_at - 当前实际时间 > 本次已批准最长执行时间 + 30秒`；缺少真实期限证明、缺少该输入执行上限、余量不足或已到期时拒绝。这里的未知拒绝仅适用于声称有期限而无法核实期限或时限的来源。共享OAuth不进入此政策。原输入一旦可能生效，超时、断开及来源变化继续保全原R/native operation/Job，不重选或重放，首次与后续正文均复用已审N04异步批准及T12身份条件。
 
 ### 13.6 真实验证与停止条件
 
@@ -985,7 +1004,7 @@ private_home固定为DataRoot/pi/<实际项目UUID>。已批准controller.open�
 2. 用户本人在同一候选批准固定公开项目、单CLI及空工具范围。实际Go/HTTP错误主体、Grant/revision/CLI或工具不符在模型前拒绝，检查明确权限原因及设置保全，不取得人工会话。
 3. 核实际子树、canonical accountHome、完整env/argv/原生设置及自产session JSONL，完成真实provider请求。结合同版本源码、真实get_state/回执和所有实际事件证明受限行为，版本字符串、启动状态或无工具事件均不能单独证明工具关闭。
 4. 用真实固定公开输入要求文件/命令操作，观察关闭工具后的真实回应及完整session/实际文件效果；不伪造工具、协议、事件或时钟。真实offline、retry/compaction/cache warming保持预期，虚拟模型及冲突配置不能改换模型或另起未批准输入。
-5. 在获准私有来源副本或由用户本人变更的实际条件下验证来源变化、重定向、ACL/账号失配、模型/provider/TTL条件、停止和撤权；不改原本机Orca/账号配置来造场景。未命中的真实分支记INCONCLUSIVE，未执行记NOT_RUN，原未知效果保全。
+5. 在获准私有来源副本或由用户本人变更的实际条件下验证来源变化、重定向、ACL/账号失配、模型/provider条件、停止和撤权；分别覆盖auth key命令/环境引用、非空credential.env、provider/model/override三层headers命令/环境及认证替换、models apiKey/oauth、目标API/baseUrl覆盖、modelOverrides和虚拟/候选路由。对首次与后续输入都核私有文件修改后在效果前拒绝，实际原生API key无TTL时允许其余条件满足的真实请求，有明确期限时核足额、余量不足、期限未知和已到期。场景只用用户本人持有且获准的真实原生来源，不制造认证/协议/时钟或修改原本机Orca/账号配置。未命中的真实分支记INCONCLUSIVE，未执行记NOT_RUN，原未知效果保全。
 6. 同一安装候选的一次固定公开任务至少两个真实Worker模型活动重叠，分别观察与获取完整输出；指定停止A并证明全树退出，B保全、同session/fence接受实际后续输入并完成成果、退出及释放。原Job/原R/资源及原Orca保全计划全部保留。
 
 本节不授予新账号、refresh、通用工具或实际模型窗口，不以技术计划代替实际可用性。独立接受后由主控定稿SPEC，再由同一Worker在原写域实施、编译、运行全部适用检查和返修，直至目标满足或具体真实阻塞；当前原生认证/工具及同候选安装双Worker均未通过。

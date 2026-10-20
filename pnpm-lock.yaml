@@ -97,6 +97,9 @@ importers:
       '@xterm/addon-serialize':
         specifier: 0.15.0-beta.301
         version: 0.15.0-beta.301(patch_hash=b35533fe252e7e45433150170348889f4e08a6c17f7017ac34ea694d831fec7f)(@xterm/xterm@6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156))
+      '@xterm/addon-unicode11':
+        specifier: 0.10.0-beta.301
+        version: 0.10.0-beta.301(@xterm/xterm@6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156))
       '@xterm/headless':
         specifier: 6.1.0-beta.303
         version: 6.1.0-beta.303
@@ -106,6 +109,9 @@ importers:
       agent-browser:
         specifier: 0.27.0
         version: 0.27.0
+      diff:
+        specifier: 8.0.4
+        version: 8.0.4
       electron-updater:
         specifier: 6.8.10
         version: 6.8.10(supports-color@10.2.2)
@@ -1428,6 +1434,11 @@ packages:
 
   '@xterm/addon-serialize@0.15.0-beta.301':
     resolution: {integrity: sha512-zWT0Sy5GCSTnarAXRiicu3XYHgam8DPtpkWfSLPME+A3s7U1A6Jy+ZATt8vMkatyeVOPI0GICYRuQJLZVgnVow==}
+    peerDependencies:
+      '@xterm/xterm': ^6.1.0-beta.304
+
+  '@xterm/addon-unicode11@0.10.0-beta.301':
+    resolution: {integrity: sha512-SS5BzfbvfFIikE4xZFAtHu6n0Kl5R1ZCPx41RL2WULLSE+HFo/WmYee53tMxNK/QUjpcQWepeVB7HebCPhHnig==}
     peerDependencies:
       '@xterm/xterm': ^6.1.0-beta.304
 
@@ -4563,6 +4574,10 @@ snapshots:
       node-addon-api: 7.1.0
 
   '@xterm/addon-serialize@0.15.0-beta.301(patch_hash=b35533fe252e7e45433150170348889f4e08a6c17f7017ac34ea694d831fec7f)(@xterm/xterm@6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156))':
+    dependencies:
+      '@xterm/xterm': 6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156)
+
+  '@xterm/addon-unicode11@0.10.0-beta.301(@xterm/xterm@6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156))':
     dependencies:
       '@xterm/xterm': 6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156)
 

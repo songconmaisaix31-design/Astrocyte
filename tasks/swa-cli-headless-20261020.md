@@ -129,3 +129,7 @@ main ff2a0861 SPEC §21.1.1及msg_7e45c71a05be已授准确740/c3fca056独立发�
 N08完整稳定字段、真实accountHome生产者、无refresh API key来源、原生工具/资源及offline/retry/compaction/cache warming消费者、完整argv/env白名单、每次效果前批准及真实同候选双Worker计划纳入报告§13，待准确独立技术接受及主控SPEC定稿后实施。默认Pi来源条目0只属主控限定观察，其他实际源未据此判空；共享OAuth无已证原生无refresh运行路径保持unknown，不改类型、交refresh或引入其他Agent账号。N04/N05/T12、原生Job/完整成果、依赖闭包及全部真实安装验收继续由同Worker完成，当前无新运行窗口。
 
 按主控msg_89ea，构建复用同任务已存在的私有pnpm-store及其完整性校验，每次独立新candidate/temp，拒绝store重定向；pnpm11.27实际源码支持verify-store-integrity Boolean，构建明确开启，不复制现有node_modules或修改全局缓存。必要pin声明校验修正原devDependencies来源后通过，初次检查错误原件保留；语法/JSON/YAML/文档来源及空白通过，lock生成、安装及再次构建未执行。主控通知原S56896按同源原库/环境恢复通过，全部后继重操作未授。
+
+原Run正式msg_aede的一次dependency03已消费：准确8ebe、原runner77d及新证据目录前置通过，exec27025/根60728于UTC18:14:40启动；原pnpm lock-only及frozen install和各自资源门禁四份exit均0，lock真实生成，命令未重复。外层final在工具截断后未取回，恢复poll为Unknown process id，不能宣称已取得外层EXIT0。UTC18:18:16/19两次新鲜所属CIM均空，msg_c9b立即交回；主控确认restore13当前S56896为UTC18:17:05.651634的新创建身份，全部重授权撤销且tracked冻结解除。后继入口静态准备candidate03/build04并保存原77d runner，尚未运行。
+
+独立准确67b1d78b的N11/N12退回已完整读取。报告§13逐类明确credential.env、auth key、provider/model/override headers、models apiKey/oauth、实际model/API/baseUrl、fallback/virtual路由的原生投影/拒绝及首次和每次输入前私有文件复核；固定原生literal分类与转义语义，不执行命令或解析环境。无TTL API key可在其他条件满足后实际请求，有明确期限的来源按实际期限、本次已批准上限及30秒余量判定；Pi get_state与原Native fence证明分开。新增model_target及原计划所有新稳定字段仍未实施/冻结，继续由原Reviewer独立审核及主控定稿。
