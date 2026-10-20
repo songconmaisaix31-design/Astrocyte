@@ -379,3 +379,15 @@ F16的参数错配、高严重程度退回及原Worker收到后等待解除冻�
 原eb073首次OpenSSL push失败128、schannel只读握手失败1、新连接事实后的单次普通push成功0及后继f011普通push0按实际时点记录；没有把失败改写为通过。F16/F17当前窗口时态已按Reviewer反馈同步，正文真实来源缺口、七项独立条件及新方案尚未定稿的范围正确；原T12提案在该准确版本仍待P01—P03复审，不用后来079计划接受覆盖当时记录。S3、T11及全部安装/模型/双Worker验收继续未通过，没有修改实现、SPEC或归档。
 
 `check-revision.ps1 -Previous 26ab2985330381628a560d51d942102873c04879 -Candidate f011c257e36d57276037a638ba9f206857341cf6` EXIT0，三Markdown/39本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有执行构建、网络重试、SQLite、资源采样、服务或模型；本次只接受准确管理记录，当前原S持有唯一窗口。
+
+准确f011接受hook `msg_2748471d826e`已获主控`msg_e0b68f091eca`完整读取ad50报告回复，实际唤起确认；主控后继用户注册Agent/REA/依赖要求不追改f011当时事实。
+
+## 准确0647754b的注册Agent任务与规格接续
+
+结论：**接受准确`0647754b18b9bbb9eb1b7903f1342a3fb654d6e0`相对f011的七文档范围。** 完整读取HANDOFF、STATUS、META_PLAN、QUESTIONS、SPEC、TASKS及首版任务差异。用户本机注册Agent发现/Swarm调用、REA准确交付物分析、实际依赖闭包及独立环境要求进入当前入口和事实源；QUESTIONS保存准确用户原话，具体注册/选择接口、各Agent支持范围和未答权限继续未决定，旧S3/完整后续规划及既有产品保持。
+
+079的T12计划、ebf的两参数及c2独立Go计划接受和三项主控实际读取回复，均与本会话准确记录一致；c2/2f普通push实际TLS失败保持本地已提交，F16成果/F17正文和全部动态结果没有扩大接受。固定Pi仍仅局部实施范围，尚未定稿的T12/正文接口暂停，Worker先交完整新方案及独立测试审核，最终同安装候选双真实Worker并发/指定停止/成果要求不变。
+
+REA旧Evidence与当前app.asar摘要不符的事实保留主控实际来源，本Reviewer只核既有摘要及完整partial startup trace，没有复算当前app或宣称新分析已执行。准确064时原S及本机Orca保持原运行，计划中的限定静态REA仍须由主控新prepare/stop窗口串行执行并恢复；本管理接受不代替窗口或新脚本运行结果。
+
+`check-revision.ps1 -Previous f011c257e36d57276037a638ba9f206857341cf6 -Candidate 0647754b18b9bbb9eb1b7903f1342a3fb654d6e0` EXIT0，七Markdown/117本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。META_PLAN既有`<task-id>`来自未改动正文，本次未新增HTML或锚点；没有重操作、Agent/probe、编译、模型或配置修改。
