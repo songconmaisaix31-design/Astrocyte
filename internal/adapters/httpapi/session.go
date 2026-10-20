@@ -164,6 +164,9 @@ func scopedAgentRoute(r *http.Request, projectID string) bool {
 			(parts[4] == "sessions" && (r.Method == http.MethodGet || r.Method == http.MethodPost)) ||
 			(parts[4] == "progress" && r.Method == http.MethodGet)
 	}
+	if len(parts) == 6 && parts[4] == "orca" && parts[5] == "commands" {
+		return r.Method == http.MethodPost
+	}
 	if len(parts) == 6 && parts[4] == "sessions" && parts[5] == "discover" {
 		return r.Method == http.MethodPost
 	}

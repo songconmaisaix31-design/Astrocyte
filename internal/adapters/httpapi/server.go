@@ -56,6 +56,7 @@ type Services struct {
 	GitHubRepositories    workspaceapp.GitHubRepositories
 	Tracking              attentionapp.TrackingService
 	LocalProjects         workspaceapp.LocalProjects
+	OrcaExecution         workspaceapp.OrcaExecution
 	RegisteredProjects    workspaceapp.RegisteredProjects
 	RankingProfile        attentionapp.RankingProfileService
 	Automatic             attentionapp.AutomaticDistillationService
@@ -121,6 +122,7 @@ func NewServer(cfg Config) *Server {
 	h.registerTracking(mux)
 	h.registerOpenViking(mux)
 	h.registerLocalProjects(mux)
+	h.registerOrcaCLI(mux)
 	h.registerRegisteredProjects(mux)
 	h.registerRepositories(mux)
 	h.registerPaperSearch(mux)

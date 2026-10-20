@@ -11,9 +11,9 @@
 | 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_0d069056baff`；原静态交付为`task_4501441a2f59 / ctx_dc2fe5ba5526` |
 | Worker / 主控 | `term_f5235f4d-4de8-4f6e-8b12-a04e22c55500` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
-| write_paths | 本文件、`docs/standards/swa-cli-headless-20261020.md`、自有 `.verification/swa-cli-headless-20261020/**` |
+| write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
 | 原独立Reviewer | `task_1cd8014750f9 / ctx_980a3282c339`，本次不另起Agent |
-| 实施状态 | `DESIGN_REVISION / TEST_PLAN_PENDING_REVIEW / IMPLEMENTATION_NOT_STARTED` |
+| 实施状态 | `TEST_PLAN_ACCEPTED / IMPLEMENTING / FUNCTIONAL_VALIDATION_NOT_RUN` |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
@@ -25,17 +25,17 @@
 
 主控明确禁止使用当前Claude的Aliyun配置或修改本机Agent配置，允许静态核查现有非AliyunCodex认证和Pi的兼容性。Python3.13的 `tomllib` 与标准JSON解析确认当前Codex两处配置均为默认OpenAI、`gpt-6.1-sol`、`auth_mode=chatgpt`，存在OAuth tokens、无API key；检查只输出白名单非秘密字段。已安装Pi1.0.1的源码包含相同原生provider/模型及CredentialStore接口。建议采用真实Pi SDK和其原生RPC，凭据只读适配在刷新回调之前拒绝修改，全部工具/扩展/上下文发现关闭。主控已接受此静态兼容调查方向；认证成功及受限正向均未验证。
 
-原Reviewer准确`142869e5ddb7b06a1a1f45be978dbd1c595a98d1`对`5523564f2d76ee992b8ffe00d590dbc3b24a4f85`退回。本次按F01—F03修订真实SDK factory及定向provider刷新、controller公开请求到原生receipt/PTY/Run的映射，并采用当前权限下的写入消费者、真实路径/端点/进程和本机Orca定向保全组合。计划不要求WPR、提权、性能组或驱动；准确返修仍须原Reviewer接受，程序写域和动态窗口仍未授予。
+原Reviewer对5523退回的F01—F03已经按准确396e修订并独立接受：真实SDK factory及定向provider刷新、controller公开请求到原生receipt/PTY/Run的映射，以及当前权限下的写入消费者、真实路径/端点/进程和本机Orca定向保全组合。计划不要求WPR、提权、性能组或驱动；独立接受与实施授权见后文。
 
-报告§4.3明确Pi过滤前的package-manager home消费者及仅在SDK子进程设置的私有home/agent/session/package路径；§5.3列出逐文件的程序写域申请，新增模块限定必要目录。该清单尚未授权；已只读核main后继`b26a2fab9b5cad853c777793dd17593fb4a509a2`的HANDOFF/STATUS及SPEC §21.1，本树尚未纳入该后继。
+报告§4.3明确Pi过滤前的package-manager home消费者及仅在SDK子进程设置的私有home/agent/session/package路径；§5.3列出逐文件程序写域，新增模块限定必要目录。原Reviewer准确`01fd4bc1ef40a0d9494ed99a649c00ec5487ca5f`独立接受396e方案和T00—T15，主控在`msg_4359842084e5`授予该清单及028迁移，并要求普通纳入main。本树已从干净396e普通快进至`f7c97d36af03309868269a7ee3d8fa791a570974`，重新读取SPEC §21.1和准确授权，开始同一Worker静态实现。
 
 ## 验收与执行顺序
 
 | 顺序 | 结果及停止条件 |
 | --- | --- |
 | 本次静态返修 | 两份文档完整描述准确来源、依赖、隔离消费者、身份、CLI和T00—T15；来源/链接检查后普通commit/push给主控与原Reviewer，不据此结束整体产品任务 |
-| 独立审核 | 原Reviewer自行推导条件并审核准确Commit；未接受不写程序。新增边界、命令和Pi只读认证均属于待审核方案 |
-| 实施准入 | 主控更新相应SPEC并授予程序/依赖/测试写域。动态窗口单独授予；本次没有窗口 |
+| 独立审核 | 原Reviewer01fd4bc1已接受准确396e的方案与T00—T15；实现和真实结果继续独立CR |
+| 实施准入 | 主控f7已更新SPEC并授予程序/依赖/测试准确写域；依赖窗口已执行并交回，构建/测试/服务/模型窗口待交付 |
 | 实现与自测 | 同一Worker实施真实native后台、控制端、Pi SDK适配及CLI，运行已审核全部检查；失败时返修 |
 | 安装验收 | 在同一准确候选完成安装和一次含至少两个真实Worker的任务：实际模型执行重叠、分别观察、指定停止A、B继续、获取成果、本机Orca保全 |
 | 收尾 | 提交实际命令、结果、原件位置和限制，主控及原Reviewer核验；独立接受不自动授予合并/发布 |
@@ -44,6 +44,8 @@
 
 ## 资源与本次检查
 
-当前原S服务PID52040占用唯一窗口，本次未操作该服务、原库或本机Orca进程。本次未运行install/build/model/service/实际产品CLI任务，未调用视觉功能。纯文档和配置结构读取使用BelowNormal；Node文档检查heap上限512MiB。后续构建、安装及真实验证按RESOURCES串行，由主控先安排原服务保全与窗口；同一任务双Worker并发在该次唯一验证窗口内执行。
+主控已保全并停止原S52040，仅为本Worker交付两条依赖命令窗口；本Worker没有操作原服务、原库或本机Orca进程。首次PowerShell未签名脚本在正文前被拒绝；主控随后明确允许本次进程的ExecutionPolicy参数，原失败保留且用户/系统策略未改。两次新资源双采样通过，已串行完成`pnpm install --lockfile-only --ignore-scripts`及`pnpm install --frozen-lockfile --ignore-scripts`，均EXIT0、BelowNormal、Node heap1024MiB和私有temp/cache/store；完整原件位于自有`dependency-01`。安装日志含一次镜像下载超时及pnpm内建重试后成功，没有另发安装命令。窗口已通过`msg_9dca8338f570`交回主控。
 
-已执行的检查与实际结果在报告§9登记。程序构建、功能测试、模型调用、安装、双Worker并发/停止/成果和本机Orca安装前后保全均为 `NOT_RUN`。当前限制为方案/测试计划待独立审核、程序写域与动态窗口未授予、Pi受限认证和实际依赖闭包尚未动态验证；不将这些状态描述为功能完成。
+主控在`msg_655f03dd1e98`确认原S已同源恢复为PID12800，原库/环境/Q/媒体/CodeGraph保全，原Orca同runtime仍ready；本Worker未接管原服务。入口exec会话37535实际EXIT0，两次PNPM同步返回均为0；定向CIM未发现本项安装脚本或PNPM store参数进程残留。本次没有逐时记录全部短命子PID，对该观察范围保持限制。
+
+已执行的检查与实际结果在报告§9登记。准确b287源码及MIT许可已通过Git archive导入获准来源副本；App/关联存储、HTTP及服务组装、原生调用适配、Pi只读SDK入口和native controller composition已形成阶段源码。主控msg_eaaf01e60d77允许阶段Commit供原Reviewer静态CR；本阶段仍有CLI、打包安装、保护检查及真实测试实施待办。产品构建、功能测试、模型调用、产品安装、双Worker并发/停止/成果和本机Orca安装前后保全均为`NOT_RUN`；当前窗口归原S12800，Pi受限认证和可安装闭包尚未验证，阶段提交不表示功能完成。

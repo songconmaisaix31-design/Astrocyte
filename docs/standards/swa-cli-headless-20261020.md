@@ -1,6 +1,6 @@
 # Swarm CLI隔离后台、身份、控制规则与真实测试计划
 
-对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至 `4e6e8ed4fa52521c2232dd770eb98297d8713785`。当前为 **设计提案和待审核测试计划**；没有程序实现、安装、构建、模型或功能验收结果。
+对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至4e6e及`f7c97d36af03309868269a7ee3d8fa791a570974`。准确396e方案与T00—T15已获原Reviewer独立接受，主控已授予§5.3逐文件写域，当前正在实现。两条依赖命令实际EXIT0；产品构建、模型、安装和功能验收仍未运行。
 
 ## 1. 来源与唯一状态归属
 
@@ -64,7 +64,7 @@ Go/TypeScript/SQLite继续保留。Go CLI及已有HTTP/App负责协议和Workspa
 
 ### 3.1 安装、状态和全局消费者
 
-拟定Windows安装布局为`<InstallRoot>/bin/swa.exe`、`<InstallRoot>/lib/swa-runtime/`和`<InstallRoot>/runtimes/node-<原生版本标识>/node.exe`；可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器使用真实路径、reparse point及ACL核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。目录及名字属于本任务实施细节，当前为待审核设计。
+已审Windows安装布局为`<InstallRoot>/bin/swa.exe`、`<InstallRoot>/lib/swa-runtime/`和`<InstallRoot>/runtimes/node-<原生版本标识>/node.exe`；可写数据显式使用`<DataRoot>`，不得位于本机Orca根、其父目录、账号根或现有项目根。安装器使用真实路径、reparse point及ACL核查拒绝重合/嵌套共享，不以路径字符串不同推断隔离。
 
 | 原生消费者 | 当前源码行为 | 产品composition处理 |
 | --- | --- | --- |
@@ -232,7 +232,7 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 ### 5.3 实施写域建议及安装行为
 
-以下是主控要求的准确实施写域申请；当前仅两份方案文档及自有验证目录有写入授权。新增模块以必要目录列出，既有文件逐文件列出，不据此扩大为整个Workspace、HTTP或其他产品目录：
+以下准确实施写域已由主控f7的首版任务授予。新增模块以必要目录列出，既有文件逐文件列出，不据此扩大为整个Workspace、HTTP或其他产品目录：
 
 | 路径 | 必要修改与复用位置 |
 | --- | --- |
@@ -257,7 +257,7 @@ runtime类跨多个继承模块并静态引用工作区、布局、账户及其�
 
 ## 6. 最少完整CLI规则
 
-以下为待审核的精确拟定命令，不是当前可执行功能。变更后CLI/HTTP/App共用同一准入语义；所有写命令要求显式`--request-id <UUID>`，按§3.3映射原生outer/child mutation receipt，公开键及每一步真实身份均保留。上下文通过UTF-8文件传入；禁止在命令行正文中放凭据。
+以下为已审精确命令契约，当前实现中，尚无运行通过结论。CLI/HTTP/App共用同一准入语义；所有写命令要求显式`--request-id <UUID>`，按§3.3映射原生outer/child mutation receipt，公开键及每一步真实身份均保留。上下文通过UTF-8文件传入；禁止在命令行正文中放凭据。
 
 | 命令 | 输入与实际结果 / 复用 |
 | --- | --- |
@@ -380,11 +380,11 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 
 ## 8. 审核、实施和真实限制
 
-当前待独立审核的事项是本报告的准确方案与T00—T15；主控已批准唯一原生账本及Pi静态调查方向，未授予程序写入或动态窗口。未回答的新权限问题只阻塞依赖部分，普通命名和组织沿此方案处理。没有把后台安装归属旧选项保留成整体阻塞。
+原Reviewer准确01fd4bc1独立接受本报告396e方案及T00—T15，主控已将接口边界纳入SPEC §21.1并授予§5.3准确程序写域。未回答的新权限问题只阻塞依赖部分，普通命名和组织沿已审方案处理。当前代码正在实现，原本机Orca及来源O保持；构建/测试/服务/模型的动态窗口尚未交付。
 
-原Reviewer准确`142869e5ddb7b06a1a1f45be978dbd1c595a98d1`已按H01—H18独立审查并退回5523。F01/F02依本报告§4的公开factory/定向provider实际路径及§3.3的原生receipt/PTY/Run映射返修；F03采用§3.1、T02/T15当前权限下的定向组合方法。准确新计划仍待原Reviewer接受；实际动态操作只等待既有程序写域、批准和唯一窗口，不增加特权采集执行者条件。
+准确396e的F01/F02公开factory/provider路径、原生receipt/PTY/Run映射及F03定向组合已经独立接受；实际实现及动态结果继续按H01—H18审核，不增加特权采集执行者条件。
 
-实际尚未证明：最终构建闭包与native装载、严格controller helper及其恢复、Pi SDK只读认证的真实成功和ToolsOff、真实双Worker模型活动重叠、指定停止的全树退出/保全、安装及原Orca文件I/O隔离。发现SDK或原生接口不能提供必要证明时明确失败并提交主控，不能把unknown改成pass或采用当前Claude配置。`jose 6.2.3`来源pin已找到，产品依赖尚未安装；短期凭据与部分真实故障窗口可能无法在一次运行命中，对应分支保持未覆盖。
+实际尚未证明：最终构建闭包与native装载、严格controller helper及其恢复、Pi SDK只读认证的真实成功和ToolsOff、真实双Worker模型活动重叠、指定停止的全树退出/保全、安装及原Orca文件I/O隔离。发现SDK或原生接口不能提供必要证明时明确失败并提交主控，不能把unknown改成pass或采用当前Claude配置。`jose 6.2.3`及产品运行时依赖已按依赖窗口完成冻结安装；短期凭据与部分真实故障窗口可能无法在一次运行命中，对应分支保持未覆盖。
 
 完整旧S3、MCP、网页重构、历史分支清理、正式实验、用户采用和正式发布均保留各自任务的决定及验收。本次准确返修先交原Reviewer；同一Worker在计划接受和明确授权后继续产品实现及全部真实验收，不以静态方案提交结束整体任务。
 
@@ -401,6 +401,15 @@ T13只在T00—T04必要准入通过且窗口可用时运行。实际PowerShell�
 | `wpr -profiles`、`wpr -help start`、`logman query providers Microsoft-Windows-Kernel-File`、WindowsPrincipal/当前权限只读查询 | FileIO profile和Kernel-File provider存在，查询EXIT0；当前token未提权、两个性能组均false、未见SystemProfile privilege。未开始采集，实际采集权限及范围尚未通过 |
 | `node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-docs.mjs` | BelowNormal；已安装marked18.1.0解析两份文档，4个本地链接、24个Orca及11个Pi关键源码引用存在，EXIT0/PASS；不触发业务程序 |
 | `git diff --cached --check` | BelowNormal；两份文档最终暂存检查EXIT0/PASS，无空白错误 |
-| install/build/model/service、产品CLI、T00—T15 | 全部NOT_RUN；未取得窗口，未修改程序/依赖/全局Agent配置 |
+| 准确方案/程序写域接续 | 原Reviewer01fd4bc1接受396e方案及T00—T15；主控msg_4359842084e5授予逐文件清单和028迁移；干净树普通快进main f7c97d36，重新读取SPEC/Task |
+| 来源导入 | `git -C <O> archive --format=zip ... b287...`及`Expand-Archive`实际EXIT0，准确来源进入third_party/orca-v1.4.230，原MIT/Lovecast许可保留，原O不改；没有执行上游程序 |
+| 依赖命令初次包装入口 | `powershell -NoProfile -File .../install-dependencies.ps1`被数字签名策略于正文前拒绝、EXIT1/UnauthorizedAccess；dependency-01不存在，两条PNPM均未执行 |
+| 依赖窗口与实际命令 | 主控保全并停止原S后交两条命令窗口，在msg_8d5073a63f85明确允许仅本次进程ExecutionPolicy参数。`pnpm install --lockfile-only --ignore-scripts --store-dir .verification/swa-cli-headless-20261020/pnpm-store`及随后`pnpm install --frozen-lockfile --ignore-scripts`同store均EXIT0；pnpm11.27.0，未运行第三方postinstall，完整日志/退出/资源原件位于自有dependency-01 |
+| 依赖实际额度及限制 | 锁前CPU7.9/15.4%、可用7306657792/7307067392字节、单调2.50128秒；安装前CPU9.4/14.8%、可用7118417920/7151431680字节、单调2.50120秒。均BelowNormal、Node heap1024MiB，temp/cache/store私有。安装日志保留一次npmmirror/json5超时及pnpm内建重试后成功；未另发PNPM安装命令。窗口以msg_9dca8338f570交回主控 |
+| 产品build/model/service/install、产品CLI、T00—T15 | 全部NOT_RUN；仅依赖窗口已用并交回，程序正在实现，未修改全局Agent配置或本机Orca |
+| 阶段Go格式与产品空白 | BelowNormal执行新增Go文件`gofmt -d`，修正显示的格式后复查无差异；产品路径`git diff --cached --check -- . ':(exclude)third_party/orca-v1.4.230/**'`实际EXIT0 |
+| 完整来源空白检查 | 包含准确上游原有终端录制fixture等的`git diff --cached --check`实际EXIT1，报告原有尾部空白及终端控制字节；这些来源原件保持，不修改上游录制结果以通过格式检查。该失败不计为产品功能测试 |
 
-本次仅通过当前Dispatch的Orca通道交付，普通commit/push两份文档；没有发布GitHub评论、PR、Slack消息或公开artifact。
+阶段源码包含Workspace App准入、028关联迁移、真实RuntimeClient适配、项目范围HTTP、产品服务组装、私有Node host、原生controller receipt/PTY/helper及Pi SDK ToolsOff入口；四项新增durable方法接入原有mutation executor。主控msg_eaaf01e60d77允许供原Reviewer先静态CR，编译和真实运行结果均不据此推断。CLI/结果导出、构建安装脚本、定向保护和T00—T15实现仍在本Worker继续；当前源码尚未形成可安装候选。
+
+本次仅通过当前Dispatch的Orca通道交付，普通commit/push方案与阶段源码；没有发布GitHub评论、PR、Slack消息或公开artifact。
