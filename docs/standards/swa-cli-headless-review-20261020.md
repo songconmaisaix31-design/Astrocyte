@@ -1081,3 +1081,19 @@ N07明确模型已送入configuration，Pi复用原parsePiModelOptionId及对应
 前移可在后续窗口先获得实际bundle/metafile或明确导入失败，尚未执行构建，也没有证明依赖已收窄或全部动态资源可用。真实dispatcher/RuntimeRpcState的ALL_RPC_METHODS及其他闭包问题保持，不能以成功生成metafile替代导入、native/dynamic/assets和安装验证。忽略目录next-window入口的候选02输出与新目录规则一致，build03仍须主控另行交付一次窗口，旧候选和失败保留。
 
 `check-revision.ps1 -Previous e5492b1898758d041bacadfabc5e0310fb87ae09 -Candidate e54d45489f54819cccb2d408474e6f885aac6970`实际EXIT0，两Markdown/5本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行构建、安装、服务或模型。原Worker`msg_115a6219f739`已收到N08账号问题并继续形成无refresh权的正式计划；修后忽略文件没有被本次接受，完整原生可用路径和新增契约仍待准确提交及主控定稿。
+
+e549、e54d和main72f三个hook分别为`msg_f1a9fe13d2e4`、`msg_0e985fb2b815`、`msg_393ef3c9a2d5`，已获主控`msg_d21b77c8148c`、`msg_71fc61e466cc`、`msg_1db6699ae7e7`完整读取准确c5f3两报告新增及实际差异的逐项回复，实际唤起确认。回复前本地参数拒绝的尝试没有计为成功回执，后继动态结果独立记录。
+
+## 准确e54d的build-03失败及restore-12
+
+结论：**退回准确`e54d45489f54819cccb2d408474e6f885aac6970`的可构建交付范围，真实缺失依赖由同一原Worker修复；既有构建顺序静态接受保持。** 已完整读取build-03的13545字节日志、资源/退出、实际运行和两次退出观察，核准确上游导入及pin、当前runner摘要和部分候选目录；没有重新执行构建。
+
+原Run只交付一次`next-window.ps1 -Stage build -EvidenceName build-03`，实际exec76466退出1，资源退出0。runner SHA256为77d93dab38c8517c4280e03b4396ef21acb538ccf5eb2c9a890d9ca3c49352e4，与交付记录一致。UTC17:54:01.542113/04.043874的CPU5.3%/8.4%、可用10962219008/10999603200字节、单调2.501772秒符合准入；原Node1024MiB、Go4、私有缓存/TEMP及BelowNormal按实际入口保持。pnpm原命令内建ETIMEDOUT重试和慢下载警告保留，最终prod deploy完成后才进入esbuild。
+
+首host bundle真实错误为headless-emulator.ts的@xterm/addon-unicode11和acp-tool-timeline.ts的diff未解析；准确e54d上游package分别pin为0.10.0-beta.301、8.0.4，源文件实际import存在。首bundle失败即终止后续流程，候选02只有runtime及部署文件，没有host/metafile、Node目录、native/Go产物或VERSION，不能安装。需要按实际消费者补必要声明或收窄真实闭包，不能仅external后留下未安装模块。host-entry、dispatcher和RuntimeRpcState的完整ALL_RPC_METHODS及旧SDK消费者仍待处理，尚无完整闭包结论。
+
+实际运行观察包含所属pwsh、conhost及Node；UTC18:00:05.6984119/08.0245030两次所属进程为空记录来自Worker原件，主控查询范围较窄，分别保留覆盖。prepare-12/stop-12完整原件及一致备份记录已读，原S22036于UTC17:52:04.334684明确退出15；prepare资源CPU9.7%/12.9%、可用10.284/10.386GiB、间隔3.002321秒，stop资源CPU7.8%/7.7%、可用10.387/10.352GiB、间隔3.009414秒。原备份integrity ok/foreign_keys空，后继恢复使用原库。
+
+restore-12实际资源CPU16.0%/8.9%、可用10.413/10.462GiB、单调3.002029秒；launch/start-intent/source/database/restored及空stderr已核，原库记录ok/fk空/equal。`.verification/inspect-restored-owner.ps1 -RestoreName restore-12`于UTC18:02:27实际EXIT0：current/restored整份JSON一致，实际S56896/父52616、原ed543程序、创建UTC18:00:13.3731609/epoch1792519213.3731608相差0.0001毫秒、BelowNormal及唯一127.0.0.1:64505监听符合。完整原环境/配置/health/Web及原Orca38652/runtime49da沿主控实际来源保留；本Reviewer未操作SQLite/HTTP或目标进程。
+
+下一prepare取restore-12/restored.json，c8源不改，当前窗口归原S；build03授权已消费，不授新重操作。两个旧构建失败及部分candidate01/02、restore11失败和诊断限制继续保留，全部真实Agent、输入/恢复、Job/完整成果、安装及同候选双Worker保持未通过。主控`msg_4a9851052cd9`只读默认Pi auth条目0及指定父环境未设置，仅限定该来源/时点；其他profile/Agent未知，本Reviewer没有读取认证内容，N08正式契约仍未定稿。

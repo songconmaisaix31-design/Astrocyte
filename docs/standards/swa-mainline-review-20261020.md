@@ -487,3 +487,15 @@ prepare-11资源CPU47.9%/48.8%、可用11.092/10.909GiB、单调3.010684秒，�
 c8控制入口未改，下一prepare取实际restore-11-recovery-01/restored.json并重新准入；当前唯一窗口归原S，无新重操作授权。N08、输入/恢复、T12、完整Job/成果、原生调用和最终同候选双Worker保持未通过，通用工具/T11及旧Codex/S3各自限制保持。修后e549程序及e54d构建顺序的局部静态结论另记于headless报告，未扩大本次主线管理接受。
 
 `check-revision.ps1 -Previous 374afc54d18959a0125e4773c2a63d31d080e2a3 -Candidate 72f27b3e4276ceb33cda87b403e4d6b45108de8a`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有运行诊断、生成、编译、SQLite、HTTP、服务、安装或模型，也没有修改管理事实源或实现。
+
+准确72f管理接受hook `msg_393ef3c9a2d5`已获主控`msg_1db6699ae7e7`完整读取c5f3两报告新增及实际差异的回复，实际唤起确认；同轮e549/e54d两hook也已分别收到准确回复，接受范围没有扩大。
+
+## 准确6883f16e的真实构建失败及当前恢复
+
+结论：**接受准确`6883f16e1ebd8c016f064457e140ff99bc1c5a50`相对72f的三文档管理范围。** 完整读取HANDOFF、STATUS及首版任务差异，并独立核prepare/stop-12、build-03完整失败日志/资源/退出、部分候选02及restore-12实际原件。准确e54d的局部顺序接受、真实bundle失败及继续交原Worker返修的范围一致，未将prod deploy或静态CR当可安装候选。
+
+真实host bundle因Unicode11/diff缺失而退出1，后续Node/native/Go/VERSION未执行，三个既有构建失败和部分候选保持；必要依赖按实际pin和消费者处理，完整方法表及旧SDK闭包尚未通过。默认Pi认证条目0和三个父环境未设置只保留主控观察的默认来源，不推出其他profile/Agent状态；N08新契约、原账号refresh授权、工具/T11及旧Codex/S3各自限制保持。
+
+原S22036退出后才运行一次build03；授权消费收回和两次所属退出观察分别保留主控/Worker实际覆盖。restore-12使用同一ed543、原库和原环境配置，原库保全记录ok/fk空/equal。UTC18:02:27只读核实际S56896的程序、创建时间、整份恢复/current记录及唯一监听符合，完整环境/health/Web和原Orca沿主控实际来源；后继prepare使用restore-12/restored.json并重新准入，当前窗口归原S。首次restore11与诊断失败/后继成功的限制没有删除，原原因继续未知。
+
+`check-revision.ps1 -Previous 72f27b3e4276ceb33cda87b403e4d6b45108de8a -Candidate 6883f16e1ebd8c016f064457e140ff99bc1c5a50`实际EXIT0，三Markdown/42本地链接及Git空白通过，marked18.1.0、BelowNormal、Node512MiB。本Reviewer没有重新构建、诊断、启动服务、访问SQLite/HTTP或调用模型；真实程序、完整成果、安装及同候选双Worker仍未通过。
