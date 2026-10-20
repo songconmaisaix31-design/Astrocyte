@@ -17,7 +17,7 @@
 
 ## 执行轨道与文件归属
 
-M0 已完成文档交付；M1 已完成只读调查、独立计划审核及静态准备，动态修复尚未实施。当前由一名执行 Worker 调查首版 CLI 抽取方案，复用一名独立 Reviewer；具体归属见首版任务。共享状态由主 Agent 维护，主 Agent 管理范围、决定、资源与最终检查。
+M0 已完成文档交付；首版 CLI 来源调查及设计提案已独立接受，实施边界仍有待定项。M1 修复 Worker 在独立工作树接续已接受计划，复用一名独立 Reviewer；具体归属见下表及首版任务。共享状态由主 Agent 维护，主 Agent 管理范围、决定、资源与最终检查。
 
 | 轨道 | 写入范围 | 结果与验收 | 依赖与停止条件 |
 | --- | --- | --- | --- |
@@ -25,7 +25,8 @@ M0 已完成文档交付；M1 已完成只读调查、独立计划审核及静�
 | M0 Worker | 独立产品基线工作树；AGENTS、CODING、SPEC、角色文档、README/CONTRIBUTING、文档目录、M0 记录、整合清单、当前状态与决定；需要迁入的主控文档及原件 | 修订 §7.5、保留有效决定和历史来源、确定 main 纳入范围；文档与本地链接检查 | 先交测试计划独立审核；只修改文档；不改变程序、冻结实验、数据或发布状态 |
 | Reviewer | 独立工作树；`docs/standards/swa-mainline-review-20261020.md`、相关独立报告；`.verification/` | 自行推导验收、审核计划、对准确提交发布 CR，执行已有 review-decision hook | 不修改被审实现；发现领域问题交原 Worker |
 | M1 只读阶段 | 原产品 Worker 工作树的两份M1文档及自有忽略目录；已普通 push `80d4f8d1e323982ef73d880ce9927f4bc5c58340` | 根因与测试计划已独立接受，实际修复尚未实施；原 FAIL 保留 | Task 已结算、终端已释放；实际修复需重新授予程序写入范围及唯一窗口 |
-| 首版 CLI 执行 Worker | [首版任务](swa-cli-v1-20261020.md) 登记的两份方案/报告及忽略目录；程序写域尚未授予 | 准确上游执行来源、完整抽取方案及真实验证计划 | 依赖用户未答边界的接口未定稿；计划独立审核及实施窗口另行安排 |
+| M1 修复 Worker | 新独立工作树；`pnpm-workspace.yaml`、`pnpm-lock.yaml`、`patches/@redocly__cli@2.60.0.patch`、两份 M1 文档及自有忽略目录 | 沿用已接受的准确5cd测试计划；实际修复与正负检查 | 当前静态准备；主控负责原服务保全/停止/恢复，明确交付唯一窗口后开始动态检查 |
+| 首版 CLI 执行 Worker | [首版任务](swa-cli-v1-20261020.md) 登记的两份方案/报告及忽略目录；程序写域尚未授予 | 准确30b的调查、设计提案及覆盖框架已独立接受 | 依赖用户未答边界的接口未定稿；可执行计划和程序实现尚未获准 |
 | 后续工作包 | M2、M3、M4、M5、M6 的范围按 META_PLAN 依赖派生 | 公共契约、真实 CLI/MCP、安装后候选与既定 S3 验收 | 共享契约先确定；不依赖未决项的工作继续 |
 
 先完成 M0 文档及有效主控内容，由主控安排已验证产品历史进入 main。最新首版 CLI 按主控核实后的实际任务推进；原 M1 契约修复及 M2—M6 分别沿各自依赖与授权处理，M2/M4 原独立工作不依赖 M1 修复完成。每次只集成一个分支；不 force push，不删除原分支、工作树及未提交内容。
@@ -49,6 +50,7 @@ M0 已完成文档交付；M1 已完成只读调查、独立计划审核及静�
 | M0 Worker | `swa-m0-20261020`，由产品32ab创建的任务分支 | `task_76639dc0a8b8` / `ctx_3d6edcaf3e8b` | Orca / Codex，实际状态报告 `gpt-6.1-sol` |
 | 独立 Reviewer | `swa-mainline-review-20261020`，独立审查分支 | `task_1cd8014750f9` / `ctx_980a3282c339` | Orca / Codex，实际状态报告 `gpt-6.1-sol` |
 | M1 只读 Worker（已结算） | 原 `frontend-observatory-20261018` 工作树及分支，材料已普通 push | `task_261b4dab6d89` / `ctx_958a2bf0ae27`，终端 released | Orca / Codex，实际模型 `gpt-6.1-sol` |
+| M1 修复 Worker | `swa-m1-contracts-implementation-20261020` 工作树及同名分支，起点main4132 | `task_ceb3b3bb76be` / `ctx_8d6a6e1c0145` | Orca / Codex，实际模型 `gpt-6.1-sol` |
 | 首版 CLI 执行 Worker | 同一产品工作树，新任务分支 `swa-cli-execution-20261020` | `task_92402bd9f0c7` / `ctx_974917191668` | Orca / Codex，实际模型 `gpt-6.1-sol` |
 
 根主控已将 Git remote 更新为经实际仓库 ID 核实的规范地址 `https://github.com/songconmaisaix31-design/swarm-anything.git`。没有改变 Go module、数据目录、协议标识或已有客户端配置。

@@ -13,7 +13,7 @@
 | 产品基线 | `songconmaisaix31-design/works-relay-integration@32ab1eec808a5848aabad40f11133735a1214e55`；原 PR #2 已普通合入 |
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
-| 后继工作 | 首版执行 Worker 调查准确 Orca v1.4.230 源码并编写方案和测试计划，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；原 M1 只读阶段已交付，动态修复尚未运行；后续排序见 [TASKS](docs/TASKS.md) |
+| 后继工作 | 首版来源调查准确30b已独立接受，实施边界与可执行计划待定，归属见[首版任务](tasks/swa-cli-v1-20261020.md)；M1 修复 Worker 已在独立工作树接续已接受计划，动态窗口尚未交付；后续排序见 [TASKS](docs/TASKS.md) |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。本轮没有停止服务、修改程序或数据库，也没有将 M0 的接受计为首版 CLI 功能通过。
 

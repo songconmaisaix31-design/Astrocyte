@@ -8,7 +8,9 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 用户最新明确首版为抽取 Orca CLI 对应执行能力、交付从原有 Agent 或终端调用的可控 Swarm CLI，主控继续核实可抽取范围，本任务不冻结新接口。原 v2.1 M2—M6 保留为后续规划；MCP 和完整 S3 不自动成为首版 CLI 的前置条件。原 M1 测试计划已接受、尚未运行，后继任务入口见 [TASKS](docs/TASKS.md)。默认 CI、受限 Codex、S3 预算与权限证据、经验准入及实际采用继续按原范围验收，未答项不推断授权。
 
-首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。独立运行或依赖已安装 Orca 的执行边界已询问用户，尚未回答；执行 Worker 正在读取完整对应版本源码，编写抽取方案和测试计划，依赖该答案的执行接口保持未决定。其任务、工作树和写入范围见该任务；方案就绪后交现有独立 Reviewer，审核及依赖决定完成后再授予实现范围和运行窗口。
+首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。准确 Orca v1.4.230 来源调查及设计提案 `30b14177ef00a4e1b52f8e18c45d2375013cbd4d` 已独立接受，范围限来源材料和 E01—E16 测试覆盖框架。独立运行或依赖已安装 Orca 的选择及 Mission/Claim 两项决定未答；正向 Agent 当前受限能力、provider 闭包、精确接口和可执行计划尚未定稿，程序实现及动态验收未开始。
+
+M1 修复由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，起点为 main `4132f28ecda414f2a1bd040d9eef50bbe1087cb6`，实际客户端为 Orca / Codex `gpt-6.1-sol`。沿用已独立接受的 T00—T09（含 T05A），仅修改 pnpm 配置/锁文件、精确 Redocly 补丁和两份 M1 文档；当前静态准备，动态窗口未交付。主控负责保全、停止及恢复同一 S、原 SQLite 和原配置。
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
