@@ -26,10 +26,10 @@ import (
 const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] --json
 swa status|capabilities --json
 swa controller open --project P --workdir W --request-id UUID --json
-swa controller show|close --controller C [--request-id UUID] --json
+swa controller show|close|recover --controller C [--request-id UUID] --json
 swa task create --controller C --spec-file F --request-id UUID --json
 swa task show|list|complete|result --controller C [--task T] [--result-file F|--output-dir O] [--request-id UUID] --json
-swa worker start --controller C --task T --name A --agent pi --model openai-codex/gpt-6.1-sol --input-file F --request-id UUID --json
+swa worker start --controller C --task T --name A --agent AGENT --model PROVIDER/MODEL --input-file F --request-id UUID --json
 swa worker show|list|read|send|stop|release --controller C [--task T|--dispatch X] [--source transcript --limit 100 --cursor K] [--input-file F] [--request-id UUID] --json
 swa request show --controller C|--project P --request-id UUID --json
 
@@ -211,13 +211,13 @@ func failureExit(code string) int {
 	switch code {
 	case "validation_failed", "invalid_argument", "request_mismatch":
 		return 2
-	case "scope_denied", "forbidden", "approval_required", "approval_revoked", "worker_identity_changed", "stable_pane_required", "legacy_read_only":
+	case "scope_denied", "forbidden", "approval_required", "approval_revoked", "worker_identity_changed", "stable_pane_required", "legacy_read_only", "consumer_fenced":
 		return 3
 	case "provider_unavailable", "unsupported_capability", "structured_agent_session_unsupported":
 		return 4
 	case "resource_limit", "resource_refused", "orcad_instance_lock_held", "address_in_use":
 		return 5
-	case "delivery_unknown", "operation_unknown", "start_unknown", "stop_unknown", "release_unknown", "release_pending", "worker_release_unconfirmed", "operation_in_progress", "controller_closing":
+	case "delivery_unknown", "operation_unknown", "start_unknown", "stop_unknown", "release_unknown", "release_pending", "worker_release_unconfirmed", "operation_in_progress", "controller_closing", "controller_unverifiable":
 		return 6
 	default:
 		return 7

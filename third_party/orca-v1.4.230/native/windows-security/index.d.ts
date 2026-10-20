@@ -25,6 +25,15 @@ export type WindowsDacl = { protected: boolean; aces: WindowsAce[]; ownerSid?: s
 /** The path's DACL as structure, or null for a NULL DACL (which grants everyone everything). */
 export declare function getDaclAces(path: string): WindowsDacl | null
 
+export declare function readServiceJobMember(name: string, pid: number): {
+  name: string
+  pid: number
+  creationTimeMs: number
+  ownerSid: string
+  protected: boolean
+  aces: { sid: string; mask: number; flags: number }[]
+}
+
 /**
  * Installs exactly the DACL in `sddl`. Its `P` flag picks protected or inheriting. A directory
  * propagates to every existing descendant, which is seconds on a large tree.

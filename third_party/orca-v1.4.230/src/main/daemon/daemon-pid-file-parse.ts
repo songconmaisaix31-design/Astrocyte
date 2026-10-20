@@ -2,6 +2,7 @@ import {
   parsePtyProcessCeilingState,
   type PtyProcessCeilingState
 } from '../../shared/pty-process-ceiling-state'
+import { swaDaemonServiceJobSchema, type SwaDaemonServiceJob } from './swa-service-job'
 export type ParsedDaemonPid = {
   pid: number
   startedAtMs: number | null
@@ -16,6 +17,7 @@ export type ParsedDaemonPid = {
   cgroupUnit: string | null
   /** Null when the daemon predates the ceiling report. */
   processCeiling?: PtyProcessCeilingState | null
+  swa_service_job?: SwaDaemonServiceJob
 }
 
 /**
@@ -60,7 +62,8 @@ export function parseDaemonPidFile(contents: string): ParsedDaemonPid | null {
         bootId: typeof parsed.bootId === 'string' ? parsed.bootId : null,
         spawnerExecPath: typeof parsed.spawnerExecPath === 'string' ? parsed.spawnerExecPath : null,
         cgroupUnit: typeof parsed.cgroupUnit === 'string' ? parsed.cgroupUnit : null,
-        processCeiling: parsePtyProcessCeilingState(parsed.processCeiling)
+        processCeiling: parsePtyProcessCeilingState(parsed.processCeiling),
+        ...(parsed.swa_service_job === undefined ? {} : { swa_service_job: swaDaemonServiceJobSchema.parse(parsed.swa_service_job) })
       }
     }
   } catch {

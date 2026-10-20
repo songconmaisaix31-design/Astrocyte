@@ -24,7 +24,7 @@
       "additionalProperties": false,
       "required": ["action"],
       "properties": {
-        "action": { "enum": ["status", "capabilities", "controller.open", "controller.show", "controller.close", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "request.show"] },
+        "action": { "enum": ["status", "capabilities", "controller.open", "controller.show", "controller.close", "controller.recover", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "request.show"] },
         "project_id": { "type": "string", "minLength": 1 },
         "controller": { "type": "string", "minLength": 1 },
         "task_id": { "type": "string", "minLength": 1 },

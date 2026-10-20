@@ -66,6 +66,7 @@ async function main() {
       case 'status':
         result = status.result; break
       case 'controller.open': result = (await client.call('swa.controllerOpen', { invocation }, mutationOptions)).result; break
+      case 'controller.recover': result = (await client.call('swa.controllerRecover', { invocation }, mutationOptions)).result; break
       case 'controller.show': result = (await client.call('swa.controllerShow', { project_id: invocation.project.id, controller: command.controller })).result; break
       case 'controller.close': result = (await client.call('swa.controllerClose', { invocation }, mutationOptions)).result; break
       case 'task.create': result = (await client.call('swa.taskCreate', { invocation }, mutationOptions)).result; break
@@ -127,7 +128,7 @@ async function requestShow(client: RuntimeClient, invocation: Invocation) {
   const request = nativeObject(response.result)
   if (request.state === 'absent') return request
   const receipt = nativeObject(request.receipt)
-  if (receipt.project_id !== invocation.project.id || invocation.command.controller && receipt.controller !== invocation.command.controller) throw new RuntimeClientError('scope_denied', 'Native request belongs to another project or controller')
+  if (receipt.project_id !== invocation.project.id || invocation.command.controller && receipt.controller !== invocation.command.controller && !(request.method === 'swa.controllerRecover' && receipt.prior_controller === invocation.command.controller)) throw new RuntimeClientError('scope_denied', 'Native request belongs to another project or controller')
   const childIds = z.array(z.string()).parse(receipt.children ?? (receipt.child_request ? [receipt.child_request] : []))
   const children = []
   for (const child of childIds) children.push((await client.call('orchestration.requestShow', { request: child })).result)

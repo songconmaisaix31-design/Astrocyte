@@ -1,7 +1,7 @@
 #Requires -Version 7.2
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T03','T06','T07','T08','T09','T13','T15')][string]$Case,
+    [Parameter(Mandatory)][ValidateSet('T00','T01','T02','T03','T06','T07','T08','T09','T12','T13','T15')][string]$Case,
     [Parameter(Mandatory)][string]$SwaPath,
     [Parameter(Mandatory)][string]$InstallRoot,
     [Parameter(Mandatory)][string]$DataRoot,
@@ -65,7 +65,7 @@ New-Item -ItemType Directory -Path $env:TEMP | Out-Null
 $swaGate = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless/resource-gate.py'
 & C:/Python313/python.exe $swaGate 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'resources.log')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
+if ($Case -in @('T00','T02','T03','T06','T08','T12','T13','T15')) {
     $swaTestDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'tests/swa-cli-headless'
     Import-Module (Join-Path $swaTestDirectory 'OrcaPreservation.psm1') -Force
     $swaPreservation = New-OrcaPreservation -OrcaPath $OrcaPath -MetadataFile $OrcaMetadataFile -ProtectedFiles $ProtectedFiles -OriginalProcessIds $OriginalProcessIds -ProbeDirectory $swaEvidence
@@ -109,7 +109,7 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 [IO.File]::WriteAllText((Join-Path $swaEvidence 'installation-scope.json'), (@{ installed_candidate = $InstallRoot; actual_port_conflict = 'rejected'; actual_protected_root = 'rejected'; actual_owned_junction = 'rejected'; actual_private_service_consumers = 'requires_T03_T13'; model_calls = 0 } | ConvertTo-Json))
                 $swaExit = 6
             }
-        } elseif ($Case -in @('T03','T06','T08','T13')) {
+        } elseif ($Case -in @('T03','T06','T08','T12','T13')) {
             if (-not [IO.Path]::IsPathFullyQualified($ProjectRoot) -or $Port -lt 1 -or $Port -gt 65535 -or $ProtectedRoots.Count -lt 1) { throw '真实服务需要明确公开项目/端口/保护目录' }
             if ($Case -eq 'T03' -and ([string]::IsNullOrWhiteSpace($Agent) -or [string]::IsNullOrWhiteSpace($Model))) { throw '真实选择检查需要明确本机 Agent 和模型' }
             $swaStart = [Diagnostics.ProcessStartInfo]::new($SwaPath)
@@ -176,6 +176,13 @@ if ($Case -in @('T00','T02','T03','T06','T08','T13','T15')) {
                 if ($swaExit -eq 0) {
                     $swaIdempotency = Get-Content -LiteralPath (Join-Path $swaEvidence 'native-idempotency.json') -Raw | ConvertFrom-Json
                     if ($swaIdempotency.remainingCases.Count -gt 0) { $swaExit = 6 }
+                }
+            } elseif ($Case -eq 'T12') {
+                & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'controller-recovery.mjs') --candidate $InstallRoot --data-root $DataRoot --project $ProjectRoot --project-id $ProjectId --endpoint "http://127.0.0.1:$Port" --protected-pids ($OriginalProcessIds -join ',') --output (Join-Path $swaEvidence 'controller-recovery.json') 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'controller-recovery.log')
+                $swaExit = $LASTEXITCODE
+                if ($swaExit -eq 0) {
+                    $swaRecovery = Get-Content -LiteralPath (Join-Path $swaEvidence 'controller-recovery.json') -Raw | ConvertFrom-Json
+                    if ($swaRecovery.remainingCases.Count -gt 0) { $swaExit = 6 }
                 }
             } else {
                 $swaObservationConfig = Join-Path $swaEvidence 'original-observation.json'

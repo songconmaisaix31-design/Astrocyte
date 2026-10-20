@@ -1,4 +1,5 @@
 import type { Socket } from 'node:net'
+import type { SwaDaemonServiceJob } from './swa-service-job'
 import { StringDecoder } from 'node:string_decoder'
 import { isDaemonRequestFrame, isHelloFrame } from './daemon-client-frame-guards'
 import type { DaemonFileLog } from './daemon-file-log'
@@ -29,6 +30,7 @@ type DaemonClientConnectionOptions = {
     entryPath: string | null
     appVersion: string | null
     spawnerExecPath: string | null
+    swa_service_job?: SwaDaemonServiceJob
   }
   log: DaemonFileLog
   streamDataBatcher: DaemonStreamDataBatcher
@@ -167,7 +169,8 @@ export class DaemonClientConnections {
                 launchNonce: identity.launchNonce,
                 ...(identity.entryPath ? { entryPath: identity.entryPath } : {}),
                 ...(identity.appVersion ? { appVersion: identity.appVersion } : {}),
-                ...(identity.spawnerExecPath ? { spawnerExecPath: identity.spawnerExecPath } : {})
+                ...(identity.spawnerExecPath ? { spawnerExecPath: identity.spawnerExecPath } : {}),
+                ...(identity.swa_service_job ? { swa_service_job: identity.swa_service_job } : {})
               }
             }
           : {})

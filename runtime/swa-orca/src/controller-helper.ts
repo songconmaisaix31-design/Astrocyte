@@ -6,7 +6,7 @@ import { helperInput, nativeObject, nativeError, type Invocation } from './contr
 const controller = process.env.ORCA_TERMINAL_HANDLE
 const data = process.env.ORCA_USER_DATA
 const executable = process.env.SWA_EXECUTABLE
-if (!controller || !data || !executable) throw new Error('native_controller_environment_missing')
+if (!controller || !data || !executable || process.env.SWA_CONTROLLER_HELPER !== '1') throw new Error('native_controller_environment_missing')
 const client = new RuntimeClient(data, 120_000, null, null, executable)
 const call = async (method: string, params?: unknown, requestId?: string) =>
   (await client.call(method, params, requestId ? { orchestrationRequestId: requestId, timeoutMs: 120_000 } : undefined)).result
@@ -14,6 +14,10 @@ const call = async (method: string, params?: unknown, requestId?: string) =>
 async function execute(action: string, requestId: string, invocation?: Invocation): Promise<unknown> {
   if (action === 'identify') return { ready: true }
   if (action === 'observe') return { current: await call('orchestration.runCurrent', { from: controller }) }
+  if (action === 'recover.v1') {
+    if (!invocation || invocation.command.action !== 'controller.recover' || invocation.command.request_id !== requestId || !invocation.command.controller || invocation.command.controller === controller || !invocation.scope.run_id || invocation.scope.controller !== invocation.command.controller) throw new Error('controller_recovery_scope_mismatch')
+    return call('orchestration.runUse', { id: invocation.scope.run_id, from: controller }, `${requestId}/run-use`)
+  }
   if (!invocation || invocation.command.controller !== controller) throw new Error('controller_scope_mismatch')
   const c = invocation.command
   const run = invocation.scope.run_id

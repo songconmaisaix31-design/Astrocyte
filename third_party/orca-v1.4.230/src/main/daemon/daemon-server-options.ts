@@ -1,6 +1,7 @@
 import type { DaemonFileLog } from './daemon-file-log'
 import type { SubprocessHandle } from './session-subprocess-handle'
 import type { TerminalSpawnAdmissionMode } from './terminal-spawn-gate'
+import type { SwaDaemonServiceJob } from './swa-service-job'
 
 export type DaemonServerOptions = {
   socketPath: string
@@ -12,6 +13,7 @@ export type DaemonServerOptions = {
   entryPath?: string
   appVersion?: string
   spawnerExecPath?: string
+  swa_service_job?: SwaDaemonServiceJob
   protocolVersion?: number
   onIdleShutdown?: () => void
   onRpcShutdown?: () => void

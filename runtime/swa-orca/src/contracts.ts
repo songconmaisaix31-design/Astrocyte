@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const commandSchema = z.strictObject({
-  action: z.enum(['status', 'capabilities', 'controller.open', 'controller.show', 'controller.close', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'request.show']),
+  action: z.enum(['status', 'capabilities', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'request.show']),
   project_id: z.string().optional(), controller: z.string().optional(), task_id: z.string().optional(),
   dispatch_id: z.string().optional(), request_id: z.string().optional(), workdir: z.string().optional(),
   spec_file: z.string().optional(), input_file: z.string().optional(), result_file: z.string().optional(),

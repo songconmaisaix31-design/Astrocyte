@@ -3,7 +3,7 @@ import { realpath } from 'node:fs/promises'
 import { join } from 'node:path'
 import { isDeepStrictEqual, stripVTControlCharacters } from 'node:util'
 import { z } from 'zod'
-import { defineMethod, type RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
+import { buildRegistry, defineMethod, isStreamingMethod, type RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { deriveRemoteRuntimeTerminalCreateHandle } from '../../../third_party/orca-v1.4.230/src/main/runtime/remote-runtime-terminal-create-identity'
@@ -18,11 +18,45 @@ import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
 import { createPrivatePiHome } from './private-pi-account'
 import { deliverNativeWorkerInput } from './worker-input'
-import { authority, controllerScope, exactController, recorded } from './controller-scope'
+import { assertDeliveryGrantCurrent } from './delivery-admission'
+import { authority, controllerOwnerSchema, controllerScope, exactController, observeControllerExited, recorded } from './controller-scope'
+import { ORCHESTRATION_RUN_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs'
+import { ORCHESTRATION_MESSAGE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods'
+import { ORCHESTRATION_WORKER_CONTROL_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-control'
+import { ORCHESTRATION_WORKER_LIST_METHOD } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-list-method'
 
 const wrapper = z.object({ invocation: invocationSchema })
 const lookup = z.object({ project_id: z.string().min(1), controller: z.string().min(1) })
 const fail = (code: string, message: string): never => { throw new OrchestrationError(code, message) }
+const historyMethods = new Set(['orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
+const history = buildRegistry([...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_WORKER_CONTROL_METHODS, ORCHESTRATION_WORKER_LIST_METHOD].filter(method => historyMethods.has(method.name)))
+
+async function nativeHistory(runtime: OrcaRuntimeService, method: string, params: unknown) {
+  const declaration = history.get(method)
+  if (!declaration || isStreamingMethod(declaration)) throw new Error('The original native history method is unavailable')
+  return declaration.handler(declaration.params?.parse(params), { runtime, authenticatedCallerFingerprint: authority(runtime) })
+}
+
+async function observeTask(runtime: OrcaRuntimeService, invocation: Invocation, scope: Scope) {
+  const c = invocation.command, run = scope.run_id
+  if (c.action === 'worker.show') return nativeHistory(runtime, 'orchestration.workerShow', { dispatch: c.dispatch_id })
+  if (c.action === 'worker.read') return nativeHistory(runtime, 'orchestration.workerRead', { dispatch: c.dispatch_id, source: 'transcript', limit: c.limit, ...(c.cursor ? { cursor: c.cursor } : {}) })
+  if (c.action === 'worker.list') return nativeHistory(runtime, 'orchestration.workerList', { run, paginate: true, limit: 100 })
+  const tasks = nativeObject(await nativeHistory(runtime, 'orchestration.taskList', { run }))
+  if (c.action !== 'task.result') return tasks
+  const rows = z.array(z.looseObject({ id: z.string(), parent_id: z.string().nullable() })).parse(tasks.tasks)
+  if (!rows.some(task => task.id === scope.root_task_id)) throw new Error('The original native root task is unavailable')
+  const children = new Set(rows.filter(task => task.parent_id === scope.root_task_id).map(task => task.id))
+  const fleet = nativeObject(await nativeHistory(runtime, 'orchestration.workerList', { run, paginate: true, limit: 100 }))
+  if (z.object({ hasMore: z.boolean() }).parse(fleet.page).hasMore) throw new Error('The fixed task Worker inventory is incomplete')
+  const workers = z.array(z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() })).parse(fleet.workers)
+  const outputs = []
+  for (const worker of workers) {
+    if (worker.runId !== run || !children.has(worker.taskId)) throw new Error('The native Worker belongs to another fixed task')
+    outputs.push({ worker, observation: await nativeHistory(runtime, 'orchestration.workerShow', { dispatch: worker.dispatchId }) })
+  }
+  return { run: await nativeHistory(runtime, 'orchestration.runShow', { id: run }), tasks, workers: outputs }
+}
 
 async function helperCall(runtime: OrcaRuntimeService, controller: string, requestId: string, action: string, invocation?: Invocation) {
   const ptyId = runtime.getTerminalPtyIdForHandle(controller)
@@ -68,6 +102,42 @@ async function effect<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
+async function createController(context: RpcContext, project: string, workspace: string, save: (receipt: Record<string, unknown>) => void) {
+  const runtime = context.runtime, requestId = context.orchestrationMutation!.requestId
+  const childId = `${requestId}/controller-pty`
+  const controller = deriveRemoteRuntimeTerminalCreateHandle('swa-controller-local', workspace, childId)
+  const fixed = { project_id: project, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId }
+  save({ ...fixed, expected_controller: controller, stage: 'pty-spawn' })
+  context.markMutationEffectPossible?.()
+  const node = process.env.SWA_NODE_EXECUTABLE
+  const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
+  if (!node) throw new Error('installed_node_missing')
+  const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
+    (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
+      launchConfig: { agentCommand: `"${node}"`, agentArgs: `--max-old-space-size=1024 "${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
+      title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
+    }))
+  if (terminal.handle !== controller) throw new Error('native_controller_handle_mismatch')
+  const observed = await helperCall(runtime, controller, requestId, 'identify')
+  const binding = runtime.getTerminalPromptRequestBinding(controller)
+  const listed = await getLocalPtyProvider().listProcesses()
+  const pty = listed.find(row => row.id === binding.ptyId && row.terminalHandle === controller && row.incarnationId === binding.processIncarnation)
+  if (!pty?.rootProcessId) throw new Error('native_controller_process_missing')
+  const rows = await readWindowsProcessTableFresh()
+  const root = rows.find(row => row.pid === pty.rootProcessId), helper = rows.find(row => row.pid === observed.pid)
+  if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
+  const ancestors = new Set<number>()
+  for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
+  if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
+  const live = runtime.getOrchestrationDispatchAuthority(controller)
+  if (!live?.launchTokenHash || !live.paneKey || live.hostScope.kind !== 'local' || live.processIncarnation !== binding.processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
+  const caller_authority = { terminalHandle: controller, paneKey: live.paneKey, processIncarnation: live.processIncarnation, launchTokenHash: live.launchTokenHash, hostScope: live.hostScope }
+  const owner = { ...fixed, controller, binding, process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority }
+  save({ ...owner, stage: 'helper-ready' })
+  const current = await helperCall(runtime, controller, requestId, 'observe')
+  return { ...owner, observation: current.result }
+}
+
 export const SWA_METHODS = [
   defineMethod({ name: 'swa.registeredAgent', permission: 'workspace', params: z.strictObject({ agent_id: z.string().min(1) }), handler: ({ agent_id }, { runtime }) => registeredAgent(runtime, agent_id) }),
   defineMethod({ name: 'swa.status', permission: 'workspace', params: null, handler: (_params, { runtime }) => ({
@@ -79,11 +149,15 @@ export const SWA_METHODS = [
   defineMethod({ name: 'swa.resolveSelection', permission: 'workspace', params: z.object({ project_id: z.string().min(1), command: commandSchema }), handler: ({ project_id, command }, { runtime }) => resolveSelection(runtime, project_id, command) }),
   defineMethod({ name: 'swa.workerSend', permission: 'workspace', params: z.strictObject({ controller: z.string().min(1), parent_request: z.uuid() }), handler: deliverNativeWorkerInput }),
   defineMethod({ name: 'swa.inputStatus', permission: 'workspace', params: z.strictObject({ project_id: z.uuid(), request_id: z.uuid() }), handler: ({ project_id, request_id }, { runtime }) => readNativeInputStatus(runtime, project_id, request_id) }),
-  defineMethod({ name: 'swa.scope', permission: 'workspace', params: lookup, handler: (params, { runtime }) => controllerScope(runtime, params.project_id, params.controller).scope }),
+  defineMethod({ name: 'swa.scope', permission: 'workspace', params: lookup, handler: (params, { runtime }) => controllerScope(runtime, params.project_id, params.controller, { history: true }).scope }),
   defineMethod({ name: 'swa.controllerShow', permission: 'workspace', params: lookup, handler: async (params, { runtime }) => {
-    const owned = controllerScope(runtime, params.project_id, params.controller)
-    await exactController(runtime, owned.owner)
-    return { ...owned, observation: await helperCall(runtime, params.controller, randomUUID(), 'observe') }
+    const owned = controllerScope(runtime, params.project_id, params.controller, { history: true })
+    try {
+      await exactController(runtime, owned.owner)
+      return { ...owned, observation: await helperCall(runtime, params.controller, randomUUID(), 'observe') }
+    } catch (error) {
+      throw new OrchestrationError('controller_unverifiable', 'The recorded controller could not be observed as a live helper', { ...owned, observation: nativeObject(nativeError(error)) })
+    }
   } }),
   defineMethod({ name: 'swa.controllerOpen', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const { runtime } = context
@@ -94,51 +168,21 @@ export const SWA_METHODS = [
       await createPrivatePiHome(invocation.project.id)
       const repo = await runtime.addRepo(workdir, 'folder')
       const workspace = getRepoMainWorktreeId(repo)
-      const requestId = context.orchestrationMutation!.requestId
-      const childId = `${requestId}/controller-pty`
-      const controller = deriveRemoteRuntimeTerminalCreateHandle('swa-controller-local', workspace, childId)
-      checkpoint(context, { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, stage: 'pty-spawn' })
-      const node = process.env.SWA_NODE_EXECUTABLE
-      const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
-      if (!node) throw new Error('installed_node_missing')
-      const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
-        (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
-          launchConfig: { agentCommand: `"${node}"`, agentArgs: `--max-old-space-size=1024 "${entry}"`, agentEnv: {} },
-          title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
-        }))
-      if (terminal.handle !== controller) throw new Error('native_controller_handle_mismatch')
-      const observed = await helperCall(runtime, controller, requestId, 'identify')
-      const binding = runtime.getTerminalPromptRequestBinding(controller)
-      const listed = await getLocalPtyProvider().listProcesses()
-      const pty = listed.find(row => row.id === binding.ptyId && row.terminalHandle === controller && row.incarnationId === binding.processIncarnation)
-      if (!pty?.rootProcessId) throw new Error('native_controller_process_missing')
-      const rows = await readWindowsProcessTableFresh()
-      const root = rows.find(row => row.pid === pty.rootProcessId)
-      const helper = rows.find(row => row.pid === observed.pid)
-      if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
-      const ancestors = new Set<number>()
-      for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
-      if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
-      const liveAuthority = runtime.getOrchestrationDispatchAuthority(controller)
-      if (!liveAuthority?.launchTokenHash || !liveAuthority.paneKey || liveAuthority.hostScope.kind !== 'local' || liveAuthority.processIncarnation !== binding.processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
-      const callerAuthority = { terminalHandle: controller, paneKey: liveAuthority.paneKey, processIncarnation: liveAuthority.processIncarnation, launchTokenHash: liveAuthority.launchTokenHash, hostScope: liveAuthority.hostScope }
-      checkpoint(context, { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, binding,
-        process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority: callerAuthority, stage: 'helper-ready' })
-      const current = await helperCall(runtime, controller, requestId, 'observe')
-      return { project_id: invocation.project.id, controller, worktree_id: workspace, client_identity: 'swa-controller-local', client_mutation_id: childId, binding,
-        process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority: callerAuthority, observation: current.result }
+      return createController(context, invocation.project.id, workspace, receipt => checkpoint(context, receipt))
     })
   } }),
+  defineMethod({ name: 'swa.controllerRecover', permission: 'workspace', params: wrapper, handler: ({ invocation }, context) => recoverController(invocation, context) }),
   defineMethod({ name: 'swa.taskCreate', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const c = invocation.command
     if (!c.controller || c.action !== 'task.create' || !invocation.context || !invocation.spec) return fail('invalid_argument', 'A fixed task and context are required')
     const owned = controllerScope(context.runtime, invocation.project.id, c.controller)
+    if (owned.scope.run_id) throw new OrchestrationError('request_mismatch', 'The controller already belongs to its fixed user task', { effectsApplied: false })
     await exactController(context.runtime, owned.owner)
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, children: [`${c.request_id}/run-create`, `${c.request_id}/root-task`], stage: 'helper-input' })
     return effect(async () => {
       const reply = nativeObject((await helperCall(context.runtime, c.controller!, requestId, c.action, invocation)).result)
       const run = nativeObject(reply.run), task = nativeObject(reply.task)
-      return { project_id: invocation.project.id, controller: c.controller, run_id: z.string().parse(run.id), root_task_id: z.string().parse(task.id), children: [`${requestId}/run-create`, `${requestId}/root-task`], native: reply }
+      return { project_id: invocation.project.id, controller: c.controller, run_id: z.string().parse(run.id), root_task_id: z.string().parse(task.id), invocation, children: [`${requestId}/run-create`, `${requestId}/root-task`], native: reply }
     })
   } }),
   defineMethod({ name: 'swa.controllerDeliver', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
@@ -153,15 +197,14 @@ export const SWA_METHODS = [
     }
     if (c.action === 'worker.start') await admitWorkerResources()
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${c.request_id}/native`, stage: 'helper-input' })
-    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, ...(['worker.start', 'worker.send'].includes(c.action) ? { invocation: { ...invocation, scope } } : {}), child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
+    return effect(async () => ({ project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, invocation: { ...invocation, scope }, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }))
   } }),
   defineMethod({ name: 'swa.observe', permission: 'workspace', params: wrapper, handler: async ({ invocation }, { runtime }) => {
     const c = invocation.command
     if (!c.controller || !['task.show', 'task.list', 'task.result', 'worker.show', 'worker.list', 'worker.read'].includes(c.action)) return fail('invalid_argument', 'Unsupported observation')
-    const { scope, owner } = controllerScope(runtime, invocation.project.id, c.controller)
-    await exactController(runtime, owner)
+    const { scope, owner } = controllerScope(runtime, invocation.project.id, c.controller, { history: true })
     validateTaskAction(runtime, invocation, scope)
-    const native = (await helperCall(runtime, c.controller, randomUUID(), c.action, { ...invocation, scope })).result
+    const native = await observeTask(runtime, invocation, scope)
     const result = c.action === 'task.result' ? await completeTaskResult(runtime, scope, owner.worktree_id, native)
       : c.action === 'worker.show' ? { ...nativeObject(native), source: await observeWorkerSource(runtime, scope, owner.worktree_id, c.dispatch_id!) } : native
     return { scope, ...(c.action === 'task.result' ? { output_dir: c.output_dir } : {}), native: result }
@@ -185,6 +228,86 @@ export const SWA_METHODS = [
   } })
 ]
 
+async function observeRecovery(context: RpcContext, receipt: Record<string, unknown>) {
+  const { runtime } = context, db = runtime.getOrchestrationDb()
+  const prior = controllerOwnerSchema.parse(receipt.prior_owner)
+  const scope = z.object({ project_id: z.string(), controller: z.string(), run_id: z.string().min(1), root_task_id: z.string().min(1), authority_domain: z.string(), context: z.unknown() }).parse(receipt.scope)
+  const owner = controllerOwnerSchema.parse(receipt)
+  await observeControllerExited(runtime, prior)
+  await exactController(runtime, owner)
+  const live = runtime.getOrchestrationDispatchAuthority(owner.controller)
+  if (!live?.launchTokenHash || live.launchTokenHash !== owner.caller_authority.launchTokenHash || live.paneKey !== owner.caller_authority.paneKey || live.processIncarnation !== owner.caller_authority.processIncarnation || !isDeepStrictEqual(live.hostScope, owner.caller_authority.hostScope)) return fail('operation_unknown', 'The recovered helper current authority is unavailable')
+  const runUse = db.getMutationReceipt(authority(runtime), z.string().parse(receipt.run_use_request))
+  if (runUse?.method !== 'orchestration.runUse' || runUse.state !== 'completed' || !runUse.receipt) return fail('operation_unknown', 'The original native Run binding remains unconfirmed')
+  const bound = nativeObject(nativeObject(JSON.parse(runUse.receipt)).run)
+  const run = db.getRun(scope.run_id), task = db.getTask(scope.root_task_id)
+  const oldGeneration = z.number().int().nonnegative().parse(receipt.prior_generation)
+  if (!run || !task || task.run_id !== run.id || task.parent_id !== null || run.id !== bound.id || run.coordinator_handle !== owner.controller || run.coordinator_pane_key !== owner.caller_authority.paneKey || run.consumer_generation <= oldGeneration || run.consumer_generation !== bound.consumer_generation || bound.coordinator_handle !== owner.controller || !isDeepStrictEqual(nativeObject(JSON.parse(task.spec)).context, scope.context)) return fail('operation_unknown', 'The recovered Run, root, context or native consumer generation differs')
+  return { ...receipt, scope: { ...scope, controller: owner.controller }, run_id: run.id, root_task_id: task.id, consumer_generation: run.consumer_generation, native: JSON.parse(runUse.receipt), stage: 'completed' }
+}
+
+async function recoverController(invocation: Invocation, context: RpcContext) {
+  const { runtime } = context, db = runtime.getOrchestrationDb(), mutation = context.orchestrationMutation
+  const command = invocation.command
+  if (command.action !== 'controller.recover' || !command.controller || !mutation || mutation.requestId !== command.request_id) return fail('request_mismatch', 'The exact public recovery request is required')
+  if (context.replayedMutationReceipt !== undefined) {
+    const receipt = nativeObject(context.replayedMutationReceipt)
+    if (receipt.stage === 'scope-reserved') {
+      const scope = z.object({ run_id: z.string().min(1) }).parse(receipt.scope)
+      const prior = controllerOwnerSchema.parse(receipt.prior_owner), run = db.getRun(scope.run_id)
+      if (!run || run.coordinator_handle !== prior.controller || run.consumer_generation !== receipt.prior_generation) return fail('operation_unknown', 'The original pre-effect recovery consumer changed')
+      try { await observeControllerExited(runtime, prior) }
+      catch (error) {
+        if (error instanceof OrchestrationError && error.code === 'controller_unverifiable') throw error
+        throw new OrchestrationError('operation_unknown', 'The original pre-effect recovery exit observations are incomplete')
+      }
+      throw new OrchestrationError('controller_unverifiable', 'The original recovery stopped before controller creation and will not replay effects', { effectsApplied: false, stage: receipt.stage })
+    }
+    return effect(() => observeRecovery(context, receipt))
+  }
+  let reserved: Record<string, unknown>
+  db.db.exec('BEGIN IMMEDIATE')
+  try {
+    const { owner, scope } = controllerScope(runtime, invocation.project.id, command.controller, { history: true })
+    const run = db.getRun(scope.run_id)
+    if (!run || !scope.root_task_id || !isDeepStrictEqual(invocation.scope, scope) || run.coordinator_handle !== owner.controller || run.coordinator_pane_key !== owner.caller_authority.paneKey) return fail('scope_denied', 'Recovery requires the original fixed Run, root and current prior consumer')
+    const competing = z.object({ count: z.number().int() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
+      WHERE caller_fingerprint=? AND method='swa.controllerRecover' AND state='pending' AND request_id<>?
+      AND json_valid(receipt)=1 AND json_extract(receipt, '$.scope.run_id')=?`).get(authority(runtime), mutation.requestId, run.id))
+    if (competing.count) throw new OrchestrationError('operation_in_progress', 'Another original recovery still owns this Run', { effectsApplied: false })
+    reserved = { project_id: invocation.project.id, prior_controller: owner.controller, prior_owner: owner, prior_generation: run.consumer_generation, scope, invocation, run_use_request: `${mutation.requestId}/run-use`, children: [`${mutation.requestId}/controller-pty`, `${mutation.requestId}/run-use`], stage: 'scope-reserved' }
+    db.checkpointPendingMutationReceipt({ ...mutation, receipt: JSON.stringify(reserved) })
+    db.db.exec('COMMIT')
+  } catch (error) {
+    db.db.exec('ROLLBACK')
+    if (error instanceof OrchestrationError) throw error
+    throw new OrchestrationError('operation_unknown', 'The original recovery reservation could not be confirmed')
+  }
+  const prior = controllerOwnerSchema.parse(reserved.prior_owner)
+  try {
+    reserved.prior_exit_observations = await observeControllerExited(runtime, prior)
+  } catch (error) {
+    if (error instanceof OrchestrationError && error.code === 'controller_unverifiable') throw error
+    throw new OrchestrationError('operation_unknown', 'The prior controller exit remains unconfirmed')
+  }
+  assertDeliveryGrantCurrent(invocation)
+  return effect(async () => {
+    const scope = z.object({ run_id: z.string().min(1) }).parse(reserved.scope)
+    const current = db.getRun(scope.run_id)
+    if (!current || current.coordinator_handle !== prior.controller || current.consumer_generation !== reserved.prior_generation) throw new Error('The original Run consumer changed before controller creation')
+    const owner = await createController(context, invocation.project.id, prior.worktree_id, partial => {
+      reserved = { ...reserved, ...partial }
+      db.checkpointPendingMutationReceipt({ ...mutation, receipt: JSON.stringify(reserved) })
+    })
+    reserved = { ...reserved, ...owner, stage: 'run-use' }
+    db.checkpointPendingMutationReceipt({ ...mutation, receipt: JSON.stringify(reserved) })
+    await exactController(runtime, owner)
+    assertDeliveryGrantCurrent(invocation)
+    await helperCall(runtime, owner.controller, mutation.requestId, 'recover.v1', invocation)
+    return observeRecovery(context, reserved)
+  })
+}
+
 async function resolveSelection(runtime: OrcaRuntimeService, project: string, command: Invocation['command']): Promise<AgentSelection> {
   if (command.action === 'worker.start') {
     if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
@@ -197,8 +320,8 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   const rows = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
     WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='completed'
     AND json_valid(receipt)=1 AND json_extract(receipt, '$.project_id')=?
-    AND json_extract(receipt, '$.controller')=? AND json_extract(receipt, '$.action')='worker.start'
-    AND json_extract(receipt, '$.native.dispatchId')=?`).all(authority(runtime), project, command.controller, command.dispatch_id))
+    AND json_extract(receipt, '$.run_id')=? AND json_extract(receipt, '$.root_task_id')=? AND json_extract(receipt, '$.action')='worker.start'
+    AND json_extract(receipt, '$.native.dispatchId')=?`).all(authority(runtime), project, scope.run_id, scope.root_task_id, command.dispatch_id))
   if (rows.length !== 1) return fail('operation_unknown', 'The exact original Worker start selection is unavailable')
   const original = agentSelectionSchema.parse(nativeObject(JSON.parse(rows[0]!.receipt)).selection)
   const dispatch = db.getDispatchContextById(command.dispatch_id)
@@ -228,8 +351,8 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
     } else if (c.action === 'controller.close') {
       const pending = z.object({ count: z.number().int() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
         WHERE caller_fingerprint=? AND state='pending' AND json_valid(receipt)=1
-        AND json_extract(receipt, '$.controller')=?
-        AND (method='swa.taskCreate' OR (method='swa.controllerDeliver' AND json_extract(receipt, '$.action')='worker.start'))`).get(authority(runtime), c.controller))
+        AND (json_extract(receipt, '$.controller')=? OR json_extract(receipt, '$.run_id')=?)
+        AND (method='swa.taskCreate' OR (method='swa.controllerDeliver' AND json_extract(receipt, '$.action')='worker.start'))`).get(authority(runtime), c.controller, fresh.scope.run_id))
       if (pending.count > 0) fail('operation_in_progress', 'A native task or Worker creation still owns its reservation')
       requireReleased(runtime, fresh.scope)
     } else {
@@ -239,8 +362,8 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
         const taskIds = new Set(children.map(task => task.id))
         const pending = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
           WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='pending'
-          AND json_valid(receipt)=1 AND json_extract(receipt, '$.controller')=?
-          AND json_extract(receipt, '$.action')='worker.start'`).all(authority(runtime), c.controller))
+          AND json_valid(receipt)=1 AND json_extract(receipt, '$.run_id')=?
+          AND json_extract(receipt, '$.action')='worker.start'`).all(authority(runtime), fresh.scope.run_id))
         let uncreated = 0
         for (const item of pending) {
           const held = z.object({ child_request: z.string() }).parse(JSON.parse(item.receipt))
@@ -254,7 +377,7 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
         if (children.length + uncreated >= 2) fail('resource_limit', 'The fixed task has reserved both Worker slots')
       }
     }
-    const requestId = checkpoint(context, { ...receipt, ...(['worker.start', 'worker.send'].includes(c.action) ? { invocation: { ...invocation, scope: fresh.scope } } : {}) })
+    const requestId = checkpoint(context, { ...receipt, invocation: { ...invocation, scope: fresh.scope } })
     db.db.exec('COMMIT')
     return requestId
   } catch (error) {

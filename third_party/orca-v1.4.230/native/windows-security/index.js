@@ -13,6 +13,7 @@ function getAddon() {
 module.exports = {
   currentUserSid: () => getAddon().currentUserSid(),
   getDaclAces: (path) => getAddon().getDaclAces(path),
+  readServiceJobMember: (name, pid) => getAddon().readServiceJobMember(name, pid),
   setDaclSddl: (path, sddl) => getAddon().setDaclSddl(path, sddl),
   setDaclSddlAsync: (path, sddl) => getAddon().setDaclSddlAsync(path, sddl),
   createFileWithDacl: (path, sddl, data) => getAddon().createFileWithDacl(path, sddl, data),

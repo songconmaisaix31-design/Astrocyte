@@ -131,7 +131,7 @@ export class OrchestrationMutationExecutor {
       isResumablePendingWorkerDone(request.method, params, begun.row.receipt)
     const resumedPendingMutation =
       begun.disposition === 'pending' &&
-      (request.method === 'orchestration.workerRelease' || resumedPendingWorkerDone)
+      (request.method === 'orchestration.workerRelease' || request.method === 'swa.controllerRecover' || resumedPendingWorkerDone)
 
     if (begun.disposition === 'completed') {
       const active = this.inFlight.get(key)
@@ -189,7 +189,7 @@ export class OrchestrationMutationExecutor {
           { requestId }
         )
       }
-      if (request.method !== 'orchestration.workerRelease' && !resumedPendingWorkerDone) {
+      if (request.method !== 'orchestration.workerRelease' && request.method !== 'swa.controllerRecover' && !resumedPendingWorkerDone) {
         const recovery = getPendingWorkerStartRecovery(request.method, begun.row.receipt)
         throw new OrchestrationError(
           'operation_unknown',
@@ -228,7 +228,8 @@ export class OrchestrationMutationExecutor {
         },
         markEffectPossible: () => {
           effectPossible = true
-        }
+        },
+        ...(request.method === 'swa.controllerRecover' && begun.disposition === 'pending' ? { replayedReceipt: JSON.parse(begun.row.receipt ?? 'null') } : {})
       })
     )
     this.inFlight.set(key, { method: request.method, payloadHash, promise: active })

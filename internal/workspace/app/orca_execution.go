@@ -221,7 +221,7 @@ func orcaAction(action string) (permission string, mutation bool, ok bool) {
 	switch action {
 	case "status", "capabilities", "controller.show", "task.show", "task.list", "task.result", "worker.show", "worker.list", "worker.read", "request.show":
 		return "observe", false, true
-	case "controller.open", "task.create", "worker.start":
+	case "controller.open", "controller.recover", "task.create", "worker.start":
 		return "start", true, true
 	case "worker.send", "task.complete":
 		return "send", true, true
@@ -240,7 +240,7 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 	}
 	fields := map[string]string{
 		"status": "", "capabilities": "",
-		"controller.open": "workdir request_id", "controller.show": "controller", "controller.close": "controller request_id",
+		"controller.open": "workdir request_id", "controller.show": "controller", "controller.close": "controller request_id", "controller.recover": "controller request_id",
 		"task.create": "controller spec_file request_id", "task.show": "controller task_id", "task.list": "controller",
 		"task.complete": "controller task_id result_file request_id", "task.result": "controller task_id output_dir",
 		"worker.start": "controller task_id name agent model input_file request_id", "worker.list": "controller task_id",

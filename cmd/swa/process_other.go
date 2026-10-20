@@ -13,10 +13,14 @@ func configureCurrentProcess() error { return errors.New("此产品安装候选�
 
 func configureServiceChild(_ *exec.Cmd) {}
 
-type serviceJob struct{}
+type serviceJob struct{ ownership serviceJobOwnership }
 
-func ownServiceTree() (*serviceJob, error) {
+func ownServiceTree(_, _ string) (*serviceJob, error) {
 	return nil, errors.New("此产品安装候选仅支持 Windows")
+}
+
+func (*serviceJob) verifyDaemon(_ serviceJobOwnership) error {
+	return errors.New("此产品安装候选仅支持 Windows")
 }
 
 func (*serviceJob) awaitDescendants(_ io.Writer) error {

@@ -97,6 +97,7 @@ async function readDaemonOwnerMetadata(
   identity: DaemonEndpointIdentity
 ): Promise<Partial<DaemonPidFile>> {
   const metadata: Partial<DaemonPidFile> = {}
+  if (identity.swa_service_job) metadata.swa_service_job = identity.swa_service_job
   if (identity.entryPath) {
     metadata.entryPath = identity.entryPath
   }

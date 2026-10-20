@@ -1,3 +1,5 @@
+import type { SwaDaemonServiceJob } from './swa-service-job'
+
 export type HelloMessage = {
   type: 'hello'
   version: number
@@ -16,6 +18,7 @@ export type DaemonEndpointIdentity = {
   entryPath?: string
   appVersion?: string
   spawnerExecPath?: string
+  swa_service_job?: SwaDaemonServiceJob
 }
 
 export type HelloResponse = {

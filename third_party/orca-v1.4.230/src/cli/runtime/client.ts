@@ -100,7 +100,7 @@ export class RuntimeClient {
     const terminalPromptMutation = isTerminalPromptMutation(method, params)
     const legacyTerminalPrompt = options?.legacyTerminalPrompt === true && terminalPromptMutation
     const durableMutation = !legacyTerminalPrompt && isDurableMutation(method, params)
-    const carriesCompatibility = method.startsWith('orchestration.') || method === 'swa.workerSend'
+    const carriesCompatibility = method.startsWith('orchestration.') || method === 'swa.workerSend' || method === 'status.get' && process.env.SWA_CONTROLLER_HELPER === '1'
     if (orchestrationMutation || method === 'swa.workerSend') {
       await this.ensureOrchestrationContractCompatible(effectiveTimeoutMs)
     }

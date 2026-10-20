@@ -130,7 +130,8 @@ export class DaemonServer {
         startedAtMs,
         entryPath: options.entryPath ?? null,
         appVersion: options.appVersion ?? null,
-        spawnerExecPath: options.spawnerExecPath ?? null
+        spawnerExecPath: options.spawnerExecPath ?? null,
+        ...(options.swa_service_job ? { swa_service_job: options.swa_service_job } : {})
       },
       log: this.log,
       streamDataBatcher: this.streamDataBatcher,

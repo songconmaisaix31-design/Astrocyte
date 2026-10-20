@@ -7,6 +7,7 @@
  * Shuts down cleanly on SIGTERM.
  */
 import { readFileSync } from 'node:fs'
+import { captureSwaDaemonServiceJob } from './swa-service-job'
 import { startDaemon, type DaemonHandle } from './daemon-main'
 import { createPtySubprocess } from './pty-subprocess'
 import { warmWindowsConptyOnce } from './windows-conpty-warmup'
@@ -137,6 +138,7 @@ async function main(): Promise<void> {
   // Why: a daemon forked from an extracted AppImage copy outlives the process that launched it.
   void leaseAppImageGenerationForCurrentProcess()
   const readyIdentity = await readCurrentDaemonReadyIdentity(startedAtMs)
+  const swaServiceJob = captureSwaDaemonServiceJob(launchNonce)
   // Fail-open: a broken log path must never block daemon startup.
   const daemonLog = logFilePath ? createDaemonFileLog(logFilePath) : createNoopDaemonFileLog()
   daemonLog.log('startup', { protocolVersion: PROTOCOL_VERSION, socketPath })
@@ -277,6 +279,7 @@ async function main(): Promise<void> {
       : null
 
   daemon = await startDaemon({
+    ...(swaServiceJob ? { swa_service_job: swaServiceJob } : {}),
     socketPath,
     tokenPath,
     ...(pidPath ? { pidPath } : {}),
@@ -298,7 +301,8 @@ async function main(): Promise<void> {
               // matters. See daemon-cgroup-scope.ts.
               cgroupUnit: detectOwnCgroupScopeUnit(),
               processCeiling,
-              launchNonce
+              launchNonce,
+              ...(swaServiceJob ? { swa_service_job: swaServiceJob } : {})
             })
         }
       : {}),

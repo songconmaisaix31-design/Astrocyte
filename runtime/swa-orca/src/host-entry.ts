@@ -1,8 +1,7 @@
 import { mkdirSync, realpathSync, lstatSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
-import { format } from 'node:util'
+import { format, isDeepStrictEqual } from 'node:util'
 import { z } from 'zod'
-import { timingSafeEqual } from 'node:crypto'
 import { setAppEnvironment, type AppPathName } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
 import { setSecretStore } from '../../../third_party/orca-v1.4.230/src/shared/secret-store'
 
@@ -58,14 +57,23 @@ async function main() {
     await initializePrivatePiRoot()
     store.updateSettings({ agentStatusHooksEnabled: false, workspaceDir: privatePath('workspaces'), browserClientHostedRemoteEnabled: false, browserSshWorkspaceRoutingEnabled: false })
     const { initDaemonPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-init')
-    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement, listLiveDaemonPtyIds } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
+    const { daemonOwnsFreshPersistentPtys, disconnectDaemon, requestIdleDaemonRetirement, listLiveDaemonPtyIds, getDaemonProvider, readDaemonPidRecord } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-state')
     await initDaemonPtyProvider(undefined, { macosLoginSessionWatch: false, startupTimeoutMs: 30_000 })
-    if (!daemonOwnsFreshPersistentPtys()) throw new Error('SWA requires its actual persistent daemon')
+    let daemonOwnershipConfirmed = false
     registerCleanup(async () => {
-      const retirement = await requestIdleDaemonRetirement()
-      if (retirement.state !== 'retiring') throw new Error(`SWA private daemon retirement unconfirmed: ${retirement.state}`)
+      if (daemonOwnershipConfirmed) {
+        const retirement = await requestIdleDaemonRetirement()
+        if (retirement.state !== 'retiring') throw new Error(`SWA private daemon retirement unconfirmed: ${retirement.state}`)
+      }
       await disconnectDaemon()
     })
+    if (!daemonOwnsFreshPersistentPtys()) throw new Error('SWA requires its actual persistent daemon')
+    const { getCurrentDaemonAdapter } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/daemon-provider-routing')
+    const { observeRuntimeSwaServiceJob } = await import('../../../third_party/orca-v1.4.230/src/main/daemon/swa-service-job')
+    const provider = getDaemonProvider()
+    if (!provider) throw new Error('SWA persistent daemon provider is unavailable')
+    const ownership = observeRuntimeSwaServiceJob(getCurrentDaemonAdapter(provider).getDaemonIdentity(), readDaemonPidRecord())
+    daemonOwnershipConfirmed = true
     const { getLocalPtyProvider } = await import('../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry')
     const { agentHookServer } = await import('../../../third_party/orca-v1.4.230/src/main/agent-hooks/server')
     await agentHookServer.start({ env: 'production', userDataPath: data, statusHooksEnabled: false })
@@ -102,42 +110,44 @@ async function main() {
     const { ORCHESTRATION_RUN_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs')
     const { ORCHESTRATION_WORKER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-methods')
     const { ORCHESTRATION_MUTATION_REQUEST_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/mutation-request-show')
-    const { ORCHESTRATION_SEND_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/send-methods')
     const { ORCHESTRATION_MESSAGE_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods')
     const { ORCHESTRATION_WORKER_LIST_METHOD } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-list-method')
     const { ORCHESTRATION_CALLER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/caller-show')
     const { SWA_METHODS } = await import('./native-methods')
-    const { OrchestrationError } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error')
-    const { admitNativeWorkerInputRPC } = await import('./worker-input')
-    const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.send', 'orchestration.requestShow'])
-    const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_SEND_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ORCHESTRATION_WORKER_LIST_METHOD, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
+    const { admitControllerRPC } = await import('./controller-admission')
+    const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runUse', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.requestShow'])
+    const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ORCHESTRATION_WORKER_LIST_METHOD, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))
     if (nativeMethods.length !== allowed.size || new Set(nativeMethods.map(method => method.name)).size !== allowed.size) throw new Error('The required native product RPC methods are incomplete')
-    const rpc = new RuntimeRpcShutdown({ runtime, userDataPath: data, enableWebSocket: false, methods: [...nativeMethods, ...SWA_METHODS], executionAdmission: async (request, _params, context) => {
-      if (request.method === 'swa.workerSend') { await admitNativeWorkerInputRPC(_params, request.orchestrationRequestId, { ...context, orchestrationCompatibilityEvidence: request.orchestrationCompatibilityEvidence }); return }
-      if (!request.method.startsWith('swa.')) return
-      const value = request.swaOwnerCapability
-      if (context.caller?.kind !== 'local-cli' || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value) || !timingSafeEqual(Buffer.from(value, 'hex'), ownerCapability)) throw new OrchestrationError('scope_denied', 'The private product owner capability is required')
-    } })
+    const rpc = new RuntimeRpcShutdown({ runtime, userDataPath: data, enableWebSocket: false, methods: [...nativeMethods, ...SWA_METHODS], executionAdmission: (request, params, context) => admitControllerRPC(request, params, context, ownerCapability) })
     registerCleanup(async () => {
       if (rpc.readClientActivity().requestsInFlight !== 0) throw new Error('SWA native requests remain in flight')
       const db = runtime.getOrchestrationDb()
       const count = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare("SELECT COUNT(*) AS count FROM mutation_receipts WHERE state='pending'").get())
       if (count.count !== 0) throw new Error('SWA native mutation outcomes remain pending')
       if (db.listWorkerTerminalResources().some(row => !row.resource || row.resource.release_state !== 'released')) throw new Error('SWA native Worker resources remain unreleased')
-      const opens = z.array(z.object({ caller_fingerprint: z.string(), receipt: z.string() })).parse(db.db.prepare("SELECT caller_fingerprint, receipt FROM mutation_receipts WHERE method='swa.controllerOpen' AND state='completed'").all())
+      const { controllerOwnerSchema, observeControllerExited } = await import('./controller-scope')
+      const opens = z.array(z.object({ caller_fingerprint: z.string(), receipt: z.string() })).parse(db.db.prepare("SELECT caller_fingerprint, receipt FROM mutation_receipts WHERE method IN ('swa.controllerOpen','swa.controllerRecover') AND state='completed'").all())
       for (const open of opens) {
         const owner = z.object({ controller: z.string().min(1) }).parse(JSON.parse(open.receipt))
         const closed = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
           WHERE caller_fingerprint=? AND method='swa.controllerClose' AND state='completed'
           AND json_valid(receipt)=1 AND json_extract(receipt, '$.controller')=?`).get(open.caller_fingerprint, owner.controller))
-        if (closed.count !== 1) throw new Error('SWA native controller close remains unconfirmed')
+        if (closed.count === 1) continue
+        const recovered = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
+          WHERE caller_fingerprint=? AND method='swa.controllerRecover' AND state='completed' AND json_valid(receipt)=1
+          AND json_extract(receipt, '$.prior_controller')=?`).all(open.caller_fingerprint, owner.controller))
+        if (closed.count !== 0 || recovered.length !== 1) throw new Error('SWA native controller close or completed recovery remains unconfirmed')
+        const actual = controllerOwnerSchema.parse(JSON.parse(open.receipt))
+        const prior = controllerOwnerSchema.parse(JSON.parse(recovered[0]!.receipt).prior_owner)
+        if (!isDeepStrictEqual(actual, prior)) throw new Error('SWA retired controller recovery identity differs')
+        await observeControllerExited(runtime, actual)
       }
       const ptys = await listLiveDaemonPtyIds()
       if (ptys === null || ptys.length !== 0) throw new Error('SWA private daemon idle inventory remains unconfirmed')
     })
     registerCleanup(() => rpc.stop())
     await rpc.start()
-    return { runtimeId: runtime.getRuntimeId(), dataRoot: data, node: process.execPath }
+    return { runtimeId: runtime.getRuntimeId(), dataRoot: data, node: process.execPath, ownership }
   }, () => { for (const callback of callbacks.splice(0)) callback() }, { browserProvider: false })
   const shutdown = installOrcadShutdownSignals(async () => {
     await running.stop()
@@ -151,6 +161,6 @@ async function main() {
     shutdown('SWA owning pipe ended during startup')
     return
   }
-  process.stdout.write(JSON.stringify({ ok: true, readiness: { runtimeId: running.runtimeId, dataRoot: running.dataRoot, node: running.node } }) + '\n')
+  process.stdout.write(JSON.stringify({ ok: true, readiness: { runtimeId: running.runtimeId, dataRoot: running.dataRoot, node: running.node }, ownership: running.ownership }) + '\n')
 }
 main().catch(error => { process.stderr.write(JSON.stringify({ code: 'swa_runtime_start_failed', message: error instanceof Error ? error.message : 'SWA startup failed' }) + '\n'); process.exitCode = 1 })

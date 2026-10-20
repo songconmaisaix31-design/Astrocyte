@@ -120,8 +120,11 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		}
 		return output.failure("resource_refused", err.Error(), "inspect_current_resources", 5)
 	}
-	job, err := ownServiceTree()
+	job, err := ownServiceTree(canonicalData, install)
 	if err != nil {
+		if errors.Is(err, errServiceOwnershipUnknown) {
+			return output.failure("operation_unknown", err.Error(), "inspect_original_daemon_and_service_job", 6)
+		}
 		return output.failure("provider_unavailable", err.Error(), "inspect_owned_service_job", 4)
 	}
 	var node, server *ownedService
@@ -185,7 +188,11 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		return finish(130, "启动已取消")
 	}
 	baseEnv := native.ChildEnvironment()
-	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "GOMAXPROCS=4", "GOMEMLIMIT=512MiB")
+	ownership, err := json.Marshal(job.ownership)
+	if err != nil {
+		return finish(7, "实际服务 Job 身份无法编码")
+	}
+	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "GOMAXPROCS=4", "GOMEMLIMIT=512MiB", "SWA_SERVICE_JOB="+string(ownership))
 	nodeCommand := exec.Command(filepath.Join(install, "node", "node.exe"), "--max-old-space-size=1024", filepath.Join(install, "runtime", "host.cjs"))
 	nodeCommand.Env, nodeCommand.Dir, nodeCommand.Stderr = baseEnv, install, stderr
 	ready := make(chan nativeStartup, 1)
@@ -203,6 +210,9 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	case actual := <-ready:
 		if actual.err != nil {
 			return finish(7, actual.err.Error())
+		}
+		if err := job.verifyDaemon(actual.ownership); err != nil {
+			return finish(6, err.Error())
 		}
 		nativeReady = actual.readiness
 		output.identity.RuntimeID = nativeReady.RuntimeID
@@ -360,6 +370,7 @@ type nativeStopped struct {
 
 type nativeStartup struct {
 	readiness nativeReadiness
+	ownership serviceJobOwnership
 	err       error
 }
 
@@ -367,19 +378,20 @@ func readNativeLifecycle(stream io.Reader, ready chan<- nativeStartup, stopped *
 	decoder := json.NewDecoder(stream)
 	decoder.DisallowUnknownFields()
 	var first struct {
-		OK        bool            `json:"ok"`
-		Readiness nativeReadiness `json:"readiness"`
-		Type      string          `json:"type"`
-		RuntimeID string          `json:"runtime_id"`
-		DataRoot  string          `json:"data_root"`
+		OK        bool                 `json:"ok"`
+		Readiness nativeReadiness      `json:"readiness"`
+		Type      string               `json:"type"`
+		RuntimeID string               `json:"runtime_id"`
+		DataRoot  string               `json:"data_root"`
+		Ownership *serviceJobOwnership `json:"ownership"`
 	}
 	if err := decoder.Decode(&first); err != nil {
 		ready <- nativeStartup{err: err}
 		return err
 	}
 	var final nativeStopped
-	if first.OK && first.Type == "" && first.RuntimeID == "" && first.DataRoot == "" && first.Readiness.RuntimeID != "" && strings.EqualFold(first.Readiness.DataRoot, data) && strings.EqualFold(first.Readiness.Node, node) {
-		ready <- nativeStartup{readiness: first.Readiness}
+	if first.OK && first.Type == "" && first.RuntimeID == "" && first.DataRoot == "" && first.Ownership != nil && first.Readiness.RuntimeID != "" && strings.EqualFold(first.Readiness.DataRoot, data) && strings.EqualFold(first.Readiness.Node, node) {
+		ready <- nativeStartup{readiness: first.Readiness, ownership: *first.Ownership}
 		if err := decoder.Decode(&final); err != nil {
 			return err
 		}

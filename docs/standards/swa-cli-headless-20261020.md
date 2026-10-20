@@ -1116,4 +1116,24 @@ N17在host现有精确白名单中显式加入唯一`ORCHESTRATION_WORKER_LIST_M
 
 原Reviewer正式`1db70be01e6422355cc2884d5a6a21df93b48509`局部确认3192的N16/N17/N18 Pi源码修复，并退回共享回调的直接消费者；本Worker沿实际调用修改九份Claude/ACP/Codex源码。Claude dispatch、connection及SDK输入队列使用同一回调返回契约，异步批准后的同步guard在SDK iterator交出消息前执行，拒绝保留实际unwritten。ACP将同步guard保存在原steer队列项，等待前一prompt/cancel后、启动实际prompt前执行；拒绝不创建新的输入。Codex在等待实际turn打开及原steer/start分支后，把同步guard传至原connection.request的实际sendLine前，写入前拒绝沿真实unwritten类型解除本次echo关联，其他超时/断开保持原unknown。
 
-上述修改只同步实际共享契约及其真实消费，未使用cast、假声明或丢弃guard消除类型问题，不授予其他Agent原生ToolsOff、账号、模型或执行权限。类型入口§15.3包含这些真实传递imports；真实Claude/ACP/Codex及Pi执行结果均未据此登记通过。当前只执行`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n19-static.mjs`的九份成熟TS语法检查，文档来源/本地链接及空白检查；原件位于`n19-static-01/`，类型正文、构建及实际队列/模型检查保持`NOT_RUN`。T12其他文件继续开发，后台接续Job未完成，没有新重操作授权。
+上述修改只同步实际共享契约及其真实消费，未使用cast、假声明或丢弃guard消除类型问题，不授予其他Agent原生ToolsOff、账号、模型或执行权限。类型入口§15.3包含这些真实传递imports；真实Claude/ACP/Codex及Pi执行结果均未据此登记通过。当前只执行`node --max-old-space-size=512 .verification/swa-cli-headless-20261020/check-n19-static.mjs`的九份成熟TS语法检查，文档来源/本地链接及空白检查；原件位于`n19-static-01/`，类型正文、构建及实际队列/模型检查保持`NOT_RUN`。T12当前阶段源码及真实剩余条件见§16，没有新重操作授权。
+
+## 16. 控制端接续、严格调用者及具名服务Job阶段源码
+
+本阶段沿主控SPEC21.1.3及已审§3.4、§7.6实施，使用本Task/Dispatch原身份持续处理。`controller.recover`进入Go命令字段表、当前批准动作、runtime写动作分类、CLI副作用输出、Node命令及私有durable方法；HTTP/OpenAPI继续引用同一CLI schema。命令只接受既有controller/request_id，Go/App仍从真实当前项目、固定context及原授权取得invocation。CLI保留controller_unverifiable的6和consumer_fenced的3，未知效果不自动重发；生成类型尚未执行。
+
+`controller-admission.ts`在既有dispatcher进入legacy路由、native executor或completed子R重放之前核验。私有owner bridge仅允许固定产品端口及明确原生历史读取；实际helper须具备原生launch/restored attestation、原owner receipt、真实PTY/incarnation/root/helper创建身份。首次Run与根Task严格匹配pending父R、原子R和固定参数；recover只允许自身R/run-use与同一旧Run/root/context/generation。普通Task/Worker写入匹配当前consumer和原swa.controllerDeliver R/native，Worker.stop/release也核真实caller与Dispatch。所有参数按原动作完整比较，不接受调用者新增目标或第二用户任务。helper的实际status预检带原生launch证明，准备阶段允许尚无Run的真实观察。
+
+recover先在原SQLite的BEGIN IMMEDIATE中保留同一Run、旧owner及generation，再取得两次新鲜真实PTY和Windows进程观察。明确旧helper仍在且尚无外部效果时，沿原executor的effect-free结算拒绝；查询或结算未知保留原reservation。首次创建前持久记录R/controller-pty、原生推导handle及pty-spawn，随后只在首次分支调用原dedupeTerminalCreate/reconcileExisting=false。取得新helper实际launch及创建身份后，仅执行原生R/run-use，核同Run/root/context、新consumer及严格增加generation。pending同R只读原checkpoint、子receipt、进程及Run，不create/dedupe/send/runUse；缺证明继续unknown。完成接续后的实际selection仍来自同Run/root/Dispatch的原Worker开始回执，原pending Worker.start继续占该Run的两席与关闭条件。
+
+历史task/Worker/成果观察复用原方法注册表及真实DB/session来源，不依赖旧helper输入。controller.show无法确认活helper时返回实际owner/scope及controller_unverifiable。最终关闭须有每个最终owner的完成close，或唯一准确completed recover证明其旧owner已退出；pending recover、未释放Worker或非空daemon PTY均阻止正常退出。恢复本身不重新prompt、不新建替代Worker、不清除未知Job/输入或释放资源。
+
+Go首次serve创建当前用户与SYSTEM受保护DACL的`Local\SWAService<UUID>`，不设置kill-on-close或breakaway；当前serve在启动子进程前加入该Job。既有daemon-v49.pid和真实authenticated hello携带同一个swa_service_job对象，包含源码/私有根、原serve及实际daemon PID/创建时间和session。Go严格读取固定v49记录，其他协议、重定向、缺损或重复记录拒绝；复开时核旧serve已退出、同候选/私有根、实际daemon成员、Job权限及其他serve，再把当前serve加入原Job。Node通过实际Windows addon核成员、创建时间及DACL，并交叉核真实hello与PID record；内部ownership只供Go核验，公开readiness保持原三个字段。native实现尚未编译，实际复开、嵌套与ABI能力未验。
+
+`controller-recovery.mjs`已形成R01/R03/R04/R05/R09的核心真实入口：同一准确干净候选和公开项目、实际完成子R的无helper调用拒绝、活旧helper明确无效果结算、精确结束本项root/helper、同Run接续、完成R重放、旧C与第二任务拒绝、历史读取及关闭。strict-caller-probe使用原Runtime transport和真实已有R，不造launch证明；故障脚本在已有私有Job成员核验后持有真实Process.SafeHandle，核创建时间/程序及受保护进程列表，只结束本项实际root/helper。构建先生成实际probe bundle，服务期间不编译。T12外围沿原服务/资源/Orca保全路径；输出remainingCases非空时返回6，不能登记完整T12通过。
+
+真实剩余条件包括同库serve/runtime重启及同Job复开、recover各效果边界断开与pending/竞争屏障、真实restored证明及旧generation、另一真实项目/Run，以及同一活Worker会话与unknown资源保留。§7.6的全部条件和T13同候选双Worker验收保持；未命中细窗口记INCONCLUSIVE，未执行保持NOT_RUN。当前入口没有运行任何CLI、服务、原生故障或模型正文，完整T12其余入口继续由同一Worker完成，通用终端正文也继续实施。
+
+本阶段静态检查入口为`.verification/swa-cli-headless-20261020/check-t12-source-static.ps1`，原件目录`t12-source-static-01/`。检查限定成熟TS/JS语法、CLI JSON与OpenAPI YAML解析、Go只读gofmt-d、两份PowerShell Parser、native JS的node --check、三份Markdown来源/本地链接和Git空白；未创建TypeScript Program，未编译Go/C++，未运行测试正文。必要类型声明的真实锁/安装、完整类型检查、生成、构建及所有动态验收仍须主控交付准确串行窗口。
+
+该入口本次实际EXIT0：24份TS/MJS语法、JSON/YAML、8份Go格式、两份PowerShell Parser、native JS语法及Git空白检查通过；三份Markdown共7个本地链接、24处Orca及11处Pi来源路径检查通过。完整类型、生成、Go/C++构建、CLI、native Job、故障、服务与模型正文全部NOT_RUN，静态检查不构成T12或安装接受。

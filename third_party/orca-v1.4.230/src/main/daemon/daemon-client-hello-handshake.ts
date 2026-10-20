@@ -1,4 +1,6 @@
 import type { Socket } from 'node:net'
+import { isDeepStrictEqual } from 'node:util'
+import { swaDaemonServiceJobSchema } from './swa-service-job'
 import { encodeNdjson, NDJSON_MAX_LINE_BYTES } from './ndjson'
 import { BINARY_STREAM_FRAMING, type DaemonStreamFraming } from './daemon-stream-binary-framing'
 import { CLEAN_DISCONNECT_PROTOCOL_VERSION, DaemonProtocolError } from './types'
@@ -138,6 +140,7 @@ function parseDaemonEndpointIdentity(value: unknown): DaemonEndpointIdentity | n
     entryPath?: unknown
     appVersion?: unknown
     spawnerExecPath?: unknown
+    swa_service_job?: unknown
   }
   if (
     !Number.isSafeInteger(identity.pid) ||
@@ -150,6 +153,8 @@ function parseDaemonEndpointIdentity(value: unknown): DaemonEndpointIdentity | n
   ) {
     return null
   }
+  const serviceJob = identity.swa_service_job === undefined ? undefined : swaDaemonServiceJobSchema.safeParse(identity.swa_service_job)
+  if (serviceJob && !serviceJob.success) return null
   return {
     pid: identity.pid as number,
     startedAtMs: identity.startedAtMs,
@@ -162,7 +167,8 @@ function parseDaemonEndpointIdentity(value: unknown): DaemonEndpointIdentity | n
       : {}),
     ...(typeof identity.spawnerExecPath === 'string' && identity.spawnerExecPath.length > 0
       ? { spawnerExecPath: identity.spawnerExecPath }
-      : {})
+      : {}),
+    ...(serviceJob?.success ? { swa_service_job: serviceJob.data } : {})
   }
 }
 
@@ -176,6 +182,7 @@ export function sameDaemonIdentity(
       right !== null &&
       left.pid === right.pid &&
       left.startedAtMs === right.startedAtMs &&
-      left.launchNonce === right.launchNonce)
+      left.launchNonce === right.launchNonce &&
+      isDeepStrictEqual(left.swa_service_job, right.swa_service_job))
   )
 }

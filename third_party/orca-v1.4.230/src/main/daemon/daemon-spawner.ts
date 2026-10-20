@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import type { PtyProcessCeilingState } from '../../shared/pty-process-ceiling-state'
+import type { SwaDaemonServiceJob } from './swa-service-job'
 import {
   constants,
   copyFileSync,
@@ -35,6 +36,7 @@ export type DaemonPidFile = {
   cgroupUnit?: string | null
   /** Whether this daemon's terminals run under an OS process ceiling, and why not when off. */
   processCeiling?: PtyProcessCeilingState
+  swa_service_job?: SwaDaemonServiceJob
 }
 
 export type DaemonProcessHandle = {

@@ -11,6 +11,7 @@
 #include <sddl.h>
 
 #include <functional>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,6 +30,11 @@ struct LocalDeleter {
   void operator()(void* pointer) const { LocalFree(pointer); }
 };
 using LocalPtr = std::unique_ptr<void, LocalDeleter>;
+
+struct HandleDeleter {
+  void operator()(void* pointer) const { CloseHandle(pointer); }
+};
+using HandlePtr = std::unique_ptr<void, HandleDeleter>;
 
 Napi::Error ToError(Napi::Env env, const Win32Result& result) {
   return Napi::Error::New(
@@ -299,6 +305,61 @@ Napi::Value SetDaclSddl(const Napi::CallbackInfo& info) {
   return env.Undefined();
 }
 
+Napi::Value ReadServiceJobMember(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  if (info.Length() != 2 || !info[0].IsString() || !info[1].IsNumber()) return ThrowTypeError(env, "readServiceJobMember(name: string, pid: number)");
+  const auto name = info[0].As<Napi::String>().Utf16Value();
+  const double requested = info[1].As<Napi::Number>().DoubleValue();
+  if (name.rfind(u"Local\\SWAService", 0) != 0 || name.size() > 256 || !std::isfinite(requested) || requested <= 0 || requested > MAXDWORD || std::floor(requested) != requested) return ThrowTypeError(env, "SWA service Job identity is invalid");
+  HandlePtr job(OpenJobObjectW(JOB_OBJECT_QUERY | READ_CONTROL, FALSE, reinterpret_cast<LPCWSTR>(name.c_str())));
+  if (!job) { ToError(env, Fail("OpenJobObjectW", GetLastError())).ThrowAsJavaScriptException(); return env.Undefined(); }
+  HandlePtr process(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, static_cast<DWORD>(requested)));
+  if (!process) { ToError(env, Fail("OpenProcess", GetLastError())).ThrowAsJavaScriptException(); return env.Undefined(); }
+  BOOL member = FALSE;
+  if (!IsProcessInJob(process.get(), job.get(), &member) || !member || WaitForSingleObject(process.get(), 0) != WAIT_TIMEOUT) { Napi::Error::New(env, "SWA service Job live membership is unavailable").ThrowAsJavaScriptException(); return env.Undefined(); }
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
+  if (!QueryInformationJobObject(job.get(), JobObjectExtendedLimitInformation, &limits, sizeof(limits), nullptr) || limits.BasicLimitInformation.LimitFlags != 0) { Napi::Error::New(env, "SWA service Job limits changed").ThrowAsJavaScriptException(); return env.Undefined(); }
+  FILETIME created{}, exited{}, kernel{}, user{};
+  if (!GetProcessTimes(process.get(), &created, &exited, &kernel, &user)) { ToError(env, Fail("GetProcessTimes", GetLastError())).ThrowAsJavaScriptException(); return env.Undefined(); }
+  ULARGE_INTEGER time{};
+  time.LowPart = created.dwLowDateTime;
+  time.HighPart = created.dwHighDateTime;
+  PSID owner = nullptr;
+  PACL dacl = nullptr;
+  PSECURITY_DESCRIPTOR raw = nullptr;
+  const DWORD status = GetSecurityInfo(job.get(), SE_KERNEL_OBJECT, OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, &owner, nullptr, &dacl, nullptr, &raw);
+  LocalPtr descriptor(raw);
+  if (status != ERROR_SUCCESS || !owner || !dacl) { ToError(env, Fail("GetSecurityInfo", status == ERROR_SUCCESS ? ERROR_INVALID_SECURITY_DESCR : status)).ThrowAsJavaScriptException(); return env.Undefined(); }
+  SECURITY_DESCRIPTOR_CONTROL control = 0;
+  DWORD revision = 0;
+  if (!GetSecurityDescriptorControl(raw, &control, &revision)) { ToError(env, Fail("GetSecurityDescriptorControl", GetLastError())).ThrowAsJavaScriptException(); return env.Undefined(); }
+  auto aces = Napi::Array::New(env, dacl->AceCount);
+  for (DWORD index = 0; index < dacl->AceCount; index++) {
+    void* entry = nullptr;
+    if (!GetAce(dacl, index, &entry)) { ToError(env, Fail("GetAce", GetLastError())).ThrowAsJavaScriptException(); return env.Undefined(); }
+    auto* header = static_cast<ACE_HEADER*>(entry);
+    if (header->AceType != ACCESS_ALLOWED_ACE_TYPE) { Napi::Error::New(env, "SWA service Job ACE type changed").ThrowAsJavaScriptException(); return env.Undefined(); }
+    auto* allowed = static_cast<ACCESS_ALLOWED_ACE*>(entry);
+    auto sid = SidString(env, &allowed->SidStart);
+    if (env.IsExceptionPending()) return env.Undefined();
+    auto ace = Napi::Object::New(env);
+    ace.Set("sid", sid);
+    ace.Set("mask", Napi::Number::New(env, allowed->Mask));
+    ace.Set("flags", Napi::Number::New(env, header->AceFlags));
+    aces.Set(index, ace);
+  }
+  auto ownerSid = SidString(env, owner);
+  if (env.IsExceptionPending()) return env.Undefined();
+  auto result = Napi::Object::New(env);
+  result.Set("name", info[0]);
+  result.Set("pid", Napi::Number::New(env, requested));
+  result.Set("creationTimeMs", Napi::Number::New(env, static_cast<double>(time.QuadPart / 10000ULL - 11644473600000ULL)));
+  result.Set("ownerSid", ownerSid);
+  result.Set("protected", Napi::Boolean::New(env, (control & SE_DACL_PROTECTED) != 0));
+  result.Set("aces", aces);
+  return result;
+}
+
 Napi::Value CreateFileWithDaclJs(const Napi::CallbackInfo& info) {
   auto env = info.Env();
   if (info.Length() < 3 || !info[0].IsString() || !info[1].IsString() ||
@@ -404,6 +465,7 @@ Napi::Value GrantAccessAsync(const Napi::CallbackInfo& info) {
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set("currentUserSid", Napi::Function::New(env, CurrentUserSid));
   exports.Set("getDaclAces", Napi::Function::New(env, GetDaclAces));
+  exports.Set("readServiceJobMember", Napi::Function::New(env, ReadServiceJobMember));
   exports.Set("setDaclSddl", Napi::Function::New(env, SetDaclSddl));
   exports.Set("setDaclSddlAsync", Napi::Function::New(env, SetDaclSddlAsync));
   exports.Set("createFileWithDacl", Napi::Function::New(env, CreateFileWithDaclJs));
