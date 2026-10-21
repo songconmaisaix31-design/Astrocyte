@@ -4,7 +4,7 @@
 
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。真实模型、完整安装及同候选双Worker仍未通过。
 
-原生OpenCode完整F18C方案/O01—O10已获828ca336独立技术接受，接口定稿于SPEC §21.1.5—§21.1.6，开发源已提交3bbfc138及后继返修。针对性构建通过，36—38真实原exe/ACP/私有serve启动后所属Job完整退出；38因全新私有DB未导入credential而拒绝完整active，尚无prompt/模型。独立接受F803修订后，原Worker直接使用官方auth import/内存stdin/原Entry初始化，再验证新ACP的实际active/凭据/空工具；最终同安装双Worker仍未验。实际默认模型、原SQLite选择及GET31的200已核，已验安装仍f2ab。原HTTP保留默认redirect、检查初始目标及固定逻辑来源；既有其他Agent测试许可保持。
+开发源fe822783已普通push，首次真实原生模型46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功和完整消息，两个所属Job全部退出；strict/architecture47各0。42私有导入/无推理获6636cdf1独立限定接受，43最终build/deny、44错模型及45缺policy拒绝实际0。当前正在接入Swarm全部Go/TS/选择/Grant/输入/成果消费者；46和准确fe独立CR继续，产品Worker、执行Grant、最终同安装双Worker仍未验。F18C/F803合同及原HTTP初始目标边界按SPEC §21.1.5—§21.1.6，已验安装仍f2ab，原95ef/5187保持。
 
 用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，其他Agent原生调用仍有NativeLaunch合同缺口，继续补齐。StepFun已核来源未发现，配置路径已询问；模型、真实双Worker、T11/T12仍未通过。
 
