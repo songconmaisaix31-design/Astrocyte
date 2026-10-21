@@ -1972,3 +1972,19 @@ Reviewer实际以安装Node24.21.0执行自有review-opencode31-account.mjs，�
 **接受准确客户端`B3F40C728C7CCD57915579C2CD1950F4561AC24D22CF781D3CFD0105708AD765`的实际GET31范围。** 完整4382字节客户端及原始log、退出码和result已独立读取；实际固定Node下于UTC2026-10-21T20:28:05.162Z只发出一次GET https://api.deepseek.com/models，返回200，所选deepseek-v4-pro存在，实际退出0。redirect:error、30秒signal、无重试，认证仅在内存HTTP Header，保存内容限安全元数据；原auth/config stat及字节保持，没有源写入、原生session、推理请求或Grant。原件deepseek-models31/result.json与log一致；该接受限本次真实key的模型列表读取，不证明余额、实际推理或2.0.31最终credential选择。
 
 32f254c5安装范围hook已获主控`msg_794a229cd5fb`明确完整读取回复。完整OpenCode计划、私有账户实际导入/最终权限、原生模型及产品执行仍待原Worker提交，不依据本次200扩大接受范围。
+
+### 准确OpenCode33完整技术计划
+
+**接受`native-opencode33-plan.md`准确SHA256 `F18C0ED603668BE5A3FA1E49C8C9F2DF476D08C4824E17BBEC6C8BAD4AA63BD9`的技术方案、接口及O01—O10测试计划范围。** 当前正文已完整读取，独立D01—D08形成在先。D01对应O01/O03的实际源和原生credential选择，D02对应O03/O04/O09的每Worker根/DB及拒绝，D03对应O03—O05的最终权限/空工具和实际模型请求，D04对应O03/O05的固定逻辑模型/来源及初始目标和官方retry，D05对应O03/O06/O09/O10的完整所属Job，D06/D07对应O04/O07/O09/O10的当前批准、原输入、错误和恢复，D08对应O05及O07—O10的完整成果、同安装双Worker和停止。必要覆盖齐全，未发现多余用例；不重复既有GET/Observe或为文档重编不变native/Go。定向入口以实际文件和准确摘要交审，计划中的拟用命令未登记为执行。
+
+新NativeLaunch account严格联合保留Pi，增加固定实际2.0.31/DeepSeek原生政策与非秘密来源和credential身份；每个实际Orca session有自己的private locator、HOME/USERPROFILE、XDG、ProgramData、TEMP和DB。原node-script与真实executable的IPC分支分别处理，原ACP request/response/update沿准确原协议进入trace，没有合成Pi事件。完整结果增加实际opencode-sqlite source联合，按所属session只读事务取得全部原始消息、完整文本和12MiB限额；检查输入/模型/状态/版本及原journal，跨库一致性分别观察，秘密出现时整体拒绝导出并保留私有原文。Go/TS/HTTP/schema及原launch/account/resume/input/result/build/install直接消费者均列入同一Worker范围。
+
+官方policy插件就绪接口已具体为同一私有serve的plugin.updated事件→官方plugin.list实际inventory→原stderr管道，原Standalone在OPENCODE_PRINT_LOGS=1时继承该管道。严格状态关联每Worker值、private root、单调序号和实际server PID；host沿原Job取得真实创建身份和成员，不依据文件或setup日志准入。缺失/failed/pending/inactive或身份/来源变化拒绝首笔及后续输入，原生hook逐次核inventory/source；缺插件真实用例不得产生ready或prompt。清除原工具/来源和最终global/Agent/session deny共同关闭工具，实际context和HTTP请求核工具0，primary模型/初始URL固定，辅助/WS意外通道拒绝，原retry hook设false。插件不注册工具/provider，不改写model/prompt/请求正文；O03先以真实私有实例无推理验证生产与消费，随后进入真实正文和最终整包。
+
+独立完整读取原Promise session hook与PluginHooks/retry及model-request相关消费者，callback沿Effect.promise逐项执行、handler之前的失败传播具备实际源码依据。另读准确AISDKNative和factory，确认该实际DeepSeek原生映射。opencode-credential-db32完整reader/result/退出0已读：node:sqlite readOnly/query_only只查询原credential表，唯一DeepSeek key、active=null，原生排序选中值与legacy相同；只输出非秘密身份和等值布尔值，原auth字节/stat及DB stat保持，没有原native CLI或模型。此源观察与后继每Worker真实导入/选择分别验收，Reviewer没有重复读取原会话内容或调用HTTP。
+
+HTTP范围依据主控`msg_1861239c4c1a`：保留原CLI默认follow，产品检查初始URL及固定逻辑provider/model/source，不声称控制全部网络跳转。独立读取准确core/util平台绑定与RequestExecutor、同版effect4.0.1官方npm包；成熟JSON/.NET SHA512核dist.integrity一致，标准tar读取原FetchHttpClient与HttpClientRequest，实际fromWeb不保留redirect，RequestInit只提供timeout:false。该事实限定传输声明，没有新增禁止redirect能力、验收或阻塞；GET31的独立redirect:error保持原范围。既定原生账户/权限、失败停止和真实完整执行条件保持。
+
+完整计划接受通知为`msg_47ae44cc7e18`，主控接口定稿请求为`msg_51e0753e5b74`。计划第4节的CACHE_HOME/CONFIG_HOME/STATE_HOME按原Global roots使用完整XDG_CACHE_HOME/XDG_CONFIG_HOME/XDG_STATE_HOME，并在O03直接核实际根；该明确含义已交原Worker和主控。主控写入准确SPEC后同一Worker连续实施O02/O03，再完成全部受影响消费者及真实正文/同安装双Worker，不在计划接受处结束任务。Reviewer不签Grant，原Observe按实际时效自然到期，执行Grant由主控按真实批准路径安排。
+
+**同时限定接受主线`d21aee9088a5f1e4a568cf09dd99025eb741f310`五份事实源的记录范围。** 相对b530的准确差异已完整读取，Pi custom原合同、f2ab已验安装/故障范围、95ef Observe、GET31及继续OpenCode分别记录；完整安装6、实际模型/双Worker、T11/S3和执行Grant未验或待定保持。实际check-revision退出0，成熟marked18.1.0解析五份/95本地链接，Git空白通过，不为管理文档另开功能阶段。5e038466的窄计划/GET hook已获主控`msg_07afe97ef05d`明确完整读取回复；当前没有将OpenCode真实运行或完整CLI记为通过。
