@@ -1842,3 +1842,26 @@ verify-types24完整脚本及全部原件已读：使用原serve/owner完整UTC�
 Reviewer实际`check-revision.ps1`核c851→c6d及d5→ebb均EXIT0；成熟marked18.1.0分别解析两文档/6本地链接及四文档/89本地链接，Git空白通过。准确23全文、真实UTC类型/时钟、精确CIM及公开服务既有独立结果保持，没有重做构建或模型检查。最新GitHub正式CLI PR查询为空，本阶段无可提交COMMENT review的对象；M0原正式审查及既有合并范围保持。
 
 beadc233三份hook已获主控`msg_77bc2ab06d08`、`msg_1668d99d70a9`、`msg_1f695caf66e8`明确完整读取回复。主控已再次发送新23本人请求，仍没有实际成功回执或凭据；原旧命令是否执行过保持待反馈。本阶段独立审查记录完成，程序整体及真实Agent/模型、工具、完整T03/T12、同一最终安装双Worker及成果继续未验，产品main未发布。
+
+## 会话批准后的仅Observe委托复验
+
+本阶段Reviewer为`task_9ae5a1337e1d / ctx_5f4446e340a0`，沿原Orca/Codex会话和本报告接续，没有新模型或子Agent。此前`ctx_40bf84d10b8c`已结算，独立只读咨询`msg_1b2765afea53`没有使用其生命周期；失败的readiness尝试也不承担本阶段结果。当前Worker为同模块原树的`ctx_fb2c13c28d40`。
+
+用户已在当前会话明确`APPROVE OBSERVE`，禁止Aliyun key、Aliyun Agent和百炼代理，允许阶跃星辰及其他Agent测试。最新主控QUESTIONS首节、HANDOFF和STATUS已重读；该决定当前位于主控未提交工作树，主控HEAD仍为`ebb16d18d0fbfa627ed169c59cbf3a379442db79`。Observe批准保持已确认，真实凭据生成与消费须另验；执行Grant、工具范围、T11及原S3未决项分别保持。
+
+独立条件在读取本轮Worker计划前已由上述咨询根据真实源码形成。实际`session.go`的bootstrap接受普通本机无Origin请求，服务生成随机cookie/CSRF并固定返回`local-human/human`；middleware依据实际cookie、有效期和CSRF建立Principal，未校验本人TTY。项目设置、Grant和token仍由App的human检查处理，正文不能声明Actor，Agent Bearer不能调用管理路由。现有human会话具有12小时管理能力，没有服务端仅Observe委托会话；本次固定准备流程和最终一小时项目token/Grant限定获准范围。记录须区分真实用户会话批准、实际Agent执行者和服务返回主体，不能将其登记为本人TTY或T11通过。
+
+| 条件 | 正确行为及必要验证 |
+| --- | --- |
+| O01 授权与执行者 | 原用户消息及主控真实转达是批准来源；新入口明确本次会话委托和原Worker身份，原23保持原件，不调用Read-Host、不注入TTY、不填写Actor或自造cookie/token。 |
+| O02 准确安装与公开项目 | 使用同一95ef/install20、human22/64509、原5187及FD5精确身份；每次效果前核三进程创建身份、父子/监听/runtime，固定公开仓库HEAD和origin，原Orca、账号及保护文件保全。 |
+| O03 真实准备与持久范围 | 真实session/cookie/CSRF只用于固定空间、项目、仅observe设置和Grant及token五项准备；核真实响应及SQLite的project/root/caller/revision、唯一observe、无执行/工具/目录及外发扩大，不能仅凭HTTP回显宣布持久成功。 |
+| O04 凭据与日期 | 服务真实签发token并保存摘要/实际到期；成熟DateTimeOffset转换、CurrentUser DPAPI、私有ACL、无reparse、CreateNew及finally清理保持，秘密不进入参数、日志、提交、消息或模型输入。 |
+| O05 成功消费 | 新入口及原consumer23分别用实际项目token取得同一候选status/capabilities，真实退出和来源完整；不创建模型Worker或调用模型，发现/配置/安装/可启动与实际调用分开判断。 |
+| O06 真实拒绝与效果 | 用真实Observe token核控制动作、人类写端点拒绝；缺cookie、缺CSRF和跨源请求实际拒绝。对照实际持久任务/Worker、原生会话及所属进程，确认拒绝先于模型和Worker效果，不伪造有效凭据或故障。 |
+| O07 部分效果与重复 | 原目录/凭据/部分状态存在时停止；写前保存非秘密request_id及路径，未知立即核原请求和实际状态，不盲重试。generic commandHandler只核元字段，RegisterProject每次生成UUID，不能由Idempotency-Key推断持久去重。 |
+| O08 Agent与未验范围 | 只读真实配置并使用成熟格式库，输出来源类型及非秘密模型/目标信息；Aliyun调用为零，StepFun或其他Agent仍按实际注册和既定NativeLaunch合同验证。工具、执行权限及缺失原生调用不得由Observe或配置存在替代。 |
+
+准确`EFD2DCD35C8B051A91B90F4226529B07E6574DA0084E0AB113EA3E69D78E7C56`的`delegated-observe24-plan.md`已完整读取。O01/O02/O04/O05/O07及仅Observe边界具备，O03允许API结果替代持久核验，O06未列实际拒绝及无副作用检查；本版本计划退回这些验证范围，已通过`msg_6a4fcd0750f3`交原Worker、`msg_c729e58ab00a`交主控。未要求构建、额外模型窗口或伪造错误；补充版本按准确摘要重新审核，客户端正文及真实授权尚未执行。
+
+**接受完整后继计划`4B5279939675B4C8E062A8854F1E803DFF9A89F4957AA6EC47A437A2C92F43B9`的仅Observe技术及必要验证范围。** 逐项对照O01—O08：五项真实403明确为无cookie读取、真实cookie缺CSRF写入、不同loopback Origin读取、真实Observe token的合法controller.open和人类Grant端点拒绝；后两项沿实际公开root和真实request_id，不造原生对象。最终真实SQLite须核root、settings r2、唯一observe、控制/目录false、工具/子目录为空、外发CLI空，以及同project/caller的Grant动作和实际expiry；准备及拒绝前后核space/project/Grant、原生session、关联、journal和全部工作表，只允许已批准三种记录新增。12小时宽cookie、未知停止、准备写无持久去重、原账号/Orca保全和秘密范围均明确，没有多余的构建或模型检查。完整后继及准确摘要已读取，成熟marked18.1.0解析EXIT0；主控`msg_58a2d16539f2`明确采用补充后连续实施范围，Worker实施通知为`msg_700b286bdd14`。本接受只覆盖计划，客户端准确源码、真实授权与消费结果仍须独立复验。
