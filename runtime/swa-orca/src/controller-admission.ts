@@ -8,7 +8,7 @@ import { authority, controllerOwnerSchema, controllerScope, exactController, obs
 import { admitNativeWorkerInputRPC } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 
-const deny = (message: string): never => { throw new OrchestrationError('scope_denied', message, { effectsApplied: false }) }
+function deny(message: string): never { throw new OrchestrationError('scope_denied', message, { effectsApplied: false }) }
 const historyReads = new Set(['status.get', 'orchestration.requestShow', 'orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
 const workerReads = new Set(['orchestration.workerShow', 'orchestration.workerRead'])
 

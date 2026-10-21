@@ -9,8 +9,6 @@ import (
 	"os/exec"
 )
 
-func configureCurrentProcess() error { return errors.New("此产品安装候选仅支持 Windows") }
-
 func configureServiceChild(_ *exec.Cmd) {}
 
 type serviceJob struct{ ownership serviceJobOwnership }

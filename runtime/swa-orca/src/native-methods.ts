@@ -12,7 +12,7 @@ import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
-import { invocationSchema, helperReply, nativeObject, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, scopeSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
+import { invocationSchema, helperReply, nativeObject, nativeError, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, scopeSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
 import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
@@ -27,7 +27,7 @@ import { ORCHESTRATION_WORKER_LIST_METHOD } from '../../../third_party/orca-v1.4
 
 const wrapper = z.object({ invocation: invocationSchema })
 const lookup = z.object({ project_id: z.string().min(1), controller: z.string().min(1) })
-const fail = (code: string, message: string): never => { throw new OrchestrationError(code, message) }
+function fail(code: string, message: string): never { throw new OrchestrationError(code, message) }
 const historyMethods = new Set(['orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
 const history = buildRegistry([...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_WORKER_CONTROL_METHODS, ORCHESTRATION_WORKER_LIST_METHOD].filter(method => historyMethods.has(method.name)))
 
@@ -114,7 +114,7 @@ async function createController(context: RpcContext, project: string, workspace:
   if (!node) throw new Error('installed_node_missing')
   const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
     (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
-      launchConfig: { agentCommand: `"${node}"`, agentArgs: `--max-old-space-size=1024 "${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
+      launchConfig: { agentCommand: `"${node}"`, agentArgs: `"${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
       title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
     }))
   if (terminal.handle !== controller) throw new Error('native_controller_handle_mismatch')
@@ -127,7 +127,12 @@ async function createController(context: RpcContext, project: string, workspace:
   const root = rows.find(row => row.pid === pty.rootProcessId), helper = rows.find(row => row.pid === observed.pid)
   if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
   const ancestors = new Set<number>()
-  for (let item = helper; item && !ancestors.has(item.pid); item = rows.find(row => row.pid === item!.ppid)) { ancestors.add(item.pid); if (item.pid === root.pid) break }
+  for (let item: typeof helper | undefined = helper; item && !ancestors.has(item.pid);) {
+    ancestors.add(item.pid)
+    if (item.pid === root.pid) break
+    const parentPid: number = item.ppid
+    item = rows.find(row => row.pid === parentPid)
+  }
   if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
   const live = runtime.getOrchestrationDispatchAuthority(controller)
   const processIncarnation = runtime.getTerminalProcessIncarnation(controller)

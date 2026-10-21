@@ -10,7 +10,9 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 本阶段Worker使用实际安装的 `@earendil-works/pi-coding-agent 1.0.1` 原生CLI和其真实provider实现，Agent及provider/model必须明确选择。已审政策限定既有原生API-key来源及三类已核API，原auth/models只读，所选有效材料在私有DataRoot中按受保护ACL独占创建；原账号不会进入安装包。固定RPC/关闭工具参数、原生状态、来源及当前批准在效果前核查；认证、工具关闭及实际模型仍须按当前测试计划获得真实验证。
 
-运行依赖和构建工具的准确输入记录在 `runtime/swa-orca/package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml` 及 `dependencies.lock.json`。pnpm deploy 按锁导出包含 workspace 的独立依赖闭包，安装复制实际内容；每个第三方包的许可和 notices 随其原始 package 内容保留。node-pty、windows-process-tree 及Windows安全模块的相关补丁属于获准来源适配，Worker及服务Job保护须使用该候选实际编译的native能力。node-gyp12.3.0和TypeScript6.0.3为构建/检查工具；Electron43.7.8与六份新增@types包为已审开发类型输入，安装使用ignore-scripts且prod deploy保持原规则。新增类型声明已由dependencies04完成真实锁与安装同步；严格类型检查仍未通过。
+运行依赖和构建工具的准确输入记录在 `runtime/swa-orca/package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml` 及 `dependencies.lock.json`。pnpm deploy 按锁导出包含 workspace 的独立依赖闭包，安装复制实际内容；每个第三方包的许可和 notices 随其原始 package 内容保留。node-pty、windows-process-tree 及Windows安全模块的相关补丁属于获准来源适配，Worker及服务Job保护须使用该候选实际编译的native能力。node-gyp12.3.0和TypeScript6.0.3为构建/检查工具；Electron43.7.8与新增@types包为开发类型输入，安装使用ignore-scripts且prod deploy保持原规则。真实声明、锁与安装已经同步。
+
+开发类型输入另含真实@types/express5.0.6，运行资源补充上游同版emojibase-data17.0.0；准确声明及锁同步保留。TypeScript6.0.3严格完整检查已通过，四个native模块已在固定Node24.21.0下真实编译及装载；完整候选仍须核相同源码及安装闭包。
 
 安装使用明确的新目录及私有当前用户 ACL，不修改 PATH、注册表、全局 Agent 配置或本机 Orca 安装。后台和会话数据由启动时明确的独立 data-dir 拥有；认证来源、受保护目录和真实当前项目授权分别核查。
 

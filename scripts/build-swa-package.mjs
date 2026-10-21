@@ -1,15 +1,15 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { access, copyFile, cp, lstat, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
+import { access, copyFile, lstat, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { root, findGo } from './process.mjs'
 import { NODE_RUNTIME_PIN, NODE_RUNTIME_ASSETS, nodeRuntimeReleaseUrl } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 import { buildSWARuntime } from './build-swa-runtime.mjs'
-import { slotSourceFiles } from '../third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs'
+import { buildNativePackage, nativePackages } from './build-swa-native.mjs'
 
-const { values } = parseArgs({ options: { output: { type: 'string' } }, allowPositionals: false })
+const { values } = parseArgs({ options: { output: { type: 'string' }, 'node-inputs': { type: 'string' } }, allowPositionals: false })
 if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('This candidate targets Windows x64')
 if (!values.output || !isAbsolute(values.output)) throw new Error('An explicit absolute --output inside dist is required')
 const output = resolve(values.output), beneath = relative(join(root, 'dist'), output)
@@ -31,7 +31,7 @@ await mkdir(temporaryRoot, { recursive: true })
 const work = await mkdtemp(join(temporaryRoot, 'candidate-'))
 const temp = join(work, 'temp')
 await mkdir(temp)
-const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_OPTIONS: '--max-old-space-size=1024', GOMAXPROCS: '4', GOMEMLIMIT: '512MiB', NODE_GYP_FORCE_PYTHON: python }
+const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_GYP_FORCE_PYTHON: python }
 const run = (program, args, cwd = root) => execFileSync(program, args, { cwd, env: environment, stdio: 'inherit', windowsHide: true, timeout: 20 * 60_000 })
 const capture = (program, args) => execFileSync(program, args, { cwd: root, env: environment, encoding: 'utf8', windowsHide: true, timeout: 60_000 }).trim()
 if (capture(process.execPath, [pnpm, '--version']) !== '11.27.0') throw new Error('The build requires pnpm 11.27.0')
@@ -63,7 +63,16 @@ const downloader = join(root, 'scripts', 'download-swa-node.ps1')
 await access(downloader)
 
 async function fetchPinned(file, expected, target) {
-  execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-File', downloader, '-Uri', nodeRuntimeReleaseUrl('official', file), '-WorkDirectory', work, '-OutputFile', target], { cwd: root, env: environment, stdio: 'inherit', windowsHide: true, timeout: 10 * 60_000 })
+  if (values['node-inputs']) {
+    const inputRoot = await realpath(values['node-inputs'])
+    const inputRelative = relative(await realpath(taskWork), inputRoot)
+    if (!inputRelative || inputRelative.startsWith('..') || isAbsolute(inputRelative)) throw new Error('Reusable Node inputs must belong to this task')
+    const source = file === NODE_RUNTIME_PIN.windowsImportLibs['win32-x64'].file ? join(inputRoot, 'headers', `node-v${NODE_RUNTIME_PIN.version}`, 'Release', 'node.lib') : join(inputRoot, file)
+    if (createHash('sha256').update(await readFile(source)).digest('hex') !== expected) throw new Error('Reusable pinned Node input differs: ' + file)
+    await copyFile(source, target)
+  } else {
+    execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-File', downloader, '-Uri', nodeRuntimeReleaseUrl('official', file), '-WorkDirectory', work, '-OutputFile', target], { cwd: root, env: environment, stdio: 'inherit', windowsHide: true, timeout: 10 * 60_000 })
+  }
   const body = await readFile(target)
   if (createHash('sha256').update(body).digest('hex') !== expected) throw new Error(`Pinned Node input differs: ${file}`)
   return body
@@ -95,36 +104,8 @@ environment.npm_config_devdir = join(work, 'gyp-cache')
 for (const key of Object.keys(environment)) if (/^(?:CL|_CL_)$/i.test(key)) delete environment[key]
 environment.CL = '/utf-8'
 console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL }))
-const installed = createRequire(join(runtime, 'package.json'))
-for (const [index, name] of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry'].entries()) {
-  const packageDir = await realpath(dirname(installed.resolve(name + '/package.json')))
-  const rel = relative(output, packageDir)
-  if (!rel || rel === '..' || rel.startsWith('..\\') || isAbsolute(rel)) throw new Error('Native build target escaped the private candidate')
-  if ((await lstat(packageDir)).isSymbolicLink()) throw new Error('Native build target is redirected')
-  if (name === 'node-pty') await copyFile(join(root, 'third_party', 'orca-v1.4.230', 'native', 'swa-provider-job.h'), join(packageDir, 'src', 'win', 'swa_provider_job.h'))
-  if (name === '@vscode/windows-process-tree') {
-    const headersDir = dirname(createRequire(join(packageDir, 'package.json')).resolve('node-addon-api/package.json'))
-    await cp(headersDir, join(packageDir, 'deps', 'node-addon-api'), { recursive: true, dereference: true, errorOnExist: true })
-  }
-  const analysisDirectory = join(work, 'a' + index)
-  await mkdir(analysisDirectory)
-  if ((await realpath(analysisDirectory)).toLowerCase() !== analysisDirectory.toLowerCase() || (await lstat(analysisDirectory)).isSymbolicLink()) throw new Error('The native analysis directory is redirected')
-  // 尾部两个反斜线在 MSVC 的带引号参数中表示目录末尾的一个反斜线。
-  environment._CL_ = '/analyze:log "' + analysisDirectory + '\\\\"'
-  if (environment._CL_.length > 1024) throw new Error('The native compiler environment exceeds the MSVC limit')
-  console.log(JSON.stringify({ stage: 'native-analysis-directory', package: name, directory: analysisDirectory, CL: environment.CL, _CL_: environment._CL_ }))
-  run(node, [gyp, 'rebuild', '--python=' + python, '--arch=x64', '--jobs=4', '--nodedir=' + nodeDir], packageDir)
-  if (name === 'node-pty') {
-    const analysis = await lstat(join(analysisDirectory, 'conpty.nativecodeanalysis.xml'))
-    if (!analysis.isFile() || analysis.size === 0) throw new Error('The actual ConPTY analysis log is missing')
-    const buildDir = join(packageDir, 'build', 'Release')
-    for (const [file, source] of slotSourceFiles({ platform: 'win32', arch: 'x64', buildDir, nodePtyDir: packageDir })) {
-      const destination = join(buildDir, file)
-      if (resolve(source) === resolve(destination)) continue
-      await mkdir(dirname(destination), { recursive: true })
-      await copyFile(source, destination)
-    }
-  }
+for (const [index, name] of nativePackages.entries()) {
+  await buildNativePackage({ name, index, runtime, work, node, nodeDir, python, gyp, environment })
 }
 delete environment._CL_
 const go = await findGo()

@@ -2,7 +2,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$OutputRoot)
 $ErrorActionPreference = 'Stop'
-[Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'
 $swaRepository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $swaAllowed = [IO.Path]::GetFullPath((Join-Path $swaRepository '.verification/swa-cli-headless-20261020')).TrimEnd('\') + '\'
 if (-not [IO.Path]::IsPathFullyQualified($OutputRoot)) { throw '需要新测试输出的绝对路径' }
@@ -20,8 +19,6 @@ $env:GOTMPDIR = $env:TEMP
 $env:GOCACHE = Join-Path $swaOutput 'go-cache'
 $env:GOMODCACHE = Join-Path $swaOutput 'go-modcache'
 $env:GOPATH = Join-Path $swaOutput 'gopath'
-$env:GOMAXPROCS = '4'
-$env:GOMEMLIMIT = '512MiB'
 $swaGo = (Get-Command go.exe -ErrorAction Stop).Source
 $swaPackages = @(
     @{ package = './cmd/swa'; binary = 'cmd-swa.test.exe'; test = 'TestOrcaCLIRealInstalledController' },

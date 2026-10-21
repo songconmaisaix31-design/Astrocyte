@@ -102,7 +102,7 @@ function callBrowserCommand(
   name: string,
   args: unknown[]
 ): unknown {
-  const member: unknown = name in commands ? commands[name] : undefined
+  const member: unknown = Reflect.get(commands, name)
   if (!isBrowserCommandMember(member)) {
     throw new BrowserError(BROWSER_UNAVAILABLE_ERROR_CODE, `Unknown browser command: ${name}`)
   }

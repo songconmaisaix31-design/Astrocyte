@@ -299,7 +299,7 @@ function retainedReason(resource: WorkerTerminalResourceRow): WorkerTerminalReta
 }
 
 function projectArchivedOutputLiveness<
-  T extends { status: { terminal: string; liveness: string } }
+  T extends { status: { terminal: string; liveness?: string } }
 >(output: T, liveness: 'live' | 'unverifiable' | 'exited'): T {
   return {
     ...output,

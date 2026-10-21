@@ -1,4 +1,4 @@
-import { WebSocketServer, type WebSocket } from 'ws'
+import { WebSocketServer, type WebSocket, type RawData } from 'ws'
 import { createServer, type Server } from 'node:http'
 import type { WebContents } from 'electron'
 import { CdpClientResponseWriter } from './cdp-client-response-writer'
@@ -95,7 +95,7 @@ export class CdpWsProxy {
       this.wss.on('connection', (ws) => {
         this.closeClient()
         this.client = ws
-        const onMessage = (data: WebSocket.RawData): void => {
+        const onMessage = (data: RawData): void => {
           this.handleClientMessage(ws, data.toString())
         }
         const onClose = (): void => {

@@ -1,4 +1,5 @@
 import type { GlobalSettings, OrcaWorkspaceLayout } from '../../../shared/global-settings-types'
+import { isTuiAgent } from '../../../shared/tui-agent-config'
 import { normalizeRuntimePathForComparison } from '../../../shared/cross-platform-path'
 import {
   legacyTerminalScrollbackBytesToRows,
@@ -165,13 +166,15 @@ export function migrateAgentYoloDefaults(
     // Keep newly added agents manual for profiles migrated by an older build.
     // Missing keys otherwise fall through to the current (possibly yolo) defaults.
     for (const agent of Object.keys(DEFAULT_TUI_AGENT_ARGS)) {
+      if (!isTuiAgent(agent)) throw new Error('Unknown default Agent')
       if (!(agent in existingArgs)) {
-        existingArgs[agent as keyof typeof DEFAULT_TUI_AGENT_ARGS] = ''
+        existingArgs[agent] = ''
       }
     }
     for (const agent of Object.keys(DEFAULT_TUI_AGENT_ENV)) {
+      if (!isTuiAgent(agent)) throw new Error('Unknown default Agent')
       if (!(agent in existingEnv)) {
-        existingEnv[agent as keyof typeof DEFAULT_TUI_AGENT_ENV] = {}
+        existingEnv[agent] = {}
       }
     }
     return {
@@ -184,26 +187,28 @@ export function migrateAgentYoloDefaults(
   const commandOverrides = settings?.agentCmdOverrides ?? {}
   const migratedArgs = { ...existingArgs }
   for (const [agent, args] of Object.entries(DEFAULT_TUI_AGENT_ARGS)) {
+    if (!isTuiAgent(agent)) throw new Error('Unknown default Agent')
     if (agent in migratedArgs) {
       continue
     }
     if (agent in commandOverrides) {
-      migratedArgs[agent as keyof typeof DEFAULT_TUI_AGENT_ARGS] = ''
+      migratedArgs[agent] = ''
       continue
     }
-    migratedArgs[agent as keyof typeof DEFAULT_TUI_AGENT_ARGS] = args
+    migratedArgs[agent] = args
   }
 
   const migratedEnv = { ...existingEnv }
   for (const [agent, env] of Object.entries(DEFAULT_TUI_AGENT_ENV)) {
+    if (!isTuiAgent(agent)) throw new Error('Unknown default Agent')
     if (agent in migratedEnv) {
       continue
     }
     if (agent in commandOverrides) {
-      migratedEnv[agent as keyof typeof DEFAULT_TUI_AGENT_ENV] = {}
+      migratedEnv[agent] = {}
       continue
     }
-    migratedEnv[agent as keyof typeof DEFAULT_TUI_AGENT_ENV] = { ...env }
+    migratedEnv[agent] = { ...env }
   }
 
   return {

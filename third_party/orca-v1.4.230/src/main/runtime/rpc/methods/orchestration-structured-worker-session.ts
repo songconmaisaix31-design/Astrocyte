@@ -228,7 +228,7 @@ function reasonClause(reason: string | null | undefined): string {
 
 /** What a preamble send reads of the host. */
 type StructuredWorkerPreambleHost = StructuredAgentTurnHost & {
-  deps: { store: { getRecord: (sessionId: string) => { lease: { runtimeFence: number } } | null } }
+  deps: { store: { getRecord: (sessionId: string) => { lease: { runtimeFence: number }; provider: string } | null } }
 }
 
 /** Delivers the dispatch preamble as the worker's first turn. `pending`: the worker's agent had

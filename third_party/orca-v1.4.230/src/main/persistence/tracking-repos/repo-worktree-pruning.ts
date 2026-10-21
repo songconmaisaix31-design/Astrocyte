@@ -1,5 +1,5 @@
 import type { WorkspaceKey } from '../../../shared/folder-workspace-types'
-import { LOCAL_EXECUTION_HOST_ID, type ExecutionHostId } from '../../../shared/execution-host'
+import { LOCAL_EXECUTION_HOST_ID, parseExecutionHostId, type ExecutionHostId } from '../../../shared/execution-host'
 import { parseWorkspaceKey } from '../../../shared/workspace-scope'
 import type { PersistedState } from '../../../shared/persisted-state-types'
 import type { WorkspaceSessionState } from '../../../shared/workspace-session-state-types'
@@ -120,7 +120,9 @@ export function pruneWorktreeStateForRepo(
       }
       const pruned = removeWorkspaceSessionOwners(session, ownerKeysToPrune)
       if (pruned) {
-        state.workspaceSessionsByHostId[partitionHostId] = pruned
+        const partition = parseExecutionHostId(partitionHostId)
+        if (!partition) throw new Error('Invalid persisted execution host identity')
+        state.workspaceSessionsByHostId[partition.id] = pruned
       }
     }
   }

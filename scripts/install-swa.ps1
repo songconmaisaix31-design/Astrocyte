@@ -7,8 +7,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'
-$env:NODE_OPTIONS = '--max-old-space-size=1024'
 
 function Get-PlainAbsolutePath([string]$InputPath) {
     if (-not [System.IO.Path]::IsPathFullyQualified($InputPath)) { throw '需要明确的绝对目录' }

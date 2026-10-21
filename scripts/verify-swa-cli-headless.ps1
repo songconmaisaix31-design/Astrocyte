@@ -26,10 +26,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'
-$env:NODE_OPTIONS = '--max-old-space-size=1024'
-$env:GOMAXPROCS = '4'
-$env:GOMEMLIMIT = '512MiB'
 $swaReadOnlySourceArgs = @()
 if ($AgentProfile) {
     if (-not [IO.Path]::IsPathFullyQualified($AgentProfile)) { throw '显式只读 Agent profile 必须是绝对路径' }

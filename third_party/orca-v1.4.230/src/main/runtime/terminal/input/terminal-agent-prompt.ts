@@ -23,7 +23,7 @@ import {
   resolveAgentPromptEffectTimeoutMs,
   verifyAgentPromptSubmission
 } from '../../agent-prompt-submission-verification'
-import { TUI_AGENT_CONFIG } from '../../../../shared/tui-agent-config'
+import { TUI_AGENT_CONFIG, isTuiAgent } from '../../../../shared/tui-agent-config'
 
 export abstract class OrcaRuntimeWithWriteTerminalAgentPrompt extends OrcaRuntimeWithResolveAuthoritativeTerminalWaitPermission {
   protected abstract createAgentPromptRenderGate(
@@ -228,7 +228,7 @@ export abstract class OrcaRuntimeWithWriteTerminalAgentPrompt extends OrcaRuntim
     options: RuntimeAgentPromptWriteOptions
   ): Promise<number> {
     const agent = this.getPtyAgent(ptyId)
-    const retryDelayMs = agent ? TUI_AGENT_CONFIG[agent]?.submitRetryDelayMs : undefined
+    const retryDelayMs = isTuiAgent(agent) ? TUI_AGENT_CONFIG[agent].submitRetryDelayMs : undefined
     if (retryDelayMs === undefined) {
       return 0
     }

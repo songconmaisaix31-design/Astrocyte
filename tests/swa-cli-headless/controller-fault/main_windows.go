@@ -277,7 +277,7 @@ func perform(candidate, data, ownerFile, database, protected, inspectionFile str
 	probeContext, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	command := exec.CommandContext(probeContext, filepath.Join(install, "node", "node.exe"), "--max-old-space-size=1024", filepath.Join(install, "runtime", "controller-inspection.cjs"), "--candidate", install, "--data-root", data, "--owner-file", ownerFile, "--database", database, "--output", inspectionFile)
-	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.BELOW_NORMAL_PRIORITY_CLASS}
+	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	for _, key := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATH", "PATHEXT", "TEMP", "TMP", "ProgramFiles"} {
 		if value := os.Getenv(key); value != "" {
 			command.Env = append(command.Env, key+"="+value)
@@ -382,10 +382,6 @@ func main() {
 	inspection := flag.String("inspection-output", "", "新鲜真实 daemon 观察")
 	output := flag.String("output", "", "实际故障原件")
 	flag.Parse()
-	if err := windows.SetPriorityClass(windows.CurrentProcess(), windows.BELOW_NORMAL_PRIORITY_CLASS); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(6)
-	}
 	report, err := perform(*candidate, *data, *owner, *database, *protected, *inspection)
 	if err != nil {
 		report["error"] = err.Error()

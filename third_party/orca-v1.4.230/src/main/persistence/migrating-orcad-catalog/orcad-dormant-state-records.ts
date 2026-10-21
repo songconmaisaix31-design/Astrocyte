@@ -6,6 +6,7 @@ import type { PersistedState } from '../../../shared/persisted-state-types'
 import type { SparsePreset } from '../../../shared/worktree/create-types'
 import type { WorkspaceLineage, WorktreeLineage } from '../../../shared/worktree/lineage-types'
 import type { WorktreeMeta } from '../../../shared/worktree/meta-types'
+import { isWorkspaceKey } from '../../../shared/workspace-scope'
 import { omitDefaultWorktreeMetaFields } from '../../../shared/worktree/meta-persisted-defaults'
 import { assertOrcadDestinationCanonicalMetadata } from './orcad-destination-worktree-metadata'
 import { assertSameValue } from './orcad-catalog-row-identity'
@@ -137,6 +138,7 @@ export function applyPreparedOrcadMigrationDormantState(
     state.worktreeLineageById[entry.key] = entry.value
   }
   for (const entry of prepared.newWorkspaceLineage) {
+    if (!isWorkspaceKey(entry.key)) throw new Error('Invalid prepared workspace lineage key')
     state.workspaceLineageByChildKey[entry.key] = entry.value
   }
   for (const preset of prepared.newSparsePresets) {

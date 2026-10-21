@@ -2,7 +2,6 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$ConfigFile,[string]$WorkerPids)
 $ErrorActionPreference = 'Stop'
-[Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'
 $swaProbeConfig = Get-Content -LiteralPath $ConfigFile -Raw | ConvertFrom-Json
 Import-Module (Join-Path $PSScriptRoot 'OrcaPreservation.psm1') -Force
 $swaPublic = Read-OrcaPublicState $swaProbeConfig.orca_path $swaProbeConfig.metadata_file $swaProbeConfig.original_process_ids

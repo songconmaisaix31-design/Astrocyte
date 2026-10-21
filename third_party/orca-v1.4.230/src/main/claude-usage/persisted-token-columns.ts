@@ -28,8 +28,8 @@ function encodeColumn(
     if (Array.isArray(column)) {
       column.push(value)
     } else if (value !== column) {
-      const priorValue = column
-      const values = Array.from({ length: rowIndex }, () => priorValue)
+      const priorValue: number | null = column
+      const values: (number | null)[] = Array.from({ length: rowIndex }, () => priorValue)
       values.push(value)
       column = values
     }

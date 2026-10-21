@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
-import type { WebSocket, WebSocketServer } from 'ws'
+import type { WebSocket, WebSocketServer, RawData } from 'ws'
 import type { RemoteRuntimeServerHeartbeat } from './remote-runtime-server-heartbeat'
 
 type WebSocketMessagePayload = string | Uint8Array<ArrayBufferLike>
@@ -33,7 +33,7 @@ export function attachNodeWebSocketLifecycle(args: {
   const { ws } = args
   let finalized = false
   const onPong = (): void => args.heartbeat.noteAlive(ws)
-  const onMessage = (data: WebSocket.RawData, isBinary: boolean): void => {
+  const onMessage = (data: RawData, isBinary: boolean): void => {
     // Why: any inbound frame counts as proof of life, so an actively-talking client isn't reaped mid-request.
     args.heartbeat.noteAlive(ws)
     const message =
@@ -97,7 +97,7 @@ export function attachNodeWebSocketLifecycle(args: {
   }
 }
 
-function toBinaryPayload(data: Exclude<WebSocket.RawData, string>): Uint8Array {
+function toBinaryPayload(data: Exclude<RawData, string>): Uint8Array {
   return Array.isArray(data) ? Buffer.concat(data) : new Uint8Array(data)
 }
 

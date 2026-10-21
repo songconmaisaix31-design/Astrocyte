@@ -119,7 +119,7 @@ export class RuntimeWorktreeLineageController {
         )
       }
       visited.add(cursor)
-      const lineage = this.deps.getStore()?.getWorktreeLineage?.(cursor)
+      const lineage: WorktreeLineage | undefined = this.deps.getStore()?.getWorktreeLineage?.(cursor)
       if (!lineage) {
         break
       }

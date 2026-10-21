@@ -79,7 +79,7 @@ func actualEnvironment() []string {
 			result = append(result, key+"="+value)
 		}
 	}
-	return append(result, "GOMAXPROCS=4", "GOMEMLIMIT=512MiB")
+	return result
 }
 
 func broker(sourceFile string) (result error) {
@@ -137,7 +137,7 @@ func broker(sourceFile string) (result error) {
 	cli.Env = actualEnvironment()
 	cli.Dir = request.Candidate
 	cli.Stderr = stderr
-	cli.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NEW_PROCESS_GROUP | windows.BELOW_NORMAL_PRIORITY_CLASS}
+	cli.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NEW_PROCESS_GROUP}
 	reader, err := cli.StdoutPipe()
 	if err != nil {
 		return err
@@ -276,10 +276,6 @@ func main() {
 	inside := flag.Bool("broker", false, "本项隐藏console控制进程")
 	source := flag.String("request-file", "", "原真实CLI参数及来源文件")
 	flag.Parse()
-	if err := windows.SetPriorityClass(windows.CurrentProcess(), windows.BELOW_NORMAL_PRIORITY_CLASS); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(6)
-	}
 	if !*inside {
 		executable, err := os.Executable()
 		if err != nil {
@@ -289,7 +285,7 @@ func main() {
 		child := exec.Command(executable, "--broker", "--request-file", *source)
 		child.Env = actualEnvironment()
 		child.Stdin, child.Stdout, child.Stderr = os.Stdin, os.Stdout, os.Stderr
-		child.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NEW_CONSOLE | windows.BELOW_NORMAL_PRIORITY_CLASS}
+		child.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NEW_CONSOLE}
 		if err := child.Run(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(6)

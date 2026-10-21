@@ -1,5 +1,6 @@
 import type { OrcadMigrationManifest } from '../../../shared/orcad-migration-manifest'
 import type { PersistedState } from '../../../shared/persisted-state-types'
+import { isWorkspaceKey } from '../../../shared/workspace-scope'
 import { subtractOrcadSourceWorktreeMetadata } from './orcad-source-worktree-metadata'
 import { subtractOrcadMigrationSourceAutomationState } from './orcad-source-automation-subtraction'
 import { subtractOrcadMigrationSourceWorkspaceSession } from './orcad-source-workspace-session-subtraction'
@@ -18,9 +19,10 @@ export function subtractOrcadMigrationSourceDormantState(
     return
   }
   dormant.worktreeLineage.forEach((entry) => delete state.worktreeLineageById[entry.sourceKey])
-  dormant.workspaceLineage.forEach(
-    (entry) => delete state.workspaceLineageByChildKey[entry.sourceKey]
-  )
+  dormant.workspaceLineage.forEach(entry => {
+    if (!isWorkspaceKey(entry.sourceKey)) throw new Error('Invalid source workspace lineage key')
+    delete state.workspaceLineageByChildKey[entry.sourceKey]
+  })
   for (const preset of dormant.sparsePresets) {
     const remaining = (state.sparsePresetsByRepo[preset.repoId] ?? []).filter(
       (entry) => entry.id !== preset.id

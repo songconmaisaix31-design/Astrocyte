@@ -1,5 +1,4 @@
 import { createInterface } from 'node:readline'
-import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { helperInput, nativeObject, nativeError, type Invocation } from './contracts'
 
@@ -33,9 +32,6 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
   }
   if (!run) throw new Error('native_run_missing')
   switch (action) {
-    case 'task.list':
-    case 'task.show': return call('orchestration.taskList', { run, callerTerminalHandle: controller })
-    case 'task.result': return collectTaskResult(invocation)
     case 'task.complete': return call('orchestration.taskUpdate', { id: c.task_id, status: 'completed', result: invocation.input?.text, run, callerTerminalHandle: controller }, `${requestId}/native`)
     case 'worker.start': {
       if (!invocation.input || !invocation.selection || invocation.selection.agent_id !== c.agent || invocation.selection.model !== c.model) throw new Error('selected_native_worker_input_required')
@@ -45,9 +41,6 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
         spec: `${invocation.input.text}\n\n固定公开上下文：\n${JSON.stringify(invocation.scope.context)}`
       }, `${requestId}/native`)
     }
-    case 'worker.show': return call('orchestration.workerShow', { dispatch: c.dispatch_id })
-    case 'worker.list': return call('orchestration.workerList', { run, paginate: true, limit: 100 })
-    case 'worker.read': return call('orchestration.workerRead', { dispatch: c.dispatch_id, source: 'transcript', limit: c.limit, ...(c.cursor ? { cursor: c.cursor } : {}) })
     case 'worker.stop': return call('orchestration.workerStop', { dispatch: c.dispatch_id }, `${requestId}/native`)
     case 'worker.release': return call('orchestration.workerRelease', { dispatch: c.dispatch_id }, `${requestId}/native`)
     case 'worker.send': {
@@ -55,25 +48,6 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     }
     default: throw new Error('unsupported_controller_action')
   }
-}
-
-async function collectTaskResult(invocation: Invocation) {
-  const run = invocation.scope.run_id, root = invocation.scope.root_task_id
-  const tasks = nativeObject(await call('orchestration.taskList', { run, callerTerminalHandle: controller }))
-  const rows = z.array(z.looseObject({ id: z.string(), parent_id: z.string().nullable() })).parse(tasks.tasks)
-  if (!rows.some(task => task.id === root)) throw new Error('The exact native root task is unavailable')
-  const children = new Set(rows.filter(task => task.parent_id === root).map(task => task.id))
-  const fleet = nativeObject(await call('orchestration.workerList', { run, paginate: true, limit: 100 }))
-  const page = z.object({ hasMore: z.boolean() }).parse(fleet.page)
-  if (page.hasMore) throw new Error('The fixed task worker inventory is unexpectedly incomplete')
-  const workers = z.array(z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() })).parse(fleet.workers)
-  const outputs = []
-  for (const worker of workers) {
-    if (worker.runId !== run || !children.has(worker.taskId)) throw new Error('Native output belongs to another task')
-    const observation = await call('orchestration.workerShow', { dispatch: worker.dispatchId })
-    outputs.push({ worker, observation })
-  }
-  return { run: await call('orchestration.runShow', { id: run }), tasks, workers: outputs }
 }
 
 async function main() {

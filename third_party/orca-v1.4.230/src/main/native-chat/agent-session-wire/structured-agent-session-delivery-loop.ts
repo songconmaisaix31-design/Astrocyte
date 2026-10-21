@@ -312,7 +312,7 @@ export class StructuredAgentSessionDeliveryLoop {
     if (!record || body?.kind !== 'message') throw new Error('The original structured input body is unavailable')
     try { await admitStructuredAgentInput({ sessionId, agent: record.provider, clientMessageId: next.clientMessageId, fence: awaitedChild.fence, body }) }
     catch (error) {
-      await session.journal.resolveDispatch({ clientMessageId: next.clientMessageId, state: 'rejected', ...agentSessionFailureWords(agentSessionFailureFact('hostFault'), { surface: 'rejection' }), reason: error instanceof Error ? error.message : 'Current native input admission failed', fence: awaitedChild.fence })
+      await session.journal.resolveDispatch({ clientMessageId: next.clientMessageId, state: 'rejected', ...agentSessionFailureWords(agentSessionFailureFact('hostFault'), { surface: 'rejection' }), fence: awaitedChild.fence })
       return this.stop(sessionId)
     }
     if (session.child !== awaitedChild || this.deps.stopping(sessionId) || this.deps.record(sessionId)?.lease.runtimeFence !== awaitedChild.fence) return this.stop(sessionId)

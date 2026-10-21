@@ -110,6 +110,7 @@ function prepare(raw: WindowsSecurityAddon): WindowsSecurity {
   return {
     userSid: raw.currentUserSid(),
     addon: {
+      readServiceJobMember: (name, pid) => raw.readServiceJobMember(name, pid),
       getDaclAces: (path) => raw.getDaclAces(toNamespacedPath(path)),
       setDaclSddl: (path, sddl) => raw.setDaclSddl(toNamespacedPath(path), sddl),
       setDaclSddlAsync: (path, sddl) =>

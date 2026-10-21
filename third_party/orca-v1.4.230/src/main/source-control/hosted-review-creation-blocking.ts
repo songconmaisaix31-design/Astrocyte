@@ -13,7 +13,7 @@ function blockedCreateResultForReason(
 ): CreateHostedReviewResult | null {
   const copy = reviewCopy(provider)
   const baseLabel = submittedBase?.trim() ? `"${submittedBase.trim()}" ` : ''
-  const blockedCreateResultByReason = {
+  const blockedCreateResultByReason: Partial<Record<NonNullable<HostedReviewCreationBlockedReason>, CreateHostedReviewResult>> = {
     auth_required: {
       ok: false,
       code: 'auth_required',

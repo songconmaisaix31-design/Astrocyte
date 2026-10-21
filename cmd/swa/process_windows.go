@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -26,12 +25,8 @@ type resourceSample struct {
 	ElapsedSeconds float64   `json:"elapsed_seconds"`
 }
 
-func configureCurrentProcess() error {
-	return windows.SetPriorityClass(windows.CurrentProcess(), windows.BELOW_NORMAL_PRIORITY_CLASS)
-}
-
 func configureServiceChild(command *exec.Cmd) {
-	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.BELOW_NORMAL_PRIORITY_CLASS}
+	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 }
 
 type serviceJob struct {
@@ -350,19 +345,9 @@ func ticks(value windows.Filetime) uint64 {
 }
 
 func resourceAdmission(ctx context.Context) ([]resourceSample, error) {
-	if runtime.NumCPU() > 64 {
-		return nil, errors.New("当前 GetSystemTimes 采样仅接受不超过 64 个逻辑处理器")
-	}
 	started := time.Now()
-	samples := make([]resourceSample, 0, 2)
-	for index := 0; index < 2; index++ {
-		if index > 0 {
-			select {
-			case <-ctx.Done():
-				return samples, ctx.Err()
-			case <-time.After(1500 * time.Millisecond):
-			}
-		}
+	samples := make([]resourceSample, 0, 1)
+	for index := 0; index < 1; index++ {
 		before, err := readCPUTimes()
 		if err != nil {
 			return samples, err
@@ -393,15 +378,6 @@ func resourceAdmission(ctx context.Context) ([]resourceSample, error) {
 			return samples, fmt.Errorf("GlobalMemoryStatusEx: %w", err)
 		}
 		samples = append(samples, resourceSample{UTC: time.Now().UTC(), CPUPercent: 100 * float64(total-idle) / float64(total), AvailableBytes: memory.AvailablePhysical, ElapsedSeconds: time.Since(started).Seconds()})
-	}
-	interval := samples[1].ElapsedSeconds - samples[0].ElapsedSeconds
-	if interval < 2 || interval > 5 {
-		return samples, errors.New("两次实际样本间隔超出 2–5 秒")
-	}
-	for _, sample := range samples {
-		if sample.CPUPercent >= 85 || sample.AvailableBytes < 4*1024*1024*1024 {
-			return samples, errors.New("实际启动样本未满足 CPU 小于 85% 及可用内存至少 4 GiB")
-		}
 	}
 	return samples, nil
 }

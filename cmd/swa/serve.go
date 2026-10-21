@@ -59,8 +59,8 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if ctx.Err() != nil {
 		return cancelled()
 	}
-	if err := configureCurrentProcess(); err != nil {
-		return output.failure("provider_unavailable", err.Error(), "inspect_supported_platform", 4)
+	if runtime.GOOS != "windows" {
+		return output.failure("provider_unavailable", "此产品安装候选仅支持 Windows", "inspect_supported_platform", 4)
 	}
 	probe, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(*port))
 	if err != nil {
@@ -192,8 +192,8 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return finish(7, "实际服务 Job 身份无法编码")
 	}
-	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "GOMAXPROCS=4", "GOMEMLIMIT=512MiB", "SWA_SERVICE_JOB="+string(ownership))
-	nodeCommand := exec.Command(filepath.Join(install, "node", "node.exe"), "--max-old-space-size=1024", filepath.Join(install, "runtime", "host.cjs"))
+	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "SWA_SERVICE_JOB="+string(ownership))
+	nodeCommand := exec.Command(filepath.Join(install, "node", "node.exe"), filepath.Join(install, "runtime", "host.cjs"))
 	nodeCommand.Env, nodeCommand.Dir, nodeCommand.Stderr = baseEnv, install, stderr
 	ready := make(chan nativeStartup, 1)
 	node, err = startOwnedService(nodeCommand, func(stream io.Reader) error {

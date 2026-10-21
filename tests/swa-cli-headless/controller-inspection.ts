@@ -11,8 +11,12 @@ import { controllerOwnerSchema } from '../../runtime/swa-orca/src/controller-sco
 import { swaDaemonServiceJobSchema } from '../../third_party/orca-v1.4.230/src/main/daemon/swa-service-job'
 
 async function main() {
-  const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'data-root', 'owner-file', 'request-show-file', 'database', 'output'].map(key => [key, { type: 'string' as const }])), 'inventory-only': { type: 'boolean', default: false } }, allowPositionals: false })
-  const required = (key: string) => z.string().refine(isAbsolute).parse(values[key])
+  const { values } = parseArgs({ options: {
+    candidate: { type: 'string' }, 'data-root': { type: 'string' }, 'owner-file': { type: 'string' },
+    'request-show-file': { type: 'string' }, database: { type: 'string' }, output: { type: 'string' },
+    'inventory-only': { type: 'boolean', default: false }
+  }, allowPositionals: false })
+  const required = (key: keyof typeof values) => z.string().refine(isAbsolute).parse(values[key])
   assert.equal([!!values['owner-file'], !!values['request-show-file'], !!values['inventory-only']].filter(Boolean).length, 1)
   const candidate = await realpath(required('candidate')), data = await realpath(required('data-root'))
   assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, 'node', 'node.exe').toLowerCase())

@@ -60,7 +60,7 @@ export async function subscribeRemoteRuntimeTransport<TResult>(
       binaryQueue: options?.outboundQueue,
       fail: (error) => fail(error)
     })
-    const requestChannel = new RemoteRuntimeSubscriptionRequestChannel({
+    const requestChannel: RemoteRuntimeSubscriptionRequestChannel = new RemoteRuntimeSubscriptionRequestChannel({
       connection,
       channel: handshake.channel,
       resolveWritableSocket: () =>
@@ -68,7 +68,7 @@ export async function subscribeRemoteRuntimeTransport<TResult>(
       enqueue: (socket, frame) => outbound.enqueueRequest(socket, frame),
       fail: (error) => fail(error)
     })
-    const frameRouter = new RemoteRuntimeSubscriptionFrameRouter({
+    const frameRouter: RemoteRuntimeSubscriptionFrameRouter<TResult> = new RemoteRuntimeSubscriptionFrameRouter({
       handshake,
       sealAuth: () =>
         handshake.sealAuth(

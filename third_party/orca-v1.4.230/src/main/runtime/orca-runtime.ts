@@ -60,7 +60,7 @@ class OrcaRuntimeService extends OrcaRuntimeSidebarBase {
     return sidebarFactsRuntime(this)
   }
   // Switch point. Idle until relay hosts attach; the fallback refresh runs while a window shows the sidebar or a phone reads the feed.
-  readonly pairedServerRows = ORCA_SIDEBAR_INPUTS_IS_MAIN
+  readonly pairedServerRows: PairedServerRowsProducer | null = ORCA_SIDEBAR_INPUTS_IS_MAIN
     ? new PairedServerRowsProducer({
         hasDemand: () =>
           this.sidebarInputsFeed?.subscribed === true ||
@@ -98,7 +98,7 @@ class OrcaRuntimeService extends OrcaRuntimeSidebarBase {
       })
     : null
   // Switch point: the phone's feed of the producers above; idle until this host's own phone reads.
-  readonly sidebarInputsFeed = ORCA_SIDEBAR_INPUTS_IS_MAIN
+  readonly sidebarInputsFeed: SidebarInputsFeed | null = ORCA_SIDEBAR_INPUTS_IS_MAIN
     ? new SidebarInputsFeed(
         () =>
           sidebarInputsFeedDomains({

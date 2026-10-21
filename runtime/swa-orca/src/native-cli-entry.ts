@@ -14,7 +14,7 @@ runWithParentJob(async () => {
   if (!shim || shim.prefixArgs.length !== 1 || shim.env?.NODE_PATH !== env.NODE_PATH) throw new Error('Native CLI requires its verified installed Node entry')
   const program = await realpath(shim.program)
   const entry = await realpath(shim.prefixArgs[0]!)
-  const child = spawnProcess({ program, args: ['--max-old-space-size=1024', entry, ...launch.args], env, stdio: ['pipe', 'pipe', 'pipe'] })
+  const child = spawnProcess({ program, args: [entry, ...launch.args], env, stdio: ['pipe', 'pipe', 'pipe'] })
   await new Promise<void>((resolve, reject) => {
     child.once('error', reject)
     child.once('spawn', () => {

@@ -1,6 +1,6 @@
 # Swarm CLI隔离后台、身份、控制规则与真实测试计划
 
-对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至4e6e及`f7c97d36af03309868269a7ee3d8fa791a570974`。准确396e方案与T00—T15已获原Reviewer独立接受，主控已接续§5.3及后继明确写域，当前继续实现。六次实际构建均未形成完整安装候选；最新依赖更新见§26，完整类型检查、当前源码编译、安装、认证、模型和功能验收仍未通过。
+对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至4e6e及`f7c97d36af03309868269a7ee3d8fa791a570974`。准确396e方案与T00—T15已获原Reviewer独立接受，主控已接续§5.3及后继明确写域，当前继续实现。严格类型检查及四个native模块的真实编译和装载已通过，记录见§29；完整安装候选、认证、模型和功能验收继续实施。
 
 ## 1. 来源与唯一状态归属
 
@@ -1259,3 +1259,15 @@ Worker与Reviewer分别以成熟.NET XML读取真实conpty.vcxproj，得到原In
 原build脚本现仅在native循环为每包独占创建本次work下a0—a3目录，realpath及lstat拒绝重定向。CL保留/utf-8，使用官方后置变量_CL_增加/analyze:log和该目录，参数位于MSBuild命令行之后；引号前实际两个反斜线经MSVC参数规则表示目录末尾一个反斜线，_CL_长度按官方1024字符限制检查。各包目录独立，原gyp4并行及所有编译/分析选项保持。node-pty真实vcxproj包含conpty.cc、path_util.cc及gyp附加的win_delay_load_hook.cc；process-tree的binding列六个源文件，两个安全模块的binding各列addon.cc，各包附加hook的名称与自身源文件名不重复。按源文件及独立包目录保存分析日志。旧CL.command.1.tlog仅有BOM，没有取得完整实际编译命令；原XML未指定PREfastLog的观察不扩大为已证CL全参数。ConPTY编译完成后须在准确a0读取真实非空conpty.nativecodeanalysis.xml；缺失立即失败。日志目录与完整CL/_CL_写入原构建日志，Go前删除_CL_，CL保持原/utf-8。其他源码、依赖、原生补丁、ABI、输出目录与安装布局保持。
 
 本修复沿原T01构建及闭包检查：先执行MJS成熟语法、runner PowerShell Parser、文档来源与差异检查；新准确候选07/build08在另授窗口中运行原完整构建，核真实ConPTY分析文件及native/Go/VERSION，失败保留并终止。完整构建通过后，原T01装载、T02独立安装及全部真实功能检查仍须执行；静态检查不证明编译修复或安装通过。当前没有运行后继正文或增加测试钩子。旧runner的准确05b0实际字节另存build-07/next-window-executed.ps1，后继runner只变更candidate07常量，摘要另报主控。
+
+## 29. 严格类型与全部native模块前置验证
+
+用户2026-10-21解除资源限制，主控在原Run接续完整写域，允许集中修复与实际复验；当前规则见主线docs/RESOURCES.md。原cpu/可用内存启动门限、固定优先级、Go/Node额度已从产品和后继验证入口解除，实际资源观察保留。原Orca、账户、权限、Job所有权及安装验收条件继续适用。
+
+准确ada的build08实际退出1，候选07保留失败原件：ConPTY三个分析XML实际生成，新增FTK1011发生于长目录的FileTracker tlog。两个所属进程观察在UTC13:38:59.1407035及13:39:15.3641194均为空。此后编译使用每包独占短源码副本及原包实际node-addon-api，原node-gyp12.3、Python3.13.13、VS2022、Node24.21.0 ABI、MSBuild默认跟踪和分析保持。产品builder和模块检查共用scripts/build-swa-native.mjs，全部对象、PDB、tlog及分析原件保留在work；产品仅复制真实.node及node-pty原slotSourceFiles支持文件。
+
+native-check-01实际退出0，nc01/r为全新pnpm deploy，未回写旧候选。三个原固定Node输入及真实exe重新按固定SHA256核验，四个native模块均真实gyp编译成功且用该Node实际require成功，包含readServiceJobMember等真实导出；各包实际tracking文件数与最大路径在原日志。执行helper快照为nc01/build-swa-native-executed.mjs。产品helper后继缩小复制范围，完整候选仍须以准确提交复验复制和装载。
+
+typecheck02保留完整331行诊断，TS子退出2、外层1；后继strict03—05分别保留实际诊断及失败退出。typecheck06使用同一TypeScript6.0.3、8192MiB、strict/noEmit/skipLibCheck=false实际退出0。修复使用真实@types及stream-json/stream-chain声明路径，增加原posthog消费的@types/express5.0.6；原动态emoji JSON使用上游同版emojibase-data17.0.0。deny/fail函数保留原throw，IPC方法先核实际存在，缺失nativeError导入及readServiceJobMember包装已贯通，其余消费者使用实际类型、规范失败句子及既有身份验证。原无消费者的helper六个查询分支已按独立接受删除，查询仍经原native handlers。
+
+go-prerequisites01实际退出0，覆盖cmd/swa、internal/swarm和两个故障控制程序的编译。后继go-prerequisites02扩大至既有workspace/httpapi全部测试时实际失败，原日志保留；失败项需要明确真实公开publication、SQL期待文件、独占输出目录或真实服务输入。适用的四个真实CLI验收用例仍按原计划在同安装候选与当前批准下执行，不以这次普通go test代替。architecture01实际退出0，47个包满足既有依赖检查。

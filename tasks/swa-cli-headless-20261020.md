@@ -17,9 +17,9 @@
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
-当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer先审，同一Worker继续后续实现。已提交的原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)；当前T12严格调用者矩阵、controller.recover、具名服务Job及真实核心测试入口见[报告§16](../docs/standards/swa-cli-headless-20261020.md#16-控制端接续严格调用者及具名服务job阶段源码)。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察，不重新创建或投递。六次构建均未形成完整安装候选，真实T12其余场景与通用终端输入继续实施。重启后的dependencies04实际EXIT0，七项已审开发声明完成真实锁生成及冻结安装；记录见报告§26。主控已通过`msg_93d5b66aa6f8`接续完整实施写域，其他Stage须单独授予；旧原S已随系统重启退出，本机Orca保持当前运行。
+当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer累计审核，同一Worker继续后续实现。原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)，T12严格调用者、controller.recover及具名服务Job见报告§16。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察。最新用户解除资源限制后，主控授原写域自主集中修复与复验；strict06及全部四native真实编译/装载已通过，实际证据和失败记录见报告§29。完整安装候选、真实T12其余场景与通用终端输入继续实施，本机Orca保持当前运行。
 
-准确3ba的真实strict类型检查因Node1024 heap OOM失败，TS子退出134、外层1，没有语义诊断；后续内存额度尚未批准。相同源码的原生成器实际EXIT0，真实产物增加已审recover及native policy声明；完整记录见报告§27。准确c42的build07实际EXIT1，ConPTY编译已越过旧语法错误，新增C1258默认分析日志路径失败；报告§28记录实际原件及每包短分析目录的窄修复。新候选07/build08尚未执行，类型、安装及同候选双Worker验收尚未通过。
+原OOM、C1258及build08的FTK1011保持真实失败原件。当前短源码native前置检查已通过，完整构建将复用重新核验的原固定Node输入；安装、认证及同候选双Worker验收尚未通过。
 
 ## 问题、建议与主控决定
 

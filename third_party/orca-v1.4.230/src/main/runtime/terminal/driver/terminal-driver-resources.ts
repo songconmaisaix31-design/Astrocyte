@@ -163,7 +163,7 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
     this.serveBrowserTabs.navigated(page)
   }
 
-  protected readonly edgeCommands = new RuntimeEdgeCommandController({
+  protected readonly edgeCommands: RuntimeEdgeCommandController = new RuntimeEdgeCommandController({
     jiraHost: {
       getSettings: () => this.requireStore().getSettings(),
       getAgentEnvironment: () => this.accounts.getCommitMessageAgentEnvironment()
@@ -209,7 +209,7 @@ export abstract class OrcaRuntimeWithTerminalDrivers extends OrcaRuntimeWithFitO
   })
 
   // Why: tests and diagnostic seams replace only screencast startup; ordinary edge methods stay pre-bound.
-  protected browserCommands = this.edgeCommands.getBrowserCommands()
+  protected browserCommands: ReturnType<RuntimeEdgeCommandController['getBrowserCommands']> = this.edgeCommands.getBrowserCommands()
 
   protected readonly browserDrivers = new RuntimeBrowserDriverController({
     notifyChanged: (browserPageId, next) =>

@@ -13,7 +13,7 @@ import {
   structuredAgentSessionAdoptAttach,
   type StructuredAgentSessionCreateIntentInput
 } from '../structured-agent-session-create-adoption'
-import { isNativeLocalLocation, LOCAL_EXECUTION_HOST_ID } from '../../../shared/execution-host'
+import { isNativeLocalLocation, LOCAL_EXECUTION_HOST_ID, parseExecutionHostId } from '../../../shared/execution-host'
 import { getLocalProjectWorktreeGitOptions } from '../../project-runtime-git-options'
 import type { AgentSessionAttachParams } from '../../native-chat/agent-session-wire/structured-agent-session-attach'
 import {
@@ -67,11 +67,14 @@ export abstract class OrcaRuntimeWithGetStructuredAgentSessionCreateSupport exte
     if (!registration) {
       return null
     }
-    return async ({ launchEnv, location }) =>
-      registration.resolveAccountHome(
+    type Request = Parameters<typeof registration.resolveAccountHome>[0]
+    return async ({ launchEnv, location }: { launchEnv: Request['launchEnv']; location: (Omit<NonNullable<Request['location']>, 'executionHostId'> & { executionHostId: string }) | null }) => {
+      const host = location ? parseExecutionHostId(location.executionHostId) : null
+      if (location && !host) throw new Error('Invalid structured Agent execution host')
+      return registration.resolveAccountHome(
         {
           launchEnv,
-          location: location ?? null,
+          location: location && host ? { ...location, executionHostId: host.id } : null,
           purpose,
           workspacePath:
             purpose === 'launch'
@@ -89,6 +92,7 @@ export abstract class OrcaRuntimeWithGetStructuredAgentSessionCreateSupport exte
           stateDirectory: getProfileUserDataPath()
         }
       )
+    }
   }
 
   /** The definition this runtime registers for `agent`: what its account home pins. Read from the

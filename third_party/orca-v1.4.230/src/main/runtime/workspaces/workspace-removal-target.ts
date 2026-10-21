@@ -110,7 +110,7 @@ export abstract class OrcaRuntimeWithResolveWorktreeRemovalTarget extends OrcaRu
     )
   }
 
-  protected localRemovalJobHost(store: RuntimeStore) {
+  protected localRemovalJobHost(store: RuntimeStore): Parameters<typeof interruptedLocalWorktreeRemovalJob>[1] {
     return {
       store,
       acquireWatcherRemoval: this.acquireFileWatcherRemoval,

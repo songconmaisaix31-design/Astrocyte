@@ -61,8 +61,8 @@ export async function listAccessibleProjects(
   let viewerFetched = 0
   while (viewerMore && viewerFetched < DISCOVERY_PROJECTS_PER_OWNER) {
     const afterArg = viewerCursor ? ', after: $after' : ''
-    const afterVar = viewerCursor ? '$after:String!' : ''
-    const query = `
+    const afterVar: string = viewerCursor ? '$after:String!' : ''
+    const query: string = `
       query${afterVar ? `(${afterVar})` : ''} {
         viewer {
           login
@@ -114,7 +114,7 @@ export async function listAccessibleProjects(
         break
       }
     }
-    const pi = res.data.viewer.projectsV2?.pageInfo
+    const pi: { hasNextPage?: boolean; endCursor?: string | null } | undefined = res.data.viewer.projectsV2?.pageInfo
     viewerMore = pi?.hasNextPage === true && typeof pi.endCursor === 'string'
     viewerCursor = viewerMore ? (pi?.endCursor ?? null) : null
   }
@@ -126,8 +126,8 @@ export async function listAccessibleProjects(
   let orgsSeen = 0
   while (orgMore && orgsSeen < DISCOVERY_MAX_ORGS) {
     const afterArg = orgCursor ? ', after: $orgAfter' : ''
-    const afterVar = orgCursor ? '$orgAfter:String!' : ''
-    const query = `
+    const afterVar: string = orgCursor ? '$orgAfter:String!' : ''
+    const query: string = `
       query${afterVar ? `(${afterVar})` : ''} {
         viewer {
           organizations(first:${DISCOVERY_ORG_PAGE_SIZE}${afterArg}) {
@@ -187,7 +187,7 @@ export async function listAccessibleProjects(
         ownerCount++
       }
     }
-    const pi = res.data.viewer?.organizations?.pageInfo
+    const pi: { hasNextPage?: boolean; endCursor?: string | null } | undefined = res.data.viewer?.organizations?.pageInfo
     orgMore = pi?.hasNextPage === true && typeof pi.endCursor === 'string'
     orgCursor = orgMore ? (pi?.endCursor ?? null) : null
   }

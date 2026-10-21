@@ -103,7 +103,7 @@ async function main() {
   } catch (error) {
     envelope.ok = false
     envelope.error = nativeError(error)
-    if (error instanceof RuntimeRpcFailureError) envelope.runtime_id = error.response._meta.runtimeId
+    if (error instanceof RuntimeRpcFailureError && error.response._meta) envelope.runtime_id = error.response._meta.runtimeId
     stdout.write(JSON.stringify({ envelope, error: envelope.error }) + '\n')
     process.exitCode = 1
   }

@@ -178,7 +178,10 @@ export async function fetchViewFieldsContinuation(
   const collected: RawProjectV2Field[] = []
   let cursor: string | null = after
   while (cursor !== null) {
-    const res = await runGraphql<{
+    const res: Awaited<ReturnType<typeof runGraphql<{ node?: {
+      id?: string
+      fields?: { pageInfo?: { hasNextPage?: boolean; endCursor?: string | null }; nodes?: (RawProjectV2Field | null)[] }
+    } | null }>>> = await runGraphql<{
       node?: {
         id?: string
         fields?: {
@@ -190,13 +193,13 @@ export async function fetchViewFieldsContinuation(
     if (!res.ok) {
       return res
     }
-    const view = res.data.node ?? null
+    const view: { id?: string; fields?: { pageInfo?: { hasNextPage?: boolean; endCursor?: string | null }; nodes?: (RawProjectV2Field | null)[] } } | null = res.data.node ?? null
     if (!view) {
       return { ok: false, error: driftError('view disappeared during field pagination') }
     }
     const nodes = (view.fields?.nodes ?? []).filter((f): f is RawProjectV2Field => f !== null)
     collected.push(...nodes)
-    const pi = view.fields?.pageInfo
+    const pi: { hasNextPage?: boolean; endCursor?: string | null } | undefined = view.fields?.pageInfo
     cursor = pi?.hasNextPage === true && typeof pi.endCursor === 'string' ? pi.endCursor : null
   }
   return { ok: true, fields: collected }
