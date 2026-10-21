@@ -8,16 +8,16 @@
 | 最新范围 | [首版任务](swa-cli-v1-20261020.md)、[用户决定](../docs/QUESTIONS.md)首版章节；产品自带隔离后台，不妨碍本机Orca |
 | 基线 | 从 `81812c32a6d345362655c6e569f680aab8fca877` 普通纳入e149及main `4e6e8ed4fa52521c2232dd770eb98297d8713785` |
 | 工作树 / 分支 | `C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020` / `swa-cli-headless-20261020` |
-| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_0d069056baff`；原静态交付为`task_4501441a2f59 / ctx_dc2fe5ba5526` |
-| Worker / 主控 | `term_f5235f4d-4de8-4f6e-8b12-a04e22c55500` / `term_3209681a-faa5-4161-a2f3-9563e1451a33` |
+| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_0cf6ac28fd13`；沿原Task在系统重启后接续 |
+| Worker / 主控 | `term_9672e756-3dbd-405e-a0fe-5a4d1ed34f10` / `term_84161ef8-54be-49cd-b699-145ed804f645` |
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
-| 原独立Reviewer | `task_1cd8014750f9 / ctx_6339d8beeb73`，本次不另起Agent |
+| 原独立Reviewer | `task_1cd8014750f9 / ctx_066b3ab5f10c`，沿原Task接续 |
 | 实施状态 | `TEST_PLAN_ACCEPTED / IMPLEMENTING / FUNCTIONAL_VALIDATION_NOT_RUN` |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
-当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer先审，同一Worker继续后续实现。已提交的原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)；当前T12严格调用者矩阵、controller.recover、具名服务Job及真实核心测试入口见[报告§16](../docs/standards/swa-cli-headless-20261020.md#16-控制端接续严格调用者及具名服务job阶段源码)。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察，不重新创建或投递。源码及测试入口已经形成，真实T12其余场景与通用终端输入继续实施。当前源码的生成、完整类型检查、编译、安装、认证和模型正文均未执行；原S持有唯一窗口，没有新重操作授权，阶段提交不结束整体任务。
+当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer先审，同一Worker继续后续实现。已提交的原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)；当前T12严格调用者矩阵、controller.recover、具名服务Job及真实核心测试入口见[报告§16](../docs/standards/swa-cli-headless-20261020.md#16-控制端接续严格调用者及具名服务job阶段源码)。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察，不重新创建或投递。六次构建均未形成完整安装候选，真实T12其余场景与通用终端输入继续实施。重启后的dependencies04实际EXIT0，七项已审开发声明完成真实锁生成及冻结安装；记录见报告§26。主控已通过`msg_93d5b66aa6f8`接续完整实施写域，其他Stage须单独授予；旧原S已随系统重启退出，本机Orca保持当前运行。
 
 ## 问题、建议与主控决定
 

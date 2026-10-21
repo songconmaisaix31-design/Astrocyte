@@ -1,6 +1,6 @@
 # Swarm CLI隔离后台、身份、控制规则与真实测试计划
 
-对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至4e6e及`f7c97d36af03309868269a7ee3d8fa791a570974`。准确396e方案与T00—T15已获原Reviewer独立接受，主控已授予§5.3逐文件写域，当前正在实现。两条依赖命令实际EXIT0；产品构建、模型、安装和功能验收仍未运行。
+对应[Worker任务](../../tasks/swa-cli-headless-20261020.md)，接管基线main `e149510762f89bed06e7c8c766917554a58294e4`，后续普通快进至4e6e及`f7c97d36af03309868269a7ee3d8fa791a570974`。准确396e方案与T00—T15已获原Reviewer独立接受，主控已接续§5.3及后继明确写域，当前继续实现。六次实际构建均未形成完整安装候选；最新依赖更新见§26，完整类型检查、当前源码编译、安装、认证、模型和功能验收仍未通过。
 
 ## 1. 来源与唯一状态归属
 
@@ -1229,3 +1229,11 @@ stdout-close保留真实部分输出及解析错误原件，允许stdout不完�
 该返修仅执行成熟MJS语法、Go格式、文档与差异检查，原件目录`n25-static-01/`；全部真实输出、console/group、PTY、SQLite/HTTP、故障及模型正文继续NOT_RUN，仍无新窗口。原资源问题保持待答；R06/R08及通用terminal后续实施继续，不据局部源码或静态接受结束整个任务。
 
 原Reviewer补充msg_bead5052222b的N26后，同一返修将`cmd/swa/output.go`输出失败的stderr加入真实已校验`selected.Controller`，字段为requested_controller；原controller/run_id/task_id继续来自已实际读取的回复。recover成功后stdout失败时，原C_old与已知C_new/Run/root均可保留，公开JSON不增加字段。真实驱动要求requested_controller准确等于原C_old；普通controller关联只接受原C_old或实际completed receipt中的C_new，实际诊断已经知道C_new时另核同一Run/root，不以pending checkpoint的expected身份充当新控制端证明。已完整读取准确02486602补充正式报告。此补充及N25后继原件为`n25-n26-static-01/`，只执行变动MJS语法、两份Go格式、文档和差异，最终诊断范围修改另存final语法/文档/差异原件；Go编译及全部正文继续未验。
+
+## 26. 重启接续与真实开发依赖更新
+
+本次沿原Task接续为`ctx_0cf6ac28fd13`，主控为`term_84161ef8-54be-49cd-b699-145ed804f645`，独立Reviewer沿原Task接续为`ctx_066b3ab5f10c`。已完整读取主控`swa-reuse-recovery-20261021.md`、新邮件及原Run定向后续。系统重启后的原S退出、本机Orca29972/runtime8362当前运行及资源归属以主控新鲜核查为准；本Worker没有恢复旧S或操作Orca。`msg_93d5b66aa6f8`接续原完整实施写域，并仅授一次dependencies04。
+
+准确干净`7c812a1a972ed914bae3b9cd864702e5426b9492`、runner05b0及独占新目录核实后，实际执行`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/next-window-04.ps1 -Stage dependencies -EvidenceName dependency-04 -ExpectedSource 7c812a1a972ed914bae3b9cd864702e5426b9492`。exec2798于UTC13:02:24启动，实际外层最终EXIT0。原pnpm11.27.0的lock-only和frozen ignore-scripts install分别7.9秒和2.1秒完成，两次资源与两命令退出均0；BelowNormal、Node1024及私有CAS/TEMP保持。资源两组CPU11.3/8.0%与14.6/23.2%，可用内存均超过4GiB，单调间隔2.5012007与2.5016213秒。peer及deprecated提示保留于完整日志。
+
+`pnpm-lock.yaml`由原命令真实生成，增加已审七项开发声明及resolution/snapshot；pnpm同时将现有Electron和React类型peer选择收敛至显式43.7.8与19.2.18。没有手写锁、升级声明或执行安装脚本。原件在`dependency-04/`，含准确SOURCE、完整日志、四项退出、外层EXIT0及实际进程身份。UTC13:02:56.3636359和13:03:05.9543247两次新鲜CIM对已观察根27240、33024、7572及子进程均无匹配，已立即通过`msg_78745a825e55`交回窗口。当前没有消费typecheck、generate、build、服务或模型Stage；同Worker继续源码复用核查、必要实现和全部真实安装验收。

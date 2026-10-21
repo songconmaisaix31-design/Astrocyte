@@ -60,7 +60,7 @@ importers:
         version: 1.0.1(@aws-sdk/credential-provider-node@3.972.84)(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.5))(@smithy/signature-v4@5.7.4)(supports-color@10.2.2)(ws@8.22.0(patch_hash=9393e04dd9a90b01eb7aa35fcd5b1431b5038ce999fbbd82651136193ba51f14))(zod@4.6.5)
       '@electron-toolkit/utils':
         specifier: 4.0.0
-        version: 4.0.0(electron@44.9.0(supports-color@10.2.2))
+        version: 4.0.0(electron@43.7.8(supports-color@10.2.2))
       '@floating-ui/dom':
         specifier: 1.8.0
         version: 1.8.0
@@ -153,7 +153,7 @@ importers:
         version: 17.0.15(i18next@26.4.2(typescript@6.0.3))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
       serve-sim:
         specifier: 0.1.47
-        version: 0.1.47(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
+        version: 0.1.47(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3)
       smol-toml:
         specifier: 1.9.1
         version: 1.9.1
@@ -185,6 +185,27 @@ importers:
       '@types/node':
         specifier: 25.9.5
         version: 25.9.5
+      '@types/proper-lockfile':
+        specifier: 4.1.4
+        version: 4.1.4
+      '@types/qrcode':
+        specifier: 1.5.6
+        version: 1.5.6
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 19.2.7
+        version: 19.2.7(@types/react@19.2.18)
+      '@types/ssh2':
+        specifier: 1.15.6
+        version: 1.15.6
+      '@types/ws':
+        specifier: 8.18.1
+        version: 8.18.1
+      electron:
+        specifier: 43.7.8
+        version: 43.7.8(supports-color@10.2.2)
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
@@ -1195,16 +1216,36 @@ packages:
   '@types/node@26.6.4':
     resolution: {integrity: sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg==}
 
+  '@types/proper-lockfile@4.1.4':
+    resolution: {integrity: sha512-uo2ABllncSqg9F1D4nugVl9v93RmjxF6LJzQLMLDdPaXCUIDPeOJ21Gbqi43xNKzBi/WQ0Q0dICqufzQbMjipQ==}
+
+  '@types/qrcode@1.5.6':
+    resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
+
+  '@types/react-dom@19.2.7':
+    resolution: {integrity: sha512-I8bPpDLcHBv1qiIiXDCy71Rt8eQDKJP0sMSWJphDdAcdqiJ1sGpZamavoEIRZmYzjia9LuEb2HlYdDpmoENpvQ==}
+    peerDependencies:
+      '@types/react': ^19.2.0
+
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
     peerDependencies:
       '@types/react': ^19.3.0
+
+  '@types/react@19.2.18':
+    resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
   '@types/react@19.3.0':
     resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
 
   '@types/retry@0.12.0':
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
+
+  '@types/ssh2@1.15.6':
+    resolution: {integrity: sha512-oGdxhBqcRTwSTKFm+9EiKzkNVYRLEFkcW44lhguvBalGJbWfGnDt/ezwSUZc+SF9m9bMc3VyklNAtp7zICjS5w==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@typescript-eslint/eslint-plugin@8.71.1':
     resolution: {integrity: sha512-nNlBf6HuotqMgZvSkWD5hNdemiBIxQ2NmrlgfcUIeZRs+BbakjscCQRq/Hb74EFVnFiSWWdL12JruqwBy3ERDw==}
@@ -1780,8 +1821,8 @@ packages:
   electron-updater@6.8.10:
     resolution: {integrity: sha512-6ZSwTUoBNtI1f9Pp8y6zCigD8LKV18Rb1+1A7sZzvKvA17o2sqSqKmm0t6uvKeF+HZqA4vsmw4qq0JSS241USQ==}
 
-  electron@44.9.0:
-    resolution: {integrity: sha512-boP8zA5OIoMGYe3uWP4IqB1VJNoEzdHYgcBaVYnd1DBv5TogwXkbM4yJGSfNmYCzalVQ5J3TAIbaKOY+ILTnyg==}
+  electron@43.7.8:
+    resolution: {integrity: sha512-h9qnttBn9b+pmnJjagrpjvK97Wb9WbsyIB03BV6NnhnPqSq1Jw7500hNkqHPkosHCE0zL/806v4zf9d3VrII0w==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -3854,9 +3895,9 @@ snapshots:
 
   '@electron-internal/extract-zip@1.0.5': {}
 
-  '@electron-toolkit/utils@4.0.0(electron@44.9.0(supports-color@10.2.2))':
+  '@electron-toolkit/utils@4.0.0(electron@43.7.8(supports-color@10.2.2))':
     dependencies:
-      electron: 44.9.0(supports-color@10.2.2)
+      electron: 43.7.8(supports-color@10.2.2)
 
   '@electron/get@5.1.0(supports-color@10.2.2)':
     dependencies:
@@ -4381,15 +4422,39 @@ snapshots:
     dependencies:
       undici-types: 8.9.0
 
+  '@types/proper-lockfile@4.1.4':
+    dependencies:
+      '@types/retry': 0.12.0
+
+  '@types/qrcode@1.5.6':
+    dependencies:
+      '@types/node': 26.6.4
+
+  '@types/react-dom@19.2.7(@types/react@19.2.18)':
+    dependencies:
+      '@types/react': 19.2.18
+
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
       '@types/react': 19.3.0
+
+  '@types/react@19.2.18':
+    dependencies:
+      csstype: 3.2.3
 
   '@types/react@19.3.0':
     dependencies:
       csstype: 3.2.3
 
   '@types/retry@0.12.0': {}
+
+  '@types/ssh2@1.15.6':
+    dependencies:
+      '@types/node': 18.19.130
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 26.6.4
 
   '@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
@@ -4890,7 +4955,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@44.9.0(supports-color@10.2.2):
+  electron@43.7.8(supports-color@10.2.2):
     dependencies:
       '@electron-internal/extract-zip': 1.0.5
       '@electron/get': 5.1.0(supports-color@10.2.2)
@@ -5923,10 +5988,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  serve-sim@0.1.47(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3):
+  serve-sim@0.1.47(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@6.0.3):
     dependencies:
       inspect-webkit: 0.0.5(typescript@6.0.3)
-      sonner: 2.0.8(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      sonner: 2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ws: 8.22.0(patch_hash=9393e04dd9a90b01eb7aa35fcd5b1431b5038ce999fbbd82651136193ba51f14)
     transitivePeerDependencies:
       - '@types/react'
@@ -5992,12 +6057,12 @@ snapshots:
 
   smol-toml@1.9.1: {}
 
-  sonner@2.0.8(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  sonner@2.0.8(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
     optionalDependencies:
-      '@types/react': 19.3.0
+      '@types/react': 19.2.18
 
   source-map-js@1.2.2: {}
 
