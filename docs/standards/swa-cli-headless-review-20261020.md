@@ -1702,3 +1702,41 @@ build13实际SOURCE与candidate12/VERSION均为准确780，最终退出0；四na
 原Run实际问询`msg_b953a635e20e`获`msg_c1e1351069ae`给出准确原件位置。260的provider-job-installed11/result.json、test.log、test-exit.txt已完整读取，真实退出0。Reviewer使用成熟stream-json逐条独立核实际身份/父链、两次完整空Job与两次旧身份退出、无关Job保持，命令`review-provider-job12.mjs <provider-job-installed11> <准确260> <仓库外260安装根>`实际0，原件`provider-job-installed11-independent.log`。四种模式的空Job间隔约98.51/94.30/88.17/80.86毫秒；late-child本次旧身份观察含第六PID44952。parent-loss旧Job保持unknown，原生Agent实际abort仍未验，模型调用0。
 
 dpapi-probe01的完整正文、日志和退出0已读：输入为该固定公开项目真实stats.go字节，CurrentUser实际加密/文件/解密往返及当前用户所有权/ACL通过；没有伪造项目token或调用人工入口。限定接受该公开文件与保护API范围，实际授权凭据交接仍待本人执行。cb0491e7的780限定接受hook已获主控`msg_8cf94974d080`完整读取回复，原Worker已通过`msg_e6a6376c9645`收到安装失败及保留要求。
+
+## 780正常发行安装、实际关闭及5e917bc4局部修复
+
+**限定接受准确780的正常ZIP发行、install13安装闭包、仓库外实际服务及下列关闭结果；限定接受准确 `5e917bc461e62835d384d553756229dbf6f1452e` 的累计源码和局部检查。** 原install12失败及退出1保持。已完整读取TokenFacts实际Win32查询、普通复制探针及发行/安装原件：工作区Node和其子PowerShell实际为Low完整性，原shell为Medium；同一固定Node字节普通复制到仓库外后为Medium，原cpSync实际成功。没有修改二进制、系统完整性设置或全局配置。
+
+正常发行使用成熟.NET ZipFile.CreateFromDirectory/ExtractToDirectory，源为准确780的完整candidate12，ZIP实际410042444字节，目标均预先不存在。提取根为`C:/Users/DW/AppData/Local/SwarmCli/candidates/780a35e9-package13`，原安装脚本将完整包安装到同父目录的`780a35e9-install13`；两根均检查现存父级reparse及私有ACL，版本保持准确780。install13复制、版本、真实native/空Job/28233路径闭包均0；端口占用返回address_in_use/5，直接保护根与四类reparse返回scope_denied/3，拒绝前目标内容与ACL保持。**安装检查的内层及外层退出为6，T03/T13实际消费者仍未验证，不能登记为完整T02通过。** 正常提取和新安装保持独立来源，没有覆盖旧失败目录或将后继源码写入780安装。
+
+Reviewer以新安装自带Node实际执行以下独立检查，均EXIT0。`review-external-install-26036164.mjs <install13> <准确780>`核五个实际native、动态@linear/sdk及emoji JSON，21个实际装载文件均来自新根，祖先没有node_modules，实际空Job创建/查询/关闭通过；`review-inline-licenses-780a.mjs <install13>`核21份实际JS及输入路径与已审260相同，九个版本完整原许可字节一致。原件分别为`external-install13-independent.log`与`installed-inline13-independent.log`，没有用脚本中的NOT_RUN字段推断服务结果。
+
+### 实际服务与所属资源关闭
+
+run-service13的完整入口、stdout/stderr及实际退出0已读。同一780安装使用独立仓库外DataRoot，实际serve/host/server为34392/46628/45740，三者Medium，readiness的runtime为`64c1ceae-d4e5-4b5a-a0ae-f9dd66a12fea`，HTTP health实际200。journal、orchestration、profile、profile备份和workspace五个真实SQLite均integrity_check=ok、foreign_key_check空。EOF后serve实际0，完整Job两次观察仅余serve自身，间隔约100毫秒。运行中和退出后六个受保护文件的字节/ACL及原Orca公开身份保持。安装根ACL只允许当前用户；普通DataRoot的ACL含当前用户、SYSTEM和Administrators，未将其记为凭据专用目录。目录通知没有writer PID，不用于推断写入进程。
+
+原lifecycle14实际来源为780，四种情况及完整原始输出已读；Reviewer执行`review-lifecycle14.mjs`实际0，原件`lifecycle14-independent.log`。立即EOF、启动中EOF、就绪后EOF、启动中stdout读端关闭分别返回130/130/0/6，记录2/10/11/11个实际身份，两次旧身份退出观察间隔264/271/276/279毫秒且剩余均空。非立即退出情况保留两次完整Job观察，间隔至少100毫秒；立即EOF在准入前取消。**该旧stdout关闭输出仍含未知关联字段的空值，只接受实际关闭与资源范围，C09诊断格式继续未接受。** 后继加强断言的driver没有作为这次780执行来源。
+
+provider-job-installed13原件和真实退出0已读，Reviewer用成熟stream-json独立执行`review-provider-job12.mjs <provider-job-installed13> <准确780> <install13>`实际0。普通所属进程fixture的normal/forced/crash/late-child两次空Job间隔约69.80/78.25/75.09/71.92毫秒，初始Node/conhost成员身份与父链、两次已记录身份退出及无关Job保持均通过。late-child额外fixture PID46432没有进入native旧身份表，保留该逐身份观察限制；全Job为空证据独立成立。parent-loss旧Job仍unknown，实际原生Agent abort仍NOT_RUN。本组模型调用0，没有执行本人授权入口。
+
+### 准确f46afc49至5e917bc4的源码范围
+
+已完整读取 `f46afc49e0e23cbb3d4e915ce0fc8c5ff78a8854` 和准确5e的差异。USAGE给出正常ZIP提取和同一PowerShell直接传递ProtectedRoots数组的原安装方式。T03沿原实际Go测试目录及SOURCE比较准确提交的cmd、internal、migrations、contracts、go.mod、go.sum和web/src/api/schema.d.ts，源码或比较失败立即拒绝，保留原编译来源。5e修改cmd后，Worker重新编译全部四个真实测试包、CLI及故障工具，实际Go为go1.27.2 windows/amd64；SOURCE在编译完成和源码复核后才记为5e。完整compile5e917入口、日志、空编译日志及外层0已读，三个传输前用例实际PASS/0，没有扩大为四个测试包全部运行通过。
+
+stop-http保持实际安装映像、创建身份、父链、同Job、真实IPC及持有句柄核验，只向HTTP server句柄取得终止权限。5e在server实际退出后对原daemon同句柄记录alive/exited，unknown立即失败；原stop-service继续要求daemon存活。该后置条件符合原serve关闭Node stdin和空闲daemon退出的实际代码路径，原Worker收到`msg_b1aca3528002`后完成修复。此处接受准确源码和编译，实际HTTP故障结果另验。
+
+outputFailure只输出实际已知且非空的关联字段，保留原R、query提示及动作退出6/7；cli-failure检查拒绝空关联字段。真实cli-local-pipe15使用准确5e编译CLI，在参数错误前关闭实际stdout读端，两例均退出7：有效request-id用例仅输出该已知request_id，无request-id用例没有关联行，均无stream错误。完整脚本、原始输出及外层0已读。**只接受此传输前失败边界，尚未接受同一最终安装完整serve的C09。**
+
+Reviewer实际`check-revision.ps1 -Previous 780a35e9ec996494f4188f44229d2568bf38b9a2 -Candidate 5e917bc461e62835d384d553756229dbf6f1452e` EXIT0，成熟marked18.1.0核三Markdown、6本地链接、原§15锚点及Git空白。
+
+### 历史所属与全新空闲服务检查计划
+
+独立条件清单为Reviewer忽略目录的`http-fault-review-conditions14.md`。完整读取Worker的`http-fault-variants14.md`后，**接受SHA256为 `33488A255DAF210FB300899828DEA86C0174D57F781E90374D82DB53C95DAC8B` 的准确计划实施**，已通过`msg_eebefb5fffa5`交原Worker，通过`msg_452ab9a2e23f`交主控；不据此接受后继实现或故障运行。
+
+计划保留默认live owner和纯inventory，显式历史检查只接受原真实成功envelope、原request/caller_fingerprint/receipt、完整owner及实际同源daemon/Job。实际inventory中的原session须完整身份匹配且isAlive=false，消失则如实记absent，仍存活或不明立即拒绝；历史结果没有当前调用者或恢复授权含义。owner-file、request-show-file、inventory-only、idle-only互斥，实际database必须是已核DataRoot/orchestration.db。
+
+idle只允许driver启动前不存在的独占DataRoot，实际inventory为空且coordinator_runs、tasks、dispatch_contexts、worker_dispatches、worker_terminal_resources、mutation_receipts六表均0。runs只允许原迁移的唯一 `ORCHESTRATION_LEGACY_RUN_ID=run_legacy_local` 默认行：objective为`Legacy orchestration state (inspect only)`、home_database=this_database、consumer_generation=0、legacy=1，四项coordinator绑定均null。已独立读取原常量、contract-constants与migrate-v2-v12的实际插入，并核service13真实数据库同一默认行及六表0；其他行、绑定、缺表或缺字段均拒绝。Go inspection_mode显式区分live/historical-owner/idle，历史及idle仅配stop-http，输出状态逐项核对；纯inventory不能代替idle。C08须记录实际HTTP目标故障、准确7/6及原因、唯一readiness、完整Job与旧身份两次退出和原Orca保全，任意非零不能代替通过。C04/R10仍须真实当前Grant及原lineage退出条件，处理窗口未命中保留INCONCLUSIVE。
+
+主控准确ef49ebf3、732f92c3及 `4dbbb564025734de12331ea024bd1ee1757cc362` 的变化已完整读取，限定接受正常发行安装和当前/历史来源分列、局部结果及未知范围的记录。Reviewer实际`check-revision.ps1 -Previous ef49ebf3896dc1d9c5bbf2ee3ff822d0c790a5c5 -Candidate 4dbbb564025734de12331ea024bd1ee1757cc362` EXIT0，成熟marked18.1.0核三Markdown、44本地链接及Git空白。933c63f5的install12退回及260补验两hook已获主控`msg_cd7e1bff73fe`、`msg_9fbc7e271bdf`明确读取回复。当前正式PR列表为空，尚无COMMENT review对象；没有集成或发布main。
+
+本人Observe尚无实际执行回执；T11、真实执行Grant、模型与工具范围、完整T12及同一最终安装的真实双Worker并发/指定停止/另一Worker继续/成果仍未通过，原S3和真实用户作品授权保持未决定。后继准确63eb7091及新candidate13已收到通知，本节没有登记该实现或新运行通过。
