@@ -1847,7 +1847,7 @@ beadc233三份hook已获主控`msg_77bc2ab06d08`、`msg_1668d99d70a9`、`msg_1f6
 
 本阶段Reviewer为`task_9ae5a1337e1d / ctx_5f4446e340a0`，沿原Orca/Codex会话和本报告接续，没有新模型或子Agent。此前`ctx_40bf84d10b8c`已结算，独立只读咨询`msg_1b2765afea53`没有使用其生命周期；失败的readiness尝试也不承担本阶段结果。当前Worker为同模块原树的`ctx_fb2c13c28d40`。
 
-用户已在当前会话明确`APPROVE OBSERVE`，禁止Aliyun key、Aliyun Agent和百炼代理，允许阶跃星辰及其他Agent测试。最新主控QUESTIONS首节、HANDOFF和STATUS已重读；该决定当前位于主控未提交工作树，主控HEAD仍为`ebb16d18d0fbfa627ed169c59cbf3a379442db79`。Observe批准保持已确认，真实凭据生成与消费须另验；执行Grant、工具范围、T11及原S3未决项分别保持。
+用户已在当前会话明确`APPROVE OBSERVE`，禁止Aliyun key、Aliyun Agent和百炼代理，允许阶跃星辰及其他Agent测试。接管时重读主控QUESTIONS首节、HANDOFF和STATUS，该决定当时位于主控未提交工作树、HEAD为`ebb16d18d0fbfa627ed169c59cbf3a379442db79`；后继准确记录见本阶段末节。Observe批准已确认，真实凭据生成与消费按下文结果验收；执行Grant、工具范围、T11及原S3未决项分别保持。
 
 独立条件在读取本轮Worker计划前已由上述咨询根据真实源码形成。实际`session.go`的bootstrap接受普通本机无Origin请求，服务生成随机cookie/CSRF并固定返回`local-human/human`；middleware依据实际cookie、有效期和CSRF建立Principal，未校验本人TTY。项目设置、Grant和token仍由App的human检查处理，正文不能声明Actor，Agent Bearer不能调用管理路由。现有human会话具有12小时管理能力，没有服务端仅Observe委托会话；本次固定准备流程和最终一小时项目token/Grant限定获准范围。记录须区分真实用户会话批准、实际Agent执行者和服务返回主体，不能将其登记为本人TTY或T11通过。
 
@@ -1884,6 +1884,32 @@ Worker的`diagnose-observe25.ps1`全文和实际退出0原件已读：同一真�
 
 五项真实HTTP均403/scope_denied，原件逐项核无cookie、缺CSRF、不同Origin、真实Observe token的合法controller.open及人类Grant路由拒绝。workspace指定space/project/Grant各增加1，session/关联不变；原生工作表保留原runs1，其余任务/Dispatch/Worker/receipts0，journal全工作表不变，未创建模型Worker。Orca前后公开身份及六保护文件字节/ACL均通过；目录通知继续只证明对应文件夹观察，不能推导写入者PID。
 
-Reviewer实际独立运行原`use-installed23-credential.ps1 -Stage Observe`，EXIT0，原件`observe26-consumer-independent.log`；没有取得管理cookie或签发Grant。再以安装Node24.21.0执行自有`review-observe26.mjs`，直接readOnly核实际项目/Grant/空间、完整设置及真实到期，并核准确源码摘要、全部五请求状态、五拒绝、独立及原消费的完整JSON结果和保全原件，EXIT0，原件`observe26-independent-02.log`。两次消费均指向同一95ef、runtime `cc80c07c-c8bf-47ff-965e-6177bd2a7c69`及原authority；这一范围真实授权和观察消费通过，Worker通知为`msg_7b85c8d32daa`。
+Reviewer实际独立运行原`use-installed23-credential.ps1 -Stage Observe`，EXIT0，原件`observe26-consumer-independent.log`；没有取得管理cookie或签发Grant。再以安装Node24.21.0执行自有`review-observe26.mjs`，直接readOnly核实际项目/Grant/空间、完整设置及真实到期，并核准确源码摘要、全部五请求状态、五拒绝、独立及原消费的完整JSON结果和保全原件，EXIT0，原件`observe26-independent-03.log`；JSON流使用已安装成熟stream-json解析。两次消费均指向同一95ef、runtime `cc80c07c-c8bf-47ff-965e-6177bd2a7c69`及原authority；这一范围真实授权和观察消费通过，Worker通知为`msg_7b85c8d32daa`。
 
 真实capabilities返回七个注册Agent；五项实际命令/版本检测为available，另外两项unavailable，全部launchable仍unknown。Pi配置未知；Codex和Claude的configured字段分别显示gpt-6.1-sol/openai、qwen3.7-max/anthropic。该字段没有证明实际供应端点许可，Claude实际调用前须核真实来源并排除Aliyun。产品`agent-discovery.ts`的选择路径、NativeLaunchPolicy及launch admission目前只接受Pi1.0.1的已审无工具/API key合同；其他Agent具备注册或配置观察不表示真实调用已实现。独立读取的agent-sources25原件及成熟JSON/TOML reader仅覆盖其明确来源，未发现匹配StepFun条目，不能推断整机没有StepFun配置。真实Agent/模型、执行Grant、T11、完整T03/T12、同候选双Worker和成果仍未验，原工具及S3范围保持。45661024两份hook已获主控`msg_cb1904c65a6c`、`msg_bae6fd3b382d`完整读取回复。
+
+### 读取custom28计划前形成的条件
+
+依据H12/H18、SPEC §21.1.5及实际安装的Pi1.0.1，独立读取当前`native-pi-policy.ts`、原ModelConfig、provider-composer和ModelRegistry。原composer允许base为空，以models.json构造模型，stored credential走原API key解析；没有inherited或models key且没有OAuth时仍生成API key handler。实际模型的api/baseUrl沿模型、provider、默认值顺序合成，modelOverrides最后应用，调用按有效api进入原getApiProvider。当前产品在composer之前要求唯一builtin handler，阻断这一真实原生custom路径。以下条件形成后才读取Worker的custom28方案。
+
+| 条件 | 必要行为与验证边界 |
+| --- | --- |
+| P01 原生组合来源 | builtin与custom明确区分，保留builtin原行为；custom使用实际1.0.1 ModelConfig及原composer、明确空base和无extension，唯一所选provider/model须来自真实源，不增加虚构注册或另一SDK。 |
+| P02 真实目标 | 完整组合后的provider/model/API/baseUrl与批准一致；新增custom范围限定直接StepFun HTTPS及已审API，拒绝任意目标、用户信息、查询/片段、别名网关、认证Header、fallback/routing和非空sampling，严禁Aliyun调用。 |
+| P03 真实认证及保全 | 使用原stored literal api_key、空credential env及既有原生literal分类；无models key/OAuth/refresh/命令或环境解引用。原账号只读，私有投影只含所选源，真实源和私有文件版本在每次效果前复核，秘密不进入结果或模型上下文。 |
+| P04 生产消费者 | 原NativeLaunchPolicy、实际AgentSelection、ToolsOff、私有账号/DACL、Job、首次/后续输入准入及完整成果消费者均保持一致；当前项目Grant和工具/目录/外发批准仍逐次核实，Observe不能替代执行Grant。 |
+| P05 拒绝与回归 | 核缺源/空认证/重复或缺少模型、未审字段/API/目标、headers/routing/sampling和源变更的真实边界；不伪造key、成功CLI或故障协议，真实故障副本只证明其命中的拒绝，原builtin回归按现有真实来源记录。 |
+| P06 分层证据 | 语法/类型、原composer来源和真实空认证拒绝分别记录；没有真实获准key时custom正向保持未验，不能从handler或配置对象生成推导可调用。取得实际源后核真实握手/输入/响应/目标及原账号保全，现有未知不改为通过。 |
+| P07 同候选验收 | 计划覆盖适用构建、准确产物及正常安装；不混改已验95ef安装。最终仍在同一候选完成两个真实Worker并发、指定停止、另一Worker继续、完整成果和所属资源条件，纯验证客户端改动复用有效原结果。 |
+
+**限定技术接受`native-pi-custom28-plan.md`准确SHA256 `4E698ACC7EF42E9D667CD2D31187F0BDED00F7A460D4F5CD95B84DF323E07514`，并纳入`msg_48f93338842d`的实际API源码身份补充。** 完整计划对照P01—P07覆盖唯一真实custom model、原composer空base/无extension、stored literal key及空env、有效openai-completions与StepFun准确HTTPS目标、既有字段/认证/routing/sampling拒绝、全部私有账号/ToolsOff/Job/输入和成果消费者。原DTO及生产权限不改变；原默认空auth可先验证，真实来源及正向模型缺失保持NOT_RUN。故障副本只验证命中拒绝，最终新候选及同安装双Worker完整验收仍保留，没有多余的文档重构建。计划成熟marked18.1.0解析0，Worker接受通知为`msg_d0aa56dfb57a`；实现及真实调用尚待准确复验。
+
+已独立读取实际1.0.1 provider-composer及ModelConfig，完整文件SHA256分别为DBA201A60EC5B0832DC52CF3D9736C4D470169150B16FCAF989E43427B9FFD5B、68C447FF2EF729331713E044DAE41B7416DBAFBF96C83773308E2EB9C3F86107；原ReadOnlyAuthStorage/private账户消费者保持前述读取范围。Worker `read-native-api28.mjs`全文及实际0原件已读：同版compat取得原openai-completions handler，stream/streamSimple存在，未调用stream、auth resolve或模型；三份实际compat/lazy/API实现的身份前后相同。这些生产来源须纳入效果前重核，handler存在不表示实际调用通过。
+
+独立读取[StepFun全球官方首页](https://platform.stepfun.ai/)，其chat.completions示例采用api.stepfun.ai/v1；[国内官方检索内容](https://platform.stepfun.com/)采用api.stepfun.com/v1，国内首页及JSON Mode页面的直接读取均超时。计划须按实际账号及明确来源再次核对应文档，不能推断跨地区key或模型可用。Firecrawl命令未安装，本次改用网页读取工具，未安装依赖或调用模型。既有私有环境的系统proxy白名单保持；本次目标检查指供应端点，未承诺关闭或修改宿主网络代理。
+
+### 本轮准确记录范围
+
+**限定接受产品`8cd402ed84d55bb10a620895962b0d4d1c9f73a3`两份文档和主线`b5303ee5b5db9caefd726573542a70de762b071e`四份管理文档的记录范围。** 准确差异均已完整读取，记录真实Observe批准、实际Agent执行者/服务主体、26和独立消费、准确expiry、24/25失败、七注册与五安装、全部launchable未知及NativeLaunch缺口；未将执行Grant、T11、S3或完整成果改为通过。产品相对c6仅文档变化，原95ef程序和安装保持；主线记录已完成实际授权消费，原23作为保留的人工入口。
+
+Reviewer实际`check-revision.ps1`分别核c6→8cd及ebb→b53，EXIT0；成熟marked分别解析两份/6本地链接和四份/89本地链接，原§15锚点保持、Git空白通过。OpenCode/StepFun来源条目按所述读取范围使用，没有以局部匹配为空推断整机无配置；后续具体配置路径仍待用户提供。bd55febd真实Observe hook已获主控`msg_0e5f304fabb5`明确完整读取回复，不重复实际凭据消费或完整构建。
