@@ -1808,3 +1808,9 @@ provider-job-installed20的完整真实入口、结果及退出0已读，Reviewe
 Worker的缺凭据消费原件实际退出1，错误停在文件不存在检查，未调用CLI；Reviewer实际观察human-approval目录仍不存在。三份Parser均错误0，真实人工授权及新凭据消费尚未运行，原公开源码DPAPI往返结果不能替代本人批准。T11、Execute、工具、真实模型及最终同安装双Worker/完整T12仍保持未决定或未验。
 
 ec225632的三份hook已获主控`msg_26fdd5701816`、`msg_eca4144b06b0`、`msg_e2a90496c96e`明确完整读取报告、准确源码及原件的回复，本次唤起确认。
+
+### 到期时间类型边界的独立复核
+
+**退回上述E0CF0C3C与B9792BE3两份本人入口的日期处理范围，准确修复前暂停该版本流程；FD5FA88C公开身份函数及95ef程序的既有接受范围保持。** 旧260关闭补充检查的实际输入揭示PowerShell日期边界：成熟ConvertFrom-Json将原UTC日期转为System.DateTime/KindUtc，随后DateTimeOffset.Parse接收该对象时先隐式转为不带UTC和毫秒的字符串。本机+08环境实际serve时间应为1792600364102，却得到1792571564000；owner应为1792600340610，却得到1792571540000。原始JSON的完整UTC字符串经成熟InvariantCulture解析，与直接DateTimeOffset类型转换所得毫秒逐项相同。Reviewer实际`pwsh -NoProfile -File .verification/review-public-utc.ps1` EXIT0，原件`public-utc-review-02.log`，输入均来自真实已保存的公开进程时间，没有生成凭据或人类会话。
+
+本人消费脚本对ConvertFrom-Json得到的expires_at使用同一Parse写法；原App的IssueProjectAgentToken明确签发一小时有效期。在此实际JSON日期对象类型下，到期判断会提前八小时失效；不能将原三Parser/公开身份检查替代该类型边界验证。两份入口交原Worker按成熟日期值与完整字符串的正确转换返修，新版本需重新核准确SHA及实际日期来源；人工HTTP回执和真实新凭据消费仍未运行。原入口及首次关闭补充原件保留，本轮没有重操作已关闭服务。主控已通过`msg_1825382d6257`及原Run的`msg_e3564a45456f`收到需替换本人待办的通知。
