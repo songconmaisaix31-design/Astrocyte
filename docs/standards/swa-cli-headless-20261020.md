@@ -1418,7 +1418,7 @@ StepFun [官方全球页面](https://platform.stepfun.ai/)实际给出OpenAI cha
 
 check-custom28.ps1实际退出0，strict TypeScript6.0.3/noEmit/skipLibCheck=false及architecture各0，47个Go package边界通过；原件custom28-checks保存准确8cd402ed及实际程序diff。empty-native-account28实际1，检查发现真实默认models.json没有单独models定义，尚未进入policy；脚本和日志保持。empty-native-account29实际0，直接从真实1.0.1 catalog取得openai/gpt-4，仅作缺凭据负向输入，无模型调用或实际执行选择。当前真实默认auth为{}，实际修改后policy在native_api_key_source_unreviewed立即拒绝，原三文件stat保持，真实项目私有账户前后不存在，没有启动CLI或创建Worker。源码和实际证据分别在原29入口、日志及result.json。StepFun真实正向、故障副本、新准确候选和同安装完整验收继续；未取得真实来源前不登记模型或双Worker通过。
 
-## 42. 准确f2ab发行安装与当前真实阻塞
+## 42. 准确f2ab发行安装与实际范围
 
 准确程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa已普通push。原Reviewermsg_cfe3b755c511完整核准确程序/两文档、实际1.0.1来源、strict/architecture和真实空auth负向29，限定接受该范围；29在auth入口返回，没有执行新增custom正向。custom/builtin正向回归、StepFun真实认证/模型及故障副本保持未验。
 
@@ -1430,6 +1430,18 @@ check-installed29.ps1实际0，沿原已审run-lifecycle20.ps1及run-http-idle16
 
 http-idle29实际0：真实空闲、三项拒绝、五库完整性/外键、实际Medium Token、唯一所属HTTP同句柄终止、实际旧身份两次退出和完整Job两次仅余serve通过。服务实际7、唯一readiness无尾包，stderr精确runtime_error；没有创建human session或调用模型。两项各自原Orca前后保全通过，另外原FD5检查在本轮前/中/后确认95ef Observe服务及5187所属入口仍保持；没有关闭或替换原服务。新检查服务已正常结束，无本轮待处理服务或原生Worker。
 
-准确f2ab安装结果已通过msg_4c593230d87c交原Reviewer独立核验。当前真实阻塞经msg_a14a1c5b02fb报告主控：用户已允许Observe、StepFun及其他Agent测试，但所核Pi默认auth为空、Pi/Codex/OpenCode来源未提供StepFun，主控补核Process/User/Machine对应环境名均无配置，实际Grok token已过期。主控已询问用户实际配置所在Agent或路径，尚未取得可用于原生custom正向的真实来源；不请求或输出密钥正文，不使用Aliyun，不伪造认证或协议，不修改默认账号。
+原Reviewermsg_c88f4297a8b9已独立核准确f2ab的build16/ZIP29/安装限定范围、lifecycle29和C08及实际闭包/native/许可，限定接受实际结果。用户已允许Observe、StepFun及其他Agent测试；所核Pi默认auth为空、Pi/Codex/OpenCode来源未提供StepFun，主控补核Process/User/Machine对应环境名均无配置，实际Grok token已过期。主控已询问用户实际配置所在Agent或路径，尚未取得可用于原生custom正向的真实来源；不请求或输出密钥正文，不使用Aliyun，不伪造认证或协议，不修改默认账号。
 
-执行Grant/当前所选Agent及model_target、真实custom/builtin正向和故障副本、模型、T03/T07/T09/T11/T12/T13剩余场景、同一最终安装双Worker实际执行重叠/指定停止A/B继续/完整成果仍未验。当前可恢复入口、准确候选和原服务身份在自有worker-handoff29.md；取得真实来源后由同一Worker按已审计划继续，不能将本阶段或仅Observe接受登记为首版完成。
+执行Grant/当前所选Agent及model_target、真实custom/builtin正向和故障副本、模型、T03/T07/T09/T11/T12/T13剩余场景、同一最终安装双Worker实际执行重叠/指定停止A/B继续/完整成果仍未验。主控已采用现有OpenCode/DeepSeek原生路径接续，见§43；不以StepFun来源缺失结束整体任务。
+
+## 43. 原生OpenCode账户、完整方案及实施接续
+
+主控msg_a846a3adc56f、msg_09c1b31e9b13采用实际安装OpenCode2.0.31的原生ACP和官方policy hook。原CLI对应anomalyco/opencode@22728d67461260d56bb9796b9b8f36e1de47202e，npm wrapper直接运行bin/opencode.exe；原Node script entry准入不能覆盖该实际exe。实际配置默认deepseek/deepseek-v4-pro，原生credential SQLite唯一deepseek选定值为key类型且与legacy auth相同；opencode-account30和opencode-credential-db32只读实际0，原source不变，没有启动原账户CLI、迁移或模型。
+
+原Reviewer独立接受准确35F8B8BD计划后，deepseek-models31.mjs准确B3F40C72仅执行一次GET https://api.deepseek.com/models，实际HTTP200、deepseek-v4-pro存在，redirect:error、无重试/推理/原生会话，原auth/config stat及bytes保持。原Reviewermsg_aaeaaec7ed04限定接受此读取结果，不据此证明原生模型或完整账户链路，也不重复GET。真实原生SQLite最终凭据选择和每Worker私有迁移仍须实际验证。
+
+完整方案在自有native-opencode33-plan.md，准确SHA256 F18C0ED603668BE5A3FA1E49C8C9F2DF476D08C4824E17BBEC6C8BAD4AA63BD9，已交原Reviewer独立审查。方案覆盖D01—D08：严格OpenCode NativeLaunch联合和Go/TS生产消费者、每Worker单独HOME/XDG/ProgramData/TEMP/DB及actual migration、插件/指令发现和全部工具关闭、标题/warming/compaction、原exe及原生ACP私有serve/Job、每次输入原R/Grant/fence、实际ACP trace与完整12MiB SQLite成果。policy使用官方Promise hook；其拒绝经Effect.promise与PluginHooks逐项yield在native handler前中止，setup失败则原native记录failed后继续，故完整方案包含同进程actual active/failed状态生产和消费，不能只凭文件或setup日志声明保护生效。
+
+实际Effect4.0.1的FetchHttpClient默认follow，http hook的Web Request经fromWeb只保留method/url/headers/body，原native平台仅提供timeout:false。主控msg_1c88d869c2b3及原Reviewermsg_a65333f7a3b9已核定保持原CLI行为，校验范围为初始URL和固定逻辑provider/model/source，不新增禁止redirect能力或验收条件，也不将其作为原生验证阻塞。没有全局fetch patch、新provider/代理、SDK替代或正文改写。
+
+执行顺序按主控msg_6466215347f5：计划独立接受、主控核定新增接口并写SPEC后，先针对性构建policy/native entry并验证真实私有ACP、凭据实际选择、工具关闭及hook保护、首次真实正文和所属收尾，再完成直接消费者、准确最终ZIP和同一安装双Worker全部验收。方案提交不结算整体任务；当前新增产品OpenCode分支、原生会话/模型和最终安装双Worker均未运行。原95ef服务/5187继续保留，Observe26已通过，后继不擅自续签或扩大为执行Grant。
