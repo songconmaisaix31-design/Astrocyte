@@ -49,7 +49,7 @@ if (parentRelative === '..' || parentRelative.startsWith('..\\') || isAbsolute(p
 // 只创建受控父目录；候选目录仍独占创建，已有路径立即失败。
 await mkdir(output)
 const runtime = join(output, 'runtime')
-run(process.execPath, [pnpm, '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', store])
+run(process.execPath, [pnpm, '--config.node-linker=hoisted', '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', store])
 const revision = capture('git', ['rev-parse', 'HEAD'])
 if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('Exact source revision is unavailable')
 if (capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('Commit the candidate source before building the installable package')

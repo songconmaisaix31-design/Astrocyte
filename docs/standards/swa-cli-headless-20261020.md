@@ -1271,3 +1271,15 @@ native-check-01实际退出0，nc01/r为全新pnpm deploy，未回写旧候选�
 typecheck02保留完整331行诊断，TS子退出2、外层1；后继strict03—05分别保留实际诊断及失败退出。typecheck06使用同一TypeScript6.0.3、8192MiB、strict/noEmit/skipLibCheck=false实际退出0。修复使用真实@types及stream-json/stream-chain声明路径，增加原posthog消费的@types/express5.0.6；原动态emoji JSON使用上游同版emojibase-data17.0.0。deny/fail函数保留原throw，IPC方法先核实际存在，缺失nativeError导入及readServiceJobMember包装已贯通，其余消费者使用实际类型、规范失败句子及既有身份验证。原无消费者的helper六个查询分支已按独立接受删除，查询仍经原native handlers。
 
 go-prerequisites01实际退出0，覆盖cmd/swa、internal/swarm和两个故障控制程序的编译。后继go-prerequisites02扩大至既有workspace/httpapi全部测试时实际失败，原日志保留；失败项需要明确真实公开publication、SQL期待文件、独占输出目录或真实服务输入。适用的四个真实CLI验收用例仍按原计划在同安装候选与当前批准下执行，不以这次普通go test代替。architecture01实际退出0，47个包满足既有依赖检查。
+
+## 30. 首个完整候选及独立安装修复
+
+准确1209aee399a2c0b0677d7a4dbedc5f87880d14ab已普通push。build09以该提交构建全新candidate08，重验并复用三项原固定Node输入，实际退出0；四native的最大中间路径为229，Go swa/server及两个故障程序、许可与VERSION全部生成。candidate08闭包检查实际退出0，34010路径在候选内，固定Node实际native装载、Job创建/查询/关闭及watcher装载通过。strict07完整检查退出0；四包test-c完成，首次CLI执行因PowerShell未引用点号参数退出2，后继同二进制正确传参后三个传输前函数全部PASS，完整原件分别保留。
+
+T02首次在调用安装脚本前因pwsh -File无法传入ProtectedRoots数组退出1，安装目标未创建；原入口改为直接调用候选真实PowerShell脚本。后继08-02完成真实独立installed08及版本校验，但安装后的闭包实际失败：@parcel/watcher无法解析picomatch。候选的pnpm Junction原指向包内.pnpm，安装dereference后变成根node_modules下普通目录，Node查找位置随之变化。candidate08及failed installed08均保留。两次finally的本机Orca公开身份、进程、定向文件字节/ACL保全均通过，无目录通知错误；没有模型调用。T00在同case08匿名克隆准确da3bdd公开项目并生成固定任务正文，实际退出0，human批准仍未取得。
+
+安装部署改用pnpm11.27实际支持的子调用--config.node-linker=hoisted，保持开发工作区和全局配置。已完整读取[pnpm deploy](https://pnpm.io/cli/deploy)及[nodeLinker](https://pnpm.io/settings/node-modules)官方说明，核实际11.27实现后执行新hoisted01部署，实际退出0。全树扫描实际0个reparse point。后继使用固定Node及安装相同cpSync搬迁到新hoisted03，实际退出0，25810文件均无链接且realpath在新根内；watcher、ssh2、Linear、ws及emoji JSON均从新根加载成功。首次局部异步cp在预建目标上EEXIST的失败原件保留，后继采用产品原有同步复制行为。安装脚本在复制前拒绝候选内所有reparse point。完整后继候选仍须验证四native、实际安装、服务和功能。
+
+dependencies.lock.json已同步真实emojibase-data17.0.0及@types/express5.0.6，原check-dependencies实际退出0，包含原summarize CLI0.25.1检查。Go资源观察明确标记primary_processor_group，范围依据[GetSystemTimes官方文档](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getsystemtimes)，不会将多processor-group的部分结果声称为全机值；它没有CPU/内存启动门限。
+
+原R06草案已进入同controller-fault包的service_windows.go及service-request-file入口，使用实际readiness、metadata、daemon PID record、具名Job和同句柄核查，仅对本项serve/host/server实施定向故障，原daemon和保护PID保留。runtime-restart.mjs记录真实初次accepted journal及原Run/root/Dispatch/session/operation、同库重启后的不替换/不重发/占用保留，使用既有固定公开a/b正文。go-prerequisites04及MJS语法实际通过；服务故障、模型、接续清理和剩余边界正文尚未执行，脚本明确保留remainingCases及退出6。

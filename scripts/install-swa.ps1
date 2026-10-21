@@ -37,6 +37,9 @@ foreach ($root in $ProtectedRoots) {
     $protected = Get-PlainAbsolutePath $root
     if ((Test-ContainsPath $protected $destination) -or (Test-ContainsPath $destination $protected) -or (Test-ContainsPath $protected $package) -or (Test-ContainsPath $package $protected)) { throw '安装或候选目录与受保护目录重叠' }
 }
+foreach ($entry in Get-ChildItem -LiteralPath $package -Recurse -Force) {
+    if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw '平铺安装候选包含 reparse point，不能复制' }
+}
 $bundledNode = Join-Path $package 'node/node.exe'
 $nodeHash = (Get-FileHash -LiteralPath $bundledNode -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($nodeHash -ne 'ba4e6d110e8c1592a1ecd390f6b05f3da124b13871a5be62b341a07a853c6c32') { throw '随包 Node 与准确 24.21.0 x64 输入不符' }

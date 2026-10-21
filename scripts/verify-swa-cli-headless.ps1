@@ -76,7 +76,7 @@ if ($Case -in @('T00','T02','T03','T06','T08','T12','T13','T15')) {
             & $swaNode --max-old-space-size=1024 (Join-Path $swaTestDirectory 'public-case.mjs') --root $CaseRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'public-source.log')
             $swaExit = $LASTEXITCODE
         } elseif ($Case -eq 'T02') {
-            & pwsh -NoProfile -File (Join-Path $PackageRoot 'install-swa.ps1') -PackageRoot $PackageRoot -InstallRoot $InstallRoot -ProtectedRoots $ProtectedRoots 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'install.log')
+            & (Join-Path $PackageRoot 'install-swa.ps1') -PackageRoot $PackageRoot -InstallRoot $InstallRoot -ProtectedRoots $ProtectedRoots 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'install.log')
             $swaExit = $LASTEXITCODE
             if ($swaExit -eq 0) {
                 & (Join-Path $InstallRoot 'node/node.exe') --max-old-space-size=1024 (Join-Path $PSScriptRoot 'check-swa-runtime.mjs') --candidate $InstallRoot 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'installed-closure.log')

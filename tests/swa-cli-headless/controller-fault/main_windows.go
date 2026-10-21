@@ -381,8 +381,19 @@ func main() {
 	protected := flag.String("protected-pids", "", "原进程保护列表")
 	inspection := flag.String("inspection-output", "", "新鲜真实 daemon 观察")
 	output := flag.String("output", "", "实际故障原件")
+	serviceRequest := flag.String("service-request-file", "", "真实服务故障请求原件")
 	flag.Parse()
-	report, err := perform(*candidate, *data, *owner, *database, *protected, *inspection)
+	var report map[string]any
+	var err error
+	if *serviceRequest != "" {
+		if *candidate != "" || *data != "" || *owner != "" || *database != "" || *protected != "" || *inspection != "" {
+			fmt.Fprintln(os.Stderr, "服务故障请求与控制端故障参数不能同时提供")
+			os.Exit(2)
+		}
+		report, err = performServiceFault(*serviceRequest)
+	} else {
+		report, err = perform(*candidate, *data, *owner, *database, *protected, *inspection)
+	}
 	if err != nil {
 		report["error"] = err.Error()
 	}

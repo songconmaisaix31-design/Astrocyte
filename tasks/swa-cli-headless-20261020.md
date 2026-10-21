@@ -19,7 +19,7 @@
 
 当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer累计审核，同一Worker继续后续实现。原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)，T12严格调用者、controller.recover及具名服务Job见报告§16。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察。最新用户解除资源限制后，主控授原写域自主集中修复与复验；strict06及全部四native真实编译/装载已通过，实际证据和失败记录见报告§29。完整安装候选、真实T12其余场景与通用终端输入继续实施，本机Orca保持当前运行。
 
-原OOM、C1258及build08的FTK1011保持真实失败原件。当前短源码native前置检查已通过，完整构建将复用重新核验的原固定Node输入；安装、认证及同候选双Worker验收尚未通过。
+原OOM、C1258及build08的FTK1011保持真实失败原件。准确1209完整build09及candidate08闭包已通过，真实安装后发现pnpm链接解引用改变依赖查找位置；失败原件保留，成熟hoisted部署的真实搬迁与动态装载已通过。当前生成后继候选继续安装、服务及全部功能；记录见报告§30。T00公开项目来源通过，认证及同候选双Worker验收尚未通过。
 
 ## 问题、建议与主控决定
 

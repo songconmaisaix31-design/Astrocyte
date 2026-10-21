@@ -21,6 +21,7 @@ import (
 type resourceSample struct {
 	UTC            time.Time `json:"utc"`
 	CPUPercent     float64   `json:"cpu_percent"`
+	CPUScope       string    `json:"cpu_scope"`
 	AvailableBytes uint64    `json:"available_bytes"`
 	ElapsedSeconds float64   `json:"elapsed_seconds"`
 }
@@ -377,7 +378,7 @@ func resourceAdmission(ctx context.Context) ([]resourceSample, error) {
 		if result == 0 {
 			return samples, fmt.Errorf("GlobalMemoryStatusEx: %w", err)
 		}
-		samples = append(samples, resourceSample{UTC: time.Now().UTC(), CPUPercent: 100 * float64(total-idle) / float64(total), AvailableBytes: memory.AvailablePhysical, ElapsedSeconds: time.Since(started).Seconds()})
+		samples = append(samples, resourceSample{UTC: time.Now().UTC(), CPUPercent: 100 * float64(total-idle) / float64(total), CPUScope: "primary_processor_group", AvailableBytes: memory.AvailablePhysical, ElapsedSeconds: time.Since(started).Seconds()})
 	}
 	return samples, nil
 }
