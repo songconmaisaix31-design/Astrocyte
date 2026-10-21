@@ -11,6 +11,10 @@ import (
 
 func configureServiceChild(_ *exec.Cmd) {}
 
+func requirePlainDataPath(_ string) error {
+	return errors.New("此产品安装候选仅支持 Windows")
+}
+
 type serviceJob struct{ ownership serviceJobOwnership }
 
 func ownServiceTree(_, _ string) (*serviceJob, error) {

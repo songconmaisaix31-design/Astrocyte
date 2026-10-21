@@ -8,6 +8,7 @@ import { createRequire } from 'node:module'
 import { basename, dirname, isAbsolute, join } from 'node:path'
 import { createInterface } from 'node:readline'
 import { parseArgs } from 'node:util'
+import { inspectFixtureJob } from './job-membership.mjs'
 
 const { values } = parseArgs({ options: { candidate: { type: 'string' }, output: { type: 'string' } }, allowPositionals: false })
 if (!values.candidate || !values.output || !isAbsolute(values.candidate) || !isAbsolute(values.output)) throw new Error('Explicit installed candidate and new evidence file are required')
@@ -78,8 +79,7 @@ for (const mode of ['normal', 'forced', 'crash', 'late-child']) {
   await tree.ready()
   await ready
   const before = tree.readObservation()
-  assert.equal(before.members.length, 3)
-  for (const row of seen) assert.ok(before.members.some(member => member.pid === row.pid && member.creationTimeMs > 0))
+  const actualProcesses = await inspectFixtureJob(requireRuntime, before, seen)
   const closed = await managed.close(tree)
   assert.deepEqual(closed, { root: 'exited', tree: 'exited' })
   assert.equal(managed.rootExitObserved, true)
@@ -89,7 +89,7 @@ for (const mode of ['normal', 'forced', 'crash', 'late-child']) {
   assert.equal(unrelatedAfter.rootPid, unrelatedBefore.rootPid)
   assert.equal(unrelatedAfter.rootCreationTimeMs, unrelatedBefore.rootCreationTimeMs)
   assert.ok(unrelatedAfter.members.some(member => member.pid === unrelatedBefore.rootPid && member.creationTimeMs === unrelatedBefore.rootCreationTimeMs))
-  records.push({ mode, actualProcesses: seen, admittedJob: before, close: closed, unrelatedAfter })
+  records.push({ mode, fixtures: seen, actualProcesses, admittedJob: before, close: closed, unrelatedAfter })
 }
 const owner = spawn(node, [join(dirname(import.meta.filename), 'job-owner-fixture.mjs'), candidate], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
 owner.stderr.pipe(process.stderr, { end: false })
@@ -101,7 +101,8 @@ const actualParentJob = await new Promise((resolve, reject) => {
       const record = JSON.parse(line)
       assert.equal(record.type, 'owned_job_parent_ready')
       assert.equal(record.pid, owner.pid)
-      assert.equal(record.job.members.length, 3)
+      assert.equal(record.fixtures.length, 3)
+      assert.ok(record.job.members.length >= record.fixtures.length)
       clearTimeout(timer)
       resolve(record.job)
     } catch (error) { clearTimeout(timer); reject(error) }

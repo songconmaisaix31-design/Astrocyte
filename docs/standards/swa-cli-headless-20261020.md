@@ -1283,3 +1283,15 @@ T02首次在调用安装脚本前因pwsh -File无法传入ProtectedRoots数组�
 dependencies.lock.json已同步真实emojibase-data17.0.0及@types/express5.0.6，原check-dependencies实际退出0，包含原summarize CLI0.25.1检查。Go资源观察明确标记primary_processor_group，范围依据[GetSystemTimes官方文档](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getsystemtimes)，不会将多processor-group的部分结果声称为全机值；它没有CPU/内存启动门限。
 
 原R06草案已进入同controller-fault包的service_windows.go及service-request-file入口，使用实际readiness、metadata、daemon PID record、具名Job和同句柄核查，仅对本项serve/host/server实施定向故障，原daemon和保护PID保留。runtime-restart.mjs记录真实初次accepted journal及原Run/root/Dispatch/session/operation、同库重启后的不替换/不重发/占用保留，使用既有固定公开a/b正文。go-prerequisites04及MJS语法实际通过；服务故障、模型、接续清理和剩余边界正文尚未执行，脚本明确保留remainingCases及退出6。
+
+## 31. 重启后真实安装边界与服务启动修复
+
+本次Task沿原Run接续为ctx_a8f0c302cc3c，主控term_a5fbafe0-ce09-4492-97d1-4ba69e5aa5f6，Reviewer沿原Task接续ctx_40bf84d10b8c。已读取resume-20261021-1441及本次持久后续，累计程序写域和资源解除继续有效。准确b624已push且接管时干净；build10实际0，candidate09及installed09的VERSION为b624，完整原件保留。
+
+install09实际独立复制、原生装载、空Job及端口冲突/直接保护根拒绝已经执行。真实最终junction被Go EvalSymlinks原样保留，随后创建home实际Access denied，原T02失败；没有install09-exit.txt，外层退出保持未知。产品现在在任何数据目录创建之前，用实际Win32 GetFileAttributes检查数据路径的全部现存组件及home/temp，拒绝reparse point；安装和保护根也检查同一条件。junction-local-01的实际源码编译0，真实最终junction、父目录junction且叶目录不存在、已有home及temp junction四项均scope_denied/3，保护目标只含原sentinel且内容保持。T02安装脚本同步覆盖这四项、保护目标字节/ACL及拒绝前没有新增同级目录；新候选仍须实际执行。
+
+candidate09-provider-job原实际5!=3失败保留。provider-job10/11保留诊断复验失败；实际native进程表确认额外两项均为fixture child/grandchild派生的conhost.exe，PID、创建时间及父链与完整Job逐项一致。fixture检查现在要求三个真实Node角色/身份逐项在Job内，额外成员只能是这些Node实际派生且创建时间一致的conhost；产品完整Job成员查询与退出条件保持。provider-job12实际0，normal/forced/crash/late-child四项及parent-loss完整退出、无关Job保全、错误创建身份/重复归属/关闭句柄拒绝、processless与missing-membership及真实缺native拒绝均已执行。parent-loss前同样核全部真实Job成员；记录全部成员用于两次新鲜退出核验。此结果只覆盖普通自有进程fixture，真实原生Agent abort及双Worker保持未验。
+
+按主控后续授权，现有installed09在全新service09-diagnostic/data、明确64506作运行诊断。当前原Orca6228/runtime a2765d35及实际daemon32280定向重新核实，前后公开CLI身份、进程及保护文件字节/ACL均通过。实际host没有取得readiness：SQLite备份报unable to open database file，随后Job归属Zod期望object却收到undefined，host实际1、serve实际6，原件service09-diagnostic。准确调用链显示daemon-entry已捕获真实归属，而daemon-main的startDaemon没有将该字段传递给DaemonServer；现补同一类型与透传，保持实际hello、PID record和内核成员的严格比较。
+
+backup09-probe以本次实际profile-state.db只读作源，普通289字符目标实际失败，namespace路径实际备份及完整性通过。SyncDatabase现在在实际SQLite打开和backup边界使用Node成熟toNamespacedPath，其他平台保持其标准行为。backup09-source-check真实bundle原修改适配器后，对302字符目标实际backup、重新只读打开及PRAGMA integrity_check均通过；未修改原数据库。host启动失败诊断另保留真实stack，后继完整服务及关闭仍须运行验证。typecheck08以原TS6 strict/noEmit/skipLibCheck=false及8192MiB实际退出0，适用MJS语法、PowerShell Parser、文档来源和git diff --check通过。late-child只对实际Job查询捕获的成员逐项核旧身份退出，未捕获的瞬时子进程不声称单独核实；parent-loss旧Job仍unknown。没有创建human会话、Grant或token，没有模型调用；全部安装验收继续同一Worker。

@@ -446,6 +446,9 @@ func waitHTTPHealth(ctx context.Context, endpoint string) error {
 
 func privateDataDirectory(input, install string, protected []string) (string, error) {
 	path := filepath.Clean(input)
+	if err := requirePlainDataPath(path); err != nil {
+		return "", err
+	}
 	var parts []string
 	ancestor := path
 	for {
@@ -467,12 +470,20 @@ func privateDataDirectory(input, install string, protected []string) (string, er
 		actual = filepath.Join(actual, parts[i])
 	}
 	for _, root := range append([]string{install}, protected...) {
+		if err := requirePlainDataPath(root); err != nil {
+			return "", err
+		}
 		root, err := (agents.ProjectFiles{}).CanonicalRoot(root)
 		if err != nil {
 			return "", err
 		}
 		if pathContains(root, actual) || pathContains(actual, root) {
 			return "", errors.New("产品数据目录与安装目录或受保护目录重叠")
+		}
+	}
+	for _, name := range []string{"home", "temp"} {
+		if err := requirePlainDataPath(filepath.Join(actual, name)); err != nil {
+			return "", err
 		}
 	}
 	if err := os.MkdirAll(actual, 0o700); err != nil {

@@ -8,6 +8,7 @@ import { defaultHostTerminalLedgerDir } from './host-terminal-ledger'
 export type DaemonStartOptions = {
   socketPath: string
   tokenPath: string
+  swa_service_job?: DaemonServerOptions['swa_service_job']
   pidPath?: string
   launchNonce?: string
   startedAtMs?: number
@@ -46,6 +47,7 @@ export async function startDaemon(opts: DaemonStartOptions): Promise<DaemonHandl
   const server = new DaemonServer({
     socketPath: opts.socketPath,
     tokenPath: opts.tokenPath,
+    ...(opts.swa_service_job ? { swa_service_job: opts.swa_service_job } : {}),
     ...(opts.pidPath ? { pidPath: opts.pidPath } : {}),
     ...(opts.launchNonce ? { launchNonce: opts.launchNonce } : {}),
     ...(opts.startedAtMs ? { startedAtMs: opts.startedAtMs } : {}),

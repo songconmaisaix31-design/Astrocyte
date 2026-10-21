@@ -163,4 +163,4 @@ async function main() {
   }
   process.stdout.write(JSON.stringify({ ok: true, readiness: { runtimeId: running.runtimeId, dataRoot: running.dataRoot, node: running.node }, ownership: running.ownership }) + '\n')
 }
-main().catch(error => { process.stderr.write(JSON.stringify({ code: 'swa_runtime_start_failed', message: error instanceof Error ? error.message : 'SWA startup failed' }) + '\n'); process.exitCode = 1 })
+main().catch(error => { process.stderr.write(JSON.stringify({ code: 'swa_runtime_start_failed', message: error instanceof Error ? error.message : 'SWA startup failed', stack: error instanceof Error ? error.stack : undefined }) + '\n'); process.exitCode = 1 })

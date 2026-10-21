@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { toNamespacedPath } from 'node:path'
 import type { backup, BackupOptions, DatabaseSync, SQLInputValue } from 'node:sqlite'
 import { hasNodeSqliteReaderApi } from './node-sqlite-reader-api'
 import { NodeSqliteStatement } from './node-sqlite-statement'
@@ -78,7 +79,7 @@ class SyncDatabase {
       throw new Error(`SQLite database does not exist: ${String(path)}`)
     }
     const DatabaseSync = loadDatabaseSync()
-    this.db = new DatabaseSync(path, {
+    this.db = new DatabaseSync(typeof path === 'string' && path !== ':memory:' ? toNamespacedPath(path) : path, {
       readOnly: options.readonly,
       timeout: options.timeout
     })
@@ -140,7 +141,7 @@ class SyncDatabase {
     if (!hasBackup(sqlite)) {
       throw new Error('Asynchronous SQLite backup is unavailable in this Node.js runtime')
     }
-    await sqlite.backup(this.db, path, options ?? {})
+    await sqlite.backup(this.db, toNamespacedPath(path), options ?? {})
   }
 
   close(): void {

@@ -8,11 +8,11 @@
 | 最新范围 | [首版任务](swa-cli-v1-20261020.md)、[用户决定](../docs/QUESTIONS.md)首版章节；产品自带隔离后台，不妨碍本机Orca |
 | 基线 | 从 `81812c32a6d345362655c6e569f680aab8fca877` 普通纳入e149及main `4e6e8ed4fa52521c2232dd770eb98297d8713785` |
 | 工作树 / 分支 | `C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020` / `swa-cli-headless-20261020` |
-| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_0cf6ac28fd13`；沿原Task在系统重启后接续 |
-| Worker / 主控 | `term_9672e756-3dbd-405e-a0fe-5a4d1ed34f10` / `term_84161ef8-54be-49cd-b699-145ed804f645` |
+| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_a8f0c302cc3c`；沿原Task在系统重启后接续 |
+| Worker / 主控 | `term_12dbd90a-0879-4e83-8685-6869bfeda367` / `term_a5fbafe0-ce09-4492-97d1-4ba69e5aa5f6` |
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
-| 原独立Reviewer | `task_1cd8014750f9 / ctx_066b3ab5f10c`，沿原Task接续 |
+| 原独立Reviewer | `task_1cd8014750f9 / ctx_40bf84d10b8c`，沿原Task接续 |
 | 实施状态 | `TEST_PLAN_ACCEPTED / IMPLEMENTING / FUNCTIONAL_VALIDATION_NOT_RUN` |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
@@ -20,6 +20,8 @@
 当前按主控`msg_e98464a9e11e`分完整功能阶段提交并普通push，供原Reviewer累计审核，同一Worker继续后续实现。原生Pi账号、CLI及结构化正文见[报告§15](../docs/standards/swa-cli-headless-20261020.md#15-原生pi账号cli及结构化正文阶段源码)，T12严格调用者、controller.recover及具名服务Job见报告§16。接续保留同一Run/root/context、原Dispatch/session和未知资源；pending原R只观察。最新用户解除资源限制后，主控授原写域自主集中修复与复验；strict06及全部四native真实编译/装载已通过，实际证据和失败记录见报告§29。完整安装候选、真实T12其余场景与通用终端输入继续实施，本机Orca保持当前运行。
 
 原OOM、C1258及build08的FTK1011保持真实失败原件。准确1209完整build09及candidate08闭包已通过，真实安装后发现pnpm链接解引用改变依赖查找位置；失败原件保留，成熟hoisted部署的真实搬迁与动态装载已通过。当前生成后继候选继续安装、服务及全部功能；记录见报告§30。T00公开项目来源通过，认证及同候选双Worker验收尚未通过。
+
+本次重启后按main的资源解除和完整写域继续。准确b624的build10、installed09路径/原生装载通过，T02原junction失败及provider-job原5!=3保留；install09外层退出文件不存在。报告§31记录实际四种junction拒绝、完整Job成员及退出通过、b624真实服务启动失败和同源窄修复；当前功能、人工批准及同安装候选双Worker继续未通过。
 
 ## 问题、建议与主控决定
 

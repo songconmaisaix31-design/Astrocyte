@@ -92,18 +92,36 @@ if ($Case -in @('T00','T02','T03','T06','T08','T12','T13','T15')) {
                 } finally { $swaOccupied.Stop() }
                 & $SwaPath serve --data-dir $ProtectedRoots[0] --port $Port @swaReadOnlySourceArgs --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-root.log')
                 if ($LASTEXITCODE -ne 3) { throw '真实保护目录没有在写入前拒绝' }
-                $swaJunction = Join-Path $swaEvidence 'owned-protected-root-junction'
-                New-Item -ItemType Junction -Path $swaJunction -Target $ProtectedRoots[0] | Out-Null
-                try {
-                    & $SwaPath serve --data-dir $swaJunction --port $Port @swaReadOnlySourceArgs --protected-roots ($ProtectedRoots -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence 'actual-protected-junction.log')
-                    if ($LASTEXITCODE -ne 3) { throw '实际本项 junction 没有在目标写入前拒绝' }
-                } finally {
-                    $swaLinkAbsolute = [IO.Path]::GetFullPath($swaJunction)
-                    $swaEvidenceAbsolute = [IO.Path]::GetFullPath($swaEvidence).TrimEnd('\') + '\'
-                    if (-not $swaLinkAbsolute.StartsWith($swaEvidenceAbsolute,[StringComparison]::OrdinalIgnoreCase) -or -not ((Get-Item -LiteralPath $swaLinkAbsolute -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw '本项 junction 清理目标无法核实' }
-                    [IO.Directory]::Delete($swaLinkAbsolute)
+                $swaJunctionTarget = Join-Path $swaEvidence 'owned-protected-target'
+                New-Item -ItemType Directory -Path $swaJunctionTarget | Out-Null
+                $swaSentinel = Join-Path $swaJunctionTarget 'sentinel.txt'
+                [IO.File]::WriteAllText($swaSentinel, 'Actual owned protected junction target')
+                $swaTargetACL = (Get-Acl -LiteralPath $swaJunctionTarget).Sddl
+                $swaJunctionCases = @('root','parent-missing-leaf','home','temp')
+                foreach ($swaJunctionCase in $swaJunctionCases) {
+                    $swaJunctionData = Join-Path $swaEvidence ('owned-junction-' + $swaJunctionCase)
+                    $swaJunction = $swaJunctionData
+                    if ($swaJunctionCase -in @('home','temp')) {
+                        New-Item -ItemType Directory -Path $swaJunctionData | Out-Null
+                        $swaJunction = Join-Path $swaJunctionData $swaJunctionCase
+                    }
+                    New-Item -ItemType Junction -Path $swaJunction -Target $swaJunctionTarget | Out-Null
+                    if ($swaJunctionCase -eq 'parent-missing-leaf') { $swaJunctionData = Join-Path $swaJunction 'missing/leaf' }
+                    try {
+                        & $SwaPath serve --data-dir $swaJunctionData --port $Port @swaReadOnlySourceArgs --protected-roots (($ProtectedRoots + $swaJunctionTarget) -join ';') --json 2>&1 | Tee-Object -FilePath (Join-Path $swaEvidence ('actual-protected-junction-' + $swaJunctionCase + '.log'))
+                        if ($LASTEXITCODE -ne 3) { throw '实际本项 junction 没有在目标写入前拒绝' }
+                        $swaRefusal = Get-Content -LiteralPath (Join-Path $swaEvidence ('actual-protected-junction-' + $swaJunctionCase + '.log')) -Raw | ConvertFrom-Json
+                        if ($swaRefusal.ok -or $swaRefusal.error.code -ne 'scope_denied') { throw '实际 junction 拒绝类型不符' }
+                        if (@(Get-ChildItem -LiteralPath $swaJunctionTarget -Force).Count -ne 1 -or [IO.File]::ReadAllText($swaSentinel) -cne 'Actual owned protected junction target' -or (Get-Acl -LiteralPath $swaJunctionTarget).Sddl -cne $swaTargetACL) { throw '实际受保护 junction 目标发生写入' }
+                        if ($swaJunctionCase -in @('home','temp') -and @(Get-ChildItem -LiteralPath $swaJunctionData -Force).Count -ne 1) { throw '已有私有根在拒绝前新增了目录' }
+                    } finally {
+                        $swaLinkAbsolute = [IO.Path]::GetFullPath($swaJunction)
+                        $swaEvidenceAbsolute = [IO.Path]::GetFullPath($swaEvidence).TrimEnd('\') + '\'
+                        if (-not $swaLinkAbsolute.StartsWith($swaEvidenceAbsolute,[StringComparison]::OrdinalIgnoreCase) -or -not ((Get-Item -LiteralPath $swaLinkAbsolute -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw '本项 junction 清理目标无法核实' }
+                        [IO.Directory]::Delete($swaLinkAbsolute)
+                    }
                 }
-                [IO.File]::WriteAllText((Join-Path $swaEvidence 'installation-scope.json'), (@{ installed_candidate = $InstallRoot; actual_port_conflict = 'rejected'; actual_protected_root = 'rejected'; actual_owned_junction = 'rejected'; actual_private_service_consumers = 'requires_T03_T13'; model_calls = 0 } | ConvertTo-Json))
+                [IO.File]::WriteAllText((Join-Path $swaEvidence 'installation-scope.json'), (@{ installed_candidate = $InstallRoot; actual_port_conflict = 'rejected'; actual_protected_root = 'rejected'; actual_owned_junctions = $swaJunctionCases; protected_target_unchanged = $true; actual_private_service_consumers = 'requires_T03_T13'; model_calls = 0 } | ConvertTo-Json))
                 $swaExit = 6
             }
         } elseif ($Case -in @('T03','T06','T08','T12','T13')) {

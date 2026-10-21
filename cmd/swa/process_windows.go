@@ -30,6 +30,25 @@ func configureServiceChild(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 }
 
+func requirePlainDataPath(path string) error {
+	for current := filepath.Clean(path); ; current = filepath.Dir(current) {
+		name, err := windows.UTF16PtrFromString(current)
+		if err != nil {
+			return err
+		}
+		attributes, err := windows.GetFileAttributes(name)
+		if err != nil && !errors.Is(err, windows.ERROR_FILE_NOT_FOUND) && !errors.Is(err, windows.ERROR_PATH_NOT_FOUND) {
+			return err
+		}
+		if err == nil && attributes&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+			return fmt.Errorf("产品数据路径经过 reparse point: %s", current)
+		}
+		if filepath.Dir(current) == current {
+			return nil
+		}
+	}
+}
+
 type serviceJob struct {
 	handle    windows.Handle
 	ownership serviceJobOwnership

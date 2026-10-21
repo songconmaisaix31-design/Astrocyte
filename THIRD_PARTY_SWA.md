@@ -17,3 +17,5 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 安装使用明确的新目录及私有当前用户 ACL，不修改 PATH、注册表、全局 Agent 配置或本机 Orca 安装。后台和会话数据由启动时明确的独立 data-dir 拥有；认证来源、受保护目录和真实当前项目授权分别核查。
 
 准确1209完整构建已完成native、Go及VERSION，候选内闭包和装载通过；独立安装后的依赖解析失败原件保留。后继采用成熟pnpm hoisted部署生成普通目录及文件，安装复制前拒绝全部reparse point；实际局部搬迁和动态装载已通过。完整安装、原生CLI认证及功能验收继续按任务计划执行，当前没有完整安装验收或功能通过结论。
+
+后继来源适配将实际服务Job归属从daemon入口经startDaemon完整传递给DaemonServer，并在原SQLite适配器打开/备份边界使用Node成熟toNamespacedPath。原生身份、PID record及内核成员的严格核验继续保留；这些修复的实际限定结果见任务报告§31。
