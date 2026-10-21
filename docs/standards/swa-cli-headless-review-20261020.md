@@ -1442,3 +1442,11 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 **N26，严重程度中：恢复成功回执后的stdout失败没有保留原C_old诊断。** 独立继续读取准确616e的cmd/swa/main.go和output.go及079bd§3.4.1。实际响应解析后main.go以reply覆盖output.identity；恢复成功时其controller为真实C_new，随后publish失败只进入stderr。output.go:83仅输出当前identity.Controller和requested_task/dispatch，未输出仍保存在selected.Controller的原C_old；projectID存在时查询命令也只含project和R。完整stdout写入失败可以没有任何envelope字节，当前诊断不能同时保留原C_old与实际C_new，不满足全部失败路径保留原R/C_old及实际已知新身份的定稿要求。建议动作：使用已验证command中保留的原选择器，连同实际响应已知C_new/Run/root核实际stderr；不从expected checkpoint补造身份，不增加公开接口。原project加R仍可查询原件，未声称恢复效果或原receipt丢失。本项已通过`msg_bead5052222b`交原Worker。
 
 实际`check-revision.ps1 -Previous 4ceff1aded43eca345c9d14729d51697baf23069 -Candidate 616eab312cfb0741fc89cf8ae65027aceac2748b` EXIT0，两Markdown/7本地链接及Git空白通过，既有§15/§16锚点保持。Worker的r10-source-static-01五份TS/MJS语法、JSON/YAML、Go格式、PS Parser、文档来源日志及四项退出0已完整读取，保持Worker归属。全部只读检查BelowNormal、Node512MiB；本Reviewer未执行Program、Go构建、安装、SQLite/HTTP正文、console、故障或模型。类型/生成/完整构建、R06/R08与其余T12、通用terminal及同安装候选双Worker继续未验；后继Stage须主控指定本次之后的准确源码，原Run实际读取回复仍待答。
+
+## 准确7c812a1a的N25及N26返修
+
+结论：**局部静态接受准确`7c812a1a972ed914bae3b9cd864702e5426b9492`的N25/N26对应源码修复。** 完整读取相对616e的五文件差异，并重新对照真实Go输出producer和OrcaNativeError字段。取消场景在真实130窗口成立后，严格UTF-8解码和成熟JSON.parse须得到单一完整失败envelope，核原R/C_old、实际delivery_unknown及inspect_original_request和项目查询诊断；读取、保存或未分类复制错误不能作为取消证据。stdout关闭允许真实部分输出，实际6之外还要求真实pipe读取错误、实际stderr输出失败、已知原关联及原请求查询信息，缺证加入remainingCases和INCONCLUSIVE。
+
+Go控制程序以标准os.PathError区分原读取、文件保存及未分类错误，后两者使控制程序失败；stdout关闭的预期读取错误继续保存实际原件。outputFailure使用已验证selected.Controller输出requested_controller，当前controller/Run/root仍取已收到的真实回复，原C_old与已知C_new分别保留。驱动核原选择器，C_new只接受真实completed receipt关联；实际诊断已知C_new时另核同一Run/root，没有使用pending expected身份。原PTY/runUse唯一性、同R重放六身份和全部动态限制保持。
+
+实际`check-revision.ps1 -Previous 616eab312cfb0741fc89cf8ae65027aceac2748b -Candidate 7c812a1a972ed914bae3b9cd864702e5426b9492` EXIT0，两Markdown/7本地链接及Git空白通过，既有锚点保持。n25-n26-static-01全部初次及final日志、七项退出0和summary已完整读取，一MJS/JSON/YAML、两Go格式与文档来源保持Worker执行归属。全部检查BelowNormal、Node512MiB，本Reviewer未运行Program、编译、安装、console、故障、SQLite/HTTP正文或模型。真实130/6、全部R10/R06/R08及T12、通用terminal、完整构建和同安装候选双Worker仍未验；技术接受不授予重操作窗口。
