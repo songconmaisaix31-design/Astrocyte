@@ -1943,3 +1943,32 @@ Reviewer实际`review-http-idle17.mjs <http-idle29> <完整f2ab SHA> 7 <http-idl
 原FD5在Worker检查前/中/后及Reviewer本次只读重核均0，human22/64509、runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69及原工具5187保持。新检查服务均已结束。原human23/consumer23及已接受Observe不重复执行，凭据实际expiry保持原2026-10-21T20:51:16.4468291Z，不能由保留文件推断后续仍有效。准确f2ab→01b两份文档差异及worker-handoff29全文已读，实际check-revision退出0，成熟marked18.1.0核两份/6本地链接、原§15锚点及Git空白通过；限定接受已通过`msg_c88f4297a8b9`交原Worker。788db525两份hook已获主控`msg_b70e9d35f340`、`msg_8873ae8b776b`明确完整读取回复。
 
 本轮模型调用为0。真实StepFun源、custom/builtin完整正向及真实故障副本、执行Grant、实际Agent调用、T03/T07/T09/T11/T12/T13剩余场景及同一最终安装双Worker重叠/指定停止A/B继续/完整成果保持未验。主控最新`msg_a6d3cbe3ec5b`要求继续独立核已有OpenCode/DeepSeek真实来源及原生配置/工具关闭/隔离合同；原Worker继续同模块实现，当前不以StepFun局部源缺失结算整体阻塞。未使用Aliyun，未改变原权限、S3或产品main发布状态。
+
+### 读取完整OpenCode计划前形成的条件
+
+实际安装package为@opencode/cli2.0.31，原Orca准确v1.4.230的ACP launch spec、account binding、OpenCode dialect及环境处理已读：2.x ACP沿原生私有serve --stdio和stdin所有权工作，原通用ACP本身不保证全部工具关闭。独立git ls-remote取得上游v2.0.31准确`22728d67461260d56bb9796b9b8f36e1de47202e`。完整读取相关config/discovery、credential及legacy migration、permission/Tool.snapshot、Agent/provider配置、plugin发现/supervisor、instruction、warming/title、CLI/server及ACP账户消费者；自有review-opencode31-public-source实际0，原件opencode31-public-source-independent-02.log。25份公开文件中12份与上游Git blob逐字节一致，其余13份Worker只读副本只增加文件末尾空行，核完整正文及原blob通过；该差异未登记为逐字节相同。
+
+实际core Credential.Service从SQLite credential表读取integration/value并按active/time_created/id选择。原生migration把legacy api条目导入type=key，已有该integration时跳过导入；因此auth.json存在不能替代最终私有库选择验证。config discovery还包括系统目录、全局与项目向上目录及.agents/.claude；CLI实际提供project/Claude相关开关，系统/全局隔离须沿真实环境和私有目录核验。Tool.snapshot按最终permission ruleset最后匹配规则移除定义，并单独过滤execute；Agent及session后置权限均可能影响该结果。plugin supervisor支持原生移除/启用操作，guarded内建插件继续保留；移除插件不代表其发现期间从未读取来源。
+
+| 条件 | 必要行为及失败边界 |
+| --- | --- |
+| D01 原生版本与账号 | 精确使用实际2.0.31及原生认证/协议，真实来源只读；沿原生legacy导入或已有credential选择核私有SQLite实际integration、凭据类型与所选身份，秘密不输出，原账号及Orca保持。 |
+| D02 每Worker隔离 | 私有HOME/USERPROFILE、XDG、ProgramData、TEMP、DB及配置目录的实际消费者均须核实；关闭项目、兼容规则和自动来源，核最终plugins/MCP/指令及来源，两个Worker无账户、临时目录、DB或所属资源混用。 |
+| D03 工具关闭 | 核原生最终全局、Agent及session权限和实际工具定义，覆盖文件、命令、网络、subagent及execute/code mode；不能只凭空plugin/MCP对象或客户端不处理permission请求推导关闭。 |
+| D04 准确模型与外发 | 真实选择固定DeepSeek provider/model及原builtin目标、API和原native消费者；查明title、warming、compaction、默认模型、fallback和provider插件行为，只允许已审来源与目标，无Aliyun或隐含外部插件请求。 |
+| D05 原生生命周期 | 复用准确Orca ACP及原协议、私有serve/stdin所有权；真实握手、native session和正文事件可定位，全部所属进程/Job/监听可关联，原95ef服务与其他Worker保全。 |
+| D06 生产准入 | 沿原AgentSelection/configuration_version、真实model_target、当前项目设置及Grant校验启动和每次输入；Observe与执行分别验收，未签发执行Grant时产品控制拒绝保持，不改变原工具与T11未决项。 |
+| D07 错误与未知 | 缺失/过期或不支持认证、源变化、模型不符、配置扩大、协议/进程失败和未知效果立即停止；保留实际原件及部分状态，不制造key、成功CLI、Actor或TTY，不盲重试未知请求。 |
+| D08 完整真实验收 | 原生成功、产品闭环和安装验收分别记录；同一最终安装须完成两真实Worker执行重叠、指定停止A、B继续、完整正文/成果及所属资源退出，真实库/事件逐项定位，未验范围保持未验。 |
+
+该表形成于读取Worker完整OpenCode计划之前，依据当前明确需求和上述实际消费者。新增接口仍须沿主控规格流程确认，表内条件不代替尚未作出的权限决定。
+
+### 单次真实DeepSeek模型列表检查
+
+在读取窄计划前独立形成五项要求：真实literal api来源和无覆盖的准确builtin目标；单次GET且禁止redirect、30秒期限和无重试；原源前后stat/字节保持；秘密及原错误正文不输出；HTTP200与所选模型存在分别判断，不能计作原生账户或推理成功。完整`deepseek-models31-plan.md`准确SHA256 `35F8B8BD52972D4F885B4FED40B11FAF3D0F4DE78503C3D6E2C35A822921D548`逐项覆盖，未要求多余原生启动或模型；**接受该计划**，实施通知为`msg_229457546952`。Reviewer没有发送重复HTTP请求。
+
+Reviewer实际以安装Node24.21.0执行自有review-opencode31-account.mjs，退出0，原件opencode31-account-independent-02.log。成熟JSON/已安装jsonc-parser确认实际auth.deepseek仅type/key、type=api且key非空，默认deepseek/deepseek-v4-pro、该provider无覆盖；实际公开snapshot的Git blob为67261ea5f5641232554e25258f600c0b6da3ce6c，builtin目标为https://api.deepseek.com、package为@ai-sdk/openai-compatible且包含所选模型。原auth/config和公开catalog前后stat及字节保持，未启动原账号CLI、迁移数据库或调用模型。[DeepSeek官方文档](https://api-docs.deepseek.com/api/list-models/)已完整读取，其模型列表接口和返回结构支持本项只读验证。
+
+**接受准确客户端`B3F40C728C7CCD57915579C2CD1950F4561AC24D22CF781D3CFD0105708AD765`的实际GET31范围。** 完整4382字节客户端及原始log、退出码和result已独立读取；实际固定Node下于UTC2026-10-21T20:28:05.162Z只发出一次GET https://api.deepseek.com/models，返回200，所选deepseek-v4-pro存在，实际退出0。redirect:error、30秒signal、无重试，认证仅在内存HTTP Header，保存内容限安全元数据；原auth/config stat及字节保持，没有源写入、原生session、推理请求或Grant。原件deepseek-models31/result.json与log一致；该接受限本次真实key的模型列表读取，不证明余额、实际推理或2.0.31最终credential选择。
+
+32f254c5安装范围hook已获主控`msg_794a229cd5fb`明确完整读取回复。完整OpenCode计划、私有账户实际导入/最终权限、原生模型及产品执行仍待原Worker提交，不依据本次200扩大接受范围。
