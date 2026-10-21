@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { root } from './process.mjs'
 
@@ -7,6 +7,55 @@ const runtime = join(root, 'runtime', 'swa-orca')
 const requireRuntime = createRequire(join(runtime, 'package.json'))
 const { build } = requireRuntime('esbuild')
 const upstream = join(root, 'third_party', 'orca-v1.4.230')
+
+function containsPath(parent, path) {
+  const pathRelative = relative(parent, path)
+  return pathRelative !== '..' && !pathRelative.startsWith('../') && !pathRelative.startsWith('..\\') && !isAbsolute(pathRelative)
+}
+
+async function packageSource(entry, expectedName, expectedVersion) {
+  for (let directory = dirname(await realpath(entry)); ; directory = dirname(directory)) {
+    if ((await readdir(directory)).includes('package.json')) {
+      const pkg = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'))
+      if (pkg.name === expectedName) {
+        if (pkg.version !== expectedVersion) throw new Error(`License source ${expectedName} version ${pkg.version} differs from ${expectedVersion}`)
+        return directory
+      }
+    }
+    if (dirname(directory) === directory) throw new Error(`License package source missing for ${expectedName}@${expectedVersion}`)
+  }
+}
+
+async function copyInlinedLicenses(output, inputs) {
+  const pkg = JSON.parse(await readFile(join(runtime, 'package.json'), 'utf8'))
+  const sources = []
+  for (const name of ['zod', 'yaml', 'diff', 'smol-toml', 'jsonc-parser', '@streamparser/json', 'tweetnacl', 'proper-lockfile']) {
+    const version = pkg.devDependencies[name]
+    if (typeof version !== 'string' || pkg.dependencies[name] !== undefined) throw new Error(`Expected build-only direct dependency ${name}`)
+    sources.push({ name, version, directory: await packageSource(requireRuntime.resolve(name), name, version) })
+  }
+  const requireSSH = createRequire(requireRuntime.resolve('ssh2'))
+  const requireBcrypt = createRequire(requireSSH.resolve('bcrypt-pbkdf'))
+  sources.push({ name: 'tweetnacl', version: '0.14.5', directory: await packageSource(requireBcrypt.resolve('tweetnacl'), 'tweetnacl', '0.14.5') })
+  const licenseRoot = join(dirname(output), 'third-party-licenses')
+  await mkdir(licenseRoot)
+  for (const { name, version, directory } of sources) {
+    if (![...inputs].some(input => containsPath(directory, resolve(root, input)))) throw new Error(`Expected actual inline input for ${name}@${version}`)
+    const files = (await readdir(directory)).filter(filename => /^(?:licen[cs]e|copying|notice)(?:[.-].*)?$/i.test(filename))
+    if (!files.some(filename => /^(?:licen[cs]e|copying)(?:[.-].*)?$/i.test(filename))) throw new Error(`Full license missing for ${name}@${version}`)
+    const target = join(licenseRoot, name.replaceAll('/', '__') + '@' + version)
+    await mkdir(target)
+    for (const filename of files) {
+      const source = join(directory, filename)
+      const stat = await lstat(source)
+      if (!stat.isFile() || stat.isSymbolicLink()) throw new Error(`License source must be an ordinary file: ${source}`)
+      const destination = join(target, filename)
+      await copyFile(source, destination)
+      if (!(await readFile(source)).equals(await readFile(destination))) throw new Error(`License copy changed bytes: ${source}`)
+    }
+    console.log(JSON.stringify({ inlined_license: name, version, files }))
+  }
+}
 
 export async function buildSWARuntime(output) {
   if (!isAbsolute(output)) throw new Error('SWA build output must be absolute')
@@ -52,16 +101,20 @@ export async function buildSWARuntime(output) {
     'worker-thread-child-process-entry.js': join(upstream, 'src/main/worker-thread-child-process/worker-thread-child-process-entry.ts'),
     'claude-profile-setup-worker-entry.js': join(upstream, 'src/main/claude-accounts/claude-profile-setup-worker-entry.ts')
   }
+  const inputs = new Set()
   for (const [filename, entry] of Object.entries(entries)) {
     const result = await build({ ...common, entryPoints: [entry], outfile: join(output, filename) })
+    for (const input of Object.keys(result.metafile.inputs)) inputs.add(input)
     await writeFile(join(output, filename + '.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
   for (const name of ['provider-job-bootstrap']) {
     const result = await build({ ...common, entryPoints: [join(runtime, 'src', name + '.ts')], outfile: join(output, name + '.mjs'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' }, packages: 'external', external: common.external })
+    for (const input of Object.keys(result.metafile.inputs)) inputs.add(input)
     await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
   const pkg = JSON.parse(await readFile(join(output, 'package.json'), 'utf8'))
   if (pkg.type !== 'commonjs') throw new Error('The deployed runtime must preserve CommonJS child entry semantics')
+  await copyInlinedLicenses(output, inputs)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {

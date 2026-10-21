@@ -171,3 +171,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 当前构建修复显式选择本机已有C:/Python313/python.exe，部署/下载/编译前执行真实sys.executable/版本预检，四项gyp沿同一--python及子进程force唯一来源；缺失、不符或不可执行立即失败，不安装、不改系统PATH或全局配置。下载器[void]抑制原async VoidTaskResult，旧实际日志保留；后继尚未运行。原b7b5 runner已存build-05原件，下一candidate05/build06仅静态准备。N04纯App准入与N08契约/私有DACL的实际差异草案留在自有忽略目录，尚未应用或计为产品通过，其他输入/恢复/Job/成果由同Worker继续。
 
 原Run正式msg_5b7d83fdfb5a仅一次build06已消费，准确b75及runner bae62前置通过；exec65865实际同步EXIT1，内外退出原件均1。Python3.13.13及VS2022实际发现成功，324项部署/21份bundle/metafile/三官方HTTP200及原pin校验完成；首conpty编译在中文UTF-8头文件报C4819/代码页936及第17行C2059/C2143，未完成native/Go/VERSION，candidate05保留不可安装。UTC19:20:34.5682573/36.9947290两次新鲜所属及旧身份均空，msg_582d立即交回；主控msg_2f350收回全部重操作并解除tracked/Git冻结，要求同Worker继续实际程序。当前只在构建的native子进程显式CL=/utf-8且清除继承CL/_CL_冲突，保持源注释和系统代码页；后继尚未编译，准确CR和全部真实验收继续。
+
+2026-10-22同Worker沿最新主控授权继续；旧资源窗口限制已由用户解除，实际规则及累计程序写域见主线当前任务和RESOURCES。准确260的build12、RPC目录、Go编译、仓库外同一安装闭包/真实私有服务/五份SQLite/普通Job及安装负向检查已取得限定通过，install11原30秒native超时失败保持原因未知。当前260服务保持运行，本人Observe批准尚未执行；Agent不取得人工会话。已审八项依赖移至构建输入、九版本原许可复制实现，pnpm真实锁生成/frozen/check-dependencies全部0；新候选及全部真实安装、T12/终端和同安装双Worker成果验收继续，完整事实见报告§33。

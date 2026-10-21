@@ -1305,3 +1305,15 @@ backup09-probe以本次实际profile-state.db只读作源，普通289字符目�
 按主控采用的原Reviewer五项条件，构建脚本可显式接受native-source/native-work/native-evidence。原输入必须是绝对普通路径、在本仓且相互归属明确，源候选与新目标在任何目标创建前拒绝互相包含。当前明确来源为candidate10、原build11成功记录及candidate-ZZTfh4工作目录，不补造旧SOURCE。复用先核来源源码、原成功日志、真实原工作产物与候选字节、原node-addon-api和支持资产；未知或失配立即失败。仅随后依据当前具体输入变化选择原编译函数，函数、CL/gyp及跟踪/分析参数保持。原注入头文件单独核准确Git字节，只排除已观察的精确addon-api生成文件。原VS/Python/gyp及参数保留在原构建日志，复制不重复发现当前VS。新候选摘要分别记录native_modules_copied与native_modules_built，仍执行新根真实四模块装载及Job检查。
 
 native-reuse07实际0：四包复制、全部四个实际.node在新根装载，Windows安全与registry通过原只读函数真正加载native，空Job创建/查询/关闭及错误来源/缺少原工作目录拒绝通过。native-reuse08实际0：自有registry源码副本增加注释形成真实输入变化，前三模块复制，只有registry沿原node-gyp12.3/固定Node24.21.0重新编译并实际装载；没有改正式native源码或旧候选。早期01/02的源码生成文件及夹具addon-api归属差异、03/04当前VS探测失败、06未触发lazy加载而2!=4的失败原件保留。typecheck09的完整strict检查实际0。程序继续由同一Worker构建、安装和实际验收，human批准及真实Agent仍未取得。
+
+## 33. 独立安装服务与已审依赖分类调整
+
+准确26036164的RPC AST检查实际16项、无缺失或重复，退出0；四包Go验收编译和三个传输前函数实际0。build12/candidate11实际0，四native从完整candidate10、原build11及原工作目录明确复用，全部28659路径和原装载检查0。service11-diagnostic实际HTTP200、五份真实SQLite完整性/外键检查0、所属退出及原Orca保全0，没有模型调用。
+
+install11真实复制和版本核查通过，原安装后的native检查触发原30秒ETIMEDOUT/SIGTERM、退出1，后续T02负向分支未在该次运行；原因保持未知。主控随后明确批准把同一实际安装移动至仓库外独占目录`C:/Users/DW/AppData/Local/SwarmCli/candidates/26036164`。relocate-installed11核全路径、没有所属活动进程、真实VERSION及同用户ACL后使用Move-Item完成；旧安装位置消失，原失败记录保留。仓库外同一安装的原闭包检查退出0，直接阶段检查实际约796毫秒、五项实际.node来源均在安装内。installed11-scope四项真实junction拒绝及目标不变、installed11-refusals真实端口冲突和保护根拒绝、provider-job-installed11普通自有进程全部检查各退出0；这些结果没有覆盖真实Agent abort。
+
+installed11-service保持同一仓库外安装、64506和独立data root运行，真实HTTP健康、五份SQLite完整性/外键及原Orca保全均0。本次本人批准入口仅允许Observe，实际session/CSRF、固定公开项目注册、最小observe Grant/token由用户本人执行；Agent没有执行人工入口。私有凭据仅CurrentUser DPAPI和同用户ACL文件交接，不输出明文。凭据发送前重新核实际serve创建身份、HTTP父链/监听和准确安装版本，消费仅核固定caller/project root及唯一observe动作后运行status/capabilities。dpapi-probe01使用真实公开stats.go字节验证加密往返和实际文件ACL，退出0，没有创建human session或项目token。
+
+依据原Reviewer准确260的八项依赖条件及主控授权，runtime的zod4.6.5、yaml2.9.1、diff8.0.4、smol-toml1.9.1、jsonc-parser3.3.1、@streamparser/json0.0.26、tweetnacl1.0.3、proper-lockfile4.1.2移至devDependencies，保留精确版本和实际间接生产依赖。dependencies13的pnpm11.27 lock-only、frozen install及原check-dependencies各退出0；锁差异仅该importer八项分类，inventory及其他importer/overrides/patches保持。
+
+原buildSWARuntime收集21份实际metafile输入，沿实际包元数据核八个构建包和ssh2→bcrypt-pbkdf→tweetnacl0.14.5的准确来源及内联输入，再逐字节复制完整LICENSE/LICENCE/COPYING/NOTICE至安装根`third-party-licenses`。包版本、内联来源或全文许可缺失立即失败，不增加external；后继完整候选及独立安装仍须实际核查全部九版本、生产闭包、服务和真实双Worker。T12、普通终端失败路径、最终同安装模型与成果验收继续，当前整体未完成。
