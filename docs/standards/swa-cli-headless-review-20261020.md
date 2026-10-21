@@ -1740,3 +1740,51 @@ idle只允许driver启动前不存在的独占DataRoot，实际inventory为空�
 主控准确ef49ebf3、732f92c3及 `4dbbb564025734de12331ea024bd1ee1757cc362` 的变化已完整读取，限定接受正常发行安装和当前/历史来源分列、局部结果及未知范围的记录。Reviewer实际`check-revision.ps1 -Previous ef49ebf3896dc1d9c5bbf2ee3ff822d0c790a5c5 -Candidate 4dbbb564025734de12331ea024bd1ee1757cc362` EXIT0，成熟marked18.1.0核三Markdown、44本地链接及Git空白。933c63f5的install12退回及260补验两hook已获主控`msg_cd7e1bff73fe`、`msg_9fbc7e271bdf`明确读取回复。当前正式PR列表为空，尚无COMMENT review对象；没有集成或发布main。
 
 本人Observe尚无实际执行回执；T11、真实执行Grant、模型与工具范围、完整T12及同一最终安装的真实双Worker并发/指定停止/另一Worker继续/成果仍未通过，原S3和真实用户作品授权保持未决定。后继准确63eb7091及新candidate13已收到通知，本节没有登记该实现或新运行通过。
+
+## 准确63eb7091与95efcc28的故障和退出观察
+
+**退回准确63eb的C08退出分类；接受其检查模式源码、安装闭包及下述故障/资源和C09实际范围。** 已完整读取 `63eb7091dbf2b846f5e1984221e229ce18528bf0` 的四文件差异。历史所属与idle显式分支符合准确33488计划，原live、inventory和stop-service条件保持，没有增加生产授权。http-variants16的实际命令记录、完整空日志及两个退出0已读：完整TS6 strict检查和Go工具编译在5e HEAD加两份已审测试源码变更时执行，相同测试正文随后纳入63eb；不将它们称为63eb完整包构建。准确build14/SOURCE及candidate13/VERSION为63eb，完整构建退出0，四native沿507原成功编译显式复制，实际28233路径闭包及空Job0。
+
+主控已批准中间完整普通复制。prepare-package17的完整脚本、原件及退出0已读，外部package17实际28232子项、25485文件与源字节相同，Node和子PowerShell为当前用户Medium。原installer将其安装到`C:/Users/DW/AppData/Local/SwarmCli/candidates/63eb7091-install17`，安装及原生闭包、端口/保护根/四reparse拒绝范围通过，原聚合退出6保留T03/T13。该准备没有完成最终ZIP发行。Reviewer以该安装自带Node执行动态来源和内联许可检查均0，原件`external-install17-independent.log`、`installed-inline17-independent.log`：五native、动态SDK/emoji和空Job通过，九版本完整原许可相同；21份JS仅controller-inspection正文与输入变化，其余20份与260相同。
+
+### C08的准确失败分类
+
+http-idle17完整入口、三项拒绝、readiness、五个SQLite、Token、所持句柄、完整流及最终保全已读。实际serve33496、host37096、server44256、daemon29952属于同一具名Job与安装，runtime为`b515a84e-0bf2-4630-b56c-86245b5df874`。两份实际idle观察均为六表0、唯一未绑定原生legacy默认行及空PTY。故障工具只终止所持server44256句柄，工具退出0；daemon当时alive，随后全部四旧身份退出，两次完整Job只余serve相隔约101毫秒，两次旧身份空观察相隔约798毫秒。三个服务及故障工具均为当前用户Medium；六个保护文件字节/ACL、原Orca公开身份保持。Reviewer实际`review-http-idle17.mjs` EXIT0，原件`http-idle17-independent.log`，仅核这些实际事实。
+
+**该次serve实际为delivery_unknown/6，不能接受其分类。** 已独立核SPEC §21.1引用的方案§6及§7.5：明确失败为7，未知效果为6。准确63eb在server.done后closeOwner取得标准os.ErrClosed即将code改为6，随后await已知exit1无法覆盖6。已读取本机实际Go1.27.2的Wait与StdinPipe源码：Wait结束后自动关闭该parent pipe。原日志只有此重复关闭、已知server失败及成功所属退出，没有其他原生或Job未知日志；该准确失败交原Worker，主控原返修为`msg_3ecbaafbd839`，Reviewer独立条件为`msg_051ee36c1686`。后继已知C08须精确返回runtime_error/7，宽收7或6不能证明分类正确。
+
+### 未知创建时间的完整查询条件
+
+原lifecycle17和c09-only18均因实际行缺creationTimeMs退出1，原件保持。17为root50796/host46128下的powershell43304，18为root50512/host50036下的node48788；两个旧集合中有此前创建时间，缺项样本没有补填该值。18实际已关闭stdout读端，并输出唯一非空runtime_id，但该次驱动没有完成最终退出和Job证据，不能登记完整C09通过。
+
+Reviewer独立读取原native的process.cc和process_worker.cc，确认CreationTime查询失败时该字段不输出，快照或首行查询失败还可能返回空数组。原rows非空判断不能证明完整OS查询成功。Worker补充计划完整版本的SHA256为 `6E3F057AA3A32C65B27F2731F9A457B7E35A3C9542159F1DE18A056B349D164F`，已完整重读并经成熟marked解析0，准确接受通知为`msg_7284cb381877`、`msg_e4f139163990`。保留实际未知行/时间/同帧父链，禁止填旧创建时间或向未知PID发信号；原native身份及完整Job条件保持。最后两次独立成熟CIM查询须成功、完整且非空，全部返回行PID存在并类型有效，本项命中身份字段完整，至少间隔50毫秒。原已知身份必须退出，曾经unknown的PID必须完全不存在；存在任何创建时间的同PID也保持unknown/6。仅记录所需身份字段及查询数量、状态和时间。
+
+### 准确95ef源码与真实局部分支
+
+已完整读取 `95efcc288e32ad8d72d4ef902f32ec130f97fea3` 五文件差异。serve先取得closeError并await；只有标准os.ErrClosed、实际Wait完成、同PID ProcessState确认退出且等待结果明确时才接受重复关闭。非ExitError的Wait错误、实际退出状态未确认、其他关闭错误及原生/Job未知继续为6。该准确实现的Go编译与新安装C08实际结果见下节。
+
+新增observe-process-exits.ps1和serve-lifecycle.mjs保持上述准确计划：完整CIM每行PID在筛选前核验，缺字段使结果保持未知；查询异常保存实际失败后退出6。驱动保留两次native观察，遇缺项单独记录unknown；本项root当前创建身份未核实时也记录未知，不用该行获得新控制权限。独立CIM限15秒，超时只处理实际创建的helper并最多再等待5秒，结果始终未知；所选、未选及所选尚未完成的Case分别记录，任一退出证明不足后停止后续Case。Reviewer实际MJS语法及成熟PowerShell Parser均0，未执行故障注入来伪造CIM失败。
+
+cim19的完整真实脚本、四个输入/输出、进程来源和原句柄Wait原件已读。实际自有pwsh44160/1792608160074存活时返回6，关闭本项stdin并Wait确认0后返回0；实际自有pwsh47180/1792608162686在unknown请求中只携带真实PID，CIM创建时间正常可用，存活返回6、实际退出后返回0。旧known在后两例已实际退出，独立区分了两个拒绝分支。四次两份完整CIM成功、字段完整，间隔约505.40/510.29/522.25/469.32毫秒；未知输入没有冒称原生查询失败。实际CIM查询故障和超时路径继续未运行。
+
+lifecycle19在原63eb安装、新仓库外数据和64508端口完成四种实际情况，原驱动退出0；立即EOF、启动中EOF、就绪后EOF、启动中关闭stdout读端分别130/130/0/6。Reviewer独立`review-lifecycle14.mjs <lifecycle19-outer> <准确63eb> diagnostic cim` EXIT0，原件`lifecycle19-independent.log`：实际2/10/11/11个已知身份两次native退出间隔263/280/264/264毫秒，四组独立CIM间隔约471.97/520.48/444.01/450.38毫秒，查询均成功、全清单非空、匹配行均空。最后一种实际conhost25892缺创建时间样本原样保留，两次CIM均未见该PID，没有声称该样本曾获得完整创建身份。三个有子进程的情况保留两次完整Job只余serve，stdout关闭实际输出失败、唯一非空runtime关联和省略未知字段符合已审C09；六个保护文件及原Orca身份保持。接受这一准确63eb安装的四种关闭及C09诊断范围。
+
+独立`review-source95ef.mjs` EXIT0，原件`source95ef-independent.log`：lifecycle19实际执行的MJS与PS快照，经换行形式规范后与准确95ef的对应源码全文相同，四份CIM原件与真实来源/请求/匹配身份/退出逐项一致。此结果证明测试源码来源和既有63eb局部结果，不表示95ef核心二进制、C04/R10真实接续或原生Agent通过。
+
+主控准确ac4e059ba7ea4f52e8cde4d4dec6cdefa645e1bf、59c7a652a6a16814c0cd198a2b99d9f28650c819的三文档变化已完整读取，按各准确来源限定接受中间安装、实际缺口和6E3F计划记录。Reviewer实际`check-revision.ps1`依次核4db→ac4、ac4→59c7、5e→63eb及63eb→95ef均0；两组管理文档各44本地链接，实施文档各6本地链接及原§15锚点，均由成熟marked18.1.0解析并通过Git空白。110e567a三个hook已获主控`msg_57ad2b4cc887`、`msg_1d987461b0e4`、`msg_493ffdc3792d`明确完整读取回复。
+
+### 95ef真实ZIP安装与C08/C09复验
+
+**限定接受准确95ef的源码、完整构建、正常发行安装、C08已知失败7及四种生命周期/C09实际范围。** compile20完整入口、原件及退出0已读：Go1.27.2在准确干净95ef重新编译四份原测试二进制，四编译日志为空，三个传输前函数实际PASS；SOURCE在完成和干净源码复核后才记95ef。四个真实安装服务消费者继续未运行。build15完整日志和退出0、SOURCE与candidate14/VERSION均为95ef，四native按原507/build11/ZZTfh4成功输入复制，built为空，实际Node/native/空Job及28233路径闭包0。
+
+extract-package20完整入口及实际0已读：成熟.NET ZipFile生成实际410059449字节ZIP，再向预先不存在的普通私有目录正常解包；原固定Node字节/版本保持，实际Node及子进程均当前用户Medium。原installer形成独立`C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20`，实际版本95ef；install20日志包含真实native/空Job/闭包0、占用端口拒绝、直接保护根及四reparse拒绝，聚合退出文件为6。该结果没有扩大为完整T02或实际任务通过。Reviewer以这个安装自带Node独立核五native、动态SDK/emoji及实际装载来源，九版本完整原许可和21份成品均符合原范围，命令退出均0；原件`external-install20-independent.log`、`installed-inline20-independent.log`。
+
+http-idle20沿同一实际安装及全新仓库外数据运行，外层退出文件为0，真实serve42212、host40280、server33444、daemon37620，runtime为`ef5610a1-804f-4b24-beae-0b855c1032c6`。完整源码及原件核唯一成功readiness、三项实际模式/错库拒绝、六表0与唯一原生默认行、空PTY、五个真实SQLite及四项Medium Token。故障工具只定向终止所属server33444的同一句柄，实际目标已退出；daemon在该次观察alive，最终全部四个旧身份两次缺席，原Job两次只余serve。实际serve精确返回runtime_error/7，没有重复关闭stdin的未知错误。Reviewer显式要求7执行`review-http-idle17.mjs <http-idle20> <准确95ef> 7 <http-idle20-exit.txt>` EXIT0，原件`http-idle20-independent-02.log`：完整Job观察间隔约101毫秒，旧身份观察约810毫秒，六个保护文件字节/ACL及原Orca公开身份保持。接受本次C08准确分类和所属收尾；原63eb/17实际6失败保持原记录。
+
+lifecycle20在同一个95ef安装及独立仓库外数据完成立即EOF、启动中EOF、就绪后EOF、启动中关闭stdout读端，实际退出130/130/0/6，驱动0，四项OBSERVED，remainingCases空。Reviewer使用该安装Node独立运行`review-lifecycle14.mjs <lifecycle20-outer> <准确95ef> diagnostic cim` EXIT0：已知身份2/10/11/11，两次native退出间隔276/274/267/265毫秒，四组独立完整CIM成功且匹配行空，间隔约411.39/474.93/409.16/537.54毫秒。本次没有创建时间缺项，原19真实缺项及其两次缺PID证明保持。完整stdout/stderr已读：两个取消为唯一失败envelope，正常EOF为唯一成功readiness，stdout关闭为实际输出失败、唯一非空runtime_id、未知字段省略及6；三个有子进程的情况均保留两次完整Job只余serve。原六个保护文件及Orca公开身份保持，实际执行的MJS/PS快照与准确95ef相同。原件`lifecycle20-independent.log`、`source95ef-lifecycle20-independent.log`，均0。
+
+provider-job-installed20的完整真实入口、结果及退出0已读，Reviewer用成熟stream-json独立`review-provider-job12.mjs <provider-job-installed20> <准确95ef> <install20>` EXIT0。普通自有进程normal/forced/crash/late-child完整空Job两次间隔约66.50/63.34/74.04/71.84毫秒，实际初始成员含两个conhost，所属父链和已捕获身份观察、无关Job保持符合原范围。late-child额外PID604未进入已捕获的native创建身份表，保留该逐身份观察限制；parent-loss旧Job仍unknown，实际原生Agent abort仍NOT_RUN。原件`provider-job-installed20-independent.log`。本节实际模型调用0，没有创建本人session、Grant或token。
+
+主控后继准确 `f0fb667e4820a4cd486226b7f6c7d58c01affbfb` 三文档差异已完整读取，接受其95ef源码、原63eb生命周期及当时待验新C08的来源记录。Reviewer实际59c7→f0fb的成熟marked/Git空白检查0，三文件44本地链接，首装和当前审查记录按实际更新。最新正式PR查询为空，尚无可发布COMMENT review的对象。
+
+本人Observe、T11、真实执行Grant/模型/工具、完整T03/T12与同一最终发行安装的真实双Worker并发/指定停止/另一Worker继续/完整成果仍未通过。CIM查询故障及超时没有实际触发，本轮只接受已描述的源码和真实运行范围。原S3和真实用户作品授权保持未决定，没有合并或发布main。
