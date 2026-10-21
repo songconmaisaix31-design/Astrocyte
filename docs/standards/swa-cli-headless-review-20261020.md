@@ -1791,7 +1791,7 @@ provider-job-installed20的完整真实入口、结果及退出0已读，Reviewe
 
 ## 同一95ef安装的本人Observe入口
 
-**接受下列准确三文件的静态/API及实际公开归属范围，可由用户本人执行Observe入口。** 本轮只执行成熟PowerShell Parser、文件摘要及共享函数的只读`Assert-SwaService`，退出0；没有执行人工授权正文、创建human session、Grant或token。Worker原件位于其忽略目录`.verification/swa-cli-headless-20261020`，三份全文已完整读取并独立逐一核对。
+**原22的公开身份/API核查结果保留，两份人工/消费版本已撤销；当前本人入口为后文准确23版本。** 本轮只执行成熟PowerShell Parser、文件摘要及共享函数的只读`Assert-SwaService`，退出0；没有执行人工授权正文、创建human session、Grant或token。下表两份原人工/消费正文已分别保留为Worker忽略目录`date-fix23/human-authorize-before.ps1`、`date-fix23/use-credential-before.ps1`，共享身份函数保持；三份全文均已完整读取并独立核摘要。
 
 | 文件 | 字节 | SHA256 |
 | --- | ---: | --- |
@@ -1811,6 +1811,26 @@ ec225632的三份hook已获主控`msg_26fdd5701816`、`msg_eca4144b06b0`、`msg_
 
 ### 到期时间类型边界的独立复核
 
-**退回上述E0CF0C3C与B9792BE3两份本人入口的日期处理范围，准确修复前暂停该版本流程；FD5FA88C公开身份函数及95ef程序的既有接受范围保持。** 旧260关闭补充检查的实际输入揭示PowerShell日期边界：成熟ConvertFrom-Json将原UTC日期转为System.DateTime/KindUtc，随后DateTimeOffset.Parse接收该对象时先隐式转为不带UTC和毫秒的字符串。本机+08环境实际serve时间应为1792600364102，却得到1792571564000；owner应为1792600340610，却得到1792571540000。原始JSON的完整UTC字符串经成熟InvariantCulture解析，与直接DateTimeOffset类型转换所得毫秒逐项相同。Reviewer实际`pwsh -NoProfile -File .verification/review-public-utc.ps1` EXIT0，原件`public-utc-review-02.log`，输入均来自真实已保存的公开进程时间，没有生成凭据或人类会话。
+**旧E0CF0C3C与B9792BE3两份本人入口的日期处理已退回并撤销；FD5FA88C公开身份函数及95ef程序的既有接受范围保持。** 旧260关闭补充检查的实际输入揭示PowerShell日期边界：成熟ConvertFrom-Json将原UTC日期转为System.DateTime/KindUtc，随后DateTimeOffset.Parse接收该对象时先隐式转为不带UTC和毫秒的字符串。本机+08环境实际serve时间应为1792600364102，却得到1792571564000；owner应为1792600340610，却得到1792571540000。原始JSON的完整UTC字符串经成熟InvariantCulture解析，与直接DateTimeOffset类型转换所得毫秒逐项相同。Reviewer实际`pwsh -NoProfile -File .verification/review-public-utc.ps1` EXIT0，原件`public-utc-review-02.log`，输入均来自真实已保存的公开进程时间，没有生成凭据或人类会话。
 
 本人消费脚本对ConvertFrom-Json得到的expires_at使用同一Parse写法；原App的IssueProjectAgentToken明确签发一小时有效期。在此实际JSON日期对象类型下，到期判断会提前八小时失效；不能将原三Parser/公开身份检查替代该类型边界验证。两份入口交原Worker按成熟日期值与完整字符串的正确转换返修，新版本需重新核准确SHA及实际日期来源；人工HTTP回执和真实新凭据消费仍未运行。原入口及首次关闭补充原件保留，本轮没有重操作已关闭服务。主控已通过`msg_1825382d6257`及原Run的`msg_e3564a45456f`收到需替换本人待办的通知。
+
+## 准确23本人入口、UTC补验与旧260收尾
+
+**接受下列准确23两文件的仅Observe静态/API、日期类型和实际公开身份范围；实际人工签发及真实DPAPI消费仍未运行。** 原Worker同Task以新Dispatch `ctx_4c001fda773c`接续，准确补充计划SHA256为 `7DF6314A9686702CE01C5A9D4E8A9E35E6729322AA6567808A9800D252215BC0`，已完整读取并经成熟marked解析0，实施接受通知为`msg_f995d676d2b6`。新两份全文已完整读取，对照完整保留的E0CF/B979原件，各仅修改一处expires_at为显式DateTimeOffset值转换；原API、CurrentUser DPAPI、私有ACL、真实项目/caller/唯一observe和精确服务检查保持。
+
+| 当前文件 | 字节 | SHA256 |
+| --- | ---: | --- |
+| human-authorize-installed23.ps1 | 8000 | A427BE2BAD35E7AF37D823419B599C3E02931F4EF36749247E0F7E47EC177C1B |
+| use-installed23-credential.ps1 | 2917 | 05C9F245B6E8DF0FC6B33C5431BE99307C4E7436D13AB1C8EF56407B5712F055 |
+| assert-installed22-service.ps1 | 3044 | FD5FA88CC2179AEF2BB97E86F28D76E4AAFBC44488540BF5A458C10E6659CD0D |
+
+旧22两个原路径现均为235字节的参数声明后立即throw，真实执行分别拒绝1；原8007/2924字节全文及原完整摘要保持在date-fix23，不覆盖首份CIM请求或结果。新23消费在缺少真实凭据时实际拒绝1，停在文件检查，human-approval前后均不存在。verify-entries23完整入口和原件已读，五个文件Parser通过，FD5不变，前后仅执行实际只读身份检查0，原服务5187、64509、runtime及三个进程创建身份保持；没有执行新人工正文。
+
+verify-types24完整脚本及全部原件已读：使用原serve/owner完整UTC，以及同一次真实时钟的+08:00和UTC两种序列化，共四份实际来源；每份核原字符串、JSON实际DateTime(Utc或Local)、DateTimeOffset三种输入。12项完整UTC ticks与Unix毫秒逐项一致，保留类型、Kind和offset。Reviewer独立`pwsh -NoProfile -File .verification/review-human23.ps1` EXIT0，采用成熟JsonDocument/ConvertFrom-Json和Int64核全部100纳秒ticks，避免大整数精度损失；同时核新SHA、保留原件、Parser、三个真实拒绝及当前实际服务，原件`human23-independent.log`。没有构造token、expiry、human或模型回执，也没有把这些日期检查计作真实授权消费。
+
+旧260收尾的完整precheck、原owner记录、service-exit=0、service-stderr及最终Orca保全已读。主控准确授权`msg_493e4d2f080c`仅在无human目录且原serve/owner身份核实后，向原工具59063的Read-Host输入Enter；沿原stdin及原持有进程Wait关闭。实际两次完整Job只余serve间隔约100毫秒，六个保护文件字节/ACL及原Orca身份保持，旧数据和原11两个入口摘要不变。最终旧服务精确补充使用date-fix23/v2请求：serve30160/1792600364102、owner33432/1792600340610，host44232/server39960只按真实PID缺席核验，未冒称取得它们的创建时间。成熟观察器两次完整CIM各410项，全部PID有效，匹配行均空，间隔约469.64毫秒，实际退出0；独立同脚本逐项核0。接受该真实旧服务收尾范围，首次时间输入与原结果保留，未再次控制已关闭服务；新human22公开身份独立检查保持0。
+
+产品准确 `c851e615d062e39be60753fc02d11a86ca7241a3` 的两份文档变化已完整读取，覆盖95ef后继8c60、57fe及当前日期/收尾记录。相对95ef只有两份文档变化，程序及安装保持；成熟Markdown与Git空白检查分别95ef→57fe、57fe→c851均0，各6本地链接及原§15锚点保持。主控f0fb→4aee四文档及4aee→d5fca的暂停/恢复记录已完整读取；两组成熟检查均0，各89本地链接，原本人待执行、T11和执行权限保持未决定或未验。暂停期的记录以其准确提交为范围，当前23恢复待办由主控维护。
+
+69d6b062的退回hook已获主控`msg_54866872354d`明确完整读取回复。新23技术接受已通过`msg_783d990b16b4`、`msg_d1e7a303fcc4`交主控和原Worker。当前目录与凭据仍不存在，实际本人回执、观察消费、T11/执行Grant、真实Agent/模型/工具、完整T03/T12和同一最终安装的真实双Worker/指定停止/另一Worker继续/完整成果保持未验；未合并或发布产品main。
