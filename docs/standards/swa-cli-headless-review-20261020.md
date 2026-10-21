@@ -1630,3 +1630,13 @@ service09-diagnostic实际host退出1、serve退出6，readiness为delivery_unkn
 build11实际EXIT0，candidate10/VERSION为准确507。service10-diagnostic实际host退出1、serve退出6，readiness为delivery_unknown；stack定位原生RPC完整性检查。`node .verification/review-rpc-registration.mjs 5070073c904aac6498dc821d6e775130deeb4257`使用TypeScript AST沿实际七组及跨文件spread展开，得到17项、无缺失，唯一重复为workerList：原WORKER_METHODS已经经release集合包含该方法，host再次显式加入。**退回507的服务启动范围**，通过`msg_b5f23ff6d649`交原Worker移除重复来源，保留原16项白名单和完整性检查；其他局部接受范围保持。
 
 主控新增native显式复用审查，具体五项条件已交原Worker并获`msg_c01841838b60`确认：固定成功源及原产物，逐模块核实际源码/补丁/addon-api/Node输入与编译规则，复制原产物和slotSourceFiles支持资产，新候选实际装载；已知变化只编译受影响模块，未知/失配立即失败，沿既有记录。当前build11未改变，后继准确实现及实际检查另审。原507限定接受hook已获`msg_f4570bfd562e`完整读取回复。
+
+## 准确26036164的RPC去重与native显式复用
+
+**限定接受 `26036164e57acc8267d3727f5ed35a97a74f0de5` 的五文件源码、实际复用及装载范围。** 完整差异已读。独立TypeScript AST按host的实际导入及跨文件spread展开，准确16项、missing/duplicates均空，白名单和严格拒绝保持。复用以candidate10/507、build11原件及原工作目录为明确来源，先检查来源与原字节，再选择已知变更模块；原注入头文件单独比较，仅排除实际生成物，源目标重叠在创建目标前拒绝。原编译记录保留，复制没有增加当前VS发现前置。
+
+已完整读取native-reuse07/08正文、结果及退出：07四包实际复制/四native装载/空Job及两项来源拒绝为0；08真实registry源码副本变化，仅registry重新编译，其余三包复制并实际装载为0。独立检查实际addon-api来源为7.1.1/7.1.0/8.9.2/8.9.2，候选、复制目录和原编译目录一致。早期诊断0及失败分别沿原记录，未计为四包通过。
+
+新candidate11/VERSION为260。Reviewer用该候选Node执行`.verification/review-native-copy-26036164.mjs`实际EXIT0：四个二进制与原n0—n3、源candidate10字节一致，三件ConPTY支持文件一致；四个实际.node均从新根装载，真实空Job创建/查询/关闭通过。完整build12最终退出与服务/安装继续复验，当前不据VERSION或局部装载宣告完整构建通过。此前独立candidate10原生检查及真实数据库/自产备份只读integrity/fk检查均0，原件在Reviewer忽略目录。
+
+实际`review-rpc-registration.mjs 26036164e57acc8267d3727f5ed35a97a74f0de5`及`check-revision.ps1 -Previous 5070073c904aac6498dc821d6e775130deeb4257 -Candidate 26036164e57acc8267d3727f5ed35a97a74f0de5`均0；marked检查两Markdown、6本地链接及原§15锚点、Git空白通过。typecheck09实际退出0且完整日志为空。bd9e4457两hook已由主控`msg_153bd7a0b360`、`msg_7218be552c8c`完整读取回复。
