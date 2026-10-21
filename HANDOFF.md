@@ -1,6 +1,6 @@
 # SWA 主线接续
 
-准确b624b45418279499887fe0c1583bd7c73c0979e2已普通push，build10实际EXIT0，完整candidate09及独立installed09的VERSION一致。hoisted部署保持普通目录，安装后的原生装载及路径闭包通过；T02在真实junction拒绝用例失败，provider-job真实后代测试在成员计数5与预期3处失败，原Worker集中修复两项。strict06/07及四native前置结果继续复用；认证、精简依赖及同安装候选双Worker尚未通过。资源限制已解除，普通修复连续实施及累计审查。
+准确5070073c904aac6498dc821d6e775130deeb4257已普通push，build11实际EXIT0，完整candidate10/VERSION一致。目录写前检查、daemon Job字段透传及SQLite长路径修复已获136d095c限定接受；独立路径junction02四项实际拒绝、Job12四种关闭场景及302字符SQLite备份通过，strict08实际0。正在复验新后台启动及独立安装；认证、精简依赖及同安装候选双Worker继续验证。资源限制已解除，普通修复连续实施及累计审查。
 
 系统UTC2026-10-21T14:41:49.500再次重启；两个原Agent于UTC14:38:40实际退出1073807364，原Task恢复ready。原Run已绑定真实term_a5fbafe0-ce09-4492-97d1-4ba69e5aa5f6/generation3；同Task、原树和原分支的新Worker为ctx_a8f0c302cc3c，Reviewer为ctx_40bf84d10b8c，均已观察turn_started。本机Orca app6228/runtime a2765d35-0b66-41e6-a8ca-e76d25294927 ready。原S、原库和配置按STATUS接续；旧PID不能作为当前身份。
 

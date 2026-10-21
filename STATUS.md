@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-准确b624b45418279499887fe0c1583bd7c73c0979e2已普通push，build10实际EXIT0，完整candidate09已独立安装为installed09，VERSION一致。hoisted普通目录部署修复此前安装复制的依赖解析图；实际Node24.21.0、原生空Job及28659路径闭包通过，候选实际CJS来源包括watcher/picomatch均在包内。T02在真实junction拒绝用例失败，provider-job后代测试在成员计数5与预期3处失败，同一Worker集中修复。strict06/07和四native前置结果继续适用；完整T01、认证、精简依赖及同安装候选双Worker尚未通过。资源限制已解除，普通修复连续实施及累计审查。
+准确5070073c904aac6498dc821d6e775130deeb4257已普通push，build11实际EXIT0，完整candidate10/VERSION一致。目录写前检查、daemon Job字段透传及SQLite长路径修复获136d095c限定接受；junction02四项实际命中指定reparse边界并保持目标，Job12四种关闭场景及302字符SQLite备份通过，strict08实际0。正在复验新后台启动及独立安装。完整T01、认证、精简依赖和同安装候选双Worker继续验证；资源限制已解除，普通修复连续实施及累计审查。
 
 系统实际于UTC2026-10-21T14:41:49.500重启，原两Agent于UTC14:38:40退出1073807364，Task恢复ready。原Run已绑定generation3；新Worker ctx_a8f0c302cc3c及Reviewer ctx_40bf84d10b8c沿原Task/树/分支继续，启动均观察到turn_started。本机Orca app6228/runtime a2765d35-0b66-41e6-a8ca-e76d25294927 ready；原S、原库和配置保留，操作前重新核实际进程身份。
 
@@ -18,8 +18,8 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f的ctx_a8f0c302cc3c继续原源码复用、T12及通用终端输入。准确b624完整构建/安装装载通过，集中修复T02 junction和真实Job后代测试失败，再验证服务/SQLite/Agent发现。inventory已同步，R06真实故障代码已编译但未执行。八项纯JS仍仅为待验证精简候选 |
-| 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_40bf84d10b8c`、terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`，保持原树、分支及两报告写域。原ctx066实际退出，Task ready后正常启动新会话，已观察turn_started；最近已push报告102bfd4a，继续累计核b624及后继真实修复 |
+| 后继工作 | 同一Worker Task9f的ctx_a8f0c302cc3c继续原源码复用、T12及通用终端输入。准确507完整candidate10已生成，复验服务/SQLite及独立安装。inventory已同步，R06真实故障代码已编译但未执行。八项纯JS仍仅为待验证精简候选 |
+| 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_40bf84d10b8c`、terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`，保持原树、分支及两报告写域。最近已push报告136d095c，对准确507源码和局部结果限定接受；主控完整读取并回复hook，继续累计核新候选实际服务与安装 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar为6a9，两次限定JS分析的partial/truncated限制保持。按用户“将orca cli逆向后参考”，补当前orca.exe准确612b的PE/Rust静态证据及实际命令目录144e的20JS分析，三个入口均EXIT0；CLI图partial/222文件未选，原生函数未反编译，完整运行依赖仍未知，见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)。doctor原EXIT1/config_drift保持，无MCP/本机Orca配置修改 |
@@ -37,7 +37,8 @@
 | 范围 | 记录的结果 |
 | --- | --- |
 | 当前服务与资源 | UTC14:41:49.500系统boot及原生process_exited记录确认原Agent退出；当前Orca app6228/runtime a276 ready。原S65980早于两次boot，旧running.json的health仅代表restore18。资源已解除，按RESOURCES连续实施修复；已运行检查保留参数及结果。原静态ctxdc及本次ctx0cf/ctx066的release_unknown保持原错误，未关闭其他终端，新Worker资源独立 |
-| 最近独立安装与后代测试 | b624/candidate09已复制为installed09，VERSION一致，Node/空Job及28659路径闭包通过；候选实际CJS装载来源全部在自身目录，含watcher/picomatch。T02直接重叠拒绝及端口占用用例已执行，junction用例实际storage_failed/1，预期scope_denied/3；install09外层没有最终退出文件，不推断退出码。provider-job实际exit1，断言成员5与预期3不符；完整后代停止未通过。原日志及安装保留 |
+| 最近独立安装与后代测试 | b624/candidate09已复制为installed09，VERSION一致，Node/空Job及28659路径闭包通过；候选实际CJS装载来源全部在自身目录，含watcher/picomatch。T02直接重叠拒绝及端口占用用例已执行，junction用例实际storage_failed，预期写前scope_denied/3；本次serve独立退出数字未保存，install09外层也没有最终退出文件，均不推断。provider-job实际exit1，断言成员5与预期3不符；完整后代停止未通过。原日志及安装保留 |
+| 最新局部修复与完整候选 | 507/build11实际EXIT0，四native和全部Go程序完成，candidate10/VERSION相同。junction02使用与程序独立的路径，四项逐一命中实际reparse边界、scope_denied/3、目标保持，EXIT0；Job12实际四模式全树退出及无关Job保全，parent-loss旧Job仍unknown。b624服务诊断host1/serve6，实际缺Job字段及SQLite长路径问题已窄修复；真实适配器302字符目标备份及integrity通过，strict08实际0，新服务及安装继续复验 |
 | 最近完整构建与闭包 | 准确1209的build09实际EXIT0，复用三项按原SHA重新核验的固定Node输入，四native、swa/server及故障程序构建完成，candidate08/VERSION=1209。模块实际中间路径最长229字符，原分析/跟踪保持；生产包只复制真实.node与原slotSourceFiles支持资源。check-swa-runtime实际0，34010路径均在候选内，Node24.21.0/Job API1及空Job创建查询关闭通过。job_descendant_test、native_authentication与functional_acceptance仍NOT_RUN，安装及真实双Worker不据此通过 |
 | 新开发依赖实际安装 | 准确7c仅一次dependencies04，pnpm11.27.0真实lock-only/frozen ignore-scripts分别7.9秒/2.1秒，外层及四子退出均0；七项已审声明、真实锁与安装一致，原peer/deprecated记录保持。两资源门禁CPU11.3/8.0及14.6/23.2%、内存均超过4GiB、间隔2.501201/2.501621秒。两次CIM所属为空，锁与报告为准确3ba76a85；没有运行Program、native或模型 |
 | 已有Python与首次C++编译实际结果 | 准确b75仅一次build-06，实际exec65865及内外退出均1；Python预检/实际node-gyp选择为C:/Python313/python.exe 3.13.13、VS2022 17.14.37710.0。324项部署、21bundle与三官方Node输入/原校验完成，VoidTaskResult不再输出；首node-pty/conpty在swa_provider_job.h:17报C2059/C2143及C4819/936，具体编译原因由同Worker核查。其余native/Go/VERSION未完成，candidate05保留不可安装；全部真实功能仍未验 |
