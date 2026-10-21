@@ -1612,3 +1612,15 @@ build10退出原件为0，最终实际输出列出全部四native及准确b624�
 准确提交已包含R06的service_windows.go和runtime-restart.mjs；两份正文、原controller-fault共用函数和service-request入口已读。控制程序核实际readiness/metadata、原daemon PID record与具名Job、持有句柄的安装映像/创建身份/成员及host/server父链，故障只选择serve/host/server并保留daemon。restart驱动按原真实journal、Run/root/Dispatch/session/operation及同库记录观察不重发和资源保留，并明确remainingCases/退出6。该部分当前仅确认源码和既有编译范围，实际故障、恢复证明及清理仍未运行。
 
 `compile-b624.log`与原编译入口已读，四份test-c产物及SOURCE存在，三个传输前函数实际PASS，不扩大为四个安装服务用例通过。Reviewer实际`check-revision.ps1 -Previous 1209aee399a2c0b0677d7a4dbedc5f87880d14ab -Candidate b624b45418279499887fe0c1583bd7c73c0979e2` EXIT0，marked18.1.0核三Markdown、6本地链接，原§15锚点保持，Git空白通过。当前`gh pr list --head swa-cli-headless-20261020`实际返回空列表，没有可提交COMMENT review的正式PR；准确交付后继续执行。认证、精简依赖、T12、普通终端后续输入及同安装候选真实双Worker并发/指定停止/成果仍未通过，本Reviewer未修改实现或启动候选。
+
+## 准确5070073c的目录、Job与SQLite修复
+
+结论：**限定接受 `5070073c904aac6498dc821d6e775130deeb4257` 的十三路径源码及下列局部验证；安装后服务仍待复验。** Win32 GetFileAttributes在数据根创建前检查全部现存父级、home/temp及保护根；daemon-entry原有Job字段经startDaemon传给DaemonServer，严格hello/PID record/内核身份核验保持；SyncDatabase的打开和备份边界使用标准toNamespacedPath。
+
+已完整读取junction-local-01/02脚本、四输出和退出原件。01的home/temp提前命中安装根重叠，已通过`msg_05f9d4897a7a`交原Worker补验。02保持同一本地编译程序，数据/保护目标与程序目录互相独立，四项逐一命中指定reparse路径、scope_denied/3，目标sentinel及拒绝前目录保持，实际EXIT0。准确新候选的T02继续执行。
+
+provider-job11实际额外成员为子/孙Node派生的两个conhost，PID/创建时间/父链与Job对应。新fixture逐项核全部成员，没有从产品Job中过滤console。provider-job12实际EXIT0；本Reviewer用成熟stream-json与JSON独立核四模式的成员、旧身份退出及两次空Job，间隔分别约59/63/56/63毫秒，无关Job root保持。late-child新增Node6020未进入已捕获的native身份表，只确认完整空Job及已记录身份退出；parent-loss旧Job仍unknown，native abort剩余保持。独立命令`node .verification/review-provider-job12.mjs`最终EXIT0，原件为`provider-job12-independent-03.log`。
+
+service09-diagnostic实际host退出1、serve退出6，readiness为delivery_unknown；SQLite备份错误和Job对象校验失败均保留。源码确认daemon-main曾遗漏转交Job字段，507已补齐。backup09-probe以真实profile数据库只读为源，289字符普通路径失败，namespace备份成功；backup09-source-check实际302字符目标经修改后的真实适配器备份并重新只读打开，integrity_check=ok，两命令退出均0。新完整候选仍须验证服务、实际数据库Worker入口和关闭。
+
+实际`check-revision.ps1 -Previous b624b45418279499887fe0c1583bd7c73c0979e2 -Candidate 5070073c904aac6498dc821d6e775130deeb4257` EXIT0：三Markdown、6本地链接、原§15锚点及Git空白通过。原2cc1f64b两hook已由主控`msg_f81a8d207fa9`及`msg_5ee89b7fa1a7`明确完整读取回复，本次唤起确认。其余验收继续按本报告H01—H18及当前任务执行。
