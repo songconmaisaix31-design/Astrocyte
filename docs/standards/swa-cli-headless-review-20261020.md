@@ -1988,3 +1988,29 @@ HTTP范围依据主控`msg_1861239c4c1a`：保留原CLI默认follow，产品检�
 完整计划接受通知为`msg_47ae44cc7e18`，主控接口定稿请求为`msg_51e0753e5b74`。计划第4节的CACHE_HOME/CONFIG_HOME/STATE_HOME按原Global roots使用完整XDG_CACHE_HOME/XDG_CONFIG_HOME/XDG_STATE_HOME，并在O03直接核实际根；该明确含义已交原Worker和主控。主控写入准确SPEC后同一Worker连续实施O02/O03，再完成全部受影响消费者及真实正文/同安装双Worker，不在计划接受处结束任务。Reviewer不签Grant，原Observe按实际时效自然到期，执行Grant由主控按真实批准路径安排。
 
 **同时限定接受主线`d21aee9088a5f1e4a568cf09dd99025eb741f310`五份事实源的记录范围。** 相对b530的准确差异已完整读取，Pi custom原合同、f2ab已验安装/故障范围、95ef Observe、GET31及继续OpenCode分别记录；完整安装6、实际模型/双Worker、T11/S3和执行Grant未验或待定保持。实际check-revision退出0，成熟marked18.1.0解析五份/95本地链接，Git空白通过，不为管理文档另开功能阶段。5e038466的窄计划/GET hook已获主控`msg_07afe97ef05d`明确完整读取回复；当前没有将OpenCode真实运行或完整CLI记为通过。
+
+### 真实私有实例34—38及正式原生初始化补充
+
+**OpenCode正向原生执行仍为证据不足；接受`native-opencode39-import-plan.md`准确SHA256 `F803EF3DB6697F921C0692D29FCB2E6D012F9694585CA837ADD108AFDC37D78E`的必要初始化修订。** 该修订仅替换全新私有SQLite的初始化路径，保留F18C的其余合同和O01—O10。原生账户使用同版正式`opencode.exe auth import --standalone`，随后另启ACP实例验证真实凭据和空工具。主控`msg_be11d514447e`已将准确修订写入其SPEC §21.1.6工作树并授权接受后直接实施；Reviewer已通过`msg_008aa6e7bf58`通知原Worker继续O03，主控通知为`msg_6c08f53a7d5d`。
+
+原Worker准确程序基线为`3bbfc1389a63535d0b3c13d01a86e105a110a3fd`，含三个OpenCode模块和真实exe IPC修改；36—38各自SOURCE均为该SHA，source.diff及七个定向产物保留当时的工作树差异。Reviewer完整读取了初始五份程序、定向build/native/PowerShell入口，以及后继修复和实际原件；本次没有把这些工作树产物登记为准确Commit的完整实现通过。34/35的实际定向构建均0，探针均1：34在jsonc-parser捆绑加载阶段失败，35在来源准入阶段失败；35 strict实际2及原类型错误原样保留。这些失败没有启动模型。后继定向build36—38均0，真实native ACP/private serve已启动，实际政策准入均失败、没有prompt或模型输入；构建0和进程启动分别记录。
+
+36/37的原log和cleanup已完整核对：36为root43660、实际native48604、conhost20600、private serve20820；37为root15148、native38928、conhost35172、private serve620，均有实际创建时间和同一所属Job。36两次完整Job空查询间隔约78毫秒，两次独立四身份均已退出；37对应间隔约79毫秒，两次四身份均已退出。两者root/tree均exited、forced=false，政策状态failed。38的真实root46288/native50360/conhost47108/private serve27168亦有创建时间，Job owner49944、limitFlags8192；两次完整Job空查询约1404/1482毫秒、两次四身份退出观察约1418/1496毫秒，forced=false。38安全失败分类为connection_resolve/TypeError，源原件未导出秘密或原生未知stderr正文。
+
+实际38只读检查器及`opencode38/actual-private-db.json`已完整读取：私有原生schema存在，credential实际为空。准确上游`core/database/migration.ts`的fresh分支执行schema.up后登记所有migration完成，既有库才逐项执行migration.up；因此全新库不能依赖legacy auth文件自动取得凭据。原`integration.connection.active`取实际排序后第一项，空凭据得到undefined，后续resolve访问connection.type，符合38的真实失败。该范围支持修订初始化步骤，尚未证明后继正式导入或模型成功。
+
+依据D01/D02/D05/D07，本新增路径必须满足以下条件；F803逐项覆盖，没有多余检查：
+
+| 条件 | 初始化与验证边界 |
+| --- | --- |
+| I01 真实原生来源 | 只读取得实际选定Entry的原id/integrationID/label/value，active对应原生实际选定身份；同版正式CLI和原credential.list/create写入，不改写数据库或migration记录。 |
+| I02 私有且无推理 | 每Worker新独占根、原已审HOME/XDG/DB/配置/DACL，导入前实际库为空；仅所选真实DeepSeek条目，导入过程无session/prompt/model，不启动原账户managed服务。 |
+| I03 秘密与退出 | Entry JSON仅在内存经stdin，秘密不进入argv、环境、日志、断言或错误正文；实际命令退出和完整所属Job两次收尾确认后才进入只读核库。 |
+| I04 实际持久结果 | 只读核唯一DeepSeek、原id、真实key类型/值及selection；失败或效果未知先查询原私有库，禁止自动重发或把unknown当空，后继独占案例保留原反证。 |
+| I05 独立ACP准入 | 后启ACP/private serve有自己的Job，沿原同实例plugin.updated/list active、真实connection.active/resolve及工具0重新验证，不复用导入进程的就绪状态；缺失/失败无prompt。 |
+
+已全文核准确227的migration、Credential.Service/schema、auth import/shared/export和ServerConnection；正式import先解析标准Entry数组，createClient的standalone分支只启动私有原生服务，再逐项credential.list/create，真实原命令处理重复id并输出计数。原auth export直接输出同一Entry，实际选择沿active/time_created/id和原connection排序；本次没有运行原账户export、CLI或模型。[原生import源码](https://github.com/anomalyco/opencode/blob/22728d67461260d56bb9796b9b8f36e1de47202e/packages/cli/src/commands/handlers/auth/import.ts)与[原生服务选择](https://github.com/anomalyco/opencode/blob/22728d67461260d56bb9796b9b8f36e1de47202e/packages/cli/src/services/server-connection.ts)支持这一路径。网页工具的两份raw读取失败后使用实际HTTP取得公开源码，无依赖安装。
+
+Reviewer以安装Node24.21.0实际运行`.verification/review-opencode39-source.mjs`，退出0，原件`opencode39-source-independent.log`；成熟JSON和Git核九份公开源的准确blob，五份逐字节一致，四份Worker副本仅文件末尾空行差异，未将后者记为逐字节相同。真实36—38原件及38只读库检查支持失败范围，不重复模型列表GET、Observe或原native探针。已读后继源码中保护根双向检查使用真实config/data/Orca/安装目录，凭据比较仅固定安全错误，plugin.list消费官方Location.response.data；这些修复交原Worker，后继准确实现及正向仍须复验。
+
+主线d21→`c3fcd86a76b9477fb2da77ae8928b439e0f80a25`五份准确差异已完整读取，实际check-revision退出0、marked18.1.0核五份/95本地链接及Git空白；其接口记录与F18C对应，当前初始化合同以主控已核定的F803补充为准，后继准确记录随实现累计复验。828ca336的计划hook及d21记录hook分别获主控`msg_b284d3bc9087`、`msg_324627f50a0e`明确完整读取回复。本次继续同Task/Dispatch审核真实初始化、正文和全部产品消费者；原95ef/5187保持，Observe实际已到期不续签，执行Grant、完整安装/双Worker、T11及S3保持各自真实状态，未使用Aliyun。
