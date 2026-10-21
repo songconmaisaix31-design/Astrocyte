@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，产品分支已普通push至记录提交57fe523796925ce065af00ef7669a6609f0324d5。compile20/build15/真实ZIP及普通解包20实际0；同一95efcc28-install20的C08精确7、四种生命周期130/130/0/6、C09诊断和所属退出通过，ec225632独立限定接受，三个hook均读回。原installer复制/native/28233路径及保护范围通过，T02聚合6保留真实消费者未验。human22同安装服务保持，三份仅Observe入口获ae785d6d限定接受且主控已读回，等待本人执行；旧260已沿原owner正常关闭0，数据及原件保留。T11、实际Agent/模型、完整T12和同安装双Worker仍未通过。
+当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，产品记录提交57fe523796925ce065af00ef7669a6609f0324d5已push。compile20/build15/真实ZIP及普通解包20实际0；同安装C08精确7、生命周期四模式130/130/0/6、C09诊断及所属退出获ec225632限定接受。原installer复制/native/28233路径和保护范围通过，T02聚合6保留真实消费者未验。当前本人Observe两脚本的UTC到期时间转换被69d6b062退回，旧22命令已暂停，原Worker以新ctx_4c001fda773c在同终端修复。FD5身份检查及95ef程序/包接受保持，human22服务保持，旧260正常关闭0。实际Agent/模型、T11/T12和同安装双Worker仍未通过。
 
 780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
 
@@ -20,7 +20,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f的ctx_a8f0c302cc3c保持95ef最终安装的human22实际服务，等待本人Observe凭据后继续发现和选择。实际执行批准、T11、T12及同安装双Worker成果未验；八项依赖分类、真实闭包及九版本许可已在当前安装独立核实 |
+| 后继工作 | 同一Worker Task9f的新ctx_4c001fda773c修复Observe脚本的成熟日期处理、暂停旧入口并准备新23入口，补准确v2只读CIM；95ef包和human22服务保持。实际执行批准、T11/T12及同安装双Worker成果未验；八项依赖分类、真实闭包及九版本许可已核 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_40bf84d10b8c`、terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`，保持原树、分支及两报告写域。ec225632限定接受95ef源码/构建/ZIP安装和实际C08/C09范围，保留63eb分类退回，三个hook均已读回；human22三准确文件已技术接受，正式记录接续 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
@@ -28,7 +28,7 @@
 | 独立 Go 检查结果 | 9c/16ad原结果保留。新增Go批准入口与消费者在独立detached准确3590bf11043a2e95cb00b319d4a44a44c2e5c784树执行未改的已审入口，exec2414实际EXIT0：四包test-c完成，三个CLI传输前函数逐PASS/零SKIP，SOURCE和结束干净HEAD均3590；runtime/live函数NOT_RUN、model_calls=0。原件根swa-go-3590-01的go-source-01及control/go-3590-execution-01.log；主控检查不代Worker自测、源码CR、原生模块或安装验收 |
 | 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.5实施；e549的N10/生成静态接受保持。9e修后N08/N13限定技术获f5dc接受，native_launch及逐类投影/请求/私有账号与工具消费者已在§21.1.5定稿，同Worker实施；默认Pi0只限定该来源，全部实际账号/工具/调用仍未通过。五条RPC导入边局部静态接受，实际收窄未验；Windows/.NET下载及D01—D05技术接受，窄helper可实施，网络/构建另授 |
 | 契约生成 | 原Worker在准确33c5干净前置下仅一次执行generate-02，实际exec38224 EXIT0，资源/生成退出均0，Node512及私有TEMP；只有web/src/api/schema.d.ts生成变化，已纳入e549，未手改生成文件。源码生成不代Node/native构建、安装或模型验证 |
-| 首装授权流程 | 当前本人入口为同一95ef最终安装的human-authorize-installed22.ps1 -Stage Observe，使用human22/64509；两入口和共用身份检查均已技术接受。主控已请求本人执行，替换旧260待办；实际Grant/token及消费未执行，后续执行批准保持未定 |
+| 首装授权流程 | human22/64509同安装服务保持。旧22人工和消费脚本因UTC日期处理退回并暂停，FD5共用身份检查保持；主控已询问旧命令是否执行，当前无人类目录。新23入口复核后再提供，实际Grant/token和消费未执行 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
