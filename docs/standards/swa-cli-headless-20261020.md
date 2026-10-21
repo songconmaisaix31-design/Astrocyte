@@ -1376,4 +1376,14 @@ provider-job-installed20实际0，限定普通所属进程四模式、parent-los
 
 新human-authorize-installed22/use-installed22-credential仅支持Observe，共用assert-installed22-service核三个实际创建身份/路径、父链、runtime及startedAt、listener、版本和health；DPAPI、用户独占ACL、原caller/固定公开根/仅observe/时效条件保持。三文件准确路径、大小、SHA及用户命令在自有human22-review.md交原Reviewer；Parser及实际只读身份检查0，当前无凭据consumer真实拒绝1，人工正文没有执行。本人批准、当前Grant/模型、原生Agent调用、T03/T12/C04/R10与同一最终安装双Worker并发/指定停止/B继续及完整成果仍未运行，整体任务继续。
 
-原Reviewer msg_f4d1abea92ab已完整核三个准确SHA/大小、Parser和独立实际只读身份0，技术接受新仅Observe入口；主控msg_493e4d2f080c已读取并向用户替换旧待办。当前新human22批准目录及凭据仍不存在，构成后续真实控制验收的实际阻塞，没有据此代行human或降低标准。主控同时授原260条件收尾：Worker核旧人类目录完全不存在、原serve准确创建身份及原owner33432/工具59063后，仅向原Read-Host发送Enter。原句柄Wait/服务退出0、工具0、两次完整Job仅余serve、原Orca收尾保全通过；额外两次完整CIM确认原serve/owner旧身份退出和host/server PID缺席0。原件在installed11-service/authorized-close*及原service-stderr/service-exit/orca-after，已交Reviewer；旧数据/入口保留，新human22仍由5187保持且实际身份检查0。
+当前本人入口及日期补充按§39接续，原22路径已撤销。当前human22批准目录及凭据不存在，后续真实控制验收依赖本人批准。主控授原260条件收尾后，Worker核旧人类目录完全不存在、原serve准确创建身份及原owner33432/工具59063，仅向原Read-Host发送Enter。原句柄Wait/服务退出0、工具0、两次完整Job仅余serve、原Orca收尾保全通过；旧服务完整UTC及准确v2独立CIM见§39。原installed11-service/authorized-close*、service-stderr/service-exit/orca-after保持，旧数据和入口原件保留，新human22仍由5187保持且实际身份检查0。
+
+## 39. Observe日期值转换与准确UTC补验
+
+同一Task的新Dispatch ctx_4c001fda773c沿原终端接续。主控明确暂停原22命令，原E0CF0C3C/B9792BE3代码及首次CIM请求/结果完整保留。旧两个22路径现仅参数声明后立即throw，实际运行均拒绝1；没有HTTP、human、DPAPI或CLI副作用。原FD5FA88C实际身份guard、95ef产品/ZIP/安装、human22数据根及5187原owner保持。
+
+原Reviewer msg_f995d676d2b6准确接受7DF6314A9686702CE01C5A9D4E8A9E35E6729322AA6567808A9800D252215BC0完整补充计划。新human-authorize-installed23/use-installed23-credential只支持Observe，人工签发响应与DPAPI消费两处expires_at均用显式DateTimeOffset值转换；保留JSON产生的DateTime(Utc)、DateTimeOffset及原字符串的真实时刻与精度。原CurrentUser DPAPI、本人独占ACL、caller/公开根/actions/时效及每次mutation/CLI前精确身份条件保持。准确文件、大小、SHA及用户命令在自有human23-review.md，待准确独立核定后由主控恢复待办；Agent没有运行人工正文。
+
+verify-date23实际0，原UTC为serve30160创建2026-10-21T16:32:44.1021696Z、owner33432创建2026-10-21T16:32:20.6106520Z，成熟转换保留全部ticks，准确Unix毫秒分别1792600364102和1792600340610。v2只读请求/结果在date-fix23/authorized-close-identities-v2*，实际0；两次完整CIM各410项、PID全部有效、目标字段完整、known退出及unknown PID缺席，间隔约469.64ms。当前使用该准确v2结果，首次原件保持，没有重新操作已关闭服务。
+
+verify-types24实际0：原UTC两字段、实际同一次时钟的本机+08:00和UTC四来源，分别通过原字符串、JSON实际DateTime(Utc或Local)、DateTimeOffset三类型值转换，12项UTC ticks与Unix毫秒一致；原输入/类型/Kind/offset原件在date-fix23/types24。没有构造expiry、token或human。verify-entries23实际0：五文件成熟Parser通过，FD5字节不变，实际只读Assert前后0；旧22两入口实际拒绝1/1，新23 consumer缺真实凭据拒绝1，human-approval前后不存在。真实签发响应、DPAPI消费、Grant/模型及同候选双Worker/T03/T12/完整成果保持未验，当前用户是否执行过旧命令仍由主控等待实际答复。
