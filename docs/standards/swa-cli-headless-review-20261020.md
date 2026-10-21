@@ -1637,6 +1637,33 @@ build11实际EXIT0，candidate10/VERSION为准确507。service10-diagnostic实�
 
 已完整读取native-reuse07/08正文、结果及退出：07四包实际复制/四native装载/空Job及两项来源拒绝为0；08真实registry源码副本变化，仅registry重新编译，其余三包复制并实际装载为0。独立检查实际addon-api来源为7.1.1/7.1.0/8.9.2/8.9.2，候选、复制目录和原编译目录一致。早期诊断0及失败分别沿原记录，未计为四包通过。
 
-新candidate11/VERSION为260。Reviewer用该候选Node执行`.verification/review-native-copy-26036164.mjs`实际EXIT0：四个二进制与原n0—n3、源candidate10字节一致，三件ConPTY支持文件一致；四个实际.node均从新根装载，真实空Job创建/查询/关闭通过。完整build12最终退出与服务/安装继续复验，当前不据VERSION或局部装载宣告完整构建通过。此前独立candidate10原生检查及真实数据库/自产备份只读integrity/fk检查均0，原件在Reviewer忽略目录。
+新candidate11/VERSION为260。Reviewer用该候选Node执行`.verification/review-native-copy-26036164.mjs`实际EXIT0：四个二进制与原n0—n3、源candidate10字节一致，三件ConPTY支持文件一致；四个实际.node均从新根装载，真实空Job创建/查询/关闭通过。build12最终退出原件为0，完整包列明四模块复制、零模块重新编译及准确260，实际原生/28659路径闭包通过。此前独立candidate10原生检查及真实数据库/自产备份只读integrity/fk检查均0，原件在Reviewer忽略目录。
 
 实际`review-rpc-registration.mjs 26036164e57acc8267d3727f5ed35a97a74f0de5`及`check-revision.ps1 -Previous 5070073c904aac6498dc821d6e775130deeb4257 -Candidate 26036164e57acc8267d3727f5ed35a97a74f0de5`均0；marked检查两Markdown、6本地链接及原§15锚点、Git空白通过。typecheck09实际退出0且完整日志为空。bd9e4457两hook已由主控`msg_153bd7a0b360`、`msg_7218be552c8c`完整读取回复。
+
+### 260实际服务与仓库外安装
+
+**限定接受260的完整构建、仓库内实际服务启动/SQLite/关闭及仓库外安装闭包；真实任务继续未验。** service11-diagnostic实际readiness.ok=true，runtime为5720a822-9d0f-40be-be29-9bd767ff4444，host/server为30160/37504，HTTP health实际200。五个实际数据库含profile备份均integrity_check=ok、foreign_key_check空；service与外层退出均0，关闭的两次Job观察仅余serve自身，间隔约101毫秒。运行中和关闭后六个受保护文件的bytes/ACL及公开Orca身份保持；目录通知没有writer PID，不能将观察到的agent-hooks通知归因于本次服务。
+
+install11完成复制与准确版本输出后，原native子检查30秒ETIMEDOUT，实际退出1，原件保留。主控明确批准将该同一安装移到 `C:/Users/DW/AppData/Local/SwarmCli/candidates/26036164`；已完整读取固定路径、现存父级reparse、旧版本、所属进程及ACL检查脚本。实际移位退出0，原源消失、私有ACL保持，新根版本准确260；该根为普通目录，其全部祖先均没有node_modules。新位置原检查实际退出0，四native实际调用、空Job及28659路径闭包通过，没有把第一次超时原因推断为依赖缺失或修改检查时限。仓库外服务已产生实际就绪、health及SQLite原件，关闭与完整功能继续复验。
+
+原260限定接受hook `msg_3931dedc11b0` 已获主控 `msg_ff8a9e31d6e4` 明确读取046fffb5报告、准确源码及原件的回复。认证、CLI完整读写、T12故障恢复、普通终端后续输入及同一最终安装的真实双Worker并发/指定停止/成果仍按H01—H18保留，没有把启动或闭包检查扩大为这些功能通过。
+
+### 八个直接依赖的具体调整条件
+
+主控要求按准确260重新审查原八项纯JavaScript候选。Reviewer实际运行原pnpm11.27.0的`list --prod --depth 100 --json`，并以已安装TypeScript6解析candidate11全部21份实际metafile/成品及createRequire别名；两命令退出0。动态参数逐类检查覆盖相对process-tree、Windows security候选、Pi实际安装配置/catalog和Claude平台CLI；保留真实native、@linear/sdk、emoji JSON、node-pty支持文件、watcher及原生Agent资源。没有仅凭静态输入缺少作删除结论。
+
+| 可从runtime dependencies移至devDependencies的精确版本 | 删除八条直接生产边后仍须由pnpm保留的实际间接版本 | 内联许可 |
+| --- | --- | --- |
+| zod4.6.5 | 4.6.5，现有Anthropic/OpenAI/MCP等SDK | MIT |
+| yaml2.9.1 | Pi coding agent的2.9.0 | ISC |
+| diff8.0.4 | Pi coding agent的8.0.4 | BSD-3-Clause |
+| smol-toml1.9.1 | 当前生产图没有其他来源 | BSD-3-Clause |
+| jsonc-parser3.3.1 | 当前生产图没有其他来源 | MIT |
+| @streamparser/json0.0.26 | 当前生产图没有其他来源 | MIT |
+| tweetnacl1.0.3 | ssh2→bcrypt-pbkdf的0.14.5 | Unlicense |
+| proper-lockfile4.1.2 | Pi coding agent的4.1.2 | MIT |
+
+这八项保留原精确版本，pnpm生成锁中的依赖类别随manifest移动，其他importer、overrides、patches保持。现有dependencies.lock.json合并dependencies/devDependencies，八项inventory版本保持。间接依赖由成熟pnpm正常部署，不手动删除传递包，不推断八个目录都会消失或具体体积减少。
+
+产物须从实际内联输入所属包保存完整版权/LICENSE/NOTICE，并更新现有THIRD_PARTY_SWA指向；覆盖九个内联版本，特别tweetnacl1.0.3及0.14.5，jsonc-parser实际许可文件为LICENSE.md。可直接沿已有构建输入和包元数据复制原文件，安装继续携带全部许可。实际迁移后须核准确manifest/锁/inventory、原frozen-lockfile/依赖检查、新成品及许可，再用新独占候选安装到批准的仓库外位置，核动态来源、实际服务/数据库/故障及同安装真实双Worker成果。当前260产物不覆盖，原native输入未变时沿已接受的显式复用规则处理。详细实施条件及原始图/调用证据在Reviewer自有忽略目录，已通过`msg_07d7ac1bea50`、`msg_2fb8ddaf9f26`交主控与原Worker；本节没有宣布后继实现或精简效果通过。
