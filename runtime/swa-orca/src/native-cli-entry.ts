@@ -11,15 +11,16 @@ runWithParentJob(async () => {
   const env: Record<string, string> = {}
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined && !/^(?:NODE_|SWA_)/i.test(key)) env[key] = value
   const shim = extname(launch.command).toLowerCase() === '.cmd' ? resolveWindowsCmdShim(launch.command, env) : null
-  if (!shim || shim.prefixArgs.length !== 1 || shim.env?.NODE_PATH !== env.NODE_PATH) throw new Error('Native CLI requires its verified installed Node entry')
-  const program = await realpath(shim.program)
-  const entry = await realpath(shim.prefixArgs[0]!)
-  const child = spawnProcess({ program, args: [entry, ...launch.args], env, stdio: ['pipe', 'pipe', 'pipe'] })
+  if (shim && (shim.prefixArgs.length !== 1 || shim.env?.NODE_PATH !== env.NODE_PATH)) throw new Error('Native CLI requires its verified installed Node entry')
+  if (!shim && extname(launch.command).toLowerCase() !== '.exe') throw new Error('Native CLI executable format is unsupported')
+  const program = await realpath(shim ? shim.program : launch.command)
+  const identity = shim ? { kind: 'node-script' as const, entry: await realpath(shim.prefixArgs[0]!) } : { kind: 'executable' as const }
+  const child = spawnProcess({ program, args: [...(identity.kind === 'node-script' ? [identity.entry] : []), ...launch.args], env, stdio: ['pipe', 'pipe', 'pipe'] })
   await new Promise<void>((resolve, reject) => {
     child.once('error', reject)
     child.once('spawn', () => {
       if (!child.pid || !process.connected || !process.send) { reject(new Error('Native CLI launch identity is unavailable')); return }
-      process.send({ type: 'swa_native_cli_started', rootPid: process.pid, pid: child.pid, program, entry }, error => { if (error) reject(error) })
+      process.send({ type: 'swa_native_cli_started', rootPid: process.pid, pid: child.pid, program, ...identity }, error => { if (error) reject(error) })
     })
     process.stdin.pipe(child.stdin)
     child.stdout.pipe(process.stdout, { end: false })

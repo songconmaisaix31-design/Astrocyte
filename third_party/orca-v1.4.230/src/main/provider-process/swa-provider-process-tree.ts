@@ -8,7 +8,11 @@ import { isWindowsProcessStartTimeAvailable, readWindowsProcessCreationTime, rea
 
 const identitySchema = z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive() })
 const observationSchema = z.object({ ownerPid: z.number().int().positive(), rootPid: z.number().int().nonnegative(), rootCreationTimeMs: z.number().nonnegative(), assigned: z.boolean(), rootExited: z.boolean(), limitFlags: z.number().int(), members: z.array(identitySchema) })
-type NativeCLIIdentity = z.infer<typeof identitySchema> & { program: string; entry: string }
+const nativeProgramSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('node-script'), program: z.string().min(1), entry: z.string().min(1) }),
+  z.strictObject({ kind: z.literal('executable'), program: z.string().min(1) })
+])
+type NativeCLIIdentity = z.infer<typeof identitySchema> & z.infer<typeof nativeProgramSchema>
 type Observation = z.infer<typeof observationSchema> & { nativeCLI?: NativeCLIIdentity }
 type Identity = z.infer<typeof identitySchema>
 type JobAPI = {
@@ -128,12 +132,15 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
     if (!value || typeof value !== 'object' || !('type' in value) || value.type !== 'swa_native_cli_started') return
     try {
       if (!this.requiresNativeCLI || this.nativeCLI || !this.child?.pid || !this.root) throw new Error('The actual native CLI launch association is ambiguous')
-      const received = z.strictObject({ type: z.literal('swa_native_cli_started'), rootPid: z.literal(this.child.pid), pid: z.number().int().positive(), program: z.string().min(1), entry: z.string().min(1) }).parse(value)
+      const received = z.intersection(z.object({ type: z.literal('swa_native_cli_started'), rootPid: z.literal(this.child.pid), pid: z.number().int().positive() }), z.union([
+        nativeProgramSchema.options[0].extend({ type: z.literal('swa_native_cli_started'), rootPid: z.literal(this.child.pid), pid: z.number().int().positive() }),
+        nativeProgramSchema.options[1].extend({ type: z.literal('swa_native_cli_started'), rootPid: z.literal(this.child.pid), pid: z.number().int().positive() })
+      ])).parse(value)
       const creationTimeMs = readWindowsProcessCreationTime(received.pid)
       if (!creationTimeMs || received.pid === this.root.pid) throw new Error('The actual native CLI creation identity is unavailable')
       const observation = this.observe()
       if (!observation.assigned || !observation.members.some(member => member.pid === received.pid && member.creationTimeMs === creationTimeMs)) throw new Error('The actual native CLI is outside its owning Job')
-      this.nativeCLI = { pid: received.pid, creationTimeMs, program: received.program, entry: received.entry }
+      this.nativeCLI = { pid: received.pid, creationTimeMs, ...nativeProgramSchema.parse('entry' in received ? { kind: received.kind, program: received.program, entry: received.entry } : { kind: received.kind, program: received.program }) }
       process.stderr.write(JSON.stringify({ type: 'swa_native_cli_job_member', managedRoot: this.root, nativeCLI: this.nativeCLI }) + '\n')
       this.resolveNativeCLI?.()
     } catch (error) { this.rejectNativeCLI?.(error instanceof Error ? error : new Error('Native CLI Job membership is unverified')) }
