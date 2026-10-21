@@ -1563,3 +1563,36 @@ e7证据不足hook `msg_7a36811bcbbc` 已获主控 `msg_4e67eeb7e521` 明确完�
 provider-job-bootstrap.mjs虽然使用packages=external，实际成品仅导出父IPC准入函数、只导入Node内置模块。真实Pi政策从已发现并验证的原生CLI所在安装目录按绝对文件URL导入配置/provider/catalog模块；零metafile输入不能证明原生Agent依赖可以删除。agent-browser二进制、ripgrep、Claude SDK资源和其他动态资源的完整必要范围继续未知，尚无删除或独立安装通过结论。
 
 明确可供原Worker验证的重复纯JS安装依赖候选为zod、yaml、diff、smol-toml、jsonc-parser、@streamparser/json、tweetnacl及proper-lockfile；实际成品已包含对应190/72/19/10/6/9/2/4个输入，21输出没有对应external，已识别的动态createRequire没有读取这些包。可保留构建依赖并检查prod deploy的重复副本是否必要，最终结论必须结合传递消费者、资源与独立安装/真实任务。现有THIRD_PARTY依赖node_modules原包携带LICENSE/notices，删除重复文件前须继续保留内联代码对应的原许可和归属。这些具体保留、缺失及有条件候选已通过 `msg_b1b8858f3b76`、`msg_3a3b957f1439` 交原Worker，没有修改实现或把本调查设为四模块修复的前置。
+
+## 准确1209aee3的累计源码、完整构建及安装失败
+
+结论：**退回准确 `1209aee399a2c0b0677d7a4dbedc5f87880d14ab` 的安装复制与直接依赖清单，已核类型、原生编译及完整构建结果按限定范围成立。** 本轮累计读取相对ada的49文件差异；修复继续由原Worker完成，后继准确提交另审。普通修复和已授权检查继续执行，本结论不构成新的资源窗口或等待回执条件。
+
+`build-swa-native.mjs`只从本次部署根解析原包，在独占n0—n3短目录保留原源码及真实node-addon-api；原MSBuild跟踪、代码分析、Python3.13.13、VS2022、node-gyp12.3与固定Node24.21.0 ABI保持。产物只复制真实.node及node-pty原slotSourceFiles所列支持文件，中间文件留在work。build脚本显式选择复用输入时仍按原三个固定SHA及真实exe校验，没有下载失败后的自动替代路径。原六个helper查询分支及无消费者collectTaskResult已删除，既有读取继续由实际native handlers承担。
+
+deny/fail改为保留原throw的函数声明；缺失nativeError使用原contracts导出；IPC send/disconnect先绑定真实方法并检查存在，Pi源header按实际已解析对象校验。Windows安全包装贯通原native的readServiceJobMember，其余上游差异主要为明确原类型和既有身份校验。journal拒绝原因继续由agentSessionFailureWords提供，符合原ResolveDispatchInput的规范失败类型，没有扩展原生协议接受任意错误句子。strict/noEmit/skipLibCheck=false和原类型编译器保持，没有虚假ambient模块或关闭严格检查。
+
+资源解除同步去除原CPU/内存门限、强制优先级和固定Go/Node额度，原Job所有权、权限、私有目录、实际身份及退出条件保持。另发现Go采样删除原64处理器保护后缺少观测范围说明：[Microsoft GetSystemTimes](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getsystemtimes)明确超过64处理器时只汇总调用线程所属primary processor group。已将这一准确性问题交原Worker，当前工作区的cpu_scope补充尚未纳入本准确提交；本轮没有运行多processor-group机器验证。
+
+已读取Worker实际原件和当前准确源码，限定结果如下：
+
+| 检查 | 实际结果与范围 |
+| --- | --- |
+| strict06/strict07 | 两份完整日志均为空，退出均0；采用原TypeScript6.0.3、8192MiB及原strict配置。strict03—05和此前OOM/语义诊断失败保留 |
+| native-check01 | 退出0，四个真实模块编译及require成功。其执行helper快照仍复制整个Release，当前helper只复制产物；差别由后继完整包另验 |
+| build09/candidate08 | 退出0，最终source_revision与VERSION均为准确1209；四模块实际编译完成，最大中间路径188/227/229/229，各8个tracking文件。C4267及C6387警告保留，Go输出和VERSION完成 |
+| candidate08闭包 | 退出0，记录34010个闭包路径、真实Node/native API与空Job观察；认证、后代Job及功能明确NOT_RUN |
+| Go prerequisites01/03 | cmd/swa、internal/swarm/app和domain通过，两个真实故障控制程序包完成编译且没有测试用例 |
+| Go prerequisites02 | FAIL；workspace与httpapi的实际测试缺少明确publication、SQL期待、独占输出或真实服务输入，没有登记为全部Go测试通过 |
+| 准确1209四测试包编译与传输前检查 | 实际四份测试二进制及各自编译日志已读；原聚合退出2保留，首次-test参数错误保持。后继正确参数的三个传输前用例实际PASS/0，不扩大为真实已安装服务用例通过 |
+| architecture01 | 实际EXIT0，47个包通过原依赖方向检查 |
+
+本Reviewer实际执行 `check-revision.ps1 -Previous ada4089de6a9fcaf72f3a91c0b0331ced11343d9 -Candidate 1209aee399a2c0b0677d7a4dbedc5f87880d14ab` EXIT0，成熟marked18.1.0解析三份变化Markdown、6个本地链接，原§15锚点保持，Git空白通过；没有重复无变化文档或重跑Program、编译及安装。
+
+### 退回项及准确来源
+
+新增emojibase-data17.0.0和@types/express5.0.6已写入真实package/pnpm锁并已安装，其他importer、overrides和patch政策保持。`node --max-old-space-size=512 .verification/check-runtime-inputs.mjs 1209aee399a2c0b0677d7a4dbedc5f87880d14ab ada4089de6a9fcaf72f3a91c0b0331ced11343d9` 使用成熟YAML/JSON及实际已安装package，确认58项声明与锁/安装一致，但dependencies.lock.json的swa_runtime缺这两项，实际EXIT1；既有check-dependencies的同项检查会拒绝该差异。已通过 `msg_1d787202d146` 交原Worker补齐，不为清单修复重复已完成的原生编译或完整包。
+
+T02首次真实调用因独立pwsh不能按原写法传递ProtectedRoots数组而失败；后继在原PowerShell中直接调用包内脚本，复制及版本输出成功，随后真实安装闭包在@parcel/watcher处报Cannot find module picomatch，install08-exit仍1。独立Get-Item确认candidate08中的@parcel/watcher为指向自身.pnpm的Junction，installed08对应路径已变成普通目录；原installer的dereference=true使模块真实位置和就近依赖图改变。准确[Node24.21.0 cp选项](https://nodejs.org/download/release/v24.21.0/docs/api/fs.html#fspromisescpsrc-dest-options)说明dereference解引用，verbatimSymlinks只跳过链接路径解析；原绝对Junction目标还须随新根重定位。安装须集中保留合法包内链接图并拒绝包外目标，不能逐个增加顶层依赖代替闭包修复。原包、失败安装及日志保留，原Worker负责实现和真实新安装验证。
+
+工作区新服务故障工具的实际readiness/metadata/PID record、Job句柄、image/创建身份/父链及原DaemonClient观察已读，尚无准确提交或真实执行接受。新工具保持独立来源，禁止覆盖candidate08产物后仍按1209记账。全部实际模型、T12故障矩阵、完整成果、精简依赖、人工批准及同安装候选双Worker验收继续未通过；本轮没有正式PR可发布COMMENT review，也没有集成或发布main。
