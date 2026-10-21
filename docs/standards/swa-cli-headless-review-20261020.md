@@ -1495,3 +1495,19 @@ generate03的准确SOURCE为3ba，原runner05b0只运行既有generate-client.mj
 typecheck01同样以准确3ba运行，完整日志明确为Reached heap limit，约1022.7MB时OOM，TS子退出134、外层1、资源0；没有任何语义类型诊断。CPU5.5/5.0%、可用18849153024/18853732352字节、单调2.5010102秒；实际四进程身份及UTC13:09:07.9578263/13:09:21.5806254两次所属为空原件已读。真实主机可用内存不能替代已批准Node1024 heap额度；新额度待答，未扩大额度、关闭strict/skipLibCheck规则或重跑。本次失败不能证明源码语义通过，也不支持推断源码已经出现某项TS诊断。
 
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 3ba76a85cc968224f283315b64a4be4c27f1fcce -Candidate c42a695f` 实际EXIT0，唯一前缀解析为上述完整SHA，两Markdown/7本地链接及Git空白通过，原§15/§16锚点保持；marked18.1.0、BelowNormal、Node512MiB。本Reviewer未执行TypeScript Program、编译、生成、服务、数据库/HTTP正文、模型或安装，当前没有正式PR，COMMENT review仍待准确交付。全部实际故障、T12、通用terminal、完整构建及同安装候选双Worker继续未验；候选06/build07是否执行及结果由主控后继窗口另行记录。
+
+原生成接受hook `msg_86b971cb67b6` 已获主控 `msg_ca043545c824` 明确完整读取准确三文件、30c258两报告新增及真实原件的回复，实际唤起确认。
+
+## 准确c42的build07失败与分析日志目录
+
+结论：**准确c42的完整包构建FAIL，交原Worker修复；每个native包独占短分析日志目录的窄技术范围成立，准确实现和真实复编另审。** 本Reviewer完整读取build07日志、SOURCE、资源、内外退出、两次运行观察及UTC13:18:42.8148453/13:19:13.0583412两次所属为空原件。资源CPU6.5/5.0%、可用18707197952/18706276352字节、单调2.5010402秒通过；构建与外层均1。主控已收回本次窗口，candidate06及全部失败原件保持。
+
+324项prod deploy、363项供应链核查、原三个固定Node输入200、Python3.13.13、VS2022及CL=/utf-8实际进入conpty.cc。日志仍有C4267警告，首fatal为C1258不能保存conpty.nativecodeanalysis.xml；没有将这些局部阶段计为完整native、Go或VERSION完成。旧头文件17行错误在本日志未出现，具体C1258根因尚未验证。
+
+独立用成熟.NET XML读取实际conpty.vcxproj，两个配置EnablePREfast均true，IntDir为原相对对象目录；真实源包含conpty.cc、path_util.cc及node-gyp自动加入的win_delay_load_hook.cc。失败XML完整路径269字符，当前父目录存在、文件缺失；CL.command.1.tlog仅2字节，不能作为完整实际CL命令证据。长度观察用于定位，未单独判定根因。
+
+已完整读取指定[Microsoft分析选项](https://learn.microsoft.com/en-us/cpp/build/reference/analyze-code-analysis?view=msvc-170)：日志参数指向已存在目录且保留末尾反斜线时采用目录模式；文件模式合并日志。按[CL环境变量](https://learn.microsoft.com/en-us/cpp/build/reference/cl-environment-variables?view=msvc-170)，CL选项前置、_CL_选项后置；带引号路径必须按[实际参数规则](https://learn.microsoft.com/en-us/cpp/c-language/parsing-c-command-line-arguments?view=msvc-170)保留尾部反斜线与闭引号。原生实际消费仍须本次真实编译证明。
+
+原Worker `msg_1e020216d2eb` 的具体范围为：沿原四包native循环，在现有私有work中分别独占创建a0—a3并核canonical所属，保留/utf-8与全部原分析/编译选项，只追加日志目录参数；不同包串行、包内MSBuild4保持，并核同名源码的日志归属。该范围不变更源码、ABI、headers、分析规则或全局配置，必要验证由原完整构建覆盖，已通过 `msg_10b6e8a59ba9` 交原Worker。实际MSBuild后继参数覆盖、引号处理和日志文件结果在准确实现及复编中核查，不因静态方向成立宣告问题已解决。
+
+本机没有Firecrawl命令，未安装依赖；网页工具初次无view直读失败，随后通过同一Microsoft官方view=msvc-170全文读取。未执行候选、编译、分析引擎或模型，没有新增运行窗口。严格类型仍为OOM失败；全部恢复、通用terminal、安装及同候选双Worker验收继续未通过。
