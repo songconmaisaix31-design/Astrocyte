@@ -1483,3 +1483,15 @@ Go App的项目/Grant/单CLI批准、产品输出与退出语义、私有账号�
 主控已收回dependencies04窗口，后继strict类型、生成及完整native/Go构建另授。原全部故障、T12、通用terminal、模型及同安装候选双Worker均保持未验。当前没有正式PR，本轮不发布GitHub review，准确交付后的COMMENT review保持待执行。
 
 原Worker随后提交忽略目录 `reuse-comparison-20261021.md`。本Reviewer完整读取并独立核全部helperCall、taskCreate的精确action条件、controllerDeliver五项mutation白名单及swa.observe六项只读入口：helper中六项历史只读分支与collectTaskResult没有当前产品调用者。限定清理范围和复用原T01/T07/T12/T13验证成立；应在已交类型窗口的源码冻结解除后实施，只删除这些分支及因此无用的zod import，保留identify/observe/recover、全部写动作、nativeHistory和完整成果/授权消费者，准确后继另审。该范围已通过 `msg_440ca4668039` 交原Worker，不增加模型轮次、运行授权或构建前置。
+
+主控 `msg_9315b3a0edac` 已明确完整读取准确3ba三文件差异、dependency04原件及af605/c6fb两报告新增，原hook `msg_f210e2f1fbe6` 的实际唤起确认。六helper分支清理由原Worker在构建窗口归还后实施，当前已取得的源码和实际检查不因此重写。
+
+## 准确c42a695f的真实生成与类型失败记录
+
+结论：**局部接受准确 `c42a695f756886c2afcc8f36f0af6339dae9ec29` 相对3ba的生成产物及两份记录；严格类型检查保持FAIL。** 已完整读取三文件差异、原生成脚本及对应OpenAPI/JSON Schema。生成产物增加controller.recover、nativeConfigurationSource、SwaNativeLaunchPolicyV1及AgentSelection.native_launch，保持已审账号来源、三个API、空工具政策和必填字段语义；没有变更原契约、程序实现、依赖或权限。
+
+generate03的准确SOURCE为3ba，原runner05b0只运行既有generate-client.mjs，实际生成、资源及外层退出均0。资源CPU9.5/9.4%、可用18586574848/18619158528字节、单调2.5010712秒，Node512及BelowNormal保持；两份UTC13:12:28.7262117/13:12:41.1910594所属为空原件已读。主控已收回生成窗口，本Reviewer没有重跑生成器或字节再生成检查；本轮只确认真实生成来源、完整差异和其与已审契约的字段对应。
+
+typecheck01同样以准确3ba运行，完整日志明确为Reached heap limit，约1022.7MB时OOM，TS子退出134、外层1、资源0；没有任何语义类型诊断。CPU5.5/5.0%、可用18849153024/18853732352字节、单调2.5010102秒；实际四进程身份及UTC13:09:07.9578263/13:09:21.5806254两次所属为空原件已读。真实主机可用内存不能替代已批准Node1024 heap额度；新额度待答，未扩大额度、关闭strict/skipLibCheck规则或重跑。本次失败不能证明源码语义通过，也不支持推断源码已经出现某项TS诊断。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 3ba76a85cc968224f283315b64a4be4c27f1fcce -Candidate c42a695f` 实际EXIT0，唯一前缀解析为上述完整SHA，两Markdown/7本地链接及Git空白通过，原§15/§16锚点保持；marked18.1.0、BelowNormal、Node512MiB。本Reviewer未执行TypeScript Program、编译、生成、服务、数据库/HTTP正文、模型或安装，当前没有正式PR，COMMENT review仍待准确交付。全部实际故障、T12、通用terminal、完整构建及同安装候选双Worker继续未验；候选06/build07是否执行及结果由主控后继窗口另行记录。

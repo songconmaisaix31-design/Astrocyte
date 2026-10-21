@@ -623,3 +623,7 @@ tracked/Git冻结解除后，同一Worker直接继续已定稿账号/工具、�
 dependency04/3ba的准确锁与安装结果已有本轮独立核查；管理文档没有把它扩展为Program、native或模型通过。当前同Task接续身份和原报告来源正确，原N14—N26的限定接受与全部实际未验分开。原权限、工具/T11、Codex/S3和最终同安装候选双Worker条件保持，程序、SPEC、资源额度及实验没有变化。主控随后定向邮件授予原Worker一次typecheck01属于本提交后的单次窗口，不扩大本Reviewer权限。
 
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 783203c341aef0c015741a1eaed84f0c4a318b6b -Candidate 882d1582995cd0820cc7aaad71d67d17c848ded5` EXIT0：七Markdown、151本地链接和Git空白通过，无锚点或HTML待核；marked18.1.0、BelowNormal、Node512MiB。23项外部引用未逐一重新联网核查，沿准确来源记录保留。本Reviewer没有运行Program、编译、依赖安装、数据库/HTTP正文、服务、模型或REA分析。
+
+本轮3ba接受hook `msg_f210e2f1fbe6` 和882管理接受hook `msg_ef7e136a74ad`，分别获主控 `msg_9315b3a0edac`、`msg_cb99b92a1740` 明确完整读取准确差异与af605/c6fb两报告新增的回复，实际唤起均已确认。主控也已读取直接复用路径及六分支限定清理范围，准确实现仍由原Worker负责。
+
+准确 `c42a695f756886c2afcc8f36f0af6339dae9ec29` 的真实生成产物和记录获局部接受，具体原件和检查见headless报告。此前3ba严格类型入口实际因1GiB heap OOM失败、子134/外层1、无语义诊断；没有将该失败改成通过。generate03的原生成器成功和未知类型/完整构建、安装及真实功能各按实际范围保留，后继内存例外待用户决定，本Reviewer未运行任何新Stage。
