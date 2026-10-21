@@ -2,7 +2,7 @@
 
 ## 同一候选的本人观察授权（2026-10-22，待执行）
 
-当前已实际ZIP解包安装的候选为95efcc288e32ad8d72d4ef902f32ec130f97fea3，安装位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。human22/64509服务及FD5身份检查保持，旧22人工/消费脚本因UTC到期时间转换错误被独立退回，原执行请求已暂停。主控已通知用户停止旧命令并询问是否执行过，当前human-approval目录不存在；问题尚无答复。原Worker在同一Task/树/终端准备新23入口，准确复核后再提供本人命令，见[首版任务](../tasks/swa-cli-v1-20261020.md)。
+当前已实际ZIP解包安装的候选为95efcc288e32ad8d72d4ef902f32ec130f97fea3，安装位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。新23人工/消费入口已修正日期值转换，准确A427BE2B/05C9F245与FD5身份检查获beadc233限定接受。原22两路径已直接拒绝执行，原件保留。主控已发送human-authorize-installed23.ps1 -Stage Observe本人命令，并保留“曾执行过旧22”的反馈选项；当前human-approval目录不存在，尚无本人实际回执或凭据。完整命令与服务归属见[首版任务](../tasks/swa-cli-v1-20261020.md)。
 
 此入口沿SPEC §21.1的真实本人session/CSRF和固定公开项目Grant流程，授权读取Agent清单；Agent不能代行。当前没有本人回执或实际DPAPI凭据，观察消费保持未执行。该观察批准不包含执行Grant、具体Agent/模型和原生工具选择；下方工具范围及T11待答项保持。
 
