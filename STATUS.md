@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-准确26036164e57acc8267d3727f5ed35a97a74f0de5已普通push，build12实际EXIT0，完整candidate11/VERSION一致。实际16项RPC、四native复用及strict09通过；真实后台、HTTP、五库及EOF关闭通过。installed11已搬迁到仓库外，版本/私有ACL和原闭包检查通过；外部安装现已实际启动，HTTP与数据库、四reparse拒绝通过。原安装native子检查30秒超时/退出1保留，原T02后续未执行。本人批准、精简依赖及同安装候选双Worker继续验证，资源解除及累计修复规则保持。
+准确780a35e9ec996494f4188f44229d2568bf38b9a2已普通push，八项依赖分类、pnpm锁/冻结安装/一致性检查均通过。build13/candidate12实际0，四native复用及28233路径闭包通过，21份JS成品与260逐字节相同、九版本原许可全文一致；源码和该范围获cb0491e7限定接受。install12在仓库外新私有根复制时报EIO/Access is denied，外层1，原Worker正在局部诊断，安装后功能尚未通过。260外部安装服务继续运行，原HTTP/五库/关闭与四reparse检查保持实际范围；原install11超时失败保留。仅Observe的本人入口已独立审核并发出执行命令，尚无回执；T12、普通终端、本人执行批准及同安装真实双Worker继续验证。
 
 系统实际于UTC2026-10-21T14:41:49.500重启，原两Agent于UTC14:38:40退出1073807364，Task恢复ready。原Run已绑定generation3；新Worker ctx_a8f0c302cc3c及Reviewer ctx_40bf84d10b8c沿原Task/树/分支继续，启动均观察到turn_started。本机Orca app6228/runtime a2765d35-0b66-41e6-a8ca-e76d25294927 ready；原S、原库和配置保留，操作前重新核实际进程身份。
 
