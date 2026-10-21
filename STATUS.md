@@ -2,6 +2,8 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
+当前中间源码及安装为63eb7091dbf2b846f5e1984221e229ce18528bf0，build14、strict及故障工具编译0，完整普通复制准备17核原字节/文件树0，原install17闭包和保护范围通过、T02聚合6。真实C08的HTTP故障/所属回收已观察；实际退出6的误分类已交原Worker修复。startup-eof观察中出现创建时间缺项，lifecycle17为1，后续新C09尚未执行；保持未知原件及独立审核。该中间目录不计最终发行或真实双Worker通过。后继窄修、适用检查及统一候选继续，原260本人Observe和T11选择仍待用户回答。
+
 780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
 
 系统实际于UTC2026-10-21T14:41:49.500重启，原两Agent于UTC14:38:40退出1073807364，Task恢复ready。原Run已绑定generation3；新Worker ctx_a8f0c302cc3c及Reviewer ctx_40bf84d10b8c沿原Task/树/分支继续，启动均观察到turn_started。本机Orca app6228/runtime a2765d35-0b66-41e6-a8ca-e76d25294927 ready；原S、原库和配置保留，操作前重新核实际进程身份。
