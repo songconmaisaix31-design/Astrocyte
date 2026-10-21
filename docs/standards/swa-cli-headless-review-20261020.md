@@ -1481,3 +1481,5 @@ Go App的项目/Grant/单CLI批准、产品输出与退出语义、私有账号�
 - `node --max-old-space-size=512 .verification/review-runtime-lock.mjs 3ba76a85cc968224f283315b64a4be4c27f1fcce 7c812a1a972ed914bae3b9cd864702e5426b9492` EXIT0：成熟YAML核锁和真实已安装声明全部通过；BelowNormal、Node512MiB，没有重复依赖命令。
 
 主控已收回dependencies04窗口，后继strict类型、生成及完整native/Go构建另授。原全部故障、T12、通用terminal、模型及同安装候选双Worker均保持未验。当前没有正式PR，本轮不发布GitHub review，准确交付后的COMMENT review保持待执行。
+
+原Worker随后提交忽略目录 `reuse-comparison-20261021.md`。本Reviewer完整读取并独立核全部helperCall、taskCreate的精确action条件、controllerDeliver五项mutation白名单及swa.observe六项只读入口：helper中六项历史只读分支与collectTaskResult没有当前产品调用者。限定清理范围和复用原T01/T07/T12/T13验证成立；应在已交类型窗口的源码冻结解除后实施，只删除这些分支及因此无用的zod import，保留identify/observe/recover、全部写动作、nativeHistory和完整成果/授权消费者，准确后继另审。该范围已通过 `msg_440ca4668039` 交原Worker，不增加模型轮次、运行授权或构建前置。
