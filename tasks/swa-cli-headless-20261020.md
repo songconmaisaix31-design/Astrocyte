@@ -8,12 +8,12 @@
 | 最新范围 | [首版任务](swa-cli-v1-20261020.md)、[用户决定](../docs/QUESTIONS.md)首版章节；产品自带隔离后台，不妨碍本机Orca |
 | 基线 | 从 `81812c32a6d345362655c6e569f680aab8fca877` 普通纳入e149及main `4e6e8ed4fa52521c2232dd770eb98297d8713785` |
 | 工作树 / 分支 | `C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020` / `swa-cli-headless-20261020` |
-| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_a8f0c302cc3c`；沿原Task在系统重启后接续 |
+| 当前Run / Task / Dispatch | `run_62ada397a104` / `task_9f062888e786` / `ctx_fb2c13c28d40`；沿原Task及同一Worker接续 |
 | Worker / 主控 | `term_12dbd90a-0879-4e83-8685-6869bfeda367` / `term_a5fbafe0-ce09-4492-97d1-4ba69e5aa5f6` |
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
-| 原独立Reviewer | `task_1cd8014750f9 / ctx_40bf84d10b8c`，沿原Task接续 |
-| 实施状态 | `TEST_PLAN_ACCEPTED / IMPLEMENTING / FUNCTIONAL_VALIDATION_NOT_RUN` |
+| 原独立Reviewer | `task_9ae5a1337e1d / ctx_5f4446e340a0`，沿同一模块接续 |
+| 实施状态 | `IMPLEMENTING / OBSERVE_ACCEPTED / NATIVE_MODEL_VALIDATION_NOT_RUN`；准确结果见报告§40 |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
@@ -188,4 +188,6 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 
 同Task新Dispatch ctx_4c001fda773c接续日期返修，主控暂停旧22命令。原件保留，旧两路径已快速失败并实际拒绝1/1；按原Reviewer准确7DF6314A完整补充计划，新23仅Observe两处expires_at使用成熟DateTimeOffset值转换，FD5及95ef/5187服务保持。原完整UTC准确serve1792600364102、owner1792600340610的v2两次只读CIM0，真实四来源三类型12项ticks/毫秒0，Parser/实际Assert及新consumer缺凭据拒绝检查0。准确新SHA交原Reviewer，用户命令待新准确接受后由主控恢复；没有human/Grant/token/模型。详情见报告§39和自有human23-review.md，全部真实执行验收保持未完成。
 
-原Reviewer msg_d1e7a303fcc4已完整独立核准确A427BE2B/8000字节人工23、05C9F245/2917字节consumer23、FD5不变、真实日期类型/拒绝/服务及v2完整CIM，限定接受准确23入口与旧260收尾。当前本人命令为自有human-authorize-installed23.ps1 -Stage Observe，旧22路径已撤销；实际人工签发/DPAPI凭据仍未取得，新95ef人类服务5187/64509保持，后续真实Grant/Agent模型/双Worker等验收依赖本人实际批准，继续保持未验。
+原Reviewer msg_d1e7a303fcc4已完整独立核准确A427BE2B/8000字节人工23、05C9F245/2917字节consumer23、FD5不变、真实日期类型/拒绝/服务及v2完整CIM，限定接受准确23入口与旧260收尾。当时实际批准尚未取得；最新授权及真实消费由报告§40接续。
+
+用户经主控msg_a536f02a7294明确APPROVE OBSERVE，并允许StepFun及其他Agent测试、禁止Aliyun key。主控msg_7ac55c65dd32采用当前真实用户会话委托执行已接受的原API准备；原23人工入口/consumer及FD5身份检查字节保持。原Reviewer准确接受4B527993委托计划及32857112零副作用恢复补充后，delegated-observe26实际0：公开项目46ceef7b-0be3-4a4b-8e74-575fd327b31c、仅observe/r2的真实Grant及CurrentUser DPAPI、原consumer23实际0、status/capabilities各0、五项实际403、三库无任务或模型新增和原Orca保全成立。原24表名及25实际Origin残留失败完整保留；没有重复原未知mutation。原Reviewermsg_7b85c8d32daa已独立运行原consumer23及只读SQLite，限定接受该授权消费范围。实际原生模型、执行Grant、T03/T12和同安装双Worker继续未验；当前Pi-only native合同阻断其他已安装Agent选择，继续同一Worker补齐原生合同和真实验收，不重复已通过的Observe。

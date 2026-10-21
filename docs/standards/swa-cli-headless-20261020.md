@@ -1388,4 +1388,20 @@ verify-date23实际0，原UTC为serve30160创建2026-10-21T16:32:44.1021696Z、o
 
 verify-types24实际0：原UTC两字段、实际同一次时钟的本机+08:00和UTC四来源，分别通过原字符串、JSON实际DateTime(Utc或Local)、DateTimeOffset三类型值转换，12项UTC ticks与Unix毫秒一致；原输入/类型/Kind/offset原件在date-fix23/types24。没有构造expiry、token或human。verify-entries23实际0：五文件成熟Parser通过，FD5字节不变，实际只读Assert前后0；旧22两入口实际拒绝1/1，新23 consumer缺真实凭据拒绝1，human-approval前后不存在。真实签发响应、DPAPI消费、Grant/模型及同候选双Worker/T03/T12/完整成果保持未验，当前用户是否执行过旧命令仍由主控等待实际答复。
 
-当前本人命令为`pwsh -NoProfile -File C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020/.verification/swa-cli-headless-20261020/human-authorize-installed23.ps1 -Stage Observe`，仅由用户执行。当前人工签发尚未发生，保留原human22服务/5187等待真实输入；原22命令已经撤销，不会调用human API。
+当时本人命令为`pwsh -NoProfile -File C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020/.verification/swa-cli-headless-20261020/human-authorize-installed23.ps1 -Stage Observe`，该人工入口仅由用户执行。后续真实用户批准及委托路径见§40；原22命令已经撤销，不会调用human API。
+
+## 40. 真实会话委托Observe及独立消费接受
+
+用户经主控msg_a536f02a7294明确APPROVE OBSERVE，并允许StepFun key及其他Agent测试、禁止Aliyun key。主控msg_7ac55c65dd32采用真实用户会话的明确委托：Agent沿既有真实session/cookie/CSRF及human API执行已限定的公开项目准备，服务实际返回local-human/human，执行者另行记录为Agent；没有伪造TTY、Read-Host、cookie、token或身份，也没有修改产品权限。原人工23、consumer23和FD5检查SHA保持。客户端cookie只在本次内存准备期间持有，随后Dispose并清空；服务签发session有效期12小时，不声称服务端session已撤销。
+
+原Reviewermsg_700b286bdd14准确接受委托计划4B5279939675B4C8E062A8854F1E803DFF9A89F4957AA6EC47A437A2C92F43B9，msg_724ce658f6f2接受恢复补充328571126C4116B32572EA23DF2E30205451C9086D12FEC2389BEE609901B578。实际客户端delegated-observe24.ps1最终SHA655799C350501C6D0659B2BF343C4FDE0F3F30FF239A4E97F9F0267D31765697，只读node:sqlite观察器observe-state24.mjs为2E2492A8ECE7F9E2364E9B7F58DEF119E0CCCEB711CB236E910599B23ACB0738。每次真实执行源码副本、请求、非秘密HTTP结果、SQLite观察、流和退出分别保存在自有delegated-observe24/25/26；凭据、cookie及digest正文未输出。
+
+delegated-observe24实际1，错误为只读观察器引用不存在的coordinator_tasks，发生在会话和准备写入前。修正为真实tasks后，25实际1发生在首个项目空间POST；原请求1182992b-8b77-4d47-adbe-05e53eb70676未重发，该次HTTP状态未被原客户端取得，保持未知。只读三库核对空间/项目/Grant均0、工作和journal未变化、批准目录为空且CurrentUser独占。随后真实GET诊断实际0：WebRequestSession保留负向Origin头，无显式Origin参数的下一GET仍403，清除其实际Headers后GET200。该诊断没有准备写入、Worker或模型。
+
+26沿独立接受的已知零效果恢复继续，保留旧空目录、失败请求及原件，以新R执行。当前真实服务为95efcc288e32ad8d72d4ef902f32ec130f97fea3最终安装、端口64509、runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69，原5187所属stdin保持。项目46ceef7b-0be3-4a4b-8e74-575fd327b31c绑定原固定公开Git根；真实设置revision2，allowed_actions仅observe，目录、工具、外发CLI及Agent控制关闭。唯一真实Grant归caller swa-cli-acceptance，仅observe，真实expiry2026-10-21T20:51:16.4468291Z、未撤销且持久digest存在。Actual CurrentUser DPAPI文件存于仓库外human22/human-approval/observe-credential.dpapi，用户独占ACL及原23entropy保持。
+
+delegated-observe26实际退出0，真实status/capabilities及原consumer23各0。缺cookie、缺CSRF、另一loopback Origin、Observe调用有效controller.open、Observe调用humanGrant五项均实际HTTP403/scope_denied。真实三库仅新增预期空间、项目及Grant；local_agent_sessions/orca_execution_links与全部实际工作表、journal计数保持，没有创建Worker或调用模型。原Orca实际前后保全通过。原Reviewermsg_7b85c8d32daa完整核准确源码和快照，独立运行原consumer23退出0及真实只读SQLite，限定接受此授权、持久和消费范围，正式报告随后接续。
+
+实际capabilities列出pi1.0.1、codex0.162.0、claude2.1.238、grok1.0.34、opencode2.0.31已安装；实际launchable均unknown。Codex默认openai/gpt-6.1-sol的原生OAuth存在；Claude显示配置名称不能代替真实供应端点许可，当前默认不得调用。现有native_launch只接受Pi1.0.1 API key及已审工具关闭合同，其他Agent选择存在真实产品缺口。只读成熟解析核Pi默认auth为空、无StepFun目录项或环境名称匹配；主控补核实际OpenCode两个配置来源只有deepseek auth名，无StepFun匹配。这些结果只覆盖所读来源，主控已向用户询问StepFun所在Agent或路径，不请求密钥正文。
+
+当前仅Observe通过。执行Grant、实际原生Agent及模型、T03/T12剩余故障接续、同一最终安装双Worker同时执行/指定停止/B继续和完整成果保持未验。继续真实原生合同分析与必要修复，不重复签发Observe，不将Pi SDK运行计为其他Agent原生调用。
