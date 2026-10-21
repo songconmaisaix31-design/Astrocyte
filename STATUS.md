@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-当前中间源码及安装为63eb7091dbf2b846f5e1984221e229ce18528bf0，build14、strict及故障工具编译0，完整普通复制准备17核原字节/文件树0，原install17闭包和保护范围通过、T02聚合6。真实C08的HTTP故障/所属回收已观察，退出6的误分类由原Worker修复。lifecycle17和首次独立c09-only18均因原生观察缺创建时间退出1；后者实际快照已保留正确runtime关联行，完整C09未通过。独立接受的6E3F057A观察计划增加两次完整成功CIM查询，未知PID必须完全不存在，保留原身份、全Job及真实动作要求；原失败保持。中间目录不计最终发行或真实双Worker通过。原260本人Observe和T11选择仍待用户回答。
+当前产品源码95efcc288e32ad8d72d4ef902f32ec130f97fea3已普通push，包含serve已知退出分类窄修与已审独立CIM测试。现有63eb中间安装的lifecycle19四模式实际130/130/0/6、唯一正确runtime诊断、原native及两次完整CIM退出、全Job和原Orca保全通过，驱动0；一个真实创建时间缺项样本保留，两个CIM查询均确认该PID缺席。cim19真实存活/退出四分支返回6/0/6/0。原17/18失败保持，新95ef准确Go、构建安装和C08已知故障7复验继续。原260本人Observe和T11选择仍待回答，最终同安装双Worker未通过。
 
 780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
 
@@ -20,15 +20,15 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f的ctx_a8f0c302cc3c继续原源码复用、T12及通用终端输入。260已在仓库外实际安装运行，准备本人批准脚本和受保护的凭据交接；R06真实故障仍未执行，八项纯JS继续核生产/构建分类及实际精简条件 |
-| 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_40bf84d10b8c`、terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`，保持原树、分支及两报告写域。最近报告046fffb5限定接受260五文件、实际RPC与复用/装载，主控完整读取并回复；后继真实服务与安装累计接续 |
+| 后继工作 | 同一Worker Task9f的ctx_a8f0c302cc3c继续95ef准确构建安装和C08分类复验，再对稳定候选生成最终ZIP并验证。八项直接依赖的开发分类、真实闭包及九版本许可已在780安装范围核实；本人Observe、执行批准、T12及同安装双Worker成果保持未验 |
+| 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_40bf84d10b8c`、terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`，保持原树、分支及两报告写域。最近正式报告110e567a限定接受780发行、5e输出窄修及main4db管理范围，三个hook均已实际读取回复；后继95ef和新实际结果累计审查 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
 | REA 来源核查 | 当前Orca1.4.230/app.asar为6a9，两次限定JS分析的partial/truncated限制保持。按用户“将orca cli逆向后参考”，补当前orca.exe准确612b的PE/Rust静态证据及实际命令目录144e的20JS分析，三个入口均EXIT0；CLI图partial/222文件未选，原生函数未反编译，完整运行依赖仍未知，见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)。doctor原EXIT1/config_drift保持，无MCP/本机Orca配置修改 |
 | 独立 Go 检查结果 | 9c/16ad原结果保留。新增Go批准入口与消费者在独立detached准确3590bf11043a2e95cb00b319d4a44a44c2e5c784树执行未改的已审入口，exec2414实际EXIT0：四包test-c完成，三个CLI传输前函数逐PASS/零SKIP，SOURCE和结束干净HEAD均3590；runtime/live函数NOT_RUN、model_calls=0。原件根swa-go-3590-01的go-source-01及control/go-3590-execution-01.log；主控检查不代Worker自测、源码CR、原生模块或安装验收 |
 | 注册 Agent 后继方案 | 按SPEC §21.1.1—§21.1.5实施；e549的N10/生成静态接受保持。9e修后N08/N13限定技术获f5dc接受，native_launch及逐类投影/请求/私有账号与工具消费者已在§21.1.5定稿，同Worker实施；默认Pi0只限定该来源，全部实际账号/工具/调用仍未通过。五条RPC导入边局部静态接受，实际收窄未验；Windows/.NET下载及D01—D05技术接受，窄helper可实施，网络/构建另授 |
 | 契约生成 | 原Worker在准确33c5干净前置下仅一次执行generate-02，实际exec38224 EXIT0，资源/生成退出均0，Node512及私有TEMP；只有web/src/api/schema.d.ts生成变化，已纳入e549，未手改生成文件。源码生成不代Node/native构建、安装或模型验证 |
-| 首装授权流程 | 原T02/T03及USAGE须完整覆盖新DataRoot和已安装资产的首次人工入口、实际session/CSRF、项目设置、Grant/token操作；同一Worker调查复用现有入口并补具体方案。尚无新安装运行结果，不由Agent代用户批准，不新增网页重构模块 |
+| 首装授权流程 | USAGE已提供正常解包、原installer及首次实际session/CSRF、项目设置、Grant/token入口；260本人Observe脚本及DPAPI消费脚本已独立静态接受，等待本人执行。后继780和63eb已有独立安装运行结果，人工步骤和执行批准尚未完成 |
 
 当前 main 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/main-20261020`；原根目录的 `validation/v1-20261012` 与正式实验材料保留。Orca 的新工作树默认基准已实际改为 `origin/main`。M0 的接受仅覆盖文档整合，首版 CLI 程序实现中，尚未通过验收。
 
