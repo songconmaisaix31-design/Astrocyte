@@ -1433,10 +1433,12 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 
 ## 准确616eab31的R10真实CLI故障入口
 
-结论：**退回准确`616eab312cfb0741fc89cf8ae65027aceac2748b`的N25输出契约检查，全部新增正文NOT_RUN。** 根据main783203c3的SPEC21.1.3及079bd计划C05/C09/R10，先独立推导实际取消须130及单一失败envelope、stdout关闭须6及已知原R查询诊断、原请求与唯一PTY/runUse保持、缺证不登记命中，再完整读取相对4ce的九文件差异和实际消费者。没有增加模型调用、故障目标或运行窗口。
+结论：**退回准确`616eab312cfb0741fc89cf8ae65027aceac2748b`的N25输出契约检查及N26原控制端诊断，全部新增正文NOT_RUN。** 根据main783203c3的SPEC21.1.3及079bd计划C05/C09/R10，先独立推导实际取消须130及单一失败envelope、stdout关闭须6及已知原R查询诊断、原请求与唯一PTY/runUse保持、缺证不登记命中，再完整读取相对4ce的九文件差异和实际消费者。没有增加模型调用、故障目标或运行窗口。
 
 原构建入口在服务前用实际Go预编译cli-fault-control，闭包检查要求该文件。控制程序分两次创建隐藏console及真实CLI独立group，在所持句柄的创建身份、完整程序、保护PID和两个实际console成员核实后定向发送CTRL_BREAK；stdout关闭使用真实StdoutPipe。驱动要求实际130或6、同一句柄退出、无控制错误及非超时，未命中保留INCONCLUSIVE。其原始流、真实request.show、私有SQLite及authenticated daemon库存均有明确来源；初次及重放后比较全部PTY六身份字段，原Run/root/spec、全部runUse集合及唯一原R子请求另行核查。pending观察和网络两项继续列入remainingCases，驱动和外围保持6；两项草稿覆盖缺口在本次准确源码中已补充。
 
 **N25，严重程度中：输出缺证仍可登记取消或stdout失败命中。** cli-failure.mjs先计算hit/status，再解析实际stdout；空流保持cliReply=null，坏JSON或多份JSON仅记录parseError，取消130仍可能登记OBSERVED，未验证C05明确要求的单一失败envelope。Go控制程序将实际管道读取/保存错误写入actual_pipe_read_error，该取消判定同样未检查。stdout-close允许真实部分输出，但驱动没有读取或断言实际CLI stderr中的已知原R及查询诊断，退出6单项不足以覆盖C09。建议动作：取消场景核完整保存的单一真实JSON、失败结果及原关联；stdout关闭按真实部分输出和stderr核原R及查询信息，缺证不能OBSERVED，不要求其stdout为完整JSON。使用成熟JSON解析和真实流，不新增Writer、响应替身或时序钩子。本项已通过`msg_2fd8345dcf4f`交原Worker。
+
+**N26，严重程度中：恢复成功回执后的stdout失败没有保留原C_old诊断。** 独立继续读取准确616e的cmd/swa/main.go和output.go及079bd§3.4.1。实际响应解析后main.go以reply覆盖output.identity；恢复成功时其controller为真实C_new，随后publish失败只进入stderr。output.go:83仅输出当前identity.Controller和requested_task/dispatch，未输出仍保存在selected.Controller的原C_old；projectID存在时查询命令也只含project和R。完整stdout写入失败可以没有任何envelope字节，当前诊断不能同时保留原C_old与实际C_new，不满足全部失败路径保留原R/C_old及实际已知新身份的定稿要求。建议动作：使用已验证command中保留的原选择器，连同实际响应已知C_new/Run/root核实际stderr；不从expected checkpoint补造身份，不增加公开接口。原project加R仍可查询原件，未声称恢复效果或原receipt丢失。本项已通过`msg_bead5052222b`交原Worker。
 
 实际`check-revision.ps1 -Previous 4ceff1aded43eca345c9d14729d51697baf23069 -Candidate 616eab312cfb0741fc89cf8ae65027aceac2748b` EXIT0，两Markdown/7本地链接及Git空白通过，既有§15/§16锚点保持。Worker的r10-source-static-01五份TS/MJS语法、JSON/YAML、Go格式、PS Parser、文档来源日志及四项退出0已完整读取，保持Worker归属。全部只读检查BelowNormal、Node512MiB；本Reviewer未执行Program、Go构建、安装、SQLite/HTTP正文、console、故障或模型。类型/生成/完整构建、R06/R08与其余T12、通用terminal及同安装候选双Worker继续未验；后继Stage须主控指定本次之后的准确源码，原Run实际读取回复仍待答。
