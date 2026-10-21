@@ -126,6 +126,7 @@ if (cliReply) {
 const cliStderrFile = prefix + '.stderr.log'
 assert.ok((await stat(cliStderrFile)).size <= 4 * 1024 * 1024, 'Actual CLI diagnostic exceeds its bound; the original stream remains in evidence')
 const cliDiagnostic = new TextDecoder('utf-8', { fatal: true }).decode(await readFile(cliStderrFile))
+assert.doesNotMatch(cliDiagnostic, /\b(?:request_id|runtime_id|authority_domain|controller|run_id|task_id|dispatch_id|requested_controller|requested_task_id|requested_dispatch_id)=""(?:\s|$)/)
 const queryDiagnostic = cliDiagnostic.includes('PowerShell 查询原请求：swa request show ') && cliDiagnostic.includes(`--request-id '${requestID}'`) && cliDiagnostic.includes('--json') && cliDiagnostic.includes(`--project '${state.project_id.replaceAll("'", "''")}'`)
 const cancellationEnvelope = parseError === null && cliReply !== null && !Array.isArray(cliReply) && cliReply.ok === false && cliReply.request_id === requestID && cliReply.controller === state.prior_controller && cliReply.error?.code === 'delivery_unknown' && typeof cliReply.error.message === 'string' && cliReply.error.message.length > 0 && typeof cliReply.error.retryable === 'boolean' && cliReply.error.required_action === 'inspect_original_request'
 const streamFilesSaved = !helperResult.actual_stdout_file_error && !helperResult.actual_unclassified_copy_error

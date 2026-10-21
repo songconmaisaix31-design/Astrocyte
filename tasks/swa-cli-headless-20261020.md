@@ -175,3 +175,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 2026-10-22同Worker沿最新主控授权继续；旧资源窗口限制已由用户解除，实际规则及累计程序写域见主线当前任务和RESOURCES。准确260的build12、RPC目录、Go编译、仓库外同一安装闭包/真实私有服务/五份SQLite/普通Job及安装负向检查已取得限定通过，install11原30秒native超时失败保持原因未知。当前260服务保持运行，本人Observe批准尚未执行；Agent不取得人工会话。已审八项依赖移至构建输入、九版本原许可复制实现，pnpm真实锁生成/frozen/check-dependencies全部0；新候选及全部真实安装、T12/终端和同安装双Worker成果验收继续，完整事实见报告§33。
 
 准确780a35e9的build13及inline13真实0，21份实际成品与260相同、九许可全文相同；外部install12复制失败1，原件保持。实际Token/icacls定位候选exe继承Low标签；普通复制同字节Node实际Medium、三个外部小探针0，正按主控授权以成熟ZipFile完成普通发行提取路径，尚无新安装结论。普通EOF副本第一模式130，第二模式身份缺项失败，剩余未运行；原Orca保全通过。当前累计修正USAGE正常解压/同会话数组调用、T03原Go来源复用和原C04/R10定向HTTP故障入口，真实执行及同安装双Worker仍待完成，细节见报告§34。
+
+正常ZIP/extract-package13实际0，原install13复制/闭包/负向范围通过且退出6保留真实消费者；仓库外服务、五份SQLite及所属退出/保全实际0，lifecycle14关闭/资源四模式0，普通provider Job0，完整限定范围见报告§35。实际C09空身份诊断缺口已在CLI与真实管道断言返修，需后继准确二进制复验；原stop-http空闲daemon状态返修及历史/无owner检查独立审核继续。原260本人Observe服务保留，真实批准与最终同安装模型/双Worker/T12成果尚未取得，未结算整体任务。

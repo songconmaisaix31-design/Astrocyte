@@ -240,6 +240,24 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 	}
 	report["actual_targets_exited"] = true
 	report["actual_targets_exited_at"] = time.Now().UTC()
+	if request.Action == "stop-http" {
+		report["actual_daemon_state"] = "unknown"
+		report["actual_daemon_observed_at"] = time.Now().UTC()
+		state, err := windows.WaitForSingleObject(held[record.PID].Handle, 0)
+		if err != nil {
+			return report, err
+		}
+		switch state {
+		case windows.WAIT_OBJECT_0:
+			report["actual_daemon_state"] = "exited"
+		case uint32(windows.WAIT_TIMEOUT):
+			report["actual_daemon_state"] = "alive"
+			report["same_daemon_preserved"] = true
+		default:
+			return report, errors.New("HTTP故障后的原daemon同句柄状态未知")
+		}
+		return report, nil
+	}
 	created, err := live(held[record.PID].Handle)
 	if err != nil || created != ownership.DaemonBirth {
 		return report, errors.Join(fmt.Errorf("原daemon在实际服务故障后未保持同一活身份: pid=%d", record.PID), err)

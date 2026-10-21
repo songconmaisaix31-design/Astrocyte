@@ -80,7 +80,26 @@ func (o *cliOutput) recovery() {
 
 func (o *cliOutput) outputFailure(err error) int {
 	_, _ = fmt.Fprintf(o.stderr, "CLI 输出失败：%v\n", err)
-	_, _ = fmt.Fprintf(o.stderr, "已知关联：request_id=%q runtime_id=%q authority_domain=%q controller=%q run_id=%q task_id=%q dispatch_id=%q requested_controller=%q requested_task_id=%q requested_dispatch_id=%q\n", o.identity.RequestID, o.identity.RuntimeID, o.identity.AuthorityDomain, o.identity.Controller, o.identity.RunID, o.identity.TaskID, o.identity.DispatchID, o.selected.Controller, o.selected.TaskID, o.selected.DispatchID)
+	var associations []string
+	for _, field := range []struct{ name, value string }{
+		{"request_id", o.identity.RequestID},
+		{"runtime_id", o.identity.RuntimeID},
+		{"authority_domain", o.identity.AuthorityDomain},
+		{"controller", o.identity.Controller},
+		{"run_id", o.identity.RunID},
+		{"task_id", o.identity.TaskID},
+		{"dispatch_id", o.identity.DispatchID},
+		{"requested_controller", o.selected.Controller},
+		{"requested_task_id", o.selected.TaskID},
+		{"requested_dispatch_id", o.selected.DispatchID},
+	} {
+		if field.value != "" {
+			associations = append(associations, fmt.Sprintf("%s=%q", field.name, field.value))
+		}
+	}
+	if len(associations) > 0 {
+		_, _ = fmt.Fprintf(o.stderr, "已知关联：%s\n", strings.Join(associations, " "))
+	}
 	o.recovery()
 	switch o.action {
 	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "serve":
