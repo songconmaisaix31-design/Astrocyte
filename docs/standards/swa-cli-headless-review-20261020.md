@@ -1788,3 +1788,23 @@ provider-job-installed20的完整真实入口、结果及退出0已读，Reviewe
 主控后继准确 `f0fb667e4820a4cd486226b7f6c7d58c01affbfb` 三文档差异已完整读取，接受其95ef源码、原63eb生命周期及当时待验新C08的来源记录。Reviewer实际59c7→f0fb的成熟marked/Git空白检查0，三文件44本地链接，首装和当前审查记录按实际更新。最新正式PR查询为空，尚无可发布COMMENT review的对象。
 
 本人Observe、T11、真实执行Grant/模型/工具、完整T03/T12与同一最终发行安装的真实双Worker并发/指定停止/另一Worker继续/完整成果仍未通过。CIM查询故障及超时没有实际触发，本轮只接受已描述的源码和真实运行范围。原S3和真实用户作品授权保持未决定，没有合并或发布main。
+
+## 同一95ef安装的本人Observe入口
+
+**接受下列准确三文件的静态/API及实际公开归属范围，可由用户本人执行Observe入口。** 本轮只执行成熟PowerShell Parser、文件摘要及共享函数的只读`Assert-SwaService`，退出0；没有执行人工授权正文、创建human session、Grant或token。Worker原件位于其忽略目录`.verification/swa-cli-headless-20261020`，三份全文已完整读取并独立逐一核对。
+
+| 文件 | 字节 | SHA256 |
+| --- | ---: | --- |
+| human-authorize-installed22.ps1 | 8007 | E0CF0C3CC91648B00E14D4442FCEC03AD718D8F6B09FE48495ACBFD49CF72E67 |
+| use-installed22-credential.ps1 | 2924 | B9792BE393874B1F16EC7CF882D5A2A90911521808C47DF1EE31FF1E20E0BC3C |
+| assert-installed22-service.ps1 | 3044 | FD5FA88CC2179AEF2BB97E86F28D76E4AAFBC44488540BF5A458C10E6659CD0D |
+
+服务复用准确95ef的同一个`95efcc28-install20`，DataRoot为仓库外`95efcc28-human22`，endpoint为回环64509。实际serve37764创建UTC2026-10-21T18:52:06.3683428Z，host44492创建UTC18:52:07.3998766，server48980创建UTC18:52:08.6552096，两者父PID均37764；runtime为`cc80c07c-c8bf-47ff-965e-6177bd2a7c69`，metadata.startedAt为1792608728394。run-service22完整入口、readiness、实际身份与三项Medium Token已读，五份真实SQLite均integrity_check=ok/foreign_key_check空，启动前及运行中六文件字节/ACL和原Orca公开身份保持。服务维持所属stdin，尚未执行收尾，不登记其最终退出。原human21脚本路径比较失败及原服务正常关闭的记录由Worker保留。
+
+两个入口共用准确3044字节身份函数，在人工提示之后、每个实际mutation及每次status/capabilities前重新核安装/数据父级reparse、三个完整映像路径与精确创建时间、实际父链、私有runtime/startedAt、唯一监听所属、版本和health。Reviewer独立实际执行该只读函数0；固定公开项目的origin及HEAD实际为原astrocyte-s3-public-stats和准确da3bdddb085808863090a05f60cc1c64415039cf，API/App来源保持已审范围。
+
+人工入口仅接受Stage=Observe，要求本人明确输入APPROVE OBSERVE；实际session cookie/CSRF、固定公开项目登记、仅observe设置/Grant/token均由本人发起。原request_id/Idempotency-Key、设置revision和未知创建保全保持。凭据只以CurrentUser DPAPI写入该DataRoot下的当前用户所有且仅当前用户允许访问的目录，CreateNew拒绝覆盖，token不输出；消费侧核固定来源/endpoint/DataRoot/project root/caller、唯一observe和到期时间，再进行实际只读CLI观察。三份准确入口已通过`msg_99552e5115da`、`msg_f4d1abea92ab`交主控及原Worker；原260入口与服务保持独立。
+
+Worker的缺凭据消费原件实际退出1，错误停在文件不存在检查，未调用CLI；Reviewer实际观察human-approval目录仍不存在。三份Parser均错误0，真实人工授权及新凭据消费尚未运行，原公开源码DPAPI往返结果不能替代本人批准。T11、Execute、工具、真实模型及最终同安装双Worker/完整T12仍保持未决定或未验。
+
+ec225632的三份hook已获主控`msg_26fdd5701816`、`msg_eca4144b06b0`、`msg_e2a90496c96e`明确完整读取报告、准确源码及原件的回复，本次唤起确认。
