@@ -1426,7 +1426,7 @@ build16.ps1实际0，从准确干净f2ab形成dist/swa-cli-install-20261020-15�
 
 install29.ps1内外实际6：仓库外f2ab4fd9-install29复制/版本、native和空Job、28233路径闭包、实际端口占用EXIT5、保护目录及四种junction EXIT3、目标字节/ACL不变和原Orca保全通过；T03/T13真实消费者未运行，未登记完整安装通过。原件位于case29/.verification/swa-cli-headless/t02-65bca04b-93d3-4f21-a217-01f70ee1b07c，原安装和失败记录保持。
 
-check-installed29.ps1实际0，沿原已审run-lifecycle20.ps1及run-http-idle16.ps1，在同一f2ab安装和新独占数据根执行。lifecycle29四模式全部OBSERVED，实际退出130/130/0/6；原native两次/独立完整CIM两次、完整Job及唯一精确非空runtime C09诊断通过，remainingCases为空。stdout模式保留两个真实native创建时间缺项行48696与33604，没有补写身份；两次完整CIM各416行、PID字段完整、实际目标缺席，确认原known退出和unknown缺席。原件为lifecycle29-outer/cases，保存真实执行脚本。
+check-installed29.ps1实际0，沿原已审run-lifecycle20.ps1及run-http-idle16.ps1，在同一f2ab安装和新独占数据根执行。lifecycle29四模式全部OBSERVED，实际退出130/130/0/6；原native两次/独立完整CIM两次、完整Job及唯一精确非空runtime C09诊断通过，remainingCases为空。readiness-eof保留37240与32444、stdout模式保留48696与33604，共四条真实native创建时间缺项，没有补写身份；每模式两次完整CIM各416行、PID字段完整、实际目标缺席，确认原known退出和unknown缺席。原件为lifecycle29-outer/cases，保存真实执行脚本。
 
 http-idle29实际0：真实空闲、三项拒绝、五库完整性/外键、实际Medium Token、唯一所属HTTP同句柄终止、实际旧身份两次退出和完整Job两次仅余serve通过。服务实际7、唯一readiness无尾包，stderr精确runtime_error；没有创建human session或调用模型。两项各自原Orca前后保全通过，另外原FD5检查在本轮前/中/后确认95ef Observe服务及5187所属入口仍保持；没有关闭或替换原服务。新检查服务已正常结束，无本轮待处理服务或原生Worker。
 
