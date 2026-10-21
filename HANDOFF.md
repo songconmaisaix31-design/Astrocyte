@@ -1,6 +1,8 @@
 # SWA 主线接续
 
-准确780a35e9ec996494f4188f44229d2568bf38b9a2已普通push，八项直接依赖转为构建输入，pnpm锁生成、冻结安装及依赖检查均0。build13/candidate12实际0，四native显式复用、28233路径闭包通过；21份JS成品与260逐字节相同，九版本完整许可与原输入一致，获cb0491e7限定接受。install12在新仓库外私有根的Node复制阶段返回EIO/Access is denied，外层1，失败目标和原件保留；原Worker先局部诊断执行身份、ACL及复制行为，再继续安装和失败路径。资源限制已解除，普通修复连续实施及累计审查。
+实际安装候选为780a35e9ec996494f4188f44229d2568bf38b9a2。完整ZIP已生成并普通解压，原installer安装至C:/Users/DW/AppData/Local/SwarmCli/candidates/780a35e9-install13；原生装载、28233路径闭包及安装负向检查通过，T02聚合6明确保留T03/T13消费者未验。仓库外validation-data/780a35e9-service13的实际服务、HTTP、五份SQLite及正常关闭均0，serve/Node/server实际Medium；同安装四项EOF/关闭输出读管道检查实际0，退出分别130/130/0/6，所属退出及原Orca保全通过。八项依赖分类、21份成品及九版本原许可保持已核范围。
+
+源码f46afc49e0e23cbb3d4e915ce0fc8c5ff78a8854已普通push，更新USAGE正常解包/同会话数组调用、原Go测试来源复用及HTTP故障工具；后继故障工具和C09未知关联字段返修由原Worker继续。实际780安装没有混入这些后继文件，最终候选仍须完成本人执行批准、真实双Worker及适用失败检查。install12原失败与Low标签诊断保留在任务及原件，普通ZIP提取保持原Node字节并得到正常进程完整性。资源限制已解除，普通修复连续实施及累计审查。
 
 installed11已安全搬迁至仓库外`C:/Users/DW/AppData/Local/SwarmCli/candidates/26036164`，版本及私有ACL保持，原路径不存在；原闭包检查实际0。仓库外服务的runtime52551ae0、host44232/server39960就绪，HTTP64506及数据库检查通过，使用Worker自有`installed11-service/data`，四项真实reparse拒绝通过。原安装中的native子检查30秒超时/退出1保持失败，原T02后续未执行；仓库外验证不改变该记录。仅Observe的本人批准入口及配套消费脚本获07b12530独立静态接受，主控已发送本人执行命令，尚无执行回执；凭据限当前用户DPAPI及私有ACL，Agent不代取human会话。原Orca6228/32280保持。
 
