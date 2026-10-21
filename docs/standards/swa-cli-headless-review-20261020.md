@@ -1693,4 +1693,12 @@ Reviewer实际`review-dependency-move-780a.mjs`使用成熟YAML/JSON，确认man
 
 build13实际SOURCE与candidate12/VERSION均为准确780，最终退出0；四native沿原candidate10/build11/ZZTfh4复制，built为空，真实Node/native/空Job及28233路径闭包0。Reviewer以candidate12自带Node执行`review-inline-licenses-780a.mjs`实际0：独立沿实际metafile输入确认九个包版本，全部原许可与输出字节一致、文件为普通文件；21个实际JS成品及其输入路径与已审260逐项相同。原件为`inline-licenses-780a-independent.log`。该结果没有改变原安装超时，也没有证明新生产部署的动态路径、实际服务或精简效果。
 
-原260服务和准确本人Observe入口保持，用户执行尚无实际回执；执行、工具、T12及同一最终安装的真实双Worker成果不计通过。准确780报告§33中的普通Job与DPAPI检查等待定位原件后分别核查，不据名称直接计入接受。07b12530的260及main两hook已获主控`msg_0819f42de142`、`msg_6baaf9b421e2`完整读取回复，本次唤起确认。
+原260服务和准确本人Observe入口保持，用户执行尚无实际回执；执行、工具、T12及同一最终安装的真实双Worker成果不计通过。07b12530的260及main两hook已获主控`msg_0819f42de142`、`msg_6baaf9b421e2`完整读取回复，本次唤起确认。
+
+### 780实际新安装失败与260普通进程补验
+
+**退回780的install12复制范围，严重程度高：新安装尚不可用。** 已读实际install12入口、完整日志及outer-exit=1。目标为批准的仓库外独占`SwarmCli/candidates/780a35e9`，私有ACL设置后，固定Node24.21.0的原cpSync在该目标根返回EIO/Access is denied，installer第57行抛出；后继闭包及T02分支没有完成。Reviewer只读观察源/目标为普通目录，目标所有者DW、DACL仅当前用户FullControl，根内尚无条目；没有据此推断失败原因。失败目录和全部原件保留，修复交原Worker，不能把此前780源码/build/许可的限定接受扩大为安装通过。
+
+原Run实际问询`msg_b953a635e20e`获`msg_c1e1351069ae`给出准确原件位置。260的provider-job-installed11/result.json、test.log、test-exit.txt已完整读取，真实退出0。Reviewer使用成熟stream-json逐条独立核实际身份/父链、两次完整空Job与两次旧身份退出、无关Job保持，命令`review-provider-job12.mjs <provider-job-installed11> <准确260> <仓库外260安装根>`实际0，原件`provider-job-installed11-independent.log`。四种模式的空Job间隔约98.51/94.30/88.17/80.86毫秒；late-child本次旧身份观察含第六PID44952。parent-loss旧Job保持unknown，原生Agent实际abort仍未验，模型调用0。
+
+dpapi-probe01的完整正文、日志和退出0已读：输入为该固定公开项目真实stats.go字节，CurrentUser实际加密/文件/解密往返及当前用户所有权/ACL通过；没有伪造项目token或调用人工入口。限定接受该公开文件与保护API范围，实际授权凭据交接仍待本人执行。cb0491e7的780限定接受hook已获主控`msg_8cf94974d080`完整读取回复，原Worker已通过`msg_e6a6376c9645`收到安装失败及保留要求。
