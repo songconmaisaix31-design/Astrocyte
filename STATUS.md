@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-系统于2026-10-21T12:44:59.5000000Z重启，原S65980及旧Agent进程退出，64505无监听，原库及旧running.json保留。当前Orca29972/runtime8362 ready，原Run generation2的同Task Worker ctx_0cf6ac28fd13与Reviewer ctx_066b3ab5f10c继续。准确ada4089de6a9fcaf72f3a91c0b0331ced11343d9的build08实际EXIT1，短目录实际生成三份分析XML，越过C1258，随后FTK1011无法创建链接跟踪日志。八次完整包失败，无可安装候选。用户已解除资源限制并要求加快修复；原Stage结束、源码/Git解除冻结，后继直接集中strict8GiB诊断、四native/全部中间路径检查与分模块修复，原Reviewer累计审查，再最终完整打包。精简依赖的实际范围和全部真实模型/同安装候选双Worker尚未验证；typecheck01原OOM失败保持，新额度无需再等2GiB回答。
+准确1209aee399a2c0b0677d7a4dbedc5f87880d14ab已普通push。strict06/07通过，四个原生模块在短目录真实编译通过；build09实际EXIT0，首次形成完整candidate08，VERSION与该源码一致。候选闭包、原生装载及空Job创建/查询/关闭通过；T02复制完成后装载因找不到picomatch失败，原pnpm Junction被展开成普通目录，改变了传递依赖解析位置，原Worker正在集中修安装复制语义。原失败安装及日志保留，Orca保全通过；认证、完整Job后代、精简依赖及同安装候选双Worker尚未通过。用户解除资源限制，普通修复直接累计处理。原S65980因系统重启退出，原库/配置和旧running.json保留；本机Orca29972/runtime8362保持ready，原Run generation2的同Task Worker与Reviewer继续。
 
 ## 当前主线与 M0
 
@@ -16,7 +16,7 @@
 | M0 任务分支 | `swa-m0-20261020@6eb7c7f640a9cf1b05ea365b3afdf6883cd01765`；独立 [COMMENT review 5581860208](https://github.com/songconmaisaix31-design/swarm-anything/pull/4#pullrequestreview-5581860208) 接受，原hook已由主控读取并回复；[PR #4](https://github.com/songconmaisaix31-design/swarm-anything/pull/4) 已实际合入产品分支，同源快进 main |
 | 主控内容来源 | `validation/v1-20261012@cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`；独有决定、归档、任务、实验入口与研究文档按[整合清单](docs/integration-audit-20261020.md)纳入 |
 | 已审调查记录集成 | `fac75c7f963d16c7f112e8e90ad30e36510d4738` 已独立接受并普通快进/push main；只新增准确30b来源调查、b112契约记录和34cfe独立报告共八份文档，各自接受范围保持，程序/依赖未变 |
-| 后继工作 | 同一Worker Task9f新ctx_0cf6ac28fd13继续原源码复用、构建修复、T12及通用终端输入。准确ada短日志目录及后置_CL_获d1d9ca31限定静态接受，真实build08已越过C1258而失败于FTK1011。用户新授权解除资源限制、集中前置检查并减少普通修复等待；原Worker直接迭代，Reviewer集中核准确累计差异，strict可用8GiB。全部中间路径及四native先分模块实编，实际依赖范围再由图/动态消费者和独立安装确认，最终同候选真实验收不降低 |
+| 后继工作 | 同一Worker Task9f新ctx_0cf6ac28fd13继续原源码复用、T12及通用终端输入。准确1209完整构建和候选闭包通过；T02已发现安装复制破坏pnpm解析图，须集中修复并验证新独立安装。新增依赖inventory已同步且check-dependencies实际0，具体新准确来源待累计提交；R06源码继续实施。八项纯JS仍仅待验证精简候选，动态依赖/许可、认证与同安装候选真实验收保持 |
 | 当前独立审查归属 | 同一Reviewer Task `task_1cd8014750f9`的Dispatch `ctx_066b3ab5f10c`、terminal `term_7f2903a4-3597-4407-9905-d65fc541c60e`，保持原树、分支及两报告写域。旧633在重启恢复时标记failed/abandoned，核boot证明退出后原生release；retry-of因Task实际ready被明确拒绝，核latest后在原ready Task正常启动并观察turn_started，失败保留。新会话已实际读brief并确认当前首版审查；原M0和7c既有结论复用，当前核新真实锁与源码复用差异 |
 | 成果路径 F16 | ebf55已将原生runShow参数改为真实schema要求的id，准确da2e报告局部静态接受，主控已完整读取并回复。T07/T13真实成果取得和导出仍未执行，参数修正不等于完整成果验收 |
 | 后续输入 F17 | ebf55原参数修正局部接受保留；当前真实正文方案按准确d441获73946fd2技术接受，SPEC §21.1.2已定稿，交同一Worker实施。固定child R/native、原host队列或实际PTY普通输入、当前异步授权、同session/fence及效果后unknown保全均须真实验证，完整正文和后续成果仍未通过 |
@@ -35,7 +35,7 @@
 | 范围 | 记录的结果 |
 | --- | --- |
 | 当前服务与资源 | 系统boot晚于原S创建和旧Agent心跳，原S65980已退出、64505无监听，旧running.json的health只代表restore18历史结果。当前Orca app29972/runtime8362 ready，CLI同612b，未停止或修改Orca。build08实际外层退出1及UTC13:38:59.1407035/13:39:15.3641194两次所属为空后结束原Stage、解除源码冻结。用户解除资源限制，后继无需逐项资源授窗，当前规则见RESOURCES；已运行检查保持原参数与结果。旧静态ctxdc两次release仍release_unknown，保留未知；新Worker资源独立。旧c8不能据旧health宣称服务已恢复 |
-| 最近完整构建 | 准确ada仅一次build08，exec96546实际EXIT1、child1/resource0/outer1。324依赖部署、21bundle、三官方Node输入HTTP200及原hash/exe/v24.21.0通过；Python3.13.13、VS2022、UTF-8及后置短分析目录实际进入ConPTY三源编译，各生成59字节XML。C1258未再出现，链接创建lib/exp后FTK1011无法写原长路径跟踪日志；四原生模块、Go、VERSION和swa.exe未完成。两次所属为空后结束，candidate07及失败日志保留，不可安装 |
+| 最近完整构建与闭包 | 准确1209的build09实际EXIT0，复用三项按原SHA重新核验的固定Node输入，四native、swa/server及故障程序构建完成，candidate08/VERSION=1209。模块实际中间路径最长229字符，原分析/跟踪保持；生产包只复制真实.node与原slotSourceFiles支持资源。check-swa-runtime实际0，34010路径均在候选内，Node24.21.0/Job API1及空Job创建查询关闭通过。job_descendant_test、native_authentication与functional_acceptance仍NOT_RUN，安装及真实双Worker不据此通过 |
 | 新开发依赖实际安装 | 准确7c仅一次dependencies04，pnpm11.27.0真实lock-only/frozen ignore-scripts分别7.9秒/2.1秒，外层及四子退出均0；七项已审声明、真实锁与安装一致，原peer/deprecated记录保持。两资源门禁CPU11.3/8.0及14.6/23.2%、内存均超过4GiB、间隔2.501201/2.501621秒。两次CIM所属为空，锁与报告为准确3ba76a85；没有运行Program、native或模型 |
 | 已有Python与首次C++编译实际结果 | 准确b75仅一次build-06，实际exec65865及内外退出均1；Python预检/实际node-gyp选择为C:/Python313/python.exe 3.13.13、VS2022 17.14.37710.0。324项部署、21bundle与三官方Node输入/原校验完成，VoidTaskResult不再输出；首node-pty/conpty在swa_provider_job.h:17报C2059/C2143及C4819/936，具体编译原因由同Worker核查。其余native/Go/VERSION未完成，candidate05保留不可安装；全部真实功能仍未验 |
 | 固定Node与导入收窄实际结果 | 准确2c仅一次build-05，三项HTTP200及原archive/header/lib SHA、exe大小/SHA/v24.21.0通过。21metafile中host完整RPC index已不存在，正输入5650/实际20957928字节；只确认这次静态变化，其他依赖/native/dynamic/assets仍未验。首node-pty/node-gyp配置未发现Python而失败，内外退出均1，未完成native/Go/VERSION。已有C:/Python313来源及唯一force选择由同Worker静态修复，不装新Python或改PATH；candidate04保留不可安装 |
