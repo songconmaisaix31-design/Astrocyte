@@ -1513,3 +1513,15 @@ typecheck01同样以准确3ba运行，完整日志明确为Reached heap limit，
 本机没有Firecrawl命令，未安装依赖；网页工具初次无view直读失败，随后通过同一Microsoft官方view=msvc-170全文读取。未执行候选、编译、分析引擎或模型，没有新增运行窗口。严格类型仍为OOM失败；全部恢复、通用terminal、安装及同候选双Worker验收继续未通过。
 
 上述build07退回及窄技术范围hook `msg_6067337645ec` 获主控 `msg_ae1bd22a9e49` 明确完整读取c20cd8ba新增和实际原件的回复，实际唤起确认。下一构建须使用独占candidate07/build08和新runner文件/hash，原05b0硬编码的candidate06已消费，不能覆盖旧原件；当前没有新运行窗口。
+
+## 准确e7fd948a的日志目录与参数覆盖
+
+结论：**准确 `e7fd948ad9214ffee033eb4701adad776bda27a4` 的短目录、转义及新runner范围静态检查通过；日志选项最终覆盖证据不足，后继准确修正另审。** 已完整读取相对c42的四文件差异。原native循环为四包分别创建现有work/a0—a3，独占mkdir及realpath/lstat核查均在原gyp调用前；1024字符限制、实际非空ConPTY日志检查和Go前恢复编译环境保持fast-fail，没有关闭分析或修改ABI、依赖、源码及全局配置。
+
+成熟TypeScript6.0.3 AST独立解析原脚本，日志参数字符串末尾的真实字符为 `[92,92,34]`，即两个反斜线及闭引号；该检查未创建Program或执行脚本。实际node-pty项目含三源，其他三个已部署包的binding已读，process-tree六源及两个安全模块各自addon.cc与附加hook在各包内没有同名；每包独立日志目录保留包间归属。实际产生日志仍待复编。
+
+`CL`在命令前置，当前安装 `Microsoft.CppCommon.targets` 的721/865/1052行把PREfastLog传给CL任务，`2052/cl.xml`也映射该日志选项。旧tlog仅BOM、项目未显式指定该属性，尚不能证明后继CL任务不会给出日志路径。[Microsoft选项顺序](https://learn.microsoft.com/en-us/cpp/build/reference/order-of-cl-options?view=msvc-170)规定冲突采用最右选项；结合已读CL/_CL_顺序，当前前置CL中的日志选项不能保证最终覆盖。这是静态可见的覆盖缺证，没有宣称已观察到真实覆盖失败。已通过 `msg_c25d3d942674` 交原Worker，仅将日志参数移到产品自有后置_CL_、保留CL=/utf-8及原宿主变量清理，并在Go前删除该后置变量；原引号、目录和真实日志检查继续保留。
+
+新 `next-window-05.ps1` 已完整读取，实际SHA256为 `7a375ffec6f7ff532abbdde3926736f5d460233f37568ae08fea853876443131`，PowerShell Parser错误0。与当前旧04相比只改变candidate06→candidate07常量；旧04与build07执行snapshot当前均为原05b0。candidate07及build08本次只读观察尚不存在。来源、干净分支、独占证据、资源门限、私有CAS及各Stage额度保持，不执行脚本；后继正式窗口须使用准确新源码和本次新runner。
+
+实际 `node --max-old-space-size=512 .verification/check-analysis-option.mjs e7fd948ad9214ffee033eb4701adad776bda27a4` EXIT0；`check-revision.ps1`准确c42→e7 EXIT0，三Markdown/7本地链接及Git空白通过，原锚点保持；全部BelowNormal、Node512MiB。未执行CL、Program、编译、生成、候选、模型或安装，C1258及严格类型失败均未关闭。

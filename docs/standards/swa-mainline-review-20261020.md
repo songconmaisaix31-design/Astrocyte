@@ -639,3 +639,5 @@ c42生成接受hook `msg_86b971cb67b6` 获主控 `msg_ca043545c824` 明确完整
 `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 882d1582995cd0820cc7aaad71d67d17c848ded5 -Candidate bdbe7498` EXIT0，唯一前缀解析为上述准确SHA；五Markdown、89本地链接及Git空白通过，无锚点/HTML待核，marked18.1.0、BelowNormal、Node512MiB。20项外部引用沿其原来源，本轮没有逐一重新联网读取。本Reviewer没有执行重操作，也没有将本文档接受作为原修复或构建的新前置。
 
 build07退回及短日志技术范围hook `msg_6067337645ec` 已获主控 `msg_ae1bd22a9e49` 明确完整读取c20cd8ba新增和准确c42原件的回复，实际唤起确认。后继继续审核原Worker准确实现。
+
+bdbe限定管理接受hook `msg_1dc2fbfa0ebe` 已获主控 `msg_194ecdc329b5` 完整读取准确五文档差异和07904266新增的回复，实际唤起确认。原Worker准确e7的分析目录、引号与新runner已有独立静态检查，日志参数最终覆盖仍证据不足，具体范围记于headless报告；当前不授构建窗口。
