@@ -13,7 +13,7 @@
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
 | 原独立Reviewer | `task_9ae5a1337e1d / ctx_5f4446e340a0`，沿同一模块接续 |
-| 实施状态 | `IMPLEMENTING / OBSERVE_ACCEPTED / NATIVE_MODEL_VALIDATION_NOT_RUN`；准确结果见报告§40 |
+| 实施状态 | `OBSERVE_ACCEPTED / CUSTOM_POLICY_ACCEPTED / INSTALLATION_PARTIAL / ACTUAL_CREDENTIAL_SOURCE_REQUIRED`；准确结果见报告§40—42 |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
@@ -193,3 +193,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 用户经主控msg_a536f02a7294明确APPROVE OBSERVE，并允许StepFun及其他Agent测试、禁止Aliyun key。主控msg_7ac55c65dd32采用当前真实用户会话委托执行已接受的原API准备；原23人工入口/consumer及FD5身份检查字节保持。原Reviewer准确接受4B527993委托计划及32857112零副作用恢复补充后，delegated-observe26实际0：公开项目46ceef7b-0be3-4a4b-8e74-575fd327b31c、仅observe/r2的真实Grant及CurrentUser DPAPI、原consumer23实际0、status/capabilities各0、五项实际403、三库无任务或模型新增和原Orca保全成立。原24表名及25实际Origin残留失败完整保留；没有重复原未知mutation。原Reviewermsg_7b85c8d32daa已独立运行原consumer23及只读SQLite，限定接受该授权消费范围。实际原生模型、执行Grant、T03/T12和同安装双Worker继续未验；当前Pi-only native合同阻断其他已安装Agent选择，继续同一Worker补齐原生合同和真实验收，不重复已通过的Observe。
 
 主控采用原生Pi custom StepFun窄修，原Reviewermsg_d0aa56dfb57a独立接受准确4E698ACC计划及实际API身份补充。现已只修改native-pi-policy.ts：真实models.json/唯一所选model、原composer空base/stored literal APIkey、直接StepFun HTTPS/v1/openai-completions及同版真实handler；compat/lazy/API源纳入原读取前后和效果前身份检查，原DTO/私有账户/无工具/Job/输入输出合同保持。check-custom28的strict和architecture均0；真实空auth负向29为0、无private账户或CLI/模型，首次28无单独模型定义的检查失败保留。详细范围见报告§41，当前真实StepFun源和正向未取得；准确新候选、安装及完整模型/双Worker验收继续同Worker执行。
+
+准确f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa已push并获原Reviewermsg_cfe3b755c511限定接受程序/实际空auth范围。build16、完整410059866字节ZIP正常解压29各0；仓库外install29实际6，复制/28233路径/native/空Job及端口、保护根、四junction拒绝通过，真实消费者未验。check-installed29同一安装的lifecycle四模式130/130/0/6和C08严格7/runtime_error各0，两个真实native缺项由两次完整CIM缺席确认，原Orca及保留的95ef/5187前中后保持。结果交原Reviewer，详情见报告§42。实际StepFun配置来源尚未取得，主控已向用户询问位置；真实正向、模型/执行Grant、剩余T03/T12和同安装双Worker继续未验，已按msg_a14a1c5b02fb报告当前真实阻塞，恢复动作在自有worker-handoff29.md。

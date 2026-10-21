@@ -1417,3 +1417,19 @@ native-pi-policy现沿实际1.0.1 composeModelProvider(providerId, undefined, Mo
 StepFun [官方全球页面](https://platform.stepfun.ai/)实际给出OpenAI chat.completions及api.stepfun.ai/v1；国内首页本次直接读取超时，主控另有实际api.stepfun.com/v1核对。端点、模型和认证最终以用户明确的真实来源为准，不自动更换。
 
 check-custom28.ps1实际退出0，strict TypeScript6.0.3/noEmit/skipLibCheck=false及architecture各0，47个Go package边界通过；原件custom28-checks保存准确8cd402ed及实际程序diff。empty-native-account28实际1，检查发现真实默认models.json没有单独models定义，尚未进入policy；脚本和日志保持。empty-native-account29实际0，直接从真实1.0.1 catalog取得openai/gpt-4，仅作缺凭据负向输入，无模型调用或实际执行选择。当前真实默认auth为{}，实际修改后policy在native_api_key_source_unreviewed立即拒绝，原三文件stat保持，真实项目私有账户前后不存在，没有启动CLI或创建Worker。源码和实际证据分别在原29入口、日志及result.json。StepFun真实正向、故障副本、新准确候选和同安装完整验收继续；未取得真实来源前不登记模型或双Worker通过。
+
+## 42. 准确f2ab发行安装与当前真实阻塞
+
+准确程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa已普通push。原Reviewermsg_cfe3b755c511完整核准确程序/两文档、实际1.0.1来源、strict/architecture和真实空auth负向29，限定接受该范围；29在auth入口返回，没有执行新增custom正向。custom/builtin正向回归、StepFun真实认证/模型及故障副本保持未验。
+
+build16.ps1实际0，从准确干净f2ab形成dist/swa-cli-install-20261020-15，21份成品与28233路径闭包通过。四native逐项核原源码/依赖/Node/编译条件和build11真实证据后，从原507候选普通复用，未重编不变native。extract-package29.ps1实际0，以成熟.NET ZipFile生成完整410059866字节swa-cli-f2ab4fd9.zip，普通解压至仓库外f2ab4fd9-package29；原Node24.21.0 pin保持，实际Node及其子进程同用户Medium8192。
+
+install29.ps1内外实际6：仓库外f2ab4fd9-install29复制/版本、native和空Job、28233路径闭包、实际端口占用EXIT5、保护目录及四种junction EXIT3、目标字节/ACL不变和原Orca保全通过；T03/T13真实消费者未运行，未登记完整安装通过。原件位于case29/.verification/swa-cli-headless/t02-65bca04b-93d3-4f21-a217-01f70ee1b07c，原安装和失败记录保持。
+
+check-installed29.ps1实际0，沿原已审run-lifecycle20.ps1及run-http-idle16.ps1，在同一f2ab安装和新独占数据根执行。lifecycle29四模式全部OBSERVED，实际退出130/130/0/6；原native两次/独立完整CIM两次、完整Job及唯一精确非空runtime C09诊断通过，remainingCases为空。stdout模式保留两个真实native创建时间缺项行48696与33604，没有补写身份；两次完整CIM各416行、PID字段完整、实际目标缺席，确认原known退出和unknown缺席。原件为lifecycle29-outer/cases，保存真实执行脚本。
+
+http-idle29实际0：真实空闲、三项拒绝、五库完整性/外键、实际Medium Token、唯一所属HTTP同句柄终止、实际旧身份两次退出和完整Job两次仅余serve通过。服务实际7、唯一readiness无尾包，stderr精确runtime_error；没有创建human session或调用模型。两项各自原Orca前后保全通过，另外原FD5检查在本轮前/中/后确认95ef Observe服务及5187所属入口仍保持；没有关闭或替换原服务。新检查服务已正常结束，无本轮待处理服务或原生Worker。
+
+准确f2ab安装结果已通过msg_4c593230d87c交原Reviewer独立核验。当前真实阻塞经msg_a14a1c5b02fb报告主控：用户已允许Observe、StepFun及其他Agent测试，但所核Pi默认auth为空、Pi/Codex/OpenCode来源未提供StepFun，主控补核Process/User/Machine对应环境名均无配置，实际Grok token已过期。主控已询问用户实际配置所在Agent或路径，尚未取得可用于原生custom正向的真实来源；不请求或输出密钥正文，不使用Aliyun，不伪造认证或协议，不修改默认账号。
+
+执行Grant/当前所选Agent及model_target、真实custom/builtin正向和故障副本、模型、T03/T07/T09/T11/T12/T13剩余场景、同一最终安装双Worker实际执行重叠/指定停止A/B继续/完整成果仍未验。当前可恢复入口、准确候选和原服务身份在自有worker-handoff29.md；取得真实来源后由同一Worker按已审计划继续，不能将本阶段或仅Observe接受登记为首版完成。
