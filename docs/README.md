@@ -22,6 +22,7 @@
 | 范围 | 执行文件 | 相关依据 |
 | --- | --- | --- |
 | 当前首版可控 Swarm CLI | [首版任务](../tasks/swa-cli-v1-20261020.md) | [最新决定与待答边界](QUESTIONS.md)、[当前状态](../STATUS.md) |
+| REA 仓库格式参考 | [来源与目录对应](standards/swa-repository-format-20261021.md) | [格式范围待答项](QUESTIONS.md) |
 | SWA M0—M6 主线 | [总任务](../tasks/swa-mainline-20261020.md)、[M0](../tasks/swa-m0-20261020.md) | [规划原文](META_PLAN.md)、[M0 来源与验证](standards/swa-mainline-m0-20261020.md) |
 | 当前交付候选与产品主线 | [交付任务](../tasks/delivery-candidate-20261020.md) | [准确32ab产品报告](https://github.com/songconmaisaix31-design/Astrocyte/blob/32ab1eec808a5848aabad40f11133735a1214e55/docs/standards/delivery-candidate-20261020.md)、[独立CR](https://github.com/songconmaisaix31-design/Astrocyte/pull/2#pullrequestreview-5577111605) |
 | 全仓文档检查与归档（已完成） | [任务](../tasks/documentation-conflicts-20261020.md) | [逐份处置报告](documentation-audit-20261020.md)、[旧执行入口归档](archive/superseded-20261020/README.md) |

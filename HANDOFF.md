@@ -1,5 +1,7 @@
 # SWA 主线接续
 
+2026-10-21系统于UTC12:44:59.500重启，原S65980及旧Worker/Reviewer进程已经退出；当前64505无监听，原库、配置及旧running.json保留。当前Orca app29972/runtime8362 ready，CLI仍612b，未修改或停止。主控真实term_84161ef8-54be-49cd-b699-145ed804f645已将原Run切至generation2。原Worker Task9f经abandon旧0d及retry-of恢复到ctx_0cf6ac28fd13/term_9672e756-3dbd-405e-a0fe-5a4d1ed34f10；原Reviewer Task1cd在旧633已failed/released后从原ready Task恢复到ctx_066b3ab5f10c/term_7f2903a4-3597-4407-9905-d65fc541c60e，同原树/分支/写域，两会话均实际读取brief。接续文件为根忽略目录`.verification/swa-reuse-recovery-20261021.md`。用户要求直接复用Orca CLI源码，沿固定b2879bd5与同身份REA证据核重复适配。准确7c/runner05b0仅一次dependencies04实际exec2798最终0，两资源/两子退出0及两次所属为空；真实锁与报告已普通push为准确3ba76a85，窗口已收回。后继严格类型/生成/build须另授，当前尚无可安装候选。
+
 先读 [STATUS](STATUS.md)、[AGENTS](AGENTS.md)、[代码规范](docs/CODING.md) 和[资源限制](docs/RESOURCES.md)，再读 [META_PLAN](docs/META_PLAN.md)、[总任务](tasks/swa-mainline-20261020.md)、[M0](tasks/swa-m0-20261020.md)、具体规格与[用户决定](docs/QUESTIONS.md)。开发者从 [CONTRIBUTING](CONTRIBUTING.md) 进入，完整导航见[文档目录](docs/README.md)。
 
 用户以 re.md v2.1 重构主线。M0 从产品 `32ab1eec808a5848aabad40f11133735a1214e55` 接续，仅整合文档；主控独有决定、研究、实验入口和归档来自准确 `cf22f118193d5dcc3f2d2ec436bd4f06e9a22c9b`。程序来源 S、已恢复服务和 M1 实际结果统一见 STATUS。处理运行服务前重新核对真实 PID、路径、创建时间、所属终端和唯一监听，遵守原库保全及授权。
@@ -14,17 +16,17 @@ M0 准确 `6eb7c7f640a9cf1b05ea365b3afdf6883cd01765` 已获独立接受，PR #4 
 
 独立发现与稳定AgentSelection按准确740/c3fca056接受，发现和选择不依赖原Orca正在运行；准确d441的N04/N05输入与模式技术计划已获73946fd2接受，准确079的T12计划已获7c6d3973接受。主控完整读取相应准确差异和报告并回复原hooks，技术契约定稿于SPEC §21.1.1—§21.1.3，同一Worker继续实现。工具范围待用户回答，技术计划接受不授予实际启动或模型窗口。主控独立9c四包Go编译及三个传输前函数已实际通过，原Worker未运行旧撤销指令；该检查不代替Worker自测或安装验收。当前原S及控制脚本身份、唯一窗口和实际限制统一见STATUS。
 
-用户补充“将orca cli逆向后参考”，实际CLI PE/Rust及20JS的REA结果、语义和依赖取舍见[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)，原生函数未反编译及部分覆盖保持。实际21metafile确认完整RPC index已移除；完整包仍六次失败，无可安装候选。准确3590bf11已提交原生Pi账号/CLI/Go批准/结构化输入与成果阶段，主控独立四包Go编译及三个传输前函数实际通过；独立CR已核N14私有models存在状态、N15等待后来源复核问题，同Worker返修，完整CR继续。T12严格caller/recover/后台Job及通用终端输入继续由同Worker负责，不等待旧冻结；源码技术契约按SPEC21.1.1—21.1.5。当前原S36744来自restore-17，创建UTC20:17:53.696819/epoch1792527473.6968188，原库和配置保持；c8未改，下次prepare取restore-17/restored.json并新鲜准入。重窗口已收回，真实原生/成果/安装双Worker仍未验。
+用户要求继续构建、参考REA仓库格式并直接复用Orca CLI源码。[CLI参考](docs/standards/swa-orca-cli-reference-20261021.md)保留实际PE/Rust及20JS的REA结果，原生函数未反编译及部分覆盖保持；[仓库格式](docs/standards/swa-repository-format-20261021.md)记录官方来源及现有路径对应，具体格式范围待答。原Worker准确7c812a1a已普通push，N14—N26已定位修正及类型声明各获限定静态/技术接受，T12实际覆盖、通用终端、类型/生成/native及同安装候选双Worker仍未验。此前准确3590四包Go和三个传输前函数通过，不能外推到后继源码；六次完整包失败，无可安装候选。重启前stop18、prepare19、readiness20及prepare20的资源拒绝和restore18历史均在首版任务保留；当前服务和唯一窗口只按STATUS及本页接续段执行。
 
 首版事实源为 [CLI 任务](tasks/swa-cli-v1-20261020.md)。用户已确认固定抽取范围、Orca 无界面执行与控制端身份/CLI规则、多 Worker、失败与资源、安装包的顺序；最终使用安装后的同一候选完成一次至少两个真实 Worker 的任务，验证并发、指定停止及成果获取。MCP、网页重构、完整旧 S3 和全部历史分支清理进入后续任务，旧 S3 保留独立记录。用户要求不妨碍本机Orca CLI并集成产品，产品采用独立后台，准确396e方案及测试计划已接受，SPEC §21.1明确接口与隔离边界。准确30b来源事实及此前提案保留，其Mission/Claim旧待决项按适用任务处理。程序已开始静态实现，CLI动态验收未通过。
 
 M1 由 `task_ceb3b3bb76be / ctx_8d6a6e1c0145` 在 `swa-m1-contracts-implementation-20261020` 工作树及同名分支接续，实际客户端为 Orca / Codex `gpt-6.1-sol`。准确 `987811f417e92cd6f15961e60c279f616e3b21a8` 原冻结安装及未补丁的完整契约命令均 EXIT0，历史崩溃本次未复现。依已接受计划停止补丁实施；程序/依赖未改，T02—T08 未执行，因果证据不足。主控已完成 T09并曾恢复同一 S、原库和原配置，记录PID52040；后继首版窗口及当前服务见STATUS。最终记录 `b112ab9e03d9ea82247e73b5cb578529ca529f9d` 已独立接受并普通push，原hook由主控实际读取回复；本次调查Task已结算、终端released，完整修复保持未接受。
 
-无界面执行由 `task_9f062888e786 / ctx_0d069056baff` 沿同一真实Codex会话、`swa-cli-headless-20261020` 工作树/分支继续负责。准确396e方案及T00—T15已独立接受并普通纳入main，原hook已实际读取回复；SPEC §21.1及首版任务明确接口边界、逐文件程序写域和迁移028。阶段源码、远端回执、当前服务及窗口统一见STATUS，准确代码由独立Reviewer接续CR。原静态Task450/ctxdc资源原生retain以保留正在使用的同一终端，整体任务结算后明确释放。历次保全/停止/恢复及Worker依赖、生成原件按首版任务保留，秘密环境与真实数据库不进入Git或安装包。CLI的§7.5退出处理、真实驱动和T12接续契约仍由同一Worker负责，T11范围待用户回答；首版功能及安装双Worker验收未通过。
+无界面执行由 `task_9f062888e786 / ctx_0cf6ac28fd13` 沿原`swa-cli-headless-20261020` 工作树/分支继续负责，旧Codex进程的退出由系统boot证明。准确396e方案及T00—T15已独立接受并纳入main，原hook已实际读取回复；SPEC §21.1及首版任务明确接口、逐文件写域和迁移028。初始Task的两文档写域由这些后继完整实施授权接续，新Worker须按首版任务执行代码、测试、文档及返修。阶段源码、远端回执及窗口见STATUS，准确代码由原Reviewer Task接续。原静态Task450/ctxdc的旧终端资源待按其准确归属结算，不能操作新Worker句柄。原件和真实数据库不进入Git或安装包。CLI退出处理、真实驱动及T12由同一Worker负责，T11待答；首版功能及安装双Worker仍未通过。
 
 已有产品原件位于原 Worker 的 `.verification/delivery-candidate-20261020/`；Windows 目录为 `dist/delivery-candidate-20261020/`。原库一致备份为该原件根 `original-01/original.sqlite`；保全、恢复条件与实际命令在[交付报告](docs/standards/delivery-candidate-20261020.md)。备份包含真实数据，仅用于本地获准核查，不能进入 Git 或发布包。
 
-当前执行源码、构建修正和技术计划的准确提交及审查范围统一见STATUS与首版任务。C01—C09/helper、T12及F16/F17真实验证继续由同一Worker负责；已定稿接口按SPEC执行。独立Reviewer同一Task已从实际退出的旧ctx980经原生retry-of恢复到`ctx_6339d8beeb73 / term_9e9193d2-733a-4ab1-8220-22a5dc640c0f`，保持原审查树、分支和两报告写域；新会话已实际读到接续说明，后续邮件只发新Dispatch。完整接续brief在根忽略目录`.verification/swa-review-recovery-20261020.md`，旧准确报告及恢复事实保持，主控须完整读取每项正式报告再回复原hook。
+当前执行源码、构建修正和技术计划的准确提交及审查范围见STATUS与首版任务。C01—C09/helper、T12及F16/F17真实验证由同一Worker负责，已定稿接口按SPEC执行。独立Reviewer当前为`ctx_066b3ab5f10c / term_7f2903a4-3597-4407-9905-d65fc541c60e`，保持原审查树、分支和两报告写域，后续邮件只发新Dispatch。本次brief为根忽略目录`.verification/swa-reuse-recovery-20261021.md`；旧review-recovery记录及全部准确报告保留。主控须读取实际源码与正式报告后确认接受范围，重启前局部结论不代替新源码或真实运行验收。
 
 构建接续：build-01 ENOENT、build-02固定Node归档TimeoutError、build-03首bundle缺失导入及build-04 Node TLS前重置均EXIT1，原件与部分candidate01/02/03保留，无可用候选。两必要依赖已真实安装并生成锁，当前21bundle/metafile为准确449；实际图额外发现SSH legacy-relay server/call-limits两处完整方法表直接导入，按实际消费者继续收窄，不按包名删除。限定官方HEAD200不证明完整下载，Node/native/完整类型构建及安装仍未验。首装T02/T03须从新DataRoot及已安装资产完成真实human session/CSRF、项目设置、Grant/token用户流程，USAGE完整操作已局部静态接受，不代用户批准。准确控制脚本、当前服务与保全目录统一读取STATUS；每次只运行明确交付Stage，结束并核所属退出后恢复同一S/原库/环境/配置，不以备份覆盖原库。
 
