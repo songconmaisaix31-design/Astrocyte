@@ -2,18 +2,28 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { access, copyFile, lstat, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { root, findGo } from './process.mjs'
 import { NODE_RUNTIME_PIN, NODE_RUNTIME_ASSETS, nodeRuntimeReleaseUrl } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 import { buildSWARuntime } from './build-swa-runtime.mjs'
-import { buildNativePackage, nativePackages } from './build-swa-native.mjs'
+import { buildNativePackage, nativePackages, prepareNativeReuse, reuseNativePackage } from './build-swa-native.mjs'
 
-const { values } = parseArgs({ options: { output: { type: 'string' }, 'node-inputs': { type: 'string' } }, allowPositionals: false })
+const { values } = parseArgs({ options: { output: { type: 'string' }, 'node-inputs': { type: 'string' }, 'native-source': { type: 'string' }, 'native-work': { type: 'string' }, 'native-evidence': { type: 'string' } }, allowPositionals: false })
+const reuseArguments = ['native-source', 'native-work', 'native-evidence'].filter(key => values[key])
+if (reuseArguments.length !== 0 && reuseArguments.length !== 3) throw new Error('Native reuse requires the explicit candidate, original work and successful evidence together')
 if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('This candidate targets Windows x64')
 if (!values.output || !isAbsolute(values.output)) throw new Error('An explicit absolute --output inside dist is required')
 const output = resolve(values.output), beneath = relative(join(root, 'dist'), output)
 if (!beneath || beneath === '..' || beneath.startsWith('..\\') || isAbsolute(beneath)) throw new Error('Choose a new candidate directory inside dist')
+if (values['native-source']) {
+  const source = await realpath(values['native-source']), parent = await realpath(dirname(output)), target = join(parent, basename(output))
+  if (!isAbsolute(values['native-source']) || source.toLowerCase() !== resolve(values['native-source']).toLowerCase() || (await lstat(values['native-source'])).isSymbolicLink()) throw new Error('The native source candidate is redirected')
+  for (const [a, b] of [[source, target], [target, source]]) {
+    const within = relative(a, b)
+    if (!within || !within.startsWith('..') && !isAbsolute(within)) throw new Error('The native source and new candidate must not overlap')
+  }
+}
 const pnpm = process.env.SWA_PNPM_CLI
 if (!pnpm || !isAbsolute(pnpm)) throw new Error('SWA_PNPM_CLI must identify the installed pinned pnpm JavaScript entry')
 await access(pnpm)
@@ -104,8 +114,12 @@ environment.npm_config_devdir = join(work, 'gyp-cache')
 for (const key of Object.keys(environment)) if (/^(?:CL|_CL_)$/i.test(key)) delete environment[key]
 environment.CL = '/utf-8'
 console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL }))
+const reuse = values['native-source'] ? await prepareNativeReuse({ candidate: values['native-source'], work: values['native-work'], evidence: values['native-evidence'], node, python, gyp }) : null
+const built = [], copied = []
 for (const [index, name] of nativePackages.entries()) {
+  if (reuse && await reuseNativePackage({ name, index, runtime, reuse })) { copied.push(name); continue }
   await buildNativePackage({ name, index, runtime, work, node, nodeDir, python, gyp, environment })
+  built.push(name)
 }
 delete environment._CL_
 const go = await findGo()
@@ -118,4 +132,5 @@ run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'controller-fault.exe
 run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'cli-fault-control.exe'), './tests/swa-cli-headless/cli-fault-control'])
 for (const [source, target] of [['LICENSE', 'LICENSE'], ['THIRD_PARTY_SWA.md', 'THIRD_PARTY_SWA.md'], ['third_party/orca-v1.4.230/LICENSE', 'ORCA_LICENSE'], ['scripts/install-swa.ps1', 'install-swa.ps1'], ['runtime/swa-orca/USAGE.md', 'USAGE.md']]) await copyFile(join(root, source), join(output, target))
 await writeFile(join(output, 'VERSION'), revision + '\n', { flag: 'wx' })
-console.log(JSON.stringify({ source_revision: revision, candidate: output, node: NODE_RUNTIME_PIN.version, native_modules_built: ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry'] }))
+run(node, [join(root, 'scripts', 'check-swa-runtime.mjs'), '--candidate', output])
+console.log(JSON.stringify({ source_revision: revision, candidate: output, node: NODE_RUNTIME_PIN.version, native_modules_built: built, native_modules_copied: copied }))
