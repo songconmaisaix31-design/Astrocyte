@@ -4,16 +4,19 @@ Windows x64 包包含`swa.exe`、`server.exe`、固定Node24.21.0、私有Orca�
 
 ## 安装
 
-使用PowerShell7.2以上，明确选择已有候选目录、尚不存在的安装目录和本机Orca及账户保护目录。安装目标父目录必须存在。下列变量由使用者设置为实际绝对路径，端口由使用者明确选择；命令不会修改PATH或注册后台服务。
+使用PowerShell7.2以上，明确选择实际发行ZIP、尚不存在的解压目录与安装目录，以及本机Orca及账户保护目录。安装目标父目录必须存在。下列变量由使用者设置为实际绝对路径，端口由使用者明确选择；在同一个PowerShell7会话中依次运行以下命令。
 
 ```powershell
-pwsh -NoProfile -File "$packageRoot/install-swa.ps1" -PackageRoot $packageRoot -InstallRoot $installRoot -ProtectedRoots $protectedRoots
+if (Test-Path -LiteralPath $packageRoot) { throw '解压目标必须不存在' }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[IO.Compression.ZipFile]::ExtractToDirectory($packageArchive, $packageRoot, $false)
+& (Join-Path $packageRoot 'install-swa.ps1') -PackageRoot $packageRoot -InstallRoot $installRoot -ProtectedRoots $protectedRoots
 $swa = Join-Path $installRoot 'swa.exe'
 & $swa --version
 & $swa --help
 ```
 
-`$protectedRoots`是字符串数组，包含本机Orca安装目录、用户数据/profile目录及实际账户配置目录。安装目录与候选目录均须和保护目录互不包含；途经reparse point的路径会被拒绝。安装仅创建明确目标并设置当前用户私有ACL，已有目标不会覆盖。
+`$packageArchive`是实际发行ZIP的绝对文件路径，`$packageRoot`是本次普通解压所得的候选目录。`$protectedRoots`是字符串数组，包含本机Orca安装目录、用户数据/profile目录及实际账户配置目录。安装目录与候选目录均须和保护目录互不包含；途经reparse point的路径会被拒绝。安装仅创建明确目标并设置当前用户私有ACL，已有目标不会覆盖，不修改PATH或注册后台服务。
 
 ## 启动私有服务
 
@@ -23,7 +26,7 @@ $swa = Join-Path $installRoot 'swa.exe'
 & $swa serve --data-dir $dataRoot --port $port --protected-roots ($protectedRoots -join ';') --json
 ```
 
-该命令在前台持有所属stdin，输出实际Node/HTTP readiness后持续运行。关闭该stdin或Ctrl+C请求关闭本次所属服务；不要把stdin预先重定向为空。服务监听显式`127.0.0.1`端口，冲突返回退出码5。缺少资源额度、依赖或所属证据会明确拒绝；不会另选端口或启动本机Orca。进程、SQLite、profile、IPC、会话、缓存和临时目录均归本次私有根。
+该命令在前台持有所属stdin，输出实际Node/HTTP readiness后持续运行。关闭该stdin或Ctrl+C请求关闭本次所属服务；不要把stdin预先重定向为空。服务监听显式`127.0.0.1`端口，冲突返回退出码5。依赖或所属证据不足会明确拒绝；不会另选端口或启动本机Orca。进程、SQLite、profile、IPC、会话、缓存和临时目录均归本次私有根。
 
 ## 项目授权与调用身份
 

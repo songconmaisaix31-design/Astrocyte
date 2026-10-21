@@ -51,11 +51,23 @@ if ($Case -eq 'T03') {
     if ($LASTEXITCODE -ne 0 -or $swaSourceDirty) { throw '真实T03需要准确干净源码' }
     $swaCompiledRevision = (Get-Content -LiteralPath (Join-Path $GoTestDirectory 'SOURCE') -Raw).Trim()
     $swaInstalledRevision = (Get-Content -LiteralPath (Join-Path $InstallRoot 'VERSION') -Raw).Trim()
-    if ($swaSourceRevision -cne $swaCompiledRevision -or $swaSourceRevision -cne $swaInstalledRevision) { throw '候选VERSION、编译SOURCE与准确源码必须相同' }
+    foreach ($swaRevision in @($swaCompiledRevision,$swaInstalledRevision)) {
+        if ($swaRevision -notmatch '^[0-9a-f]{40}$') { throw '原编译或实际安装缺少准确源码版本' }
+        & git -C $swaSourceRoot cat-file -e ($swaRevision + '^{commit}')
+        if ($LASTEXITCODE -ne 0) { throw '原编译或实际安装源码不是当前仓库中的真实提交' }
+    }
+    $swaGoInputs = @('cmd','internal','migrations','contracts','go.mod','go.sum','web/src/api/schema.d.ts')
+    foreach ($swaRevision in @($swaSourceRevision,$swaInstalledRevision)) {
+        & git -C $swaSourceRoot diff --quiet --exit-code $swaCompiledRevision $swaRevision -- @swaGoInputs
+        if ($LASTEXITCODE -ne 0) { throw '真实Go检查的程序、依赖、迁移或生成契约发生变化，必须重新编译适用检查' }
+    }
 }
 $swaEvidenceParent = Join-Path $CaseRoot '.verification/swa-cli-headless'
 $swaEvidence = Join-Path $swaEvidenceParent ($Case.ToLowerInvariant() + '-' + [Guid]::NewGuid().ToString())
 New-Item -ItemType Directory -Path $swaEvidence -Force | Out-Null
+if ($Case -eq 'T03') {
+    [IO.File]::WriteAllText((Join-Path $swaEvidence 'go-source-reuse.json'),(@{compiled_source=$swaCompiledRevision;installed_source=$swaInstalledRevision;check_source=$swaSourceRevision;unchanged_go_input_paths=$swaGoInputs;actual_git_comparisons='equal'} | ConvertTo-Json -Depth 5))
+}
 $env:TEMP = Join-Path $swaEvidence 'temp'
 $env:TMP = $env:TEMP
 New-Item -ItemType Directory -Path $env:TEMP | Out-Null

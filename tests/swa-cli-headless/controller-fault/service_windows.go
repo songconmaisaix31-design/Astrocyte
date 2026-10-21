@@ -41,7 +41,7 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 	if err != nil {
 		return report, err
 	}
-	if (request.Action != "observe" && request.Action != "stop-service") || !filepath.IsAbs(request.Inspection) || len(request.ProtectedPIDs) == 0 || request.Root.PID == 0 || request.Root.Created == 0 || !samePath(request.Root.Name, "swa.exe") {
+	if (request.Action != "observe" && request.Action != "stop-service" && request.Action != "stop-http") || !filepath.IsAbs(request.Inspection) || len(request.ProtectedPIDs) == 0 || request.Root.PID == 0 || request.Root.Created == 0 || !samePath(request.Root.Name, "swa.exe") {
 		return report, errors.New("实际根创建身份、保护列表或原件路径缺失")
 	}
 	var readiness struct {
@@ -131,7 +131,7 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 			return report, errors.New("实际根、host、server或daemon PID重复")
 		}
 		rights := uint32(windows.SYNCHRONIZE | windows.PROCESS_QUERY_LIMITED_INFORMATION)
-		if expected.Terminate && request.Action == "stop-service" {
+		if expected.Terminate && request.Action == "stop-service" || expected.PID == readiness.ServerPID && request.Action == "stop-http" {
 			rights |= windows.PROCESS_TERMINATE
 		}
 		handle, err := windows.OpenProcess(rights, false, expected.PID)
@@ -212,7 +212,12 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 		return report, nil
 	}
 	report["actual_fault_started_at"] = time.Now().UTC()
-	for _, pid := range []uint32{readiness.HostPID, readiness.ServerPID, request.Root.PID} {
+	targets := []uint32{readiness.HostPID, readiness.ServerPID, request.Root.PID}
+	if request.Action == "stop-http" {
+		targets = []uint32{readiness.ServerPID}
+	}
+	report["actual_termination_targets"] = targets
+	for _, pid := range targets {
 		state, err := windows.WaitForSingleObject(held[pid].Handle, 0)
 		if err != nil {
 			return report, err
@@ -227,7 +232,7 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 			return report, err
 		}
 	}
-	for _, pid := range []uint32{readiness.HostPID, readiness.ServerPID, request.Root.PID} {
+	for _, pid := range targets {
 		state, err := windows.WaitForSingleObject(held[pid].Handle, 10000)
 		if err != nil || state != windows.WAIT_OBJECT_0 {
 			return report, errors.Join(errors.New("实际服务目标未由相同句柄确认退出"), err)

@@ -173,3 +173,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 原Run正式msg_5b7d83fdfb5a仅一次build06已消费，准确b75及runner bae62前置通过；exec65865实际同步EXIT1，内外退出原件均1。Python3.13.13及VS2022实际发现成功，324项部署/21份bundle/metafile/三官方HTTP200及原pin校验完成；首conpty编译在中文UTF-8头文件报C4819/代码页936及第17行C2059/C2143，未完成native/Go/VERSION，candidate05保留不可安装。UTC19:20:34.5682573/36.9947290两次新鲜所属及旧身份均空，msg_582d立即交回；主控msg_2f350收回全部重操作并解除tracked/Git冻结，要求同Worker继续实际程序。当前只在构建的native子进程显式CL=/utf-8且清除继承CL/_CL_冲突，保持源注释和系统代码页；后继尚未编译，准确CR和全部真实验收继续。
 
 2026-10-22同Worker沿最新主控授权继续；旧资源窗口限制已由用户解除，实际规则及累计程序写域见主线当前任务和RESOURCES。准确260的build12、RPC目录、Go编译、仓库外同一安装闭包/真实私有服务/五份SQLite/普通Job及安装负向检查已取得限定通过，install11原30秒native超时失败保持原因未知。当前260服务保持运行，本人Observe批准尚未执行；Agent不取得人工会话。已审八项依赖移至构建输入、九版本原许可复制实现，pnpm真实锁生成/frozen/check-dependencies全部0；新候选及全部真实安装、T12/终端和同安装双Worker成果验收继续，完整事实见报告§33。
+
+准确780a35e9的build13及inline13真实0，21份实际成品与260相同、九许可全文相同；外部install12复制失败1，原件保持。实际Token/icacls定位候选exe继承Low标签；普通复制同字节Node实际Medium、三个外部小探针0，正按主控授权以成熟ZipFile完成普通发行提取路径，尚无新安装结论。普通EOF副本第一模式130，第二模式身份缺项失败，剩余未运行；原Orca保全通过。当前累计修正USAGE正常解压/同会话数组调用、T03原Go来源复用和原C04/R10定向HTTP故障入口，真实执行及同安装双Worker仍待完成，细节见报告§34。
