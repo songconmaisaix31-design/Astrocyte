@@ -1,6 +1,8 @@
 # SWA 主线接续
 
-当前产品源码95efcc288e32ad8d72d4ef902f32ec130f97fea3已普通push。serve的重复关闭分类窄修及可复用生命周期/CIM测试已纳入原Worker写域。lifecycle19使用现有63eb仓库外安装，四项实际退出130/130/0/6、精确runtime诊断和所属退出检查通过，驱动0；缺创建时间的一个真实样本保留，并由两次完整CIM确认PID缺席。cim19真实存活/退出分支返回6/0/6/0。原Worker继续95ef准确Go检查、新候选安装及C08已知故障7的复验；本人Observe和T11仍待回答。
+当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，原产品分支已普通push到仅更新验证记录的8c60cab8dec910fb9e42bdc24678e4738e356039。compile20、build15、真实ZIP/普通解包20实际0；安装根为C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。原installer的复制/闭包/保护范围通过，聚合6保留真实消费者未验。同一安装的C08准确7/runtime_error、四项生命周期130/130/0/6、C09关联诊断和所属收尾通过。原Reviewer ec22563245721da8f7a69d4409e667c935e5ea7d限定接受，三个hook均已实际读取回复。
+
+下一步为本人执行95ef同安装的Observe入口。新服务使用validation-data/95efcc28-human22及64509，runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69，serve37764/host44492/server48980；真实服务、五库、Medium及原Orca保全通过。human-authorize-installed22.ps1、use-installed22-credential.ps1和assert-installed22-service.ps1三份准确文件已独立技术接受，主控已请求本人运行新入口替换旧260待办。当前无实际凭据，不代行human或签发Grant；T11、实际Agent/模型、完整T12和同一候选真实双Worker仍未通过。旧260按原owner正常收尾的结果待回执，新human22的stdin保持。
 
 原Reviewer已接受lifecycle-unknown-review18.md准确SHA256 6E3F057AA3A32C65B27F2731F9A457B7E35A3C9542159F1DE18A056B349D164F，主控完整读取并通过msg_88c42a0b1084采用。原生观察缺创建时间时保留未知样本，不补时间、不向该PID发送信号；结束时增加两次成熟Get-CimInstance完整非空成功查询，未知PID必须完全不存在，原known身份、至少50ms间隔、全Job及实际动作条件保持。原lifecycle17失败及首次独立c09-only18的同类失败均保留，完整C09未通过。接续brief为根忽略目录.verification/swa-cli-v1-control/resume-20261022-0205.md，当前事实优先于其中早期定位记录。
 

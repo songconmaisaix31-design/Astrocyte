@@ -1,5 +1,11 @@
 # 用户决定与待定项
 
+## 同一候选的本人观察授权（2026-10-22，待执行）
+
+当前已实际ZIP解包安装的候选为95efcc288e32ad8d72d4ef902f32ec130f97fea3，安装位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。本人观察入口已准备到同一安装的human22服务：仅支持Observe，准确三文件经原Reviewer独立技术接受，实际身份、监听、版本及健康检查通过。主控已请求本人执行本机脚本human-authorize-installed22.ps1 -Stage Observe并输入APPROVE OBSERVE，替换旧260待办；具体绝对路径及实际服务归属见[首版任务](../tasks/swa-cli-v1-20261020.md)。
+
+此入口沿SPEC §21.1的真实本人session/CSRF和固定公开项目Grant流程，授权读取Agent清单；Agent不能代行。当前没有本人回执或实际DPAPI凭据，观察消费保持未执行。该观察批准不包含执行Grant、具体Agent/模型和原生工具选择；下方工具范围及T11待答项保持。
+
 ## 继续构建与 REA 仓库格式（2026-10-21）
 
 用户要求“继续构建swarm cli，格式上用rea的仓库格式”。构建继续按已确认首版目标、隔离和验收推进；已读取官方 REA 的仓库入口、架构、开发与包定义，来源和当前路径对应见[参考记录](standards/swa-repository-format-20261021.md)。
