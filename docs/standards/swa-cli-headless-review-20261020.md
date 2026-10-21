@@ -1596,3 +1596,19 @@ deny/fail改为保留原throw的函数声明；缺失nativeError使用原contrac
 T02首次真实调用因独立pwsh不能按原写法传递ProtectedRoots数组而失败；后继在原PowerShell中直接调用包内脚本，复制及版本输出成功，随后真实安装闭包在@parcel/watcher处报Cannot find module picomatch，install08-exit仍1。独立Get-Item确认candidate08中的@parcel/watcher为指向自身.pnpm的Junction，installed08对应路径已变成普通目录；原installer的dereference=true使模块真实位置和就近依赖图改变。准确[Node24.21.0 cp选项](https://nodejs.org/download/release/v24.21.0/docs/api/fs.html#fspromisescpsrc-dest-options)说明dereference解引用，verbatimSymlinks只跳过链接路径解析；原绝对Junction目标还须随新根重定位。安装须集中保留合法包内链接图并拒绝包外目标，不能逐个增加顶层依赖代替闭包修复。原包、失败安装及日志保留，原Worker负责实现和真实新安装验证。
 
 工作区新服务故障工具的实际readiness/metadata/PID record、Job句柄、image/创建身份/父链及原DaemonClient观察已读，尚无准确提交或真实执行接受。新工具保持独立来源，禁止覆盖candidate08产物后仍按1209记账。全部实际模型、T12故障矩阵、完整成果、精简依赖、人工批准及同安装候选双Worker验收继续未通过；本轮没有正式PR可发布COMMENT review，也没有集成或发布main。
+
+## 准确b624b454的独立安装与两项真实失败
+
+结论：**退回准确 `b624b45418279499887fe0c1583bd7c73c0979e2` 的T02目录保护及Job后代验收；hoisted安装复制与inventory修正按实际范围接受。** 本次Reviewer沿原Task、工作树和两报告接续，当前Dispatch为`ctx_40bf84d10b8c`，终端为`term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`。实际公开terminal show预览为`GPT-6.1-Sol xhigh fast`，没有子Agent。已完整读取主控重启接续文件，资源解除与既有权限继续适用，普通修复直接交原Worker累计处理。
+
+相对1209的十一文件差异已完整读取。prod deploy只在本次子调用设置node-linker=hoisted，安装复制前新增拒绝候选内reparse point，未改开发目录和全局配置；原Node固定输入、原生编译和许可保持。inventory补齐两项真实依赖。独立`check-runtime-inputs.mjs b624b45418279499887fe0c1583bd7c73c0979e2 1209aee399a2c0b0677d7a4dbedc5f87880d14ab`实际EXIT0，成熟YAML/JSON核58项声明、锁及实际安装一致，其他importer和政策保持，inventory无差异。`cpu_scope=primary_processor_group`明确原GetSystemTimes观察范围，没有增加CPU准入门限。
+
+build10退出原件为0，最终实际输出列出全部四native及准确b624，candidate09/VERSION相同。install09实际完成独立installed09，版本一致；真实Node24.21.0、native API1、空Job及28659路径闭包通过。candidate09-native-origins实际EXIT0，输出的CJS/native来源均在该候选，包含watcher、picomatch及其平台native。上述证据只接受路径、实际模块装载和空Job范围；全部入口及子进程、SQLite和动态消费者的运行闭包继续未验。
+
+**T02目录保护，严重程度高。** install09先实际拒绝占用端口与直接受保护根，随后junction用例返回`storage_failed`并尝试`owned-protected-root-junction/home`，完整日志中的Access is denied及测试异常保持。`privateDataDirectory`在检查重叠时复用`agents.CanonicalRoot`的EvalSymlinks；同一既有projects.go已说明Windows最终junction可能保持原路径。当前路径随后进入MkdirAll，没有在受保护目标任何写入前拒绝。修复须在写入前检查数据根及现存全部父级的真实reparse属性，覆盖根junction、父级junction和不存在叶目录，保持`scope_denied/3`及目标无新增写入。install09没有外层退出文件，重启前异常不推断外层退出码。
+
+**Job后代测试，严重程度高。** candidate09-provider-job实际EXIT1，普通进程fixture在provider-job.test.mjs:81断言成员数时得到5，预期3，不能计为后代退出验证通过。原日志保留进程缺失、成员未确认及两个实际准入观察；它没有保存失败时额外两个成员的完整身份，尚不能判定额外成员来源。原Worker须先记录全部实际成员PID、创建时间、映像及父链，依据真实来源解释与修复；直接放宽计数不能证明全树所属及退出。normal、forced、crash、late-child、parent-loss、两次完整空Job观察及无关所属Job继续保全均保留验收要求。已通过`msg_74688d72d9d4`直接交当前原Worker。
+
+准确提交已包含R06的service_windows.go和runtime-restart.mjs；两份正文、原controller-fault共用函数和service-request入口已读。控制程序核实际readiness/metadata、原daemon PID record与具名Job、持有句柄的安装映像/创建身份/成员及host/server父链，故障只选择serve/host/server并保留daemon。restart驱动按原真实journal、Run/root/Dispatch/session/operation及同库记录观察不重发和资源保留，并明确remainingCases/退出6。该部分当前仅确认源码和既有编译范围，实际故障、恢复证明及清理仍未运行。
+
+`compile-b624.log`与原编译入口已读，四份test-c产物及SOURCE存在，三个传输前函数实际PASS，不扩大为四个安装服务用例通过。Reviewer实际`check-revision.ps1 -Previous 1209aee399a2c0b0677d7a4dbedc5f87880d14ab -Candidate b624b45418279499887fe0c1583bd7c73c0979e2` EXIT0，marked18.1.0核三Markdown、6本地链接，原§15锚点保持，Git空白通过。当前`gh pr list --head swa-cli-headless-20261020`实际返回空列表，没有可提交COMMENT review的正式PR；准确交付后继续执行。认证、精简依赖、T12、普通终端后续输入及同安装候选真实双Worker并发/指定停止/成果仍未通过，本Reviewer未修改实现或启动候选。

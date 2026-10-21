@@ -653,3 +653,13 @@ bdbe限定管理接受hook `msg_1dc2fbfa0ebe` 已获主控 `msg_194ecdc329b5` �
 ada局部静态接受hook `msg_6f0b4c91eee7` 已获主控 `msg_f68c9a2feb53` 明确读取准确差异和d1d9ca31报告的回复，实际唤起确认。后继普通修复按本次用户授权累计反馈，现有失败原件和实际验收要求继续保留。
 
 1ca管理接受hook `msg_3aadf3903287` 获主控 `msg_c584eb4a8501` 明确完整读取6a88156d两报告新增、准确六文档和build08原件的回复，实际唤起确认。后继准确 `1209aee399a2c0b0677d7a4dbedc5f87880d14ab` 已形成完整candidate08，build09、strict07及候选闭包检查的实际结果为0；真实安装因复制破坏pnpm内部链接而失败，依赖inventory另有两项遗漏，已交原Worker累计修复。限定源码结论、适用Go检查和完整安装失败见headless报告，全部真实人类批准与最终双Worker验收保持。
+
+## 准确c8b6ac6b的安装结果与重启接续记录
+
+结论：**准确 `c8b6ac6b9fa1b2fd11af42cb8e249191028816b0` 的四份管理文档已核；junction退出数字证据不足，其余产品验证状态按限定范围成立。** 已完整读取相对eef7的HANDOFF、STATUS、首版任务及仓库格式记录差异。b624的hoisted修正、candidate09/installed09版本及路径/原生装载证据已独立核实；T02 junction和Job成员断言保持实际FAIL，完整T01入口/子进程/SQLite及动态闭包、认证、精简依赖和同安装候选双Worker验收保持未通过。管理更新没有修改产品源码或权限。
+
+install09完整日志可证`storage_failed`及PowerShell测试异常，没有保存本次serve独立退出数字，也没有外层退出文件。准确b624的serve.go对该分支返回7，output.failure原样返回；文档中的`storage_failed/1`缺少原件依据。已通过`msg_5e0f01da8d40`交主控改为可证错误及退出未知范围，不据源码推断替代实际退出。该问题不增加原Worker修复或局部验证的前置。
+
+当前Review使用原Task的新Dispatch `ctx_40bf84d10b8c`、实际terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`；公开Orca回执的runtime为`a2765d35-0b66-41e6-a8ca-e76d25294927`。原报告与失败原件保留，不复用重启前PID作当前身份。资源解除继续适用，原账号、工具、资料、人类批准及最终验收要求保持。
+
+实际 `check-revision.ps1 -Previous eef7c8ecd36888a812af98a31c0c5c6a0fb8a97a -Candidate c8b6ac6b9fa1b2fd11af42cb8e249191028816b0` EXIT0，marked18.1.0核四Markdown、46本地链接及Git空白，无待核锚点或HTML。9项外部引用沿已核来源，本次没有重复联网读取。产品累计结论及直接返修见headless报告；没有修改实现、发布main或登记完整功能通过。
