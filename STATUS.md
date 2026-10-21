@@ -2,7 +2,7 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，产品分支已普通push至记录提交8c60cab8dec910fb9e42bdc24678e4738e356039。compile20/build15/真实ZIP及普通解包20实际0；同一95efcc28-install20的C08精确7、四种生命周期130/130/0/6、C09诊断和所属退出通过，ec225632独立限定接受，三个hook均读回。原installer复制/native/28233路径及保护范围通过，T02聚合6保留真实消费者未验。当前human22同安装服务及仅Observe入口已准备并获独立技术接受，等待本人执行；T11、实际Agent/模型、完整T12和同安装双Worker仍未通过。
+当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，产品分支已普通push至记录提交8c60cab8dec910fb9e42bdc24678e4738e356039。compile20/build15/真实ZIP及普通解包20实际0；同一95efcc28-install20的C08精确7、四种生命周期130/130/0/6、C09诊断和所属退出通过，ec225632独立限定接受，三个hook均读回。原installer复制/native/28233路径及保护范围通过，T02聚合6保留真实消费者未验。human22同安装服务保持，三份仅Observe入口获ae785d6d限定接受且主控已读回，等待本人执行；旧260已沿原owner正常关闭0，数据及原件保留。T11、实际Agent/模型、完整T12和同安装双Worker仍未通过。
 
 780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
 
