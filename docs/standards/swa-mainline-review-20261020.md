@@ -605,3 +605,11 @@ tracked/Git冻结解除后，同一Worker直接继续已定稿账号/工具、�
 主控`msg_3e87bf84e891`、`msg_727d621735a9`和`msg_be81ad05ca38`分别确认完整读取56ffc、7a0058和68bc4三项准确源码及报告，原ask已取得实际答复，三项hook的实际唤起确认。后继结论继续逐准确源码接收读取回复，不以报告已读代替全部源码核查。
 
 准确7c812a1a972ed914bae3b9cd864702e5426b9492补取消单一失败JSON与流保存、stdout关闭真实错误/查询诊断及原C_old和实际已知C_new分别保留，N25/N26对应源码获限定静态接受。准确差异、实际Markdown及Worker原件读取记录见headless报告，全部实际故障、类型/构建、恢复、通用terminal及同安装候选双Worker仍未验；下一单次dependencies窗口继续由主控安排，没有新增运行授权。
+
+## 2026-10-21 重启后的同 Task 接续
+
+当前 Reviewer 为原 Task `task_1cd8014750f9` 的 Dispatch `ctx_066b3ab5f10c`，终端 `term_7f2903a4-3597-4407-9905-d65fc541c60e`，仍使用本审查树和分支。已完整读取主控恢复记录 `C:/Users/DW/orca/Astrocyte/.verification/swa-reuse-recovery-20261021.md`、定向消息 `msg_e1d4f4d8d1e7`，并通过 `msg_220f36a04112` 实际回复读取确认；本次 Orca ask 已获主控明确答复。原 M0、准确6eb及PR #4的结论和回执继续有效，没有重复发布其review或hook。当前实际客户端仍为Orca/Codex，会话预览为 `GPT-6.1-Sol xhigh fast`，没有增加子Agent。
+
+主控明确已实际读取2ffed两报告新增、7c相关真实消费者和原后继结论，7c的N25/N26限定静态接受保持。重启前S65980及其health属于历史观察，当前窗口以主控新鲜事实为准；本Reviewer没有启动、恢复或停止服务。主控 `msg_222453bcc62d` 已收回单次dependencies04窗口，后继typecheck、生成、构建和服务仍由主控另行安排。
+
+准确 `3ba76a85cc968224f283315b64a4be4c27f1fcce` 的真实开发依赖锁及安装结果获限定接受，固定b287源码直接复用的具体路径和必须保留的产品组装见headless独立报告本次新增。原权限、工具/T11、Codex/S3、全部真实功能和同安装候选双Worker验收保持其原状态。主控七份管理文档待提供准确提交，本轮没有将工作区内容记为准确CR通过。

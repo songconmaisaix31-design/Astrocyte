@@ -1450,3 +1450,34 @@ Go持续持有目标root/helper和daemon句柄，真实同句柄核Job/DACL、�
 Go控制程序以标准os.PathError区分原读取、文件保存及未分类错误，后两者使控制程序失败；stdout关闭的预期读取错误继续保存实际原件。outputFailure使用已验证selected.Controller输出requested_controller，当前controller/Run/root仍取已收到的真实回复，原C_old与已知C_new分别保留。驱动核原选择器，C_new只接受真实completed receipt关联；实际诊断已知C_new时另核同一Run/root，没有使用pending expected身份。原PTY/runUse唯一性、同R重放六身份和全部动态限制保持。
 
 实际`check-revision.ps1 -Previous 616eab312cfb0741fc89cf8ae65027aceac2748b -Candidate 7c812a1a972ed914bae3b9cd864702e5426b9492` EXIT0，两Markdown/7本地链接及Git空白通过，既有锚点保持。n25-n26-static-01全部初次及final日志、七项退出0和summary已完整读取，一MJS/JSON/YAML、两Go格式与文档来源保持Worker执行归属。全部检查BelowNormal、Node512MiB，本Reviewer未运行Program、编译、安装、console、故障、SQLite/HTTP正文或模型。真实130/6、全部R10/R06/R08及T12、通用terminal、完整构建和同安装候选双Worker仍未验；技术接受不授予重操作窗口。
+
+## 固定 b287 源码直接复用的接续核查
+
+结论：**现有原生核心继续直接复用；产品授权、隔离和效果结算的组装保持。整体运行验收继续证据不足。** 已完整读取主线SPEC21.1.1—21.1.5、当前CLI/REA参考及主控恢复记录，再对照真实 `b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e` 源码、安装CLI的RuntimeClient JS和准确7c消费者。后继3ba只改锁与文档，该源码范围未变化。本次不重复REA分析，也不将来源对照作为后继类型或构建的新增前置。
+
+下表原路径均位于 `third_party/orca-v1.4.230/`；本轮逐项读取所列核心与产品消费者，静态关系只支持其对应范围。
+
+| 原生实现及当前直接消费者 | 核实结果与具体接续建议 |
+| --- | --- |
+| `src/cli/runtime/client.ts`、`transport.ts` → `runtime/swa-orca/src/client.ts`、`controller-helper.ts` | 两个产品入口已直接实例化同一RuntimeClient并显式给定私有data及产品executable。与b287的准确文件差异显示，client只增加已审owner capability及SWA兼容调用，transport只增加该本地包络字段；继续保留原协议解析、runtime/source fence和未知请求诊断，不另写客户端或socket协议 |
+| `src/main/orcad/orcad-lifecycle.ts`、`OrcaRuntimeService`、`RuntimeRpcShutdown` → `runtime/swa-orca/src/host-entry.ts` | 原profile准入、instance lock、cleanup顺序及运行服务已复用；lifecycle差异为可关闭browser provider的已审可选参数。产品须保留私有路径、秘密存储、只读owner、精确方法白名单及真实空闲关闭条件，不能直接使用原全局host组装 |
+| `rpc/methods/orchestration/runs/runs.ts`、`worker/worker-methods.ts`、`worker-list-method.ts`、`messaging/message-methods.ts`、`runs/mutation-request-show.ts` → host方法表、helper与`nativeHistory` | 状态查询和写动作都调用原handler；helper固定原R子请求和真实controller，保留原Run/Task/Dispatch归属。原CLI `worker-launch-handler.ts`提供完整flags及from解析，其直接照搬会引入未批准参数；当前产品只映射已审动作和选择，无需再复制一层原handler |
+| `rpc/orchestration-mutation-executor.ts`、原mutation receipt存储 → `native-methods.ts`及`controller-admission.ts` | 产品继续使用原executor及同一SQLite原receipt/checkpoint；严格准入在legacy和executor之前，pending恢复观察和效果后unknown属于已审产品补充。保持原存储和请求身份，不另建执行或恢复账本 |
+| `runtime/orchestration/send-agent-turn.ts`、`native-chat/agent-session-wire/structured-agent-session-task-queue.ts`及原host → `worker-input.ts` | structured正文已进入原host.send及waitForSendSettlement，原session串行队列与b287相同。当前批准、原operation/fence和最后写入前同步检查仍必要；继续沿原队列及其真实adapter消费者。通用terminal正文仍须完成SPEC21.1.2规定的普通sendTerminalAgentPrompt路径，实际结果没有通过 |
+
+Go App的项目/Grant/单CLI批准、产品输出与退出语义、私有账号投影及工具政策、真实helper身份、所属Job和完整自产成果均为已确认产品行为。它们继续由现有App/adapter/composition承担。MIT原许可和Lovecast归属保留。原核心源码与整个生产依赖表的保留范围分别判断；完整运行闭包继续依据实际metafile、动态子入口、native和独立安装结果，静态未连边不能支持删除依赖。
+
+独立读取也发现helper中task.list/show/result及worker.show/list/read聚合与`nativeHistory`存在相近逻辑。当前公开只读调用已经沿client默认分支进入swa.observe；本次不以此为由改动稳定模块或阻断构建。原Worker应先确认完整真实消费者，只有证实没有调用的helper分支才在原写域中移除，保留准确差异及适用回归。该建议不增加新的框架、公开命令或审批。
+
+## 准确3ba76a85的真实依赖锁与安装结果
+
+结论：**限定接受准确 `3ba76a85cc968224f283315b64a4be4c27f1fcce` 相对7c的真实锁与两份记录，未接受类型、构建或运行结果。** 完整读取三文件差异和dependency-04全部命令日志、SOURCE、五项退出、两组资源及运行/退出观察原件。原runner05b0以准确7c开始，原pnpm11.27.0先lock-only、后frozen ignore-scripts/verify-store-integrity，7.9秒和2.1秒均成功；两次资源准入与外层最终退出均0。资源CPU11.3/8.0%及14.6/23.2%，可用内存均超过4GiB，单调间隔2.5012007及2.5016213秒。deprecated/peer提示和两次所属为空记录保持，不将其改写为无警告运行或全部依赖兼容。
+
+本Reviewer使用已安装成熟YAML/JSON独立核真实锁、清单和已安装package.json：56项声明逐项匹配，manifest与dependencies.lock.json相对7c保持；其他importer、原patch、override及设置保持。七项已审开发依赖已实际锁定并在产品node_modules中核得相同版本，Node类型25.9.5和TypeScript6.0.3同样对应。pnpm自然peer变化只有runtime importer的Electron toolkit→43.7.8和serve-sim→React类型19.2.18，以及相应snapshot；原声明没有升级。该读取没有执行包正文、安装脚本或创建TypeScript Program。
+
+实际命令及结果：
+
+- `pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 7c812a1a972ed914bae3b9cd864702e5426b9492 -Candidate 3ba76a85cc968224f283315b64a4be4c27f1fcce` EXIT0：Git空白及marked18.1.0检查通过，两Markdown、7本地链接，原§15/§16锚点保持。
+- `node --max-old-space-size=512 .verification/review-runtime-lock.mjs 3ba76a85cc968224f283315b64a4be4c27f1fcce 7c812a1a972ed914bae3b9cd864702e5426b9492` EXIT0：成熟YAML核锁和真实已安装声明全部通过；BelowNormal、Node512MiB，没有重复依赖命令。
+
+主控已收回dependencies04窗口，后继strict类型、生成及完整native/Go构建另授。原全部故障、T12、通用terminal、模型及同安装候选双Worker均保持未验。当前没有正式PR，本轮不发布GitHub review，准确交付后的COMMENT review保持待执行。
