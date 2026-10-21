@@ -1874,4 +1874,16 @@ Reviewer实际以安装Node24.21.0和成熟`node:sqlite`的readOnly逐项读取�
 
 Worker的`diagnose-observe25.ps1`全文和实际退出0原件已读：同一真实服务签发诊断cookie，仅GET重现WebRequestSession保留Origin64510，跨源及后续无Origin参数请求分别403/403，显式删除该Header后200；没有准备写或模型。其真实三库计数对比与独立零效果观察一致。该诊断支持客户端清除负向测试Header；没有重发原写请求或以诊断成功替代完整授权。
 
-**接受恢复补充计划`328571126C4116B32572EA23DF2E30205451C9086D12FEC2389BEE609901B578`。** 完整新增条款及保留的准确4B原件已读，成熟marked解析0；26须在每次效果前重新核FD5、25 register失败及唯一原R、当前三库无准备/工作效果、原目录空且私有、无真实凭据。保留原目录和全部失败原件，禁止首次重建或覆盖，任何已有或未知效果立即停止；新独占证据目录、真实新请求和cookie沿同一批准执行完整五项拒绝、持久范围、DPAPI和保全。请求保存实际HTTP状态或网络未知及安全错误码，秘密保持私有。Worker接受通知为`msg_724ce658f6f2`，当前26源码和实际结果待核。e5a0a429两份计划hook已获主控`msg_ae872f18a18c`、`msg_662535eb1edb`明确完整读取回复。
+**接受恢复补充计划`328571126C4116B32572EA23DF2E30205451C9086D12FEC2389BEE609901B578`。** 完整新增条款及保留的准确4B原件已读，成熟marked解析0；26须在每次效果前重新核FD5、25 register失败及唯一原R、当前三库无准备/工作效果、原目录空且私有、无真实凭据。保留原目录和全部失败原件，禁止首次重建或覆盖，任何已有或未知效果立即停止；新独占证据目录、真实新请求和cookie沿同一批准执行完整五项拒绝、持久范围、DPAPI和保全。请求保存实际HTTP状态或网络未知及安全错误码，秘密保持私有。Worker接受通知为`msg_724ce658f6f2`，26准确源码和实际结果见下节。e5a0a429两份计划hook已获主控`msg_ae872f18a18c`、`msg_662535eb1edb`明确完整读取回复。
+
+### 真实Observe26与独立消费结果
+
+**限定接受准确恢复客户端`655799C350501C6D0659B2BF343C4FDE0F3F30FF239A4E97F9F0267D31765697`及helper`2E2492A8ECE7F9E2364E9B7F58DEF119E0CCCEB711CB236E910599B23ACB0738`的真实Observe26范围。** 两份完整执行源码及快照已读；恢复先核原25唯一失败请求、真实三库零效果和原空私有目录，清除真实跨源测试Origin后才准备写。原目录、全部24/25原件及准确4B计划保留，原23人工/consumer及FD5全文摘要分别保持A427BE2B、05C9F245、FD5FA88C；没有修改95ef程序或安装包。
+
+真实26退出0，五个唯一准备request_id的响应依次201/200/200/200/200，无自动重试。实际服务返回`local-human/human`，批准源为原用户会话`msg_a536f02a7294`、执行者为原Worker Agent；新空间`MNHPWL2X74QSIZMIYBTAYL3RLO`、项目`46ceef7b-0be3-4a4b-8e74-575fd327b31c`属于原固定公开仓库。真实SQLite设置r2仅observe、目录/控制false、子目录/工具为空、引用扩展false、history_roots空、外发CLI空；唯一该caller Grant仅observe、未撤销，服务真实expiry为`2026-10-21T20:51:16.4468291Z`，私有token摘要存在且未输出。真实CurrentUser DPAPI凭据写入原独占文件，原consumer23实际消费退出0；没有把服务端12小时会话登记为已撤销。
+
+五项真实HTTP均403/scope_denied，原件逐项核无cookie、缺CSRF、不同Origin、真实Observe token的合法controller.open及人类Grant路由拒绝。workspace指定space/project/Grant各增加1，session/关联不变；原生工作表保留原runs1，其余任务/Dispatch/Worker/receipts0，journal全工作表不变，未创建模型Worker。Orca前后公开身份及六保护文件字节/ACL均通过；目录通知继续只证明对应文件夹观察，不能推导写入者PID。
+
+Reviewer实际独立运行原`use-installed23-credential.ps1 -Stage Observe`，EXIT0，原件`observe26-consumer-independent.log`；没有取得管理cookie或签发Grant。再以安装Node24.21.0执行自有`review-observe26.mjs`，直接readOnly核实际项目/Grant/空间、完整设置及真实到期，并核准确源码摘要、全部五请求状态、五拒绝、独立及原消费的完整JSON结果和保全原件，EXIT0，原件`observe26-independent-02.log`。两次消费均指向同一95ef、runtime `cc80c07c-c8bf-47ff-965e-6177bd2a7c69`及原authority；这一范围真实授权和观察消费通过，Worker通知为`msg_7b85c8d32daa`。
+
+真实capabilities返回七个注册Agent；五项实际命令/版本检测为available，另外两项unavailable，全部launchable仍unknown。Pi配置未知；Codex和Claude的configured字段分别显示gpt-6.1-sol/openai、qwen3.7-max/anthropic。该字段没有证明实际供应端点许可，Claude实际调用前须核真实来源并排除Aliyun。产品`agent-discovery.ts`的选择路径、NativeLaunchPolicy及launch admission目前只接受Pi1.0.1的已审无工具/API key合同；其他Agent具备注册或配置观察不表示真实调用已实现。独立读取的agent-sources25原件及成熟JSON/TOML reader仅覆盖其明确来源，未发现匹配StepFun条目，不能推断整机没有StepFun配置。真实Agent/模型、执行Grant、T11、完整T03/T12、同候选双Worker和成果仍未验，原工具及S3范围保持。45661024两份hook已获主控`msg_cb1904c65a6c`、`msg_bae6fd3b382d`完整读取回复。
