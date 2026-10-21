@@ -1913,3 +1913,15 @@ Reviewer实际独立运行原`use-installed23-credential.ps1 -Stage Observe`，E
 **限定接受产品`8cd402ed84d55bb10a620895962b0d4d1c9f73a3`两份文档和主线`b5303ee5b5db9caefd726573542a70de762b071e`四份管理文档的记录范围。** 准确差异均已完整读取，记录真实Observe批准、实际Agent执行者/服务主体、26和独立消费、准确expiry、24/25失败、七注册与五安装、全部launchable未知及NativeLaunch缺口；未将执行Grant、T11、S3或完整成果改为通过。产品相对c6仅文档变化，原95ef程序和安装保持；主线记录已完成实际授权消费，原23作为保留的人工入口。
 
 Reviewer实际`check-revision.ps1`分别核c6→8cd及ebb→b53，EXIT0；成熟marked分别解析两份/6本地链接和四份/89本地链接，原§15锚点保持、Git空白通过。OpenCode/StepFun来源条目按所述读取范围使用，没有以局部匹配为空推断整机无配置；后续具体配置路径仍待用户提供。bd55febd真实Observe hook已获主控`msg_0e5f304fabb5`明确完整读取回复，不重复实际凭据消费或完整构建。
+
+### 准确f2ab4fd9静态实现及真实空认证边界
+
+**限定接受`f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa`的静态实现、相关记录及实际空认证拒绝范围；custom完整正向证据不足。** 相对8cd的三份准确差异已完整读取，唯一生产修改为native-pi-policy。逐项核P01—P07：builtin重复及无API key handler拒绝保持；custom须有真实models源和唯一所选model，沿原composer的空base/无extension组成有效原生API key provider，modelOverrides不能补足缺失模型。最终custom API限定openai-completions，URL成熟解析后核准确StepFun HTTPS hostname、默认端口、/v1或/v1/及原userinfo/query/fragment拒绝；原字段/Headers/compat/routing/sampling和账号literal/空env检查保持。原DTO、私有账号消费者、工具关闭、Job及输入/成果代码未改。
+
+三份实际compat/lazy/openai-completions实现加入sources，读取前后及assertNativePiSnapshotCurrent均逐项核真实路径与stat版本；custom取得实际registry handler后核api及两stream函数，未新增自有handler或SDK。AgentSelection的原configuration_version包含完整sources，新来源仍进入原选择比较；没有用新注册观察替代旧Dispatch绑定或当前Grant。
+
+完整`check-custom28.ps1`及SOURCE/程序diff、真实退出和日志已读：来源为8cd加与准确f2一致的程序差异。TypeScript实际6.0.3、8192MiB、原tsconfig strict/noEmit/skipLibCheck=false，真实strict退出0且完整日志为空；architecture退出0，完整日志确认47个Go package的现有边界。Reviewer没有重复完整构建。实际`check-revision.ps1`核8cd→f2退出0，成熟Markdown两份/6本地链接、原§15锚点及Git空白通过。
+
+empty-native-account28在所读默认配置找不到非禁provider的单独model定义，实际退出1，未调用policy；原脚本和日志保留。29完整入口及实际0原件已独立读：从真实同版catalog取得openai/gpt-4，明确只作缺credential的显式负向输入，不声明其已配置或已被选中执行。真实auth为{}，实际policy返回native_api_key_source_unreviewed；原三源stat保持、实际项目的private账户前后不存在，没有启动CLI、Worker或模型。29在认证入口结束，未覆盖新增custom组合、目标、正向认证或模型请求；这些范围及真实源故障副本、builtin正向回归、新候选和同安装双Worker继续未验。Worker限定接受通知为`msg_cfe3b755c511`。
+
+已读Grok来源reader及grok-source28非秘密结果：成熟TOML/JSON、三文件前后stat保持，配置无默认模型；唯一所读账号的expiry为2026-10-21T18:52:47.570220800Z，已早于本轮检查，没有刷新或模型请求。该观察不能提供可用的替代账号。Claude禁止供应目标、Codex完整ToolsOff及其他Agent NativeLaunch缺口继续按实际范围保留，StepFun真实源仍待明确。17e440ea的计划/记录两份hook已获主控`msg_ebf576095746`、`msg_acf22bddd79d`明确完整读取回复；后继构建由原Worker继续，不结算整体CLI通过。
