@@ -2,9 +2,9 @@
 
 ## 范围与准确需求
 
-本报告由用户继续原Reviewer Dispatch的指令授权，写入范围为本文件及自有忽略目录。Reviewer为`task_1cd8014750f9 / ctx_980a3282c339`，原Run为`run_62ada397a104`。实际客户端为Orca/Codex，实际会话projection为`gpt-6.1-sol`、终端预览为`GPT-6.1-Sol xhigh fast`；没有子Agent。
+本报告接续首版CLI独立审核；早期Reviewer身份为`task_1cd8014750f9 / ctx_980a3282c339`，当前为`task_9ae5a1337e1d / ctx_5f4446e340a0`，原Run为`run_62ada397a104`。当前写入范围为本文件、既有swa-mainline-review报告及自有忽略目录，业务实现由原Worker负责。实际客户端为Orca/Codex，实际会话projection为`gpt-6.1-sol`、终端预览为`GPT-6.1-Sol xhigh fast`；没有子Agent。
 
-H01—H16先依据准确main `81812c32a6d345362655c6e569f680aab8fca877`的首版任务和QUESTIONS形成，并在`846d67ecd3684b2c6e3b4922fe4714056461371d`提交。当前事实源接续准确main `e149510762f89bed06e7c8c766917554a58294e4`的`tasks/swa-cli-v1-20261020.md`及`docs/QUESTIONS.md`，并沿现行SPEC、META_PLAN和RESOURCES。已完整读取最新首版任务及相对818的全部决定变化；按用户不妨碍本机Orca并集成产品的最新要求更新H02/H13/H16、追加H17，均在读取新Worker任何计划前完成。
+H01—H16先依据准确main `81812c32a6d345362655c6e569f680aab8fca877`的首版任务和QUESTIONS形成，并在`846d67ecd3684b2c6e3b4922fe4714056461371d`提交。该阶段接续准确main `e149510762f89bed06e7c8c766917554a58294e4`的首版任务及QUESTIONS，按不妨碍本机Orca并集成产品的要求更新H02/H13/H16、追加H17，均在读取对应新Worker计划前完成。本轮采用现行SPEC §21.1.5—§21.1.6、F18C/F803及用户最新授权；具体准确版本、已验范围和真实限制随文末审核记录接续，旧阶段事实不替代当前结论。
 
 用户已确认五阶段：固定抽取范围；接入Orca无界面执行和控制端身份并定义CLI控制规则；完成多Worker流程；验证失败与资源处理；验证安装包。最终验收使用安装后的同一候选，完成一次至少两个真实Worker实际并发的任务，并验证指定停止、其他Worker保全及真实成果获取。
 
