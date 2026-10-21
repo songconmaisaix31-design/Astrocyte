@@ -1382,8 +1382,10 @@ provider-job-installed20实际0，限定普通所属进程四模式、parent-los
 
 同一Task的新Dispatch ctx_4c001fda773c沿原终端接续。主控明确暂停原22命令，原E0CF0C3C/B9792BE3代码及首次CIM请求/结果完整保留。旧两个22路径现仅参数声明后立即throw，实际运行均拒绝1；没有HTTP、human、DPAPI或CLI副作用。原FD5FA88C实际身份guard、95ef产品/ZIP/安装、human22数据根及5187原owner保持。
 
-原Reviewer msg_f995d676d2b6准确接受7DF6314A9686702CE01C5A9D4E8A9E35E6729322AA6567808A9800D252215BC0完整补充计划。新human-authorize-installed23/use-installed23-credential只支持Observe，人工签发响应与DPAPI消费两处expires_at均用显式DateTimeOffset值转换；保留JSON产生的DateTime(Utc)、DateTimeOffset及原字符串的真实时刻与精度。原CurrentUser DPAPI、本人独占ACL、caller/公开根/actions/时效及每次mutation/CLI前精确身份条件保持。准确文件、大小、SHA及用户命令在自有human23-review.md，待准确独立核定后由主控恢复待办；Agent没有运行人工正文。
+原Reviewer msg_f995d676d2b6准确接受7DF6314A9686702CE01C5A9D4E8A9E35E6729322AA6567808A9800D252215BC0完整补充计划。新human-authorize-installed23/use-installed23-credential只支持Observe，人工签发响应与DPAPI消费两处expires_at均用显式DateTimeOffset值转换；保留JSON产生的DateTime(Utc)、DateTimeOffset及原字符串的真实时刻与精度。原CurrentUser DPAPI、本人独占ACL、caller/公开根/actions/时效及每次mutation/CLI前精确身份条件保持。准确文件、大小、SHA及用户命令在自有human23-review.md；原Reviewer msg_d1e7a303fcc4已完整核准确两文件和原件diff、独立类型/拒绝/guard及v2CIM，接受该准确23入口和旧服务收尾实际范围，由主控安排本人执行。Agent没有运行人工正文。
 
 verify-date23实际0，原UTC为serve30160创建2026-10-21T16:32:44.1021696Z、owner33432创建2026-10-21T16:32:20.6106520Z，成熟转换保留全部ticks，准确Unix毫秒分别1792600364102和1792600340610。v2只读请求/结果在date-fix23/authorized-close-identities-v2*，实际0；两次完整CIM各410项、PID全部有效、目标字段完整、known退出及unknown PID缺席，间隔约469.64ms。当前使用该准确v2结果，首次原件保持，没有重新操作已关闭服务。
 
 verify-types24实际0：原UTC两字段、实际同一次时钟的本机+08:00和UTC四来源，分别通过原字符串、JSON实际DateTime(Utc或Local)、DateTimeOffset三类型值转换，12项UTC ticks与Unix毫秒一致；原输入/类型/Kind/offset原件在date-fix23/types24。没有构造expiry、token或human。verify-entries23实际0：五文件成熟Parser通过，FD5字节不变，实际只读Assert前后0；旧22两入口实际拒绝1/1，新23 consumer缺真实凭据拒绝1，human-approval前后不存在。真实签发响应、DPAPI消费、Grant/模型及同候选双Worker/T03/T12/完整成果保持未验，当前用户是否执行过旧命令仍由主控等待实际答复。
+
+当前本人命令为`pwsh -NoProfile -File C:/Users/DW/orca/workspaces/Astrocyte/swa-cli-headless-20261020/.verification/swa-cli-headless-20261020/human-authorize-installed23.ps1 -Stage Observe`，仅由用户执行。当前人工签发尚未发生，保留原human22服务/5187等待真实输入；原22命令已经撤销，不会调用human API。
