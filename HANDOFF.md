@@ -31,9 +31,13 @@
 
 ## 正式实验接续
 
-V4 与产品任务分别管理。依据 [V4 日运行任务](tasks/M6-V4-daily-operation.md) 和 [协议](docs/EXPERIMENT.md)，先核原权威锁、day0、路由及授权。最近核查中外部原根、锁和正式 SQLite 缺失；没有恢复事实前不补采、不重建替代锁或正式库、不请求模型。
+2026-10-22 本次 automation run 10 `be8c8b7e-313a-4d67-86a5-e37abad0568d` 已实际派发，仅处理 Asia/Shanghai 刚结束的昨日 2026-10-21。接管分支 `validation/v1-20261012`，HEAD `9140cf8aa618c832b3a099222a46991b7c2b3ddd`，工作区和暂存区干净。依据 [V4 日运行任务](tasks/M6-V4-daily-operation.md) 与 [操作契约](docs/experiment/OPERATIONS.md)，本地 [协议](docs/EXPERIMENT.md) 全文 SHA256 为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，与登记一致；Codex CLI 为 `0.162.0`，相关运行源码相对已验 `d749ecb` 无差异。
 
-原 automation 为 enabled，已登记的日程窗口止于 2026-10-23；后续按原任务处理最后一天及窗口外禁用要求。本次没有查询或修改 automation。原模型路由、参数、漏日、预测和人评记录保留在任务及归档中。
+`Test-Path` 确认原 `C:/Users/DW/AppData/Local/astrocyte-validation/`、`v1-20261012` 根、权威 `v4-w2/locked-protocol-20261013-first.json` 和正式 `v4-w1/formal-20261013-first/state.sqlite` 均不存在。真实 root/reviewed 锁、day0、路由和授权无法重新核验；原根恢复及已有搬迁记录未确认。按历史登记 day0=10-13，昨日对应 D8，仅允许采集、Sleep 和成熟预测；真实锁缺失，本次全部实验命令未启动，新增事件、Sleep、回答、judge、人评及实验模型请求均0，历史累计数无法复核，没有实际可用用户评分表路径，终局门禁未满足。
+
+阻塞 Handoff `msg_6383905de04a` 已沿原线程 `msg_85c2c930c85b` 持久排入原 W1 所属 Run `run_d09ff3f95ebc`，关联原 Task `task_e538790026ad`，交接原根可用性、搬迁或恢复事实；回执仅证明排队，原 owner 已读及恢复未确认。只修改 root HANDOFF/STATUS，不新增 Agent、Task、Run、工作树或开发轨；漏日、unknown 和空人评保持，不重建替代锁或正式库。
+
+已只读查询原 automation `f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b`：仍 enabled，Asia/Shanghai `20 0 14-23 10 *`，下次为2026-10-23 00:20。10-21 run 9 `1ab61e03-4d4e-4640-a08d-02c3ab977eea` 为 `dispatch_failed`，不能记为已采集。本次处于10-14至10-23运行窗口内；10-23接续仅处理昨日10-22，原锁门禁保持，最后 D9 处理结束或任何窗口外唤醒即禁用本 automation。固定 `gpt-6.1-sol/872000/4096/5094907/model_context_split`、题库、评分及 B-only 七日边界保持；84答、7实际人评、7judge及全部成熟预测齐全后才交原 W2 终局报告。
 
 ## 原任务与停止条件
 

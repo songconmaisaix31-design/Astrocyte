@@ -4,6 +4,14 @@
 
 用户已明确首版为抽取 Orca CLI 执行能力、从原有 Agent 或终端调用的可控 Swarm CLI，见[首版任务](tasks/swa-cli-v1-20261020.md)。M0 文档整合正在检查来源和链接；M1 契约修复测试计划已获独立接受，动态检查尚未开始。当前核实对应 Orca 源码，是否脱离桌面独立运行的边界待用户回答；本轮尚未修改 main、程序或数据。整体整合规划仍见 [META_PLAN](docs/META_PLAN.md)，执行信息见[总任务](tasks/swa-mainline-20261020.md)。
 
+## V4 日运行（2026-10-22）
+
+本次仅核查 Asia/Shanghai 昨日2026-10-21，automation run 10 `be8c8b7e-313a-4d67-86a5-e37abad0568d` 已实际派发。协议全文 SHA256 与登记 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7` 一致，Codex CLI `0.162.0`，相关运行源码相对 `d749ecb` 无差异。
+
+原外部 `C:/Users/DW/AppData/Local/astrocyte-validation/`、`v1-20261012` 根、权威锁和正式 SQLite 的 `Test-Path` 均为 false。真实锁、day0、路由及授权无法重新核验；按历史锁日昨日对应 D8，本次采集、Sleep、成熟预测及其他实验命令均未启动，新增事件、Sleep、回答、judge、人评及实验模型请求均0。历史累计数无法复核，没有实际可用用户评分表路径，终局门禁未满足。
+
+阻塞 Handoff `msg_6383905de04a` 已沿原线程排入原 W1 所属 Run，关联原 Task `task_e538790026ad`；原 owner 已读及原根恢复未确认。10-21 run 9 为 `dispatch_failed`，不计为已采集。automation 仍 enabled，下次2026-10-23 00:20；最后 D9 处理结束或窗口外唤醒须禁用。仅更新 root HANDOFF/STATUS，普通 `[skip ci]` 提交与 push；执行细节见 [HANDOFF](HANDOFF.md)。
+
 ## 状态来源
 
 本页依据 2026-10-20 [交付候选与实际运行收敛](tasks/delivery-candidate-20261020.md) 更新。当前交付候选已完成源码、验证记录和实际运行对应，并普通推送到产品主线。原全量分支与旧任务事实见 [接管核查](docs/integration-audit-20261020.md)，接续步骤见 [HANDOFF](HANDOFF.md)。
