@@ -8,7 +8,7 @@
 
 真实session/CSRF和固定公开项目Grant流程由Agent受托执行，原23人工入口保留。独立接受的32857112计划及26实际结果区分真实用户批准、实际Agent执行者和服务返回主体；现有human Cookie仍是12小时管理会话，客户端清除引用不代表服务端注销，最终项目Grant/token仅observe。具体可用Agent、模型及原生工具状态分别核实；执行Grant尚未签发，工具范围及T11待答项保持。已核默认Pi及OpenCode源没有StepFun配置，已询问其所在Agent或配置路径，请勿发送密钥正文；其余已授权工作继续。
 
-其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key；单次真实GET https://api.deepseek.com/models返回200并确认默认模型存在，未进行推理或改变原源。该验证仅证明认证读取与模型存在性；NativeLaunch、关闭工具和插件、上下文及每Worker隔离、真实原生调用和执行Grant仍按独立计划落实，不能由配置或该GET代替。用户既有其他Agent测试许可保持，不重复询问通用调用授权。
+其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key，原SQLite唯一选定key与legacy一致；单次真实GET https://api.deepseek.com/models返回200并确认默认模型存在，未进行推理或改变原源。完整F18C计划获独立828ca336技术接受，主控核定NativeLaunch联合及原exe/ACP/私有每Worker根/完整SQLite成果于SPEC §21.1.6，原Worker连续实施真实私有无推理、正文及最终同安装双Worker。HTTP保留原CLI默认redirect，检查初始目标及固定逻辑来源，不另增传输保护或批准条件。执行Grant仍须实际签发，技术接受不表示运行通过；用户既有其他Agent测试许可保持。
 
 ## 继续构建与 REA 仓库格式（2026-10-21）
 

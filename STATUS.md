@@ -4,7 +4,7 @@
 
 当前程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。真实模型、完整安装及同候选双Worker仍未通过。
 
-继续OpenCode原生调用：实际2.0.31原源码和默认deepseek/deepseek-v4-pro、原生api认证已核；单次真实GET /models返回200、默认模型存在、原配置不变。原Worker及Reviewer正核NativeLaunch、工具/插件/上下文隔离、版本对应ACP消费者与完整成果，不以尚未实现的合同或局部StepFun来源缺失停止整体构建。
+原生OpenCode完整F18C方案/O01—O10已获828ca336独立技术接受，接口定稿于SPEC §21.1.5—§21.1.6，原Worker立即实施针对性构建及真实私有O03，继而完成正文、全部产品消费者和最终同安装双Worker。实际2.0.31、默认deepseek/deepseek-v4-pro、原SQLite选定key与GET31的200已核；新增运行尚未通过。当前产品记录5a47f7e8已push，程序仍f2ab；原native HTTP保留默认redirect，准确检查初始URL和固定逻辑来源。既有其他Agent测试许可保持。
 
 用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，其他Agent原生调用仍有NativeLaunch合同缺口，继续补齐。StepFun已核来源未发现，配置路径已询问；模型、真实双Worker、T11/T12仍未通过。
 

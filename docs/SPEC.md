@@ -921,8 +921,29 @@ type NativeLaunchPolicy = {
     model_target: { model_id: string; api: string; base_url: string }
   }
   tools: { mode: 'disabled'; native_contract: 'pi-cli-1.0.1' }
+} | {
+  schema: 'swa.native-launch.v1'
+  account: {
+    kind: 'opencode-native-api-key'
+    provider: 'deepseek'
+    source_home: string
+    config_source: { path: string; version: string }
+    auth_source: { path: string; version: string }
+    database_source: { path: string; version: string }
+    credential_id: string
+    credential_updated_at: number
+    private_root: string
+    model_target: {
+      model_id: 'deepseek-v4-pro'
+      api: 'opencode-native-deepseek'
+      base_url: 'https://api.deepseek.com'
+    }
+  }
+  tools: { mode: 'disabled'; native_contract: 'opencode-cli-2.0.31' }
 }
 ```
+
+上述联合按account.kind及对应tools.native_contract严格验证，不允许交叉组合。本节后续Pi来源、参数和RPC细则适用于pi-native-api-key；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。
 
 路径为实际canonical来源，version沿原配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后继出现视为变化。政策与原settings source/revision/configuration_version、原R/checkpoint共同固定原生选择，不保存凭据或另建账号账本。model_target绑定实际合成modelId/API/baseUrl，成熟URL解析拒绝账号信息、秘密查询、动态模板和未批准目标。API只允许已核最终请求消费者的openai-responses、openai-completions、azure-openai-responses，其他API保持政策unknown，不换模型或来源。
 
@@ -945,6 +966,30 @@ private_home固定DataRoot/pi/<实际项目UUID>，不同项目不共享。已�
 原生API key没有TTL字段时有效期为unknown，其余条件满足可以真实请求，账号远程有效性仍由实际结果证明。有实际明确期限的来源每次要求`expires_at - 当前时间 > 本次已批准最长执行时间 + 30秒`，期限或执行上限缺证、余量不足或到期拒绝；此未知拒绝不适用于原格式没有TTL的key。可能输入后继续按§21.1.2保全原R/operation/Job，不重选或重放。
 
 准确方案§13.6全部真实检查进入同一Worker计划：真实账号/明确模型、用户单CLI和空工具批准、原生子树/argv/env/私有文件及自产JSONL、实际工具效果、逐类来源/路由/请求覆盖和TTL边界、首次及后续输入、同安装候选双Worker/停止A/B同会话成果。仅用获准真实来源，未命中记INCONCLUSIVE、不伪造协议或时钟；工具/T11待答及旧Codex/S3各自限制保持。
+
+#### 21.1.6 OpenCode原生执行及完整成果
+
+原Reviewer依据先行D01—D08接受`native-opencode33-plan.md`准确SHA256 `F18C0ED603668BE5A3FA1E49C8C9F2DF476D08C4824E17BBEC6C8BAD4AA63BD9`及O01—O10，主控据此核定本节接口。实际客户端固定@opencode/cli2.0.31及官方tag `22728d67461260d56bb9796b9b8f36e1de47202e`，复用Orca1.4.230原ACP适配器和原生exe；原默认deepseek/deepseek-v4-pro、built-in DeepSeek目标及原生key来源固定，禁止Aliyun。单次真实GET31的200仅证明该次认证读取及模型存在，原生执行和最终安装另行验收。
+
+**私有账号。** §21.1.5新增opencode-native-api-key分支，三个source沿既有canonical path/version定义；原生credential按实际active/time_created/id规则选择，只读核其integration、key类型、非空literal及与legacy auth一致。拒绝OAuth、external、命令或环境key、自定义目标或请求覆盖。启动和每次效果前重读原源、实际所选credential及私有投影，秘密只在内存和私有原生账号文件中使用。
+
+private_root固定为`<DataRoot>/opencode/<实际projectId>`，每Worker根为其下真实Orca sessionId。OpenCode持久accountHome locator新增`{kind:'private',root:<每Worker根>}`，与原managed/unmanaged平行；account-home schema、创建前绑定、环境恢复、相等比较和resume共同消费，禁止映射为Pi环境变量。目录必须canonical、当前用户/SYSTEM私有DACL、无reparse且不与原账号/Orca/安装根重叠；已有未知内容拒绝。每Worker独立HOME/USERPROFILE、XDG_DATA_HOME、XDG_CACHE_HOME、XDG_CONFIG_HOME、XDG_STATE_HOME、OPENCODE_CONFIG_DIR、OPENCODE_DB、ProgramData、APPDATA/LOCALAPPDATA及TEMP/TMP，实际原生消费者须核实这些路径。原账户及本机Orca不写入。
+
+私有legacy auth只投影真实选定deepseek api key，由原生migration导入全新私有SQLite；产品不插入credential、migration或会话记录。启动后只读核私有库真实唯一选中key及integration，不能以auth文件存在替代。环境只继承原已审必要OS/Path和网络变量，清除provider key、OPENCODE覆盖及其他Agent/Orca注入值，不输出秘密。
+
+**原生权限与插件。** 实际私有配置固定build、准确model、更新/分享/warming/snapshot/自动compaction关闭，全局、agent和session最终权限全部拒绝，Tool.snapshot和execute定义均须为空。关闭项目、Claude兼容、指令、skills、MCP、reference、用户/项目插件和其他自动上下文发现；保留原生固定system和获准公开正文。plugins按原生有序移除及明确启用，仅保留guarded `opencode.provider.opencode`、`opencode.config.policy`及`opencode.agent`、`opencode.models.dev`、`opencode.config.agent`、`opencode.config.compaction`和产品policy插件，guarded provider无Console凭据。实际inventory必须准确且全部active，无failed/pending；真实路由若需其他插件先说明实际来源并审核，不放开通配。
+
+policy使用官方Promise hook。context核最终工具数量0，model.request核实际session/build/primary和固定provider/model/baseURL，http.request在原handler前以成熟Request/JSON核POST、初始HTTPS目标、原model和空tools，不改原请求/正文/provider。拒绝辅助标题、warming、compaction及未经审核通道，session.retry返回retry:false；原生失败只记录安全状态，不把凭据、headers或原错误dump输出。HTTP底层保持原CLI默认redirect行为，合同检查初始URL及固定逻辑provider/model/source，不声明所有跳转受控。
+
+原生setup失败会登记failed后继续，因此ready必须来自同一真实私有server的官方plugin.updated及plugin.list。产品沿现有stderr接收严格非秘密状态，含实际server PID、canonical私有根、单调序号及每Worker关联值，并与真实Job成员/PID/创建时间核对。缺记录、错误归属、库存不符或failed/inactive拒绝首笔和后续prompt；不能用文件或setup日志代替active。插件每次prompt/context/model/http继续复核状态和来源，注销或事件消费失败立即失效，不新增网络服务或状态账本。O03须先在无推理的实际生产者/消费者中验证此路径，缺插件负向必须无ready、无prompt。
+
+**真实进程与输入。** native CLI IPC为严格联合`{kind:'node-script',program,entry}`或`{kind:'executable',program}`，exe分支直接spawn实际opencode.exe acp，不虚构entry。原生Standalone私有serve使用`--stdio --port 0`及原stdin所有权，全部进程进入既有provider Job；adapter client capabilities关闭fs/terminal/elicitation/compaction、MCP为空、权限请求拒绝。实际native PID、canonical程序、创建时间和Job归属核实后才允许ready。禁止连接原账号managed服务。
+
+structured launch admission增加disabledOpenCodeTools，与disabledPiTools各自对应合同；原R、child R、Dispatch/session、input binding、当前Grant、runtime fence和consumer generation保持。首次及后续输入等待原串行队列后，效果前重新核全部选择、来源、私有账号、原生policy和授权；当前输入未知只查询原R，不重发、不换Agent/model/目录。当前许可只接受固定公开项目的text，attachment、资源读取、slash command及输入中模型切换在边界拒绝。
+
+**事件、成果与停止。** 原providerEventDirectory增加protocol=acp的真实request/response/update trace，绑定actual ACP sessionId、native process incarnation、单调时间及原R/input operation；不得合成Pi事件，秘密不进入trace。task.result新增source=opencode-sqlite联合分支，Go/TS/HTTP schema及全部直接消费者同步；Pi结果原语义保持。读取前核同一R/Run/root/Dispatch/native lease和ACP session，只读事务一次读取真实私有session_v2/session_message全部指定会话记录，核seq/time/id唯一顺序、model/directory/project及实际input/output/stop。累计UTF-8超过12MiB明确失败；保留原生JSON和完整文本投影，未知schema或不完整结构立即失败。读取前后核DB/session和原journal epoch/sequence，跨库不声明原子；partial和确定完整成果分别表示。检测实际凭据泄露时整体拒绝导出，私有原件保持。
+
+停止沿原cancel/close和Job消费者，只处理已核所属身份，保留其他Worker、主服务和本机Orca；两次完整Job查询核全部非保留成员退出，缺创建时间按已审独立完整CIM缺席方法处理，未知不标released。实施顺序为O02针对性构建、O03/O04真实私有无推理及拒绝、O05首次真实正文/O06所属故障，再O07全部产品消费者、O08准确最终安装、O09同安装双Worker及O10必要失败恢复。最终须真实执行重叠、停止活跃A全树、B原PID/session/fence继续并接收真实后续正文、完整成果及逐项真实事件库定位；本节技术接受不表示这些检查已经通过。
 
 ### 21.2 已采用的工程决策
 

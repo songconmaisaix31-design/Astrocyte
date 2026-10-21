@@ -2,7 +2,7 @@
 
 当前程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398均已push。Pi原生StepFun custom准入代码、strict/architecture及真实空auth拒绝获788db525限定接受；build16/410059866字节完整ZIP/普通解包29实际0。安装位于C:/Users/DW/AppData/Local/SwarmCli/candidates/f2ab4fd9-install29，复制/native/闭包/保护拒绝通过，安装汇总6保留真实消费者未验。同安装四项生命周期130/130/0/6、C08服务7/runtime_error和所属退出获32f254c5限定接受。新检查服务已退出。
 
-原Worker和Reviewer继续OpenCode原生调用，不能以StepFun局部来源缺失结束整个任务。实际@opencode/cli2.0.31及官方tag22728d67461260d56bb9796b9b8f36e1de47202e已取得；原配置默认deepseek/deepseek-v4-pro，原auth.deepseek为api且key存在。仅一次真实GET /models返回200并确认该模型存在，原源字节/stat保持，未进行推理。下一步核工具关闭、插件/上下文/每Worker隔离、ACP2.0.31消费者、完整输入成果及停止保全，方案审核后由原Worker实现。用户已允许其他Agent测试，无需重复通用许可。
+原Worker和Reviewer继续OpenCode原生调用。准确F18C完整方案/O01—O10获独立828ca3360be1a8a36434cb18b4d8f9679c56c83c技术接受，主控已全文读取并将NativeLaunch联合、每Worker private locator、原exe IPC、真实ACP trace和完整SQLite结果定稿于SPEC §21.1.5—§21.1.6，已通知原Worker立即实施O02/O03及后续全部计划。实际2.0.31/default deepseek/deepseek-v4-pro及原SQLite选定key已核，只读GET31返回200、未推理。先针对性构建和真实私有无推理验证同server插件active、实际凭据及空工具，再真实正文、全部产品消费者和最终同安装双Worker；原生HTTP保留默认redirect，检查初始URL和固定逻辑provider/model/source。产品后继记录5a47f7e89b393def96775aa3d01b49fda84e6d3b已push，当前新增OpenCode运行尚未通过；用户既有其他Agent测试许可保持。
 
 2026-10-22用户已回复APPROVE OBSERVE，禁止Aliyun key，允许阶跃星辰key和其他Agent测试。同一95ef安装的delegated-observe26实际0：真实Observe Grant、CurrentUser DPAPI及原23消费、status/capabilities通过，五项真实403和三库持久范围/无Worker模型效果核查通过。项目46ceef7b-0be3-4a4b-8e74-575fd327b31c，caller swa-cli-acceptance，凭据到期UTC2026-10-21T20:51:16.4468291Z。执行者为Agent，依据本次用户会话委托，不能记作本人TTY或T11通过。原Worker ctx_fb2c13c28d40与原Reviewer ctx_5f4446e340a0继续，5187及64509保持。
 
