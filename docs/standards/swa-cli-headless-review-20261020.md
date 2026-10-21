@@ -1925,3 +1925,21 @@ Reviewer实际`check-revision.ps1`分别核c6→8cd及ebb→b53，EXIT0；成熟
 empty-native-account28在所读默认配置找不到非禁provider的单独model定义，实际退出1，未调用policy；原脚本和日志保留。29完整入口及实际0原件已独立读：从真实同版catalog取得openai/gpt-4，明确只作缺credential的显式负向输入，不声明其已配置或已被选中执行。真实auth为{}，实际policy返回native_api_key_source_unreviewed；原三源stat保持、实际项目的private账户前后不存在，没有启动CLI、Worker或模型。29在认证入口结束，未覆盖新增custom组合、目标、正向认证或模型请求；这些范围及真实源故障副本、builtin正向回归、新候选和同安装双Worker继续未验。Worker限定接受通知为`msg_cfe3b755c511`。
 
 已读Grok来源reader及grok-source28非秘密结果：成熟TOML/JSON、三文件前后stat保持，配置无默认模型；唯一所读账号的expiry为2026-10-21T18:52:47.570220800Z，已早于本轮检查，没有刷新或模型请求。该观察不能提供可用的替代账号。Claude禁止供应目标、Codex完整ToolsOff及其他Agent NativeLaunch缺口继续按实际范围保留，StepFun真实源仍待明确。17e440ea的计划/记录两份hook已获主控`msg_ebf576095746`、`msg_acf22bddd79d`明确完整读取回复；后继构建由原Worker继续，不结算整体CLI通过。
+
+### 准确f2ab发行安装29与实际故障范围
+
+**限定接受程序`f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa`的build16、正常ZIP提取、安装29已验子项和本轮实际生命周期/C08/C09；接受后继`01b23b452a7949f0468859044ff622c0be327398`两份文档的准确记录范围。** 完整构建、解压、安装及检查入口和原始日志已独立读取。build16实际0，来源为干净f2ab，形成dist/swa-cli-install-20261020-15；实际Node24.21.0、pnpm11.27及Python3.13.13，21份成品、28233路径闭包通过。四份不变native沿实际源码、依赖、Node及编译条件核对原build11证据，从准确5070073c904aac6498dc821d6e775130deeb4257候选普通复制，未宣称重编。
+
+extract-package29实际0，成熟.NET ZipFile正常生成410059866字节完整ZIP并提取至仓库外f2ab4fd9-package29；原Node pin保持，实际父子进程为同一用户、Medium完整性8192。原安装器生成仓库外`C:/Users/DW/AppData/Local/SwarmCli/candidates/f2ab4fd9-install29`，**install29内外实际退出均为6，完整安装验收保持未通过**。已验子项覆盖真实复制/准确版本、native/空Job、完整闭包、端口占用退出5、保护根及四种junction退出3、目标字节/ACL和原Orca保全。T03/T13真实消费者仍未运行；安装原件位于case29/.verification/swa-cli-headless/t02-65bca04b-93d3-4f21-a217-01f70ee1b07c。
+
+Reviewer用该安装的固定Node实际执行`review-external-install-26036164.mjs <install29> <完整f2ab SHA>`，退出0，原件external-install29-independent.log。五个实际.node分别加载conpty、windows-process-tree、windows-security、windows-registry和watcher；原Job API1创建、读取空Job并关闭，creationTime/SID/registry只读和动态SDK/数据加载成立，21个实际加载文件均位于安装目录。实际`review-inline-licenses-780a.mjs <install29> <完整f2ab SHA>`退出0，原件installed-inline29-independent.log，逐项核21份成品meta及九个准确版本许可证。实际swa.exe --version返回完整f2ab且退出0；这些独立检查没有启动服务、Worker或模型。
+
+check-installed29入口及执行快照已完整读取，实际0。准确同一安装沿原run-lifecycle20和run-http-idle16，在新独占根完成本轮检查，没有替换原95ef服务。Reviewer实际`review-lifecycle14.mjs <lifecycle29-outer> <完整f2ab SHA> diagnostic cim`和`review-lifecycle29-source.mjs`均退出0，原件lifecycle29-independent.log及lifecycle29-source-independent.log。四种模式全部OBSERVED、remainingCases为空，实际退出130/130/0/6；真实native两次旧身份观察间隔分别278/278/269/278毫秒，完整CIM两次间隔分别461.2836/467.37/421.8026/485.5947毫秒，每次416行、所有PID有效。准确执行快照与f2ab的serve-lifecycle和observe-process-exits原文件一致；已启动模式完整Job两次仅余serve，C09为唯一关联非空runtime的精确诊断。
+
+真实创建时间缺项共四条：readiness-eof的swa37240/父33304与conhost32444/父37240，startup-stdout-close的swa48696/父33304与conhost33604/父48696。原样本及creation_time_unavailable原因保留；没有补写出生时间或向未知身份发送终止信号。各模式两次成功完整CIM均确认这些PID缺席，known身份退出和unknown PID缺席分别成立。该结论限本轮实际数据，未扩大为实际Agent中止、父进程丢失、CIM查询失败或超时场景通过。
+
+Reviewer实际`review-http-idle17.mjs <http-idle29> <完整f2ab SHA> 7 <http-idle29-outer-exit.txt>`退出0，原件http-idle29-independent.log。实际runtime为0b2287db-21b2-499b-ae7a-336ab889e9d0，HTTP故障只终止经原持有句柄/完整身份确认的14304，daemon故障时存活；实际serve退出7/runtime_error，readiness唯一且没有尾部消息。完整Job两次仅余serve间隔100毫秒，旧身份两次退出间隔929毫秒；五真实库完整性及外键、三项真实拒绝、六保护文件和原Orca保全通过。没有human session、模型或实际任务/恢复验收。
+
+原FD5在Worker检查前/中/后及Reviewer本次只读重核均0，human22/64509、runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69及原工具5187保持。新检查服务均已结束。原human23/consumer23及已接受Observe不重复执行，凭据实际expiry保持原2026-10-21T20:51:16.4468291Z，不能由保留文件推断后续仍有效。准确f2ab→01b两份文档差异及worker-handoff29全文已读，实际check-revision退出0，成熟marked18.1.0核两份/6本地链接、原§15锚点及Git空白通过；限定接受已通过`msg_c88f4297a8b9`交原Worker。788db525两份hook已获主控`msg_b70e9d35f340`、`msg_8873ae8b776b`明确完整读取回复。
+
+本轮模型调用为0。真实StepFun源、custom/builtin完整正向及真实故障副本、执行Grant、实际Agent调用、T03/T07/T09/T11/T12/T13剩余场景及同一最终安装双Worker重叠/指定停止A/B继续/完整成果保持未验。主控最新`msg_a6d3cbe3ec5b`要求继续独立核已有OpenCode/DeepSeek真实来源及原生配置/工具关闭/隔离合同；原Worker继续同模块实现，当前不以StepFun局部源缺失结算整体阻塞。未使用Aliyun，未改变原权限、S3或产品main发布状态。
