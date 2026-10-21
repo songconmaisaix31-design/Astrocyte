@@ -13,7 +13,7 @@
 | 实际客户端 / 模型 | Orca中Codex；本次 `terminal show` 的实际预览为 `GPT-6.1-Sol xhigh fast` |
 | write_paths | main f7c97d36的[首版任务](swa-cli-v1-20261020.md)“已授权的实施写域”，对应报告§5.3准确清单；公共事实源由主控维护 |
 | 原独立Reviewer | `task_9ae5a1337e1d / ctx_5f4446e340a0`，沿同一模块接续 |
-| 实施状态 | `OBSERVE_ACCEPTED / CUSTOM_POLICY_ACCEPTED / INSTALLATION_PARTIAL / NATIVE_OPENCODE_PLAN_REVIEW`；准确结果见报告§40—43 |
+| 实施状态 | `OBSERVE_ACCEPTED / CUSTOM_POLICY_ACCEPTED / NATIVE_MODEL_VERIFIED / PRODUCT_CONSUMERS_IMPLEMENTING / INSTALLATION_PARTIAL`；准确结果见报告§40—45 |
 
 接管已读取main的HANDOFF/STATUS及本树AGENTS/CODING/RESOURCES、最新首版任务和QUESTIONS相关决定，完整读取主控brief。已核准确上游 `stablyai/orca v1.4.230@b2879bd5aaac5d27c101ccf4171faa25d9f0bb1e`，来源工作树干净；只读目录为 `C:/Users/DW/orca/Astrocyte/.verification/orca-source-v1.4.230`。准确30b的两份来源报告保留其原调查与旧方案适用范围，本任务按最新首版范围提出方案。
 
@@ -197,3 +197,7 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 准确f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa已push并获原Reviewermsg_cfe3b755c511限定接受程序/实际空auth范围。build16、完整410059866字节ZIP正常解压29各0；仓库外install29实际6，复制/28233路径/native/空Job及端口、保护根、四junction拒绝通过，真实消费者未验。check-installed29同一安装的lifecycle四模式130/130/0/6和C08严格7/runtime_error各0，两个模式共四条真实native缺项均由各自两次完整CIM缺席确认，原Orca及保留的95ef/5187前中后保持。原Reviewermsg_c88f4297a8b9已限定接受这些实际结果，详情见报告§42。实际StepFun配置来源尚未取得，主控已向用户询问位置；后继按已安装OpenCode及现有DeepSeek原生账户继续，完整方案和真实剩余验收见报告§43，不以StepFun来源缺失结算整体任务。
 
 主控msg_a846a3adc56f/msg_09c1b31e9b13采用原生OpenCode2.0.31和官方policy hook，按msg_6466215347f5先私有真实原生、后完整消费者及最终整包。实际默认deepseek/deepseek-v4-pro、原生SQLite选定key与legacy auth一致；opencode-credential-db32只读0，唯一已批GET31实际HTTP200且模型存在、无推理/原生会话。完整native-opencode33-plan.md按准确F18C0ED6交原Reviewer，包含所有直接消费者/Go DTO、每Worker独立账户/DB、官方插件实际active准入、原exe/ACP/Job和完整12MiB结果。主控msg_1c88d869c2b3核定保持原CLI默认follow，只校验初始URL/固定逻辑provider/model/source，不增加redirect门禁。接口待主控核定并写SPEC，计划独立接受后由同Worker实施全部真实验证，95ef/5187保留。
+
+原Reviewermsg_47ae44cc7e18接受准确F18C，主控msg_0f1237445d1a核定SPEC21.1.5/6并授连续实施。首批原生exe/Job联合、来源/私有账户及官方policy插件已提交3bbfc138并push，后继普通返修继续；34/35加载前失败及36—38真实私有原生准入失败完整保持，全部零prompt/模型。36—38各自真实Job root/tree退出，两次完整查询及已观察身份缺席成立。实际38的private credential为0，准确fresh bootstrap不执行legacy import，正式auth import修订F803EF3D已交原Reviewer，主控已采用并更新SPEC；39严格类型检查实际0，当前继续原生初始化及其后全部产品和同安装验收，见报告§44。
+
+原Reviewer接受准确F803导入修订后，42/43真实私有原生无推理检查实际0，原Reviewer独立只读核42的真实库/12私有目录DACL/两个完整Job及FD5后限定接受；43另实际核最终Agent权限。44错误模型被原native policy拒绝且HTTP0，45缺policy无active且真实private verifier拒绝、零prompt/HTTP，均0。46首次原固定公开正文实际0，唯一原DeepSeek/pro POST返回HTTP200/tools0，ACP end_turn/478更新、原session succeeded/5消息、两个Job全部退出；47最新strict/architecture各0。继续完整产品选择/Go DTO/Grant/输入/ACP trace/完整成果消费者和最终同安装双Worker，不以原生模型阶段结束任务，见报告§45。

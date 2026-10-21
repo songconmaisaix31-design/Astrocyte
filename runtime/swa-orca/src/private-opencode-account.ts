@@ -57,12 +57,12 @@ export async function createPrivateOpenCodeRoot(projectId: string) {
   return root
 }
 
-export function privateOpenCodeConfig(root: string, plugin: string, correlation: string) {
+export function privateOpenCodeConfig(root: string, plugin: string, correlation: string, snapshot: NativeOpenCodeSnapshot) {
   return {
     model: 'deepseek/deepseek-v4-pro', default_agent: 'build', update: 'disable', share: 'disabled',
     warming: false, compaction: { auto: false }, snapshots: false, permissions: [deny],
     agents: { build: { permissions: [deny] }, ...Object.fromEntries(['general', 'explore', 'title', 'summary', 'compaction'].map(id => [id, { disabled: true }])) },
-    plugins: ['-*', ...openCodeBuiltinPlugins.filter(id => !['opencode.provider.opencode', 'opencode.config.policy'].includes(id)), { package: plugin, options: { root, correlation, source: join(plugin, 'server.js') } }]
+    plugins: ['-*', ...openCodeBuiltinPlugins.filter(id => !['opencode.provider.opencode', 'opencode.config.policy'].includes(id)), { package: plugin, options: { root, correlation, source: join(plugin, 'server.js'), sources: snapshot.sources, absent_sources: snapshot.absentSources } }]
   }
 }
 
@@ -74,10 +74,13 @@ export async function materializePrivateOpenCodeAccount(snapshot: NativeOpenCode
   if (!samePath(expected, snapshot.policy.account.private_root)) throw new Error('private_opencode_root_changed')
   assertNativeOpenCodeCurrent(snapshot)
   const root = join(expected, sessionId)
-  for (const protectedRoot of [snapshot.policy.account.source_home, process.env.SWA_INSTALL_ROOT]) {
+  for (const protectedRoot of [dirname(snapshot.policy.account.auth_source.path), dirname(snapshot.policy.account.config_source.path), dirname(snapshot.policy.account.database_source.path), join(snapshot.policy.account.source_home, 'AppData/Roaming/orca'), process.env.SWA_INSTALL_ROOT]) {
     if (!protectedRoot) continue
-    const part = relative(await realpath(protectedRoot), root)
-    if (!part || !part.startsWith('..') && !isAbsolute(part)) throw new Error('private_opencode_root_overlap')
+    const actualProtected = await realpath(protectedRoot)
+    for (const [parent, child] of [[actualProtected, root], [root, actualProtected]]) {
+      const part = relative(parent, child)
+      if (!part || !part.startsWith('..') && !isAbsolute(part)) throw new Error('private_opencode_root_overlap')
+    }
   }
   await directory(root)
   if ((await readdir(root)).length) throw new Error('private_opencode_existing_account_unreviewed')
@@ -90,7 +93,7 @@ export async function materializePrivateOpenCodeAccount(snapshot: NativeOpenCode
     if (!snapshot.sources.some(item => isDeepStrictEqual(item, source))) snapshot.sources.push(source)
   }
   writePrivateJSON(join(root, 'data/opencode/auth.json'), { deepseek: { type: 'api', key: snapshot.key } })
-  writePrivateJSON(join(root, 'config/opencode/opencode.json'), privateOpenCodeConfig(root, actualPlugin, correlation))
+  writePrivateJSON(join(root, 'config/opencode/opencode.json'), privateOpenCodeConfig(root, actualPlugin, correlation, snapshot))
   await verifyPrivateOpenCodeAccount(snapshot, root, actualPlugin, correlation)
   return root
 }
@@ -101,7 +104,7 @@ export async function verifyPrivateOpenCodeAccount(snapshot: NativeOpenCodeSnaps
   await actualDirectory(root)
   security(root, true)
   for (const name of privateDirectories) { await actualDirectory(join(root, name)); security(join(root, name), true) }
-  for (const [name, expected] of [['data/opencode/auth.json', { deepseek: { type: 'api', key: snapshot.key } }], ['config/opencode/opencode.json', privateOpenCodeConfig(root, plugin, correlation)]] as const) {
+  for (const [name, expected] of [['data/opencode/auth.json', { deepseek: { type: 'api', key: snapshot.key } }], ['config/opencode/opencode.json', privateOpenCodeConfig(root, plugin, correlation, snapshot)]] as const) {
     const file = join(root, name), info = await lstat(file)
     if (!info.isFile() || info.isSymbolicLink() || !samePath(await realpath(file), file)) throw new Error('private_opencode_file_redirected')
     security(file, false)

@@ -1,18 +1,18 @@
-import { readFileSync, realpathSync, writeSync } from 'node:fs'
+import { lstatSync, readFileSync, realpathSync, statSync, writeSync } from 'node:fs'
 import { join } from 'node:path'
 import { z } from 'zod'
 
 const pluginId = 'swa.opencode.policy'
 const expectedIds = ['opencode.provider.opencode', 'opencode.config.policy', 'opencode.agent', 'opencode.models.dev', 'opencode.config.agent', 'opencode.config.compaction', pluginId].sort()
 const modelSchema = z.object({ id: z.literal('deepseek-v4-pro'), providerID: z.literal('deepseek') })
-const optionsSchema = z.strictObject({ root: z.string().min(1), correlation: z.string().regex(/^[a-f0-9]{64}$/), source: z.string().min(1) })
+const optionsSchema = z.strictObject({ root: z.string().min(1), correlation: z.string().regex(/^[a-f0-9]{64}$/), source: z.string().min(1), sources: z.array(z.strictObject({ path: z.string(), version: z.string() })).min(1), absent_sources: z.array(z.string()) })
 const inventorySchema = z.array(z.object({ id: z.string(), state: z.object({ status: z.literal('active') }) }))
 type Context = {
   options: unknown
   location: { directory: string }
   plugin: { list(): Promise<unknown> }
   tool: { list(): Promise<readonly unknown[]> }
-  agent: { get(input: { agentID: string }): Promise<unknown> }
+  agent: { list(): Promise<unknown> }
   session: { get(input: { sessionID: string }): Promise<unknown>; hook(name: string, callback: (event: unknown) => Promise<void> | void): Promise<unknown> }
   integration: { connection: { active(id: string): Promise<unknown>; resolve(connection: unknown): Promise<unknown> } }
   event: { subscribe(options: { signal: AbortSignal }): AsyncIterable<unknown> }
@@ -27,18 +27,44 @@ export default {
     const authPath = join(root, 'data/opencode/auth.json'), configPath = join(root, 'config/opencode/opencode.json')
     const authBytes = readFileSync(authPath), configBytes = readFileSync(configPath), pluginBytes = readFileSync(options.source)
     const key = z.object({ deepseek: z.strictObject({ type: z.literal('api'), key: z.string().min(1) }) }).parse(JSON.parse(authBytes.toString('utf8'))).deepseek.key
-    let sequence = 0, active = false, failure = false
+    let sequence = 0, active = false, failure = false, checking = 'setup'
     const controller = new AbortController()
     const emit = (state: string, detail: Record<string, unknown> = {}) => writeSync(2, 'SWA_OPENCODE_POLICY ' + JSON.stringify({ type: 'swa_opencode_policy', correlation: options.correlation, pid: process.pid, root, sequence: ++sequence, state, ...detail }) + '\n')
     const filesCurrent = () => {
       if (failure || controller.signal.aborted || !authBytes.equals(readFileSync(authPath)) || !configBytes.equals(readFileSync(configPath)) || !pluginBytes.equals(readFileSync(options.source))) throw new Error('swa_opencode_policy_unavailable')
+      for (const source of options.sources) {
+        const path = realpathSync(source.path), info = statSync(path, { bigint: true })
+        if (path !== source.path || !info.isFile() || `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}` !== source.version) throw new Error('swa_opencode_source_changed')
+      }
+      for (const path of options.absent_sources) {
+        try { lstatSync(path) }
+        catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT') continue; throw error }
+        throw new Error('swa_opencode_source_appeared')
+      }
     }
     async function inventory() {
       filesCurrent()
-      const plugins = inventorySchema.parse(await ctx.plugin.list())
+      checking = 'plugin_list'
+      const raw = await ctx.plugin.list()
+      checking = 'plugin_response_decode'
+      const response = z.object({ location: z.object({ directory: z.string().min(1) }), data: inventorySchema }).parse(raw)
+      checking = 'plugin_location'
+      if (realpathSync(response.location.directory).toLowerCase() !== realpathSync(ctx.location.directory).toLowerCase()) throw new Error('swa_opencode_plugin_location_changed')
+      const plugins = response.data
+      checking = 'plugin_ids'
       if (JSON.stringify(plugins.map(row => row.id).sort()) !== JSON.stringify(expectedIds)) throw new Error('swa_opencode_plugin_inventory_changed')
+      checking = 'tool_list'
       if ((await ctx.tool.list()).length) throw new Error('swa_opencode_tools_available')
+      checking = 'agent_permissions'
+      const agents = z.object({ location: z.object({ directory: z.string() }), data: z.array(z.object({ id: z.string(), permissions: permissionSchema })) }).parse(await ctx.agent.list())
+      if (realpathSync(agents.location.directory).toLowerCase() !== realpathSync(ctx.location.directory).toLowerCase() || agents.data.length !== 1 || agents.data[0]!.id !== 'build') throw new Error('swa_opencode_agent_selection_changed')
+      const last = agents.data[0]!.permissions.at(-1)
+      if (last?.action !== '*' || last.resource !== '*' || last.effect !== 'deny') throw new Error('swa_opencode_agent_permissions_changed')
+      checking = 'connection_active'
       const connection = await ctx.integration.connection.active('deepseek')
+      if (connection === undefined) throw new Error('swa_opencode_native_credential_missing')
+      z.object({ type: z.literal('credential'), id: z.string().min(1), method: z.literal('key') }).parse(connection)
+      checking = 'connection_resolve'
       const credential = z.strictObject({ type: z.literal('key'), key: z.string().min(1) }).parse(await ctx.integration.connection.resolve(connection))
       if (credential.key !== key) throw new Error('swa_opencode_native_credential_changed')
       filesCurrent()
@@ -48,8 +74,10 @@ export default {
       if (!active) throw new Error('swa_opencode_policy_not_active')
       const scope = z.object({ sessionID: z.string().min(1) }).parse(value)
       const plugins = await inventory()
-      const session = z.object({ id: z.literal(scope.sessionID), directory: z.string(), agent: z.literal('build'), model: modelSchema, permissions: permissionSchema.optional() }).parse(await ctx.session.get({ sessionID: scope.sessionID }))
-      if (realpathSync(session.directory).toLowerCase() !== realpathSync(ctx.location.directory).toLowerCase()) throw new Error('swa_opencode_session_directory_changed')
+      const parsed = z.object({ id: z.literal(scope.sessionID), location: z.object({ directory: z.string() }), agent: z.literal('build'), model: modelSchema, permissions: permissionSchema.optional() }).safeParse(await ctx.session.get({ sessionID: scope.sessionID }))
+      if (!parsed.success) { emit('rejected', { session_id: scope.sessionID, code: 'native_session_selection_changed' }); throw new Error('swa_opencode_session_selection_changed') }
+      const session = parsed.data
+      if (realpathSync(session.location.directory).toLowerCase() !== realpathSync(ctx.location.directory).toLowerCase()) throw new Error('swa_opencode_session_directory_changed')
       if (session.permissions?.some(rule => rule.effect !== 'deny')) throw new Error('swa_opencode_session_permission_changed')
       return { scope, plugins }
     }
@@ -94,7 +122,12 @@ export default {
         emit('active', { plugins, tools_count: 0, directory: ctx.location.directory, roots: { home: process.env.HOME, data: process.env.XDG_DATA_HOME, cache: process.env.XDG_CACHE_HOME, config: process.env.XDG_CONFIG_HOME, state: process.env.XDG_STATE_HOME, programdata: process.env.ProgramData, temp: process.env.TEMP, database: process.env.OPENCODE_DB } })
       }
       if (!controller.signal.aborted) throw new Error('swa_opencode_policy_event_stream_ended')
-    })().catch(() => { if (!controller.signal.aborted) { failure = true; active = false; emit('failed') } })
+    })().catch(error => {
+      if (!controller.signal.aborted) {
+        failure = true; active = false
+        emit('failed', { code: error instanceof Error && /^swa_opencode_[a-z_]+$/.test(error.message) ? error.message : 'native_policy_validation_failed', checking, error_type: error instanceof Error ? error.name.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60) : typeof error, issue_paths: error instanceof z.ZodError ? error.issues.map(issue => issue.path.join('.')) : [] })
+      }
+    })
     return () => { active = false; controller.abort(); emit('inactive'); authBytes.fill(0) }
   }
 }
