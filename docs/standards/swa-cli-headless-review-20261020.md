@@ -1535,3 +1535,31 @@ e7证据不足hook `msg_7a36811bcbbc` 已获主控 `msg_4e67eeb7e521` 明确完�
 该后置位置依已读原生CL规则解决本次前置覆盖缺证；未宣称MSVC实际消费、分析文件生成或C1258修复已通过。新runner05的7a375、旧04及snapshot的05b0、仅candidate路径差异和Parser0等未变化范围复用前次准确检查。仍需主控单独授予准确ada和新runner的全新candidate07/build08，旧候选与失败原件保留。
 
 实际 `node --max-old-space-size=512 .verification/check-analysis-option.mjs ada4089de6a9fcaf72f3a91c0b0331ced11343d9 environment._CL_` EXIT0，成熟TypeScript6.0.3 AST确认后置变量和真实尾部 `[92,92,34]`，未创建Program；`check-revision.ps1`准确e7→ada EXIT0，一Markdown/1本地链接及Git空白通过，BelowNormal、Node512MiB。累计范围只改原builder和三文档，没有新依赖或程序权限。严格类型OOM、全部真实功能及同安装候选双Worker继续未通过，本Reviewer没有执行编译、候选、服务或模型。
+
+## 用户解除资源限制后的累计审查
+
+主控 `msg_5d03182be32c` 明确转达用户解除资源限制、提高普通修复效率的决定；准确main `1ca10457b95fe3e2ed3ea5a3813ec66295b035ec` 已更新六份管理文档，本Reviewer完整读取准确差异并接受其限定范围。后继strict可用8192MiB，原Worker集中检查全部类型、工具链与四个native模块，复用原固定校验输入，分模块修复后执行最终完整包；本Reviewer直接累计反馈，不再逐小改等待主控资源窗口或回执。历史检查保留实际参数和失败结果，原账号、工具、资料、批准及最终同安装候选验收要求保持。ada静态接受hook `msg_6f0b4c91eee7` 已获主控 `msg_f68c9a2feb53` 明确读取准确源码和d1d9ca31报告后回复。
+
+**build08完整包仍为FAIL。** 已读准确SOURCE=ada、完整build.log、资源、内外退出及UTC13:38:59.1407035/13:39:15.3641194两次所属为空原件。资源样本CPU8.5/8.1%、available18029510656/17906249728字节、间隔2.501628秒；child1/resource0/outer1。日志记录Python3.13.13、VS2022及固定Node24.21.0，ConPTY的conpty.cc、path_util.cc和win_delay_load_hook.cc均进入编译并创建lib/exp；三份真实分析XML各59字节，成熟.NET XML解析确认DEFECTS根节点和零子元素。C1258在本次日志未再出现，原C4267警告保持。后续FileTracker FTK1011无法创建原长目录中的link-rc、link-cvtres及link读写tlog，未完成四个native模块、Go、VERSION或swa.exe，candidate07保留不可安装。
+
+只读本机v170真实文件确认：Microsoft.BuildSteps.targets:219默认TLogLocation引用IntDir及项目名；Microsoft.Cl.Common.props:113、Microsoft.Link.Common.props:24及其他RC/Manifest/Lib消费者使用该目录。对象文件与编译器PDB依赖IntDir，链接器PDB依赖OutDir；路径及项目归属需要统一处理。node-gyp12.3.0的lib/build.js会将Windows收到的额外argv改写为/t:，MSBuild属性须经真实入口和最终求值核实。已通过 `msg_164f46834c6c` 直接交原Worker；保留代码分析、跟踪、ABI和原编译规则，实际修复与四模块复编另审，没有关闭FileTracker或修改全局配置。
+
+已只读typecheck02的SOURCE=ada、实际tsc-exit=2及日志首尾，确认取得语义诊断；native-methods.ts:160缺少nativeError导入、边界值可能undefined、真实类型路径和Windows安全契约等已通过 `msg_7ad118b74966` 交原Worker累计修复。完整入口参数、全部诊断处理及后继类型结果以原Worker准确交付另审，本轮未将该失败视为通过，也未启动第二份类型检查。
+
+### candidate07的实际执行依赖
+
+以build08生成的21份实际metafile和JS为对象，`node --max-old-space-size=512 .verification/review-external-dependencies.mjs` 使用JSON.parse读取全部outputs.imports，`node --max-old-space-size=2048 .verification/review-dynamic-consumers.mjs` 使用已安装TypeScript6.0.3逐份解析成品AST，均实际EXIT0；未创建Program或执行候选。全部metafile去重6048个inputs，host为5769个；这些输入数量只用于定位消费者，不作为进度。
+
+直接非Node内置external包括node-pty及其两个内部入口、@orca/windows-security、@parcel/watcher、ws的可选bufferutil/utf-8-validate和ssh2的两个可选native相对路径。动态createRequire还保留以下真实消费者，单看inputs或outputs静态边均不充分：
+
+| 实际成品位置 | 消费内容 | 当前结论 |
+| --- | --- | --- |
+| host.cjs:26942、27735 | @orca/windows-registry、@vscode/windows-process-tree | 保留四个原生模块及其真实JS装载入口 |
+| host.cjs:179274 | @linear/sdk | 真实动态加载，保留当前安装依赖 |
+| host.cjs:111867 | emojibase-data/en/shortcodes/emojibase.json | 实际worktree名称处理加载器存在，candidate07的对应包目录缺失；实际可达范围与补齐方式交原Worker核查 |
+| agent-connection、swa-provider-process-tree、host等成品 | node-pty/lib/utils、真实ConPTY文件与支持资源 | 保留包内文件、原slotSourceFiles结果及原ABI |
+| profile-state-writer、claude-profile-setup等后台成品 | Windows安全加载器与进程树 | 子入口与主入口一并核查 |
+
+provider-job-bootstrap.mjs虽然使用packages=external，实际成品仅导出父IPC准入函数、只导入Node内置模块。真实Pi政策从已发现并验证的原生CLI所在安装目录按绝对文件URL导入配置/provider/catalog模块；零metafile输入不能证明原生Agent依赖可以删除。agent-browser二进制、ripgrep、Claude SDK资源和其他动态资源的完整必要范围继续未知，尚无删除或独立安装通过结论。
+
+明确可供原Worker验证的重复纯JS安装依赖候选为zod、yaml、diff、smol-toml、jsonc-parser、@streamparser/json、tweetnacl及proper-lockfile；实际成品已包含对应190/72/19/10/6/9/2/4个输入，21输出没有对应external，已识别的动态createRequire没有读取这些包。可保留构建依赖并检查prod deploy的重复副本是否必要，最终结论必须结合传递消费者、资源与独立安装/真实任务。现有THIRD_PARTY依赖node_modules原包携带LICENSE/notices，删除重复文件前须继续保留内联代码对应的原许可和归属。这些具体保留、缺失及有条件候选已通过 `msg_b1b8858f3b76`、`msg_3a3b957f1439` 交原Worker，没有修改实现或把本调查设为四模块修复的前置。
