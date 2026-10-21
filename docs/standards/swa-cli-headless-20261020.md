@@ -1237,3 +1237,13 @@ stdout-close保留真实部分输出及解析错误原件，允许stdout不完�
 准确干净`7c812a1a972ed914bae3b9cd864702e5426b9492`、runner05b0及独占新目录核实后，实际执行`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/next-window-04.ps1 -Stage dependencies -EvidenceName dependency-04 -ExpectedSource 7c812a1a972ed914bae3b9cd864702e5426b9492`。exec2798于UTC13:02:24启动，实际外层最终EXIT0。原pnpm11.27.0的lock-only和frozen ignore-scripts install分别7.9秒和2.1秒完成，两次资源与两命令退出均0；BelowNormal、Node1024及私有CAS/TEMP保持。资源两组CPU11.3/8.0%与14.6/23.2%，可用内存均超过4GiB，单调间隔2.5012007与2.5016213秒。peer及deprecated提示保留于完整日志。
 
 `pnpm-lock.yaml`由原命令真实生成，增加已审七项开发声明及resolution/snapshot；pnpm同时将现有Electron和React类型peer选择收敛至显式43.7.8与19.2.18。没有手写锁、升级声明或执行安装脚本。原件在`dependency-04/`，含准确SOURCE、完整日志、四项退出、外层EXIT0及实际进程身份。UTC13:02:56.3636359和13:03:05.9543247两次新鲜CIM对已观察根27240、33024、7572及子进程均无匹配，已立即通过`msg_78745a825e55`交回窗口。当前没有消费typecheck、generate、build、服务或模型Stage；同Worker继续源码复用核查、必要实现和全部真实安装验收。
+
+## 27. 真实严格类型检查与契约生成
+
+准确`3ba76a85cc968224f283315b64a4be4c27f1fcce`的真实锁及安装已获原Reviewer准确af60598f限定接受。主控随后分别授予同runner05b0的typecheck01与generate03，两项独立执行并逐项交回，没有串联其他Stage。
+
+`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/next-window-04.ps1 -Stage typecheck -EvidenceName typecheck-01 -ExpectedSource 3ba76a85cc968224f283315b64a4be4c27f1fcce`实际exec40419外层EXIT1，TS子退出134，资源退出0。CPU5.5/5.0%、可用内存均约18.85GB、间隔2.5010102秒；BelowNormal、Node1024及私有TEMP保持。原TS6 strict/noEmit/skipLibCheck=false在约1022.7MB heap后抛出真实OOM，没有语义诊断，类型检查记FAIL。完整原件在`typecheck-01/`；UTC13:09:07.9578263和13:09:21.5806254两次新鲜CIM对已观察31832、35124、27584、27964及子进程均空，已立即交回。没有提额、关闭规则或重试；原上游分项目runner对node项目7GiB和CLI2GiB的预算仅作来源事实，当前新额度仍待用户决定，不影响其他静态实现和独立构建准备。
+
+`pwsh -NoProfile -File .verification/swa-cli-headless-20261020/next-window-04.ps1 -Stage generate -EvidenceName generate-03 -ExpectedSource 3ba76a85cc968224f283315b64a4be4c27f1fcce`实际exec31513外层、原生成器及资源退出均0。CPU9.5/9.4%、可用18.59/18.62GB、间隔2.5010712秒；Node512、BelowNormal及私有TEMP保持。真实`web/src/api/schema.d.ts`由既有生成器增加controller.recover、SwaNativeLaunchPolicyV1、nativeConfigurationSource及selection.native_launch，与已审契约对应，未手改生成文件。原件在`generate-03/`；UTC13:12:28.7262117和13:12:41.1910594两次定向新鲜CIM对根15636、子进程及真实生成器node均空，已通过msg_570974b28663交回。下一完整build使用新candidate06/build07，当前没有执行native/Go构建、服务、模型或安装验收。
+
+已完整读取主线CLI参考及原Reviewer源码对应报告。当前client/helper直接调用固定Orca RuntimeClient/transport；host直接组装原OrcaRuntimeService、RuntimeRpcShutdown、16项原生RPC及原PTY/daemon；structured正文直接调用sendAgentTurn、host.send和waitForSendSettlement，唯一receipt继续由原executor/SQLite维护。必要产品授权、隔离、helper真实身份及native Job保持。原Reviewer已独立核实helper六项历史只读分支及collectTaskResult没有当前产品调用者，允许后继精确删除；当前生成阶段没有应用该清理，不以来源核对或清理作为构建前置。

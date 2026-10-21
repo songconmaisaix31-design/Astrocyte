@@ -3201,6 +3201,7 @@ export interface components {
         SwaRegisteredAgentV1: components["schemas"]["registeredAgent"];
         SwaAgentCapabilitiesV1: components["schemas"]["capabilities"];
         SwaAgentSelectionV1: components["schemas"]["agentSelection"];
+        SwaNativeLaunchPolicyV1: components["schemas"]["nativeLaunchPolicy"];
         OpenVikingStatusV1: {
             /** @constant */
             schema_version: 1;
@@ -7743,7 +7744,7 @@ export interface components {
         /** @description Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here. */
         command: {
             /** @enum {unknown} */
-            action: "status" | "capabilities" | "controller.open" | "controller.show" | "controller.close" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
+            action: "status" | "capabilities" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
             project_id?: string;
             controller?: string;
             task_id?: string;
@@ -7903,6 +7904,36 @@ export interface components {
                 requirements: components["schemas"]["requirements"];
             }[];
         };
+        nativeConfigurationSource: {
+            path: string;
+            version: string;
+        };
+        nativeLaunchPolicy: {
+            /** @constant */
+            schema: "swa.native-launch.v1";
+            account: {
+                /** @constant */
+                kind: "pi-native-api-key";
+                provider: string;
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                models_source: components["schemas"]["nativeConfigurationSource"] | null;
+                private_home: string;
+                model_target: {
+                    model_id: string;
+                    /** @enum {unknown} */
+                    api: "openai-responses" | "openai-completions" | "azure-openai-responses";
+                    /** Format: uri */
+                    base_url: string;
+                };
+            };
+            tools: {
+                /** @constant */
+                mode: "disabled";
+                /** @constant */
+                native_contract: "pi-cli-1.0.1";
+            };
+        };
         agentSelection: {
             agent_id: string;
             adapter: string;
@@ -7916,6 +7947,7 @@ export interface components {
             settings_source: components["schemas"]["settingsSource"];
             settings_revision: number;
             configuration_version: string;
+            native_launch: components["schemas"]["nativeLaunchPolicy"];
         };
     };
     responses: {
