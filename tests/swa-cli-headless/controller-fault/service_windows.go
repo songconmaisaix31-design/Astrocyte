@@ -16,15 +16,16 @@ import (
 )
 
 type actualServiceFault struct {
-	Action        string          `json:"action"`
-	Candidate     string          `json:"candidate"`
-	DataRoot      string          `json:"data_root"`
-	Database      string          `json:"database"`
-	OwnerFile     string          `json:"owner_file"`
-	ReadinessFile string          `json:"readiness_file"`
-	Inspection    string          `json:"inspection_output"`
-	Root          processIdentity `json:"actual_serve_process"`
-	ProtectedPIDs []uint32        `json:"protected_process_ids"`
+	Action         string          `json:"action"`
+	Candidate      string          `json:"candidate"`
+	DataRoot       string          `json:"data_root"`
+	Database       string          `json:"database"`
+	OwnerFile      string          `json:"owner_file"`
+	ReadinessFile  string          `json:"readiness_file"`
+	Inspection     string          `json:"inspection_output"`
+	InspectionMode string          `json:"inspection_mode,omitempty"`
+	Root           processIdentity `json:"actual_serve_process"`
+	ProtectedPIDs  []uint32        `json:"protected_process_ids"`
 }
 
 func performServiceFault(requestFile string) (report map[string]any, result error) {
@@ -44,6 +45,34 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 	if (request.Action != "observe" && request.Action != "stop-service" && request.Action != "stop-http") || !filepath.IsAbs(request.Inspection) || len(request.ProtectedPIDs) == 0 || request.Root.PID == 0 || request.Root.Created == 0 || !samePath(request.Root.Name, "swa.exe") {
 		return report, errors.New("实际根创建身份、保护列表或原件路径缺失")
 	}
+	switch request.InspectionMode {
+	case "", "live":
+		if !filepath.IsAbs(request.OwnerFile) {
+			return report, errors.New("live检查需要真实owner-file")
+		}
+	case "historical-owner":
+		if request.Action != "stop-http" || !filepath.IsAbs(request.OwnerFile) {
+			return report, errors.New("历史检查只接受stop-http及真实owner-file")
+		}
+	case "idle":
+		if request.Action != "stop-http" || request.OwnerFile != "" {
+			return report, errors.New("空闲检查只接受stop-http且不得提供owner-file")
+		}
+	default:
+		return report, errors.New("实际检查模式无效")
+	}
+	database, err := canonical(request.Database)
+	if err != nil {
+		return report, err
+	}
+	expectedDatabase, err := canonical(filepath.Join(data, "orchestration.db"))
+	if err != nil {
+		return report, err
+	}
+	if !samePath(database, expectedDatabase) {
+		return report, errors.New("实际orchestration.db不能由同根其他SQLite替代")
+	}
+	request.Database = database
 	var readiness struct {
 		OK          bool   `json:"ok"`
 		Install     string `json:"install_root"`
@@ -173,7 +202,16 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 	started := time.Now().UTC()
 	probeContext, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	probe := exec.CommandContext(probeContext, filepath.Join(install, "node", "node.exe"), filepath.Join(install, "runtime", "controller-inspection.cjs"), "--candidate", install, "--data-root", data, "--owner-file", request.OwnerFile, "--database", request.Database, "--output", request.Inspection)
+	probeArgs := []string{filepath.Join(install, "runtime", "controller-inspection.cjs"), "--candidate", install, "--data-root", data, "--database", request.Database, "--output", request.Inspection}
+	if request.InspectionMode == "idle" {
+		probeArgs = append(probeArgs, "--idle-only")
+	} else {
+		probeArgs = append(probeArgs, "--owner-file", request.OwnerFile)
+		if request.InspectionMode == "historical-owner" {
+			probeArgs = append(probeArgs, "--historical-owner")
+		}
+	}
+	probe := exec.CommandContext(probeContext, filepath.Join(install, "node", "node.exe"), probeArgs...)
 	probe.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	for _, key := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATH", "PATHEXT", "TEMP", "TMP", "ProgramFiles"} {
 		if value := os.Getenv(key); value != "" {
@@ -185,14 +223,25 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 		return report, err
 	}
 	var inspection struct {
-		Observed time.Time        `json:"observed_at"`
-		Job      serviceOwnership `json:"service_job"`
+		Observed   time.Time        `json:"observed_at"`
+		Job        serviceOwnership `json:"service_job"`
+		OwnerState string           `json:"owner_state"`
 	}
 	if err := readJSON(request.Inspection, &inspection); err != nil {
 		return report, err
 	}
 	if inspection.Observed.Before(started) || time.Since(inspection.Observed) > 5*time.Second || inspection.Job != ownership {
 		return report, errors.New("原DaemonClient真实观察的时间或Job来源不符")
+	}
+	validState := inspection.OwnerState == "live"
+	if request.InspectionMode == "historical-owner" {
+		validState = inspection.OwnerState == "historical" || inspection.OwnerState == "absent"
+	}
+	if request.InspectionMode == "idle" {
+		validState = inspection.OwnerState == "idle"
+	}
+	if !validState {
+		return report, errors.New("实际原生观察与请求检查模式不符")
 	}
 	for _, process := range held {
 		created, err := live(process.Handle)
@@ -207,6 +256,7 @@ func performServiceFault(requestFile string) (report map[string]any, result erro
 	report["actual_held_processes"], report["actual_inspection_file"] = held, request.Inspection
 	report["protected_process_ids"] = request.ProtectedPIDs
 	report["actual_action"] = request.Action
+	report["actual_inspection_mode"], report["actual_owner_state"] = request.InspectionMode, inspection.OwnerState
 	if request.Action == "observe" {
 		report["same_daemon_preserved"] = true
 		return report, nil
