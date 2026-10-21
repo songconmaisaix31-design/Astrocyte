@@ -1525,3 +1525,13 @@ typecheck01同样以准确3ba运行，完整日志明确为Reached heap limit，
 新 `next-window-05.ps1` 已完整读取，实际SHA256为 `7a375ffec6f7ff532abbdde3926736f5d460233f37568ae08fea853876443131`，PowerShell Parser错误0。与当前旧04相比只改变candidate06→candidate07常量；旧04与build07执行snapshot当前均为原05b0。candidate07及build08本次只读观察尚不存在。来源、干净分支、独占证据、资源门限、私有CAS及各Stage额度保持，不执行脚本；后继正式窗口须使用准确新源码和本次新runner。
 
 实际 `node --max-old-space-size=512 .verification/check-analysis-option.mjs e7fd948ad9214ffee033eb4701adad776bda27a4` EXIT0；`check-revision.ps1`准确c42→e7 EXIT0，三Markdown/7本地链接及Git空白通过，原锚点保持；全部BelowNormal、Node512MiB。未执行CL、Program、编译、生成、候选、模型或安装，C1258及严格类型失败均未关闭。
+
+e7证据不足hook `msg_7a36811bcbbc` 已获主控 `msg_4e67eeb7e521` 明确完整读取5d859ad4新增、准确e7四文件和实际安装消费者的回复，实际唤起确认。
+
+## 准确ada4089d的原生后置日志参数
+
+结论：**局部静态接受准确 `ada4089de6a9fcaf72f3a91c0b0331ced11343d9` 相对e7的两文件修正及累计四文件范围，真实编译效果继续未验。** 已完整读取builder和报告差异，日志参数使用产品自有_CL_后置，CL继续为原/utf-8；每包独占目录、原宿主CL/_CL_先行清理、1024长度检查、尾部转义、实际非空ConPTY日志验证及全部原native编译参数保持。完成native循环后删除_CL_再进入原Go编译，不改变其他进程或全局环境。
+
+该后置位置依已读原生CL规则解决本次前置覆盖缺证；未宣称MSVC实际消费、分析文件生成或C1258修复已通过。新runner05的7a375、旧04及snapshot的05b0、仅candidate路径差异和Parser0等未变化范围复用前次准确检查。仍需主控单独授予准确ada和新runner的全新candidate07/build08，旧候选与失败原件保留。
+
+实际 `node --max-old-space-size=512 .verification/check-analysis-option.mjs ada4089de6a9fcaf72f3a91c0b0331ced11343d9 environment._CL_` EXIT0，成熟TypeScript6.0.3 AST确认后置变量和真实尾部 `[92,92,34]`，未创建Program；`check-revision.ps1`准确e7→ada EXIT0，一Markdown/1本地链接及Git空白通过，BelowNormal、Node512MiB。累计范围只改原builder和三文档，没有新依赖或程序权限。严格类型OOM、全部真实功能及同安装候选双Worker继续未通过，本Reviewer没有执行编译、候选、服务或模型。
