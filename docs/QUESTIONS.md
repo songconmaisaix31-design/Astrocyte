@@ -1,10 +1,12 @@
 # 用户决定与待定项
 
-## 同一候选的本人观察授权（2026-10-22，待执行）
+## 同一候选的观察批准与测试来源（2026-10-22，已确认）
 
-当前已实际ZIP解包安装的候选为95efcc288e32ad8d72d4ef902f32ec130f97fea3，安装位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。新23人工/消费入口已修正日期值转换，准确A427BE2B/05C9F245与FD5身份检查获beadc233限定接受。原22两路径已直接拒绝执行，原件保留。主控已发送human-authorize-installed23.ps1 -Stage Observe本人命令，并保留“曾执行过旧22”的反馈选项；当前human-approval目录不存在，尚无本人实际回执或凭据。完整命令与服务归属见[首版任务](../tasks/swa-cli-v1-20261020.md)。
+用户明确回复：“APPROVE OBSERVE 禁止使用aliyun的key，可以用阶跃星辰的key还有其他agent测试”。本次Observe已经批准，禁止使用Aliyun key及百炼代理执行；可以使用真实阶跃星辰配置和其他Agent进行测试。密钥只在实际消费者内使用，不进入日志、提交或导出。本机Orca与原账号配置继续只读保全，固定公开项目及关闭原生文件、命令工具的范围保持。
 
-此入口沿SPEC §21.1的真实本人session/CSRF和固定公开项目Grant流程，授权读取Agent清单；Agent不能代行。当前没有本人回执或实际DPAPI凭据，观察消费保持未执行。该观察批准不包含执行Grant、具体Agent/模型和原生工具选择；下方工具范围及T11待答项保持。
+同一95efcc288e32ad8d72d4ef902f32ec130f97fea3安装已完成delegated-observe26实际0，位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。真实项目46ceef7b-0be3-4a4b-8e74-575fd327b31c、caller swa-cli-acceptance的唯一Grant仅observe；CurrentUser DPAPI凭据已创建，原23消费及status/capabilities均0，五项真实403、持久范围和原Orca保全通过。凭据到期UTC2026-10-21T20:51:16.4468291Z，秘密不进入本文件。服务归属及原件见[首版任务](../tasks/swa-cli-v1-20261020.md)。
+
+真实session/CSRF和固定公开项目Grant流程由Agent受托执行，原23人工入口保留。独立接受的32857112计划及26实际结果区分真实用户批准、实际Agent执行者和服务返回主体；现有human Cookie仍是12小时管理会话，客户端清除引用不代表服务端注销，最终项目Grant/token仅observe。具体可用Agent、模型及原生工具状态分别核实；执行Grant尚未签发，工具范围及T11待答项保持。已核默认Pi及OpenCode源没有StepFun配置，已询问其所在Agent或配置路径，请勿发送密钥正文；其余已授权工作继续。
 
 ## 继续构建与 REA 仓库格式（2026-10-21）
 

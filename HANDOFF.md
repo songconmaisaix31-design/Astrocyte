@@ -1,6 +1,8 @@
 # SWA 主线接续
 
-当前本人Observe入口为human-authorize-installed23.ps1，消费入口为use-installed23-credential.ps1，准确SHA为A427BE2B/05C9F245，FD5身份检查保持。beadc2330b30a1aa17885e865d4542d82ac0b023限定接受新23、真实四来源三类型日期检查和准确v2退出观察；主控完整读取后已请求本人执行新23。旧22两路径已直接throw，原件保留。当前human-approval目录不存在，实际授权和消费未运行。原Task9f的新ctx_4c001fda773c本阶段以人工阻塞结算failed，原终端和5187服务已原生retained供同一未完成模块接续；后续实际批准后在同树/同终端创建新Dispatch，不复用已结算生命周期。
+2026-10-22用户已回复APPROVE OBSERVE，禁止Aliyun key，允许阶跃星辰key和其他Agent测试。同一95ef安装的delegated-observe26实际0：真实Observe Grant、CurrentUser DPAPI及原23消费、status/capabilities通过，五项真实403和三库持久范围/无Worker模型效果核查通过。项目46ceef7b-0be3-4a4b-8e74-575fd327b31c，caller swa-cli-acceptance，凭据到期UTC2026-10-21T20:51:16.4468291Z。执行者为Agent，依据本次用户会话委托，不能记作本人TTY或T11通过。原Worker ctx_fb2c13c28d40与原Reviewer ctx_5f4446e340a0继续，5187及64509保持。
+
+原23人工入口及消费入口保留，FD5身份检查保持。受托Observe按已独立接受的32857112计划完成26；24预检表名错误和25负向测试Origin残留失败原件保留，修正限验证消费者，95ef程序和包未改。真实发现已核Pi1.0.1、Codex0.162.0、Claude2.1.238、Grok1.0.34、OpenCode2.0.31安装可用；账号、关闭工具和原生调用分别验证。当前Pi账号源无可用key，已核OpenCode源无StepFun，已询问其配置路径；Codex真实OAuth存在，但产品当前NativeLaunch仅Pi合同，原Worker继续原生调用缺口分析和补齐。
 
 当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，原产品分支已普通push到仅更新验证记录的c6d95473796290f96c213513a70d49e3b546f904。compile20、build15、真实ZIP/普通解包20实际0；安装根为C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。原installer的复制/闭包/保护范围通过，聚合6保留真实消费者未验。同一安装的C08准确7/runtime_error、四项生命周期130/130/0/6、C09关联诊断和所属收尾通过。原Reviewer ec22563245721da8f7a69d4409e667c935e5ea7d限定接受，三个hook均已实际读取回复。
 
