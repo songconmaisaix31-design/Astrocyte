@@ -112,18 +112,28 @@ assert.equal(helperResult.pid, actualReady.pid)
 assert.equal(helperResult.creation_time_ms, actualReady.creation_time_ms)
 assert.equal(helperResult.group_id, actualReady.group_id)
 const expectedCLIExit = values.action === 'cancel' ? 130 : 6
-const hit = !!beforeFault && helperExit.exit === 0 && helperExit.signal === null && !inputError && !helperResult.control_error && !helperResult.deadline && helperResult.actual_action === values.action && helperResult.actual_cli_exit === expectedCLIExit && helperResult.actual_handle_signaled === true
-const status = hit ? 'OBSERVED' : 'INCONCLUSIVE'
+const processWindowHit = !!beforeFault && helperExit.exit === 0 && helperExit.signal === null && !inputError && !helperResult.control_error && !helperResult.deadline && helperResult.actual_action === values.action && helperResult.actual_cli_exit === expectedCLIExit && helperResult.actual_handle_signaled === true
 assert.ok((await stat(prefix + '.stdout.log')).size <= 4 * 1024 * 1024, 'Actual CLI response exceeds the inspection bound; the original stream remains in evidence')
 const cliBytes = await readFile(prefix + '.stdout.log')
 let cliReply = null, parseError = null
 if (cliBytes.length) {
-  try { cliReply = JSON.parse(cliBytes.toString('utf8')) }
+  try { cliReply = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(cliBytes)) }
   catch (error) { parseError = String(error) }
 }
 if (cliReply) {
   assert.equal(cliReply.request_id, requestID)
-  if (hit) assert.equal(cliReply.ok, false)
+}
+const cliStderrFile = prefix + '.stderr.log'
+assert.ok((await stat(cliStderrFile)).size <= 4 * 1024 * 1024, 'Actual CLI diagnostic exceeds its bound; the original stream remains in evidence')
+const cliDiagnostic = new TextDecoder('utf-8', { fatal: true }).decode(await readFile(cliStderrFile))
+const queryDiagnostic = cliDiagnostic.includes('PowerShell 查询原请求：swa request show ') && cliDiagnostic.includes(`--request-id '${requestID}'`) && cliDiagnostic.includes('--json') && cliDiagnostic.includes(`--project '${state.project_id.replaceAll("'", "''")}'`)
+const cancellationEnvelope = parseError === null && cliReply !== null && !Array.isArray(cliReply) && cliReply.ok === false && cliReply.request_id === requestID && cliReply.controller === state.prior_controller && cliReply.error?.code === 'delivery_unknown' && typeof cliReply.error.message === 'string' && cliReply.error.message.length > 0 && typeof cliReply.error.retryable === 'boolean' && cliReply.error.required_action === 'inspect_original_request'
+const streamFilesSaved = !helperResult.actual_stdout_file_error && !helperResult.actual_unclassified_copy_error
+const cancellationStreamSaved = streamFilesSaved && !helperResult.actual_pipe_read_error
+if (processWindowHit && values.action === 'cancel') {
+  assert.ok(cancellationStreamSaved, 'Actual cancellation stdout must be completely saved without pipe or file errors')
+  assert.ok(cancellationEnvelope, 'Actual cancellation must publish exactly one complete UTF-8 JSON failure envelope with the original request and controller')
+  assert.ok(queryDiagnostic, 'Actual cancellation must publish the original request query diagnostic')
 }
 const commandResults = []
 let ordinal = 0
@@ -155,6 +165,14 @@ const afterRoot = db.prepare('SELECT * FROM tasks WHERE id=?').get(state.root_ta
 assert.equal(afterRoot.run_id, beforeRoot.run_id)
 assert.equal(afterRoot.spec, beforeRoot.spec)
 const receipt = after.receipt ? JSON.parse(after.receipt) : null
+const knownControllers = [state.prior_controller, ...(after.state === 'completed' && typeof receipt?.controller === 'string' ? [receipt.controller] : [])]
+const stdoutCorrelation = cliDiagnostic.includes('已知关联：') && cliDiagnostic.includes(`request_id="${requestID}"`) && cliDiagnostic.includes(`requested_controller=${JSON.stringify(state.prior_controller)}`) && knownControllers.some(controller => cliDiagnostic.includes(` controller=${JSON.stringify(controller)} `))
+const publishedNewControllerKnown = after.state === 'completed' && typeof receipt?.controller === 'string' && cliDiagnostic.includes(` controller=${JSON.stringify(receipt.controller)} `)
+const publishedNewScopeRetained = !publishedNewControllerKnown || cliDiagnostic.includes(` run_id=${JSON.stringify(state.run_id)} `) && cliDiagnostic.includes(` task_id=${JSON.stringify(state.root_task_id)} `)
+const stdoutFailure = streamFilesSaved && cliDiagnostic.includes('CLI 输出失败：') && typeof helperResult.actual_pipe_read_error === 'string' && helperResult.actual_pipe_read_error.length > 0 && stdoutCorrelation && publishedNewScopeRetained && queryDiagnostic
+const outputEvidence = { actual_stderr_file: cliStderrFile, query_diagnostic: queryDiagnostic, cancellation_single_failure_envelope: cancellationEnvelope, cancellation_stream_completely_saved: cancellationStreamSaved, actual_reply_new_controller_known: publishedNewControllerKnown, actual_reply_new_run_and_root_retained: publishedNewScopeRetained, stdout_actual_stream_failure_and_known_association: stdoutFailure }
+const hit = processWindowHit && (values.action === 'cancel' ? cancellationEnvelope && cancellationStreamSaved && queryDiagnostic : stdoutFailure)
+const status = hit ? 'OBSERVED' : 'INCONCLUSIVE'
 const afterInventory = await inventory('inventory-after')
 assert.deepEqual(afterInventory.daemon, beforeInventory.daemon)
 assert.deepEqual(afterInventory.service_job, beforeInventory.service_job)
@@ -225,7 +243,7 @@ if (after.state === 'completed') {
   assert.equal(closed.exit, 0)
   assert.equal(closed.reply.ok, true)
 } else assert.equal(after.state, 'pending')
-const remainingCases = [...(hit ? [] : [`real_${values.action}_window_not_confirmed`]), ...(after.state === 'pending' ? ['original_pending_recovery_remains_unknown_do_not_repeat', 'request_show_only_reads_the_original_receipt_pending_recover_observation_was_not_executed'] : []), 'real_connection_failure_and_network_disconnect_are_separate_cases']
-await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, action: values.action, status, request_id: requestID, prior_controller: state.prior_controller, actual_controller: observedController, before_fault: beforeFault ?? null, after_request: after, actual_helper_ready: actualReady, actual_helper_exit: helperExit, actual_helper_result: helperResult, actual_cli_reply: cliReply, actual_cli_parse_error: parseError, queries: commandResults, actual_pty_inventory_files: ['inventory-before', 'inventory-after', ...(after.state === 'completed' ? ['inventory-after-replay'] : [])].map(suffix => prefix + `.${suffix}.json`), actual_run_use_files: [prefix + '.run-use-before.json', prefix + '.run-use-after.json'], model_calls: 0, remainingCases }, null, 2) + '\n', { flag: 'wx' })
+const remainingCases = [...(hit ? [] : [`real_${values.action}_${processWindowHit ? 'required_output_evidence_not_confirmed' : 'window_not_confirmed'}`]), ...(after.state === 'pending' ? ['original_pending_recovery_remains_unknown_do_not_repeat', 'request_show_only_reads_the_original_receipt_pending_recover_observation_was_not_executed'] : []), 'real_connection_failure_and_network_disconnect_are_separate_cases']
+await writeFile(values.output, JSON.stringify({ candidate, source_revision: sourceRevision, action: values.action, status, request_id: requestID, prior_controller: state.prior_controller, actual_controller: observedController, before_fault: beforeFault ?? null, after_request: after, actual_helper_ready: actualReady, actual_helper_exit: helperExit, actual_helper_result: helperResult, actual_cli_reply: cliReply, actual_cli_parse_error: parseError, actual_output_evidence: outputEvidence, queries: commandResults, actual_pty_inventory_files: ['inventory-before', 'inventory-after', ...(after.state === 'completed' ? ['inventory-after-replay'] : [])].map(suffix => prefix + `.${suffix}.json`), actual_run_use_files: [prefix + '.run-use-before.json', prefix + '.run-use-after.json'], model_calls: 0, remainingCases }, null, 2) + '\n', { flag: 'wx' })
 db.close()
 if (remainingCases.length) process.exitCode = 6

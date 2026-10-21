@@ -1219,3 +1219,13 @@ Windows选项和group语义已完整读取Microsoft官方[Process Creation Flags
 完成后实际调用同R recover，再核原receipt、runUse集合、完整PTY标识和存活集合不变，并逐项比较新旧全部PTY的sessionId、terminalHandle、incarnationId、pid、isAlive、wslDistro。其他PTY的消失或身份改变均失败；真实owner检查仍对最终新PTY核实际原绑定。此处库存和集合只描述实际快照覆盖，不能据此声称未观察到的瞬态分支。request.show只读原件，pending recover观察继续由原R08单独验证；pending、未命中、网络连接失败4及处理中断开6尚未覆盖时均保留remainingCases，驱动及外围退出6。
 
 本阶段仅允许语法、格式、文档来源及差异检查；实际静态原件目录为`r10-source-static-01/`。没有依赖安装、TypeScript Program、Go/C++构建、生成、服务、故障或模型执行，尚无可用的新安装候选。原问题msg_991a51a62cc3连续三次等待600000ms超时仍待主控，静态实施继续；后继正式窗口须指定随后准确源码，不能沿用4ce作为新源码的ExpectedSource。原build06已消费、原S及本机Orca保持原资源归属；整体T12、通用terminal及同候选双Worker验收继续由同一Worker完成。
+
+## 25. R10真实输出契约检查
+
+已完整读取独立准确0df0f4a5两份正式报告及N25原邮件，继续原Worker返修。取消场景在真实130及控制条件满足后，要求原stdout无读取/保存错误，成熟UTF-8严格解码与JSON.parse消费完整字节流，结果必须为单一失败envelope，保留原request_id/controller、真实delivery_unknown错误和inspect_original_request，并实际包含带原项目、原R及--json的查询诊断。空输出、坏JSON、多份JSON、错误关联或缺诊断均不能作为有效取消结果。
+
+stdout-close保留真实部分输出及解析错误原件，允许stdout不完整；只有实际6、控制条件、真实pipe读取错误、实际stderr的输出失败消息、已知R/控制端关联及原R查询诊断均具备，才登记OBSERVED。缺少这些事实时保留INCONCLUSIVE和remainingCases，不能由6单项推断输出失败。Go控制程序通过标准os.PathError的Op区分真实读取、保存文件写入与未分类复制错误；保存或未分类错误使控制程序失败，不能冒充预期pipe读端关闭。没有替换Writer、CLI回复或产品时序。
+
+该返修仅执行成熟MJS语法、Go格式、文档与差异检查，原件目录`n25-static-01/`；全部真实输出、console/group、PTY、SQLite/HTTP、故障及模型正文继续NOT_RUN，仍无新窗口。原资源问题保持待答；R06/R08及通用terminal后续实施继续，不据局部源码或静态接受结束整个任务。
+
+原Reviewer补充msg_bead5052222b的N26后，同一返修将`cmd/swa/output.go`输出失败的stderr加入真实已校验`selected.Controller`，字段为requested_controller；原controller/run_id/task_id继续来自已实际读取的回复。recover成功后stdout失败时，原C_old与已知C_new/Run/root均可保留，公开JSON不增加字段。真实驱动要求requested_controller准确等于原C_old；普通controller关联只接受原C_old或实际completed receipt中的C_new，实际诊断已经知道C_new时另核同一Run/root，不以pending checkpoint的expected身份充当新控制端证明。已完整读取准确02486602补充正式报告。此补充及N25后继原件为`n25-n26-static-01/`，只执行变动MJS语法、两份Go格式、文档和差异，最终诊断范围修改另存final语法/文档/差异原件；Go编译及全部正文继续未验。

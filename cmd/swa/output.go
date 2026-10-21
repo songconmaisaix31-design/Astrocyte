@@ -80,7 +80,7 @@ func (o *cliOutput) recovery() {
 
 func (o *cliOutput) outputFailure(err error) int {
 	_, _ = fmt.Fprintf(o.stderr, "CLI 输出失败：%v\n", err)
-	_, _ = fmt.Fprintf(o.stderr, "已知关联：request_id=%q runtime_id=%q authority_domain=%q controller=%q run_id=%q task_id=%q dispatch_id=%q requested_task_id=%q requested_dispatch_id=%q\n", o.identity.RequestID, o.identity.RuntimeID, o.identity.AuthorityDomain, o.identity.Controller, o.identity.RunID, o.identity.TaskID, o.identity.DispatchID, o.selected.TaskID, o.selected.DispatchID)
+	_, _ = fmt.Fprintf(o.stderr, "已知关联：request_id=%q runtime_id=%q authority_domain=%q controller=%q run_id=%q task_id=%q dispatch_id=%q requested_controller=%q requested_task_id=%q requested_dispatch_id=%q\n", o.identity.RequestID, o.identity.RuntimeID, o.identity.AuthorityDomain, o.identity.Controller, o.identity.RunID, o.identity.TaskID, o.identity.DispatchID, o.selected.Controller, o.selected.TaskID, o.selected.DispatchID)
 	o.recovery()
 	switch o.action {
 	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "serve":

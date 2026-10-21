@@ -248,8 +248,18 @@ func broker(sourceFile string) (result error) {
 	if waitErr != nil {
 		report["actual_wait_error"] = waitErr.Error()
 	}
+	var stdoutFileErr, unknownCopyErr error
 	if copyErr != nil {
-		report["actual_pipe_read_error"] = copyErr.Error()
+		var pathErr *os.PathError
+		if errors.As(copyErr, &pathErr) && pathErr.Op == "read" {
+			report["actual_pipe_read_error"] = copyErr.Error()
+		} else if pathErr != nil && pathErr.Op == "write" {
+			stdoutFileErr = copyErr
+			report["actual_stdout_file_error"] = copyErr.Error()
+		} else {
+			unknownCopyErr = copyErr
+			report["actual_unclassified_copy_error"] = copyErr.Error()
+		}
 	}
 	if controlErr != nil {
 		report["control_error"] = controlErr.Error()
@@ -259,7 +269,7 @@ func broker(sourceFile string) (result error) {
 		return errors.Join(controlErr, err)
 	}
 	writeErr := errors.Join(json.NewEncoder(output).Encode(report), output.Close())
-	return errors.Join(controlErr, exitErr, writeErr)
+	return errors.Join(controlErr, exitErr, writeErr, stdoutFileErr, unknownCopyErr)
 }
 
 func main() {
