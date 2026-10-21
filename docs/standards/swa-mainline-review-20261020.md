@@ -663,3 +663,7 @@ install09完整日志可证`storage_failed`及PowerShell测试异常，没有保
 当前Review使用原Task的新Dispatch `ctx_40bf84d10b8c`、实际terminal `term_6b1b14a1-e6e8-4f57-b394-8bcd79ec1e3e`；公开Orca回执的runtime为`a2765d35-0b66-41e6-a8ca-e76d25294927`。原报告与失败原件保留，不复用重启前PID作当前身份。资源解除继续适用，原账号、工具、资料、人类批准及最终验收要求保持。
 
 实际 `check-revision.ps1 -Previous eef7c8ecd36888a812af98a31c0c5c6a0fb8a97a -Candidate c8b6ac6b9fa1b2fd11af42cb8e249191028816b0` EXIT0，marked18.1.0核四Markdown、46本地链接及Git空白，无待核锚点或HTML。9项外部引用沿已核来源，本次没有重复联网读取。产品累计结论及直接返修见headless报告；没有修改实现、发布main或登记完整功能通过。
+
+## 准确0ae50787的累计事实
+
+**接受 `0ae507873b4f928762640a7781703b40202fdf80` 相对c8b6的四文档范围。** 完整差异已读，junction错误只保留实际storage_failed及两个退出数字未知；507局部修复、junction02/Job12/长路径备份和build11范围与原件相符。新服务及安装保持复验状态，后继service10实际失败和RPC重复已交原Worker，详见headless报告。`check-revision.ps1 -Previous c8b6ac6b9fa1b2fd11af42cb8e249191028816b0 -Candidate 0ae507873b4f928762640a7781703b40202fdf80` EXIT0，四Markdown、46本地链接及Git空白通过。

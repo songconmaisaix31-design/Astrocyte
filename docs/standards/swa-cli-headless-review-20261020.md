@@ -1624,3 +1624,9 @@ provider-job11实际额外成员为子/孙Node派生的两个conhost，PID/创�
 service09-diagnostic实际host退出1、serve退出6，readiness为delivery_unknown；SQLite备份错误和Job对象校验失败均保留。源码确认daemon-main曾遗漏转交Job字段，507已补齐。backup09-probe以真实profile数据库只读为源，289字符普通路径失败，namespace备份成功；backup09-source-check实际302字符目标经修改后的真实适配器备份并重新只读打开，integrity_check=ok，两命令退出均0。新完整候选仍须验证服务、实际数据库Worker入口和关闭。
 
 实际`check-revision.ps1 -Previous b624b45418279499887fe0c1583bd7c73c0979e2 -Candidate 5070073c904aac6498dc821d6e775130deeb4257` EXIT0：三Markdown、6本地链接、原§15锚点及Git空白通过。原2cc1f64b两hook已由主控`msg_f81a8d207fa9`及`msg_5ee89b7fa1a7`明确完整读取回复，本次唤起确认。其余验收继续按本报告H01—H18及当前任务执行。
+
+### candidate10实际启动：退回重复RPC注册
+
+build11实际EXIT0，candidate10/VERSION为准确507。service10-diagnostic实际host退出1、serve退出6，readiness为delivery_unknown；stack定位原生RPC完整性检查。`node .verification/review-rpc-registration.mjs 5070073c904aac6498dc821d6e775130deeb4257`使用TypeScript AST沿实际七组及跨文件spread展开，得到17项、无缺失，唯一重复为workerList：原WORKER_METHODS已经经release集合包含该方法，host再次显式加入。**退回507的服务启动范围**，通过`msg_b5f23ff6d649`交原Worker移除重复来源，保留原16项白名单和完整性检查；其他局部接受范围保持。
+
+主控新增native显式复用审查，具体五项条件已交原Worker并获`msg_c01841838b60`确认：固定成功源及原产物，逐模块核实际源码/补丁/addon-api/Node输入与编译规则，复制原产物和slotSourceFiles支持资产，新候选实际装载；已知变化只编译受影响模块，未知/失配立即失败，沿既有记录。当前build11未改变，后继准确实现及实际检查另审。原507限定接受hook已获`msg_f4570bfd562e`完整读取回复。
