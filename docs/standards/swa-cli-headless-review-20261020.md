@@ -1865,3 +1865,13 @@ beadc233三份hook已获主控`msg_77bc2ab06d08`、`msg_1668d99d70a9`、`msg_1f6
 准确`EFD2DCD35C8B051A91B90F4226529B07E6574DA0084E0AB113EA3E69D78E7C56`的`delegated-observe24-plan.md`已完整读取。O01/O02/O04/O05/O07及仅Observe边界具备，O03允许API结果替代持久核验，O06未列实际拒绝及无副作用检查；本版本计划退回这些验证范围，已通过`msg_6a4fcd0750f3`交原Worker、`msg_c729e58ab00a`交主控。未要求构建、额外模型窗口或伪造错误；补充版本按准确摘要重新审核，客户端正文及真实授权尚未执行。
 
 **接受完整后继计划`4B5279939675B4C8E062A8854F1E803DFF9A89F4957AA6EC47A437A2C92F43B9`的仅Observe技术及必要验证范围。** 逐项对照O01—O08：五项真实403明确为无cookie读取、真实cookie缺CSRF写入、不同loopback Origin读取、真实Observe token的合法controller.open和人类Grant端点拒绝；后两项沿实际公开root和真实request_id，不造原生对象。最终真实SQLite须核root、settings r2、唯一observe、控制/目录false、工具/子目录为空、外发CLI空，以及同project/caller的Grant动作和实际expiry；准备及拒绝前后核space/project/Grant、原生session、关联、journal和全部工作表，只允许已批准三种记录新增。12小时宽cookie、未知停止、准备写无持久去重、原账号/Orca保全和秘密范围均明确，没有多余的构建或模型检查。完整后继及准确摘要已读取，成熟marked18.1.0解析EXIT0；主控`msg_58a2d16539f2`明确采用补充后连续实施范围，Worker实施通知为`msg_700b286bdd14`。本接受只覆盖计划，客户端准确源码、真实授权与消费结果仍须独立复验。
+
+### 准备检查失败与已知零效果恢复
+
+两次客户端及helper全文和实际原件已独立读取。24客户端`D74E3C73E7BBE6BE7EC28E3BAF9B56684DA4DECC54BD9C0059D8CD397ED182A5`、helper`BCA50FC85BB4B35252522909BCEAC12EEECA0CB2506BB77F2F15C0066F366BBF`实际退出1于预检，误用不存在的coordinator_tasks；未进入会话或准备写入。25客户端`BE4E9586474FA4437C534050A398356C3C9911F92ACBECEB43EA8CBB42158D39`、helper`2E2492A8ECE7F9E2364E9B7F58DEF119E0CCCEB711CB236E910599B23ACB0738`改用真实tasks后，取得真实会话并通过前三项403，在首个空间准备请求`1182992b-8b77-4d47-adbe-05e53eb70676`停止1；其原始HTTP状态未单独保存。实际failure、原请求和两份源码快照保留，两次Orca保全均通过；这两次运行未接受为授权消费成功。
+
+Reviewer实际以安装Node24.21.0和成熟`node:sqlite`的readOnly逐项读取三库schema及计数，`read-observe-schema.mjs`实际0；原件`observe-schema-independent.log`及首次准备写后再次读取的`observe-schema-post25.log`。真实表为tasks；空间、项目、Grant、session和执行关联均0，orchestration保留原runs1及原ledger1、任务/Worker/receipts0，journal全部工作表0。此范围只读，没有取得human会话或读取凭据。当前human目录实际0项，保护ACL的owner及唯一Allow主体均为当前DW。
+
+Worker的`diagnose-observe25.ps1`全文和实际退出0原件已读：同一真实服务签发诊断cookie，仅GET重现WebRequestSession保留Origin64510，跨源及后续无Origin参数请求分别403/403，显式删除该Header后200；没有准备写或模型。其真实三库计数对比与独立零效果观察一致。该诊断支持客户端清除负向测试Header；没有重发原写请求或以诊断成功替代完整授权。
+
+**接受恢复补充计划`328571126C4116B32572EA23DF2E30205451C9086D12FEC2389BEE609901B578`。** 完整新增条款及保留的准确4B原件已读，成熟marked解析0；26须在每次效果前重新核FD5、25 register失败及唯一原R、当前三库无准备/工作效果、原目录空且私有、无真实凭据。保留原目录和全部失败原件，禁止首次重建或覆盖，任何已有或未知效果立即停止；新独占证据目录、真实新请求和cookie沿同一批准执行完整五项拒绝、持久范围、DPAPI和保全。请求保存实际HTTP状态或网络未知及安全错误码，秘密保持私有。Worker接受通知为`msg_724ce658f6f2`，当前26源码和实际结果待核。e5a0a429两份计划hook已获主控`msg_ae872f18a18c`、`msg_662535eb1edb`明确完整读取回复。
