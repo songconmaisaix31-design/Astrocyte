@@ -1684,3 +1684,13 @@ install11完成复制与准确版本输出后，原native子检查30秒ETIMEDOUT
 cookie/CSRF仅驻本人窗口，token使用CurrentUser DPAPI、固定来源entropy、私有DataRoot及当前用户所有权/ACL保存，CreateNew拒绝覆盖；消费侧核来源、根、caller、唯一observe、时效及reparse，token只进入调用进程环境并在finally清理。输出只有实际请求标识、公开结果和凭据文件路径。当前静态接受已通过`msg_c9de61d348a6`、`msg_14302c355962`交主控及原Worker，可由主控请求本人执行；Agent没有创建human session、Grant或token，未把该批准扩大为执行、目录、工具或原生Agent的实际通过。
 
 主控准确3b46b293的四文档及后继3cdf29ce的依赖计划已完整读取，限定接受其当前记录与实施条件；原超时和未知保持。Reviewer实际`check-revision.ps1`分别核0ae50787→3b46b293、3b46b293→3cdf29ce，marked18.1.0检查四文件/46本地链接及一文件/5本地链接，Git空白均0。compile260实际SOURCE=260、四个测试包编译日志为空、三个传输前用例PASS/外层0已读，只接受该范围，不表示四包全部运行通过。原ac950358 hook已获主控`msg_50db746ddf2f`明确完整读取报告和原件回复；八项实施条件已获`msg_4f401ee97ec6`采用。后继依赖实现及本人实际批准继续累计核查。
+
+## 准确780a35e9的依赖分类与完整许可
+
+**限定接受 `780a35e9ec996494f4188f44229d2568bf38b9a2` 的六文件源码、build13完整包及九版本许可检查；仓库外新安装与真实任务继续复验。** 已完整读取全部差异。八个原精确版本移入devDependencies，原bundler条件、external及各入口保持；生产间接依赖继续由pnpm部署。原buildSWARuntime收集实际21份metafile，按真实包名/版本核内联来源，复制全部原许可/notice至安装根third-party-licenses；缺失来源或全文立即失败，原安装复制覆盖该目录。
+
+Reviewer实际`review-dependency-move-780a.mjs`使用成熟YAML/JSON，确认manifest及完整锁仅发生八项预定移动，全部其他字段相同，inventory字节不变；`check-runtime-inputs.mjs 780a35e9ec996494f4188f44229d2568bf38b9a2 26036164e57acc8267d3727f5ed35a97a74f0de5`核58项声明/实际安装/锁及inventory一致，两命令均0。dependencies13实际lock-only、frozen install、原check-dependencies三份完整日志和退出0已读。`check-revision.ps1`准确260→780实际0，marked核三Markdown、6本地链接及原§15锚点，Git空白通过。
+
+build13实际SOURCE与candidate12/VERSION均为准确780，最终退出0；四native沿原candidate10/build11/ZZTfh4复制，built为空，真实Node/native/空Job及28233路径闭包0。Reviewer以candidate12自带Node执行`review-inline-licenses-780a.mjs`实际0：独立沿实际metafile输入确认九个包版本，全部原许可与输出字节一致、文件为普通文件；21个实际JS成品及其输入路径与已审260逐项相同。原件为`inline-licenses-780a-independent.log`。该结果没有改变原安装超时，也没有证明新生产部署的动态路径、实际服务或精简效果。
+
+原260服务和准确本人Observe入口保持，用户执行尚无实际回执；执行、工具、T12及同一最终安装的真实双Worker成果不计通过。准确780报告§33中的普通Job与DPAPI检查等待定位原件后分别核查，不据名称直接计入接受。07b12530的260及main两hook已获主控`msg_0819f42de142`、`msg_6baaf9b421e2`完整读取回复，本次唤起确认。
