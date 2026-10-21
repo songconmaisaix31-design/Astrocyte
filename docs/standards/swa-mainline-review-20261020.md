@@ -629,3 +629,13 @@ dependency04/3ba的准确锁与安装结果已有本轮独立核查；管理文�
 准确 `c42a695f756886c2afcc8f36f0af6339dae9ec29` 的真实生成产物和记录获局部接受，具体原件和检查见headless报告。此前3ba严格类型入口实际因1GiB heap OOM失败、子134/外层1、无语义诊断；没有将该失败改成通过。generate03的原生成器成功和未知类型/完整构建、安装及真实功能各按实际范围保留，后继内存例外待用户决定，本Reviewer未运行任何新Stage。
 
 c42生成接受hook `msg_86b971cb67b6` 获主控 `msg_ca043545c824` 明确完整读取准确三文件差异、30c258两报告新增及生成/类型原件的回复，实际唤起确认。后继同源码build07实际失败，资源0、构建与外层均1；首fatal为C1258分析日志无法保存，candidate06未形成安装条件。失败与Microsoft既有分析日志目录选项的窄修复范围另见headless报告；当前没有新的类型额度或运行授权。
+
+## 准确bdbe7498的类型与构建实际状态
+
+结论：**接受准确 `bdbe74982e40c81c66f83a9b8fc92194d5520241` 相对882的五文档管理范围。** 已完整读取HANDOFF、STATUS、QUESTIONS、首版任务和REA格式参考的差异。typecheck01的真实OOM/134/外层1及无语义诊断、generate03的原生成成功、build07的C1258和所属退出均与已独立读取的原件相符；准入通过、局部阶段成功及整体失败分别记录。短日志目录保持技术范围，准确修复及复编未记为通过；旧候选、旧runner及失败原件保留，新candidate07/build08和新runner/hash须另授。
+
+2GiB仅为待用户回答的tsc例外，原7GiB/2GiB上游预算没有成为本项目授权，8192MiB未授；SPEC、资源额度、接口及原工具/资料权限均未变更。旧ctxdc两次release_unknown继续作为原生资源未知，boot只证明旧进程退出，没有将其登记为released或操作新Worker句柄。旧Codex/S3、T11、安装与同候选双Worker条件保持。
+
+`pwsh -NoProfile -File .verification/check-revision.ps1 -Previous 882d1582995cd0820cc7aaad71d67d17c848ded5 -Candidate bdbe7498` EXIT0，唯一前缀解析为上述准确SHA；五Markdown、89本地链接及Git空白通过，无锚点/HTML待核，marked18.1.0、BelowNormal、Node512MiB。20项外部引用沿其原来源，本轮没有逐一重新联网读取。本Reviewer没有执行重操作，也没有将本文档接受作为原修复或构建的新前置。
+
+build07退回及短日志技术范围hook `msg_6067337645ec` 已获主控 `msg_ae1bd22a9e49` 明确完整读取c20cd8ba新增和准确c42原件的回复，实际唤起确认。后继继续审核原Worker准确实现。

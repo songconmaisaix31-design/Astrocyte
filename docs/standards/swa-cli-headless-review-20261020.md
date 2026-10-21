@@ -1511,3 +1511,5 @@ typecheck01同样以准确3ba运行，完整日志明确为Reached heap limit，
 原Worker `msg_1e020216d2eb` 的具体范围为：沿原四包native循环，在现有私有work中分别独占创建a0—a3并核canonical所属，保留/utf-8与全部原分析/编译选项，只追加日志目录参数；不同包串行、包内MSBuild4保持，并核同名源码的日志归属。该范围不变更源码、ABI、headers、分析规则或全局配置，必要验证由原完整构建覆盖，已通过 `msg_10b6e8a59ba9` 交原Worker。实际MSBuild后继参数覆盖、引号处理和日志文件结果在准确实现及复编中核查，不因静态方向成立宣告问题已解决。
 
 本机没有Firecrawl命令，未安装依赖；网页工具初次无view直读失败，随后通过同一Microsoft官方view=msvc-170全文读取。未执行候选、编译、分析引擎或模型，没有新增运行窗口。严格类型仍为OOM失败；全部恢复、通用terminal、安装及同候选双Worker验收继续未通过。
+
+上述build07退回及窄技术范围hook `msg_6067337645ec` 获主控 `msg_ae1bd22a9e49` 明确完整读取c20cd8ba新增和实际原件的回复，实际唤起确认。下一构建须使用独占candidate07/build08和新runner文件/hash，原05b0硬编码的candidate06已消费，不能覆盖旧原件；当前没有新运行窗口。
