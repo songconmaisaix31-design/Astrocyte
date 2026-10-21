@@ -78,7 +78,8 @@ async function nativePiSources(executable: string, version: string, env: NodeJS.
   if (!aiPackageSchema.safeParse(ai.value).success) throw new Error('native_cli_contract_unavailable')
   const files = await Promise.all(['core/model-config.js', 'core/provider-composer.js', 'core/resolve-config-value.js', 'core/auth-storage.js'].map(file => nativeConfigurationSource(join(dirname(manifest.source.path), 'dist', file))))
   const catalog = await nativeConfigurationSource(join(dirname(ai.source.path), 'dist/providers/all.js'))
-  return { launch, entry, interpreter, manifest: manifest.source, aiManifest: ai.source, files, catalog }
+  const apiSources = await Promise.all(['compat.js', 'api/openai-completions.lazy.js', 'api/openai-completions.js'].map(file => nativeConfigurationSource(join(dirname(ai.source.path), 'dist', file))))
+  return { launch, entry, interpreter, manifest: manifest.source, aiManifest: ai.source, files, catalog, apiSources }
 }
 
 function knownFields(value: Record<string, unknown>, allowed: ReadonlySet<string>) {
@@ -134,8 +135,8 @@ export async function inspectNativePiPolicy(input: { executable: string; version
   const beneath = (base: string, target: string) => { const part = relative(base, target); return !part || part !== '..' && !part.startsWith('..\\') && !part.startsWith('../') && !isAbsolute(part) }
   if (beneath(sourceHome, privateHome) || beneath(privateHome, sourceHome)) throw new Error('native_account_directory_overlap')
   const sources = await nativePiSources(input.executable, input.version, input.env)
-  const [configModule, composer, values, authModule, catalog] = await Promise.all([...sources.files.map(file => import(pathToFileURL(file.path).href)), import(pathToFileURL(sources.catalog.path).href)])
-  if (typeof configModule.ModelConfig?.load !== 'function' || typeof composer.composeModelProvider !== 'function' || typeof values.isCommandConfigValue !== 'function' || typeof values.getConfigValueEnvVarNames !== 'function' || typeof values.resolveConfigValue !== 'function' || typeof authModule.ReadOnlyAuthStorage !== 'function' || typeof catalog.builtinProviders !== 'function') throw new Error('native_cli_contract_unavailable')
+  const [configModule, composer, values, authModule, catalog, apiRegistry] = await Promise.all([...sources.files.map(file => import(pathToFileURL(file.path).href)), import(pathToFileURL(sources.catalog.path).href), import(pathToFileURL(sources.apiSources[0]!.path).href)])
+  if (typeof configModule.ModelConfig?.load !== 'function' || typeof composer.composeModelProvider !== 'function' || typeof values.isCommandConfigValue !== 'function' || typeof values.getConfigValueEnvVarNames !== 'function' || typeof values.resolveConfigValue !== 'function' || typeof authModule.ReadOnlyAuthStorage !== 'function' || typeof catalog.builtinProviders !== 'function' || typeof apiRegistry.getApiProvider !== 'function') throw new Error('native_cli_contract_unavailable')
   const authPath = join(sourceHome, 'auth.json'), modelsPath = join(sourceHome, 'models.json')
   const auth = await readJSON(authPath)
   const credential = credentialSchema.safeParse(auth.value[input.provider])
@@ -149,8 +150,9 @@ export async function inspectNativePiPolicy(input: { executable: string; version
   const config = await configModule.ModelConfig.load(modelsSource?.path)
   if (config.getError()) throw new Error('native_models_configuration_unverifiable')
   const bases = catalog.builtinProviders().filter((provider: { id: string }) => provider.id === input.provider)
-  if (bases.length !== 1 || !bases[0].auth.apiKey) throw new Error('native_api_key_handler_unavailable')
+  if (bases.length > 1 || bases[0] && !bases[0].auth.apiKey) throw new Error('native_api_key_handler_unavailable')
   const base = bases[0], configured = config.getProvider(input.provider)
+  if (!base && (!modelsSource || configured === undefined)) throw new Error('native_model_target_unverifiable')
   let projection: Record<string, unknown> | undefined
   if (configured !== undefined) {
     const provider = object(configured)
@@ -160,6 +162,7 @@ export async function inspectNativePiPolicy(input: { executable: string; version
     compat(provider.compat)
     const models = provider.models === undefined ? [] : z.array(objectSchema).parse(provider.models).filter(item => item.id === input.modelId)
     if (models.length > 1) throw new Error('native_model_target_ambiguous')
+    if (!base && models.length !== 1) throw new Error('native_model_target_unverifiable')
     for (const model of models) reviewedModel(model, modelFields, values)
     const overrides = provider.modelOverrides === undefined ? {} : object(provider.modelOverrides)
     const override = overrides[input.modelId] === undefined ? undefined : object(overrides[input.modelId])
@@ -167,13 +170,14 @@ export async function inspectNativePiPolicy(input: { executable: string; version
     projection = { ...provider, ...(provider.models === undefined ? {} : { models }), ...(provider.modelOverrides === undefined ? {} : { modelOverrides: override ? { [input.modelId]: override } : {} }) }
     if (!models.length && !override && !['baseUrl', 'headers', 'compat', 'authHeader'].some(key => provider[key] !== undefined)) projection = undefined
   }
-  headers(base.headers, values)
-  for (const model of base.getModels().filter((item: { id: string }) => item.id === input.modelId)) {
+  headers(base?.headers, values)
+  for (const model of (base?.getModels() ?? []).filter((item: { id: string }) => item.id === input.modelId)) {
     emptySampling(object(model))
     headers(model.headers, values)
     compat(model.compat)
   }
   const effective = configured ? composer.composeModelProvider(input.provider, base, config, undefined) : base
+  if (!effective?.auth.apiKey) throw new Error('native_api_key_handler_unavailable')
   const models = effective.getModels().filter((item: { id: string }) => item.id === input.modelId)
   if (models.length !== 1) throw new Error('native_model_target_unverifiable')
   const model = object(models[0])
@@ -184,9 +188,14 @@ export async function inspectNativePiPolicy(input: { executable: string; version
   if (!target.success || model.provider !== input.provider) throw new Error('native_model_api_unreviewed')
   const endpoint = new URL(target.data.base_url)
   if (!['https:', 'http:'].includes(endpoint.protocol) || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error('native_model_endpoint_unreviewed')
+  if (!base) {
+    if (target.data.api !== 'openai-completions' || endpoint.protocol !== 'https:' || !['api.stepfun.com', 'api.stepfun.ai'].includes(endpoint.hostname) || endpoint.port || !['/v1', '/v1/'].includes(endpoint.pathname)) throw new Error('native_custom_model_target_unreviewed')
+    const handler = apiRegistry.getApiProvider(target.data.api)
+    if (handler?.api !== target.data.api || typeof handler.stream !== 'function' || typeof handler.streamSimple !== 'function') throw new Error('native_model_api_unreviewed')
+  }
   const policy = nativeLaunchPolicySchema.parse({ schema: 'swa.native-launch.v1', account: { kind: 'pi-native-api-key', provider: input.provider, source_home: sourceHome, auth_source: auth.source, models_source: modelsSource, private_home: privateHome, model_target: target.data }, tools: { mode: 'disabled', native_contract: 'pi-cli-1.0.1' } })
   if (!isDeepStrictEqual(auth.source, await nativeConfigurationSource(authPath)) || !isDeepStrictEqual(modelsSource, await optionalSource(modelsPath))) throw new Error('native_configuration_changed_during_read')
-  for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog]) {
+  for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources]) {
     if (source && !isDeepStrictEqual(source, await nativeConfigurationSource(source.path))) throw new Error('native_cli_source_changed_during_read')
   }
   return { policy, sources, auth: { [input.provider]: { type: credential.data.type, key: credential.data.key } }, models: modelsSource === null ? null : { providers: projection ? { [input.provider]: projection } : {} } }
@@ -198,7 +207,7 @@ export function sameNativeLaunchPolicy(left: NativeLaunchPolicy, right: NativeLa
 
 export function assertNativePiSnapshotCurrent(snapshot: NativePiPolicySnapshot) {
   const sources = snapshot.sources, account = snapshot.policy.account
-  for (const source of [account.auth_source, account.models_source, sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog]) {
+  for (const source of [account.auth_source, account.models_source, sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources]) {
     if (!source) continue
     const path = realpathSync.native(source.path), info = statSync(path, { bigint: true })
     const version = `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`

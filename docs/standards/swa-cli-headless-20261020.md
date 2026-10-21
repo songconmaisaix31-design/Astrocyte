@@ -1405,3 +1405,15 @@ delegated-observe26实际退出0，真实status/capabilities及原consumer23各0
 实际capabilities列出pi1.0.1、codex0.162.0、claude2.1.238、grok1.0.34、opencode2.0.31已安装；实际launchable均unknown。Codex默认openai/gpt-6.1-sol的原生OAuth存在；Claude显示配置名称不能代替真实供应端点许可，当前默认不得调用。现有native_launch只接受Pi1.0.1 API key及已审工具关闭合同，其他Agent选择存在真实产品缺口。只读成熟解析核Pi默认auth为空、无StepFun目录项或环境名称匹配；主控补核实际OpenCode两个配置来源只有deepseek auth名，无StepFun匹配。这些结果只覆盖所读来源，主控已向用户询问StepFun所在Agent或路径，不请求密钥正文。
 
 当前仅Observe通过。执行Grant、实际原生Agent及模型、T03/T12剩余故障接续、同一最终安装双Worker同时执行/指定停止/B继续和完整成果保持未验。继续真实原生合同分析与必要修复，不重复签发Observe，不将Pi SDK运行计为其他Agent原生调用。
+
+## 41. Pi原生StepFun custom provider准入
+
+主控msg_64e56044a7dd采用同版Pi原生custom provider窄修，原Reviewermsg_d0aa56dfb57a从真实ModelConfig/composer/ModelRegistry和现有消费者独立推导P01—P07后，接受准确计划4E698ACC7EF42E9D667CD2D31187F0BDED00F7A460D4F5CD95B84DF323E07514及msg_48f93338842d源码身份补充。计划在自有native-pi-custom28-plan.md，要求真实StepFun来源、stored literal key/空env、唯一所选model、直接HTTPS/v1和openai-completions，保持私有账户/工具关闭/Job/输入/成果合同；禁止假key、假源和假协议，缺真实来源的正向保持未验。
+
+native-pi-policy现沿实际1.0.1 composeModelProvider(providerId, undefined, ModelConfig, undefined)支持这一原生custom分支，没有自有handler。无builtin时必须存在真实models.json和唯一所选model，modelOverrides不能补足缺失模型；有效原生auth.apiKey必需。目标仅允许api.stepfun.com或api.stepfun.ai的HTTPS默认端口、/v1或/v1/和openai-completions，原userinfo/query/fragment、字段/认证header/OAuth/extension/routing/非空sampling拒绝保持。provider和model ID保留真实配置值；原生API实现、仅所选账户和模型的私有投影、原API DTO及native CLI调用保持。
+
+实际compat.js、openai-completions.lazy.js及openai-completions.js现加入原sources、读取前后和每次效果前重核；实际API registry中的handler及两个stream函数必需。read-native-api28实际0，仅证明同版真实handler存在与源码身份稳定，没有调用stream、认证resolver或模型。Grok真实只读元数据检查grok-source28实际0，唯一账号token的expiry为2026-10-21T18:52:47.570220800Z且无默认模型；最初将其复合账号键按URL解析失败的原件保留，后继用URL.canParse区分非URL键，未调用账号刷新或模型。Codex的生成schema和官方配置目前未建立完整ToolsOff合同；[官方配置](https://learn.chatgpt.com/docs/config-file/config-reference)仅明确shell_tool控制命令。其他Agent没有据此获得NativeLaunch或实际成功声明。
+
+StepFun [官方全球页面](https://platform.stepfun.ai/)实际给出OpenAI chat.completions及api.stepfun.ai/v1；国内首页本次直接读取超时，主控另有实际api.stepfun.com/v1核对。端点、模型和认证最终以用户明确的真实来源为准，不自动更换。
+
+check-custom28.ps1实际退出0，strict TypeScript6.0.3/noEmit/skipLibCheck=false及architecture各0，47个Go package边界通过；原件custom28-checks保存准确8cd402ed及实际程序diff。empty-native-account28实际1，检查发现真实默认models.json没有单独models定义，尚未进入policy；脚本和日志保持。empty-native-account29实际0，直接从真实1.0.1 catalog取得openai/gpt-4，仅作缺凭据负向输入，无模型调用或实际执行选择。当前真实默认auth为{}，实际修改后policy在native_api_key_source_unreviewed立即拒绝，原三文件stat保持，真实项目私有账户前后不存在，没有启动CLI或创建Worker。源码和实际证据分别在原29入口、日志及result.json。StepFun真实正向、故障副本、新准确候选和同安装完整验收继续；未取得真实来源前不登记模型或双Worker通过。
