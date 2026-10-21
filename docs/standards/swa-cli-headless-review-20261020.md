@@ -1667,3 +1667,20 @@ install11完成复制与准确版本输出后，原native子检查30秒ETIMEDOUT
 这八项保留原精确版本，pnpm生成锁中的依赖类别随manifest移动，其他importer、overrides、patches保持。现有dependencies.lock.json合并dependencies/devDependencies，八项inventory版本保持。间接依赖由成熟pnpm正常部署，不手动删除传递包，不推断八个目录都会消失或具体体积减少。
 
 产物须从实际内联输入所属包保存完整版权/LICENSE/NOTICE，并更新现有THIRD_PARTY_SWA指向；覆盖九个内联版本，特别tweetnacl1.0.3及0.14.5，jsonc-parser实际许可文件为LICENSE.md。可直接沿已有构建输入和包元数据复制原文件，安装继续携带全部许可。实际迁移后须核准确manifest/锁/inventory、原frozen-lockfile/依赖检查、新成品及许可，再用新独占候选安装到批准的仓库外位置，核动态来源、实际服务/数据库/故障及同安装真实双Worker成果。当前260产物不覆盖，原native输入未变时沿已接受的显式复用规则处理。详细实施条件及原始图/调用证据在Reviewer自有忽略目录，已通过`msg_07d7ac1bea50`、`msg_2fb8ddaf9f26`交主控与原Worker；本节没有宣布后继实现或精简效果通过。
+
+## 260仓库外动态装载与本人Observe入口
+
+**接受准确260安装的下列实际局部结果，以及本人Observe入口的静态/API范围；人工授权和真实任务结果继续未验。** Reviewer使用该仓库外安装自带Node实际执行`.verification/review-external-install-26036164.mjs`，EXIT0：四个原native及watcher平台native、动态@linear/sdk和emoji JSON全部从该根装载，实际21个装载文件均在安装根内，祖先没有node_modules；空Job创建、查询及关闭通过，模型调用0。原件为`external-install-26036164-independent.log`。已完整读取Worker的installed11-native-stages、refusals及scope实际脚本和原件：实际装载、端口占用/直接保护根拒绝及根、父级加不存在叶、home、temp四类reparse检查均0，保持scope_denied/3、拒绝前目标内容及目录；该范围不代表完整T02或任务通过。
+
+本人入口和配套消费脚本在Worker自有忽略目录中，准确版本如下。两份正文完整读取后，Reviewer仅调用成熟PowerShell Parser，均错误0，没有执行正文。
+
+| 文件 | 字节数 | SHA256 |
+| --- | --- | --- |
+| human-authorize-installed11.ps1 | 9686 | B9A06E352B131273B1053F5ECEF5766766B4B9127824473B4C789DCA2B2928C4 |
+| use-installed11-credential.ps1 | 4578 | FF1D61DA9958DD5F788E024FE49D02E888E51838D39BFBCE2660DAA0C3E00C9B |
+
+流程仅支持Observe。固定公开stats项目根、准确da3bdddb来源及caller=swa-cli-acceptance，真实新项目默认关闭目录和Agent控制；settings与Grant只增加observe。已沿实际sessionGuard、classification/spaces、local_projects及projects代码核cookie/CSRF、UUID/Idempotency-Key、schema/expected_version、settings CAS和space/project/grant/credential字段，沿既有USAGE/API操作。服务独立观察为serve30160、创建UTC2026-10-21T16:32:44.1021696Z、准确安装映像，HTTP39960父链和64506监听归属一致，health实际200；人工确认后bootstrap、每个写请求以及两脚本每次发送凭据的CLI前均重新核上述身份、版本及health。
+
+cookie/CSRF仅驻本人窗口，token使用CurrentUser DPAPI、固定来源entropy、私有DataRoot及当前用户所有权/ACL保存，CreateNew拒绝覆盖；消费侧核来源、根、caller、唯一observe、时效及reparse，token只进入调用进程环境并在finally清理。输出只有实际请求标识、公开结果和凭据文件路径。当前静态接受已通过`msg_c9de61d348a6`、`msg_14302c355962`交主控及原Worker，可由主控请求本人执行；Agent没有创建human session、Grant或token，未把该批准扩大为执行、目录、工具或原生Agent的实际通过。
+
+主控准确3b46b293的四文档及后继3cdf29ce的依赖计划已完整读取，限定接受其当前记录与实施条件；原超时和未知保持。Reviewer实际`check-revision.ps1`分别核0ae50787→3b46b293、3b46b293→3cdf29ce，marked18.1.0检查四文件/46本地链接及一文件/5本地链接，Git空白均0。compile260实际SOURCE=260、四个测试包编译日志为空、三个传输前用例PASS/外层0已读，只接受该范围，不表示四包全部运行通过。原ac950358 hook已获主控`msg_50db746ddf2f`明确完整读取报告和原件回复；八项实施条件已获`msg_4f401ee97ec6`采用。后继依赖实现及本人实际批准继续累计核查。
