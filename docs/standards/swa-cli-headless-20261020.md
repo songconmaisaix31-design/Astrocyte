@@ -1247,3 +1247,15 @@ stdout-close保留真实部分输出及解析错误原件，允许stdout不完�
 `pwsh -NoProfile -File .verification/swa-cli-headless-20261020/next-window-04.ps1 -Stage generate -EvidenceName generate-03 -ExpectedSource 3ba76a85cc968224f283315b64a4be4c27f1fcce`实际exec31513外层、原生成器及资源退出均0。CPU9.5/9.4%、可用18.59/18.62GB、间隔2.5010712秒；Node512、BelowNormal及私有TEMP保持。真实`web/src/api/schema.d.ts`由既有生成器增加controller.recover、SwaNativeLaunchPolicyV1、nativeConfigurationSource及selection.native_launch，与已审契约对应，未手改生成文件。原件在`generate-03/`；UTC13:12:28.7262117和13:12:41.1910594两次定向新鲜CIM对根15636、子进程及真实生成器node均空，已通过msg_570974b28663交回。下一完整build使用新candidate06/build07，当前没有执行native/Go构建、服务、模型或安装验收。
 
 已完整读取主线CLI参考及原Reviewer源码对应报告。当前client/helper直接调用固定Orca RuntimeClient/transport；host直接组装原OrcaRuntimeService、RuntimeRpcShutdown、16项原生RPC及原PTY/daemon；structured正文直接调用sendAgentTurn、host.send和waitForSendSettlement，唯一receipt继续由原executor/SQLite维护。必要产品授权、隔离、helper真实身份及native Job保持。原Reviewer已独立核实helper六项历史只读分支及collectTaskResult没有当前产品调用者，允许后继精确删除；当前生成阶段没有应用该清理，不以来源核对或清理作为构建前置。
+
+## 28. ConPTY分析日志位置的窄修复
+
+原Run的msg_13aa2d8afcd3只授一次build07。准确干净`c42a695f756886c2afcc8f36f0af6339dae9ec29`、runner05b0和全新candidate06核实后，实际exec76158于UTC13:14:25启动；资源CPU6.5/5.0%、可用约18.71GB、间隔2.5010402秒通过。真实prod deploy324项及363项供应链核查完成，21份bundle/metafile生成。官方归档37618919字节、headers10291794字节及node.lib2988566字节均HTTP200，原SHA、node.exe大小/哈希与24.21.0版本核验通过；Python3.13.13和VS2022实际进入编译。
+
+实际CL=/utf-8后，conpty.cc已越过原头文件17语法错误，保留151行C4267警告。新的c1xx C1258为无法保存`conpty.nativecodeanalysis.xml`，原MSVC及完整构建退出1；没有完成native/Go/VERSION。原件在`build-07/`，实际外层和build退出1、gate0。UTC13:18:42.8148453和13:19:13.0583412两次新鲜CIM对已观察根29244及相关子进程均空，已立即交回；主控msg_74dbd8448c6c正式收回窗口并解除冻结。candidate06及全部失败原件保持。
+
+Worker与Reviewer分别以成熟.NET XML读取真实conpty.vcxproj，得到原IntDir、EnablePREfast=true及未指定PREfastLog；失败目标长269字符，父目录存在，文件不存在。路径长度与C1258的因果仍须实际后继编译确认。已完整读取主控提供的[Microsoft /analyze文档](https://learn.microsoft.com/en-us/cpp/build/reference/analyze-code-analysis?view=msvc-170)、[CL环境变量](https://learn.microsoft.com/en-us/cpp/build/reference/cl-environment-variables?view=msvc-170)及[C参数引号规则](https://learn.microsoft.com/en-us/cpp/c-language/parsing-c-command-line-arguments?view=msvc-170)。
+
+原build脚本现仅在native循环为每包独占创建本次work下a0—a3目录，realpath及lstat拒绝重定向。保留/utf-8，以CL增加/analyze:log和该目录；引号前实际两个反斜线经MSVC参数规则表示目录末尾一个反斜线，CL长度按官方1024字符限制检查。各包目录独立，原gyp4并行及所有编译/分析选项保持。node-pty真实vcxproj包含conpty.cc、path_util.cc及gyp附加的win_delay_load_hook.cc；process-tree的binding列六个源文件，两个安全模块的binding各列addon.cc，各包附加hook的名称与自身源文件名不重复。按源文件及独立包目录保存分析日志。旧CL.command.1.tlog仅有BOM，没有取得完整实际编译命令；原XML未指定PREfastLog的观察不扩大为已证CL全参数。ConPTY编译完成后须在准确a0读取真实非空conpty.nativecodeanalysis.xml；缺失立即失败。日志目录和完整CL写入原构建日志，Go前将CL恢复为原/utf-8。其他源码、依赖、原生补丁、ABI、输出目录与安装布局保持。
+
+本修复沿原T01构建及闭包检查：先执行MJS成熟语法、runner PowerShell Parser、文档来源与差异检查；新准确候选07/build08在另授窗口中运行原完整构建，核真实ConPTY分析文件及native/Go/VERSION，失败保留并终止。完整构建通过后，原T01装载、T02独立安装及全部真实功能检查仍须执行；静态检查不证明编译修复或安装通过。当前没有运行后继正文或增加测试钩子。旧runner的准确05b0实际字节另存build-07/next-window-executed.ps1，后继runner只变更candidate07常量，摘要另报主控。

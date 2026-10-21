@@ -96,7 +96,7 @@ for (const key of Object.keys(environment)) if (/^(?:CL|_CL_)$/i.test(key)) dele
 environment.CL = '/utf-8'
 console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL }))
 const installed = createRequire(join(runtime, 'package.json'))
-for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry']) {
+for (const [index, name] of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-security', '@orca/windows-registry'].entries()) {
   const packageDir = await realpath(dirname(installed.resolve(name + '/package.json')))
   const rel = relative(output, packageDir)
   if (!rel || rel === '..' || rel.startsWith('..\\') || isAbsolute(rel)) throw new Error('Native build target escaped the private candidate')
@@ -106,8 +106,17 @@ for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-s
     const headersDir = dirname(createRequire(join(packageDir, 'package.json')).resolve('node-addon-api/package.json'))
     await cp(headersDir, join(packageDir, 'deps', 'node-addon-api'), { recursive: true, dereference: true, errorOnExist: true })
   }
+  const analysisDirectory = join(work, 'a' + index)
+  await mkdir(analysisDirectory)
+  if ((await realpath(analysisDirectory)).toLowerCase() !== analysisDirectory.toLowerCase() || (await lstat(analysisDirectory)).isSymbolicLink()) throw new Error('The native analysis directory is redirected')
+  // 尾部两个反斜线在 MSVC 的带引号参数中表示目录末尾的一个反斜线。
+  environment.CL = '/utf-8 /analyze:log "' + analysisDirectory + '\\\\"'
+  if (environment.CL.length > 1024) throw new Error('The native compiler environment exceeds the MSVC limit')
+  console.log(JSON.stringify({ stage: 'native-analysis-directory', package: name, directory: analysisDirectory, CL: environment.CL }))
   run(node, [gyp, 'rebuild', '--python=' + python, '--arch=x64', '--jobs=4', '--nodedir=' + nodeDir], packageDir)
   if (name === 'node-pty') {
+    const analysis = await lstat(join(analysisDirectory, 'conpty.nativecodeanalysis.xml'))
+    if (!analysis.isFile() || analysis.size === 0) throw new Error('The actual ConPTY analysis log is missing')
     const buildDir = join(packageDir, 'build', 'Release')
     for (const [file, source] of slotSourceFiles({ platform: 'win32', arch: 'x64', buildDir, nodePtyDir: packageDir })) {
       const destination = join(buildDir, file)
@@ -117,6 +126,7 @@ for (const name of ['node-pty', '@vscode/windows-process-tree', '@orca/windows-s
     }
   }
 }
+environment.CL = '/utf-8'
 const go = await findGo()
 for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/server']]) {
   const args = ['build', '-p=4', '-trimpath']
