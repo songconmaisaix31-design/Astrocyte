@@ -141,11 +141,12 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 			if child == nil {
 				continue
 			}
-			if err := child.closeOwner(); err != nil {
-				_, _ = fmt.Fprintf(stderr, "所属服务 stdin 关闭失败: %v\n", err)
+			closeError := child.closeOwner()
+			childCode := child.await(stderr)
+			if closeError != nil && !(errors.Is(closeError, os.ErrClosed) && childCode != 6 && child.confirmedExit()) {
+				_, _ = fmt.Fprintf(stderr, "所属服务 stdin 关闭失败: %v\n", closeError)
 				code = 6
 			}
-			childCode := child.await(stderr)
 			if childCode == 7 && code == 130 {
 				childCode = 6
 			}
@@ -342,9 +343,30 @@ func (child *ownedService) closeOwner() error {
 	return child.closeError
 }
 
+func (child *ownedService) confirmedExit() bool {
+	select {
+	case <-child.done:
+		state := child.command.ProcessState
+		return state != nil && child.command.Process != nil && state.Pid() == child.command.Process.Pid && state.Exited()
+	default:
+		return false
+	}
+}
+
 func (child *ownedService) await(stderr io.Writer) int {
 	select {
 	case <-child.done:
+		if !child.confirmedExit() {
+			_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 的实际退出状态尚未确认: %v\n", child.command.Process.Pid, child.waitError)
+			return 6
+		}
+		if child.waitError != nil {
+			var actualExit *exec.ExitError
+			if !errors.As(child.waitError, &actualExit) {
+				_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 的等待结果尚未确认: %v\n", child.command.Process.Pid, child.waitError)
+				return 6
+			}
+		}
 		if err := errors.Join(child.waitError, child.readError); err != nil {
 			_, _ = fmt.Fprintf(stderr, "所属服务 PID %d 退出失败: %v\n", child.command.Process.Pid, err)
 			return 7
