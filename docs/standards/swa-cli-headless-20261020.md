@@ -1363,3 +1363,15 @@ lifecycle17及独立C09-only18均因真实native行缺少creationTimeMs失败，
 cim19以真实Process.Start句柄与匹配CIM创建时间运行四个分支：known存活6，stdin关闭并Wait确认退出后0；另一个实际进程只在unknown请求不带创建时间、真实CIM创建时间正常可用时，存活6、实际退出后0。四次均完成两次完整CIM观察，实际原输入、身份来源和Wait保留；未伪造OS清单或查询故障。不能实际触发的查询故障与超时路径仅有静态审查，未宣称运行通过。
 
 lifecycle19以同一63eb仓库外安装、新数据根和端口64508运行四种真实模式，驱动实际0：立即EOF130、启动中EOF130、readiness后EOF0、stdout实际读端关闭6。所有实际旧身份经native两次及CIM两次确认；最后模式出现一个真实创建时间缺项，原样保留，两个完整CIM均确认该PID缺席。stdout模式精确核唯一非空runtime关联行，两次全Job仅余serve成立，原Orca前后保全通过。该结果对应63eb及当次保存的真实脚本，未计入尚未构建的Go分类修复。测试driver和CIM helper纳入tests/swa-cli-headless，后继准确安装复验继续；Human、真实Grant、Agent、T03/T12及同安装双Worker仍未运行。
+
+## 38. 准确95ef真实ZIP安装及本人入口
+
+准确95efcc288e32ad8d72d4ef902f32ec130f97fea3已普通push。compile20以干净准确源码完成四包Go test-c及三个既有传输前检查，实际0；原SOURCE不改。build15准确候选14实际0，四native原输入及原实际编译证据核验后复用。extract-package20以成熟.NET ZipFile生成410059449字节真实发行ZIP并普通解压，实际0，原Node pin保持、Node及实际子进程为同用户Medium。原installer20实际6，安装复制、28233路径闭包、native/空Job、端口及保护根/四junction真实拒绝通过；保留真实消费者未运行，不登记完整安装验收通过。
+
+同一95efcc28-install20的http-idle20实际0：实际空闲及三项模式/真实同根其他库拒绝、五库完整性/外键、实际Token、唯一所属HTTP同句柄终止、旧身份两次退出、完整Job两次仅余serve和原Orca保全成立。serve实际退出7，唯一readiness无尾包，stderr精确runtime_error；原http-idle17的分类6失败保持。lifecycle20-outer同安装四项实际0，退出130/130/0/6、原native2+CIM2及完整Job条件成立，精确stdout关联诊断通过，selected_modes四项且remainingCases空；本轮没有缺项样本，原19真实缺项原件保持。
+
+provider-job-installed20实际0，限定普通所属进程四模式、parent-loss旧身份退出、无关Job保全及原负向范围；late-child PID604未取得完整创建身份、parent-loss旧Job观察及真实Agent abort保持未验。原Reviewer ec22563245721da8f7a69d4409e667c935e5ea7d已独立按上述实际范围接受95ef代码、ZIP安装20、严格C08、lifecycle20、真实CIM分支及普通Job，不据此接受本人、Grant、模型或双Worker。
+
+按主控msg_870a，在同一95ef最终安装准备仅Observe本人入口。human21验证脚本路径斜线比较失败1，实际服务readiness后正常关闭0/Job两次仅余serve，原件保持；规范化比较后新独占human22保持运行，endpoint64509、runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69、serve37764创建UTC2026-10-21T18:52:06.3683428Z、host44492、server48980。实际HTTP200、五库及三Token/原Orca前和运行中保全通过；工具会话5187保持stdin。旧260服务和原两个准确脚本未改变。
+
+新human-authorize-installed22/use-installed22-credential仅支持Observe，共用assert-installed22-service核三个实际创建身份/路径、父链、runtime及startedAt、listener、版本和health；DPAPI、用户独占ACL、原caller/固定公开根/仅observe/时效条件保持。三文件准确路径、大小、SHA及用户命令在自有human22-review.md交原Reviewer；Parser及实际只读身份检查0，当前无凭据consumer真实拒绝1，人工正文没有执行。本人批准、当前Grant/模型、原生Agent调用、T03/T12/C04/R10与同一最终安装双Worker并发/指定停止/B继续及完整成果仍未运行，整体任务继续。
