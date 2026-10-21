@@ -8,6 +8,8 @@
 
 真实session/CSRF和固定公开项目Grant流程由Agent受托执行，原23人工入口保留。独立接受的32857112计划及26实际结果区分真实用户批准、实际Agent执行者和服务返回主体；现有human Cookie仍是12小时管理会话，客户端清除引用不代表服务端注销，最终项目Grant/token仅observe。具体可用Agent、模型及原生工具状态分别核实；执行Grant尚未签发，工具范围及T11待答项保持。已核默认Pi及OpenCode源没有StepFun配置，已询问其所在Agent或配置路径，请勿发送密钥正文；其余已授权工作继续。
 
+其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key；单次真实GET https://api.deepseek.com/models返回200并确认默认模型存在，未进行推理或改变原源。该验证仅证明认证读取与模型存在性；NativeLaunch、关闭工具和插件、上下文及每Worker隔离、真实原生调用和执行Grant仍按独立计划落实，不能由配置或该GET代替。用户既有其他Agent测试许可保持，不重复询问通用调用授权。
+
 ## 继续构建与 REA 仓库格式（2026-10-21）
 
 用户要求“继续构建swarm cli，格式上用rea的仓库格式”。构建继续按已确认首版目标、隔离和验收推进；已读取官方 REA 的仓库入口、架构、开发与包定义，来源和当前路径对应见[参考记录](standards/swa-repository-format-20261021.md)。

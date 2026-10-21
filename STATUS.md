@@ -2,9 +2,13 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
+当前程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。真实模型、完整安装及同候选双Worker仍未通过。
+
+继续OpenCode原生调用：实际2.0.31原源码和默认deepseek/deepseek-v4-pro、原生api认证已核；单次真实GET /models返回200、默认模型存在、原配置不变。原Worker及Reviewer正核NativeLaunch、工具/插件/上下文隔离、版本对应ACP消费者与完整成果，不以尚未实现的合同或局部StepFun来源缺失停止整体构建。
+
 用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，其他Agent原生调用仍有NativeLaunch合同缺口，继续补齐。StepFun已核来源未发现，配置路径已询问；模型、真实双Worker、T11/T12仍未通过。
 
-当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，产品记录提交c6d95473796290f96c213513a70d49e3b546f904已push。compile20/build15/真实ZIP及普通解包20实际0；同安装C08精确7、生命周期四模式130/130/0/6、C09诊断及所属退出获限定接受。原installer复制/native/28233路径和保护范围通过，T02聚合6保留真实消费者未验。Observe已实际完成，凭据位于human22/human-approval/observe-credential.dpapi，到期时间见QUESTIONS；原23消费0，24/25真实失败原件保留。
+保留的95efcc288e32ad8d72d4ef902f32ec130f97fea3安装已完成Observe。compile20/build15/真实ZIP及普通解包20实际0；同安装C08精确7、生命周期四模式130/130/0/6、C09诊断及所属退出获限定接受。原installer复制/native/28233路径和保护范围通过，T02聚合6保留真实消费者未验。Observe凭据位于human22/human-approval/observe-credential.dpapi，到期时间见QUESTIONS；原23消费0，24/25真实失败原件保留。
 
 780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
 

@@ -1,10 +1,14 @@
 # SWA 主线接续
 
+当前程序f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398均已push。Pi原生StepFun custom准入代码、strict/architecture及真实空auth拒绝获788db525限定接受；build16/410059866字节完整ZIP/普通解包29实际0。安装位于C:/Users/DW/AppData/Local/SwarmCli/candidates/f2ab4fd9-install29，复制/native/闭包/保护拒绝通过，安装汇总6保留真实消费者未验。同安装四项生命周期130/130/0/6、C08服务7/runtime_error和所属退出获32f254c5限定接受。新检查服务已退出。
+
+原Worker和Reviewer继续OpenCode原生调用，不能以StepFun局部来源缺失结束整个任务。实际@opencode/cli2.0.31及官方tag22728d67461260d56bb9796b9b8f36e1de47202e已取得；原配置默认deepseek/deepseek-v4-pro，原auth.deepseek为api且key存在。仅一次真实GET /models返回200并确认该模型存在，原源字节/stat保持，未进行推理。下一步核工具关闭、插件/上下文/每Worker隔离、ACP2.0.31消费者、完整输入成果及停止保全，方案审核后由原Worker实现。用户已允许其他Agent测试，无需重复通用许可。
+
 2026-10-22用户已回复APPROVE OBSERVE，禁止Aliyun key，允许阶跃星辰key和其他Agent测试。同一95ef安装的delegated-observe26实际0：真实Observe Grant、CurrentUser DPAPI及原23消费、status/capabilities通过，五项真实403和三库持久范围/无Worker模型效果核查通过。项目46ceef7b-0be3-4a4b-8e74-575fd327b31c，caller swa-cli-acceptance，凭据到期UTC2026-10-21T20:51:16.4468291Z。执行者为Agent，依据本次用户会话委托，不能记作本人TTY或T11通过。原Worker ctx_fb2c13c28d40与原Reviewer ctx_5f4446e340a0继续，5187及64509保持。
 
 原23人工入口及消费入口保留，FD5身份检查保持。受托Observe按已独立接受的32857112计划完成26；24预检表名错误和25负向测试Origin残留失败原件保留，修正限验证消费者，95ef程序和包未改。真实发现已核Pi1.0.1、Codex0.162.0、Claude2.1.238、Grok1.0.34、OpenCode2.0.31安装可用；账号、关闭工具和原生调用分别验证。当前Pi账号源无可用key，已核OpenCode源无StepFun，已询问其配置路径；Codex真实OAuth存在，但产品当前NativeLaunch仅Pi合同，原Worker继续原生调用缺口分析和补齐。
 
-当前候选源码95efcc288e32ad8d72d4ef902f32ec130f97fea3，原产品分支已普通push到仅更新验证记录的c6d95473796290f96c213513a70d49e3b546f904。compile20、build15、真实ZIP/普通解包20实际0；安装根为C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。原installer的复制/闭包/保护范围通过，聚合6保留真实消费者未验。同一安装的C08准确7/runtime_error、四项生命周期130/130/0/6、C09关联诊断和所属收尾通过。原Reviewer ec22563245721da8f7a69d4409e667c935e5ea7d限定接受，三个hook均已实际读取回复。
+95efcc288e32ad8d72d4ef902f32ec130f97fea3为保留的Observe安装。compile20、build15、真实ZIP/普通解包20实际0；安装根为C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。原installer的复制/闭包/保护范围通过，聚合6保留真实消费者未验。同一安装的C08准确7/runtime_error、四项生命周期130/130/0/6、C09关联诊断和所属收尾通过。原Reviewer ec22563245721da8f7a69d4409e667c935e5ea7d限定接受，三个hook均已实际读取回复。
 
 本人入口继续使用95ef同一安装的validation-data/95efcc28-human22及64509，runtime cc80c07c-c8bf-47ff-965e-6177bd2a7c69，serve37764/host44492/server48980；真实服务、五库、Medium及原Orca保全通过。完整新23命令见首版任务。T11、实际Agent/模型、完整T12和同一候选真实双Worker仍未通过。旧260沿原owner工具59063的stdin正常收尾0，完整Job两次只余serve；准确v2以原UTC推导正确创建时间，两次完整CIM各410行确认目标缺席，原Orca保全通过。新human22工具5187保持stdin。
 
