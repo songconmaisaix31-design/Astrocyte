@@ -2014,3 +2014,15 @@ HTTP范围依据主控`msg_1861239c4c1a`：保留原CLI默认follow，产品检�
 Reviewer以安装Node24.21.0实际运行`.verification/review-opencode39-source.mjs`，退出0，原件`opencode39-source-independent.log`；成熟JSON和Git核九份公开源的准确blob，五份逐字节一致，四份Worker副本仅文件末尾空行差异，未将后者记为逐字节相同。真实36—38原件及38只读库检查支持失败范围，不重复模型列表GET、Observe或原native探针。已读后继源码中保护根双向检查使用真实config/data/Orca/安装目录，凭据比较仅固定安全错误，plugin.list消费官方Location.response.data；这些修复交原Worker，后继准确实现及正向仍须复验。
 
 主线d21→`c3fcd86a76b9477fb2da77ae8928b439e0f80a25`五份准确差异已完整读取，实际check-revision退出0、marked18.1.0核五份/95本地链接及Git空白；其接口记录与F18C对应，当前初始化合同以主控已核定的F803补充为准，后继准确记录随实现累计复验。828ca336的计划hook及d21记录hook分别获主控`msg_b284d3bc9087`、`msg_324627f50a0e`明确完整读取回复。本次继续同Task/Dispatch审核真实初始化、正文和全部产品消费者；原95ef/5187保持，Observe实际已到期不续签，执行Grant、完整安装/双Worker、T11及S3保持各自真实状态，未使用Aliyun。
+
+### 实际42私有导入与无推理ACP
+
+**限定接受42的真实私有原生导入、ACP握手/设置及所属收尾证据。** 准确基线为`3bbfc1389a63535d0b3c13d01a86e105a110a3fd`加`opencode41-build/source.diff`，差异SHA256 `D4074E8C790B049124CDE45DC200C85D1661F5879523F506387EA6BC473663FC`；已读探针SHA256 `2BEFFFEB6A20A987592548C3359737BE28D469199BB9889AD236E45150039140`，Reviewer自有native-opencode42-reviewed.mjs及opencode41-reviewed-source.diff保留逐字节副本。八个定向产物由41构建，42入口核原差异不变后复用，没有重编不变成品。该轮使用固定公开项目和随机私有探针根，没有创建产品Orca Dispatch，接受范围不包括正式产品执行、首次prompt、最终session工具及完整安装。
+
+原`opencode42.log`、真实退出0、import-exit/import-result/result/cleanup及入口已完整读取。正式原生auth import实际退出0，原真实credential id进入新私有库，计数1、stdoutBytes0、六条其他stderr仅计数且不导出正文；导入Job真实root12984/native15120/conhost44700的完整Job及三身份两次退出。后启ACP使用另一所属Job，root5480/native43524/conhost33336/private serve43600均有实际创建时间；原plugin.updated/list得到准确七个active插件、tool.list为0，状态PID43600属于实际Job，根/目录/数据库与各XDG路径匹配。ACP initialize实际报告OpenCode2.0.31，原生session为`ses_e9fb3dcaaffeJ5r1F6PF21cuWv`。
+
+新session最初回应中的model为opencode免费模型，实际setMode/build及setConfigOption/model后，原生SQLite持久agent=build、model=deepseek/deepseek-v4-pro；没有以配置文件或最初回应推断最终模型。原session_message的两条记录实际为agent-switched及model-switched，没有prompt/模型正文。该轮未调用模型，效果前最终session/model/context/HTTP工具政策由后续O04/O05和生产消费者另行验证。39的原生导入已真实退出0且库中有唯一凭据，但Windows CRLF计数断言失败；40对两条原生设置记录的数量断言失败，41对同一canonical目录的斜线形式断言失败，原log/私有库及实际非零原样保留。42使用新独占案例，没有重发原导入或未知模型请求。
+
+Reviewer实际使用安装Node24.21.0执行自有`review-opencode42.mjs`，退出0，原件`opencode42-independent-03.log`。node:sqlite readOnly/query_only直接核全credential表只有一行、原id/integration/type/key和active=1，key仅在内存与private auth作安全等值比较；核原session和两条真实有序记录，数据库dev/ino/birth/mtime/size保持。安装原生windows-security只读核12个私有目录的protected DACL、当前用户所有者、仅当前用户/SYSTEM及权限；成熟stream-json JSONL核导入/ACP两个不同Job各自两次完整空查询、两次已观测身份退出且间隔均超过50毫秒，forced=false。Reviewer首次检查因本树未编native而失败，第二次因JSONL适配入口错误失败，实际改用已有安装native和成熟jsonl.asStream后完整检查0；没有构建native或重复原生/HTTP/模型。原FD5身份guard实际0，95ef/5187保持。限定接受通知为`msg_ee7604d98544`，原Worker继续O04/O05及所有后继消费者。
+
+**同时限定接受准确主线`c05b341def7c67181991703fd6f717897c1c948c`的管理记录及F803初始化合同范围。** c3→c05四份准确差异已完整读取，正式import/原Entry/内存stdin/空库与两Job/未知先查写入SPEC，开发基线3bb和已验安装f2分别记录；未将34—38失败、首次模型、完整安装/双Worker、执行Grant、T11或S3改为通过。实际check-revision退出0，marked18.1.0核四份/50本地链接及Git空白，前序c3五份准确差异及对应检查已在本报告记录。1e8f8d84的补充接受及正向证据不足两个hook分别获主控`msg_57d899dacc41`、`msg_b17aa9b9cedb`明确完整读取回复，本Task/Dispatch继续。
