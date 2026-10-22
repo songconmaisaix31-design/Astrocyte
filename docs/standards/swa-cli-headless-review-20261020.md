@@ -2273,4 +2273,22 @@ Reviewer独立`review-cleanup87e.mjs`实际0，原件`cleanup87e-independent.log
 
 准确893fb885的build19实际退出0，SOURCE、完整入口及日志已读，Node24.21与四个原507/build11 native均按原证据复制，没有重编native；实际闭包28251路径，原检查明确native认证和功能验收NOT_RUN。普通归档/提取安装88及服务89入口已读，安装和真实helper结果仍待完整原件，不将构建成功计为T13通过。
 
-5eab3922的893源码限定接受与旧67退出证据不足hook分别获主控`msg_be0efa8926f7`、`msg_064436444de9`完整读取回复，两项唤起已确认。本Task继续新候选的真实验收及原Windows必要复验。
+5eab3922的893源码限定接受与旧67退出证据不足hook分别获主控`msg_be0efa8926f7`、`msg_064436444de9`完整读取回复，两项唤起已确认。本Task继续新候选的真实验收。
+
+## 893安装88、服务89与准确来源90
+
+**接受execute90-review-input/actual-inputs.json冻结的准确893来源、四份既有委托客户端和89真实服务前置，范围为既定新91准备及后续原调用链入口。** 四份客户端摘要与79已接受正文相同，准备客户端为F72D42D2；guard、消费者、observer分别仍为DEA336E1、3D4B0940、F0DDAFC5。没有新增权限或人工确认条件。新数据为`893fb885-service89`，新runtime为`6aec5c49-4077-4376-8e4d-8dc5b83acc77`，新安装为`893fb885-install88`；旧82的项目、authority、cookie和DPAPI不作为本次新绑定消费。Reviewer没有运行准备客户端、创建session、签发Grant或调用模型。
+
+Reviewer独立`review-execute90.mjs`实际0，原件`execute90-independent.log`：四客户端及三同生产bundle/metafile实际摘要、入口和准确893相关干净源码均核；实际source前后逐字节一致，authority_domain/source_snapshot仍null，最终delegated-execute/version-home尚不存在。真实只读三库的业务计数与90原观察相同，workspace五表全0，orchestration仅原inspect-only bootstrap一行，其余六表0，journal十四表全0，认证身份0；DB/WAL大小和mtime保持。没有把真实迁移bootstrap要求为全零或提前生成项目。
+
+Reviewer独立`review-execute89-service.ps1`实际0，原件`execute89-service-independent.log`：当前serve6224、host33976、http55368的创建时间分别为UTC05:51:07.2867800、05:51:08.3431430、05:51:11.6592370，父进程分别13636、6224、6224，路径均属于准确新安装；64508监听、metadata、VERSION/CLI版本、health、私有owner/DACL/无reparse、host SHA256 `2ba1146a5662b3aef2fac0ef7040d7308aec28785769c729fdb366819c012493`及三份同用户Medium原身份记录匹配。原服务工具32198与只读Job句柄21806保留，Reviewer不写入或结束它们；原95ef/5187保持。hold89-job.ps1完整读取，仅持有QUERY和READ_CONTROL句柄供所属服务结束后两次完整成员观察，当前尚未登记退出通过。
+
+88普通.NET归档/提取实际0，归档412666860字节、25502条目，原archive SHA256为`74BA57A4C40D5614D2421607029C9046DAFFAC430ADF829F171E7AB28B509745`；独立ZIP元数据检查核关键唯一入口及准确VERSION。原安装T02聚合退出6，真实T03/T13尚未完成，不能把包提取和服务存活登记为完整安装验收。93准确干净893的四个Go消费者test binary编译原入口、SOURCE、测试列表、outer及退出0已读；此处只登记实际编译，真实四用例结果尚待原件，Reviewer没有重复编译。
+
+本轮独立前置接受已先送原Worker`msg_3974ee636733`、主控`msg_c65a966ab1e3`，允许按原授权连续91及无模型controller/helper/Idempotency，再核同安装双Worker。真实Grant、DPAPI消费、helper握手、产品Worker和最终T13仍待实际证据；没有将原83未知父R、旧EOF6或缺失Job证明改为通过。2197a441的87e限定接受hook已获主控`msg_3191bfa6192c`完整读取回复，唤起已确认，本Task继续。
+
+## 准确893的后继双平台CI
+
+Reviewer完整读取Ubuntu job119658661466及Windows job119658661639原日志，实际合并源码为`fce64fb1533f8224f2617d8313d351a90657939e`，父版本为main b0306af5及Worker893fb885。普通frozen install两平台成功，后续Go整体均退出1，完整CI仍失败。独立`review-ci893.mjs`实际0，原件`ci893-independent.log`：同平台main50c2基线比较，Ubuntu失败名称同为68项，Windows同为79项，新增与删除均0；先前5c750的Relay父例及actual_database_failure子例本轮没有出现。
+
+实际两个合并版本356905dd与fce64fb1的cmd、internal、migrations、go.mod/go.sum及pnpm-workspace.yaml逐字节差异为空。这支持本轮没有观察到该新增失败，旧5c750具体原因仍未知，不能称为已修复、全部失败同因或完整CI通过。主控`msg_ca10be70ec49`及`msg_3191bfa6192c`已取消尚未开始的额外两源码SQLite复验和诊断改写；当前继续产品关键调用链，不增加重复测试或管理等待，历史失败原件保留。
