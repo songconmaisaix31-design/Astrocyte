@@ -2204,3 +2204,15 @@ Linux job119643340844实际检出的PR合并Commit为`89ff401aecc725ade76a4e9713
 实际80前置观察另记录原两个目录创建时间、私有DACL/无reparse、空version-home和无DPAPI，来源完整等于68；原Worker收到79接受后已在同67开始显式恢复82，不新增批准等待。准确生产源码亦核实settings的ExternalModelCLI校验经既有ValidateExternalCLI→registered_agent桥→swa.registeredAgent，在真实DB取得或创建local_authenticated_transport主体；authority须在该真实效果后取得，未手动写身份。实际82响应和持久效果仍待验。
 
 a4d00884的79限定接受hook获主控`msg_30d1e0fa7235`明确全文读取报告、原件和独立结果后回复，唤起已确认；5ee4dd6c的故障消费者退回hook此前获`msg_2f239fc7cf0d`全文读回。本Task继续原产品和最终同安装双Worker审核。
+
+## 82实际准备及83原请求未知
+
+**接受82真实委托准备及同安装Observe消费的实际范围。** 原F72恢复入口沿同3bcf-install60/67服务，真实五笔space、project、settings、Grant、token请求均有独立原request_id、当前UTC及2xx回执，无自动重试；六项缺cookie、缺CSRF、跨Origin和Agent管理Grant/token/settings实际403。实际服务主体为human/local-human，执行者明确为原Agent Task/Dispatch，tty_input_used=false；服务cookie12小时且未撤销与本次一小时token分别记录，未伪造用户输入。
+
+真实项目为`6d8cf620-f26c-4ee3-8554-1c9609075736`，固定公开目录，settings revision2、single OpenCode CLI、空tools、五动作observe/start/send/stop/read_context及当前目录/引用边界保持。实际authority为`e63abe4b00a394a833acc1e804e1a084775f62958a93a16015219c915fcf650c`，在原设置校验后由生产链生成，Grant/token前真实同生产来源完整取得；原scope没有手工写入或伪造。token实际到期UTC`2026-10-22T06:04:06.7927994Z`，与原签发请求时间加一小时匹配，未重签或续旧95ef Observe。
+
+Reviewer独立`review-execute82.ps1`及其mjs实际0，原件`execute82-independent.log`：只读CurrentUser DPAPI并在内存核完整绑定和token，对实际库内唯一Grant的private_token_digest进行真实SHA256等值检查，秘密不进入命令行或输出；文件/父目录私有owner/DACL和无reparse核。真实project设置及Grant/actions/expiry/revoked_at、现存authority均匹配原回执；准备各阶段原三库观察只增加space/project/Grant各一，orchestration/journal业务状态保持，没有Worker或模型。当前83的后继业务状态与准备阶段分别审核，没有把后继记录强称为准备时零状态。
+
+同安装真实status/capabilities及CurrentUser DPAPI Observe消费实际0，runtime/authority/registry/原生版本、provider/model/account_source逐项匹配，credential_renewed=false。实际安装发现Pi1.0.1、Codex0.162.0、Claude2.1.238、Grok1.0.34和OpenCode2.0.31；capabilities中实际launchable仍为unknown，发现或配置状态不登记实际执行。Reviewer在内存读取原选定DeepSeek凭据，核62份准备/消费者导出和prepared.json均不含该实际key或实际token，原native DB mtime保持；原Orca before/after保全passed，Reviewer没有发HTTP、签Grant、原生调用或模型。
+
+**83产品流程当前证据不足。** 真实第二条CLI命令controller.open返回HTTP409、exit6、operation_unknown，原请求`3bed9c88-9c99-4cdd-83cf-a523e5383374`不可重发。Reviewer独立只读`inspect-flow83.mjs`实际0，原件`flow83-original-request-independent.log`：真实原R为swa.controllerOpen/pending、stage=pty-spawn，没有已登记controller/process/helper或子请求；真实Run仅原bootstrap，tasks/dispatch/worker/resource表仍0。这些记录没有证明PTY未创建或完整资源退出，未知继续保留，由原Worker查询同一原请求和准确所属资源并诊断。未重开Controller、重跑Flow或重签token，产品Worker、模型和最终双Worker均未接受；通知为`msg_12180190c336`。
