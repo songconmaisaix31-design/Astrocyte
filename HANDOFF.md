@@ -1,5 +1,9 @@
 # SWA 主线接续
 
+本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。首轮已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；GUI源码至 `b7447f4a`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。先沿01—06原负责人推进 Linux运行/打包/CLI生命周期及新增准入，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。
+
+工具与缓存位于 `.verification/cloud-setup`，新 shell 可读取该目录 `activate.sh`；固定 Node24.16.0/pnpm11.27.0/Go1.27.2。实际 filtered frozen 与模块校验、应用构建和开发启动已通过；全量 Go 失败与独立适用检查见任务和 `docs/validation/swa-product`。未知请求只查原 request，不换键重放；工具关闭和公开固定输入边界仍保留。
+
 当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，控制端command/env窄修及84严格检查获5eab3922限定接受。build19、412666860字节ZIP/普通解包和安装88的复制/native/28251闭包/保护拒绝通过，安装汇总6保留功能未验。独立服务89在64508/runtime6aec5c49就绪，6224/33976/55368及三Medium、五库核查0，原Worker TTY32198和只读Job观察21806保持；90两次真实来源一致，authority为空、业务与模型0，既定新准备91和实际helper/T13继续。87e原生指定session清理0、三句柄退出及六已观察身份两次缺席获2197a441限定接受，旧67 EOF6/Job不可查询/83父R pending保留。原95ef/5187和本机Orca保持，最终双Worker尚未通过。
 
 主控已建立[draft PR #5](https://github.com/songconmaisaix31-design/swarm-anything/pull/5)，当前head893fb885，尚未合并。d829脚本策略、3fadb迁移测试前提、5c750故障消费者来源/路径规范化均已限定接受，72普通frozen及73真实迁移检查0。最新893实际合并源fce64fb1的Ubuntu119658661466/Windows119658661639均普通frozen成功、Go整体1；失败名称分别68/79，与真实main50c2各平台基线相同，无增删。5c750前次Windows额外迁移失败未复现、原因未知保留；尚未开始的两来源额外复验已取消，完整CI失败。原始日志位于根.verification/swa-cli-v1-control，详细范围见首版任务。
