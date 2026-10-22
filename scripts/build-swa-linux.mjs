@@ -35,7 +35,7 @@ await mkdir(join(root, 'dist'), { recursive: true })
 if ((await lstat(join(root, 'dist'))).isSymbolicLink() || await realpath(dirname(output)) !== dirname(output)) throw new Error('The output directory is redirected')
 await mkdir(output, { mode: 0o700 })
 const runtime = join(output, 'runtime')
-run(process.execPath, [pnpm, '--config.node-linker=hoisted', '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', join(task, 'store')])
+run(process.execPath, [pnpm, '--config.node-linker=hoisted', '--config.prefer-symlinked-executables=false', '--config.extend-node-path=false', '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', join(task, 'store')])
 await buildSWARuntime(runtime)
 
 async function pinned(file, expected) {
