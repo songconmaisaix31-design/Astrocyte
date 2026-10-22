@@ -1,8 +1,8 @@
 # SWA 当前状态
 
-最新Windows只读诊断d8e8/run39852044562/job120080501797成功，其他native及S0均skip，06已核。原4aef根1280/create1792700293571；唯一剩项7288/create1792700119902早173669ms、observed ppid8780、ready双键匹配0，其角色/Jobmembership未知。原两native/CIM均剩1的FAIL保留；同一剩项身份未复用不排除原raw-PPID父链归属错误，具体链尚UNKNOWN。下一只读同一latest快照子集的数字父链，不新full/服务。
+最新Windows只读e929/run39853536500成功/S0及其他native skip，06已核。原4aef根1280/create1792700293571，唯一剩项7288/create1792700119902早173669ms/ppid8780/ready匹配0；latest同次子集仅2行缺目标，完整父链/Job归属UNKNOWN，不补历史union，旧FAIL不改。已接受pure4cb66241…/collector f0f6f824…两源，身份/时间门收紧且unknown整支永久锁、正Job身份和原关闭强门保留。实际历史标量回归tJsdhp为0/stderr0/5输入前后同：verified-root条件式旧必要门true，新函数两次predates-parent，06限定接受；不冒称完整链回放或native通过。下一仅process-tree单组件和普通父子进程实际关闭控制，尚不新full。
 
-Linux EINTR局部验证实际0，06已核：真实pipe Poll0有63次、普通child pidfd Poll0有26次EINTR，PidfdOpen未复现；自身信号sender正常join、byte/EOF及child Wait0/pidfdPOLLIN通过。新observer b3fba893…/binary403fe2e4…的保守整轮重试已审，但未接producer/新serve，原错误具体syscall及旧external关闭仍UNKNOWN。原件`.verification/cloud-setup/pi-owned-eintr-local-r1-07p77Y/`；旧4244包保持失效，human/Grant/token/driver/model均0。
+Linux EINTR局部验证0，06已核真实Poll0的63/26次EINTR、PidfdOpen未复现及正常资源收尾，旧具体syscall/旧external UNKNOWN保留。新capsule6269/b3fb/403fe与check-only0已接受。Root新exec13657当前持有OWN02，runtime`e5df3e0d-ae5c-46a2-9388-f5a65d429d53`/serve223474，截止21:58:07.346UTC；新PKG02 review SHA`055b97213e876b4deb1a1fed893474204fe04a81943165eab16dee85fadb4170`已有fresh10intents、原三wire、本地verify0/HTTP0/model0及01准确限定接受。已向用户请求此新包human/CAS/Grant/token/StepFun Pi N3和两cleanup范围明确委托，待答前不执行。旧4244永远失效；新基线完整最终D尚待正常EOF后的实际外部两fresh观察，不能由初始proof或旧结果替代。
 
 Pi具体拟授权包4244当前失效：原owned observer于20:09:37UTC记录`interrupted system call`并退出1，原serve随后正常0，Root20:35:18读取会话才确认；外部final双空缺失，最终shutdownUNKNOWN。内部两条owned0/全部pidfd退出原记录保留，不能替代完整外部结算。已明确通知用户旧包不能执行/不能用于替换服务；原review及元数据保留，PKG/INVALIDATED.md说明状态。human/Grant/token/driver与模型生成仍未执行，SOURCE私有保留。03只读定位实际EINTR调用面和后继最小真实MRE计划，不改产品或自动重启；下文原baseline存活/截止时间均是失效前记录。
 

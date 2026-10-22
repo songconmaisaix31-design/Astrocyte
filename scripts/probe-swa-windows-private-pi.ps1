@@ -1,17 +1,26 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$PnpmCli, [Parameter(Mandatory)][string]$Python)
+param(
+    [Parameter(Mandatory)][string]$PnpmCli,
+    [Parameter(Mandatory)][string]$Python,
+    [ValidateSet('private-directory', 'process-incarnation')][string]$Component = 'private-directory'
+)
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $env:SWA_PI_PROBE_PHASE = 'preflight'
 if (-not $IsWindows -or [Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne 'X64') { throw 'Actual Windows x64 is required' }
-$failedRevision = '11717767f82a8a4070351ff74674aa0d268f79b2'
+$processIncarnation = $Component -ieq 'process-incarnation'
+$failedRevision = if ($processIncarnation) { '4aef552c63dd1ab5cd787fd2514d92a7815b943c' } else { '11717767f82a8a4070351ff74674aa0d268f79b2' }
 $checkout = (Get-Item -LiteralPath $env:GITHUB_WORKSPACE).FullName
 Set-Location -LiteralPath $checkout
 $observationRevision = (& git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $observationRevision -cnotmatch '^[0-9a-f]{40}$' -or $observationRevision -cne $env:GITHUB_SHA) { throw 'The actual component observer source differs from the CI revision' }
 $revision = $observationRevision
+if ($processIncarnation) {
+    $status = & git status --porcelain --untracked-files=normal
+    if ($LASTEXITCODE -ne 0 -or $status) { throw 'The actual process component source is not clean' }
+}
 $developmentNode = (Get-Command node -CommandType Application | Select-Object -First 1).Source
 if ((& $developmentNode --version).Trim() -cne 'v24.16.0' -or (& $developmentNode $PnpmCli --version).Trim() -cne '11.27.0') { throw 'The pinned development tools differ' }
 if (-not [IO.Path]::IsPathFullyQualified($Python) -or -not (Test-Path -LiteralPath $Python -PathType Leaf)) { throw 'An actual absolute Python input is required' }
@@ -26,7 +35,7 @@ function Assert-PlainAncestors([string]$Path) {
     }
 }
 
-$evidence = Join-Path $checkout '.verification/swa-ci/windows-private-directory'
+$evidence = Join-Path $checkout $(if ($processIncarnation) { '.verification/swa-ci/windows-process-incarnation' } else { '.verification/swa-ci/windows-private-directory' })
 Assert-PlainAncestors $evidence
 if (Test-Path -LiteralPath $evidence) { throw 'The component evidence directory already exists' }
 New-Item -ItemType Directory -Path $evidence | Out-Null
@@ -117,12 +126,14 @@ try {
     New-Item -ItemType Directory -Path $sourceRoot | Out-Null
     $tar = Join-Path $env:SystemRoot 'System32/tar.exe'
     Invoke-Preparation 'fixed-source-extract' $tar @('-xf', $sourceArchive, '-C', $sourceRoot)
-    Invoke-Preparation 'baseline-source-fetch' 'git' @('fetch', '--no-tags', '--depth=1', 'origin', $failedRevision)
-    $baselineArchive = Join-Path $work 'baseline-source.tar'
-    Invoke-Preparation 'baseline-source-archive' 'git' @('archive', '--format=tar', '--output', $baselineArchive, $failedRevision)
-    $baselineRoot = Join-Path $work 'b'
-    New-Item -ItemType Directory -Path $baselineRoot | Out-Null
-    Invoke-Preparation 'baseline-source-extract' $tar @('-xf', $baselineArchive, '-C', $baselineRoot)
+    if (-not $processIncarnation) {
+        Invoke-Preparation 'baseline-source-fetch' 'git' @('fetch', '--no-tags', '--depth=1', 'origin', $failedRevision)
+        $baselineArchive = Join-Path $work 'baseline-source.tar'
+        Invoke-Preparation 'baseline-source-archive' 'git' @('archive', '--format=tar', '--output', $baselineArchive, $failedRevision)
+        $baselineRoot = Join-Path $work 'b'
+        New-Item -ItemType Directory -Path $baselineRoot | Out-Null
+        Invoke-Preparation 'baseline-source-extract' $tar @('-xf', $baselineArchive, '-C', $baselineRoot)
+    }
     $env:SWA_PI_PROBE_PHASE = 'original-download-helper'
     $helperBlob = (& git rev-parse ($revision + ':scripts/download-swa-node.ps1')).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'The original downloader identity is unavailable' }
@@ -165,6 +176,12 @@ try {
     $toolRuntime = Join-Path $sourceRoot 'runtime/swa-orca'
     $gyp = (& $node -e 'const r=require("node:module").createRequire(process.argv[1]);if(r("node-gyp/package.json").version!=="12.3.0")process.exit(2);process.stdout.write(r.resolve("node-gyp/bin/node-gyp.js"))' (Join-Path $toolRuntime 'package.json')).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'The original locked node-gyp differs' }
+    if ($processIncarnation) {
+        $processTreeJSON = & $node -e 'const{createRequire}=require("node:module"),fs=require("node:fs"),path=require("node:path");const r=createRequire(process.argv[1]),t=createRequire(process.argv[2]),lock=t("yaml").parse(fs.readFileSync(path.join(process.argv[3],"pnpm-lock.yaml"),"utf8"));console.log(JSON.stringify({version:r("@vscode/windows-process-tree/package.json").version,patch:lock.patchedDependencies["@vscode/windows-process-tree@0.8.0"]}))' (Join-Path $runtime 'package.json') (Join-Path $toolRuntime 'package.json') $sourceRoot
+        if ($LASTEXITCODE -ne 0) { throw 'The actual process-tree source identity is unavailable' }
+        $processTreeSource = $processTreeJSON | ConvertFrom-Json
+        if ($processTreeSource.version -cne '0.8.0' -or $processTreeSource.patch -cne '9da74aa3d17243aa53dcdc95c9f06e97437e7fbccf098aeb017579e2d24cbac2') { throw 'The actual process-tree frozen source differs' }
+    }
     $env:SWA_PI_PROBE_PHASE = 'official-msvc-toolchain'
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
     $vsJSON = & $vswhere -products '*' -version '[18.0,19.0)' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
@@ -182,14 +199,24 @@ try {
     $env:npm_config_devdir = Join-Path $work 'gyp-cache'
     $effective = & $node -e 'const g=require("node:module").createRequire(process.argv[1])("node-gyp/lib/node-gyp.js")();g.parseArgv([process.execPath,process.argv[2],"rebuild"]);console.log(JSON.stringify({msvs_version:g.opts["msvs-version"]}))' (Join-Path $toolRuntime 'package.json') $gyp
     if ($LASTEXITCODE -ne 0 -or ($effective | ConvertFrom-Json).msvs_version -cne '2026') { throw 'The original effective node-gyp selection conflicts' }
-    $configuration = [ordered]@{ name = '@orca/windows-security'; index = 2; runtime = $runtime; work = $work; node = $node; nodeDir = $nodeDir; python = $Python; gyp = $gyp } | ConvertTo-Json -Compress
-    Invoke-Preparation 'single-windows-security-build' $node @('--input-type=module', '-e', 'import{pathToFileURL}from"node:url";const m=await import(pathToFileURL(process.argv[1]));await m.buildNativePackage({...JSON.parse(process.argv[2]),environment:{...process.env}})', (Join-Path $sourceRoot 'scripts/build-swa-native.mjs'), $configuration)
-    $preparation = [ordered]@{ failed_source_revision = $failedRevision; source_revision = $revision; observation_revision = $env:GITHUB_SHA; downloader_git_blob = $helperBlob; node_version = $pin.version; node_sha256 = $pin.asset.executableSha256; headers_sha256 = $pin.headers.sha256; import_library_sha256 = $pin.library.sha256; python_version = $pythonInfo.version; compiler_year = '2026'; actual_vs_version = $selected.installationVersion; actual_cl_version = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler).FileVersion; native_component = '@orca/windows-security'; native_component_index = 2; other_native_components_built = $false; dependency_lifecycles_executed = $false; original_baseline_native_rebuilt = $false }
+    $nativeComponent = if ($processIncarnation) { '@vscode/windows-process-tree' } else { '@orca/windows-security' }
+    $nativeIndex = if ($processIncarnation) { 1 } else { 2 }
+    $configuration = [ordered]@{ name = $nativeComponent; index = $nativeIndex; runtime = $runtime; work = $work; node = $node; nodeDir = $nodeDir; python = $Python; gyp = $gyp } | ConvertTo-Json -Compress
+    $buildPhase = if ($processIncarnation) { 'single-windows-process-tree-build' } else { 'single-windows-security-build' }
+    Invoke-Preparation $buildPhase $node @('--input-type=module', '-e', 'import{pathToFileURL}from"node:url";const m=await import(pathToFileURL(process.argv[1]));await m.buildNativePackage({...JSON.parse(process.argv[2]),environment:{...process.env}})', (Join-Path $sourceRoot 'scripts/build-swa-native.mjs'), $configuration)
+    $preparation = [ordered]@{ failed_source_revision = $failedRevision; source_revision = $revision; observation_revision = $env:GITHUB_SHA; downloader_git_blob = $helperBlob; node_version = $pin.version; node_sha256 = $pin.asset.executableSha256; headers_sha256 = $pin.headers.sha256; import_library_sha256 = $pin.library.sha256; python_version = $pythonInfo.version; compiler_year = '2026'; actual_vs_version = $selected.installationVersion; actual_cl_version = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler).FileVersion; native_component = $nativeComponent; native_component_index = $nativeIndex; other_native_components_built = $false; dependency_lifecycles_executed = $false; original_baseline_native_rebuilt = $false }
+    if ($processIncarnation) {
+        $nativeBinary = (& $node -e 'const r=require("node:module").createRequire(process.argv[1]),path=require("node:path");process.stdout.write(path.join(path.dirname(r.resolve("@vscode/windows-process-tree/package.json")),"build","Release","windows_process_tree.node"))' (Join-Path $runtime 'package.json')).Trim()
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $nativeBinary -PathType Leaf)) { throw 'The actual compiled process-tree binary is unavailable' }
+        $preparation.native_package_version = $processTreeSource.version
+        $preparation.native_patch_hash = $processTreeSource.patch
+        $preparation.native_binary_sha256 = (Get-FileHash -LiteralPath $nativeBinary -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
     $preparation | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'preparation.json')
     $env:SWA_PI_PROBE_PHASE = 'metadata-process'
-    $metadataHelper = Join-Path $checkout 'tests/swa-cli-headless/windows-private-directory-control.mjs'
+    $metadataHelper = if ($processIncarnation) { Join-Path $sourceRoot 'tests/swa-cli-headless/windows-process-incarnation-control.mjs' } else { Join-Path $checkout 'tests/swa-cli-headless/windows-private-directory-control.mjs' }
     $metadataHelperHash = (Get-FileHash -LiteralPath $metadataHelper -Algorithm SHA256).Hash.ToLowerInvariant()
-    $private = Join-Path $env:RUNNER_TEMP ('swa-private-directory-' + $env:GITHUB_SHA)
+    $private = Join-Path $env:RUNNER_TEMP ($(if ($processIncarnation) { 'swa-process-incarnation-' } else { 'swa-private-directory-' }) + $env:GITHUB_SHA)
     Assert-PlainAncestors $private
     if (Test-Path -LiteralPath $private) { throw 'The metadata private parent already exists' }
     New-Item -ItemType Directory -Path $private | Out-Null
@@ -217,31 +244,52 @@ try {
     $start.Environment['LOCALAPPDATA'] = $paths.localappdata
     $start.Environment['TEMP'] = $paths.temp
     $start.Environment['TMP'] = $paths.temp
-    foreach ($argument in @($metadataHelper, '--source-root', $sourceRoot, '--baseline-root', $baselineRoot, '--runtime-root', $runtime, '--tool-runtime-root', $toolRuntime, '--data-root', $paths.data, '--output-dir', $output, '--source-revision', $revision)) { $start.ArgumentList.Add($argument) }
+    $metadataArguments = if ($processIncarnation) { @($metadataHelper, '--source-root', $sourceRoot, '--runtime-root', $runtime, '--data-root', $paths.data, '--output-dir', $output, '--source-revision', $revision) } else { @($metadataHelper, '--source-root', $sourceRoot, '--baseline-root', $baselineRoot, '--runtime-root', $runtime, '--tool-runtime-root', $toolRuntime, '--data-root', $paths.data, '--output-dir', $output, '--source-revision', $revision) }
+    foreach ($argument in $metadataArguments) { $start.ArgumentList.Add($argument) }
     $processResult = Invoke-MetadataProcess $start $evidence
     if ($processResult.exited) { Set-Content -LiteralPath (Join-Path $evidence 'metadata.exit.txt') -Value $processResult.exit_code }
     if (-not $processResult.started -or -not $processResult.exited -or $processResult.timed_out -or $processResult.output_limit_exceeded -or $processResult.io_failed) { throw 'The bounded metadata process remains failed or unknown' }
     $metadata = Get-Content -LiteralPath (Join-Path $output 'result.json') -Raw | ConvertFrom-Json
-    if ($metadata.failed_source_revision -cne $failedRevision -or $metadata.source_revision -cne $revision -or $metadata.helper_sha256 -cne $metadataHelperHash -or $metadata.probe_exit -ne 0 -or $processResult.exit_code -ne 0 -or -not $metadata.diagnostic_only -or -not $metadata.control_complete -or $metadata.model_calls -ne 0 -or $metadata.candidate_built -or $metadata.install_started -or $metadata.service_started -or $metadata.account_session_started) { throw 'The actual directory control evidence is incomplete or inconsistent' }
-    $expectedCases = @('fresh_directory', 'existing_private_directory', 'existing_ordinary_directory', 'existing_public_file', 'missing_parent', 'invalid_empty', 'invalid_nul', 'invalid_relative', 'actual_junction', 'current_pi_consumer')
-    if ($metadata.cases.Count -ne $expectedCases.Count) { throw 'The directory control cases are incomplete' }
-    for ($index = 0; $index -lt $expectedCases.Count; $index++) {
-        if ($metadata.cases[$index].name -cne $expectedCases[$index]) { throw 'The actual directory control case differs' }
-        Publish-Metadata 'Actual private directory control' $metadata.cases[$index]
+    if ($processIncarnation) {
+        if ($metadata.schema_version -ne 1 -or $metadata.status -cne 'CONTROL_COMPLETE' -or $metadata.source_revision -cne $revision -or $metadata.helper_sha256 -cne $metadataHelperHash -or $metadata.probe_exit -ne 0 -or $processResult.exit_code -ne 0 -or $metadata.diagnostic_only -isnot [bool] -or -not $metadata.diagnostic_only -or $metadata.control_complete -isnot [bool] -or -not $metadata.control_complete -or $metadata.model_calls -ne 0 -or $metadata.candidate_built -isnot [bool] -or $metadata.candidate_built -or $metadata.install_started -isnot [bool] -or $metadata.install_started -or $metadata.service_started -isnot [bool] -or $metadata.service_started -or $metadata.account_session_started -isnot [bool] -or $metadata.account_session_started) { throw 'The actual process incarnation control evidence is incomplete or inconsistent' }
+        $closureHash = (Get-FileHash -LiteralPath (Join-Path $sourceRoot 'tests/swa-cli-headless/process-incarnation-closure.mjs') -Algorithm SHA256).Hash.ToLowerInvariant()
+        $native = $metadata.native_component
+        $flags = $native.supported_process_data_flags
+        if ($metadata.closure_sha256 -cne $closureHash -or $native.name -cne '@vscode/windows-process-tree' -or $native.version -cne '0.8.0' -or $native.addon_sha256 -cne $preparation.native_binary_sha256 -or ($flags -isnot [int] -and $flags -isnot [long]) -or $flags -lt 0 -or $flags -gt [uint32]::MaxValue -or ($flags -band 4) -ne 4 -or $native.loaded_binary_matches_compiled -isnot [bool] -or -not $native.loaded_binary_matches_compiled) { throw 'The actual loaded process component or closure differs from its prepared source' }
+        $expectedCases = @('live-root-child', 'normal-eof')
+        if ($metadata.cases -isnot [array] -or $metadata.cases.Count -ne $expectedCases.Count) { throw 'The process incarnation control cases are incomplete' }
+        for ($index = 0; $index -lt $expectedCases.Count; $index++) {
+            if ($metadata.cases[$index].name -cne $expectedCases[$index]) { throw 'The actual process incarnation control case differs' }
+            if (($metadata.cases[$index] | ConvertTo-Json -Depth 14 -Compress).Length -gt 8000) { throw 'The actual process incarnation control metadata exceeds its output limit' }
+            Publish-Metadata 'Actual process incarnation control' $metadata.cases[$index]
+        }
+    } else {
+        if ($metadata.failed_source_revision -cne $failedRevision -or $metadata.source_revision -cne $revision -or $metadata.helper_sha256 -cne $metadataHelperHash -or $metadata.probe_exit -ne 0 -or $processResult.exit_code -ne 0 -or -not $metadata.diagnostic_only -or -not $metadata.control_complete -or $metadata.model_calls -ne 0 -or $metadata.candidate_built -or $metadata.install_started -or $metadata.service_started -or $metadata.account_session_started) { throw 'The actual directory control evidence is incomplete or inconsistent' }
+        $expectedCases = @('fresh_directory', 'existing_private_directory', 'existing_ordinary_directory', 'existing_public_file', 'missing_parent', 'invalid_empty', 'invalid_nul', 'invalid_relative', 'actual_junction', 'current_pi_consumer')
+        if ($metadata.cases.Count -ne $expectedCases.Count) { throw 'The directory control cases are incomplete' }
+        for ($index = 0; $index -lt $expectedCases.Count; $index++) {
+            if ($metadata.cases[$index].name -cne $expectedCases[$index]) { throw 'The actual directory control case differs' }
+            Publish-Metadata 'Actual private directory control' $metadata.cases[$index]
+        }
     }
     Set-Content -LiteralPath (Join-Path $evidence 'control.exit.txt') -Value $processResult.exit_code
     $result.status = 'DIAGNOSTIC_COMPLETE'
     $result.control_exit = $processResult.exit_code
     $result.control_complete = $metadata.control_complete
-    $result.baseline_run_reference = '39786376454'
-    $result.baseline_native_rebuilt = $false
-    $result.original_117_owner_and_aces = 'UNKNOWN'
-    Publish-Metadata 'Windows private directory component control only' $result
+    if ($processIncarnation) {
+        $result.component = $Component
+        Publish-Metadata 'Windows process incarnation component control only' $result
+    } else {
+        $result.baseline_run_reference = '39786376454'
+        $result.baseline_native_rebuilt = $false
+        $result.original_117_owner_and_aces = 'UNKNOWN'
+        Publish-Metadata 'Windows private directory component control only' $result
+    }
 } catch {
     $result.status = 'FAIL'
     $result.failed_phase = $env:SWA_PI_PROBE_PHASE
     $result.exception_type = $_.Exception.GetType().FullName
-    Publish-Metadata 'Windows Pi directory component preparation failed' $result
+    Publish-Metadata $(if ($processIncarnation) { 'Windows process incarnation preparation failed' } else { 'Windows Pi directory component preparation failed' }) $result
     throw 'The component diagnostic failed; see the bounded phase/type metadata'
 } finally {
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'driver-result.json')

@@ -41,7 +41,9 @@
 
 ## 当前云机验证
 
-Windows角色只读诊断d8e8/run39852044562/job120080501797成功、其他native及S0skip，06已审原HTML。原4aef根1280/create1792700293571，唯一剩项7288/create1792700119902早173669ms、原observed ppid8780、ready双键匹配0；role/Jobmembership与完整父链仍UNKNOWN。两native/CIM剩1的原FAIL不改，同一7288身份不排除raw-PPID祖先归属错误；下一只读latest同一快照子集的数字链，禁止历史union补链，不新full/服务。Linux EINTR源码b3fba893…/新binary403fe2e4…及局部原件pi-owned-eintr-local-r1-07p77Y已06限定接受：pipe Poll0实际63次、普通child pidfd Poll0实际26次EINTR，PidfdOpen未复现；self sender join、真实byte/EOF及child Wait0/pidfdPOLLIN通过。保守丢弃整轮/保身份期限与两fresh门尚未接producer或新serve；旧syscall/旧external关闭UNKNOWN、旧4244包不复活、human/model0。
+Windows最终只读e929/run39853536500/job120085698236成功、其他native及S0skip，06已核。原4aef根1280/create1792700293571、唯一剩项7288/create1792700119902早173669ms/ppid8780/ready匹配0；latest同次子集2行缺目标，不补union，完整父链/Job归属/PID复用根因UNKNOWN、旧FAIL保留。03 pure4cb66241…/collector f0f6f824…及实际历史标量tJsdhp exit0已06限定接受；旧必要birth门在verified-root条件下true，新实际函数两次predates-parent，5输入首末同/stderr0，不冒称完整回放或native通过。保unknown整支/永久incomplete锁、正常root缺席边界、正Job known和原2native/2CIM/内部Job强门，下一仅process-tree单组件普通进程真实EOF/Wait控制，不新full。
+
+Linux EINTR局部原件pi-owned-eintr-local-r1-07p77Y及新source/binary b3fb/403fe已06接受，真实Poll0有63/26次EINTR、PidfdOpen未复现，正常EOF/Wait/pidfd与信号sender收尾通过；旧syscall/external UNKNOWN不补。capsule6269/b3fb/403fe和check-only0已接受，Root实际新exec13657持有OWN02/runtime e5df3e0d-ae5c-46a2-9388-f5a65d429d53/serve223474，截止21:58:07.346UTC。新PKG02 review SHA055b97213e876b4deb1a1fed893474204fe04a81943165eab16dee85fadb4170已prepare fresh10intents/原三wirecopy/verify0（仅已知proc权限）及01准确接受；两cleanup true仅提案，具体human/CAS/Grant/token/StepFun Pi N3委托已问待答。human/model仍0，旧4244永远失效；新owner或身份变化/到期也使本包失效，完整新D仍待最终实际EOF结算。
 
 当前Pi包4244实际失效，原exec63472最终FAILED/observer_exited_during_hold：原observer stderr20:09:37UTC为interrupted system call/exit1，service随后normal0；Root20:35:18读会话确认。内部owned0/allpidfds两原件不补外部final双空，shutdownUNKNOWN保留。用户已获最小失败证据与旧包不可execute说明；尚无human/Grant/token/driver/model生成，旧review原件不改，INVALIDATED.md新增说明。03仅只读定位EINTR真实调用面和必要MRE计划，不重启替换原服务或伪闭合资源。先前独立SOURCE仍私有保留。
 

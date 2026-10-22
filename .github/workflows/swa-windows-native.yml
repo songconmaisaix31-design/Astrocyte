@@ -75,6 +75,53 @@ jobs:
         shell: pwsh
         run: |
           & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-windows-service-evidence') -ExpectedRevision '4aef552c63dd1ab5cd787fd2514d92a7815b943c'
+  windows-process-incarnation-control:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-incarnation-control]') }}
+    runs-on: windows-2025
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Prepare only the pinned component package manager
+        shell: pwsh
+        run: |
+          npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-pnpm') --no-audit --no-fund pnpm@11.27.0
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned component package manager installation failed' }
+      - name: Control only actual ordinary process incarnations
+        shell: pwsh
+        run: |
+          $env:SWA_PI_PROBE_PHASE = 'preflight'
+          try {
+            $python = (& python -c 'import sys; print(sys.executable)').Trim()
+            if ($LASTEXITCODE -ne 0) { throw 'Actual component Python is unavailable' }
+            & ./scripts/probe-swa-windows-private-pi.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs') -Python $python -Component process-incarnation
+          } catch {
+            $phase = $env:SWA_PI_PROBE_PHASE
+            if ($phase -cnotmatch '^[a-z][a-z-]{0,63}$') { $phase = 'unknown' }
+            Write-Host ('::error title=Process incarnation control failed::phase=' + $phase + '; kind=' + $_.Exception.GetType().FullName)
+            throw 'The process incarnation component failed; see the bounded phase/type metadata'
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-windows-process-incarnation-control-${{ github.sha }}
+          path: |
+            .verification/swa-ci/windows-process-incarnation/driver-result.json
+            .verification/swa-ci/windows-process-incarnation/preparation.json
+            .verification/swa-ci/windows-process-incarnation/metadata-process.json
+            .verification/swa-ci/windows-process-incarnation/*.exit.txt
+            .verification/swa-ci/windows-process-incarnation/control/result.json
+            .verification/swa-ci/windows-process-incarnation/control/cim-exit-observations.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   prior-windows-build-diagnostics:
     if: ${{ (github.event_name == 'workflow_dispatch' && !inputs.build_candidate && !inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025

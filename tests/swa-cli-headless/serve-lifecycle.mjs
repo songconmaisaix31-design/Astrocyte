@@ -5,6 +5,7 @@ import { mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
+import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
 const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision'].map(name => [name, { type: 'string' }])), allowPositionals: false })
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
@@ -106,6 +107,7 @@ for (const mode of selectedModes) {
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
   let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null
+  let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0
   const exited = new Promise(resolve => {
     child.once('error', error => { spawnError = error })
     child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now() }; resolve(settled) })
@@ -123,21 +125,17 @@ for (const mode of selectedModes) {
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
   const deadline = Date.now() + 150_000
   while (!closed && Date.now() < deadline) {
-    const rows = await processes(), owned = new Set([child.pid])
-    let changed = true
-    while (changed) {
-      changed = false
-      for (const row of rows) if (owned.has(row.ppid) && !owned.has(row.pid)) { owned.add(row.pid); changed = true }
+    const rows = await processes()
+    const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
+    // Once provenance is incomplete, disappearance of its first unknown PID
+    // cannot prove that unobserved descendants have also exited.
+    closureIncomplete ||= unknownRows.length > 0
+    for (const row of ownedRows) observed.set(row.pid + ':' + row.creationTimeMs, row)
+    if (unknownRows.length) {
+      for (const entry of unknownRows) unknown.push({ observed_at_ms: Date.now(), ...entry })
+      await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
     }
-    const rootVerified = rows.some(row => row.pid === child.pid && row.creationTimeMs === rootCreationTimeMs)
-    await writeFile(join(directory, 'latest-actual-observation.json'), JSON.stringify({ mode, pid: child.pid, creation_time_ms: rootCreationTimeMs, events, current_owned_processes: rows.filter(row => owned.has(row.pid)), observed_processes: [...observed.values()], unknown_process_observations: unknown, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), observed_at_ms: Date.now() }, null, 2) + '\n')
-    for (const row of rows) if (owned.has(row.pid)) {
-      if (row.creationTimeMs > 0 && rootVerified) observed.set(row.pid + ':' + row.creationTimeMs, row)
-      else {
-        unknown.push({ observed_at_ms: Date.now(), reason: row.creationTimeMs > 0 ? 'current_root_identity_unverified' : 'creation_time_unavailable', actual: row })
-        await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
-      }
-    }
+    await writeFile(join(directory, 'latest-actual-observation.json'), JSON.stringify({ mode, pid: child.pid, creation_time_ms: rootCreationTimeMs, events, current_owned_processes: ownedRows, excluded_parent_edges: excludedEdges, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), observed_at_ms: Date.now() }, null, 2) + '\n')
     const currentStdout = Buffer.concat(stdout).toString('utf8')
     if (!readiness && currentStdout.includes('\n')) {
       readiness = JSON.parse(currentStdout)
@@ -145,12 +143,16 @@ for (const mode of selectedModes) {
     }
     if (!acted && mode === 'readiness-eof' && readiness?.ok) {
       const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs)
+      for (const member of observation.members) {
+        observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
+          ppid: member.parent_pid, name: member.name, role: member.role, actual_named_job_membership: true })
+      }
       await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
       child.stdin.end()
       acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
     }
-    if (!acted && rootVerified && mode.startsWith('startup-') && rows.some(row => row.ppid === child.pid && row.creationTimeMs > 0 && row.name.toLowerCase() === 'node.exe')) {
+    if (!acted && rootVerified && mode.startsWith('startup-') && ownedRows.some(row => row.ppid === child.pid && row.name.toLowerCase() === 'node.exe')) {
       const noPublishedReadiness = !currentStdout.length
       events.push({ type: 'actual-owned-node-observed', no_published_readiness: noPublishedReadiness, observed_at_ms: Date.now() })
       if (mode === 'startup-eof') child.stdin.end()
@@ -202,10 +204,10 @@ for (const mode of selectedModes) {
     catch (error) { cimError = String(error) }
   }
   const completeCIM = !cimTimedOut && cimExit.exit === 0 && cimExit.signal === null && cimError === null && cimReport?.schema_version === 1 && cimReport.query_failure === null && cimReport.all_exited === true && Array.isArray(cimReport.observations) && cimReport.observations.length === 2 && cimReport.observations.every(row => row.query_succeeded === true && row.complete_result_count > 0 && row.required_identity_fields_complete === true && row.known_identities_exited === true && row.unknown_pids_absent === true) && cimReport.observations[1].monotonic_ms - cimReport.observations[0].monotonic_ms >= 50
-  const identitiesExited = observations.every(row => row.remaining.length === 0) && completeCIM
+  const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)

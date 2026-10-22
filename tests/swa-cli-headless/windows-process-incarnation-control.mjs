@@ -1,0 +1,244 @@
+import assert from 'node:assert/strict'
+import { fork, spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { once } from 'node:events'
+import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
+import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
+import { collectOwnedIncarnations, incarnationOrder } from './process-incarnation-closure.mjs'
+
+const { values } = parseArgs({ options: Object.fromEntries(['fixture-role', 'source-root', 'runtime-root', 'data-root', 'output-dir', 'source-revision'].map(name => [name, { type: 'string' }])), allowPositionals: false })
+const helper = fileURLToPath(import.meta.url)
+const validCreation = value => Number.isSafeInteger(value) && value > 0
+const validPID = value => Number.isSafeInteger(value) && value > 0 && value <= 0xffffffff
+const digest = bytes => createHash('sha256').update(bytes).digest('hex')
+const identity = row => ({ pid: row.pid, ppid: row.ppid, creationTimeMs: row.creationTimeMs })
+
+async function bounded(promise, milliseconds, label) {
+  let timer
+  try {
+    return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(label)), milliseconds) })])
+  } finally { clearTimeout(timer) }
+}
+
+function settle(child) {
+  return new Promise(resolveExit => {
+    let failed = false
+    child.once('error', () => { failed = true })
+    child.once('close', (exit, signal) => resolveExit({ exit, signal, spawn_failed: failed }))
+  })
+}
+
+function countStream(stream) {
+  const state = { bytes: 0, eof: false, failed: false, exceeded: false }
+  stream.on('data', chunk => { state.bytes += chunk.length; if (state.bytes > 16_384) { state.exceeded = true; stream.destroy() } })
+  stream.on('end', () => { state.eof = true })
+  stream.on('error', () => { state.failed = true })
+  return state
+}
+
+async function send(message) {
+  assert.equal(typeof process.send, 'function')
+  await new Promise((resolveSend, reject) => process.send(message, error => error ? reject(error) : resolveSend()))
+}
+
+async function fixtureChild() {
+  process.stdin.resume()
+  const ended = once(process.stdin, 'end')
+  await send({ type: 'fixture-child-ready', pid: process.pid })
+  await bounded(ended, 30_000, 'Fixture child stdin did not close')
+  process.disconnect()
+}
+
+async function fixtureRoot() {
+  const child = fork(helper, ['--fixture-role', 'child'], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe', 'ipc'] })
+  const exited = settle(child), output = countStream(child.stdout), errors = countStream(child.stderr)
+  let closed = false, inputFailed = false
+  child.once('close', () => { closed = true })
+  child.stdin.on('error', () => { inputFailed = true })
+  try {
+    const [ready] = await bounded(once(child, 'message'), 10_000, 'Fixture child readiness was not observed')
+    assert.deepEqual(ready, { type: 'fixture-child-ready', pid: child.pid })
+    process.stdin.resume()
+    const ended = once(process.stdin, 'end')
+    await send({ type: 'fixture-root-ready', pid: process.pid, child_pid: child.pid })
+    await bounded(ended, 25_000, 'Fixture root stdin did not close')
+    child.stdin.end()
+    const actualExit = await bounded(exited, 10_000, 'Fixture child did not exit after EOF')
+    assert.deepEqual(actualExit, { exit: 0, signal: null, spawn_failed: false })
+    assert.ok(!inputFailed && output.eof && errors.eof && !output.failed && !errors.failed && !output.exceeded && !errors.exceeded)
+    await send({ type: 'fixture-child-closed', pid: child.pid, actual_exit: actualExit, stdout_eof: output.eof, stderr_eof: errors.eof })
+    process.disconnect()
+  } finally {
+    if (!closed) {
+      child.stdin.end()
+      try { await bounded(exited, 3000, 'Fixture child cleanup remains unknown') } catch {
+        // 只尝试关闭本次真实创建的 child，不将此操作作为正常退出证据。
+        child.kill()
+        await bounded(exited, 2000, 'Fixture child cleanup did not settle')
+      }
+    }
+  }
+}
+
+async function control() {
+  assert.equal(process.platform, 'win32')
+  assert.equal(process.arch, 'x64')
+  assert.equal(process.versions.node, '24.21.0')
+  for (const key of ['source-root', 'runtime-root', 'data-root', 'output-dir']) assert.ok(values[key] && isAbsolute(values[key]))
+  assert.match(values['source-revision'] ?? '', /^[0-9a-f]{40}$/)
+  const source = await realpath(values['source-root']), runtime = await realpath(values['runtime-root']), data = await realpath(values['data-root'])
+  assert.equal((await realpath(helper)).toLowerCase(), join(source, 'tests', 'swa-cli-headless', 'windows-process-incarnation-control.mjs').toLowerCase())
+  for (const path of [source, runtime, data]) assert.ok((await lstat(path)).isDirectory() && !(await lstat(path)).isSymbolicLink())
+  const output = resolve(values['output-dir'])
+  await mkdir(output)
+  const result = {
+    schema_version: 1, diagnostic_only: true, source_revision: values['source-revision'], helper_sha256: digest(await readFile(helper)),
+    closure_sha256: digest(await readFile(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))),
+    status: 'NOT_RUN', control_complete: false, probe_exit: 2, cases: [], candidate_built: false, install_started: false,
+    service_started: false, account_session_started: false, model_calls: 0, kernel_tree_exit_proven: false
+  }
+  const requireRuntime = createRequire(join(runtime, 'package.json'))
+  let root, rootExit, rootClosed = false, phase = 'native-preflight'
+  try {
+    const packageRoot = await realpath(dirname(requireRuntime.resolve('@vscode/windows-process-tree/package.json')))
+    const packageRelative = relative(runtime, packageRoot)
+    assert.ok(packageRelative && !packageRelative.startsWith('..') && !isAbsolute(packageRelative))
+    const native = requireRuntime('@vscode/windows-process-tree')
+    assert.ok(Number.isSafeInteger(native.supportedProcessDataFlags) && (native.supportedProcessDataFlags & 4) === 4)
+    assert.equal(typeof native.getProcessCreationTime, 'function')
+    const binary = await realpath(join(packageRoot, 'build', 'Release', 'windows_process_tree.node'))
+    assert.ok(!relative(runtime, binary).startsWith('..'))
+    const loadedAddons = await Promise.all(Object.keys(requireRuntime.cache).filter(path => path.toLowerCase().endsWith('.node')).map(path => realpath(path)))
+    assert.equal(loadedAddons.length, 1)
+    assert.equal(loadedAddons[0].toLowerCase(), binary.toLowerCase())
+    result.native_component = { name: '@vscode/windows-process-tree', version: requireRuntime('@vscode/windows-process-tree/package.json').version, addon_sha256: digest(await readFile(binary)), supported_process_data_flags: native.supportedProcessDataFlags, loaded_binary_matches_compiled: true }
+    assert.equal(result.native_component.version, '0.8.0')
+    const processes = () => bounded(new Promise((resolveRows, reject) => native.getAllProcesses(rows => Array.isArray(rows) ? resolveRows(rows) : reject(new Error('Actual native process callback unavailable')), 4)), 5000, 'Native process callback timed out')
+    phase = 'live-root-child'
+    root = fork(helper, ['--fixture-role', 'root'], { windowsHide: true, cwd: data, stdio: ['pipe', 'pipe', 'pipe', 'ipc'] })
+    rootExit = settle(root)
+    root.once('close', () => { rootClosed = true })
+    let rootInputFailed = false
+    root.stdin.on('error', () => { rootInputFailed = true })
+    const rootOutput = countStream(root.stdout), rootErrors = countStream(root.stderr)
+    const childClosed = new Promise(resolveChild => { root.on('message', message => { if (message?.type === 'fixture-child-closed') resolveChild(message) }) })
+    const [ready] = await bounded(once(root, 'message'), 10_000, 'Fixture root readiness was not observed')
+    assert.equal(ready.type, 'fixture-root-ready')
+    assert.equal(ready.pid, root.pid)
+    assert.ok(validPID(root.pid) && validPID(ready.child_pid) && root.pid !== ready.child_pid)
+    const anchor = { pid: root.pid, creationTimeMs: native.getProcessCreationTime(root.pid) }
+    assert.ok(validCreation(anchor.creationTimeMs))
+    const known = new Map(), unknown = []
+    const live = { name: phase, observations: [] }
+    result.cases.push(live)
+    for (let index = 0; index < 2; index++) {
+      const rows = await processes(), closure = collectOwnedIncarnations(rows, anchor)
+      const childRows = closure.ownedRows.filter(row => row.pid === ready.child_pid)
+      live.observations.push({ observed_at_ms: Date.now(), actual_row_count: rows.length, root_verified: closure.rootVerified, owned_count: closure.ownedRows.length, owned: closure.ownedRows.slice(0, 8).map(identity), owned_truncated: closure.ownedRows.length > 8, excluded_edge_count: closure.excludedEdges.length, unknown_count: closure.unknownRows.length })
+      for (const row of closure.ownedRows) known.set(row.pid + ':' + row.creationTimeMs, row)
+      unknown.push(...closure.unknownRows.map(entry => entry.actual))
+      assert.equal(closure.rootVerified, true)
+      assert.equal(closure.unknownRows.length, 0)
+      assert.equal(childRows.length, 1)
+      assert.equal(childRows[0].ppid, root.pid)
+      assert.equal(incarnationOrder(anchor.creationTimeMs, childRows[0].creationTimeMs), 'ordered')
+      if (index === 0) await delay(250)
+    }
+    phase = 'normal-eof'
+    const normal = { name: phase, native_exit_observations: [] }
+    result.cases.push(normal)
+    root.stdin.end()
+    normal.root_exit = await bounded(rootExit, 10_000, 'Fixture root did not exit after EOF')
+    normal.child_wait = await bounded(childClosed, 1000, 'Fixture child close record was not observed')
+    normal.root_stdout_eof = rootOutput.eof
+    normal.root_stderr_eof = rootErrors.eof
+    normal.root_stdin_failed = rootInputFailed
+    assert.deepEqual(normal.root_exit, { exit: 0, signal: null, spawn_failed: false })
+    assert.deepEqual(normal.child_wait.actual_exit, { exit: 0, signal: null, spawn_failed: false })
+    assert.equal(normal.child_wait.pid, ready.child_pid)
+    assert.ok(!rootInputFailed && normal.child_wait.stdout_eof && normal.child_wait.stderr_eof && rootOutput.eof && rootErrors.eof && !rootOutput.failed && !rootErrors.failed && !rootOutput.exceeded && !rootErrors.exceeded)
+    for (let index = 0; index < 2; index++) {
+      const rows = await processes(), closure = collectOwnedIncarnations(rows, anchor)
+      const remaining = [...known.values()].filter(old => rows.some(row => row.pid === old.pid && (!validCreation(row.creationTimeMs) || row.creationTimeMs === old.creationTimeMs)))
+      const rootRows = rows.filter(row => row.pid === anchor.pid)
+      normal.native_exit_observations.push({ observed_at_ms: Date.now(), actual_row_count: rows.length, remaining_count: remaining.length, remaining: remaining.slice(0, 8).map(identity), remaining_truncated: remaining.length > 8, root_rows_count: rootRows.length, root_verified: closure.rootVerified, owned_count: closure.ownedRows.length, unknown_count: closure.unknownRows.length })
+      unknown.push(...closure.unknownRows.map(entry => entry.actual))
+      assert.equal(remaining.length, 0)
+      assert.equal(rootRows.length, 0)
+      assert.equal(closure.rootVerified, false)
+      assert.equal(closure.ownedRows.length, 0)
+      assert.equal(closure.unknownRows.length, 0)
+      if (index === 0) await delay(250)
+    }
+    const request = join(output, 'cim-request.json'), cimOutput = join(output, 'cim-exit-observations.json')
+    await writeFile(request, JSON.stringify({ schema_version: 1, known: [...known.values()], unknown }, null, 2) + '\n', { flag: 'wx' })
+    assert.ok(process.env.ProgramFiles && isAbsolute(process.env.ProgramFiles))
+    const powershell = await realpath(join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe'))
+    const cim = spawn(powershell, ['-NoProfile', '-NonInteractive', '-File', join(source, 'tests/swa-cli-headless/observe-process-exits.ps1'), '-RequestFile', request, '-OutputFile', cimOutput], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    const cimOutputState = countStream(cim.stdout), cimErrorState = countStream(cim.stderr), cimExit = settle(cim)
+    try { normal.cim_process_exit = await bounded(cimExit, 15_000, 'Actual CIM process observation timed out') } catch (error) {
+      // 只收尾本次创建的 CIM helper；超时始终失败，不宣称其退出结果。
+      cim.kill()
+      await bounded(cimExit, 3000, 'CIM helper cleanup remains unknown')
+      throw error
+    }
+    normal.cim_stdout_eof = cimOutputState.eof
+    normal.cim_stderr_eof = cimErrorState.eof
+    const report = JSON.parse(await readFile(cimOutput, 'utf8'))
+    const number = value => Number.isFinite(value) && value >= 0 ? value : 'UNKNOWN'
+    const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+    normal.cim_report = {
+      schema_version: number(report?.schema_version), all_exited: boolean(report?.all_exited),
+      query_failure: report?.query_failure === null ? null : { query_index: number(report?.query_failure?.query_index), query_succeeded: boolean(report?.query_failure?.query_succeeded), exception_type: /^[A-Za-z_][A-Za-z0-9_.+]{0,159}$/.test(report?.query_failure?.exception_type ?? '') ? report.query_failure.exception_type : 'UNKNOWN' },
+      observation_count: Array.isArray(report?.observations) ? report.observations.length : 'UNKNOWN',
+      observations_truncated: Array.isArray(report?.observations) ? report.observations.length > 2 : 'UNKNOWN',
+      observations: Array.isArray(report?.observations) ? report.observations.slice(0, 2).map(row => ({ query_succeeded: boolean(row.query_succeeded), complete_result_count: number(row.complete_result_count), invalid_pid_record_count: number(row.invalid_pid_record_count), required_identity_fields_complete: boolean(row.required_identity_fields_complete), known_identities_exited: boolean(row.known_identities_exited), unknown_pids_absent: boolean(row.unknown_pids_absent), monotonic_ms: number(row.monotonic_ms), actual_match_count: Array.isArray(row.actual_matches) ? row.actual_matches.length : 'UNKNOWN' })) : 'UNKNOWN'
+    }
+    assert.deepEqual(normal.cim_process_exit, { exit: 0, signal: null, spawn_failed: false })
+    assert.ok(cimOutputState.eof && cimErrorState.eof && !cimOutputState.failed && !cimErrorState.failed && !cimOutputState.exceeded && !cimErrorState.exceeded)
+    assert.equal(report.schema_version, 1)
+    assert.equal(report.query_failure, null)
+    assert.equal(report.all_exited, true)
+    assert.equal(report.observations.length, 2)
+    assert.ok(report.observations.every(row => row.query_succeeded === true && row.complete_result_count > 0 && row.required_identity_fields_complete === true && row.known_identities_exited === true && row.unknown_pids_absent === true))
+    assert.ok(report.observations[1].monotonic_ms - report.observations[0].monotonic_ms >= 50)
+    result.status = 'CONTROL_COMPLETE'
+    result.control_complete = true
+    result.probe_exit = 0
+  } catch {
+    result.status = 'FAIL'
+    result.failed_phase = phase
+    result.probe_exit = 6
+  } finally {
+    if (root && !rootClosed) {
+      result.cleanup_attempted = true
+      root.stdin.end()
+      try { await bounded(rootExit, 5000, 'Fixture root cleanup remains unknown') } catch {
+        // 此句柄来自本次 fork；不按未知外部 PID 发信号。
+        root.kill()
+        try { await bounded(rootExit, 2000, 'Fixture root cleanup did not settle') } catch { result.cleanup_unknown = true }
+      }
+    }
+    try {
+      await writeFile(join(output, 'result.json'), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' })
+      console.log(JSON.stringify({ diagnostic_only: true, status: result.status, probe_exit: result.probe_exit, source_revision: result.source_revision, failed_phase: result.failed_phase ?? null, model_calls: 0 }))
+    } catch {
+      process.stderr.write('Fixture evidence write failed\n')
+      result.probe_exit = 2
+    }
+    process.exitCode = result.probe_exit
+  }
+}
+
+if (values['fixture-role'] === 'child') {
+  try { await fixtureChild() } catch { process.stderr.write('Fixture child failed\n'); process.exitCode = 6 }
+} else if (values['fixture-role'] === 'root') {
+  try { await fixtureRoot() } catch { process.stderr.write('Fixture root failed\n'); process.exitCode = 6 }
+} else {
+  assert.equal(values['fixture-role'], undefined)
+  await control()
+}
