@@ -6,9 +6,10 @@ import { z } from 'zod'
 import { assertNativeOpenCodeCurrent, openCodeBuiltinPlugins, type NativeOpenCodeSnapshot } from './native-opencode-policy'
 import { nativeConfigurationSource } from './native-pi-policy'
 import { privateStructuredOpenCodeEnvironment } from '../../../third_party/orca-v1.4.230/src/main/opencode/opencode-structured-account-home'
+import { createPosixPrivateFile, requirePosixPrivatePath } from './private-posix-security'
 
 const systemSid = 'S-1-5-18'
-const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+const samePath = (a: string, b: string) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
 const deny = { action: '*', resource: '*', effect: 'deny' }
 const privateDirectories = ['home', 'data', 'data/opencode', 'cache', 'config', 'config/opencode', 'state', 'programdata', 'appdata', 'localappdata', 'temp']
 
@@ -22,6 +23,7 @@ async function actualDirectory(path: string) {
 }
 
 function security(path: string, directory: boolean) {
+  if (process.platform === 'linux') return requirePosixPrivatePath(path, directory)
   const user = currentUserSid(), acl = getDaclAces(toNamespacedPath(path)), trustees = new Set([user, systemSid])
   if (!acl?.protected || acl.ownerSid !== user || acl.aces.length !== trustees.size) throw new Error('private_opencode_security_changed')
   for (const ace of acl.aces) {
@@ -32,17 +34,21 @@ function security(path: string, directory: boolean) {
 
 async function directory(path: string) {
   let created = false
-  try { await mkdir(path); created = true }
+  try { await mkdir(path, { mode: 0o700 }); created = true }
   catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error }
   await actualDirectory(path)
   if (created) {
     if ((await readdir(path)).length) throw new Error('private_opencode_directory_not_empty')
-    setDaclSddl(toNamespacedPath(path), `D:P${[...new Set([currentUserSid(), systemSid])].map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
+    if (process.platform === 'win32') setDaclSddl(toNamespacedPath(path), `D:P${[...new Set([currentUserSid(), systemSid])].map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
   }
   security(path, true)
 }
 
 function writePrivateJSON(file: string, value: unknown) {
+  if (process.platform === 'linux') {
+    createPosixPrivateFile(file, Buffer.from(JSON.stringify(value) + '\n'))
+    return
+  }
   const user = currentUserSid()
   createFileWithDacl(toNamespacedPath(file), `O:${user}D:P${[...new Set([user, systemSid])].map(sid => `(A;;FA;;;${sid})`).join('')}`, Buffer.from(JSON.stringify(value) + '\n'))
   security(file, false)

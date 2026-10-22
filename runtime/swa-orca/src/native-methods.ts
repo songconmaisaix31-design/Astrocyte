@@ -12,6 +12,8 @@ import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { quotePowerShellNativeArgument } from '../../../third_party/orca-v1.4.230/src/shared/powershell-native-argument'
 import { resolveWindowsShellLaunchArgs } from '../../../third_party/orca-v1.4.230/src/main/providers/windows-shell-args'
+import { quotePosixShellString } from '../../../third_party/orca-v1.4.230/src/main/agent-hooks/posix-hook-command'
+import { readSwaLinuxProcess, requireSwaLinuxAncestor } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { invocationSchema, helperReply, nativeObject, nativeError, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, scopeSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
@@ -121,11 +123,11 @@ async function createController(context: RpcContext, project: string, workspace:
   const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
   if (!node) throw new Error('installed_node_missing')
   const launchScope = await runtime.resolveTerminalWorkspaceLaunchScope(`id:${workspace}`)
-  const command = `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}; exit $LASTEXITCODE`
-  if (process.platform !== 'win32' || launchScope.connectionId || !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
+  const command = process.platform === 'linux' ? `exec ${quotePosixShellString(node)} ${quotePosixShellString(entry)}` : `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}; exit $LASTEXITCODE`
+  if (launchScope.connectionId || process.platform !== 'linux' && process.platform !== 'win32' || process.platform === 'win32' && !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
   const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
     (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
-      command, env: { SWA_CONTROLLER_HELPER: '1' }, shellOverride: 'pwsh.exe', startupCommandDelivery: 'fast',
+      command, env: { SWA_CONTROLLER_HELPER: '1' }, shellOverride: process.platform === 'linux' ? '/bin/bash' : 'pwsh.exe', startupCommandDelivery: 'fast',
       launchConfig: { agentCommand: `"${node}"`, agentArgs: `"${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
       title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
     }))
@@ -135,22 +137,31 @@ async function createController(context: RpcContext, project: string, workspace:
   const listed = await getLocalPtyProvider().listProcesses()
   const pty = listed.find(row => row.id === binding.ptyId && row.terminalHandle === controller && row.incarnationId === binding.processIncarnation)
   if (!pty?.rootProcessId) throw new Error('native_controller_process_missing')
-  const rows = await readWindowsProcessTableFresh()
-  const root = rows.find(row => row.pid === pty.rootProcessId), helper = rows.find(row => row.pid === observed.pid)
-  if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
-  const ancestors = new Set<number>()
-  for (let item: typeof helper | undefined = helper; item && !ancestors.has(item.pid);) {
-    ancestors.add(item.pid)
-    if (item.pid === root.pid) break
-    const parentPid: number = item.ppid
-    item = rows.find(row => row.pid === parentPid)
+  let rootProcess: z.infer<typeof controllerOwnerSchema>['process'], helperProcess: z.infer<typeof controllerOwnerSchema>['helper']
+  if (process.platform === 'linux') {
+    rootProcess = readSwaLinuxProcess(pty.rootProcessId)
+    helperProcess = readSwaLinuxProcess(observed.pid)
+    requireSwaLinuxAncestor(helperProcess, rootProcess)
+  } else {
+    const rows = await readWindowsProcessTableFresh()
+    const root = rows.find(row => row.pid === pty.rootProcessId), helper = rows.find(row => row.pid === observed.pid)
+    if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
+    const ancestors = new Set<number>()
+    for (let item: typeof helper | undefined = helper; item && !ancestors.has(item.pid);) {
+      ancestors.add(item.pid)
+      if (item.pid === root.pid) break
+      const parentPid: number = item.ppid
+      item = rows.find(row => row.pid === parentPid)
+    }
+    if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
+    rootProcess = { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }
+    helperProcess = { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }
   }
-  if (!ancestors.has(root.pid)) throw new Error('helper_not_owned_by_controller_pty')
   const live = runtime.getOrchestrationDispatchAuthority(controller)
   const processIncarnation = runtime.getTerminalProcessIncarnation(controller)
   if (!live?.launchTokenHash || !live.paneKey || !processIncarnation || live.hostScope.kind !== 'local' || live.ptyId !== binding.ptyId || live.processIncarnation !== processIncarnation) throw new Error('The actual controller launch commitment is unavailable')
   const caller_authority = { terminalHandle: controller, paneKey: live.paneKey, processIncarnation, launchTokenHash: live.launchTokenHash, hostScope: live.hostScope }
-  const owner = { ...fixed, controller, binding, process: { pid: root.pid, creationTimeMs: root.creationTimeMs, name: root.name }, helper: { pid: helper.pid, creationTimeMs: helper.creationTimeMs, name: helper.name }, caller_authority }
+  const owner = { ...fixed, controller, binding, process: rootProcess, helper: helperProcess, caller_authority }
   save({ ...owner, stage: 'helper-ready' })
   const current = await helperCall(runtime, controller, requestId, 'observe')
   return { ...owner, observation: current.result }
@@ -240,8 +251,7 @@ export const SWA_METHODS = [
       if (!close.ptyKilled) throw new Error('controller_exit_unproven')
       const remaining = await getLocalPtyProvider().listProcesses()
       if (remaining.some(row => row.id === owner.binding.ptyId)) throw new Error('controller_pty_still_present')
-      const rows = await readWindowsProcessTableFresh()
-      if (rows.some(row => [owner.process, owner.helper].some(old => old.pid === row.pid && old.creationTimeMs === row.creationTimeMs))) throw new Error('controller_process_exit_unproven')
+      await observeControllerExited(context.runtime, owner)
       return { project_id: invocation.project.id, controller: c.controller, binding: owner.binding, process: owner.process, helper: owner.helper, close }
     })
   } })

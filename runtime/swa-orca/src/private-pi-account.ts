@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util'
 import { createFileWithDacl, currentUserSid, getDaclAces, setDaclSddl } from '@orca/windows-security'
 import { z } from 'zod'
 import { nativeConfigurationSource, nativePiSettings, type NativePiPolicySnapshot } from './native-pi-policy'
+import { createPosixPrivateFile, requirePosixPrivatePath } from './private-posix-security'
 
 const fullControl = 0x1f01ff
 const systemSid = 'S-1-5-18'
@@ -19,6 +20,7 @@ async function actualDirectory(path: string) {
 }
 
 function security(path: string, directory: boolean) {
+  if (process.platform === 'linux') return requirePosixPrivatePath(path, directory)
   if (process.platform !== 'win32') throw new Error('private_pi_security_unavailable')
   const user = currentUserSid()
   const acl = getDaclAces(toNamespacedPath(path))
@@ -32,15 +34,17 @@ function security(path: string, directory: boolean) {
 
 async function createPrivateDirectory(path: string) {
   let created = false
-  try { await mkdir(path); created = true }
+  try { await mkdir(path, { mode: 0o700 }); created = true }
   catch (error) {
     if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error
   }
   await actualDirectory(path)
   if (created) {
     if ((await readdir(path)).length) throw new Error('private_pi_directory_not_empty')
-    const trustees = [...new Set([currentUserSid(), systemSid])]
-    setDaclSddl(toNamespacedPath(path), `D:P${trustees.map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
+    if (process.platform === 'win32') {
+      const trustees = [...new Set([currentUserSid(), systemSid])]
+      setDaclSddl(toNamespacedPath(path), `D:P${trustees.map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
+    }
   }
   security(path, true)
 }
@@ -116,12 +120,14 @@ export async function materializePrivatePiAccount(snapshot: NativePiPolicySnapsh
     await verifyPrivatePiAccount(snapshot)
     return
   }
-  const trustees = [...new Set([currentUserSid(), systemSid])]
-  const acl = `O:${currentUserSid()}D:P${trustees.map(sid => `(A;;FA;;;${sid})`).join('')}`
+  const trustees = process.platform === 'win32' ? [...new Set([currentUserSid(), systemSid])] : []
+  const acl = process.platform === 'win32' ? `O:${currentUserSid()}D:P${trustees.map(sid => `(A;;FA;;;${sid})`).join('')}` : ''
   for (const [name, value] of [['auth.json', snapshot.auth], ['models.json', snapshot.models], ['settings.json', nativePiSettings]] as const) {
     security(home, true)
     if (value === null) { await requireAbsent(join(home, name)); continue }
-    createFileWithDacl(toNamespacedPath(join(home, name)), acl, Buffer.from(JSON.stringify(value) + '\n', 'utf8'))
+    const bytes = Buffer.from(JSON.stringify(value) + '\n', 'utf8')
+    if (process.platform === 'linux') createPosixPrivateFile(join(home, name), bytes)
+    else createFileWithDacl(toNamespacedPath(join(home, name)), acl, bytes)
   }
   for (const name of ['appdata', 'localappdata', 'temp']) await createPrivateDirectory(join(home, name))
   await verifyPrivatePiAccount(snapshot)

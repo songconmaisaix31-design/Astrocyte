@@ -2,6 +2,7 @@ import { mkdirSync, realpathSync, lstatSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { format, isDeepStrictEqual } from 'node:util'
 import { z } from 'zod'
+import { requirePosixPrivatePath } from './private-posix-security'
 import { setAppEnvironment, type AppPathName } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
 import { setSecretStore } from '../../../third_party/orca-v1.4.230/src/shared/secret-store'
 
@@ -20,13 +21,14 @@ const absolute = (key: string) => {
 }
 const data = absolute('SWA_DATA_DIR')
 const install = absolute('SWA_INSTALL_ROOT')
-if (process.platform !== 'win32') throw new Error('This SWA package requires Windows')
+if (process.platform !== 'win32' && process.platform !== 'linux') throw new Error('This SWA package requires Windows or Linux')
+if (process.platform === 'linux') requirePosixPrivatePath(data, true)
 if (absolute('ORCA_USER_DATA') !== data || absolute('ORCA_USER_DATA_PATH') !== data) throw new Error('SWA native profile root mismatch')
 const privatePath = (name: string) => {
   const target = join(data, name)
   try { if (lstatSync(target).isSymbolicLink()) throw new Error('SWA private path redirected') }
   catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error }
-  mkdirSync(target, { recursive: true })
+  mkdirSync(target, { recursive: true, mode: 0o700 })
   const actual = realpathSync.native(target)
   const rel = relative(data, actual)
   if (!rel || rel.startsWith('..') || isAbsolute(rel)) throw new Error('SWA private path escaped')

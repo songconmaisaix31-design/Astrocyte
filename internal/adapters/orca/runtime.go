@@ -36,6 +36,13 @@ type Config struct {
 
 type Runtime struct{ config Config }
 
+func platformExecutable(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
+}
+
 var _ app.OrcaExecutionRuntime = (*Runtime)(nil)
 
 func contains(root, path string) bool {
@@ -130,7 +137,7 @@ func (r *Runtime) environment() []string {
 		"SWA_INSTALL_ROOT="+r.config.InstallRoot,
 		"SWA_OWNER_CAPABILITY="+r.config.OwnerCapability,
 		"SWA_PROTECTED_ROOTS="+strings.Join(r.config.ProtectedRoots, string(filepath.ListSeparator)),
-		"SWA_EXECUTABLE="+filepath.Join(r.config.InstallRoot, "swa.exe"),
+		"SWA_EXECUTABLE="+filepath.Join(r.config.InstallRoot, platformExecutable("swa")),
 		"SWA_AGENT_PROFILE="+r.config.AgentProfile,
 		"SWA_DISCOVERY_HOME="+r.config.DiscoveryHome,
 		"SWA_DISCOVERY_APPDATA="+r.config.DiscoveryAppData,

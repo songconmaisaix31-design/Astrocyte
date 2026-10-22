@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -35,9 +36,13 @@ func composeOrcaExecution(db *sqlite.DB, projects interface {
 		}
 		return nil, nil
 	}
-	runtime, err := orcaadapter.New(orcaadapter.Config{
+	node := "node"
+	if runtime.GOOS == "windows" {
+		node += ".exe"
+	}
+	native, err := orcaadapter.New(orcaadapter.Config{
 		InstallRoot: root, DataRoot: os.Getenv("SWA_DATA_DIR"),
-		NodeExecutable:        filepath.Join(root, "node", "node.exe"),
+		NodeExecutable:        filepath.Join(root, "node", node),
 		ClientEntry:           filepath.Join(root, "runtime", "client.cjs"),
 		AgentProfile:          os.Getenv("SWA_AGENT_PROFILE"),
 		DiscoveryHome:         os.Getenv("SWA_DISCOVERY_HOME"),
@@ -52,10 +57,10 @@ func composeOrcaExecution(db *sqlite.DB, projects interface {
 	if err != nil {
 		return nil, err
 	}
-	if err := projects.ConfigureExternalCLIRegistry(runtime); err != nil {
+	if err := projects.ConfigureExternalCLIRegistry(native); err != nil {
 		return nil, err
 	}
-	return workspaceapp.NewOrcaExecutionService(db, agents.ProjectFiles{}, projects, runtime, db)
+	return workspaceapp.NewOrcaExecutionService(db, agents.ProjectFiles{}, projects, native, db)
 }
 
 func runOrcaProduct(parent context.Context, logger *slog.Logger) error {

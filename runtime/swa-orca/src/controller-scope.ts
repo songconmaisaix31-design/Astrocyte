@@ -5,12 +5,18 @@ import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { contextSchema, nativeObject, scopeSchema, type Scope } from './contracts'
+import { isSwaLinuxProcessAbsent, readSwaLinuxProcess, requireSwaLinuxProcess, swaLinuxProcessIdentitySchema } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
+
+const controllerProcessSchema = z.union([
+  z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive(), name: z.string() }),
+  swaLinuxProcessIdentitySchema
+])
 
 export const controllerOwnerSchema = z.object({
   project_id: z.string(), controller: z.string(), worktree_id: z.string(),
   binding: z.object({ ptyId: z.string(), processIncarnation: z.string(), generation: z.number() }),
-  process: z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive(), name: z.string() }),
-  helper: z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive(), name: z.string() }),
+  process: controllerProcessSchema,
+  helper: controllerProcessSchema,
   caller_authority: z.object({ terminalHandle: z.string().min(1), paneKey: z.string().min(1), processIncarnation: z.string().min(1), launchTokenHash: z.string().min(1), hostScope: z.looseObject({ kind: z.literal('local') }) })
 })
 export type Controller = z.infer<typeof controllerOwnerSchema>
@@ -58,11 +64,26 @@ export async function observeControllerExited(runtime: OrcaRuntimeService, owner
   const observations = []
   for (let index = 0; index < 2; index++) {
     const inventory = await getLocalPtyProvider().listProcesses()
-    const rows = await readWindowsProcessTableFresh()
     const ptys = inventory.filter(row => row.id === owner.binding.ptyId || row.terminalHandle === owner.controller)
-    const processes = rows.filter(row => [owner.process, owner.helper].some(old => old.pid === row.pid))
-    if (processes.some(row => ![owner.process, owner.helper].some(old => old.pid === row.pid && old.creationTimeMs === row.creationTimeMs && old.name === row.name))) return fail('operation_unknown', 'The prior controller process identity was replaced')
-    observations.push({ observed_at: new Date().toISOString(), ptys: ptys.length, processes: processes.length })
+    let processCount = 0
+    if (process.platform === 'linux') {
+      for (const old of [owner.process, owner.helper]) {
+        if (!('platform' in old)) return fail('operation_unknown', 'The controller belongs to another operating system')
+        try {
+          const actual = readSwaLinuxProcess(old.pid)
+          if (!isDeepStrictEqual(actual, old)) return fail('operation_unknown', 'The prior controller process identity was replaced')
+          processCount++
+        } catch (error) {
+          if (!isSwaLinuxProcessAbsent(old.pid)) throw error
+        }
+      }
+    } else {
+      const rows = await readWindowsProcessTableFresh()
+      const processes = rows.filter(row => [owner.process, owner.helper].some(old => old.pid === row.pid))
+      if (processes.some(row => ![owner.process, owner.helper].some(old => !('platform' in old) && old.pid === row.pid && old.creationTimeMs === row.creationTimeMs && old.name === row.name))) return fail('operation_unknown', 'The prior controller process identity was replaced')
+      processCount = processes.length
+    }
+    observations.push({ observed_at: new Date().toISOString(), ptys: ptys.length, processes: processCount })
   }
   if (observations.every(row => row.ptys === 0 && row.processes === 0)) return observations
   if (observations.every(row => row.ptys > 0 || row.processes > 0)) throw new OrchestrationError('controller_unverifiable', 'The prior controller PTY or helper is still present', { effectsApplied: false, observations })
@@ -76,8 +97,16 @@ export async function exactController(runtime: OrcaRuntimeService, owner: Contro
   const binding = runtime.getTerminalPromptRequestBinding(owner.controller)
   if (binding.ptyId !== owner.binding.ptyId || binding.processIncarnation !== owner.binding.processIncarnation) return fail('worker_identity_changed', 'The controller binding changed')
   if (runtime.getTerminalProcessIncarnation(owner.controller) !== owner.caller_authority.processIncarnation) return fail('worker_identity_changed', 'The controller caller process incarnation changed')
+  if (process.platform === 'linux') {
+    for (const identity of [owner.process, owner.helper]) {
+      if (!('platform' in identity)) return fail('worker_identity_changed', 'The controller belongs to another operating system')
+      requireSwaLinuxProcess(identity)
+    }
+    return
+  }
   const rows = await readWindowsProcessTableFresh()
   for (const identity of [owner.process, owner.helper]) {
+    if ('platform' in identity) return fail('worker_identity_changed', 'The controller belongs to another operating system')
     const row = rows.find(item => item.pid === identity.pid)
     if (!row || row.creationTimeMs !== identity.creationTimeMs || row.name !== identity.name) return fail('worker_identity_changed', 'The controller process identity changed')
   }
