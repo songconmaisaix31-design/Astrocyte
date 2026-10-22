@@ -2292,3 +2292,23 @@ Reviewer独立`review-execute89-service.ps1`实际0，原件`execute89-service-i
 Reviewer完整读取Ubuntu job119658661466及Windows job119658661639原日志，实际合并源码为`fce64fb1533f8224f2617d8313d351a90657939e`，父版本为main b0306af5及Worker893fb885。普通frozen install两平台成功，后续Go整体均退出1，完整CI仍失败。独立`review-ci893.mjs`实际0，原件`ci893-independent.log`：同平台main50c2基线比较，Ubuntu失败名称同为68项，Windows同为79项，新增与删除均0；先前5c750的Relay父例及actual_database_failure子例本轮没有出现。
 
 实际两个合并版本356905dd与fce64fb1的cmd、internal、migrations、go.mod/go.sum及pnpm-workspace.yaml逐字节差异为空。这支持本轮没有观察到该新增失败，旧5c750具体原因仍未知，不能称为已修复、全部失败同因或完整CI通过。主控`msg_ca10be70ec49`及`msg_3191bfa6192c`已取消尚未开始的额外两源码SQLite复验和诊断改写；当前继续产品关键调用链，不增加重复测试或管理等待，历史失败原件保留。
+
+## 91真实委托准备与Observe消费
+
+**接受准确893安装88/89服务的91新委托准备及实际Observe消费范围。** 原入口实际0，五笔space、project、settings、Grant、token写入各一次，真实请求ID、执行时间和2xx回执完整；六项缺cookie、缺CSRF、跨Origin及Agent管理Grant/token/settings均实际403。服务返回主体仍为human/local-human，实际执行者为原Worker Task/Dispatch/terminal且tty_input_used=false；12小时服务cookie未撤销与本次一小时token分别记录，没有伪造本人输入或身份。
+
+新项目`5f596c58-e7ce-429c-b505-124821055cee`属于原固定公开目录，settings revision2、五动作、single OpenCode CLI、原生tools为空、目录/引用边界保持。真实authority为`6b276bc4777128a42992eb317e79a594403d1d1760f7b891b82d1ea6b0264b31`，在生产身份桥后取得；token实际到期UTC`2026-10-22T06:57:49.3951688Z`，与本次真实签发时间加一小时匹配。该准备使用893/新DataRoot/新runtime完整绑定，没有复用82或续签95ef旧Observe。
+
+Reviewer独立`review-execute91.ps1`及mjs实际0，原件`execute91-independent.log`：只读CurrentUser DPAPI并在内存核实际token与真实Grant private_token_digest等值、完整来源/项目/actions/expiry绑定及私有owner/DACL/无reparse；真实库中project、唯一Grant、authority与原阶段回执相符。91各阶段三库记录只增加真实space/project/Grant各一，orchestration和journal业务状态保持；后继92与91阶段分别记录。实际status/capabilities和Observe消费0，credential_renewed=false，registry、2.0.31、DeepSeek-pro及account_source一致，实际launchable仍unknown。实际发现Pi、Codex、Claude、Grok、OpenCode安装，不据此登记全部Agent已调用。
+
+Reviewer只读实际选定DeepSeek凭据并在内存核62份导出及prepared.json均不含实际key/token，原生库mtime保持，Orca前后保全passed；没有调用HTTP、签Grant、原生Agent或模型。限定接受已送原Worker`msg_710bed268243`，继续原无模型调用链及T13，不增加确认。5481497d的89/90来源hook获主控`msg_43d37b92aa26`完整读取准确报告和两个独立日志后回复，唤起已确认。主控准确64451493的HANDOFF、STATUS及QUESTIONS差异已完整读，授权及旧限制保持。
+
+## 92实际helper链与消费者Run表缺口
+
+**接受92已经完成的真实controller/helper及Run/root Task限定范围；退回准确893测试消费者的Run查询，完整幂等验证尚未通过。** 原92驱动实际1，在native-idempotency.mjs:217以coordinator_runs计数0比较预期1处停止，尚未执行后续关闭；原失败输出、请求与资源保留。准确生产run-create.ts写入runs，coordinator-run-store.ts是另一条独立旧协调状态，不能为错误测试修改产品写表。
+
+Reviewer独立`inspect-idempotency92.mjs`实际0，原件`idempotency92-binding-independent.log`：真实原open `febc0b31-069e-4b08-8972-2afb86597935`、task `c1504651-6a55-4fc8-8fb5-0bc48116cf19`及其/run-create、/root-task四回执均completed。Controller为`term_e86fd2e2c7caf2a0383ec5c3e39aaaa4`，实际PTY53564/出生1792648746942、helper56260/出生1792648748228、真实binding/incarnation/pane与回执相同；实际runs唯一`run_66c11beca641`绑定该controller、generation1、legacy0，root `task_0613700f941d`恰一行且parent_id=null。并发及完成重放回到同controller/Run/Task，四项实际workdir/spec/context变化拒绝request_mismatch；Worker记录为0，本次没有模型。该限定观察不替代后续完整关闭、全部幂等失败路径或T13。
+
+同一准确测试域另有native-idempotency的storage计数、controller-recovery计数、runtime-restart的计数和原Run读取、cli-failure的计数和原Run读取误用coordinator_runs。CLI消费者随后访问beforeRun.coordinator_handle，restart恢复随后访问run.id，真实缺行将抛错停止；这些入口不能执行既定验收，应由原Worker集中修正真实runs查询并保留记录存在、身份/代际、唯一root及全部原失败断言。controller-inspection.ts已另有SELECT * FROM runs及唯一inspect-only bootstrap/legacy/generation0校验，其旧协调表零计数仍适用，无须因此修改。准确范围已送原Worker`msg_6472dfb88468`及主控`msg_f9bb5d6efe20`。
+
+已完整读取并独立核新增ControllerClose消费者SHA256 `F7B9C7F430B02B694BDB3330592787381E7434A6A314529D29184012AA0062F7`，限定接受原92真实open响应、completed原R及当前同controller完整owner/出生/pane核实后的单新close R，原DPAPI/来源/stop授权保持，未知响应不重发。前置intent须保留当前UTC、原Task/Dispatch和阶段，原Worker在原客户端补齐后可连续执行，最终准确SHA和实际关闭结果另核；原89服务及只读Job/95ef保持。当前没有登记该关闭或完整幂等通过；纯测试修订不要求重编未变893程序和native。
