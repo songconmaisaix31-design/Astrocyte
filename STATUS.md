@@ -20,7 +20,11 @@ B局部文件检查r1/r2准备失败、r3为5PASS/3FAIL，窄修打包规则和�
 
 官方Pi首次真实无账号RPC已获06独立限定接受：唯一窗口2.850s，get_state/get_available_models均成功，stdout1059 bytes完整保留、stderr0、双EOF/root0/完整D退出/forced=false，私有HOME34项权限通过，available模型0，native只创建空auth、未生成conversation JSONL。后继仅离线消费原两回复，通过B完整严格DTO及同FD EOF/首末来源核验，未重跑CLI。原件`pi-no-model-rpc-window-cHWnUg/evidence/`与`pi-no-model-dto-offline-IKFW93/summary.json`，完整限定见`pi-no-model-rpc-actual-handoff-r1.md`。875只供Node/PTY ABI，不当新安装；Host/Grant/受管peer/真实输入/停止/成果/ToolsOff运行/模型/N/Windows仍未验。私密来源创建工具未执行，生成调用仍为0。
 
-Pi并发验收驱动七源已实现，正在独立源码审查返修。首轮语法/help/Python AST与5项真实文件边界检查通过；开发观察器编译因验收脚本绕过TypeScript扩展名解析而失败，修正脚本后仅续编译并通过，123项真实输入首末一致，新观察器未执行。原脚本与失败保留；新安装的同S观察器正向仍未验。审查要求补齐活动停止、导出原文与Worker来源绑定、delta重组及真实journal投影关联，当前不据局部通过开放N3。
+Pi并发验收驱动七源已获01/04限定源码接受，提交push`a92e66df6b178f1517465d45b3078a90d58ccef1`。活动停止、原文与Worker绑定、delta重组及真实journal来源均已返修复审。首轮语法/help/Python AST与5项真实文件边界通过；开发观察器编译首败为验收脚本绕过TS扩展解析，修正后仅续编译0/123输入，集中返修后必要语法及续编译0/127输入，最末view单独语法0。原脚本/失败保留，观察器新产物未执行；同S安装准备、真实会话及N3尚未验。
+
+官方Pi transport的无认证HEAD局部对照已实际定位云机证书链：当前有限环境报`SELF_SIGNED_CERT_IN_CHAIN`；只增`NODE_USE_SYSTEM_CA=1`后返回401，双方正常退出、双EOF及两个dispatcher完整关闭，无认证/模型。结果`pi-stepfun-tls-r1/result.json` SHA38e9e42d…获05独立复核。Linux私有环境固定CA1及bootstrap仅转发精确值1、SPEC一句已源码接受并提交push`705afd02f87f959b813bc5457097f1933d631be2`；Windows、任意NODE变量过滤和TLS验证保持。该后继修复将由新完整候选原strict检查，不将B阶段R3当成后继构建结果。
+
+持续owned serve脚本/独立observer源码已01接受；仅本地语法、Go构建/help、参数早拒及8项真实FS负向通过，证据`pi-owned-local-r1-KyGNJD/`。原observer源码/二进制保留，实际服务/ready/owned launch及授权包仍未产生。仅指定Go缓存的官方清理已实际0，可用空间从3607339008增至5311774720字节，证据`go-cache-clean-pi-full-prep-01/`，旧产物不动。下一步冻结完整S，按分段空间计划构建并安装新组合候选，再核同S观察器与服务；当前凭据仍仅在会话内存，尚无密钥来源文件或human/Grant/model执行。
 
 Linux专属原生启动器的私有创建默认值已提交`8fb6397971f2c259e491668c32f666ef86eddd34`并获06独立限定接受：真实准入之后、spawn之前设置并读回077；所有该启动器的Linux原生子进程继承，daemon及Windows不改变。唯一development-source组件检查实际1PASS/0fail/0skip，普通Node/fs子进程默认创建目录0700、文件0600，父测试进程仍为022，真实EOF及完整D收尾、forced=false通过，前后两源摘要一致。原件`.verification/cloud-setup/pi-private-creation-local-r1.log`及`pi-private-creation-sources-r1.sha256`；875安装仅提供同ABI Node/PTY输入，未修改旧安装，未重复旧D14或完整构建。该检查不代表Pi JSONL、Agent或模型通过；设置/readback异常仍保持UNKNOWN。
 

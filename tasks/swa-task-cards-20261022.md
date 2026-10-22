@@ -51,7 +51,9 @@ B局部检查原件保留：FS r1/r2准备失败、r3实际5PASS/3FAIL后，窄�
 
 封闭Pi授权helper三源已01限定接受并提交push039924d2，consumer原样；Go3组22子项/build/help0，4真实非法包均HTTP前拒2。没有真实human/Grant/token、业务driver或模型执行。06 N3驱动7写域计划已独立接受、进入实现；最终同S可执行包尚未就绪。
 
-驱动七源首稿的syntax/help/PythonAST及5项真实普通文件边界PASS；开发observer编译首败为ignored helper跳过TS扩展解析，窄修后仅compile-only实际0/123真实inputs，新输出未执行，原失败/脚本保留。01/04源码CR要求补齐活动停止、导出trace原件绑定、完整delta与journal来源，原06正在返修；不以局部通过代替N3准入，同S新安装及模型尚未运行。
+驱动七源已集中补齐活动停止、trace原件绑定、完整delta及journal来源，获01/04限定源码接受并commit/push`a92e66df6b178f1517465d45b3078a90d58ccef1`。首轮syntax/help/PythonAST与5FS PASS；helper TS扩展解析编译首败保留，后继仅compile-only0/123inputs，集中返修后必要语法/compile0/127inputs，最末view语法0。观察器新产物未执行，不据此升级真实N3。
+
+官方Pi无认证HEAD实际当前env证书链失败，仅系统CA1后401，两路正常exit/EOF/dispatcher关闭完整、无key/body/model；05已核原件。Linux私有env+真实bootstrap精确转发1及SPEC三源已提交push`705afd02f87f959b813bc5457097f1933d631be2`，任意NODE过滤/Windows/TLS校验不变，待新标准候选原strict。持续服务准备脚本仅源码/本地语法、Go build/help/参数及8FS拒绝通过，未产生实际服务/启动记录或human授权包。仅指定Go可再生缓存实际清理0，可用空间5311774720字节，旧产物全保；完整S的新构建/安装/同S观察器与模型仍未运行。
 
 独立修复`8fb6397971f2c259e491668c32f666ef86eddd34`只含Linux bootstrap及一个真实D组件case，获06准确源码与原件限定接受。实际准入后紧贴spawn前设置/读回077；普通Node/fs子进程默认创建0700目录/0600文件，父测试仍022，真实EOF/fullD/forced=false及前后两源摘要一致，唯一case实际1PASS/0fail/0skip/退出0。执行`bash .verification/cloud-setup/pi-private-creation-local-r1.sh`，原件为同名前缀log/exit及sources-r1.sha256。开发源码控制仅复用875安装同ABI Node/PTY；未修改875、未重旧D14/完整构建，不代表Pi JSONL或Agent模型通过，设置异常仍UNKNOWN。
 
