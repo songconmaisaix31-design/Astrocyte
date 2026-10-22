@@ -4,13 +4,17 @@
 
 本次云开发支线为 `integration/swa-task-cards`，在 main `64451493` 与 PR #5 `6778a66f` 的本地集成基线 `6195f4cf` 上执行用户上传的六卡。总席位/预约保护、CLI、GUI及构建改动已分批提交；人类按当前项目权限独立追加输入的后端为 `1accc19e`，GUI权限设置与提示为 `1518645b`。实际检查和提交清单见[本轮任务](tasks/swa-task-cards-20261022.md)。标准应用构建、开发服务/代理、适用合同/strict/CLI/架构/依赖检查通过；标准完整检查仍在 Go 测试阶段失败，保留原件和分类，不称完整 CI 通过。
 
-用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生局部检查；原生 N=3 与 Windows 安装验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
+用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生检查；原生 N=3、Agent账号与模型验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
-新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过。双平台候选来源`11717767f82a8a4070351ff74674aa0d268f79b2`的Linux结果见下段；Windows完整run39778043411/job119821899284在service-smoke失败，旧Pi目录owner原件未记录。后继abef组件MRE已确认普通新目录DACL正确但owner仍为Admin的机制；新目录修复`0ab2956d`的Windows单组件10项控制现已通过，独立接受范围见下段，准备新同S双平台完整候选。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
+已提交运行时`489be745`包含Codex独立API-key HOME/受控启动/真实流与完整成果核查、Claude Linux结果reader、Pi Linux安全前置；R6 strict0/30源无漂移及独立限定接受保持，不算账号或模型验收。Windows安装ACL为`5f450e59`；此前117的service-smoke失败、旧目录owner未知，abef普通目录MRE定位DACL-only不改Admin owner后，`0ab2956d`显式owner新目录组件十项通过。后继同S875的最新双平台事实见下段；Linux Pi仍拒绝实际执行，Claude A/B仅源码开发，不能计多数Agent已适配。
 
-最近已验 Linux x64 glibc 组合安装来源为 `11717767f82a8a4070351ff74674aa0d268f79b2`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-11717767-codex-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY/watcher/kernel probe、官方目录资产、28312路径闭包及网页清单2入口/4引用通过。同安装进程检查为11项装内原件PASS及3项同SHA源码诊断PASS，均无跳过，4份candidate/install原件SHA一致；实际覆盖subreaper、pidfd、收养与精确回收、双ECHILD及IPC拒绝。组合服务退出0：health200、首页与4个资产的字节/hash/MIME一致、标准同源301、stdin正常关闭code0，内部双空树与全部pidfd退出、外部5个实际进程身份退出及55.8ms双空观察通过。06独立限定接受构建、安装、native组件、普通进程托管及静态HTTP；证据见[本轮任务](tasks/swa-task-cards-20261022.md)。原689安装及其301脚本首败/局部修正原件保留，不混用验收。Agent账号、ToolsOff模型、controller、GUI业务和真实N=3仍NOT_RUN。
+最近已验Linux组合安装来源为`8752ec991668071d59ff5fca4cf99690568ff90c`，实际根`/workspace/swa-linux-installs/swa-linux-combined-8752ec99-common-dir-01`。唯一完整build、普通archive/SHA、仓库外解包和严格安装均0，Node24.21、真实PTY/watcher/kernel probe、28312闭包与manifest2+4通过。装内原件D11=11PASS，同S源码诊断3PASS，均0skip；四原件candidate/install字节及首末SHA一致。组合服务health200、首页/4资产字节/hash/MIME、同源301、正常EOF0/null通过；内部双owned0/全部pidfd退出，外部本轮4身份双空、相距53.65ms。06已独立核原件限定接受；服务已停，无human/Grant/controller/账号/模型。原证据与handoff见[本轮任务](tasks/swa-task-cards-20261022.md)。
 
-项目能力与GUI阶段修复`a66dfe6e`已获01/06准确源码限定接受：Go仅将已授权p.Root经内部链传到静态发现，前后复核当前目录、settings与Grant；GUI用真实静态配置/当前项目版本判断能否提交，未握手的launchable/read/tools仍为unknown，实际start原准入门保持。02的7文件通过Node2真实FS、Go app29子项、完整strict及45包架构检查，adapter在该Go命令仅编译；GUI三文件通过9规则、ESLint/Web类型及2项真实错误/权限刷新浏览器检查。测试输入多传workdir及未激活工具链两次局部失败原件保留，分别修用例/激活后复验0，未改生产拒绝门。06的分阶段Linux/Codex驱动六源亦已独立限定接受，正式组件范围见下段；117安装不修改，真实配置key、首次启动、改后安装/模型仍未验。
+该875最初只改四份事实文档，未命中native workflow的push.paths，成熟matcher实核交集为空，故最初没有Windows run；root已向用户报告。官方tag规则与准确新ref计划获01/06接受后，一次普通push创建`ci/swa-windows-8752ec99-common-dir-01`精确指向875，不改源码/旧安装；实际run39794724054为push/tag/875，native job119879061698。新鲜public页checkout0、完整driver14:21:17→14:27:22Z实际0、evidence及candidate上传0、Complete job成功；14:42Z最终run Status=Success/native completed successfully，诊断与VS均skip。此前Queued缓存及14:35整体in progress观察分别保留，以后继实际结算更新。本机未下载artifact，不冒称其额外metadata；Windows Agent/账号/模型/N未验。Linux所有本地guard已结束且独立接受，远端不可变tag无本地树依赖，本地冻结已解除以继续Claude A/B，无新增full。
+
+此前已验Linux117安装及5身份/55.8ms服务证据保留，原689及e148安装和失败原件亦保留，不混入875的4身份/53.65ms结果。Agent账号、ToolsOff模型、controller、GUI业务和真实N=3仍NOT_RUN。
+
+项目能力与GUI修复`a66dfe6e`已获01/06准确源码限定接受：仅传已授权p.Root，前后重核目录/settings/Grant，GUI按当前静态配置和版本准许提交，live unknown保持且原start门不变。后端Node2真实FS、Go app29子项、strict及45包架构0（adapter该Go命令仅编译）；GUI9规则/lint/Web类型及2真实错误/权限刷新浏览器检查0。多传workdir和未激活工具链的原失败及修正复验保留。06六源Linux/Codex驱动已独立接受；875基础安装结果如上，配置key/首次真实启动/模型仍未验。
 
 此前只读诊断`2420301d212b15b6e7b441676e559cf2047c54c7`的run39780632906/job119830667048实际成功，06独立核原annotations：117的7前序exit0、实际installed ACL两bool均true，服务helper1/serve6、没有ready观察；原启动错误为`private_pi_security_changed`，调用`security→createPrivateDirectory→initializePrivatePiRoot`，helper最终因acted=false断言失败。CIM helper0/all_exited=true及unknown观察2不代表服务通过，原117完整FAIL保持。当时具体owner/ACE子因未知，后继普通目录MRE的独立事实见下段。
 
@@ -20,7 +24,7 @@
 
 该0ab实际Windows run39791764329/job119869368842全部steps0，组件13:59:50→14:01:20Z、artifact上传成功，full/VS均skip。06独读原public HTML十项：新目录true/原guard七谓词全真；重复私有目录false且不变/PASS；原普通Admin目录false且不变/原guardFAIL；原公开文件false且不变/type拒；缺父目录CreateDirectoryW code3/未创建；empty/NUL/relative均TypeError；真实junction false/parent拒且target不变；当前Pi消费者原guard及七谓词全真。只限定新native组件与Pi目录路径，不算OpenCode/Codex Windows消费者、安装/服务/账号/模型；sample非原子，旧117历史owner仍UNKNOWN。本机未下载上传artifact，driver summary未在public页展示，未冒称已读；完整步骤成功与可见十项支持本轮限定结论。root取证曾误用`.parsed.json`文件名，实际文件为`-parsed.json`，修正路径后读取0，不重跑产品。最小复现、根因和本轮局部结果报告后，才重开同S完整构建。
 
-Linux/Codex验收驱动六源已获01独立限定接受，Windows Pi/OpenCode原路径保留；从安装VERSION取得准确Git原件及同安装依赖，原R/fence、双runtime、真实流、停止与完整成果分别核验。正式prepare3480原blob/119输入退出0；正式observer d77b6a2d的5项真实PID/非Session有界检查PASS，非typedSession或模型。新旧bundle摘要复用断言曾失败，01逐190处核为95注释与95模块标签后定位目录前缀差异，原失败保留；随后仅复验已成正式bundle五项，无重新归档/编译或full。真实start/send/stop/result/N仍待新同SHA安装、合法Grant/API key及网络条件。
+Linux/Codex验收驱动六源已获01独立限定接受，Windows Pi/OpenCode原路径保留；从安装VERSION取得准确Git原件及同安装依赖，原R/fence、双runtime、真实流、停止与完整成果分别核验。117正式prepare3480原blob/119输入0，observer d77b6a2d五项真实PID/非Session检查PASS，非typedSession或模型。新旧bundle摘要复用曾因190处目录前缀标签差异失败，原件及正式bundle五项复验0保留，无重新编译或full。当前875基础安装已具备；真实start/send/stop/result/N仍需合法Grant、对应API来源和网络，不混用后继HEAD源码。
 
 旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取及官方API-key私有HOME接线源码已限定接受，真实账号启动未验；缺少真实安全配置的key时不能宣称可启动。
 
