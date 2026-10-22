@@ -51,7 +51,7 @@ CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_
 
 ## 平台进程身份与关闭
 
-服务内部`SWA_SERVICE_JOB`与daemon身份沿真实平台联合传递。Windows保持`Local\SWAService<UUID>`、`serve_created_at_ms/daemon_created_at_ms`及原Job核验，原wire不增加Linux字段。Linux使用`platform:'linux'`、`SWAService<UUID>`、`serve_start_ticks/daemon_start_ticks`、`boot_id/owner_uid`和原`serve_pid/daemon_pid/daemon_session/data_root/install_root/source_revision`；ticks和UID为十进制字符串。它们来自实际内核proc身份，不换算为Windows创建时间。Node和Go还核同安装程序、VERSION、原daemon记录及实际祖先归属，旧活daemon不自动接管。
+服务内部`SWA_SERVICE_JOB`与daemon身份沿真实平台联合传递。Windows保持`Local\SWAService<UUID>`、`serve_created_at_ms/daemon_created_at_ms`及原Job核验，原wire不增加Linux字段。Linux使用`platform:'linux'`、`SWAService<UUID>`、`serve_start_ticks/daemon_start_ticks`、`boot_id/owner_uid`和原`serve_pid/daemon_pid/daemon_session/data_root/install_root/source_revision`；ticks和UID为十进制字符串。它们来自实际内核proc身份，不换算为Windows创建时间。Linux分支的Node和Go还核同安装程序、VERSION、原daemon记录及实际祖先归属，旧活daemon不自动接管；Windows保留原私有Job与daemon身份核验后的恢复语义。
 
 `serve`的`resource_samples`在Linux为一次实际`{platform:'linux',logical_cpus,available_bytes,sampled_at}`观察，未提供CPU百分比；Windows保留原实际阻塞CPU采样数组。该区别不改变Worker自己的资源准入，也不把瞬时内存或CPU数量称为容量承诺。Linux `e14800c1`同安装的服务/daemon正常启动、health和stdin关闭后的服务树退出已验；强杀serve的完整回收仍未知，不能推广为每Worker退出通过。
 
