@@ -2,6 +2,8 @@
 
 Windows x64 包包含`swa.exe`、`server.exe`、固定Node24.21.0、私有Orca运行文件、安装入口与许可。`VERSION`和`swa.exe --version`给出同一准确源码提交。当前首版尚未通过同一安装候选的完整真实验收，实际验证范围以随交付的记录为准。
 
+`--help`、子命令的`--help`/`-h`及`--version`输出本地文本，无需项目授权或运行服务。普通业务命令的`--json`在stdout只发布一个JSON结果，诊断在stderr；帮助和版本属于文本元数据，不使用业务结果协议。
+
 ## 安装
 
 使用PowerShell7.2以上，明确选择实际发行ZIP、尚不存在的解压目录与安装目录，以及本机Orca及账户保护目录。安装目标父目录必须存在。下列变量由使用者设置为实际绝对路径，端口由使用者明确选择；在同一个PowerShell7会话中依次运行以下命令。
@@ -25,6 +27,14 @@ $swa = Join-Path $installRoot 'swa.exe'
 ```powershell
 & $swa serve --data-dir $dataRoot --port $port --protected-roots ($protectedRoots -join ';') --json
 ```
+
+CLI形态不需要网页或浏览器。组合形态的`EDITION`必须为`combined`，网页资产位于本次安装的`web`目录；显式增加`--web-dir`即可由同一HTTP服务提供现有工作台和API，不启动另一个原生后台：
+
+```powershell
+& $swa serve --data-dir $dataRoot --port $port --protected-roots ($protectedRoots -join ';') --web-dir (Join-Path $installRoot 'web') --json
+```
+
+网页目录必须属于同一次安装，包含真实`index.html`和Vite资产清单；目录或资产经过重解析点、符号链接、文件缺失或edition不符时启动拒绝。省略`--web-dir`只提供API，继承环境中的`ASTROCYTE_WEB_DIR`不自动启用网页。附着于该服务的浏览器页面关闭后，CLI服务继续由原所属stdin管理。
 
 该命令在前台持有所属stdin，输出实际Node/HTTP readiness后持续运行。关闭该stdin或Ctrl+C请求关闭本次所属服务；不要把stdin预先重定向为空。服务监听显式`127.0.0.1`端口，冲突返回退出码5。依赖或所属证据不足会明确拒绝；不会另选端口或启动本机Orca。进程、SQLite、profile、IPC、会话、缓存和临时目录均归本次私有根。
 
@@ -151,31 +161,94 @@ $env:SWA_PROJECT_ID = $projectId
 $env:SWA_PROJECT_TOKEN = $projectToken
 & $swa status --json
 & $swa capabilities --json
-& $swa controller open --project $projectId --workdir $projectRoot --request-id ([Guid]::NewGuid().ToString()) --json
+$openRequest = [Guid]::NewGuid().ToString()
+$openedText = & $swa controller open --project $projectId --workdir $projectRoot --request-id $openRequest --json
+if ($LASTEXITCODE -ne 0) { throw '保留openRequest，使用request show --project查询原效果' }
+$opened = $openedText | ConvertFrom-Json
+$controller = $opened.controller
+if (-not $controller -or -not $opened.runtime_id) { throw '真实控制端回执缺少身份' }
 ```
 
-后继controller、Run、根Task及Dispatch全部使用真实回执。固定`task.json`包含`goal/source_repo/source_revision/success_criteria/max_workers:2/context`；context引用批准的实际公开文件。`a.txt/b.txt`和后继输入位于该项目的允许目录，文件内容作为真实模型输入。
+后继controller、Run、根Task及Dispatch全部使用真实回执。固定`task.json`包含`goal/source_repo/source_revision/success_criteria/max_workers/context`；context引用批准的实际公开文件。`max_workers`是根任务批准创建或预留的Worker总席位，已完成或释放的child Task仍计数，不自动归还席位。本轮验收默认`N=3`，其他数量须符合当前机器和批准范围。N不是产品固定上限。准备N份实际公开输入和已审阅的独立Worker名称，输入及后继文件均位于该项目的允许目录。历史两Worker检查保留其当时范围；配置额度为2的任务仍应拒绝第三席。
 
 ```powershell
-& $swa task create --controller $controller --spec-file $specFile --request-id $createRequest --json
-& $swa worker start --controller $controller --task $rootTask --name A --agent $agent --model $model --input-file $inputA --request-id $startARequest --json
-& $swa worker start --controller $controller --task $rootTask --name B --agent $agent --model $model --input-file $inputB --request-id $startBRequest --json
-& $swa worker show --controller $controller --dispatch $dispatchA --json
-& $swa worker read --controller $controller --dispatch $dispatchB --source transcript --limit 100 --json
-& $swa worker stop --controller $controller --dispatch $dispatchA --request-id $stopARequest --json
-& $swa worker send --controller $controller --dispatch $dispatchB --input-file $followupFile --request-id $sendBRequest --json
+$n = 3
+if ($n -lt 3) { throw '本多Worker验收示例要求N至少为3；这不是产品数量下限' }
+$inputDirectory = (Resolve-Path -LiteralPath (Read-Host '已有且已批准的公开输入目录')).Path
+$workerInputs = @(1..$n | ForEach-Object {
+  $inputPath = Join-Path $inputDirectory ("worker-{0}.txt" -f $_)
+  if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) { throw '实际公开输入文件缺失' }
+  [pscustomobject]@{ name="worker-$_"; input_file=$inputPath }
+})
+$spec = Get-Content -LiteralPath $specFile -Raw | ConvertFrom-Json
+if ($spec.max_workers -ne $n -or $workerInputs.Count -ne $n) { throw '任务额度及已审阅输入数量须与N一致' }
+$createRequest = [Guid]::NewGuid().ToString()
+$createdText = & $swa task create --controller $controller --spec-file $specFile --request-id $createRequest --json
+if ($LASTEXITCODE -ne 0) { throw '保留createRequest，先查询原请求，不继续启动Worker' }
+$created = $createdText | ConvertFrom-Json
+$rootTask = $created.task_id
+if (-not $rootTask -or -not $created.run_id) { throw '真实任务回执缺少身份' }
+$workerCalls = @($workerInputs | ForEach-Object {
+  [pscustomobject]@{ name=$_.name; input_file=$_.input_file; request_id=[Guid]::NewGuid().ToString(); dispatch_id=$null }
+})
+if (@($workerCalls.name | Select-Object -Unique).Count -ne $n) { throw 'Worker名称必须唯一' }
+foreach ($call in $workerCalls) {
+  $startedText = & $swa worker start --controller $controller --task $rootTask --name $call.name --agent $agent --model $model --input-file $call.input_file --request-id $call.request_id --json
+  if ($LASTEXITCODE -ne 0) { throw '保留当前call.request_id并查询；已启动Worker继续占有原身份' }
+  $started = $startedText | ConvertFrom-Json
+  if (-not $started.dispatch_id -or $started.run_id -ne $created.run_id) { throw '真实Worker回执身份不符' }
+  $call.dispatch_id = $started.dispatch_id
+}
+if (@($workerCalls.dispatch_id | Select-Object -Unique).Count -ne $n) { throw '每个Worker须有独立Dispatch' }
+& $swa worker list --controller $controller --task $rootTask --json
+foreach ($call in $workerCalls) {
+  & $swa worker show --controller $controller --dispatch $call.dispatch_id --json
+}
+$stopTarget = $workerCalls[0].dispatch_id
+$continueTarget = $workerCalls[1].dispatch_id
+$stopRequest = [Guid]::NewGuid().ToString()
+& $swa worker stop --controller $controller --dispatch $stopTarget --request-id $stopRequest --json
+if ($LASTEXITCODE -ne 0) { throw '先按stopRequest核查原停止效果，不能直接宣布已停止' }
+$sendRequest = [Guid]::NewGuid().ToString()
+& $swa worker send --controller $controller --dispatch $continueTarget --input-file $followupFile --request-id $sendRequest --json
+if ($LASTEXITCODE -ne 0) { throw '保留sendRequest核查原输入，不换键重发' }
+& $swa worker read --controller $controller --dispatch $continueTarget --source transcript --limit 100 --json
 & $swa task result --controller $controller --task $rootTask --output-dir $newOutputDirectory --json
 ```
 
-每个写动作的request变量为首次调用前保存的不同规范UUID。查询结果包含真实原生状态，查询成功不代表任务成功。退出码6表示效果未知：保留原request，使用`request show --controller ... --request-id ... --json`查询；controller尚未取得时使用`--project`形式。未知输入不能换键重发。
+以上循环提交只说明如何操作N个Worker，不证明模型执行区间重叠；真实并发、指定停止期间其余Worker继续和原生会话接续须按安装验收核查。首次操作前保存`$workerCalls`、`$createRequest`及后续request变量于当前受保护会话，不把token或私有输出写入公开项目。`worker list/show/read`和`task show/list`返回原生快照；逐项检查所有Worker，不能把首个回复或HTTP成功当作整项任务完成。当前没有`run/wait/events/export`便捷命令；完整结果使用`task result`，不根据不完整列表推断终态。
+
+每个写动作的request变量为首次调用前保存的不同规范UUID。查询结果包含真实原生状态，查询成功不代表任务成功。退出码6表示效果未知：保留原request，使用`request show --controller ... --request-id ... --json`查询；controller尚未取得时使用`--project`形式。未知输入不能换键重发。CLI的HTTP等待上限为150秒；超时未收到确定结果时返回6，不停止后台或自动重发。普通查询/控制等待中的Ctrl-C返回130，只取消当前CLI等待；原请求仍需核查。`serve`的Ctrl-C或所属stdin结束会关闭本次所属服务，行为与普通命令分别处理。
+
+| 退出码 | 含义 |
+| --- | --- |
+| 0 | 当前命令成功；查询成功不等于任务完成 |
+| 2 | 参数、字段或请求不一致 |
+| 3 | 权限、批准或当前身份不足 |
+| 4 | 服务或原生能力不可用 |
+| 5 | 资源额度、端口或实例锁拒绝 |
+| 6 | 原请求、停止或释放效果未知，先查询原回执 |
+| 7 | 运行、响应处理或导出失败 |
+| 130 | 当前等待已取消；`serve`按所属生命周期回收服务 |
 
 指定停止仅处理该Worker的专有Job；root退出、tree退出和资源释放分别记录。全部相关Worker确认退出并按原生流程归档释放后，可显式提交固定成功条件的真实结果，再关闭controller：
 
 ```powershell
-& $swa worker stop --controller $controller --dispatch $dispatchB --request-id $stopBRequest --json
-& $swa worker release --controller $controller --dispatch $dispatchA --request-id $releaseARequest --json
-& $swa worker release --controller $controller --dispatch $dispatchB --request-id $releaseBRequest --json
+foreach ($call in $workerCalls) {
+  # 首个目标已经有stopRequest；其余只在需要停止时提交各自独立原请求。
+  if ($call.dispatch_id -ne $stopTarget) {
+    $call | Add-Member -NotePropertyName stop_request -NotePropertyValue ([Guid]::NewGuid().ToString())
+    & $swa worker stop --controller $controller --dispatch $call.dispatch_id --request-id $call.stop_request --json
+    if ($LASTEXITCODE -ne 0) { throw '停止尚未确认；保留该Worker与原请求占用，不继续释放' }
+  }
+  $call | Add-Member -NotePropertyName release_request -NotePropertyValue ([Guid]::NewGuid().ToString())
+  & $swa worker release --controller $controller --dispatch $call.dispatch_id --request-id $call.release_request --json
+  if ($LASTEXITCODE -ne 0) { throw '归档释放尚未确认；保留原请求，不提交任务完成' }
+}
+$completeRequest = [Guid]::NewGuid().ToString()
 & $swa task complete --controller $controller --task $rootTask --result-file $checkedResultFile --request-id $completeRequest --json
+if ($LASTEXITCODE -ne 0) { throw '任务完成尚未确认；先查询completeRequest' }
+$closeRequest = [Guid]::NewGuid().ToString()
 & $swa controller close --controller $controller --request-id $closeRequest --json
 ```
 

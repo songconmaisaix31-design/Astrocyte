@@ -23,20 +23,25 @@ import (
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
-const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] --json
+const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] [--web-dir INSTALL/web] --json
 swa status|capabilities --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close|recover --controller C [--request-id UUID] --json
 swa task create --controller C --spec-file F --request-id UUID --json
 swa task show|list|complete|result --controller C [--task T] [--result-file F|--output-dir O] [--request-id UUID] --json
-swa worker start --controller C --task T --name A --agent AGENT --model PROVIDER/MODEL --input-file F --request-id UUID --json
+swa worker start --controller C --task T --name NAME --agent AGENT --model PROVIDER/MODEL --input-file F --request-id UUID --json
 swa worker show|list|read|send|stop|release --controller C [--task T|--dispatch X] [--source transcript --limit 100 --cursor K] [--input-file F] [--request-id UUID] --json
 swa request show --controller C|--project P --request-id UUID --json
 
 查询和控制使用 SWA_ENDPOINT、SWA_PROJECT_ID、SWA_PROJECT_TOKEN。
 SWA_PROJECT_TOKEN 必须来自当前项目授权。后台启动不会发行项目授权。
 可用 --endpoint 明确指定已启动的回环 HTTP 服务；查询不会启动服务。
-serve 的 D、F 必须是绝对路径；R 是 Windows 分号分隔的本机 Orca/账户保护目录。
+serve 的数据目录、可选 profile 与网页目录必须是绝对路径；R 是 Windows 分号分隔的本机 Orca/账户保护目录。
+--web-dir 仅接受 combined 安装中的 web 绝对目录，由同一 HTTP 服务提供网页。
+task spec 的 max_workers 是任务批准创建或预留的 Worker 总席位；已完成或释放的 child Task 仍计数，不自动归还席位。每次 start 使用独立名称、输入与 request ID。
+业务 --json 调用只输出一个 JSON 结果；help/--help/--version 输出本地文本，不连接服务。
+退出码：0=命令成功，2=参数错误，3=权限或批准不足，4=能力不可用，5=资源拒绝，6=效果未知，7=运行或导出失败，130=等待已取消。
+普通查询/控制的 Ctrl-C 只取消当前 CLI 等待，不停止 Worker；serve 的 Ctrl-C/所属 stdin 结束会关闭本次所属服务。
 安装及完整调用说明见安装目录 USAGE.md；使用独立目录，保持 serve 所属 stdin 开启。
 `
 
@@ -70,6 +75,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		if len(rest) == 0 {
 			return output.failure("validation_failed", "缺少命令动作", "read_swa_help", 2)
 		}
+		if (rest[0] == "--help" || rest[0] == "-h") && (action == "controller" || action == "task" || action == "worker" || action == "request") {
+			return writeHelp(&output, nil)
+		}
 		action, rest = action+"."+rest[0], rest[1:]
 	}
 	command := workspaceapp.OrcaCommand{Action: action}
@@ -77,6 +85,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(io.Discard)
 	project := flags.String("project", "", "项目 ID")
 	endpoint := flags.String("endpoint", os.Getenv("SWA_ENDPOINT"), "明确的回环 HTTP 服务")
+	flags.Lookup("endpoint").DefValue = ""
 	asJSON := flags.Bool("json", false, "输出 JSON")
 	flags.StringVar(&command.Controller, "controller", "", "原生控制端 selector")
 	flags.StringVar(&command.TaskID, "task", "", "原生根 Task ID")
@@ -100,6 +109,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	parseError := flags.Parse(rest)
 	output.parsedRequest(command)
 	output.pretty = !*asJSON
+	if errors.Is(parseError, flag.ErrHelp) {
+		return writeHelp(&output, flags)
+	}
 	if parseError != nil || flags.NArg() != 0 {
 		return output.failure("validation_failed", "命令参数无效", "read_swa_help", 2)
 	}
@@ -190,6 +202,20 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	if !reply.OK || response.StatusCode != http.StatusOK {
 		return 7
+	}
+	return 0
+}
+
+func writeHelp(output *cliOutput, flags *flag.FlagSet) int {
+	var text bytes.Buffer
+	text.WriteString(usage)
+	if flags != nil {
+		text.WriteString("\n共享选项；每项动作只接受上述用法中的字段：\n")
+		flags.SetOutput(&text)
+		flags.PrintDefaults()
+	}
+	if _, err := io.Copy(output.stdout, &text); err != nil {
+		return output.outputFailure(err)
 	}
 	return 0
 }

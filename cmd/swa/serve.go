@@ -33,9 +33,14 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	asJSON := flags.Bool("json", false, "输出实际 readiness")
 	agentProfile := flags.String("agent-profile", "", "既有原 Orca profile 的只读绝对路径")
 	protected := flags.String("protected-roots", os.Getenv("SWA_PROTECTED_ROOTS"), "本机 Orca 及账户受保护目录列表")
+	flags.Lookup("protected-roots").DefValue = ""
+	webDirectory := flags.String("web-dir", "", "本 combined 安装内 web 的绝对目录；省略时只提供 API")
 	parseError := flags.Parse(args)
 	output.pretty = !*asJSON
-	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || *agentProfile != "" && !filepath.IsAbs(*agentProfile) || *port < 1 || *port > 65535 || *protected == "" {
+	if errors.Is(parseError, flag.ErrHelp) {
+		return writeHelp(&output, flags)
+	}
+	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || *agentProfile != "" && !filepath.IsAbs(*agentProfile) || *webDirectory != "" && !filepath.IsAbs(*webDirectory) || *port < 1 || *port > 65535 || *protected == "" {
 		return output.failure("validation_failed", "需要明确的数据目录、端口、受保护目录和绝对路径的可选只读来源", "correct_serve_configuration", 2)
 	}
 	ownerEOF := errors.New("所属 stdin 已结束")
@@ -76,6 +81,10 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	install, err := (agents.ProjectFiles{}).CanonicalRoot(filepath.Dir(executable))
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_installation", 4)
+	}
+	webDir, err := orcaadapter.InstalledWebDirectory(install, *webDirectory)
+	if err != nil {
+		return output.failure("validation_failed", err.Error(), "inspect_combined_installation_web_assets", 2)
 	}
 	roots := filepath.SplitList(*protected)
 	canonicalData, err := privateDataDirectory(*data, install, roots)
@@ -230,7 +239,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	endpoint := "http://127.0.0.1:" + strconv.Itoa(*port)
 	listening := make(chan error, 1)
 	serverCommand := exec.Command(filepath.Join(install, "server.exe"))
-	serverCommand.Env, serverCommand.Dir, serverCommand.Stderr = baseEnv, install, stderr
+	serverCommand.Env, serverCommand.Dir, serverCommand.Stderr = append(baseEnv, "ASTROCYTE_WEB_DIR="+webDir), install, stderr
 	server, err = startOwnedService(serverCommand, func(stream io.Reader) error {
 		var announcement struct {
 			Type   string `json:"type"`
