@@ -3,24 +3,46 @@
 param([Parameter(Mandatory)][string]$PnpmCli)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+$env:SWA_VS_PROBE_PHASE = 'preflight'
 if (-not $IsWindows) { throw 'This local probe requires actual Windows' }
 $checkout = (Get-Item -LiteralPath $env:GITHUB_WORKSPACE).FullName
 Set-Location -LiteralPath $checkout
 $evidence = Join-Path $checkout '.verification/swa-ci/vs-probe'
-$work = Join-Path $env:RUNNER_TEMP 'swa-visualstudio-probe'
-foreach ($directory in @($evidence, $work)) {
+$rejectedWork = Join-Path $env:RUNNER_TEMP 'swa-visualstudio-probe'
+foreach ($directory in @($evidence, $rejectedWork)) {
     if (Test-Path -LiteralPath $directory) { throw 'A probe output directory already exists' }
     New-Item -ItemType Directory -Path $directory | Out-Null
 }
 $developmentNode = (Get-Command node -CommandType Application | Select-Object -First 1).Source
 if ((& $developmentNode --version).Trim() -cne 'v24.16.0' -or (& $developmentNode $PnpmCli --version).Trim() -cne '11.27.0') { throw 'The pinned development tools differ' }
+$env:SWA_VS_PROBE_PHASE = 'frozen-prerequisites'
 & $developmentNode $PnpmCli --filter '@swa/orca-runtime' install --frozen-lockfile *> (Join-Path $evidence 'frozen-install.log')
 if ($LASTEXITCODE -ne 0) { throw 'Frozen local probe prerequisites failed' }
+$env:SWA_VS_PROBE_PHASE = 'original-node-pin'
 $assetJSON = & $developmentNode --input-type=module -e 'import{NODE_RUNTIME_ASSETS,nodeRuntimeReleaseUrl}from"./third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts";let a=NODE_RUNTIME_ASSETS["win32-x64"];console.log(JSON.stringify({...a,url:nodeRuntimeReleaseUrl("official",a.archive)}));'
 if ($LASTEXITCODE -ne 0) { throw 'Original Node pin could not be loaded' }
 $asset = $assetJSON | ConvertFrom-Json
+$env:SWA_VS_PROBE_PHASE = 'download-work-guard'
+$download = Join-Path $checkout 'scripts/download-swa-node.ps1'
+$rejectedOutput = Join-Path $rejectedWork $asset.archive
+$guardLog = Join-Path $evidence 'download-work-guard.log'
+& (Join-Path $PSHOME 'pwsh.exe') -NoProfile -NonInteractive -File $download -Uri $asset.url -WorkDirectory $rejectedWork -OutputFile $rejectedOutput *> $guardLog
+$guardExit = $LASTEXITCODE
+$guard = Get-Content -LiteralPath $guardLog -Raw | ConvertFrom-Json
+if ($guardExit -ne 1 -or $guard.schema -cne 'swa.node-download.v1' -or $guard.stage -cne 'validate' -or $guard.error_type -cne 'System.ArgumentException' -or (Test-Path -LiteralPath $rejectedOutput)) { throw 'The original invalid download work path did not fail at its expected guard' }
+$guardResult = [ordered]@{ diagnostic_only = $true; original_invalid_work_exit = $guardExit; stage = $guard.stage; error_type = $guard.error_type; output_exists = $false; http_request_started = $false }
+$guardResult | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'download-work-guard.json')
+$guardMessage = ($guardResult | ConvertTo-Json -Compress).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+Write-Host ('::warning title=Original download work guard reproduction::' + $guardMessage)
+$buildRoot = Join-Path $checkout '.verification/swa-cli-headless-20261020/build'
+New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
+$work = Join-Path $buildRoot ('candidate-' + [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(3)))
+New-Item -ItemType Directory -Path $work | Out-Null
+$env:SWA_VS_PROBE_PHASE = 'pinned-node-download'
 $archive = Join-Path $work $asset.archive
-& (Join-Path $checkout 'scripts/download-swa-node.ps1') -Uri $asset.url -WorkDirectory $work -OutputFile $archive
+& (Join-Path $PSHOME 'pwsh.exe') -NoProfile -NonInteractive -File $download -Uri $asset.url -WorkDirectory $work -OutputFile $archive *> (Join-Path $evidence 'node-download.log')
+if ($LASTEXITCODE -ne 0) { throw 'The original pinned Node downloader failed; its safe phase log is retained' }
+$env:SWA_VS_PROBE_PHASE = 'pinned-node-verification'
 if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -cne $asset.archiveSha256) { throw 'The original Node archive checksum differs' }
 $extracted = Join-Path $work 'node'
 [IO.Compression.ZipFile]::ExtractToDirectory($archive, $extracted, $false)
@@ -40,10 +62,12 @@ function Publish-Probe([string]$Title, [object]$Value) {
     Write-Host ('::warning title=' + $Title + '::' + $escaped)
 }
 $baseline = Join-Path $evidence 'baseline.json'
+$env:SWA_VS_PROBE_PHASE = 'baseline-finder'
 & $node $probe --finder $finder --output $baseline --mode baseline
 $baselineExit = $LASTEXITCODE
 Publish-Probe 'VS baseline observation only' (@{ process_exit = $baselineExit; observation = (Get-Content -LiteralPath $baseline -Raw | ConvertFrom-Json) })
 if ($baselineExit -ne 0) { throw 'The bounded baseline probe did not finish; its outcome is unknown' }
+$env:SWA_VS_PROBE_PHASE = 'official-vs-discovery'
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
 $metadataJSON = & $vswhere -products '*' -version '[17.0,18.0)' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
 if ($LASTEXITCODE -ne 0) { throw 'Official VS2022 installation discovery failed' }
@@ -52,8 +76,10 @@ if ($installations.Count -eq 0) { throw 'No actual VS2022 x64 tool installation 
 $selected = $installations[0]
 Publish-Probe 'Official VS2022 metadata' (@{ installation_path = $selected.installationPath; installation_version = $selected.installationVersion; complete = $selected.isComplete })
 $launch = Join-Path $selected.installationPath 'Common7/Tools/Launch-VsDevShell.ps1'
+$env:SWA_VS_PROBE_PHASE = 'official-developer-shell'
 & $launch -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> (Join-Path $evidence 'devshell-entry.log')
 $devshell = Join-Path $evidence 'devshell.json'
+$env:SWA_VS_PROBE_PHASE = 'developer-shell-finder'
 & $node $probe --finder $finder --output $devshell --mode devshell
 $devshellExit = $LASTEXITCODE
 $actual = Get-Content -LiteralPath $devshell -Raw | ConvertFrom-Json
@@ -62,6 +88,7 @@ if ($devshellExit -ne 0 -or -not $actual.finder.vc_install_dir_present -or -not 
 if (-not [IO.Path]::GetFullPath($actual.finder.actual.path).Equals([IO.Path]::GetFullPath($selected.installationPath), [StringComparison]::OrdinalIgnoreCase)) { throw 'The finder selected a different Visual Studio installation' }
 if (-not (Test-Path -LiteralPath $actual.finder.actual.msBuild -PathType Leaf)) { throw 'The actual MSBuild executable is missing' }
 if (-not $env:WindowsSdkDir -or -not $env:WindowsSDKVersion -or -not (Test-Path -LiteralPath (Join-Path $env:WindowsSdkDir ('Include/' + $env:WindowsSDKVersion)) -PathType Container)) { throw 'The actual developer environment Windows SDK is missing' }
+$env:SWA_VS_PROBE_PHASE = 'actual-compiler-version'
 $compiler = (Get-Command cl -CommandType Application | Select-Object -First 1).Source
 if (-not [IO.Path]::GetFullPath($compiler).StartsWith(([IO.Path]::GetFullPath($selected.installationPath).TrimEnd('\') + '\VC\Tools\MSVC\'), [StringComparison]::OrdinalIgnoreCase) -or $compiler -notmatch '\\bin\\Hostx64\\x64\\cl\.exe$') { throw 'The actual compiler is outside the selected VS2022 x64 toolchain' }
 $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler)
