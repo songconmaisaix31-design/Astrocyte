@@ -1,8 +1,8 @@
 # SWA 主线接续
 
-程序来源3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb的59严格、build18及412666020字节ZIP/普通解包60实际0；安装60复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。五项源码和真实ACP完整Job退出62获限定接受。82真实执行准备实际0，五项管理写入各一次，CurrentUser DPAPI和真实CLI消费通过。Flow83的controller.open超时6，原请求3bed9c88-9c99-4cdd-83cf-a523e5383374/native pending和所属PTY保留，没有创建产品Worker或模型；原Worker与Reviewer继续核对helper启动参数，未知效果不重发。必要程序修复后须使用准确的新安装完成最终双Worker验收。当前67服务由原Worker TTY17950保持，64508/runtime9ea24e54及原95ef/5187保全。四Go真实消费者65仅编译0，实际检查未运行。
+当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，控制端command/env窄修及84严格检查获5eab3922限定接受。build19、412666860字节ZIP/普通解包和安装88的复制/native/28251闭包/保护拒绝通过，安装汇总6保留功能未验。独立服务89在64508/runtime6aec5c49就绪，6224/33976/55368及三Medium、五库核查0，原Worker TTY32198和只读Job观察21806保持；90两次真实来源一致，authority为空、业务与模型0，既定新准备91和实际helper/T13继续。87e原生指定session清理0、三句柄退出及六已观察身份两次缺席获2197a441限定接受，旧67 EOF6/Job不可查询/83父R pending保留。原95ef/5187和本机Orca保持，最终双Worker尚未通过。
 
-主控已建立[draft PR #5](https://github.com/songconmaisaix31-design/swarm-anything/pull/5)，当前head5c75001e，尚未合并。后继d829的六项准确依赖脚本false、3fadb的真实迁移测试前提、5c750的故障消费者来源与保全路径规范化均已独立限定接受，程序安装输入保持3bcf。72普通完整归档frozen及73真实迁移检查实际0；最新Ubuntu job119649240667的68个失败名称与实际main50c2基线完全一致，无新增或删除，完整CI仍失败，Windows仍在运行。实际日志保存在根.verification/swa-cli-v1-control，详细范围见首版任务。
+主控已建立[draft PR #5](https://github.com/songconmaisaix31-design/swarm-anything/pull/5)，当前head893fb885，尚未合并。d829脚本策略、3fadb迁移测试前提、5c750故障消费者来源/路径规范化均已限定接受，72普通frozen及73真实迁移检查0。最新893实际合并源fce64fb1的Ubuntu119658661466/Windows119658661639均普通frozen成功、Go整体1；失败名称分别68/79，与真实main50c2各平台基线相同，无增删。5c750前次Windows额外迁移失败未复现、原因未知保留；尚未开始的两来源额外复验已取消，完整CI失败。原始日志位于根.verification/swa-cli-v1-control，详细范围见首版任务。
 
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398均已push。Pi原生StepFun custom准入代码、strict/architecture及真实空auth拒绝获788db525限定接受；build16/410059866字节完整ZIP/普通解包29实际0。安装位于C:/Users/DW/AppData/Local/SwarmCli/candidates/f2ab4fd9-install29，复制/native/闭包/保护拒绝通过，安装汇总6保留真实消费者未验。同安装四项生命周期130/130/0/6、C08服务7/runtime_error和所属退出获32f254c5限定接受。新检查服务已退出。
 

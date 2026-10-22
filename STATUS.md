@@ -2,9 +2,9 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-程序来源3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb的五项返修/实际根退出62获限定接受；59严格、build18/ZIP/普通解包60实际0，安装60复制/native/28251闭包及保护拒绝通过，汇总6。82真实执行Grant、CurrentUser DPAPI和CLI消费实际0，五项管理写入各一次。Flow83的controller.open实际超时6，原R/native pending和PTY保留，无产品Worker或模型；原Worker/Reviewer核对helper启动参数，最终同安装双Worker尚未通过。67服务以TTY17950保持，四Go消费者65仅编译0、尚未运行，原Orca和95ef/5187保持。
+当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，参数窄修/84严格检查获5eab3922限定接受。build19、完整ZIP/普通解包88及安装复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。新89服务在64508/runtime6aec5c49真实就绪，90两次来源一致、authority为空、业务/模型0，准备91及实际helper/最终同安装双Worker继续。旧67的87e指定session/三句柄/六已观察身份退出获2197a441限定接受，原EOF6/Job不可查询/83父R pending保持。原Worker持有89 TTY32198和Job观察21806，原Orca/95ef/5187保持。
 
-draft PR #5当前head5c75001e，后继六版本脚本策略d829、迁移测试前提3fadb、故障消费者来源/路径规范化5c750均获独立限定接受，程序和3bcf安装归属保持。72普通归档frozen及73真实迁移检查实际0。最新Ubuntu job119649240667的68个失败名称与实际main50c2基线相同，无新增或删除；此结果限于失败名称比较，完整CI仍失败，Windows尚在运行。原64/69/75失败原件及79/82显式恢复记录保留。
+draft PR #5未合并，d829/3fadb/5c750修订及72/73实际检查获限定接受。最新893实际合并源fce64fb1的Ubuntu119658661466和Windows119658661639均普通frozen成功、Go整体1；失败名称68/79与真实main50c2各平台相同，无增删。前5c Windows额外迁移失败此次未复现，原因未知保留，未开始的额外两来源复验已取消；完整CI失败。原64/69/75/83/85/86/87前置失败和恢复原件分别保留。
 
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。该安装的产品Worker模型、完整安装及同候选双Worker仍未通过。
 

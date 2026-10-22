@@ -12,6 +12,8 @@
 
 主控在上述真实测试许可内确认受托执行范围：原固定公开Git/正文、实际OpenCode/DeepSeek-pro、原生工具为空及既有项目单CLI批准，按实际命令只需observe/start/send/stop/read_context；controller.recover沿start，恢复验收保持。准确客户端、来源与75前置失败显式恢复已获独立审核，82实际准备0：真实项目6d8cf620-f26c-4ee3-8554-1c9609075736、设置revision2、既有身份桥形成authority，五笔管理写入各一次，CurrentUser DPAPI/CreateNew及实际CLI消费通过，token到期UTC2026-10-22T06:04:06.7927994Z。执行者为Agent，服务实际主体另行记录，旧Observe项目/凭据、T11及工具范围保持；没有重签未知效果的token。Flow83尚无产品Worker模型，真实双Worker验收继续。
 
+后继893fb885已完成安装88并启动独立服务89，旧67的已观察所属身份经87e实际退出，原Job不可查询及83父R pending保持。新DataRoot/runtime/来源90与旧82凭据分开，原四已审客户端沿既定公开范围、空原生工具及五动作准备91，不覆盖或错用旧82DPAPI，不要求重复Agent测试许可。新安装的真实helper/产品Worker及最终同候选双Worker尚未通过，T11保持原待答范围。
+
 ## 继续构建与 REA 仓库格式（2026-10-21）
 
 用户要求“继续构建swarm cli，格式上用rea的仓库格式”。构建继续按已确认首版目标、隔离和验收推进；已读取官方 REA 的仓库入口、架构、开发与包定义，来源和当前路径对应见[参考记录](standards/swa-repository-format-20261021.md)。
