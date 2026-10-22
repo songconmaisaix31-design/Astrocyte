@@ -2119,3 +2119,27 @@ Reviewer自有`review-pi56.mjs`实际0，原件`pi56-independent.log`：成熟st
 委托客户端仍在编写，未固定准确原件，尚未接受或执行。Reviewer已读取其真实session/CSRF、五项scope、写前来源/authority检查、原请求未知停止、CurrentUser DPAPI及消费入口，working反馈`msg_bb767bb06960`要求核已有capabilities的enabled/provider/model/account_source，并指出RestartObserve的旧runtime guard、必需readiness/新进程输入和真实预期退出6。Worker回复`msg_bdd18c62540a`称已补专用的真实重启观察绑定，原DPAPI不修改/续签、普通模式仍拒绝runtime替换；此修订仍待准确源码及实际描述集中审查，未把准备成功计为R08完成。
 
 主控管理Commit `eee780b9f20d9023c1216ee6013df3bba65c62ce`四份准确差异已全文读取：累计实际e9fa退回、build17及49失败、53局部安装6、56/64DD限定接受、五动作真实测试授权和原95ef保全，未将未知S3/T11或最终双Worker改成通过。此前STATUS模型范围措辞已限定原安装/产品Worker及780历史阶段。Reviewer运行031dc至eee780的Git/成熟marked18.1.0检查为0，四份Markdown的89个本地链接无缺失。只读使用.NET ZipFile核原e9fa归档411419795字节、25494条归档条目，VERSION/Node/policy成品各唯一；归档条目数与含目录的28243闭包路径分别记录，没有重新解压或构建。这些管理事实随产品累计，不构成e9fa程序接受或新操作窗口。
+
+088f0fee的e9fa累计退回和eee780限定记录hook分别获主控`msg_85936106d5e4`、`msg_e2ea12a18ab6`明确完整读取回复，两项唤起已确认。
+
+## 准确3bcf0c71返修及真实根退出62
+
+**接受`3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb`对前述五项缺口的源码返修和真实原生根退出62的限定范围。** e9fa至该准确Commit的13份差异均已完整读取。完整Job未知时acceptClose不再缓存成功，rootVerdict/exited保持unverifiable；统一verifiedExit在完整Job或真实processless后一次发布，原连接/tree可继续关闭。初始化的processless只表示没有实际创建进程，后续实际import成功条件仍要求原exit0和真实导入结果。
+
+受限ACP的权限请求直接cancelled，其他客户端工具请求直接拒绝，普通ACP保持原流程。完整结果合并之后运行每个真实OpenCode来源的validateExport闭包，检查覆盖summary/native session/journal原rows与snapshot，命中整体失败。受限错误保留AcpAgentError、AuthRequired、InvalidResponse、ConnectionClosed、Timeout等实际类别和安全numeric code/status/session，原data/details/body/cause不进入通用消费者；admitNotification在全部journal/扩展订阅分发前执行真实trace及凭据检查，失败关闭同一Job并阻止该条外送。普通连接的两个基础钩子分别返回原错误和允许通知，未替换普通ACP协议。
+
+自有`check-opencode59-source.mjs`实际0，原件`opencode59-source-independent.log`：在自有忽略目录的独立Git index以真实Git读取e9fa、应用59的完整source.diff，对全部程序/构建/测试文件与准确3bcf比较一致，原diff仅在内存规范化CRLF传输，原件保留，实际工作树和真实index未修改。59原入口、strict-exit0及语法日志已读，准确程序与该严格检查对应；客户端位于忽略目录，后续仍须按冻结摘要分别审核。两份准确Markdown的成熟marked18.1.0/Git检查0，六个本地链接无缺失，旧§15锚点保留。build18入口要求准确干净3bcf，实际exit0，Node24.21、29份bundle/metafile及28251路径闭包，四native继续来自原507/build11准确输入；Reviewer没有重复构建。
+
+62使用同一仓库外3bcf-install60、真实原CLI及官方auth import、新独占私有账户和固定公开目录。原native session为`ses_e9e19e0f8ffeLNzuncnmOEsKuw`，实际build/DeepSeek-pro、七项active工具0；没有prompt。故障入口在核managed root的实际程序与创建身份后终止该根，真实退出通知仅一次，发布时exited/rootVerdict均exited、processTreeUnproven=false且lastCloseResult为完整Job退出，再次close返回true。此驱动采用普通ACP加owned Job，未传产品swaOpenCodePolicy对象，没有产品Dispatch或Grant。
+
+Reviewer自有`review-opencode62.mjs`实际0，原件`opencode62-independent.log`：真实只读SQLite逐项核两条原生消息`msg_161e61f7f0015LtoGv1BuZa7jG`、`msg_161e61fbe0016Z7Fbeq0f2t84e`及session，与原导出一致，消息仅agent-switched/model-switched，实际唯一active DeepSeek凭据与私有auth等值且结果不含该值；SQLite mtime保持。成熟stream-json核官方import及ACP两个完整Job，各有两次空清单与全部已观察出生身份两次缺席；实际ACP root为51304/1792643832430，native为12500/1792643832536。通知发布时的完整退出状态、驱动另两次实际身份观察及原Orca before/after保全均核。Reviewer没有重跑原生进程或模型。
+
+该接受包括已检查的静态整改及上述真实根退出范围；未知到已知关闭没有实际出现，原件明确NOT_RUN。受限incoming权限、秘密错误/上游异常没有实际触发，保留静态保障及未验范围；62不能代替这些分支、真实产品输入或双Worker。安装60汇总实际6、Grant客户端/最终实际描述及最终同安装双Worker仍待验，原95ef/5187保持，整体产品没有接受。
+
+## pnpm CI窄配置计划与参考来源
+
+在读取Worker计划正文前，Reviewer依据实际CI安装失败形成C01—C03：六项准确包/版本及脚本/真实消费者有来源；明确允许或不运行有必要依据，保留严格未知拒绝和原受控native能力；真实frozen结果及未执行步骤按平台记录，最终同安装验证保持。**接受`pnpm-ci64-plan.md`准确SHA256 `45FE97A216B14C4CF3FBEF04B4790C8AEE5B28FFB48C13EC2F8BE8AE25B9702C`的技术与必要检查范围，实际配置提交和安装/CI结果尚未接受。**
+
+实际job119639202522日志的错误尾段已读：pnpm11.27 frozen install以ERR_PNPM_IGNORED_BUILDS退出1，后续检查/测试/构建没有运行。计划只为watcher2.5.6、windows-process-tree0.8.0、agent-browser0.27.0、cpu-features0.0.10、node-pty1.1.0、ssh2 1.17.0补明确false。Reviewer核实际pnpm createAllowBuildFunction的版本规则和false优先分支、准确3bcf原workspace策略、各包实际元数据、watcher/ssh2安装源和cpu-features的原可选消费者、agent-browser下载/全局shim分支。watcher使用锁内平台预编译包，原check-swa-runtime真实require已通过；四native继续原准确受控构建和成品装载，没有批准隐式替代编译或浏览器下载，没有删依赖或改未知脚本策略。真实Windows归档frozen install、私有store完整性、依赖检查/锁保持及原Linux CI复验结果继续由原Worker提供；不能用本机结果替代Linux，不能将计划接受计为实际CI通过。通知为`msg_479dc758e59d`。
+
+用户新增OpenMausBot参考由主控固定为`dbb73a73ae2cba48fdf608e9e22d1d5d91608532`。Reviewer只读Git对象，完整读取README、LICENSING、headless-cli/custom-engines文档及headless/output.ts，没有安装、运行或复制代码。其统一result/error/progress秘密处理可用于核对既定输出边界；其深度redaction会改写正文，本项目完整成果仍按实际凭据整体拒绝。该参考的本地owner、原生工具、重试及分页导出约定与本次合同分别核，不作为本项目Grant、ToolsOff、unknown或完整成果证据。当前没有必要直接复制建议，未来具体建议再核准确文件及Apache2/enterprise许可归属，不为参考库增加整体方案阶段；通知主控为`msg_888ca40623e2`。
