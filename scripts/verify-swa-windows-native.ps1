@@ -7,10 +7,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+$env:SWA_CI_PHASE = 'preflight-platform'
 if (-not $IsWindows -or [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne 'X64') { throw 'Native Windows x64 is required' }
-foreach ($path in @($PnpmCli, $Python, $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:ProgramFiles)) {
-    if (-not [IO.Path]::IsPathFullyQualified($path) -or -not (Test-Path -LiteralPath $path)) { throw 'An actual absolute CI input is missing' }
+$inputs = [ordered]@{ pnpm = $PnpmCli; python = $Python; checkout = $env:GITHUB_WORKSPACE; temporary = $env:RUNNER_TEMP; program_files = $env:ProgramFiles }
+foreach ($role in $inputs.Keys) {
+    $env:SWA_CI_PHASE = 'preflight-input-' + $role
+    $path = $inputs[$role]
+    if (-not [IO.Path]::IsPathFullyQualified($path) -or -not (Test-Path -LiteralPath $path)) { throw ('An actual absolute CI input is missing: ' + $role) }
 }
+$env:SWA_CI_PHASE = 'preflight-source'
 $checkout = (Get-Item -LiteralPath $env:GITHUB_WORKSPACE).FullName
 Set-Location -LiteralPath $checkout
 $revision = (& git rev-parse HEAD).Trim()
@@ -29,11 +34,11 @@ $env:SWA_PNPM_CLI = (Get-Item -LiteralPath $PnpmCli).FullName
 $env:SWA_BUILD_PYTHON = (Get-Item -LiteralPath $Python).FullName
 $env:ASTROCYTE_GO = $go
 $env:GOTOOLCHAIN = 'local'
-$stage = 'preflight'
+$env:SWA_CI_PHASE = 'preflight-toolchain'
 $result = [ordered]@{ source_revision = $revision; platform = 'win32-x64'; edition = 'cli'; status = 'NOT_RUN'; model_calls = 0; agent_acceptance = 'NOT_RUN' }
 
 function Invoke-Logged([string]$Name, [string]$Program, [string[]]$Arguments) {
-    $script:stage = $Name
+    $env:SWA_CI_PHASE = $Name
     $log = Join-Path $logs ($Name + '.log')
     & $Program @Arguments *> $log
     $code = $LASTEXITCODE
@@ -61,20 +66,20 @@ try {
         if (Test-Path -LiteralPath $path) { throw 'A candidate output parent already exists' }
         New-Item -ItemType Directory -Path $path | Out-Null
     }
-    $stage = 'archive'
+    $env:SWA_CI_PHASE = 'archive'
     $archive = Join-Path $artifacts ($name + '.zip')
     [IO.Compression.ZipFile]::CreateFromDirectory($candidate, $archive, [IO.Compression.CompressionLevel]::Optimal, $true)
     $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
     Set-Content -LiteralPath ($archive + '.sha256') -Value ($hash + '  ' + [IO.Path]::GetFileName($archive))
     if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -cne $hash) { throw 'The archive checksum differs' }
-    $stage = 'extract'
+    $env:SWA_CI_PHASE = 'extract'
     [IO.Compression.ZipFile]::ExtractToDirectory($archive, $packages, $false)
     Set-Content -LiteralPath (Join-Path $logs 'archive-check.log') -Value ('ZIP SHA256=' + $hash + '; ordinary .NET extraction completed without overwrite')
     $package = Join-Path $packages $name
     $install = Join-Path $installs $name
     $checker = Join-Path $checkout 'scripts/check-swa-runtime.mjs'
     Invoke-Logged 'extracted-check' (Join-Path $package 'node/node.exe') @($checker, '--candidate', $package)
-    $stage = 'install'
+    $env:SWA_CI_PHASE = 'install'
     try {
         & (Join-Path $package 'install-swa.ps1') -PackageRoot $package -InstallRoot $install -ProtectedRoots @($checkout, $env:ProgramFiles) *> (Join-Path $logs 'install.log')
         Set-Content -LiteralPath (Join-Path $logs 'install.exit.txt') -Value 0
@@ -86,6 +91,7 @@ try {
     $actual = (& (Join-Path $install 'swa.exe') --version).Trim()
     if ($LASTEXITCODE -ne 0 -or $actual -cne $revision -or (Get-Content -LiteralPath (Join-Path $install 'VERSION') -Raw).Trim() -cne $revision) { throw 'The installed source version differs' }
     $acl = Get-Acl -LiteralPath $install
+    $env:SWA_CI_PHASE = 'installed-acl'
     $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
     if (-not $acl.AreAccessRulesProtected -or $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid) { throw 'The actual installation root is not private to its owner' }
     $seenTrustees = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -95,7 +101,7 @@ try {
         if ($rule.IsInherited -or $rule.AccessControlType -ne [Security.AccessControl.AccessControlType]::Allow -or $trustee -notin @($sid, 'S-1-5-18') -or -not $seenTrustees.Add($trustee) -or $rule.FileSystemRights -ne [Security.AccessControl.FileSystemRights]::FullControl -or $rule.InheritanceFlags -ne $expectedInheritance -or $rule.PropagationFlags -ne [Security.AccessControl.PropagationFlags]::None) { throw 'The installation root has unexpected access rules' }
     }
     if (-not $seenTrustees.Contains($sid)) { throw 'The installation root lacks the exact owner access rule' }
-    $stage = 'service-smoke'
+    $env:SWA_CI_PHASE = 'service-smoke'
     $private = Join-Path $env:RUNNER_TEMP ('swa-data-' + $revision)
     if (Test-Path -LiteralPath $private) { throw 'The private CI data parent already exists' }
     New-Item -ItemType Directory -Path $private | Out-Null
@@ -134,6 +140,7 @@ try {
     Set-Content -LiteralPath (Join-Path $logs 'service-smoke.log') -Value (($output.GetAwaiter().GetResult()) + ($errors.GetAwaiter().GetResult()))
     Set-Content -LiteralPath (Join-Path $logs 'service-smoke.exit.txt') -Value $process.ExitCode
     if ($process.ExitCode -ne 0) { throw 'The actual service/Job shutdown check failed or remains unknown' }
+    $env:SWA_CI_PHASE = 'final-source'
     $finalRevision = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or $finalRevision -cne $revision) { throw 'The source version changed during verification' }
     $finalStatus = & git status --porcelain --untracked-files=normal
@@ -145,7 +152,7 @@ try {
     $result.whole_service_job_shutdown = 'PASS'
 } catch {
     $result.status = 'FAIL'
-    $result.failed_stage = $stage
+    $result.failed_stage = $env:SWA_CI_PHASE
     $result.failure = $_.Exception.Message
     throw
 } finally {
