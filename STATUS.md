@@ -6,6 +6,12 @@
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生检查；原生 N=3、Agent账号与模型验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
+最新Linux安装来源为`aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`，实际根`/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`。标准完整build、archive/SHA、仓库外extract及strict install均0，05已限定接受；新tar SHA`54cf2f30306a2bad73b2889ba04f5e23db4469d51815876ad54e70e6b3422684`，闭包28314、manifest2入口4引用。06独立接受装内同S observer准备0/3484源码/127输入、D12全部PASS0skip，以及真实组合服务health/静态资产/完整进程树PASS、4身份/约54.85ms双空/正常EOF0，smoke已关；观察器未用于真实Worker，source3只复用旧同源诊断。新包已含Pi执行和CA源码，不再把旧875当当前Linux安装；Windows新源码候选仍未运行，旧875成功记录保留。
+
+独立StepFun私有来源已真实创建为0700/0600，密钥未进入Git、argv、输出或草稿；账号和模型尚未通过。当前owned基线根`/workspace/swa-pi-owned-aefe6c4b-20261023-01`、18794服务持有截止2026-10-22 20:54:04.605UTC；准确拟包`/workspace/swa-pi-n3-packet-aefe6c4b-20261023-01/review.json` SHA4244f3a526efc765b6accfd6607a13d006a9f3f47b1da687e04dcb4a24c42253已01限定接受。同S helper53ce4d19…实际沙箱verify3；证据为/proc/PID/exe读取EACCES而原身份仍活。同包/二进制/服务只改为允许该读取的执行权限后verify0/VERIFIED_LOCAL_ONLY/http0/model0，旧失败保留并已向用户交代MRE、证据与局部结果，无新full重试或自动审批拒绝。已提出当次human会话/CAS/Grant/token/固定N3/结束及人工未知时独立撤销的明确委托；尚未取得答复，不执行effects。生成调用0。
+
+以下为此前阶段记录；其中“尚未安装/仅留内存”等描述仅指当时窗口，当前状态以上两段及本轮任务为准。
+
 已提交运行时`489be745`包含Codex独立API-key HOME/受控启动/真实流与完整成果核查、Claude Linux结果reader、Pi Linux安全前置；Windows安装ACL为`5f450e59`、显式owner新目录组件为`0ab2956d`。后继同S875双平台安装事实见下段。Claude受限启动与完整成果接线已独立限定接受并提交`9131d882620796c3b9b4c8599e992ba400ab55c7`：合同/实际SDK来源、当前授权与取消末核、有界恢复、真实SDK对象/CLI全文分源、最新R及完整树关闭已接通；最终strict R2退出0，29957输入首末一致。尚无包含该源码的新安装或真实SDK启动；builtin来源未审全时继续不可用，Linux Pi仍拒绝实际执行，不能计多数Agent已适配。
 
 阶跃星辰官方模型目录已实际校验：无认证HEAD为401，单次带认证GET为200，返回33个模型，含`step-3.5-flash`；生成调用为0。06已独立核验结果权限与摘要，仅接受目录读取成功，不代表余额、模型生成或Pi接入。先前权限核验的私有临时来源已删除，当前凭据仅留会话内存，工作区无密钥文件，密钥未进入Git、命令参数、输出或云草稿。本次GET使用私有TTY且没有创建密钥文件。云草稿已增`api.stepfun.com`并保存，仍需环境设置中的保存与发布。Codex/OpenAI、Claude/Anthropic对应来源仍缺，不能共用该凭据。

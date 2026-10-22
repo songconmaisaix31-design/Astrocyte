@@ -41,6 +41,12 @@
 
 ## 当前云机验证
 
+当前Linux同S候选已推进至`aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`：标准完整build、分段archive/extract及strict install均0，实际新根`/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`，tar SHA54cf2f30306a2bad73b2889ba04f5e23db4469d51815876ad54e70e6b3422684。05已接受交付；06已接受installed observer prepare0/3484源码/127输入/48c1ae01…、D12=12PASS0skip/17.406s、组合服务health/2入口4资产/4身份/约54.85ms双空与EOF0。闭包28314、protocol563dc4d5…/metafile1cd325e2…实际装内核对，旧875及所有原件保留。当前Windows新源码仍未验，旧875完整成功范围不扩推。
+
+真实私有StepFun SOURCE已按0700/0600提供；同S工具binary53ce4d19…/consumer608e5f96…已build/help0，Go1.27.2/vcs.modified=false。独占owned服务18794已保存真实六键launch/ready/proof，原owner根`/workspace/swa-pi-owned-aefe6c4b-20261023-01`、runtime faa37e36…/持有截止2026-10-22 20:54:04.605UTC。新准确拟授权包`/workspace/swa-pi-n3-packet-aefe6c4b-20261023-01/review.json` SHA4244f3a526efc765b6accfd6607a13d006a9f3f47b1da687e04dcb4a24c42253及review.md已成，原pins/10intents与三wire保留并获01限定接受。沙箱verify3的最小复现/实际EACCES原件与同包权限对照verify0/http0/model0已报告；不降低exe/pidfd原门、不新full试错。用户具体human会话/项目授权写入/固定Pi-StepFun N3/两项最终撤销委托请求待答；bool true及verify0不代替同意，尚无人类会话/Grant/token/driver或模型生成执行。
+
+下列内容保留此前阶段检查与失败原件；旧“尚无新安装/来源未创建”等状态不覆盖以上当前结果。
+
 Pi每Worker HOME合同及完整B四十文件已提交push`ca3d35176de19e42365adb74918a7a6895a11244`，A的403项JSON/Zod、Go33子项及264examples/生成一致性结果保留；旧账户分支不改。B后继主稿c6b9e7e6…/ports9cff985a…及完整消费者已独立限定接受，原d803/76fac保留历史。Linux新kind的两个主动caller转完整policy准入；Windows原Job门、旧中性投影Linux拒绝及OpenCode保护保持。最终统一strict/架构已0，同S新安装尚未运行。首StepFun四元组保持，实际目录包含该ID，生成与N仍未验。
 
 B局部检查原件保留：FS r1/r2准备失败、r3实际5PASS/3FAIL后，窄修共用打包规则/严格JSON返回对象，r4实际8PASS/0skip、首末摘要一致。共享queue8/真实UTF8 reader6/SQLite publication3/Go5组47子项亦通过。8entry初次仅编译0；必要源码CR已关闭真实提交排序、锁选项、版本probe隔离、stop清理及失败锁存问题。后继预检40OK/1陈旧源码摘要拒绝，没有编译；已核是manifest漏已审realpath:false一行，保留原件并先报告。其后唯一8entry局部编译0、41源首末全匹配，新同S安装仍待完成。
