@@ -14,6 +14,10 @@
 
 VS局部探测来源`369680ec`已普通push，实际 [39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 的工具准备成功、probe退出1、artifact上传成功，完整候选与旧完整检查均跳过。当前公开摘要不足以定位这一轮实际异常；静态核查发现probe传入的RUNNER_TEMP工作目录违反原下载器的candidate目录限制，且漏查下载退出码。修正仅涉及局部探测调用，保留下载器保护规则，后继先复现非法参数拒绝再运行合法目录下探测，不重启完整构建。
 
+后继局部run39764771846实际验证原非法目录在HTTP前拒绝，合法下载/哈希通过，发现VS18而非VS17。run39765889558的真实三阶段对照进一步确认：原2022选择失败并报告版本不符；只改为2026后finder成功；官方Developer Shell下2026/v145、MSBuild、SDK和编译器身份核查成功。VSSetup原命令输出1451733字节，默认execFile在1048576字节处报MAXBUFFER，C#命令78312字节通过。该轮整体仍报失败，末尾`cl /Bv`无输入退出2已记录，runner退出分类待局部核查；不将局部观测成功写成job通过，产品builder仍未修改2022选择，也未重开完整Windows构建。
+
+显式Codex/Claude API-key来源目录配置为`4c79625d`，定向Go与Windows交编通过，无账号内容读取。Codex合同/Schema为`3b32fae6`，94形状边界与264示例/生成一致性通过；完整官方模型目录/许可及随包检查为`ac668ca8`，局部资产检查通过。运行时NativeLaunch接线仍在实现，新源码尚无同安装验收。当前环境对OpenAI和Anthropic官方API的无认证HEAD均CONNECT403；两精确域名已追加到云草稿，保存成功但尚未应用/发布。缺真实key、项目Grant和网络准入时原生模型及N=3保持NOT_RUN。
+
 以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
 
 当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，参数窄修/84严格检查获5eab3922限定接受。build19、完整ZIP/普通解包88及安装复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。新89服务在64508/runtime6aec5c49真实就绪，90两次来源一致、authority为空、业务/模型0，准备91及实际helper/最终同安装双Worker继续。旧67的87e指定session/三句柄/六已观察身份退出获2197a441限定接受，原EOF6/Job不可查询/83父R pending保持。原Worker持有89 TTY32198和Job观察21806，原Orca/95ef/5187保持。
