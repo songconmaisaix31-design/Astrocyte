@@ -30,6 +30,7 @@ function New-OrcaPreservation {
     foreach ($path in @($OrcaPath,$MetadataFile) + $ProtectedFiles) { if (-not [IO.Path]::IsPathFullyQualified($path)) { throw '保全来源必须是实际绝对路径' } }
     if ($ProtectedFiles.Count -lt 1 -or $OriginalProcessIds.Count -lt 1) { throw '必须提供定向配置/认证文件和原 daemon 实际 PID' }
     if (-not [IO.Path]::IsPathFullyQualified($ProbeDirectory)) { throw '目录通知自检需要明确的本项目录' }
+    $ProbeDirectory = [IO.Path]::GetFullPath($ProbeDirectory)
     $probeWatcher = [IO.FileSystemWatcher]::new($ProbeDirectory)
     $probeId = 'swa-own-notification-probe-' + [Guid]::NewGuid().ToString()
     Register-ObjectEvent -InputObject $probeWatcher -EventName Created -SourceIdentifier $probeId
@@ -40,7 +41,8 @@ function New-OrcaPreservation {
         $probeFile = Join-Path $ProbeDirectory ('notification-probe-' + [Guid]::NewGuid().ToString() + '.txt')
         [IO.File]::WriteAllText($probeFile,'Actual owned directory notification probe')
         $probeEvent = Wait-Event -SourceIdentifier $probeId -Timeout 3
-        if (-not $probeEvent -or $probeEvent.SourceEventArgs.FullPath -ne $probeFile) { throw '当前权限下实际目录创建通知未被观察' }
+        if (-not $probeEvent) { throw '当前权限下未取得实际目录创建通知' }
+        if ([IO.Path]::GetFullPath($probeEvent.SourceEventArgs.FullPath) -ine [IO.Path]::GetFullPath($probeFile)) { throw '实际目录创建通知的规范路径不符' }
         $probe = @{ actual_path = $probeFile; actual_event = [string]$probeEvent.SourceEventArgs.ChangeType; utc = $probeEvent.TimeGenerated.ToUniversalTime().ToString('o') }
     } finally {
         Unregister-Event -SubscriptionId $probeSubscription.SubscriptionId

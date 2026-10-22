@@ -9,6 +9,7 @@ import { pipeline } from 'node:stream/promises'
 import { setTimeout } from 'node:timers/promises'
 import { parseArgs } from 'node:util'
 import { readJSONL } from './read-jsonl.mjs'
+import { verifyInstalledProductSource } from './installed-product-source.mjs'
 
 const { values } = parseArgs({ options: Object.fromEntries(['phase', 'config', 'state', 'output', 'readiness', 'current-serve-process'].map(key => [key, { type: 'string' }])), allowPositionals: false })
 assert.ok(['prepare', 'observe'].includes(values.phase))
@@ -21,8 +22,7 @@ const candidate = await realpath(config.candidate), data = await realpath(config
 const sourceDirectory = await realpath(config.source_directory), source = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
 assert.match(source, /^[0-9a-f]{40}$/)
 assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, 'node', 'node.exe').toLowerCase())
-assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sourceDirectory, encoding: 'utf8', windowsHide: true }).trim(), source)
-assert.equal(execFileSync('git', ['status', '--porcelain'], { cwd: sourceDirectory, encoding: 'utf8', windowsHide: true }).trim(), '')
+await verifyInstalledProductSource(candidate, sourceDirectory, values.output + '.source-versions.json')
 const endpoint = new URL(config.endpoint)
 assert.equal(endpoint.protocol, 'http:')
 assert.equal(endpoint.hostname, '127.0.0.1')

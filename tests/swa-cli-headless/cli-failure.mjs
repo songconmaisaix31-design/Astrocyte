@@ -9,6 +9,7 @@ import { createInterface } from 'node:readline'
 import { pipeline } from 'node:stream/promises'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
+import { verifyInstalledProductSource } from './installed-product-source.mjs'
 
 const { values } = parseArgs({ options: { state: { type: 'string' }, output: { type: 'string' }, action: { type: 'string' } }, allowPositionals: false })
 assert.ok(values.state && values.output && isAbsolute(values.state) && isAbsolute(values.output))
@@ -22,8 +23,7 @@ const sourceRevision = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim
 assert.match(sourceRevision, /^[0-9a-f]{40}$/)
 assert.equal(sourceRevision, state.source_revision)
 const sourceDirectory = await realpath(state.source_directory)
-assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sourceDirectory, encoding: 'utf8', windowsHide: true }).trim(), sourceRevision)
-assert.equal(execFileSync('git', ['status', '--porcelain'], { cwd: sourceDirectory, encoding: 'utf8', windowsHide: true }).trim(), '')
+await verifyInstalledProductSource(candidate, sourceDirectory, values.output + '.source-versions.json')
 const within = relative(data, databasePath)
 assert.ok(within && !within.startsWith('..') && !isAbsolute(within))
 const endpoint = new URL(state.endpoint)

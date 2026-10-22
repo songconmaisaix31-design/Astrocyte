@@ -7,6 +7,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { dirname, isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
+import { verifyInstalledProductSource } from './installed-product-source.mjs'
 
 const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'protected-pids', 'output', 'fault-case'].map(key => [key, { type: 'string' }])), allowPositionals: false })
 assert.ok(values['fault-case'] === undefined || ['cancel', 'stdout-close'].includes(values['fault-case']))
@@ -16,8 +17,7 @@ const candidate = await realpath(values.candidate), data = await realpath(values
 assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, 'node', 'node.exe').toLowerCase())
 const sourceRevision = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
 const codeRoot = await realpath(join(dirname(import.meta.filename), '..', '..'))
-assert.equal(execFileSync('git', ['-C', codeRoot, 'rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true }).trim(), sourceRevision)
-assert.equal(execFileSync('git', ['-C', codeRoot, 'status', '--porcelain'], { encoding: 'utf8', windowsHide: true }).trim(), '')
+await verifyInstalledProductSource(candidate, codeRoot, values.output + '.source-versions.json')
 const inputs = join(project, '.verification', 'swa-cli-input')
 const source = JSON.parse(await readFile(join(inputs, 'source.json'), 'utf8'))
 assert.equal(source.revision, 'da3bdddb085808863090a05f60cc1c64415039cf')
