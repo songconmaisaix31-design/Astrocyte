@@ -2216,3 +2216,11 @@ Reviewer独立`review-execute82.ps1`及其mjs实际0，原件`execute82-independ
 同安装真实status/capabilities及CurrentUser DPAPI Observe消费实际0，runtime/authority/registry/原生版本、provider/model/account_source逐项匹配，credential_renewed=false。实际安装发现Pi1.0.1、Codex0.162.0、Claude2.1.238、Grok1.0.34和OpenCode2.0.31；capabilities中实际launchable仍为unknown，发现或配置状态不登记实际执行。Reviewer在内存读取原选定DeepSeek凭据，核62份准备/消费者导出和prepared.json均不含该实际key或实际token，原native DB mtime保持；原Orca before/after保全passed，Reviewer没有发HTTP、签Grant、原生调用或模型。
 
 **83产品流程当前证据不足。** 真实第二条CLI命令controller.open返回HTTP409、exit6、operation_unknown，原请求`3bed9c88-9c99-4cdd-83cf-a523e5383374`不可重发。Reviewer独立只读`inspect-flow83.mjs`实际0，原件`flow83-original-request-independent.log`：真实原R为swa.controllerOpen/pending、stage=pty-spawn，没有已登记controller/process/helper或子请求；真实Run仅原bootstrap，tasks/dispatch/worker/resource表仍0。这些记录没有证明PTY未创建或完整资源退出，未知继续保留，由原Worker查询同一原请求和准确所属资源并诊断。未重开Controller、重跑Flow或重签token，产品Worker、模型和最终双Worker均未接受；通知为`msg_12180190c336`。
+
+## 83控制端启动的准确调用缺口
+
+**退回准确`3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb`的createController启动参数。** 独立沿准确源码核native-methods.ts、runtime-agent-terminal-startup.ts、terminal-create.ts、agent-launch-token.ts及daemon terminal-host-session-create.ts：本次调用只传launchConfig.agentCommand/agentArgs/agentEnv，没有实际command和env。无launchAgent时原选项解析直接返回opts，原PTY spawn只取launchOpts.command及launchOpts.env，不从launchConfig生成它们；daemon实际hasCommand也取opts.command，故83的无启动命令现象与源码一致。
+
+launchConfig仍用于保存启动配置并触发原agentLaunchTokenFor生成真实启动身份。原Worker须在原模块同时提供按实际shell正确构造的command/env并保留launchConfig、真实token/pane/创建身份；原helper实际启动与身份握手需要真实验证。引用Node/入口路径按既有shell构造规则处理，不冒充注册Agent、用户输入或人工Actor。主控`msg_e96e80027fb4`和Worker报告原pwsh50820仍存在、helper未启动；这份资源观察的准确原件及完整所属退出继续核，原R保持pending，不手工写SQL完成或据表内缺少Worker推断无进程。
+
+该缺口属于必要程序修复，准确新Commit改变安装输入后须新构建/安装并在同一新候选完成真实验收；已核未变native可继续复用。旧3bcf不能代表修复后的最终程序，82准备的限定接受及原95ef保全继续保持，不自动消费不匹配的旧DPAPI或重签未知请求。独立源码结论已送原Worker`msg_039e094ef4dd`、主控`msg_31b5696cd5b0`，全部修复由原Worker负责，当前Task继续。
