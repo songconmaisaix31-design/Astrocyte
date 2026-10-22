@@ -2101,3 +2101,21 @@ f5393fb4两项hook均获主控明确完整读取回复：e9fa退回`msg_baf565d1
 **接受e9fa安装53的实际Pi node-script IPC无推理回归56。** 原入口run-pi55.ps1和native-pi-startup.mjs已完整读取，实际候选Node24.21启动真实pi.cmd及其原Node解释器/cli.js，私有空账户仅发送get_state，offline、原生工具及扩展/上下文入口关闭。实际session为`01a161c6-53ea-766d-ad75-5b66b01d8a16`，模型id为unknown，messageCount/pendingMessageCount均0，未复制原凭据、未进行推理。55首次原件退出1，真实Job已收尾，失败来自检查入口错误的manifest路径；后继入口改用Node原findPackageJSON，56实际退出0，55原件保留。
 
 Reviewer自有`review-pi56.mjs`实际0，原件`pi56-independent.log`：成熟stream-json读取全部56 JSONL，按实际root 51724/出生1792641749666和native node-script 50768/出生1792641749770关联成员，核两次完整Job为空、两次全部已观察出生身份缺席，均forced=false；真实result与安装VERSION一致，before/after原Orca保全passed。Reviewer没有重新启动Pi或模型。53之后FD5来源摘要核对及只读Assert-SwaService独立执行0，原95ef/5187保持。Pi正向模型仍未验，完整产品/e9fa ACP返修/最终同候选安装及双Worker仍未接受；该回归不替代这些范围。通知为`msg_75d7101ae0dd`。
+
+01386648的hook `msg_ca42d330e69a`获主控`msg_fe10c2c79d8c`明确完整读取报告、准确64DD、55/56原件和独立消费者后回复，限定范围已实际读回。当前Task继续。
+
+## e9fa后续权限与完整导出调用检查
+
+**准确e9fa继续退回以下既定F18C合同缺口。** 这些发现来自继续追踪真实生产消费者，没有发现当前真实模型结果含实际key，也没有构造native错误或请求。
+
+| 既定条件 | 准确调用路径及缺口 | 原Worker处理与验证边界 |
+| --- | --- | --- |
+| 受限ACP权限请求立即取消 | acp-structured-acquire的onPermission在active turn进入AcpStructuredPrompts.handle；OPENCODE_ACP_DIALECT仅normalizeToolUpdate，通用translateAcpRequest会为session/request_permission生成presentation，handle写request.open并等待人工回答。 | 本次launch.swaOpenCodePolicy路径立即返回原cancelled，普通ACP保持。实际tools0不能证明未出现的incoming权限分支已执行；不能伪造native协议来登记通过。 |
+| 完整最终成果检查实际凭据 | readNativeOpenCodeSessionSource仅对native SQLite value序列化检查snapshot.key，completeTaskResult之后还加入原journal rows/snapshot及其他完整字段，没有对合并的最终返回执行同一实际key检查。 | 将同一实际选定key检查覆盖完整返回，命中整体失败，私有原记录保持；不得通过删改成果后冒充完整内容。 |
+| 原生错误仅输出安全分类 | AcpAgentConnection将super.prompt的AcpAgentError原样交AcpStructuredTurns，再进入timeline的promptFailed/promptRefused；acpPromptErrorDetail优先取dialect转换，再取原data字符串/data.details，最后message。OpenCode通用dialect没有受限转换，详细内容进入person diagnostic/journal；acquire的onDiagnostic另直接传native message给logger。 | 仅收紧本次受限路径的安全code/status/session等输出，保持真实送达、unknown和AuthRequired语义，普通ACP保持。未出现的上游异常不登记为实际已验，不把已经送达错误改成neverReached。 |
+
+权限缺口通知`msg_98368a0df934`，完整导出及错误范围通知`msg_fdf73c269297`，具体data/details调用证据补充为`msg_8e6fa3fa670c`。与前两项完整Job缺口均交原Worker在原域集中返修，准确程序及必要实际证据形成后复验；没有新增功能、扩大权限或重复旧46模型。
+
+委托客户端仍在编写，未固定准确原件，尚未接受或执行。Reviewer已读取其真实session/CSRF、五项scope、写前来源/authority检查、原请求未知停止、CurrentUser DPAPI及消费入口，working反馈`msg_bb767bb06960`要求核已有capabilities的enabled/provider/model/account_source，并指出RestartObserve的旧runtime guard、必需readiness/新进程输入和真实预期退出6。Worker回复`msg_bdd18c62540a`称已补专用的真实重启观察绑定，原DPAPI不修改/续签、普通模式仍拒绝runtime替换；此修订仍待准确源码及实际描述集中审查，未把准备成功计为R08完成。
+
+主控管理Commit `eee780b9f20d9023c1216ee6013df3bba65c62ce`四份准确差异已全文读取：累计实际e9fa退回、build17及49失败、53局部安装6、56/64DD限定接受、五动作真实测试授权和原95ef保全，未将未知S3/T11或最终双Worker改成通过。此前STATUS模型范围措辞已限定原安装/产品Worker及780历史阶段。Reviewer运行031dc至eee780的Git/成熟marked18.1.0检查为0，四份Markdown的89个本地链接无缺失。只读使用.NET ZipFile核原e9fa归档411419795字节、25494条归档条目，VERSION/Node/policy成品各唯一；归档条目数与含目录的28243闭包路径分别记录，没有重新解压或构建。这些管理事实随产品累计，不构成e9fa程序接受或新操作窗口。
