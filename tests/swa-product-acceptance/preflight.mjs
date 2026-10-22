@@ -22,7 +22,9 @@ try {
 const checks = []
 const record = (name, status, detail) => checks.push({ name, status, detail })
 const windows = process.platform === 'win32' && process.arch === 'x64'
-record('platform', windows ? 'PASS' : 'NOT_RUN', windows ? 'Windows x64 observed' : 'The current product candidate and Job/DPAPI checks require Windows x64')
+const linux = process.platform === 'linux' && process.arch === 'x64' && !!process.report?.getReport().header.glibcVersionRuntime
+const hostPlatform = windows ? 'win32-x64' : linux ? 'linux-x64-glibc' : null
+record('platform', hostPlatform ? 'PASS' : 'NOT_RUN', hostPlatform ? `${hostPlatform} host observed; an actual matching candidate is still required` : 'No supported product candidate platform was observed')
 for (const name of ['candidate', 'data-root', 'project', 'agent', 'model']) {
   record(`input.${name}`, values[name] ? 'PASS' : 'NOT_RUN', values[name] ? 'Explicit input supplied; operation remains unverified' : `Supply --${name} for the selected actual installation and approved run`)
 }
@@ -40,24 +42,38 @@ const overlaps = (left, right) => {
   return !within || within !== '..' && !within.startsWith('..\\') && !within.startsWith('../') && !isAbsolute(within)
 }
 
-// Linux 不读取 Windows 私有目录，也不执行未验证的候选或 Agent。
-if (windows && values.candidate) {
+// 只观察当前平台的明确候选，不运行其他平台的二进制。
+if (hostPlatform && values.candidate) {
   try {
     const candidate = await ordinary(values.candidate, true)
-    const required = ['VERSION', 'swa.exe', 'node/node.exe', 'runtime/package.json', 'runtime/host.cjs', 'runtime/client.cjs']
+    let platform
+    try {
+      await ordinary(join(candidate, 'PLATFORM'), false)
+      platform = (await readFile(join(candidate, 'PLATFORM'), 'utf8')).trim()
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error
+      platform = 'win32-x64'
+    }
+    if (!['win32-x64', 'linux-x64-glibc'].includes(platform) || platform !== hostPlatform) throw new Error('The candidate platform does not match this host')
+    const cli = platform === 'win32-x64' ? 'swa.exe' : 'swa'
+    const required = ['VERSION', cli, platform === 'win32-x64' ? 'server.exe' : 'server', platform === 'win32-x64' ? 'node/node.exe' : 'node/node', 'runtime/package.json', 'runtime/host.cjs', 'runtime/client.cjs']
     for (const file of required) {
       const actual = await ordinary(join(candidate, file), false)
       if (!overlaps(candidate, actual)) throw new Error('A candidate input escapes the selected installation')
     }
     const revision = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
     if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('Candidate VERSION must contain the exact source commit emitted by the product builder')
-    const actual = execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 }).trim()
+    const actual = execFileSync(join(candidate, cli), ['--version'], { encoding: 'utf8', windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 }).trim()
     if (actual !== revision) throw new Error('The selected installed CLI does not report the candidate VERSION')
     record('candidate.version', 'PASS', revision)
     record('candidate.closure', 'NOT_RUN', 'Run the existing check:swa against this exact installation; minimum file presence does not prove the dependency closure')
     if (values['data-root'] && values.project) {
       const data = await ordinary(values['data-root'], true)
       const project = await ordinary(values.project, true)
+      if (linux) {
+        const info = await lstat(data)
+        if (info.uid !== process.getuid() || (info.mode & 0o777) !== 0o700) throw new Error('The Linux private data root must be owned by the current uid and have mode 0700')
+      }
       if ([[candidate, data], [candidate, project], [data, project]].some(([left, right]) => overlaps(left, right) || overlaps(right, left))) throw new Error('Candidate, private data root and public test project must be separate directories')
       record('paths.isolation', 'PASS', 'The selected real directory roots do not overlap; ACL and actual write destinations still require the real acceptance checks')
     }
@@ -65,7 +81,7 @@ if (windows && values.candidate) {
     record('candidate.observation', 'FAIL', 'The explicitly selected candidate or directory inputs could not be verified; inspect them locally without exposing credentials')
   }
 }
-if (windows && values.agent) {
+if (hostPlatform && values.agent) {
   try {
     await ordinary(values.agent, false)
     record('agent.file', 'PASS', 'The explicitly selected executable file exists; installation, login, NativeLaunch policy and model access remain unverified')
