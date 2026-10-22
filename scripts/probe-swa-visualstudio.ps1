@@ -69,12 +69,20 @@ Publish-Probe 'VS baseline observation only' (@{ process_exit = $baselineExit; o
 if ($baselineExit -ne 0) { throw 'The bounded baseline probe did not finish; its outcome is unknown' }
 $env:SWA_VS_PROBE_PHASE = 'official-vs-discovery'
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
-$metadataJSON = & $vswhere -products '*' -version '[17.0,18.0)' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
-if ($LASTEXITCODE -ne 0) { throw 'Official VS2022 installation discovery failed' }
+$metadataJSON = & $vswhere -products '*' -version '[18.0,19.0)' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
+if ($LASTEXITCODE -ne 0) { throw 'Official VS2026 installation discovery failed' }
 $installations = @($metadataJSON | ConvertFrom-Json | Sort-Object { [version]$_.installationVersion } -Descending)
-if ($installations.Count -eq 0) { throw 'No actual VS2022 x64 tool installation was reported' }
+if ($installations.Count -eq 0) { throw 'No actual VS2026 x64 tool installation was reported' }
 $selected = $installations[0]
-Publish-Probe 'Official VS2022 metadata' (@{ installation_path = $selected.installationPath; installation_version = $selected.installationVersion; complete = $selected.isComplete })
+Publish-Probe 'Official VS2026 metadata' (@{ installation_path = $selected.installationPath; installation_version = $selected.installationVersion; complete = $selected.isComplete })
+$env:SWA_VS_PROBE_PHASE = 'experimental-probe-selection'
+if ($env:VCINSTALLDIR) { throw 'The selection-only control requires the original environment without Developer Shell' }
+$env:npm_config_msvs_version = '2026'
+$selection = Join-Path $evidence 'experimental-probe-selection.json'
+& $node $probe --finder $finder --output $selection --mode experimental-probe-selection
+$selectionExit = $LASTEXITCODE
+Publish-Probe 'Experimental 2026 selection without Developer Shell' (@{ process_exit = $selectionExit; observation = (Get-Content -LiteralPath $selection -Raw | ConvertFrom-Json) })
+if ($selectionExit -ne 0) { throw 'The bounded experimental selection probe did not finish; its outcome is unknown' }
 $launch = Join-Path $selected.installationPath 'Common7/Tools/Launch-VsDevShell.ps1'
 $env:SWA_VS_PROBE_PHASE = 'official-developer-shell'
 & $launch -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> (Join-Path $evidence 'devshell-entry.log')
@@ -84,16 +92,16 @@ $env:SWA_VS_PROBE_PHASE = 'developer-shell-finder'
 $devshellExit = $LASTEXITCODE
 $actual = Get-Content -LiteralPath $devshell -Raw | ConvertFrom-Json
 Publish-Probe 'VS developer environment observation only' (@{ process_exit = $devshellExit; observation = $actual })
-if ($devshellExit -ne 0 -or -not $actual.finder.vc_install_dir_present -or -not $actual.finder.accepted -or $actual.finder.actual.versionYear -ne 2022 -or $actual.finder.actual.toolset -cne 'v143') { throw 'The actual official developer environment did not establish the required finder result' }
+if ($devshellExit -ne 0 -or -not $actual.finder.vc_install_dir_present -or -not $actual.finder.accepted -or $actual.finder.actual.versionYear -ne 2026 -or $actual.finder.actual.toolset -cne 'v145') { throw 'The actual official developer environment did not establish the required finder result' }
 if (-not [IO.Path]::GetFullPath($actual.finder.actual.path).Equals([IO.Path]::GetFullPath($selected.installationPath), [StringComparison]::OrdinalIgnoreCase)) { throw 'The finder selected a different Visual Studio installation' }
 if (-not (Test-Path -LiteralPath $actual.finder.actual.msBuild -PathType Leaf)) { throw 'The actual MSBuild executable is missing' }
 if (-not $env:WindowsSdkDir -or -not $env:WindowsSDKVersion -or -not (Test-Path -LiteralPath (Join-Path $env:WindowsSdkDir ('Include/' + $env:WindowsSDKVersion)) -PathType Container)) { throw 'The actual developer environment Windows SDK is missing' }
 $env:SWA_VS_PROBE_PHASE = 'actual-compiler-version'
 $compiler = (Get-Command cl -CommandType Application | Select-Object -First 1).Source
-if (-not [IO.Path]::GetFullPath($compiler).StartsWith(([IO.Path]::GetFullPath($selected.installationPath).TrimEnd('\') + '\VC\Tools\MSVC\'), [StringComparison]::OrdinalIgnoreCase) -or $compiler -notmatch '\\bin\\Hostx64\\x64\\cl\.exe$') { throw 'The actual compiler is outside the selected VS2022 x64 toolchain' }
+if (-not [IO.Path]::GetFullPath($compiler).StartsWith(([IO.Path]::GetFullPath($selected.installationPath).TrimEnd('\') + '\VC\Tools\MSVC\'), [StringComparison]::OrdinalIgnoreCase) -or $compiler -notmatch '\\bin\\Hostx64\\x64\\cl\.exe$') { throw 'The actual compiler is outside the selected VS2026 x64 toolchain' }
 $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler)
 & $compiler /Bv *> (Join-Path $evidence 'compiler-version.log')
 $compilerExit = $LASTEXITCODE
-$result = [ordered]@{ diagnostic_only = $true; baseline_finder_accepted = (Get-Content -LiteralPath $baseline -Raw | ConvertFrom-Json).finder.accepted; devshell_finder_accepted = $actual.finder.accepted; actual_compiler_path = $compiler; actual_compiler_file_version = $version.FileVersion; actual_compiler_product_version = $version.ProductVersion; compiler_Bv_exit = $compilerExit; compiler_Bv_without_input_is_compile_test = $false; complete_candidate_built = $false; model_calls = 0 }
+$result = [ordered]@{ diagnostic_only = $true; baseline_finder_accepted = (Get-Content -LiteralPath $baseline -Raw | ConvertFrom-Json).finder.accepted; experimental_selection_2026_finder_accepted = (Get-Content -LiteralPath $selection -Raw | ConvertFrom-Json).finder.accepted; devshell_finder_accepted = $actual.finder.accepted; actual_compiler_path = $compiler; actual_compiler_file_version = $version.FileVersion; actual_compiler_product_version = $version.ProductVersion; compiler_Bv_exit = $compilerExit; compiler_Bv_without_input_is_compile_test = $false; complete_candidate_built = $false; model_calls = 0 }
 $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'result.json')
 Publish-Probe 'VS local MRE result only' $result

@@ -98,7 +98,7 @@ jobs:
           try {
             & ./scripts/probe-swa-visualstudio.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs')
           } catch {
-            $phases = @('driver-invocation', 'preflight', 'frozen-prerequisites', 'original-node-pin', 'download-work-guard', 'pinned-node-download', 'pinned-node-verification', 'baseline-finder', 'official-vs-discovery', 'official-developer-shell', 'developer-shell-finder', 'actual-compiler-version')
+            $phases = @('driver-invocation', 'preflight', 'frozen-prerequisites', 'original-node-pin', 'download-work-guard', 'pinned-node-download', 'pinned-node-verification', 'baseline-finder', 'official-vs-discovery', 'experimental-probe-selection', 'official-developer-shell', 'developer-shell-finder', 'actual-compiler-version')
             $phase = if ($env:SWA_VS_PROBE_PHASE -cin $phases) { $env:SWA_VS_PROBE_PHASE } else { 'unknown' }
             $detail = $_.Exception.Message
             if ($detail -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') { $detail = '[sensitive exception text omitted]' }
