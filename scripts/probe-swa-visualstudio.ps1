@@ -102,6 +102,8 @@ if (-not [IO.Path]::GetFullPath($compiler).StartsWith(([IO.Path]::GetFullPath($s
 $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler)
 & $compiler /Bv *> (Join-Path $evidence 'compiler-version.log')
 $compilerExit = $LASTEXITCODE
+if ($compilerExit -notin @(0, 2)) { throw 'The compiler version observation returned an unclassified exit' }
 $result = [ordered]@{ diagnostic_only = $true; baseline_finder_accepted = (Get-Content -LiteralPath $baseline -Raw | ConvertFrom-Json).finder.accepted; experimental_selection_2026_finder_accepted = (Get-Content -LiteralPath $selection -Raw | ConvertFrom-Json).finder.accepted; devshell_finder_accepted = $actual.finder.accepted; actual_compiler_path = $compiler; actual_compiler_file_version = $version.FileVersion; actual_compiler_product_version = $version.ProductVersion; compiler_Bv_exit = $compilerExit; compiler_Bv_without_input_is_compile_test = $false; complete_candidate_built = $false; model_calls = 0 }
 $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'result.json')
 Publish-Probe 'VS local MRE result only' $result
+exit 0
