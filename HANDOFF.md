@@ -6,6 +6,8 @@
 
 e9fa的完整ZIP和普通解包53实际0，仓库外install53复制、Node24.21.0/native/28243闭包及保护拒绝通过，T02实际6保留真实消费者未验。该安装真实Pi1.0.1无推理RPC/node-script及完整Job退出回归56获01386648限定接受，55检查入口manifest路径失败原件保留；没有Pi正向模型。来源计划后继64DD沿384D，仅将同生产settings读取入口随必要ACP返修合包，获同报告技术接受。准确返修及客户端、最终安装描述、执行Grant和双Worker继续，原e9fa不作为最终接受候选。
 
+088f0fee独立审核追加受限权限请求、合并后完整成果的实际key检查和原生错误/diagnostic安全分类三项，与ACP完整Job两项集中返修；真实未触发分支保留静态范围。用户新增OpenMausBot参考，固定dbb73a73，相关CLI、registry和构建来源及采用边界已写首版任务；原命令接口、Orca抽取、ToolsOff和最终同安装验收保持，原Worker/Reviewer连续推进。
+
 原生验证来源fe822783的46单次DeepSeek/pro请求HTTP200/tools0、完整原生消息、两个Job退出及43—45实际边界已获42d70d4e限定接受。该原生结果未创建产品Dispatch。原95ef/5187、账号和本机Orca继续保全，Observe真实凭据已到期不续签；固定公开范围、native工具为空和同一最终安装至少两真实Worker条件保持。
 
 2026-10-22用户已回复APPROVE OBSERVE，禁止Aliyun key，允许阶跃星辰key和其他Agent测试。同一95ef安装的delegated-observe26实际0：真实Observe Grant、CurrentUser DPAPI及原23消费、status/capabilities通过，五项真实403和三库持久范围/无Worker模型效果核查通过。项目46ceef7b-0be3-4a4b-8e74-575fd327b31c，caller swa-cli-acceptance，凭据到期UTC2026-10-21T20:51:16.4468291Z。执行者为Agent，依据本次用户会话委托，不能记作本人TTY或T11通过。原Worker ctx_fb2c13c28d40与原Reviewer ctx_5f4446e340a0继续，5187及64509保持。

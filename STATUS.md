@@ -8,6 +8,8 @@
 
 e9fa完整ZIP/普通解包53实际0，仓库外install53复制/native/28243闭包和保护拒绝通过；T02实际6保留真实消费者未验。同安装真实Pi1.0.1的无推理RPC/node-script与完整Job回归56获01386648限定接受，55入口manifest错误退出1保留。来源后继64DD沿384D仅共用生产settings bundle，获同报告技术接受；e9fa ACP返修及最终准确安装验收继续。
 
+088f0fee对e9fa追加三项静态退回：受限权限请求、合并完整成果实际key检查、原生错误和diagnostic安全分类，与原ACP两项集中返修。用户新增参考OpenMausBot，主控已固定dbb73a73并读取相关CLI/registry/构建源码；采用边界见首版任务。真实Grant、产品Worker模型和同安装双Worker继续未验。
+
 原生验证来源fe822783的46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功/完整消息及两个Job退出；43—46已验范围获42d70d4e限定接受。执行Grant客户端按64DD已接受来源补充准备，真实签发、产品Worker模型、最终同安装双Worker仍未验。F18C/F803合同按SPEC §21.1.5—§21.1.6；原95ef/5187保持。
 
 用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，Codex等其他Agent的完整关闭工具及原生调用合同仍有缺口。原生OpenCode已验范围见上一段；StepFun配置路径已询问，产品Worker模型、真实双Worker、T11/T12仍未通过。
