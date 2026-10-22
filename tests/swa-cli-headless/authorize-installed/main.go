@@ -34,18 +34,21 @@ const publicRoot = "/workspace/swa-public-case-20261022/public-project"
 const projectName = "SWA Codex N3 public stats"
 const spaceTitle = "SWA Codex N3 public stats 20261022"
 const requiredGo = "go1.27.2"
+const piProfile = "stepfun-pi-n3"
 
 var stages = []string{"session", "space", "project", "observe-settings", "observe-grant", "observe-token", "execute-settings", "execute-grant", "execute-token", "revoke"}
 var actions = []string{"read_context", "observe", "start", "send", "stop"}
 
 type executionPackage struct {
 	SchemaVersion      int               `json:"schema_version"`
+	Profile            string            `json:"profile,omitempty"`
 	Installation       string            `json:"installation"`
 	Revision           string            `json:"source_revision"`
 	DataRoot           string            `json:"data_root,omitempty"`
 	Project            string            `json:"project"`
 	Endpoint           string            `json:"endpoint"`
 	CodexSourceHome    string            `json:"codex_api_key_home,omitempty"`
+	PiSourceHome       string            `json:"pi_source_home,omitempty"`
 	ProtectedRoots     []string          `json:"protected_roots"`
 	SourceRepository   string            `json:"source_repository"`
 	EvidenceRoot       string            `json:"evidence_root"`
@@ -70,6 +73,42 @@ type executionPackage struct {
 	AllowRevoke        bool              `json:"delegate_final_revoke"`
 	RevokeAfterUnknown bool              `json:"delegate_revoke_after_human_unknown"`
 	Requests           map[string]string `json:"request_intents"`
+}
+
+type profileScope struct {
+	agent, model, caller, project, space, version, provider, accountSource string
+	sourceName, sourceHome                                                 string
+	dependencies                                                           []string
+}
+
+func fixedProfile(p executionPackage) (profileScope, error) {
+	scope := profileScope{
+		agent: "codex", model: "gpt-5.5", caller: caller, project: projectName, space: spaceTitle,
+		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
+		sourceName: "codex_api_key_home", sourceHome: p.CodexSourceHome,
+		dependencies: []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"},
+	}
+	switch p.Profile {
+	case "":
+		if p.PiSourceHome != "" {
+			return profileScope{}, fail("source_does_not_match_profile")
+		}
+	case piProfile:
+		if p.CodexSourceHome != "" {
+			return profileScope{}, fail("source_does_not_match_profile")
+		}
+		scope.agent, scope.model, scope.caller = "pi", "stepfun/step-3.5-flash", "swa-stepfun-pi-n3-20261023"
+		scope.project, scope.space = "SWA StepFun Pi N3 public stats", "SWA StepFun Pi N3 public stats 20261023"
+		scope.version, scope.provider, scope.accountSource = "1.0.1", "stepfun", "pi-api-key-file"
+		scope.sourceName, scope.sourceHome = "pi_source_home", p.PiSourceHome
+		scope.dependencies = append(scope.dependencies, "pi-event-view.mjs", "pi-source-observer-entry.ts")
+	default:
+		return profileScope{}, fail("reviewed_profile_required")
+	}
+	if p.SchemaVersion != 1 || p.Caller != scope.caller || p.Agent != scope.agent || p.Model != scope.model || p.Workers != 3 || p.Project != publicRoot {
+		return profileScope{}, fail("fixed_public_case_scope_required")
+	}
+	return scope, nil
 }
 
 type classifiedError struct {
@@ -251,8 +290,9 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 	if err := checkedEndpoint(p.Endpoint); err != nil {
 		return nil, err
 	}
-	if p.SchemaVersion != 1 || p.Caller != caller || p.Agent != "codex" || p.Model != "gpt-5.5" || p.Workers != 3 || p.Project != publicRoot {
-		return nil, fail("fixed_public_case_scope_required")
+	scope, err := fixedProfile(*p)
+	if err != nil {
+		return nil, err
 	}
 	if id, err := hex.DecodeString(p.Revision); err != nil || len(id) != 20 || strings.ToLower(p.Revision) != p.Revision {
 		return nil, fail("exact_source_revision_required")
@@ -315,7 +355,7 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 	if err := gitSource(*p, "tests/swa-product-acceptance/run-installed.mjs", driverPath(*p)); err != nil {
 		return nil, err
 	}
-	dependencies := []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
+	dependencies := scope.dependencies
 	if prepare && p.DriverSourceSHA == nil {
 		p.DriverSourceSHA = map[string]string{}
 	}
@@ -358,33 +398,9 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 	if p.RevokeAfterUnknown && !p.AllowRevoke {
 		return nil, fail("independent_revoke_delegation_inconsistent")
 	}
-	var missing []string
-	for _, entry := range []struct{ name, path string }{{"data_root", p.DataRoot}, {"codex_api_key_home", p.CodexSourceHome}} {
-		if entry.path == "" {
-			missing = append(missing, entry.name)
-			continue
-		}
-		if err := plain(entry.path, true, true); err != nil {
-			return nil, err
-		}
-		for _, root := range []string{p.Installation, p.SourceRepository, p.Project, p.EvidenceRoot} {
-			if inside(root, entry.path) || inside(entry.path, root) {
-				return nil, fail("private_runtime_root_overlaps_other_scope")
-			}
-		}
-	}
-	if p.DataRoot != "" && p.CodexSourceHome != "" && (inside(p.DataRoot, p.CodexSourceHome) || inside(p.CodexSourceHome, p.DataRoot)) {
-		return nil, fail("source_overlaps_product_data")
-	}
-	for _, protected := range p.ProtectedRoots {
-		if err := plain(protected, true, false); err != nil {
-			return nil, err
-		}
-		for _, root := range []string{p.Installation, p.DataRoot, p.CodexSourceHome} {
-			if root != "" && (inside(protected, root) || inside(root, protected)) {
-				return nil, fail("runtime_root_overlaps_protected_root")
-			}
-		}
+	missing, err := privateRuntimeRoots(*p, scope)
+	if err != nil {
+		return nil, err
 	}
 	if p.ExpectedRuntimeID == "" {
 		missing = append(missing, "expected_runtime_id")
@@ -404,6 +420,38 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 			}
 			if err := bindHash(entry.path, entry.expected, prepare); err != nil {
 				return nil, err
+			}
+		}
+	}
+	return missing, nil
+}
+
+func privateRuntimeRoots(p executionPackage, scope profileScope) ([]string, error) {
+	var missing []string
+	for _, entry := range []struct{ name, path string }{{"data_root", p.DataRoot}, {scope.sourceName, scope.sourceHome}} {
+		if entry.path == "" {
+			missing = append(missing, entry.name)
+			continue
+		}
+		if err := plain(entry.path, true, true); err != nil {
+			return nil, err
+		}
+		for _, root := range []string{p.Installation, p.SourceRepository, p.Project, p.EvidenceRoot} {
+			if inside(root, entry.path) || inside(entry.path, root) {
+				return nil, fail("private_runtime_root_overlaps_other_scope")
+			}
+		}
+	}
+	if p.DataRoot != "" && scope.sourceHome != "" && (inside(p.DataRoot, scope.sourceHome) || inside(scope.sourceHome, p.DataRoot)) {
+		return nil, fail("source_overlaps_product_data")
+	}
+	for _, protected := range p.ProtectedRoots {
+		if err := plain(protected, true, false); err != nil {
+			return nil, err
+		}
+		for _, root := range []string{p.Installation, p.DataRoot, scope.sourceHome} {
+			if root != "" && (inside(protected, root) || inside(root, protected)) {
+				return nil, fail("runtime_root_overlaps_protected_root")
 			}
 		}
 	}
@@ -471,13 +519,20 @@ type daemonWire struct {
 }
 
 // This is only the original serve owner's non-secret spawn record, not a product wire.
+type launchBase struct {
+	Installation string `json:"installation"`
+	Revision     string `json:"source_revision"`
+	DataRoot     string `json:"data_root"`
+	Endpoint     string `json:"endpoint"`
+	ServePID     int    `json:"serve_pid"`
+}
 type launchWire struct {
-	Installation    string `json:"installation"`
-	Revision        string `json:"source_revision"`
-	DataRoot        string `json:"data_root"`
-	Endpoint        string `json:"endpoint"`
-	ServePID        int    `json:"serve_pid"`
+	launchBase
 	CodexSourceHome string `json:"codex_api_key_home"`
+}
+type piLaunchWire struct {
+	launchBase
+	PiSourceHome string `json:"pi_source_home"`
 }
 
 func readWire(path string, value any, expectedSHA string) error {
@@ -492,7 +547,8 @@ func readWire(path string, value any, expectedSHA string) error {
 		return fail("approved_service_wire_bytes_changed")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(body))
-	if _, ownerRecord := value.(*launchWire); ownerRecord {
+	switch value.(type) {
+	case *launchWire, *piLaunchWire:
 		decoder.DisallowUnknownFields()
 	}
 	if err = decoder.Decode(value); err != nil || decoder.Decode(new(any)) != io.EOF {
@@ -501,10 +557,15 @@ func readWire(path string, value any, expectedSHA string) error {
 	return nil
 }
 func serviceIdentity(p executionPackage) (string, error) {
+	scope, err := fixedProfile(p)
+	if err != nil || scope.sourceHome == "" {
+		return "", fail("fixed_service_source_required")
+	}
 	var ready readyWire
 	var proof proofWire
 	var daemon daemonWire
-	var launch launchWire
+	var launch launchBase
+	var sourceHome string
 	if p.ExpectedRuntimeID == "" || p.ReadySHA == "" || p.ProofSHA == "" || p.LaunchSHA == "" {
 		return "", fail("fixed_service_baseline_required")
 	}
@@ -514,14 +575,24 @@ func serviceIdentity(p executionPackage) (string, error) {
 	if err := readWire(p.ProofFile, &proof, p.ProofSHA); err != nil {
 		return "", err
 	}
-	if err := readWire(p.LaunchFile, &launch, p.LaunchSHA); err != nil {
-		return "", err
+	if p.Profile == piProfile {
+		var record piLaunchWire
+		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
+			return "", err
+		}
+		launch, sourceHome = record.launchBase, record.PiSourceHome
+	} else {
+		var record launchWire
+		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
+			return "", err
+		}
+		launch, sourceHome = record.launchBase, record.CodexSourceHome
 	}
 	if err := readWire(filepath.Join(p.DataRoot, "daemon/daemon-v49.pid"), &daemon, ""); err != nil {
 		return "", err
 	}
 	o := daemon.Ownership
-	if !ready.OK || ready.HTTP != p.Endpoint || ready.Data != p.DataRoot || ready.Install != p.Installation || ready.Readiness.Data != p.DataRoot || ready.Readiness.Node != filepath.Join(p.Installation, "node/node") || ready.Readiness.RuntimeID != p.ExpectedRuntimeID || proof.Type != "process_tree_observed" || o.Platform != "linux" || o.Source != p.Revision || o.Install != p.Installation || o.Data != p.DataRoot || o.Boot != proof.Boot || o.ServePID != proof.RootPID || o.DaemonPID != daemon.PID || o.UID != strconv.Itoa(os.Getuid()) || launch.Installation != p.Installation || launch.Revision != p.Revision || launch.DataRoot != p.DataRoot || launch.Endpoint != p.Endpoint || launch.ServePID != o.ServePID || launch.CodexSourceHome != p.CodexSourceHome {
+	if !ready.OK || ready.HTTP != p.Endpoint || ready.Data != p.DataRoot || ready.Install != p.Installation || ready.Readiness.Data != p.DataRoot || ready.Readiness.Node != filepath.Join(p.Installation, "node/node") || ready.Readiness.RuntimeID != p.ExpectedRuntimeID || proof.Type != "process_tree_observed" || o.Platform != "linux" || o.Source != p.Revision || o.Install != p.Installation || o.Data != p.DataRoot || o.Boot != proof.Boot || o.ServePID != proof.RootPID || o.DaemonPID != daemon.PID || o.UID != strconv.Itoa(os.Getuid()) || launch.Installation != p.Installation || launch.Revision != p.Revision || launch.DataRoot != p.DataRoot || launch.Endpoint != p.Endpoint || launch.ServePID != o.ServePID || sourceHome != scope.sourceHome {
 		return "", fail("actual_service_wire_mismatch")
 	}
 	boot, err := readBounded("/proc/sys/kernel/random/boot_id", 4096)
@@ -749,12 +820,12 @@ func (c *humanClient) settings(stage string, p domain.LocalProject, settings dom
 	return updated, nil
 }
 func (c *humanClient) grant(stage string, approved []string) error {
-	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/grants", map[string]any{"agent_id": caller, "actions": approved}, 200)
+	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/grants", map[string]any{"agent_id": c.p.Caller, "actions": approved}, 200)
 	if err != nil {
 		return err
 	}
 	grant, err := field[domain.ProjectGrant](body, "grant")
-	if err != nil || grant.ProjectID != c.projectID || grant.AgentID != caller || !reflect.DeepEqual(grant.Actions, approved) || grant.RevokedAt != nil {
+	if err != nil || grant.ProjectID != c.projectID || grant.AgentID != c.p.Caller || !reflect.DeepEqual(grant.Actions, approved) || grant.RevokedAt != nil {
 		c.unknown = true
 		return fail("actual_grant_receipt_mismatch")
 	}
@@ -762,12 +833,12 @@ func (c *humanClient) grant(stage string, approved []string) error {
 	return c.receipt(stage, safeGrantReceipt(grant))
 }
 func (c *humanClient) token(stage string) (domain.AgentToken, error) {
-	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/agent-token", map[string]any{"agent_id": caller}, 200)
+	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/agent-token", map[string]any{"agent_id": c.p.Caller}, 200)
 	if err != nil {
 		return domain.AgentToken{}, err
 	}
 	token, err := field[domain.AgentToken](body, "credential")
-	if err != nil || token.ProjectID != c.projectID || token.AgentID != caller || token.Token == "" || !token.ExpiresAt.After(time.Now()) {
+	if err != nil || token.ProjectID != c.projectID || token.AgentID != c.p.Caller || token.Token == "" || !token.ExpiresAt.After(time.Now()) {
 		c.unknown = true
 		return domain.AgentToken{}, fail("actual_token_receipt_mismatch")
 	}
@@ -818,6 +889,10 @@ func runBounded(cmd *exec.Cmd, stdoutLimit, stderrLimit int) ([]byte, error) {
 	return append([]byte(nil), stdout.body.Bytes()...), nil
 }
 func runDriver(p executionPackage, projectID string, token domain.AgentToken) error {
+	scope, err := fixedProfile(p)
+	if err != nil {
+		return err
+	}
 	if actualRuntime, err := serviceIdentity(p); err != nil || actualRuntime != p.ExpectedRuntimeID {
 		return fail("fixed_service_identity_unavailable_before_driver")
 	}
@@ -833,7 +908,11 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 	}
 	ctx, cancel := context.WithDeadline(context.Background(), token.ExpiresAt.Add(-30*time.Second))
 	defer cancel()
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", "codex", "--model", "gpt-5.5", "--workers", "3", "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository)
+	args := []string{driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", scope.agent, "--model", scope.model, "--workers", "3", "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository}
+	if p.Profile == piProfile {
+		args = append(args, "--pi-launch-record", p.LaunchFile, "--pi-launch-sha256", p.LaunchSHA)
+	}
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
 	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_PROJECT_TOKEN="+token.Token)
 	cmd.Stdin = os.Stdin
 	stdout, err := cmd.StdoutPipe()
@@ -898,6 +977,10 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 }
 func execute(p executionPackage) (report map[string]any, returned error) {
 	report = map[string]any{"authorization": "USER_DELEGATION_MUST_HAVE_BEEN_CONFIRMED_BY_ROOT", "model_acceptance": "REQUIRES_INDEPENDENT_REVIEW", "revoke": "NOT_RUN"}
+	scope, err := fixedProfile(p)
+	if err != nil {
+		return report, err
+	}
 	runtimeID, err := serviceIdentity(p)
 	if err != nil {
 		return report, err
@@ -910,10 +993,10 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 	defer human.transport.CloseIdleConnections()
 	defer func() {
 		if human.grantConfirmed && p.AllowRevoke && (!human.unknown || p.RevokeAfterUnknown) {
-			body, err := human.command("revoke", "POST", "/api/v1/local-projects/"+human.projectID+"/grants/revoke", map[string]any{"agent_id": caller}, 200)
+			body, err := human.command("revoke", "POST", "/api/v1/local-projects/"+human.projectID+"/grants/revoke", map[string]any{"agent_id": p.Caller}, 200)
 			if err == nil {
 				grant, decodeErr := field[domain.ProjectGrant](body, "grant")
-				if decodeErr != nil || grant.ProjectID != human.projectID || grant.AgentID != caller || grant.RevokedAt == nil {
+				if decodeErr != nil || grant.ProjectID != human.projectID || grant.AgentID != p.Caller || grant.RevokedAt == nil {
 					human.unknown = true
 					err = fail("revoke_receipt_unverified")
 				} else {
@@ -980,7 +1063,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 			return report, fail("fresh_private_project_state_required")
 		}
 	}
-	spaceBody, err := human.command("space", "POST", "/api/v1/project-spaces", map[string]any{"title": spaceTitle}, 201)
+	spaceBody, err := human.command("space", "POST", "/api/v1/project-spaces", map[string]any{"title": scope.space}, 201)
 	if err != nil {
 		return report, err
 	}
@@ -991,15 +1074,15 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 		human.unknown = true
 		return report, fail("actual_space_receipt_missing")
 	}
-	if err := human.receipt("space", map[string]any{"space_id": space.ID, "submitted_title": spaceTitle}); err != nil {
+	if err := human.receipt("space", map[string]any{"space_id": space.ID, "submitted_title": scope.space}); err != nil {
 		return report, err
 	}
-	projectBody, err := human.command("project", "POST", "/api/v1/local-projects", map[string]any{"name": projectName, "root": p.Project, "space_id": space.ID}, 200)
+	projectBody, err := human.command("project", "POST", "/api/v1/local-projects", map[string]any{"name": scope.project, "root": p.Project, "space_id": space.ID}, 200)
 	if err != nil {
 		return report, err
 	}
 	project, err := field[domain.LocalProject](projectBody, "project")
-	if err != nil || uuid.Validate(project.ID) != nil || project.Root != p.Project || project.SpaceID != space.ID || project.Name != projectName || project.Settings.Revision != 1 || project.Settings.AllowDirectory || project.Settings.AllowAgentControl || len(project.Settings.AllowedActions) != 0 || len(project.Settings.AllowedTools) != 0 || len(project.Settings.HistoryRoots) != 0 || project.Settings.ExternalModelCLI != "" {
+	if err != nil || uuid.Validate(project.ID) != nil || project.Root != p.Project || project.SpaceID != space.ID || project.Name != scope.project || project.Settings.Revision != 1 || project.Settings.AllowDirectory || project.Settings.AllowAgentControl || len(project.Settings.AllowedActions) != 0 || len(project.Settings.AllowedTools) != 0 || len(project.Settings.HistoryRoots) != 0 || project.Settings.ExternalModelCLI != "" {
 		human.unknown = true
 		return report, fail("actual_project_receipt_mismatch")
 	}
@@ -1037,15 +1120,22 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 	if err != nil {
 		return report, err
 	}
+	type observation struct {
+		Status string `json:"status"`
+	}
 	var capabilityWire struct {
 		RuntimeID string `json:"runtime_id"`
 		Result    struct {
 			Source string `json:"source_revision"`
 			Agents []struct {
-				ID        string `json:"id"`
-				Installed struct {
-					Status  string `json:"status"`
-					Version string `json:"version"`
+				ID         string      `json:"id"`
+				Registered observation `json:"registered"`
+				Enabled    observation `json:"enabled"`
+				Launchable observation `json:"launchable"`
+				Installed  struct {
+					Status     string `json:"status"`
+					Version    string `json:"version"`
+					Executable string `json:"executable"`
 				} `json:"installed"`
 				Configured struct {
 					Status   string `json:"status"`
@@ -1053,6 +1143,13 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 					Provider string `json:"provider"`
 					Source   string `json:"account_source"`
 				} `json:"configured"`
+				Control struct {
+					Start observation `json:"start"`
+					Send  observation `json:"send"`
+					Stop  observation `json:"stop"`
+					Read  observation `json:"read"`
+					Tools observation `json:"tools"`
+				} `json:"control"`
 			} `json:"agents"`
 		} `json:"result"`
 	}
@@ -1060,12 +1157,24 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 		return report, fail("actual_capability_source_mismatch")
 	}
 	found := false
+	matches := 0
 	for _, agent := range capabilityWire.Result.Agents {
-		if agent.ID == "codex" {
-			found = agent.Installed.Status == "available" && agent.Installed.Version == "0.163.0" && agent.Configured.Status == "available" && agent.Configured.Model == "gpt-5.5" && agent.Configured.Provider == "openai" && agent.Configured.Source == "codex-native-api-key"
+		if agent.ID == scope.agent {
+			matches++
+			found = agent.Installed.Status == "available" && agent.Installed.Version == scope.version && agent.Configured.Status == "available" && agent.Configured.Model == scope.model && agent.Configured.Provider == scope.provider && agent.Configured.Source == scope.accountSource
+			if p.Profile == piProfile {
+				found = found && agent.Registered.Status == "available" && agent.Enabled.Status == "available" && agent.Control.Start.Status == "available" && agent.Control.Send.Status == "available" && agent.Control.Stop.Status == "available" && plain(agent.Installed.Executable, false, false) == nil
+				for _, status := range []string{agent.Launchable.Status, agent.Control.Read.Status, agent.Control.Tools.Status} {
+					found = found && (status == "unknown" || status == "available")
+				}
+				report["pi_live_capabilities"] = map[string]string{"launchable": agent.Launchable.Status, "read": agent.Control.Read.Status, "tools": agent.Control.Tools.Status}
+			}
 		}
 	}
-	if !found {
+	if !found || p.Profile == piProfile && matches != 1 {
+		if p.Profile == piProfile {
+			return report, fail("pi_source_not_observed_available")
+		}
 		return report, fail("codex_source_not_observed_available")
 	}
 	approved := project.Settings
@@ -1074,7 +1183,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 	approved.ExpandReferences = false
 	approved.AllowedActions = append([]string{}, actions...)
 	approved.AllowedTools = []string{}
-	approved.ExternalModelCLI = "codex"
+	approved.ExternalModelCLI = scope.agent
 	approved.AllowAgentControl = true
 	project, err = human.settings("execute-settings", project, approved)
 	if err != nil {
@@ -1097,7 +1206,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 
 func run() int {
 	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires explicit prior user delegation to the exact reviewed package")
-	packageFile := flag.String("package", "", "absolute private JSON package path; prepare writes a separate .prepared.json")
+	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex) or stepfun-pi-n3; prepare writes a separate .prepared.json")
 	flag.Parse()
 	if flag.NArg() != 0 || (*mode != "prepare" && *mode != "verify" && *mode != "execute-authorized") {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INVALID_ARGUMENTS", "http_calls": 0})
