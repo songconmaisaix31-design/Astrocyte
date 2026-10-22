@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { workerLimitSchema } from './task-budget'
 
 export const commandSchema = z.strictObject({
   action: z.enum(['status', 'capabilities', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'request.show']),
@@ -95,7 +96,7 @@ export const invocationSchema = z.object({
   project: z.looseObject({ id: z.string().min(1), root: z.string().min(1) }),
   scope: scopeSchema,
   selection: agentSelectionSchema.optional(),
-  spec: z.looseObject({ goal: z.string().min(1), source_repo: z.string().min(1), source_revision: z.string().min(1), success_criteria: z.array(z.string().min(1)).min(1), max_workers: z.literal(2) }).optional(),
+  spec: z.looseObject({ goal: z.string().min(1), source_repo: z.string().min(1), source_revision: z.string().min(1), success_criteria: z.array(z.string().min(1)).min(1), max_workers: workerLimitSchema }).optional(),
   context: contextSchema.optional(),
   input: z.object({ path: z.string(), version: z.string().min(1), text: z.string().min(1) }).optional()
 })

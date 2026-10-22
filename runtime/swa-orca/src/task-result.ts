@@ -6,6 +6,7 @@ import parser from 'stream-json/jsonl/parser.js'
 import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
+import { approvedWorkerLimit } from './task-budget'
 import { sessionIdFromStructuredWorkerIncarnation } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
 import { agentSessionProviderHandleChainHead, agentSessionProviderHandleKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
@@ -200,8 +201,8 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
 export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, metadata: unknown) {
   const summary = nativeObject(metadata)
   const workers = z.array(z.looseObject({ worker: z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() }), observation: z.unknown() })).parse(summary.workers)
-  if (workers.length > 2) return fail('The exact fixed task Worker inventory exceeds its approved bound')
   const db = runtime.getOrchestrationDb()
+  if (workers.length > approvedWorkerLimit(db.getTask(scope.root_task_id), scope)) return fail('The exact fixed task Worker inventory exceeds its approved bound')
   const children = db.listTasksWithDispatch({ runId: scope.run_id }).filter(task => task.parent_id === scope.root_task_id)
   if (children.length !== workers.length || new Set(workers.map(row => row.worker.dispatchId)).size !== workers.length) return fail('Native Worker output inventory is incomplete or duplicated')
   const host = getStructuredAgentSessionHost()

@@ -45,7 +45,7 @@ type OrcaTaskSpec struct {
 	SourceRepo      string                `json:"source_repo"`
 	SourceRevision  string                `json:"source_revision"`
 	SuccessCriteria []string              `json:"success_criteria"`
-	MaxWorkers      int                   `json:"max_workers"`
+	MaxWorkers      int64                 `json:"max_workers"`
 	Context         domain.ContextRequest `json:"context"`
 }
 
@@ -57,6 +57,13 @@ type OrcaScope struct {
 	RootTaskID      string               `json:"root_task_id"`
 	AuthorityDomain string               `json:"authority_domain"`
 	Context         domain.ContextPacket `json:"context"`
+}
+
+func validateOrcaTaskSpec(spec OrcaTaskSpec) error {
+	if strings.TrimSpace(spec.Goal) == "" || spec.SourceRepo == "" || spec.SourceRevision == "" || len(spec.SuccessCriteria) == 0 || spec.MaxWorkers < 1 || spec.MaxWorkers > 9007199254740991 {
+		return projectError(apierrors.ValidationFailed, "task specification requires goal, source revision, success criteria and a positive safe-integer max_workers")
+	}
+	return nil
 }
 
 type OrcaInvocation struct {
@@ -556,8 +563,8 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		if err := decoder.Decode(&spec); err != nil {
 			return reply, fmt.Errorf("decode task specification: %w", err)
 		}
-		if strings.TrimSpace(spec.Goal) == "" || spec.SourceRepo == "" || spec.SourceRevision == "" || len(spec.SuccessCriteria) == 0 || spec.MaxWorkers != 2 {
-			return reply, projectError(apierrors.ValidationFailed, "task specification requires goal, source revision, success criteria and max_workers=2")
+		if err := validateOrcaTaskSpec(spec); err != nil {
+			return reply, err
 		}
 		packet, err := s.contexts.ReadProjectContext(ctx, caller, projectID, spec.Context)
 		if err != nil {

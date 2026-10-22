@@ -76,6 +76,10 @@ func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
 	if err != nil || port < 1 || port > 65535 {
 		return errors.New("the private SWA HTTP port must be explicit")
 	}
+	webDir, err := orcaadapter.InstalledWebDirectory(os.Getenv("SWA_INSTALL_ROOT"), os.Getenv("ASTROCYTE_WEB_DIR"))
+	if err != nil {
+		return fmt.Errorf("private SWA Web assets: %w", err)
+	}
 	state := filepath.Join(root, "workspace")
 	if err := os.MkdirAll(state, 0o700); err != nil {
 		return err
@@ -109,7 +113,7 @@ func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
 	if err := os.Unsetenv("SWA_OWNER_CAPABILITY"); err != nil {
 		return err
 	}
-	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, SWAOwnerCapability: ownerCapability, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
+	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, WebDir: webDir, SWAOwnerCapability: ownerCapability, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
 	listener, err := bindHTTPListener(port)
 	if err != nil {
 		return err

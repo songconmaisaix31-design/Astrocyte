@@ -23,6 +23,7 @@ import { createPrivateOpenCodeRoot } from './private-opencode-account'
 import { deliverNativeWorkerInput } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { authority, controllerOwnerSchema, controllerScope, exactController, observeControllerExited, recorded } from './controller-scope'
+import { approvedWorkerLimit, assertCompletionInventory, assertWorkerCapacity, assertWorkerStartOpen } from './task-budget'
 import { ORCHESTRATION_RUN_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs'
 import { ORCHESTRATION_MESSAGE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods'
 import { ORCHESTRATION_WORKER_CONTROL_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-control'
@@ -367,7 +368,11 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
 
 function requireReleased(runtime: OrcaRuntimeService, scope: Scope) {
   if (!scope.run_id) return
-  const resources = runtime.getOrchestrationDb().listWorkerTerminalResources({ runId: scope.run_id, limit: 100 })
+  const db = runtime.getOrchestrationDb()
+  const resources = db.listWorkerTerminalResources({ runId: scope.run_id, limit: 101 })
+  if (resources.length > 100) fail('worker_release_unconfirmed', 'The complete Worker resource inventory exceeds the current observation bound')
+  const children = db.listTasksWithDispatch({ runId: scope.run_id }).filter(task => task.parent_id === scope.root_task_id)
+  if (children.some(task => !resources.some(resource => resource.taskId === task.id && resource.parentTaskId === scope.root_task_id))) fail('worker_release_unconfirmed', 'An exact Worker task has no observed resource closure')
   if (resources.some(row => !row.resource || row.resource.release_state !== 'released')) fail('worker_release_unconfirmed', 'All exact Worker resources must be archived and released')
 }
 
@@ -391,6 +396,11 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
     } else {
       validateTaskAction(runtime, invocation, fresh.scope)
       if (c.action === 'worker.start') {
+        const completion = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
+          WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='pending'
+          AND json_valid(receipt)=1 AND json_extract(receipt, '$.run_id')=?
+          AND json_extract(receipt, '$.root_task_id')=? AND json_extract(receipt, '$.action')='task.complete'`).get(authority(runtime), fresh.scope.run_id, fresh.scope.root_task_id))
+        assertWorkerStartOpen(z.object({ status: z.string() }).parse(db.getTask(fresh.scope.root_task_id)).status, completion.count)
         const children = db.listTasksWithDispatch({ runId: fresh.scope.run_id }).filter(task => task.parent_id === fresh.scope.root_task_id)
         const taskIds = new Set(children.map(task => task.id))
         const pending = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
@@ -407,7 +417,7 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
           const dispatch = dispatchId ? db.getDispatchContextById(dispatchId) : undefined
           if (!dispatch || !taskIds.has(dispatch.task_id)) uncreated++
         }
-        if (children.length + uncreated >= 2) fail('resource_limit', 'The fixed task has reserved both Worker slots')
+        assertWorkerCapacity(approvedWorkerLimit(db.getTask(fresh.scope.root_task_id), fresh.scope), children.length, uncreated)
       }
     }
     const requestId = checkpoint(context, { ...receipt, invocation: { ...invocation, scope: fresh.scope } })
@@ -433,9 +443,14 @@ function validateTaskAction(runtime: OrcaRuntimeService, invocation: Pick<Invoca
     }
   }
   const tasks = db.listTasksWithDispatch({ runId: scope.run_id })
-  if (c.action === 'worker.start' && tasks.filter(task => task.parent_id === scope.root_task_id).length >= 2) fail('resource_limit', 'The fixed task permits exactly two Workers')
+  if (c.action === 'worker.start') assertWorkerCapacity(approvedWorkerLimit(db.getTask(scope.root_task_id), scope), tasks.filter(task => task.parent_id === scope.root_task_id).length, 0)
   if (c.action === 'task.complete') {
+    const pending = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
+      WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='pending'
+      AND json_valid(receipt)=1 AND json_extract(receipt, '$.run_id')=?
+      AND json_extract(receipt, '$.root_task_id')=? AND json_extract(receipt, '$.action')='worker.start'`).get(authority(runtime), scope.run_id, scope.root_task_id))
+    assertCompletionInventory(approvedWorkerLimit(db.getTask(scope.root_task_id), scope), tasks.filter(task => task.parent_id === scope.root_task_id).length, pending.count)
     requireReleased(runtime, scope)
-    if (tasks.filter(task => task.parent_id === scope.root_task_id).length !== 2 || !invocation.input) fail('evidence_missing', 'The two Worker tasks and explicit result are required')
+    if (!invocation.input) fail('evidence_missing', 'The explicit task result is required')
   }
 }
