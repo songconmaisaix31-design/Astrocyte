@@ -2143,3 +2143,24 @@ Reviewer自有`review-opencode62.mjs`实际0，原件`opencode62-independent.log
 实际job119639202522日志的错误尾段已读：pnpm11.27 frozen install以ERR_PNPM_IGNORED_BUILDS退出1，后续检查/测试/构建没有运行。计划只为watcher2.5.6、windows-process-tree0.8.0、agent-browser0.27.0、cpu-features0.0.10、node-pty1.1.0、ssh2 1.17.0补明确false。Reviewer核实际pnpm createAllowBuildFunction的版本规则和false优先分支、准确3bcf原workspace策略、各包实际元数据、watcher/ssh2安装源和cpu-features的原可选消费者、agent-browser下载/全局shim分支。watcher使用锁内平台预编译包，原check-swa-runtime真实require已通过；四native继续原准确受控构建和成品装载，没有批准隐式替代编译或浏览器下载，没有删依赖或改未知脚本策略。真实Windows归档frozen install、私有store完整性、依赖检查/锁保持及原Linux CI复验结果继续由原Worker提供；不能用本机结果替代Linux，不能将计划接受计为实际CI通过。通知为`msg_479dc758e59d`。
 
 用户新增OpenMausBot参考由主控固定为`dbb73a73ae2cba48fdf608e9e22d1d5d91608532`。Reviewer只读Git对象，完整读取README、LICENSING、headless-cli/custom-engines文档及headless/output.ts，没有安装、运行或复制代码。其统一result/error/progress秘密处理可用于核对既定输出边界；其深度redaction会改写正文，本项目完整成果仍按实际凭据整体拒绝。该参考的本地owner、原生工具、重试及分页导出约定与本次合同分别核，不作为本项目Grant、ToolsOff、unknown或完整成果证据。当前没有必要直接复制建议，未来具体建议再核准确文件及Apache2/enterprise许可归属，不为参考库增加整体方案阶段；通知主控为`msg_888ca40623e2`。
+
+## 68准确委托客户端与67真实服务
+
+**接受execute68-review-input/actual-clients.json冻结的四份客户端源码及67真实前置描述，范围为既定G01—G09准备和后继消费者入口。** 四份正文均已完整读取并独立核实际SHA256；该结论允许原Worker依已确认五动作范围执行实际准备，Reviewer没有签发Grant、运行准备客户端或调用模型。实际HTTP响应、库中Grant、DPAPI消费、产品Worker和最终同安装双Worker仍须后续审核。
+
+| 原件 | 准确SHA256 |
+| --- | --- |
+| execute50-guard.ps1 | DEA336E12B020A63D27D2F8B0B81ECA826FA82B4CF9ABD136C43710D5F565825 |
+| delegated-execute50.ps1 | 380A7C2F44CF39D7362D763E08465238499F11C01B9CC5B03D2600D943B4CDA2 |
+| use-execute50-credential.ps1 | 3D4B0940C45E3EC74428C618AD4B8F8312400831385AA17A0653FF8FEC0F0DE1 |
+| observe-execute50.mjs | F0DDAFC5D525C5700FA7B2A2877AB0991DAD44E5F21DF925180B36309DD010E6 |
+
+准备客户端使用真实auth/session、Web cookie和CSRF，分别记录服务返回的human/local-human主体与当前Agent Task/Dispatch/terminal执行者，未伪造本人TTY、Actor或token，原23入口保留。缺cookie、缺CSRF、跨Origin以及scoped Agent管理接口拒绝均有真实消费者；正向请求前移除负向Origin。space/project/settings通过现有API取得真实ID和revision，五动作准确为observe/start/send/stop/read_context，固定公开Git、单OpenCode CLI、空tools及当前范围保持。Grant/token之前须取得真实项目、authority和同生产native来源，缺失或变化立即停止；没有复制选择算法或读取owner能力。
+
+每笔写入前保存当前UTC、原request_id和阶段，客户端没有将请求header当成持久去重保证；未知响应立即停止，保留已经发生的效果，token不自动重签。CurrentUser DPAPI使用原源码/DataRoot/runtime/authority熵及完整项目、caller、actions、来源观察和实际expiry绑定，私有DACL、owner、无reparse、CreateNew及最终路径均核。消费者普通模式拒绝运行身份替换，status/capabilities核实际enabled/installed/configured、2.0.31、DeepSeek-pro、account_source、registry产物。RestartObserve另要求原真实状态与新真实描述、原三进程出生身份已不存在、同来源/项目/数据/authority、新runtime及实际readiness/current-serve-process；旧DPAPI仍用原熵解密，不覆盖或续签。原驱动退出6明确为incomplete，未登记恢复通过。
+
+Reviewer独立`review-execute68.mjs`实际0，原件`execute68-independent.log`：四摘要、三个同生产bundle及metafile摘要和入口一致，相关真实源码与准确`3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb`相同；68原两次source JSON逐字节一致。真实只读SQLite核workspace五表、orchestration七表及journal十四表与原观察一致，DB/WAL的mtime和大小保持；现存唯一Run为生产迁移生成的`run_legacy_local`、legacy=1、generation=0及空coordinator。其余业务记录均0，local_authenticated_transport主体尚不存在，authority_domain/source_snapshot保持null；最终delegated-execute/version-home尚未创建。源migrate-v2-v12.ts的真实inspect-only bootstrap已核，未要求伪造全零基线或提前生成项目。
+
+Reviewer独立`review-execute67-service.ps1`实际0，原件`execute67-service-independent.log`：私有描述、实际PID/创建时间/程序/父进程、监听归属、metadata、VERSION、CLI版本、host产物和health全部匹配。准确候选仍为3bcf-install60，数据为3bcf-service67，runtime为`9ea24e54-4f25-44d1-ae2c-72462e92e130`，serve55300、host53008、http46428，创建时间分别UTC04:39:46.262484、04:39:47.309058、04:39:48.482722，端点64508。Reviewer没有写入或轮询原服务工具17950/5187；原95ef服务及已到期Observe保持，未调用Aliyun。
+
+2b4b9d22的3bcf/62与CI计划两个hook分别获主控`msg_d51e98d35289`、`msg_cd18a2caf6d6`明确完整读取回复，实际唤起已确认。本轮客户端接受不结算当前Task/Dispatch；CI准确配置与真实安装/基线比较、Grant实际准备及产品验收继续累计，尚未接受完整CI或产品。
