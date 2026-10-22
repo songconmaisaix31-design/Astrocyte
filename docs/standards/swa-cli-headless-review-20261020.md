@@ -2042,3 +2042,27 @@ Reviewer实际使用安装Node24.21.0执行自有`review-opencode42.mjs`，退�
 **退回fe822文档§45的单项计量事实修复：原assistant.data为26912个UTF-16代码单元、30622个UTF-8字节。** 原件直接按两种编码计算确认，修复已通过`msg_8176dd2f15de`交原Worker；当前Worker工作树已采用30622个UTF-8字节，后继准确Commit待复验，不重跑模型、不另开功能阶段。准确程序及独立原生范围接受通知为`msg_483092407308`，原Worker继续产品选择/Go与HTTP合同、当前Grant、实际Dispatch/输入/trace/完整成果及最终同安装双Worker。新增kind触及原node-script，后续适用回归须核真实生产/消费和Job身份，旧于3bb的结果不直接覆盖该变化；无法运行的真实范围保持未验，不伪造key或协议。
 
 本次没有创建产品Dispatch，没有签发执行Grant，完整产品、O06/O07—O10剩余范围、完整安装/双Worker、T11和S3保持各自真实状态，禁止Aliyun。6636的42与c05两个hook分别获主控`msg_da4904100106`、`msg_294dd17e2635`明确完整读取回复；继续本Task/Dispatch审核原Worker后继实现。
+
+### 最终执行Grant计划的先行条件与27FA审核
+
+主控`msg_60bb918a808d`要求沿既有真实Agent测试许可准备最终候选的受托执行客户端。Reviewer在阅读计划正文前形成G01—G09，自有原件为execute-grant-independent-conditions.md；已重新读取当前QUESTIONS、原23/26客户端及实际HTTP session/项目路由、Grant/token、项目权限和CLI动作/上下文消费者。比较main031dc与准确fe822，服务签发human cookie/CSRF、Grant和token的既有主体逻辑保持；产品增加私有owner准入、orca/commands项目路由及实际注册CLI校验。以下独立条件以这些实际消费者及现行SPEC为依据，Worker通知摘要及解释未作为用例存在的依据。
+
+| 条件 | 正确实现与验证边界 |
+| --- | --- |
+| G01 真实委托身份 | 保留用户原文与主控具体测试范围，分别记录用户批准、Agent执行者、实际服务human/local-human主体及最终scoped Agent；不编造本人TTY、新批准口令或Actor/token，保留原23本人入口。 |
+| G02 最终候选与选择 | 准确最终源码/安装、独占新DataRoot、实际服务PID/创建身份/监听、endpoint/runtime/authority和固定公开Git根/版本相符后才写入；签发前核当前实际OpenCode/DeepSeek-pro选择、原生工具空及来源版本，变化拒绝。 |
+| G03 原生HTTP认证 | 真实auth/session、cookie、CSRF及Origin边界；Bearer不能回退至human cookie，scoped Agent不取得管理批准能力。12小时服务端session与客户端释放引用分别记录，内部owner能力不用于绕过批准。 |
+| G04 必要动作与范围 | 按真实命令映射仅给必要动作；task.create及效果前重读Context实际要求read_context，controller.recover按start，resume须有实际恢复消费者或已核适用范围。single CLI、空tools、公开目录/原文本及当前Agent control设置逐项匹配，不扩大旧Mission或管理范围。 |
+| G05 当前批准准入 | 每笔expected_revision/响应revision、完整settings及Grant归属/动作/撤销状态可核；模型效果前仍核当前Grant、selection、R/Dispatch/session与fence。准备成功不改变产品权限、T11或S3待答项。 |
+| G06 未知效果停止 | 每笔请求前保留真实request_id/幂等header和安全阶段，不假设准备接口持久去重；token签发会更新digest，未知响应后先查原持久效果，不能自动再签、改SQL或清目录重试，不改写95ef旧Observe。 |
+| G07 DPAPI与真实时效 | CurrentUser DPAPI、准确owner/私有DACL/无reparse、CreateNew及候选/DataRoot/endpoint/runtime/authority/project/caller/actions/选择绑定；真实服务token固定一小时，使用实际UTC/expiry，错配或过期在请求前拒绝，秘密不进入参数、日志、异常或提交。 |
+| G08 实际消费与拒绝 | 真正解密消费并以同最终安装运行status/capabilities及固定后继验收；适用HTTP负向核缺cookie/CSRF、跨源、scoped Agent不能管理、错项目/主体/时效和来源变化。未改auth原证据可复用，新范围及消费者需实际证据，不伪造协议、凭据或时钟。 |
+| G09 持久事实与保全 | 响应、实际库及CLI分别核；准备space/project/settings/Grant/token不计作已运行Worker/模型。原23/26、95ef/5187、旧Observe实际到期及本机Orca/账号保持，只控制本次已证实所属资源，未知不释放，禁止Aliyun。 |
+
+实际源码明确：GrantProjectAgent仅接受服务认证human，IssueProjectAgentToken保存随机token的digest并返回当前UTC加一小时；再次签发同caller token会替换digest。AuthenticateAgentToken每次核当前Grant/expiry/digest，项目动作/目录/工具/外发范围另经App准入。CLI的controller.recover属于start，task.create及输入前上下文检查实际调用ReadProjectContext；据此可以推导必要动作，不按名称猜测。主控`msg_c6a500cc1957`已确认恢复消费者均映射start时将本次Grant收紧为实际五项，恢复功能验收保持，不需重复通用许可。
+
+**退回`delegated-execute50-plan.md`准确SHA256 `27FAAE443540DA9B8B1CEEB3440E5DCF731CB7951F04F7B0896F8F7822C1D3A6`两项集中修订。** 正文已完整读取：第一，移除本次CLI没有独立消费者的resume，settings/Grant/DPAPI及验证统一为observe/start/send/stop/read_context五项；第二，在最终描述、DPAPI及写前guard中明确actual authority_domain与当前selection的非秘密来源/配置版本及provider/model/native contract，并说明签发前使用的既有真实只读生产者。当前正文主要固定二进制及agent/model，capabilities放在签发后，尚未具体覆盖签发前稳定选择/来源条件。主控`msg_8a3b2e56addc`采用该修订并明确分阶段：项目尚未生成时只核可观测的真实候选/来源，生成后补真实project/root绑定，Grant/token效果前完整匹配，不构造项目或selection记录。不为此新增业务API或权限、重跑模型或另开整体方案阶段；原Worker修改计划后给准确新摘要，客户端随后集中审核，O07原已接受实现继续。
+
+27FA的其余E01—E08覆盖真实session/三个HTTP拒绝、实际独占新项目、真实返回主体/Agent执行者、UTC一小时token、CurrentUser DPAPI、未知写请求停止、真实库与CLI消费及原23/26/95ef保全；未发现需新增模型自我证明检查。准备前后执行表保持基线的检查支持确认没有Controller/Task/Worker或模型效果，未触发的网络未知分支保持未验。原件摘要及计划尚未作为客户端或签发接受，最终候选身份/selection尚未冻结，本次没有签发Grant或启动后继模型。修订通知为`msg_abc56a9a198c`、主控为`msg_84e5b2e484af`。
+
+主控工具等待异常跨UTC21:41至03:33后，原Task/Dispatch于UTC03:36收到恢复通知并继续；没有重启或结算。原FD5只读身份guard恢复后实际0，旧Observe到期不续签。42d70d4e的原生接受和计量修复两个hook分别获主控`msg_9fdd638b6b7b`、`msg_e12907e497de`明确完整读取回复；准确main031dc三份后继记录已读，STATUS范围措辞普通修复由主控继续，当前未借时间流逝新增验收结论。
