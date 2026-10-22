@@ -279,6 +279,7 @@ export function privatePiEnvironment(home: string, inherited: Readonly<Record<st
     for (const name of environmentDirectories) requirePosixPrivatePath(join(home, name), true)
     for (const [key, value] of Object.entries(inherited)) if (allowed.has(key) || ['http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'].includes(key)) env[key] = value
     Object.assign(env, {
+      NODE_USE_SYSTEM_CA: '1',
       TMPDIR: join(home, 'temp'), XDG_CONFIG_HOME: join(home, 'xdg-config'), XDG_DATA_HOME: join(home, 'xdg-data'),
       XDG_CACHE_HOME: join(home, 'xdg-cache'), XDG_STATE_HOME: join(home, 'xdg-state'), XDG_RUNTIME_DIR: join(home, 'xdg-runtime'),
       XDG_CONFIG_DIRS: join(home, 'xdg-config-dirs'), XDG_DATA_DIRS: join(home, 'xdg-data-dirs')

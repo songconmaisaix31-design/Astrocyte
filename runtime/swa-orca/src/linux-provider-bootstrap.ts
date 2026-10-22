@@ -23,6 +23,7 @@ export async function runLinuxNativeCLI(): Promise<void> {
   const program = script ? { kind: 'node-script' as const, program: await realpath(process.execPath), entry: launch.command } : { kind: 'executable' as const, program: launch.command }
   const env: Record<string, string> = {}
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined && !/^(?:NODE_|SWA_)/i.test(key)) env[key] = value
+  if (process.env.NODE_USE_SYSTEM_CA === '1') env.NODE_USE_SYSTEM_CA = '1'
   let binding: z.infer<typeof swaLinuxCustodySchema> | undefined
   let child: PipedChildProcess | undefined, nativeState: SwaLinuxNativeState | undefined
   let nativeClosed = false, stopping = false, forced = false, ownerLost = false, acknowledged = false
