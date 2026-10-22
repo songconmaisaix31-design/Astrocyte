@@ -1,6 +1,12 @@
 name: SWA Windows native candidate
 on:
   workflow_dispatch:
+    inputs:
+      build_candidate:
+        description: 'Run a complete candidate only after reporting the failure MRE, cause and local validation'
+        type: boolean
+        required: false
+        default: false
   push:
     paths:
       - '.github/workflows/swa-windows-native.yml'
@@ -43,7 +49,29 @@ concurrency:
   group: swa-windows-native-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  prior-windows-build-diagnostics:
+    if: ${{ (github.event_name == 'workflow_dispatch' && !inputs.build_candidate) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-diagnostics]')) }}
+    runs-on: windows-2025
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39758793164
+          name: swa-windows-native-evidence-3f4a4ea278d2cdf58711c8c6dee22797241b3780
+          path: ${{ runner.temp }}/swa-prior-windows-evidence
+      - name: Report only the previous run's filtered build errors
+        shell: pwsh
+        run: |
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '3f4a4ea278d2cdf58711c8c6dee22797241b3780'
   windows-native-candidate:
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_candidate) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-full]') && !contains(github.event.head_commit.message, '[swa-windows-diagnostics]')) }}
     runs-on: windows-2025
     timeout-minutes: 60
     steps:
