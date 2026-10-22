@@ -55,13 +55,25 @@ CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_
 
 `serve`的`resource_samples`在Linux为一次实际`{platform:'linux',logical_cpus,available_bytes,sampled_at}`观察，未提供CPU百分比；Windows保留原实际阻塞CPU采样数组。该区别不改变Worker自己的资源准入，也不把瞬时内存或CPU数量称为容量承诺。Linux `e14800c1`同安装的服务/daemon正常启动、health和stdin关闭后的服务树退出已验；强杀serve的完整回收仍未知，不能推广为每Worker退出通过。
 
-每Worker Linux完整回收D为已独立接受、正在实现且尚待真实验收的内部合同。最小进程身份为`{platform:'linux',pid,boot_id,start_ticks,owner_uid}`，live身份另核实际程序`name`；`readObservation()`按平台联合返回，Linux不补`creationTimeMs/rootCreationTimeMs`。每Worker独占Node引导器在Agent加载前以真实`PR_SET/PR_GET_CHILD_SUBREAPER`确认，内部IPC绑定随机`custody_id`、原owner/root/native CLI身份及本次`stop_id`；native API版本为`providerLinuxIsolationVersion:1`。
+每Worker Linux完整回收D已经实现，并在准确`6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`的Linux组合安装上完成14项普通进程检查：11项使用装内原件，3项为同SHA身份/私有路径诊断，0skip。证据为`.verification/cloud-setup/linux-provider-tree-installed-6890522e-01.log`；该结果不包括原生Agent、账号、模型或N=3。最小进程身份为`{platform:'linux',pid,boot_id,start_ticks,owner_uid}`，live身份另核实际程序`name`；`readObservation()`按平台联合返回，Linux不补`creationTimeMs/rootCreationTimeMs`。每Worker独占Node引导器在Agent加载前以真实`PR_SET/PR_GET_CHILD_SUBREAPER`确认，内部IPC绑定随机`custody_id`、原owner/root/native CLI身份及本次`stop_id`；native API版本为`providerLinuxIsolationVersion:1`。
 
 D需要运行内核实际支持subreaper、`pidfd_open/pidfd_send_signal`及`waitid(P_PIDFD)`。glibc/GLIBCXX/CXXABI符号基线或发行版标签不能证明这些内核能力；缺失时拒绝或保持unknown，不降级为裸PID发信号。
 
 D要求原生直接child先由libuv完成close/回收，再仅精确回收已确认收养的直接child。需要两次独立内核`ECHILD`、递增单调时刻、原身份匹配的完整退出proof、父核对后ACK，以及原引导器实际退出，才能判定该Worker完整退出。`WNOHANG=0`、根退出、IPC中断、进程组消失或普通进程表为空均不足。native未创建与引导器从未创建分别记录；已有引导器时仍需完整证明，不能冒充processless。身份、内核查询或父IPC失效保持unknown与占用，不先杀引导器再声称释放。
 
 这些是现有provider内部生命周期接口，不新增HTTP/CLI命令或公共Task字段。普通系统进程的内核测试、实际安装服务、Agent NativeLaunch/ToolsOff、原生模型与成果及N=3场景分别验收；各Agent的Linux来源和成果政策尚未接入时，模型输入前保持不支持。
+
+## 原生Agent后继准入
+
+`6890522e`安装实现的NativeLaunch分支仅为Pi与OpenCode，独立Codex rollout读取器已有。本轮Codex单分支合同已冻结，Schema及直接消费者同步实施；Claude仍仅规划，原始事件与完整成果接线均须另验。Codex来源仅接受显式非秘密路径`SWA_CODEX_API_KEY_HOME`，不回退普通CODEX_HOME、Orca账号选择或原ChatGPT登录。空配置允许服务启动并报告Codex未配置；路径非法早拒，合法目录缺少实际API-key来源仍为未配置，不把目录存在当认证通过。
+
+该source与普通CODEX_HOME、SWA_DISCOVERY_CODEX_HOME、缺省`~/.codex`、安装/data/每Worker私有根、已知受保护账号根以及项目/公开输入目录均不得同路径或存在祖先/后代重叠。Go只做现有路径元数据核验与显式传递，不读取旧auth或解析Orca账号；Node继续核选中managed-home、真实来源和当前版本。拒绝链接或重解析路径，source实际根须owner-only，不要求`/workspace`等普通祖先均为0700。
+
+Codex拟通过官方stdin登录将获准API key导入各Worker独立私有HOME，固定真实0.163.0、openai/gpt-5.5与官方完整目录；NativeLaunch只携带非秘密来源引用。Claude拟使用CLI2.1.284、SDK0.3.284、bare/API-key与空工具组合，仅从显式`SWA_CLAUDE_API_KEY_HOME/settings.json`的literal `env.ANTHROPIC_API_KEY`取得来源，采用同样的owner-only和双向路径隔离。空配置报告未配置，不回退`~/.claude`或Orca账号，不读.credentials/OAuth/AUTH_TOKEN、不执行helper，也不将其它来源env/settings带入child；OAuth/keychain不适用于该路线。两者仍须实际当前授权、封闭启动和每轮参数、原Run/Dispatch/session/fence及request绑定、真实delta和完整原件来源、对应平台完整退出；缺key期间可验证拒绝路径，账号/模型正向保持NOT_RUN。准确固定来源见[矩阵](02-agent-matrix.md)，不新增HTTP认证动作或自动签发Grant。
+
+Codex的strict NativeLaunch沿`schema:'swa.native-launch.v1'`新增`account.kind:'codex-native-api-key'`，固定provider为openai、model_target为gpt-5.5/openai-responses/`https://api.openai.com/v1`，tools为disabled与`native_contract:'codex-cli-0.163.0'`。其余账号字段仅source_home、auth_source、catalog_source和private_root；文件源复用`{path,version}`，不含key、邮箱或虚构credential ID。auth_source固定source_home/auth.json，catalog_source固定实际安装根的runtime/codex-policy/models.json并核原件完整hash，私有根固定实际`SWA_DATA_DIR/codex/<projectId>`且每session有独立HOME。现selection的executable/version/model/provider/configuration_version继续绑定实际来源。登录子进程和app-server分别受管，登录结算未知时不重导入、不先启动app-server。
+
+Codex新thread与每次turn保持空环境及受控纯文本；活跃turn追加沿原turn/steer和实际expectedTurnId，绑定本次send自己的原R/operation/clientUserMessageId，不复用start的operation。实际thread reply缺model/provider/history/path时不能以参数补造。原native通知按session/fence顺序写入provider-events，完整rollout/journal/trace共同计入12MiB且有界读取；来源或秘密检查失败整体拒绝完整成果。`source.process`及结果`source.owner_process`指bootstrap：Windows保留`{pid,creation_time_ms,runtime_id}`，Linux使用`{platform:'linux',pid,boot_id,start_ticks,owner_uid,runtime_id}`，native CLI另列真实custody身份。其关联核实际Tree观察、lease PID/runtime/session/fence及SourceVersion，不用Linux估算毫秒补proof。最终proof从原Tree的只读readFinalObservation取得；unknown/processless为null，真正完整退出事实持久化失败保持unknown。真实未创建bootstrap的processless继续走原独立受证分支。新增getter与Codex来源消费者属于本轮开发合同，`6890522e`的D14不证明这些新增接线已验。现HTTP native结果为opaque，合同由02 producer和06实际消费者共同核验，不新增公共认证接口或无人消费Schema。
 
 ## Worker 额度
 

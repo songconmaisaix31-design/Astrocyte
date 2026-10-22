@@ -86,9 +86,9 @@ ACP共同定义`acp-structured-agent-definitions.ts`的`approvalEnforcement='orc
 
 ## 每个引擎的实际覆盖记录
 
-清单和模板平台声明来自源码核查。当前云机为Linux x86_64，`e14800c1`的Linux安装、PTY/watcher、服务/daemon及服务级正常退出已验，未执行Agent模型或每Worker完整退出D。主控已核Codex 0.163.0及login reported，API_KEY未设置不能据此称缺登录；专题metadata04结果如下。其他六个引擎本卡没有进行登录或模型调用，不能把它们填为已安装/已认证/已启动。
+清单和模板平台声明来自源码核查。当前云机为Linux x86_64，`e14800c1`的Linux安装、PTY/watcher、服务/daemon及服务级正常退出已验。后继`6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`组合安装和D普通进程检查14项通过，其中11项使用装内原件、3项为同SHA诊断；尚未执行Agent账号、模型或N=3。主控已核Codex 0.163.0及login reported，API_KEY未设置不能据此称缺登录；专题metadata04结果如下。其他六个引擎本卡没有进行登录或模型调用，不能把它们填为已安装/已认证/已启动。
 
-后续逐次记录每个引擎的`installed/version`、`login/config`、`NativeLaunch/ToolsOff`、`start/send/read/stop/resume`、`完整result`和`process custody`的PASS/FAIL/NOT_RUN或unknown及来源；每项分别标Linux和Windows。用户确认Windows x64是目标体系架构，当前未连接Windows主机，其实际候选与链路均为NOT_RUN，不重复询问架构，也不声称可远程执行。
+后续逐次记录每个引擎的`installed/version`、`login/config`、`NativeLaunch/ToolsOff`、`start/send/read/stop/resume`、`完整result`和`process custody`的PASS/FAIL/NOT_RUN或unknown及来源；每项分别标Linux和Windows。用户确认Windows x64是目标体系架构，当前没有交互式Windows主机；Windows CI已有真实构建和局部probe失败，准确状态见[STATUS](../../../STATUS.md)，不把失败写成未运行。Windows实际安装和模型链路仍未验，不重复询问架构，也不声称已具备远程交互执行环境。
 
 ## Codex 0.163的准确来源与已验边界
 
@@ -98,8 +98,18 @@ ACP共同定义`acp-structured-agent-definitions.ts`的`approvalEnforcement='orc
 
 源码确认公开`environments:[]`可以关闭环境访问，但初始线程和每次turn都要保持空环境，不能接受`cwd/runtimeWorkspaceRoots`重新引入环境；线程`selectedCapabilityRoots`保持空。[工具注册表](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/core/src/tools/spec_plan.rs#L1209)还独立受stable environment、shell、code mode、MCP、模型clock声明、plan、用户输入、delegation、web/image、skills和memory/history等门控制。插件warmup在initialize前发生，需启动时关闭；`--strict-config`防配置错误回落默认值，hooks与legacy notify也分别关闭。完整门逐项核验后仍需实际线程/消费者验证，不能从几个flag或metadata检查声称ToolsOff。
 
-普通app-server没有公开pre-turn有效工具全集查询，也没有公开JSON入口注入Rust `ToolPolicy.allowed_tools=Some([])`。后继必须以准确版本、真实模型、来源与完整组合政策逐项审查，遵守当前项目AllowedTools；未批准的MCP、clock、delegation和其他工具不能默许执行。当前产品NativeLaunch、原账号使用、真实工具集合、模型、同会话输入及完整成果均待02/06验收。
+普通app-server没有公开pre-turn有效工具全集查询，也没有公开JSON入口注入Rust `ToolPolicy.allowed_tools=Some([])`。后继必须以准确版本、真实模型、来源与完整组合政策逐项审查，遵守当前项目AllowedTools；未批准的MCP、clock、delegation和其他工具不能默许执行。Codex新增分支合同已冻结；其实际NativeLaunch准入、独立API账号绑定、真实工具集合、模型、同会话输入及完整成果均待02/06验收，原ChatGPT账号保持保全。
 
-后继Codex成果读取器内部最小输入为`path/privateRoot/nativeId/cwd/model/provider/stopped/nativeVersion:'0.163.0'/source`，另有必填内部`validateExport(serialized)`回调，由真实账号快照的调用方提供。`source`复用现有`nativeConfigurationSource`的`{path,version}`及`dev:ino:birthtimeNs:mtimeNs:size`实际版本；返回`{value,verify,validateExport}`沿已有成果消费结构。读取器核原生文件实际格式和来源，完整原文及最终序列化须经导出检查；调用方继续核原Run/Dispatch/session/fence、providerHandle与进程归属。缺少真实session/turn来源必须拒绝，不新建SourceVersion账本或公共Task协议；这些内部参数不提前冻结账号/NativeLaunch。
+独立Codex成果读取器`runtime/swa-orca/src/codex-session-result.ts`已经实现并完成严格编译和真实文件负向审查；正向会话、续写、真实停止及产品接线仍为NOT_RUN。其内部最小输入为`path/privateRoot/nativeId/cwd/model/provider/stopped/nativeVersion:'0.163.0'/source`，另有必填内部`validateExport(serialized)`回调，由真实账号快照的调用方提供。`source`复用现有`nativeConfigurationSource`的`{path,version}`及`dev:ino:birthtimeNs:mtimeNs:size`实际版本；返回`{value,verify,validateExport}`沿已有成果消费结构。读取器核原生文件实际格式和来源，完整原文及最终序列化须经导出检查；调用方继续核原Run/Dispatch/session/fence、providerHandle与进程归属。缺少真实session/turn来源必须拒绝，不新建SourceVersion账本或公共Task协议；这些内部参数不提前冻结账号/NativeLaunch。
+
+## Codex与Claude的API-key接入规划
+
+Codex后继选定CLI0.163.0、内建openai与真实gpt-5.5、上述未修改官方完整catalog。固定源码的[`cli/src/login.rs`](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/cli/src/login.rs)与[`login/src/auth/manager.rs`](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/login/src/auth/manager.rs)支持官方`login --with-api-key`私有stdin和ApiKey文件存储，无OAuth refresh。来源为显式、独立且owner-only的`SWA_CODEX_API_KEY_HOME`，准确路径边界见[共享合同](01-contract.md)；不自动读取原ChatGPT auth，不将其token转换为key。各Worker私有HOME分别由官方CLI导入真实获准key，配置固定file store、API登录和`https://api.openai.com/v1`。推理可使用该域`/v1/responses`的HTTP或TLS WebSocket；原始key不进入argv、NativeLaunch、公开回执或事件日志。新增认证/base URL门未实测，47+2+31原证据保持其限定范围，登录写入成功也不证明远程key有效或模型权限。
+
+Claude后继拟固定用户实际CLI2.1.284与现依赖SDK0.3.284，使用API key、`--bare`、`tools:[]`、`--disable-slash-commands`、空settings sources/MCP/agents/plugins/skills/hooks/附加目录，并拒绝未批准的覆盖参数。SDK声明的CLI版本不能代替实际可执行文件验证。官方固定[`CHANGELOG.md`](https://github.com/anthropics/claude-code/blob/8364969e9f5234ef3d9743cf7c790e9aab0ac3b1/CHANGELOG.md)说明bare跳过hooks/LSP/plugin sync/skills目录与auto-memory，并禁用OAuth/keychain；本轮不批准apiKeyHelper命令。04已核验官方Linux x64原生CLI的完整SSRI与SDK manifest二进制SHA256，独立空HOME的`--version/--help`均0；该真实help仍允许bare下显式`/skill-name`，因此须额外禁用slash commands。证据为`.verification/cloud-setup/claude-cli-2.1.284/report.md`，未执行完整startup、账号或模型。SDK `settingSources:[]`自身不隔离managed policy，`plugins:[]`自身不证明全部插件关闭，session hooks仍不得注册。真实system/init的工具/插件/skills/MCP数组须逐轮核验；它在首输入后到达，不能称为首输入前的工具全集证明。
+
+Claude只接受显式`SWA_CLAUDE_API_KEY_HOME`下真实settings.json中的literal `env.ANTHROPIC_API_KEY`，不回退默认`~/.claude`或Orca环境，不读.credentials/OAuth/AUTH_TOKEN、不执行helper，不透传其它来源env/settings。source/home沿Codex同样的owner-only与双向路径隔离；空配置报告未配置。来源的准确允许格式与拒绝项仍须02/04共同审查，不能删除未知字段后继续启动。
+
+Claude需要分别保存原journal投影、真实SDK事件序列和CLI自产会话JSONL；将SDK消息重新编码不能称为CLI原件。Codex字段已共同审查并冻结，直接消费者实施中；Claude最终NativeLaunch字段、会话/原始delta/完整成果及Windows Job或Linux D消费者仍须共同审查后实施。当前没有这两条路线所需的真实安全配置key，账号/模型正向均NOT_RUN；实现和无凭据负向可独立推进，不自动取得人类会话、执行Grant或更改工具/资料范围。
 
 模型测试预算不设上限解除本轮费用额度限制；它不产生缺少的供应商账号、Windows机器、原生支持、工具权限、私有资料权限或外部发布许可。固定公开输入、ToolsOff、原request幂等、效果未知、超时/并发和机器资源准入继续有效。后续实现缺口交02，依赖/原生构建和平台候选交05，命令体验交03，真实验收交06；本轮不以任何比例宣称已经完成“大部分Agent适配”。

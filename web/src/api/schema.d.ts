@@ -7981,7 +7981,35 @@ export interface components {
                 native_contract: "opencode-cli-2.0.31";
             };
         };
-        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"];
+        nativeCodexLaunchPolicy: {
+            /** @constant */
+            schema: "swa.native-launch.v1";
+            account: {
+                /** @constant */
+                kind: "codex-native-api-key";
+                /** @constant */
+                provider: "openai";
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                catalog_source: components["schemas"]["nativeConfigurationSource"];
+                private_root: string;
+                model_target: {
+                    /** @constant */
+                    model_id: "gpt-5.5";
+                    /** @constant */
+                    api: "openai-responses";
+                    /** @constant */
+                    base_url: "https://api.openai.com/v1";
+                };
+            };
+            tools: {
+                /** @constant */
+                mode: "disabled";
+                /** @constant */
+                native_contract: "codex-cli-0.163.0";
+            };
+        };
+        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"];
         agentSelection: {
             agent_id: string;
             adapter: string;

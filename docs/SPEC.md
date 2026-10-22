@@ -815,7 +815,7 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 本轮目标包括Windows x64与Linux，实际原生Agent来源及逐引擎平台限制见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。本次已确认的人类跨创建者例外仅为`worker.send`：同项目当前settings、动作、目录/固定上下文、原生CLI/模型和外发批准独立准入，不继承创建者Agent Grant，不以其有效为人类权限来源，原创建者关联保留来源。跨创建者`worker.start`仍拒绝，Agent仍严格绑定原Grant与主体，人类自己的start沿原规则。投递前再次核当前批准、原Dispatch/session/selection/代次及原request；当前权限或来源失效不得产生输入。实际实现和真实HTTP/SQLite及原生消费者验证分别记录。真实模型测试预算不设费用上限；固定公开输入、ToolsOff、私有资料/账户保全、超时和资源/并发准入保持。未连接Windows环境不表示平台验收完成。
 
-Linux服务身份使用实际boot_id、原始start_ticks和UID，不填Windows创建时间；现有服务级归属与每Worker完整退出分别核验。后继D内部合同要求独占subreaper引导器、精确pidfd和收养child回收、两次内核ECHILD、父确认及原引导器真实退出；接口已审，正在实现，不能以`e14800c1`服务正常关闭代替Worker验收。准确字段与未知边界见[共享合同](integration/openmausbot/01-contract.md)。Codex 0.163无模型metadata仅证明其实际目录/配置/feature来源，不证明原账号路由、有效工具全集、ToolsOff或推理；NativeLaunch、来源读取及产品模型按独立后继验收，不新增未经消费者支持的公共字段。“大部分Agent”的验收分母见QUESTIONS当前待答项，不擅自用注册数量判通过。
+Linux服务身份使用实际boot_id、原始start_ticks和UID，不填Windows创建时间；服务级归属与每Worker完整退出分别核验。D内部合同已经实现，要求独占subreaper引导器、精确pidfd和收养child回收、两次内核ECHILD、父确认及原引导器真实退出。准确`6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`的Linux组合安装已完成14项普通进程检查，其中11项使用装内原件、3项为同SHA诊断；该结果不包括Agent账号、模型或N=3。准确字段与未知边界见[共享合同](integration/openmausbot/01-contract.md)。Codex 0.163无模型metadata仅证明其实际目录/配置/feature来源，不证明原账号路由、有效工具全集、ToolsOff或推理；独立rollout读取器已有，NativeLaunch及产品来源/模型接线继续按后继验收。“大部分Agent”的验收分母见QUESTIONS当前待答项，不擅自用注册数量判通过。
 
 产品底座使用 Go/TypeScript/SQLite，旧 Python 执行内核保持独立研究来源。[H2，第 1 节] summarize 等工具可使用所需 Python 依赖；机制按完整业务意义、来源和验证迁入，保持单一任务执行权威。现行语言决定见 QUESTIONS，早期绝对禁令不再作为当前接入条件。
 
@@ -946,10 +946,32 @@ type NativeLaunchPolicy = {
     }
   }
   tools: { mode: 'disabled'; native_contract: 'opencode-cli-2.0.31' }
+} | {
+  schema: 'swa.native-launch.v1'
+  account: {
+    kind: 'codex-native-api-key'
+    provider: 'openai'
+    source_home: string
+    auth_source: { path: string; version: string }
+    catalog_source: { path: string; version: string }
+    private_root: string
+    model_target: {
+      model_id: 'gpt-5.5'
+      api: 'openai-responses'
+      base_url: 'https://api.openai.com/v1'
+    }
+  }
+  tools: { mode: 'disabled'; native_contract: 'codex-cli-0.163.0' }
 }
 ```
 
-上述联合按account.kind及对应tools.native_contract严格验证，不允许交叉组合。本节后续Pi来源、参数和RPC细则适用于pi-native-api-key；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。
+上述联合按account.kind及对应tools.native_contract严格验证，不允许交叉组合。本节后续Pi来源、参数和RPC细则适用于pi-native-api-key；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。Codex新增分支已通过接口审查，直接消费者正在实施；字段定稿不表示真实账号、工具集合、Worker或模型已验。其auth_source固定为显式source_home下auth.json，catalog_source为实际安装根的`runtime/codex-policy/models.json`，内容须匹配固定官方完整原件。private_root为实际`SWA_DATA_DIR/codex/<projectId>`，每Worker的CODEX_HOME为其下`<sessionId>`，复用原LegacyAccountHome的CODEX_HOME变量/路径表示。selection继续绑定实际executable、version=0.163.0、model=gpt-5.5、provider=openai和configuration_version，不新增凭据ID、邮箱、账号值或独立配置账本。
+
+Codex通过官方`login --with-api-key`的私有stdin向各Worker独立HOME导入获准API key；登录子进程和app-server分别沿真实Job或Linux D结算，登录未知时不能重导入或提前启动模型进程。来源仅为显式`SWA_CODEX_API_KEY_HOME`，空配置允许服务启动并报告Codex未配置，合法目录缺auth同样未配置，不回退普通CODEX_HOME或读取原ChatGPT凭据。来源路径、当前账号、工具政策、原始事件、完整成果及平台归属须分别核验；设置路径本身不代表账号可用。Claude新增分支仍仅规划，未进入上述联合：拟固定原生CLI2.1.284与SDK0.3.284，采用`--bare`与`tools:[]`的API-key路线，来源仅为显式`SWA_CLAUDE_API_KEY_HOME/settings.json`中的literal `env.ANTHROPIC_API_KEY`，不回退原账号或执行helper。bare禁用OAuth/keychain，不能把原OAuth登录作为该路线可用的证据。准确来源与未验范围见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。Go/TS/Schema和直接消费者同步实施，维持原HTTP action/envelope，不自动取得人类会话或Grant。
+
+Codex每个新thread固定真实model/provider、`environments:[]/selectedCapabilityRoots:[]/dynamicTools:[]`、禁止模型fallback且持久化；不得用`cwd/runtimeWorkspaceRoots`重新引入环境。原生reply须提供并核对实际thread/model/provider/history/path，缺失时拒绝或保留unknown，不以请求参数补造。每次turn/start固定原thread、本次输入的原clientUserMessageId、model和空environments，只允许批准的纯文本；活跃turn的同会话追加沿原turn/steer与实际expectedTurnId，绑定本次send自己的原R/operation/clientUserMessageId，不复用start的operation，也不增加目录、工具、模型或capability覆盖。启动的strict config、完整工具组合门、当前来源与项目权限在投递前再次核验；API-key或模型catalog不替代ToolsOff证据。
+
+Codex真实通知在journal合并前写入原`provider-events.ndjson`，保留同session/fence的序号、host观察时刻、原生method/params与已审raw line；delta来自实际agentMessage/reasoning通知，不能拆分最终assistant全文。该来源和完整rollout/journal共同受12MiB导出上限、FD有界读、前后SourceVersion及秘密检查。原opaque native响应的`source.process/source.owner_process`是bootstrap所属身份：Windows保持`{pid,creation_time_ms,runtime_id}`，Linux为`{platform:'linux',pid,boot_id,start_ticks,owner_uid,runtime_id}`，ticks/UID为十进制字符串；native CLI身份单独取真实custody观测，不代替lease PID。最终tree事实由受控Tree的只读`readFinalObservation()`取得，未知或processless不返回完整tree proof；原root退出、stderr JSON或interrupt回执不足以释放。只有实际最终事实成功持久化后才能向session host发布退出；真实未创建bootstrap的processless沿原独立受证分支处理。这些新增来源由实际消费者另验，不以689的D14替代，也不增加无人消费的JSON Schema定义。
 
 路径为实际canonical来源，version沿原配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后继出现视为变化。政策与原settings source/revision/configuration_version、原R/checkpoint共同固定原生选择，不保存凭据或另建账号账本。model_target绑定实际合成modelId/API/baseUrl，成熟URL解析拒绝账号信息、秘密查询、动态模板和未批准目标。API只允许已核最终请求消费者的openai-responses、openai-completions、azure-openai-responses，其他API保持政策unknown，不换模型或来源。
 

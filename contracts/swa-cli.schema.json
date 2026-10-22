@@ -99,7 +99,24 @@
       "type": "object", "additionalProperties": false, "required": ["path", "version"],
       "properties": {"path": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}}
     },
-    "nativeLaunchPolicy": {"oneOf": [{"$ref": "#/$defs/nativePiLaunchPolicy"}, {"$ref": "#/$defs/nativeOpenCodeLaunchPolicy"}]},
+    "nativeLaunchPolicy": {"oneOf": [{"$ref": "#/$defs/nativePiLaunchPolicy"}, {"$ref": "#/$defs/nativeOpenCodeLaunchPolicy"}, {"$ref": "#/$defs/nativeCodexLaunchPolicy"}]},
+    "nativeCodexLaunchPolicy": {
+      "type": "object", "additionalProperties": false, "required": ["schema", "account", "tools"],
+      "properties": {
+        "schema": {"const": "swa.native-launch.v1"},
+        "account": {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "provider", "source_home", "auth_source", "catalog_source", "private_root", "model_target"],
+          "properties": {
+            "kind": {"const": "codex-native-api-key"}, "provider": {"const": "openai"}, "source_home": {"type": "string", "minLength": 1},
+            "auth_source": {"$ref": "#/$defs/nativeConfigurationSource"}, "catalog_source": {"$ref": "#/$defs/nativeConfigurationSource"},
+            "private_root": {"type": "string", "minLength": 1},
+            "model_target": {"type": "object", "additionalProperties": false, "required": ["model_id", "api", "base_url"], "properties": {"model_id": {"const": "gpt-5.5"}, "api": {"const": "openai-responses"}, "base_url": {"const": "https://api.openai.com/v1"}}}
+          }
+        },
+        "tools": {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract"], "properties": {"mode": {"const": "disabled"}, "native_contract": {"const": "codex-cli-0.163.0"}}}
+      }
+    },
     "nativeOpenCodeLaunchPolicy": {
       "type": "object", "additionalProperties": false, "required": ["schema", "account", "tools"],
       "properties": {
