@@ -31,7 +31,7 @@
 
 先由独立审查者审核各卡具体测试计划，再实现。运行 frozen 安装、Go module 校验、适用合同和类型检查、CLI 编译及相关真实测试、GUI 构建。检查必须保持真实服务、SQLite、请求回执和来源，不制造模型执行或通过结果。
 
-本机 Linux x86_64 可运行 Go/Node 开发检查；Windows x64 安装、DPAPI、完整 Job 退出必须在实际 Windows 环境验证。旧机 PID、账号和过期 Grant 不移植。本机仅发现 Codex 0.163.0，尚未验证其通过产品的受限启动链，也未授权扩大工具或付费范围。
+本机 Linux x86_64 可运行 Go/Node 开发检查；Windows x64 安装、DPAPI、完整 Job 退出必须在实际 Windows 环境验证。旧机 PID、账号和过期 Grant 不移植。本机仅发现 Codex 0.163.0，尚未验证其通过产品的受限启动链；模型预算按本页最新用户决定，不扩大工具或私有资料范围。
 
 正式验收要求同产品任务至少 N=3 不同 Dispatch/原生 session 的真实执行重叠，指定停止一个后其余 N−1 同身份继续，原 request 的幂等和效果未知正确处理，同 session 追加输入、完整成果、权限拒绝、完整所属进程退出。组合候选还要求 CLI/GUI 同一身份和数据的双向一致性。缺少外部平台、合法当前授权或真实输入时保留 NOT_RUN，并继续独立开发工作。
 
@@ -48,7 +48,7 @@
 - 各卡的最终适用检查与剩余条件由其交付文档记录，最终安装验收入口见 [真实验收计划](../docs/validation/swa-product/README.md)。
 - 使用标准 `pnpm check` 再次验证：gofmt、`go vet -mod=readonly ./...` 通过，设置标准输出目录后的 Go 测试仍退出 1，文本报告有 94 条失败事件，其名称均已在前段独立全量检查中出现。其后的检查因 runner fast-fail 未执行，适用的合同、strict、前端及 CLI 检查由各卡单独运行；不把失败名称相同当作原因相同或完整回归通过。原件为 `.verification/cloud-setup/standard-check.log`。
 - 已实际运行开发脚本，验证 API、Vite 页面、Vite API 代理和正常所属进程退出，全部通过；复跑幂等安装脚本也退出 0。可复用环境草稿的安装及启动说明已更新。
-- GUI 浏览器安装请求 `cdn.playwright.dev` 受到当前代理 403 Domain forbidden 拒绝；所需域名已在配置草稿中增量保存，未改变当前运行策略或宣称浏览器测试通过。Windows x64、当前模型/预算与 CLI Agent 到 GUI human 的追加输入权限语义已向用户提交异步问题；等待期间保留现有身份绑定，不放宽授权。
+- Playwright固定浏览器下载受到 `cdn.playwright.dev` 代理403拒绝；所需域名已在草稿中增量保存，不等于当前策略已应用。后续实际使用系统Chromium154执行页面检查，按真实浏览器与Playwright版本分别记录。用户已确认Windows x64、无限模型预算及人类独立追加输入语义，见本页最新决定；未提供可访问Windows主机。
 - 本轮完整 `pnpm build` 退出 0，实际构建三个 Go 入口和前端；`pnpm check:architecture`、`pnpm check:dependencies` 均退出 0（45 个 Go 包的既有分层规则、精确依赖清单及 summarize CLI 版本一致）。前端体积警告保留。
 
 ## 分批提交与接受范围
@@ -63,3 +63,13 @@
 | 04 | `b7447f4a1af3ef80a2fe921d561c70d86d46fe9e` | 共享真实 API 工作台、任务与 Worker 发起/观察/输入/停止/成果入口、原请求恢复；11 项 API/解析检查和系统 Chromium 页面边界 1 项通过，真实 Worker 场景未验 |
 | 05 | `731d4da315171cee7e7dd7bf4e3250767629b635` | 显式 Python、strict 入口、CLI/combined 构建与真实资产/许可证闭包检查；Windows 候选尚未构建 |
 | 06 | `46f7bb7ad1cacda7d63045257ced732e1b5f3a4a` | 真实验收计划、只读前置检查和既有失败分类；里程碑 A/B 均 NOT_RUN |
+
+## Linux基底与新增权限的实际结果
+
+- `1accc19e`允许当前项目获准human独立执行跨创建者`worker.send`，保留跨创建者`worker.start`与Agent原Grant规则；真实SQLite三组共25子场景及race通过。`1518645b`保留GUI显式控制设置并刷新追加输入权限；实际HTTP/SQLite与系统Chromium检查通过，真人到原生Worker链仍未验。
+- Linux CLI所属生命周期为`d2a10dc9`，构建、私有安装与依赖为`3dad4b36`，公开N输入准备为`66a55a77`，运行时身份/私有目录/daemon基础为`1961dfba`。真实proc、pidfd、subreaper、收养后代/僵尸与拒绝检查，以及适用Go、strict、Windows交编分别通过，不外推为每Worker或模型验收。
+- Linux候选01在部署闭包因pnpm启动器符号链接退出1；正式普通启动器配置`559c621b`修复。候选02构建0、安装在平台空`.git`误判时退出1；`f71eec93`修复。候选03构建0、安装因fs.cp对新建空目标的语义退出1；`e14800c1`修复逐顶层entry复制。各失败日志及partial均保留，没有改旧候选或放宽拒覆盖、保护目录及无链接规则。
+- 准确`e14800c1b207a8c063531fedf014aa0cd2374558`的CLI04标准build、普通归档SHA核查、仓库外解包和严格安装全部退出0。安装根`/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`；实际Node24.21.0、PTY输入回显/exit0、watcher create及28253路径闭包通过，root0700/文件0600或可执行0700/当前UID。证据在`.verification/swa-linux/evidence/e14800c1b207a8c063531fedf014aa0cd2374558-cli-04/`。
+- 相同安装的实际服务证据为`/workspace/swa-cli-smoke-e14800c1-1792661325429/smoke-evidence/result.json`：runtime `746084d0-a595-4690-98d7-d711925c9d2d`，service与process_tree PASS，HTTP health=ok，正常stdin关闭code0。status/controller因缺少当前合法项目Grant为NOT_RUN，不自动取得human会话或签发Grant。
+- 每Worker Linux独立完整回收D的接口与真实内核/IPC测试计划已获独立接受，后继由02实现header/bootstrap/tree，05实现固定node-pty patch/构建/API probe。该计划和服务级subreaper不能代替D实际通过。Codex原生ToolsOff/结果消费者、大部分Agent适配、最终N=3及组合候选仍在继续。
+- GitHub实际run `39747808189`的准确`faea9d4a`基础matrix在Ubuntu和Windows均通过；完整check仍失败，不能算Windows native安装或N=3通过。普通push已覆盖`139a777a4341b22df0de6e5db1c9b259586cf8df`；其Windows原生候选workflow实际run `39757398493`已启动，结果尚未取得。此workflow使用真实ZIP、SHA、普通解包、严格安装、health及named Job所属关闭，不取账号或调用模型。

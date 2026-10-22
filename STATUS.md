@@ -2,9 +2,15 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-本次云开发支线为 `integration/swa-task-cards`，在 main `64451493` 与 PR #5 `6778a66f` 的本地集成基线 `6195f4cf` 上执行用户上传的六卡；首轮合同、运行时总席位/预约保护、CLI、GUI及构建改动已分批提交，GUI源码至 `b7447f4a`。实际检查和提交清单见[本轮任务](tasks/swa-task-cards-20261022.md)。标准应用构建、开发服务/代理、适用合同/strict/CLI/架构/依赖检查通过；标准完整检查仍在 Go 测试阶段失败，保留原件和分类，不称完整 CI 通过。
+本次云开发支线为 `integration/swa-task-cards`，在 main `64451493` 与 PR #5 `6778a66f` 的本地集成基线 `6195f4cf` 上执行用户上传的六卡。总席位/预约保护、CLI、GUI及构建改动已分批提交；人类按当前项目权限独立追加输入的后端为 `1accc19e`，GUI权限设置与提示为 `1518645b`。实际检查和提交清单见[本轮任务](tasks/swa-task-cards-20261022.md)。标准应用构建、开发服务/代理、适用合同/strict/CLI/架构/依赖检查通过；标准完整检查仍在 Go 测试阶段失败，保留原件和分类，不称完整 CI 通过。
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。当前仅 Linux 云机可访问，原生 N=3 与 Windows 安装验收未完成。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
+
+最近已验 Linux x64 glibc CLI 安装来源为 `e14800c1b207a8c063531fedf014aa0cd2374558`，实际安装在 `/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`。标准构建、普通归档与校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY输入回显与退出、watcher create及28253路径闭包通过。安装root和可执行文件0700、VERSION0600，owner为当前用户。相同安装的真实service/daemon就绪、HTTP health、所属进程树检查及stdin正常关闭退出0；项目status/controller正向因没有当前合法Grant为NOT_RUN。原生Agent和N=3模型仍未运行，组合候选尚未构建。本机服务级Linux subreaper已验；每Worker独立回收D的接口和实际内核测试计划已独立接受，正在实现，不能据此声称Worker完整退出通过。
+
+本轮GitHub [39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 的准确来源 `faea9d4a` 有Ubuntu与Windows两项foundation任务通过；完整check任务仍失败。该结果仅覆盖其实际基础检查，不证明Windows安装或模型验收。可复用安装和启动说明已保存到云环境草稿，尚未发布快照。
+
+以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
 
 当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，参数窄修/84严格检查获5eab3922限定接受。build19、完整ZIP/普通解包88及安装复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。新89服务在64508/runtime6aec5c49真实就绪，90两次来源一致、authority为空、业务/模型0，准备91及实际helper/最终同安装双Worker继续。旧67的87e指定session/三句柄/六已观察身份退出获2197a441限定接受，原EOF6/Job不可查询/83父R pending保持。原Worker持有89 TTY32198和Job观察21806，原Orca/95ef/5187保持。
 

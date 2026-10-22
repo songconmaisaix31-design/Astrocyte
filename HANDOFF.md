@@ -1,8 +1,12 @@
 # SWA 主线接续
 
-本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。首轮已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；GUI源码至 `b7447f4a`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。先沿01—06原负责人推进 Linux运行/打包/CLI生命周期及新增准入，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。
+本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；人类独立追加输入后端为 `1accc19e`，GUI设置与提示为 `1518645b`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。沿01—06原负责人继续，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。
+
+Linux已验安装来源为 `e14800c1b207a8c063531fedf014aa0cd2374558`，安装根 `/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`，候选与安装证据在 `.verification/swa-linux/evidence/e14800c1b207a8c063531fedf014aa0cd2374558-cli-04/`。标准build、archive/SHA、普通外解包、严格安装及实际PTY/watcher/28253闭包均0。同安装03服务证据为 `/workspace/swa-cli-smoke-e14800c1-1792661325429/smoke-evidence`：service/process_tree PASS，health ok，正常stdin关闭0；status/controller无当前Grant为NOT_RUN，没有自动取human会话。该不可变安装不补丁；新源码提交后另建候选。下一步02/05按06已接受的D计划实现每Worker Linux subreaper与窄node-pty API，01同步合同，06在01独立审查后实现真实N驱动。Codex0.163的官方工具政策由专题只读审查者核查，空私有CODEX_HOME的无模型metadata与原账号绑定分别处理；尚无产品模型调用。
 
 工具与缓存位于 `.verification/cloud-setup`，新 shell 可读取该目录 `activate.sh`；固定 Node24.16.0/pnpm11.27.0/Go1.27.2。实际 filtered frozen 与模块校验、应用构建和开发启动已通过；全量 Go 失败与独立适用检查见任务和 `docs/validation/swa-product`。未知请求只查原 request，不换键重放；工具关闭和公开固定输入边界仍保留。
+
+以下为原Windows环境的历史接续记录，资源和授权均须按原核查时间阅读；其中“当前”不指本次Linux云机会话，不按这些旧PID或终端操作。
 
 当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，控制端command/env窄修及84严格检查获5eab3922限定接受。build19、412666860字节ZIP/普通解包和安装88的复制/native/28251闭包/保护拒绝通过，安装汇总6保留功能未验。独立服务89在64508/runtime6aec5c49就绪，6224/33976/55368及三Medium、五库核查0，原Worker TTY32198和只读Job观察21806保持；90两次真实来源一致，authority为空、业务与模型0，既定新准备91和实际helper/T13继续。87e原生指定session清理0、三句柄退出及六已观察身份两次缺席获2197a441限定接受，旧67 EOF6/Job不可查询/83父R pending保留。原95ef/5187和本机Orca保持，最终双Worker尚未通过。
 
