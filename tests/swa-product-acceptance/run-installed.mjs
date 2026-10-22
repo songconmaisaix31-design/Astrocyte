@@ -58,6 +58,7 @@ const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.
 let output, candidate, dataRoot, project, inputDirectory, swa, runtimeId, controller, rootTask, runId, database, requireRuntime, processAPI, daemonOwner
 let source, inputs, spec, jsonlParser, foldJournal, completed = false
 const sources = new Map(), witnesses = new Map(), stopped = new Set()
+const sessionOwners = new Map()
 const stopRequests = new Map(), releaseRequests = new Map()
 const approvedFiles = new Map()
 const check = (name, detail) => report.checks.push({ name, status: 'PASS', detail })
@@ -140,12 +141,105 @@ async function cli(args, expected = 0) {
 }
 const identity = value => ({ session: value.native_session_id, fence: value.fence, process: value.process, provider_link: value.provider_link })
 async function queryWorker(dispatch) {
-  return native(await cli(['worker', 'show', '--controller', controller, '--dispatch', dispatch]))
+  const observed = native(await cli(['worker', 'show', '--controller', controller, '--dispatch', dispatch]))
+  assert.equal(observed.worker.dispatchId, dispatch, 'worker_dispatch_changed')
+  assert.equal(observed.worker.runtimeEpoch, runtimeId, 'worker_service_epoch_changed')
+  return observed
+}
+async function originalStartBinding(worker, workerSource) {
+  const request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
+  assert.equal(request.state, 'completed', 'original_start_not_completed')
+  const binding = object(object(request.receipt).swa_input_binding)
+  const input = object(request.current_input)
+  assert.equal(input.state, 'accepted', 'original_start_input_not_accepted')
+  assert.deepEqual(input.binding, binding, 'original_start_input_binding_changed')
+  assert.equal(input.request_id, worker.request_id)
+  assert.equal(input.dispatch_id, worker.dispatch_id)
+  assert.equal(input.session_id, workerSource.native_session_id)
+  assert.equal(binding.parent_request, worker.request_id)
+  assert.equal(binding.dispatch_id, worker.dispatch_id)
+  assert.equal(binding.session_id, workerSource.native_session_id)
+  assert.equal(binding.agent, values.agent)
+  assert.equal(binding.execution_mode, 'structured')
+  assert.equal(binding.runtime_fence, workerSource.fence)
+  assert.equal(input.operation_id, binding.operation_id)
+  return binding
+}
+async function sessionRecord(workerSource) {
+  const path = await ordinary(workerSource.journal_database, false)
+  assert.ok(within(dataRoot, path), 'session_journal_outside_private_root')
+  const before = await stat(path, { bigint: true })
+  const journalSource = { path, identity: `${before.dev}:${before.ino}:${before.birthtimeNs}` }
+  const journal = new DatabaseSync(path, { readOnly: true })
+  try {
+    const row = journal.prepare(`SELECT session_id,
+      json_extract(record_json, '$.schemaVersion') AS schema_version,
+      json_extract(record_json, '$.sessionId') AS record_session_id,
+      json_extract(record_json, '$.provider') AS provider,
+      json_extract(record_json, '$.options.model') AS model,
+      json_extract(record_json, '$.providerHandleChain') AS handles,
+      json_extract(record_json, '$.lease') AS lease
+      FROM agent_session_records WHERE session_id=? AND json_valid(record_json)=1`).get(workerSource.native_session_id)
+    assert.ok(row, 'actual_session_record_missing')
+    assert.equal(row.schema_version, 2, 'session_record_schema_unreviewed')
+    assert.equal(row.session_id, workerSource.native_session_id)
+    assert.equal(row.record_session_id, row.session_id)
+    assert.equal(row.provider, values.agent)
+    assert.equal(row.model, values.model)
+    const handles = JSON.parse(row.handles), lease = object(JSON.parse(row.lease))
+    assert.ok(Array.isArray(handles) && handles.length > 0)
+    // 此入口只支持现有 Pi/OpenCode neutral handles，typed handles 另行审查。
+    const head = object(handles.at(-1)), handle = object(head.handle)
+    assert.equal(handle.agent, values.agent)
+    assert.equal(handle.transport, values.agent === 'pi' ? 'jsonl-rpc' : 'acp')
+    assert.equal(lease.sessionId, row.session_id)
+    assert.equal(lease.runtimeKind, 'native')
+    assert.equal(lease.unreconciled, false, 'session_record_unreconciled')
+    assert.equal(lease.handoffStage, null, 'session_record_handoff_in_progress')
+    const after = await stat(path, { bigint: true })
+    assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, journalSource.identity, 'session_journal_replaced')
+    return { journal_source: journalSource, session_id: row.session_id, provider: row.provider, model: row.model, head, lease: { claimStatus: lease.claimStatus, runtimeFence: lease.runtimeFence, provenHandleLinkId: lease.provenHandleLinkId, ownerProcess: lease.ownerProcess, deathEvidence: lease.deathEvidence } }
+  } finally { journal.close() }
+}
+function verifySessionOwner(record, workerSource, owner, worker) {
+  assert.deepEqual(record.journal_source, owner.journal_source, 'original_session_journal_changed')
+  assert.deepEqual(record.head, owner.head, 'original_provider_head_changed')
+  assert.equal(record.head.mintedAtFence, owner.binding.runtime_fence)
+  if (record.lease.claimStatus === 'live') {
+    assert.equal(record.lease.runtimeFence, owner.binding.runtime_fence)
+    assert.equal(record.lease.provenHandleLinkId, record.head.linkId)
+    assert.deepEqual(record.lease.ownerProcess, owner.process, 'original_session_owner_changed')
+  } else {
+    assert.equal(record.lease.claimStatus, 'released', 'session_owner_unproven')
+    assert.equal(record.lease.ownerProcess, null)
+    assert.ok(record.lease.runtimeFence > owner.binding.runtime_fence)
+    assert.equal(record.lease.deathEvidence?.kind, 'exit-observed')
+    assert.equal(record.lease.deathEvidence?.ownerFence, owner.binding.runtime_fence)
+    assert.ok(stopped.has(worker.dispatch_id) && worker.stop?.proof, 'released_owner_has_no_original_complete_job_proof')
+    assert.equal(worker.stop.proof.root.pid, owner.process.pid)
+    assert.equal(worker.stop.proof.root.creationTimeMs, owner.process.processStartTimeMs)
+  }
+  assert.equal(workerSource.process.runtime_id, owner.process.runtime)
+  assert.equal(workerSource.process.pid, owner.process.pid)
+  assert.equal(workerSource.process.creation_time_ms, owner.process.processStartTimeMs)
 }
 async function events(workerSource) {
   assert.equal(workerSource.availability, 'observed')
   assert.equal(workerSource.provider, values.agent)
-  assert.equal(workerSource.process.runtime_id, runtimeId)
+  const worker = report.started_workers.find(item => item.source?.native_session_id === workerSource.native_session_id)
+  assert.ok(worker, 'source_has_no_original_dispatch')
+  await queryWorker(worker.dispatch_id)
+  let owner = sessionOwners.get(workerSource.native_session_id)
+  const binding = owner?.binding ?? await originalStartBinding(worker, workerSource)
+  const beforeRecord = await sessionRecord(workerSource)
+  if (!owner) {
+    assert.equal(beforeRecord.lease.claimStatus, 'live', 'first_owner_observation_must_be_live')
+    const process = object(beforeRecord.lease.ownerProcess)
+    assert.match(process.runtime, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'actual_process_runtime_incarnation_missing')
+    assert.deepEqual(beforeRecord.head, workerSource.provider_link, 'provider_source_head_differs_from_actual_record')
+    owner = { binding, process, head: beforeRecord.head, journal_source: beforeRecord.journal_source }
+  }
+  verifySessionOwner(beforeRecord, workerSource, owner, worker)
   assert.ok(Number.isSafeInteger(workerSource.process.pid) && workerSource.process.creation_time_ms > 0)
   const path = await ordinary(workerSource.provider_events, false)
   assert.ok(within(dataRoot, path), 'provider_source_outside_private_root')
@@ -166,6 +260,10 @@ async function events(workerSource) {
     const after = await stat(path, { bigint: true })
     assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, signature)
     assert.ok(after.size >= before.size)
+    const afterRecord = await sessionRecord(workerSource)
+    verifySessionOwner(afterRecord, workerSource, owner, worker)
+    if (beforeRecord.lease.claimStatus === afterRecord.lease.claimStatus) assert.deepEqual(afterRecord, beforeRecord, 'session_owner_changed_during_event_read')
+    else assert.ok(beforeRecord.lease.claimStatus === 'live' && afterRecord.lease.claimStatus === 'released', 'unreviewed_session_owner_transition')
     witnesses.set(path, { signature, bytes })
   } finally { await handle.close() }
   if (values.agent === 'opencode') rows = rows.filter(row => row.session_id === workerSource.native_session_id && row.runtime_fence === workerSource.fence)
@@ -176,6 +274,8 @@ async function events(workerSource) {
     assert.ok(row.native_cli?.pid > 0 && row.native_cli.creationTimeMs > 0 && row.native_cli.pid !== row.process.pid)
     assert.equal(row.projection, values.agent === 'pi' ? 'actual_native_cli_lifecycle_and_delta_fields' : 'actual_native_acp_lifecycle_and_delta_fields')
   }
+  if (!sessionOwners.has(workerSource.native_session_id)) check('worker.runtime_identity', { dispatch_id: worker.dispatch_id, session_id: workerSource.native_session_id, service_runtime_epoch: runtimeId, process_runtime_incarnation: owner.process.runtime, original_fence: owner.binding.runtime_fence })
+  sessionOwners.set(workerSource.native_session_id, owner)
   sources.set(workerSource.native_session_id, { source: workerSource, rows })
   return rows
 }

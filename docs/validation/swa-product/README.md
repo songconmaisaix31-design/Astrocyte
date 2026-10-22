@@ -52,6 +52,8 @@ node tests/swa-product-acceptance/prepare-public-case.mjs --root /workspace/swa-
 
 准备器和驱动共用固定公开定义；模型输入前逐字核对四份真实Git原文、完整任务规格（含空references）、各职责正文和后续正文。每条命令在启动前以0600独占保存原参数和request并同步磁盘；未知stop/release只查询该Dispatch已有的原request，不换键重新停止。已完成请求的回放同时核原回执、input operation和真实原生执行次数；继续输出的证据须晚于实际原生停止标记。报告记录安装物实际EDITION；缺少装内正式checker时保持NOT_RUN，不使用开发树脚本替换。
 
+服务UUID与进程owner incarnation分别验证：CLI回执及实际Worker的`runtimeEpoch`必须属于开始时的服务；`source.process.runtime_id`则绑定本Session真实journal数据库记录中的`lease.ownerProcess.runtime`。首次保存进程身份前还核原start request的实际input binding及provider head原fence；每次事件读取前后重新核同一普通journal文件的必要record/head/lease。停止后只在原ownerFence的真实deathEvidence、已保存进程身份及原完整Job退出证明一致时读取已释放来源。驱动当前只消费Windows Pi/OpenCode已有neutral handles；Linux/Codex消费者仍须另审准确来源形状。
+
 实际成果齐备后，驱动输出原结果路径，等待真实Reviewer/Agent阅读后输入一行JSON，字段为 `reviewed_result` 和 `checked_result`；只把真实审阅记录写入完成正文，不自动生成通过，也不取得human身份。未知请求只查询原request；缺少实际分块观察、未命中的效果丢失分支、过期/跨项目权限与GUI行为分别保留未验。
 
 本轮实际 `node --check`、固定安装Node的 `--help` 退出0；workers=2/3.5、相对候选路径、未知参数各退出2。共享公开定义修改后，重新从固定真实来源准备独立案例退出0，并核既有案例与新案例的完整正文、任务和清单逐字一致，证据为 `.verification/swa-product-acceptance/review-driver-checks.json`。尚无本轮当前项目ID/Grant与可用Linux原生来源，完整N驱动正向未运行；修改前落盘、未知stop保键及原生回放次数的动态路径仍等待真实授权执行，不用替身验证。参数验证和语法通过不代表N=3通过。退出0仅表示当次已执行断言及成果交接完成，最终里程碑由独立审查决定。
