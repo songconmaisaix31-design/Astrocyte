@@ -41,6 +41,8 @@
 
 ## 当前云机验证
 
+Windows最新准确尝试`4aef552c63dd1ab5cd787fd2514d92a7815b943c`只比Linuxaefe多三facts，原新tag `ci/swa-windows-4aef552c-pi-01`普通push0后actual run39846687508/native120061709303。正式driver20:12:41→20:18:18UTC退出1，公开错误仅service-smoke/actual service or Job shutdown checkfailed-orunknown；evidence上传0，candidate skip，旧diag/VS skip，原最终HTML已保留。用户已先获最小阶段/原证据/已有Linux局部结果说明；root cause/ready/Job具体值UNKNOWN，不猜117 owner、不再full。精确3文件原artifact只读取证计划已06接受，第三文件仅check.yml两if排除新marker避免默认4项完整检查；待末稿源码CR后只诊断运行，不产品/native/service/model重跑。后段“Windows未运行”是此前触发前状态，不覆盖本次FAIL。
+
 当前Linux同S候选已推进至`aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`：标准完整build、分段archive/extract及strict install均0，实际新根`/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`，tar SHA54cf2f30306a2bad73b2889ba04f5e23db4469d51815876ad54e70e6b3422684。05已接受交付；06已接受installed observer prepare0/3484源码/127输入/48c1ae01…、D12=12PASS0skip/17.406s、组合服务health/2入口4资产/4身份/约54.85ms双空与EOF0。闭包28314、protocol563dc4d5…/metafile1cd325e2…实际装内核对，旧875及所有原件保留。当前Windows新源码仍未验，旧875完整成功范围不扩推。
 
 真实私有StepFun SOURCE已按0700/0600提供；同S工具binary53ce4d19…/consumer608e5f96…已build/help0，Go1.27.2/vcs.modified=false。独占owned服务18794已保存真实六键launch/ready/proof，原owner根`/workspace/swa-pi-owned-aefe6c4b-20261023-01`、runtime faa37e36…/持有截止2026-10-22 20:54:04.605UTC。新准确拟授权包`/workspace/swa-pi-n3-packet-aefe6c4b-20261023-01/review.json` SHA4244f3a526efc765b6accfd6607a13d006a9f3f47b1da687e04dcb4a24c42253及review.md已成，原pins/10intents与三wire保留并获01限定接受。沙箱verify3的最小复现/实际EACCES原件与同包权限对照verify0/http0/model0已报告；不降低exe/pidfd原门、不新full试错。用户具体human会话/项目授权写入/固定Pi-StepFun N3/两项最终撤销委托请求待答；bool true及verify0不代替同意，尚无人类会话/Grant/token/driver或模型生成执行。

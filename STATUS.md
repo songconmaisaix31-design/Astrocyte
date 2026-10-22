@@ -1,5 +1,7 @@
 # SWA 当前状态
 
+Windows最新运行`39846687508`的native job`120061709303`对准确`4aef552c63dd1ab5cd787fd2514d92a7815b943c`实际FAIL：正式driver20:12:41→20:18:18UTC退出1，公开定位仅`service-smoke`复合服务/Job关闭门；evidence上传成功，candidate ZIP跳过，旧诊断/VS跳过。该S相对Linuxaefe只三facts，不能把Linux通过或旧875成功扩为本轮Windows通过。原始startup/ready/退出子因UNKNOWN；已向用户报告最小复现范围、证据与现有局部结果，暂停新full。仅针对本次原artifact的精确3文件只读取证计划已独立接受，具体字段待原件；无产品/服务/模型重跑。以下“Windows尚未运行”属于本轮触发前的记录，以本段实际失败为准。
+
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
 本次云开发支线为 `integration/swa-task-cards`，在 main `64451493` 与 PR #5 `6778a66f` 的本地集成基线 `6195f4cf` 上执行用户上传的六卡。总席位/预约保护、CLI、GUI及构建改动已分批提交；人类按当前项目权限独立追加输入的后端为 `1accc19e`，GUI权限设置与提示为 `1518645b`。实际检查和提交清单见[本轮任务](tasks/swa-task-cards-20261022.md)。标准应用构建、开发服务/代理、适用合同/strict/CLI/架构/依赖检查通过；标准完整检查仍在 Go 测试阶段失败，保留原件和分类，不称完整 CI 通过。

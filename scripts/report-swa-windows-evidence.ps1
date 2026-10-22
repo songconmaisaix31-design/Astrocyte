@@ -11,8 +11,9 @@ $source = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'SOURCE') -Raw).Tri
 if ($source -cne $ExpectedRevision) { throw 'The prior artifact source revision differs' }
 $result = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Raw | ConvertFrom-Json
 if ($result.status -cne 'FAIL') { throw 'This is not an original failed artifact' }
-if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') {
-    if ($result.failed_stage -cne 'service-smoke') { throw 'The original 117 candidate failed at a different stage' }
+if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c') {
+    $priorRun = if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') { '39778043411' } else { '39846687508' }
+    if ($result.failed_stage -cne 'service-smoke') { throw 'The original service candidate failed at a different stage' }
     function Format-ServiceError([string]$Text) {
         if ($Text -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|nonce|api[-_]?key|secret|password|cookie|credential)') { return '[sensitive log line omitted]' }
         $safeText = [regex]::Replace($Text, '(?i)https?://\S+', '[URL omitted]')
@@ -50,7 +51,7 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') {
     $latestFile = Join-Path $EvidenceRoot 'smoke/readiness-eof/latest-actual-observation.json'
     if (Test-Path -LiteralPath $latestFile -PathType Leaf) { $latest = Get-Content -LiteralPath $latestFile -Raw | ConvertFrom-Json }
     $observation = [ordered]@{
-        diagnostic_only = $true; prior_run = '39778043411'; source_revision = $source; original_status = 'FAIL'; failed_stage = 'service-smoke'; recorded_preceding_exits = $exits
+        diagnostic_only = $true; prior_run = $priorRun; source_revision = $source; original_status = 'FAIL'; failed_stage = 'service-smoke'; recorded_preceding_exits = $exits
         actual_installed_acl = [ordered]@{ owner_matches_current_user = $acl.owner_matches_current_user; access_rules_protected = $acl.access_rules_protected }
         service_helper_exit = $helperExit
         mode_result_present = $null -ne $mode
@@ -85,7 +86,7 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') {
             if ($envelope.error.message -is [string]) { $errorLines.Add((Format-ServiceError $envelope.error.message)) }
         } else { $errorLines.Add('[original stdout is not a complete JSON envelope; no raw output exported]') }
     }
-    $message = 'Prior run39778043411; source=' + $source + '; filtered original service errors:' + "`n" + ($errorLines -join "`n")
+    $message = 'Prior run' + $priorRun + '; source=' + $source + '; filtered original service errors:' + "`n" + ($errorLines -join "`n")
     if ($errorLines.Count -eq 0) { $message += '[no whitelisted error line found; root cause remains unknown]' }
     if ($message.Length -gt 8000) { $message = $message.Substring(0, 8000) + ' [original artifact retained]' }
     $escaped = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')

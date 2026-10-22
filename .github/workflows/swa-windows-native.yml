@@ -54,6 +54,27 @@ concurrency:
   group: swa-windows-native-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  retained-windows-service-evidence:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-service-evidence]') }}
+    runs-on: windows-2025
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39846687508
+          name: swa-windows-native-evidence-4aef552c63dd1ab5cd787fd2514d92a7815b943c
+          path: ${{ runner.temp }}/swa-retained-windows-service-evidence
+      - name: Read only the retained service failure evidence
+        shell: pwsh
+        run: |
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-windows-service-evidence') -ExpectedRevision '4aef552c63dd1ab5cd787fd2514d92a7815b943c'
   prior-windows-build-diagnostics:
     if: ${{ (github.event_name == 'workflow_dispatch' && !inputs.build_candidate && !inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025
