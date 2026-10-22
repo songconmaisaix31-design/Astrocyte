@@ -105,7 +105,49 @@ Observe-LocalACL 'after-original-copy'
 $env:SWA_ACL_PROBE_PHASE = 'copy-verification'
 $copied = Get-Item -LiteralPath (Join-Path $destination 'LICENSE') -Force
 if ($copied.PSIsContainer -or ($copied.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $copied.FullName -Algorithm SHA256).Hash -cne $licenseHash) { throw 'The ordinary public component copy differs' }
-$result = [ordered]@{ diagnostic_only = $true; installer_source_revision = $revision; observation_source_revision = $env:GITHUB_SHA; bundled_node_version = '24.21.0'; original_operations = @($expected.Keys); ordinary_component_bytes_equal = $true; observations = $observations; candidate_built = $false; installation_acceptance = 'NOT_RUN'; service_started = $false; model_calls = 0 }
+$env:SWA_ACL_PROBE_PHASE = 'proposed-source'
+$proposedTokens = $null
+$proposedErrors = $null
+$proposedAST = [Management.Automation.Language.Parser]::ParseFile((Join-Path $checkout 'scripts/install-swa.ps1'), [ref]$proposedTokens, [ref]$proposedErrors)
+if ($proposedErrors.Count -ne 0) { throw 'The proposed installer source did not parse' }
+$definitions = @($proposedAST.EndBlock.Statements | Where-Object { $_ -is [Management.Automation.Language.FunctionDefinitionAst] -and $_.Name -ceq 'Set-PrivateInstallDirectoryAcl' })
+if ($definitions.Count -ne 1) { throw 'The proposed production ACL function is not unique' }
+. ([scriptblock]::Create($definitions[0].Extent.Text))
+$guardLines = & git show ($revision + ':scripts/verify-swa-windows-native.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'The original production ACL assertion is unavailable' }
+$guardTokens = $null
+$guardErrors = $null
+$guardAST = [Management.Automation.Language.Parser]::ParseInput(($guardLines -join "`n"), [ref]$guardTokens, [ref]$guardErrors)
+if ($guardErrors.Count -ne 0) { throw 'The original production ACL assertion did not parse' }
+$tryStatements = @($guardAST.EndBlock.Statements | Where-Object { $_ -is [Management.Automation.Language.TryStatementAst] })
+if ($tryStatements.Count -ne 1) { throw 'The original production verification block is not unique' }
+$guardStatements = $tryStatements[0].Body.Statements
+$starts = @(0..($guardStatements.Count - 1) | Where-Object { $guardStatements[$_].Extent.Text -ceq '$acl = Get-Acl -LiteralPath $install' })
+$ends = @(0..($guardStatements.Count - 1) | Where-Object { $guardStatements[$_].Extent.Text -ceq 'if (-not $seenTrustees.Contains($sid)) { throw ''The installation root lacks the exact owner access rule'' }' })
+if ($starts.Count -ne 1 -or $ends.Count -ne 1 -or $ends[0] - $starts[0] -ne 7) { throw 'The original production ACL assertion has an unexpected AST shape' }
+$originalGuard = [scriptblock]::Create(($guardStatements[$starts[0]..$ends[0]].Extent.Text -join "`n"))
+$env:SWA_ACL_PROBE_PHASE = 'proposed-private-root'
+$destination = Join-Path $work 'proposed-ordinary-copy'
+. $operations['create']
+Set-PrivateInstallDirectoryAcl $destination
+Observe-LocalACL 'after-proposed-private-root'
+$install = $destination
+. $originalGuard
+if ($seenTrustees.Count -ne 2) { throw 'The proposed private root does not grant exactly its owner and SYSTEM' }
+$env:SWA_ACL_PROBE_PHASE = 'proposed-copy'
+. $operations['copy_source']
+. $operations['copy'] *> (Join-Path $evidence 'proposed-ordinary-copy.log')
+. $operations['copy_exit']
+Observe-LocalACL 'after-proposed-copy'
+. $originalGuard
+if ($seenTrustees.Count -ne 2) { throw 'The copied private root does not grant exactly its owner and SYSTEM' }
+$env:SWA_ACL_PROBE_PHASE = 'proposed-verification'
+$proposedCopy = Get-Item -LiteralPath (Join-Path $destination 'LICENSE') -Force
+if ($proposedCopy.PSIsContainer -or ($proposedCopy.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $proposedCopy.FullName -Algorithm SHA256).Hash -cne $licenseHash) { throw 'The proposed ordinary public component copy differs' }
+$result = [ordered]@{ diagnostic_only = $true; installer_source_revision = $revision; observation_source_revision = $env:GITHUB_SHA; bundled_node_version = '24.21.0'; original_operations = @($expected.Keys); ordinary_component_bytes_equal = $true; proposed_production_function = 'Set-PrivateInstallDirectoryAcl'; original_production_acl_assertion_after_set = 'PASS'; original_production_acl_assertion_after_copy = 'PASS'; exact_owner_and_system_rule_count = 2; proposed_component_bytes_equal = $true; observations = $observations; candidate_built = $false; installation_acceptance = 'NOT_RUN'; service_started = $false; model_calls = 0 }
 $result | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $evidence 'result.json')
-Write-Output 'The original narrow ACL operations were observed; no candidate, installation acceptance, native build, service or model was run.'
+$summary = [ordered]@{ diagnostic_only = $true; installer_source_revision = $revision; observation_source_revision = $env:GITHUB_SHA; original_production_acl_assertion_after_set = $result.original_production_acl_assertion_after_set; original_production_acl_assertion_after_copy = $result.original_production_acl_assertion_after_copy; exact_owner_and_system_rule_count = 2; ordinary_component_bytes_equal = $true; candidate_built = $false; installation_acceptance = 'NOT_RUN'; model_calls = 0 }
+$summaryMessage = ($summary | ConvertTo-Json -Compress).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+Write-Host ('::warning title=Proposed production ACL function local result::' + $summaryMessage)
+Write-Output 'The original operations and proposed production ACL function were checked on ordinary files; no candidate, installation acceptance, native build, service or model was run.'
 exit 0

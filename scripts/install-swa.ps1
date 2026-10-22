@@ -28,6 +28,19 @@ function Test-ContainsPath([string]$ParentPath, [string]$ChildPath) {
     return $ChildPath.Equals($ParentPath, [System.StringComparison]::OrdinalIgnoreCase) -or $ChildPath.StartsWith($ParentPath + '\', [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Set-PrivateInstallDirectoryAcl([string]$Directory) {
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent().User
+    $security = [Security.AccessControl.DirectorySecurity]::new()
+    $security.SetOwner($user)
+    $security.SetAccessRuleProtection($true, $false)
+    $inheritance = [Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit
+    foreach ($principal in @($user, [Security.Principal.SecurityIdentifier]::new('S-1-5-18'))) {
+        $rule = [Security.AccessControl.FileSystemAccessRule]::new($principal, [Security.AccessControl.FileSystemRights]::FullControl, $inheritance, [Security.AccessControl.PropagationFlags]::None, [Security.AccessControl.AccessControlType]::Allow)
+        $security.AddAccessRule($rule)
+    }
+    Set-Acl -LiteralPath $Directory -AclObject $security
+}
+
 $package = Get-PlainAbsolutePath $PackageRoot
 $destination = Get-PlainAbsolutePath $InstallRoot
 if (-not (Test-Path -LiteralPath $package -PathType Container)) { throw '候选目录不存在' }
@@ -49,9 +62,7 @@ $reported = & (Join-Path $package 'swa.exe') --version
 if ($LASTEXITCODE -ne 0 -or $reported.Trim() -ne $revision) { throw '候选 CLI 与准确源码版本不符' }
 if (-not (Test-Path -LiteralPath ([System.IO.Path]::GetDirectoryName($destination)) -PathType Container)) { throw '安装目标的明确父目录必须存在' }
 New-Item -ItemType Directory -Path $destination | Out-Null
-$sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-& (Join-Path $env:SystemRoot 'System32/icacls.exe') $destination '/inheritance:r' '/grant:r' "*$($sid):(OI)(CI)F"
-if ($LASTEXITCODE -ne 0) { throw '安装根私有 ACL 设置失败' }
+Set-PrivateInstallDirectoryAcl $destination
 $copy = "require('node:fs').cpSync(process.argv[1],process.argv[2],{recursive:true,dereference:true,errorOnExist:true,force:false})"
 & $bundledNode --max-old-space-size=1024 -e $copy $package $destination
 if ($LASTEXITCODE -ne 0) { throw '复制安装闭包失败，保留实际目标供检查' }

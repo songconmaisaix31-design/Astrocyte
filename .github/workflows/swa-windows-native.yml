@@ -84,7 +84,7 @@ jobs:
           try {
             & ./scripts/probe-swa-windows-install-acl.ps1
           } catch {
-            $phases = @('driver-invocation', 'preflight', 'installer-source', 'node-pin', 'node-download', 'node-verification', 'ordinary-source', 'original-create', 'original-acl', 'original-copy', 'copy-verification')
+            $phases = @('driver-invocation', 'preflight', 'installer-source', 'node-pin', 'node-download', 'node-verification', 'ordinary-source', 'original-create', 'original-acl', 'original-copy', 'copy-verification', 'proposed-source', 'proposed-private-root', 'proposed-copy', 'proposed-verification')
             $phase = if ($env:SWA_ACL_PROBE_PHASE -cin $phases) { $env:SWA_ACL_PROBE_PHASE } else { 'unknown' }
             $detail = $_.Exception.Message
             if ($detail -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') { $detail = '[sensitive exception text omitted]' }
