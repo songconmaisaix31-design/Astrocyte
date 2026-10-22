@@ -6,11 +6,11 @@
 
 同一95efcc288e32ad8d72d4ef902f32ec130f97fea3安装已完成delegated-observe26实际0，位置C:/Users/DW/AppData/Local/SwarmCli/candidates/95efcc28-install20。真实项目46ceef7b-0be3-4a4b-8e74-575fd327b31c、caller swa-cli-acceptance的唯一Grant仅observe；CurrentUser DPAPI凭据已创建，原23消费及status/capabilities均0，五项真实403、持久范围和原Orca保全通过。凭据到期UTC2026-10-21T20:51:16.4468291Z，秘密不进入本文件。服务归属及原件见[首版任务](../tasks/swa-cli-v1-20261020.md)。
 
-真实session/CSRF和固定公开项目Grant流程由Agent受托执行，原23人工入口保留。独立接受的32857112计划及26实际结果区分真实用户批准、实际Agent执行者和服务返回主体；现有human Cookie仍是12小时管理会话，客户端清除引用不代表服务端注销，最终项目Grant/token仅observe。具体可用Agent、模型及原生工具状态分别核实；执行Grant尚未签发，工具范围及T11待答项保持。已核默认Pi及OpenCode源没有StepFun配置，已询问其所在Agent或配置路径，请勿发送密钥正文；其余已授权工作继续。
+真实session/CSRF和固定公开项目Grant流程由Agent受托执行，原23人工入口保留。独立接受的32857112计划及26实际结果区分真实用户批准、实际Agent执行者和服务返回主体；现有human Cookie仍是12小时管理会话，客户端清除引用不代表服务端注销，原Observe项目Grant/token仅observe。后继82已按下述实际测试授权形成独立执行Grant，原项目权限保持。具体Agent、模型及原生工具状态分别核实，T11待答项保持。已核默认Pi及OpenCode源没有StepFun配置，已询问其所在Agent或配置路径，请勿发送密钥正文；其余已授权工作继续。
 
-其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key，原SQLite唯一选定key与legacy一致；单次真实GET https://api.deepseek.com/models返回200并确认默认模型存在，未进行推理或改变原源。完整F18C计划获独立828ca336技术接受，主控核定NativeLaunch联合及原exe/ACP/私有每Worker根/完整SQLite成果于SPEC §21.1.6，原Worker连续实施真实私有无推理、正文及最终同安装双Worker。HTTP保留原CLI默认redirect，检查初始目标及固定逻辑来源，不另增传输保护或批准条件。执行Grant仍须实际签发，技术接受不表示运行通过；用户既有其他Agent测试许可保持。
+其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key，原SQLite唯一选定key与legacy一致；来源核查的单次真实GET https://api.deepseek.com/models返回200，原源保持。完整F18C计划获独立828ca336技术接受，主控核定NativeLaunch联合及原exe/ACP/私有每Worker根/完整SQLite成果于SPEC §21.1.6。原生46已完成单次真实推理和完整退出的限定验收，产品Worker及最终同安装双Worker继续。HTTP保留原CLI默认redirect，检查初始目标及固定逻辑来源；实际执行Grant见下段，技术接受与运行结果分别记录，用户既有其他Agent测试许可保持。
 
-主控在上述真实测试许可内确认最终安装的受托执行准备范围：原固定公开Git/正文、实际OpenCode/DeepSeek-pro、原生工具为空及既有项目单CLI批准，按实际命令只需observe/start/send/stop/read_context；controller.recover沿start，恢复验收保持。授权客户端、实际执行者和服务主体分别留证，旧Observe项目和凭据不扩大。最终候选、来源/选择、authority、真实项目和一小时时效按原API/DPAPI核验，独立审核后才实际签发。该准备尚未执行，不授原生文件/命令工具或T11人工接管，不要求用户重复通用Agent测试许可。
+主控在上述真实测试许可内确认受托执行范围：原固定公开Git/正文、实际OpenCode/DeepSeek-pro、原生工具为空及既有项目单CLI批准，按实际命令只需observe/start/send/stop/read_context；controller.recover沿start，恢复验收保持。准确客户端、来源与75前置失败显式恢复已获独立审核，82实际准备0：真实项目6d8cf620-f26c-4ee3-8554-1c9609075736、设置revision2、既有身份桥形成authority，五笔管理写入各一次，CurrentUser DPAPI/CreateNew及实际CLI消费通过，token到期UTC2026-10-22T06:04:06.7927994Z。执行者为Agent，服务实际主体另行记录，旧Observe项目/凭据、T11及工具范围保持；没有重签未知效果的token。Flow83尚无产品Worker模型，真实双Worker验收继续。
 
 ## 继续构建与 REA 仓库格式（2026-10-21）
 

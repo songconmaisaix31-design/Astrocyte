@@ -1,8 +1,8 @@
 # SWA 主线接续
 
-当前程序来源3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb已普通push，59严格检查、build18和412666020字节ZIP/普通解包60实际0；安装60复制/native/28251闭包/保护拒绝通过、汇总6保留功能未验。五项源码返修和同安装真实ACP根/私有serve完整Job退出62获2b4b9d22限定接受。四Go真实消费者二进制65编译0，尚未执行四项检查。当前67服务以原Worker的TTY工具17950保持，runtime9ea24e54、55300/53008/46428、64508及3bcf0c71-service67数据根真实就绪；61服务正常0关闭、原身份两次缺席。63/68准确客户端和只读来源已集中交审，执行Grant未签发，产品双Worker仍未验。
+程序来源3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb的59严格、build18及412666020字节ZIP/普通解包60实际0；安装60复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。五项源码和真实ACP完整Job退出62获限定接受。82真实执行准备实际0，五项管理写入各一次，CurrentUser DPAPI和真实CLI消费通过。Flow83的controller.open超时6，原请求3bed9c88-9c99-4cdd-83cf-a523e5383374/native pending和所属PTY保留，没有创建产品Worker或模型；原Worker与Reviewer继续核对helper启动参数，未知效果不重发。必要程序修复后须使用准确的新安装完成最终双Worker验收。当前67服务由原Worker TTY17950保持，64508/runtime9ea24e54及原95ef/5187保全。四Go真实消费者65仅编译0，实际检查未运行。
 
-主控已建立[draft PR #5](https://github.com/songconmaisaix31-design/swarm-anything/pull/5)，尚未合并。后继d82958a0dd48ab87ea6e77a6d69d6305bf3d11b9已普通push，只含六项准确依赖脚本false策略及说明，无程序变化；45FE计划获2b4b限定接受，原3bcf安装归属保持。原Linux frozen install/1及后续未执行保留，新完整归档普通frozen和Linux原CI实际复验继续，严格未知脚本策略保持。
+主控已建立[draft PR #5](https://github.com/songconmaisaix31-design/swarm-anything/pull/5)，当前head5c75001e，尚未合并。后继d829的六项准确依赖脚本false、3fadb的真实迁移测试前提、5c750的故障消费者来源与保全路径规范化均已独立限定接受，程序安装输入保持3bcf。72普通完整归档frozen及73真实迁移检查实际0；最新Ubuntu job119649240667的68个失败名称与实际main50c2基线完全一致，无新增或删除，完整CI仍失败，Windows仍在运行。实际日志保存在根.verification/swa-cli-v1-control，详细范围见首版任务。
 
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398均已push。Pi原生StepFun custom准入代码、strict/architecture及真实空auth拒绝获788db525限定接受；build16/410059866字节完整ZIP/普通解包29实际0。安装位于C:/Users/DW/AppData/Local/SwarmCli/candidates/f2ab4fd9-install29，复制/native/闭包/保护拒绝通过，安装汇总6保留真实消费者未验。同安装四项生命周期130/130/0/6、C08服务7/runtime_error和所属退出获32f254c5限定接受。新检查服务已退出。
 
