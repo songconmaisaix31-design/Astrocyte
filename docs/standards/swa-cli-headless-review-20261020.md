@@ -2050,7 +2050,7 @@ Reviewer实际使用安装Node24.21.0执行自有`review-opencode42.mjs`，退�
 | 条件 | 正确实现与验证边界 |
 | --- | --- |
 | G01 真实委托身份 | 保留用户原文与主控具体测试范围，分别记录用户批准、Agent执行者、实际服务human/local-human主体及最终scoped Agent；不编造本人TTY、新批准口令或Actor/token，保留原23本人入口。 |
-| G02 最终候选与选择 | 准确最终源码/安装、独占新DataRoot、实际服务PID/创建身份/监听、endpoint/runtime/authority和固定公开Git根/版本相符后才写入；签发前核当前实际OpenCode/DeepSeek-pro选择、原生工具空及来源版本，变化拒绝。 |
+| G02 最终候选与选择 | 准备按实际可见阶段绑定准确最终源码/安装、新DataRoot、服务PID/创建身份/监听、endpoint/runtime、现存authority及固定公开Git。Grant前共用生产读取函数核当前OpenCode/DeepSeek-pro来源和工具关闭合同；token后核现有status/capabilities实际字段。完整选择仍经模型前原Go/native准入及首次实际原R/receipt/journal逐项核验，不要求新增公开selection接口；来源变化拒绝。 |
 | G03 原生HTTP认证 | 真实auth/session、cookie、CSRF及Origin边界；Bearer不能回退至human cookie，scoped Agent不取得管理批准能力。12小时服务端session与客户端释放引用分别记录，内部owner能力不用于绕过批准。 |
 | G04 必要动作与范围 | 按真实命令映射仅给必要动作；task.create及效果前重读Context实际要求read_context，controller.recover按start，resume须有实际恢复消费者或已核适用范围。single CLI、空tools、公开目录/原文本及当前Agent control设置逐项匹配，不扩大旧Mission或管理范围。 |
 | G05 当前批准准入 | 每笔expected_revision/响应revision、完整settings及Grant归属/动作/撤销状态可核；模型效果前仍核当前Grant、selection、R/Dispatch/session与fence。准备成功不改变产品权限、T11或S3待答项。 |
@@ -2067,8 +2067,29 @@ Reviewer实际使用安装Node24.21.0执行自有`review-opencode42.mjs`，退�
 
 主控工具等待异常跨UTC21:41至03:33后，原Task/Dispatch于UTC03:36收到恢复通知并继续；没有重启或结算。原FD5只读身份guard恢复后实际0，旧Observe到期不续签。42d70d4e的原生接受和计量修复两个hook分别获主控`msg_9fdd638b6b7b`、`msg_e12907e497de`明确完整读取回复；准确main031dc三份后继记录已读，STATUS范围措辞普通修复由主控继续，当前未借时间流逝新增验收结论。
 
-**接受返修计划`delegated-execute50-plan.md`准确SHA256 `7DFE168251FD546960CAEA6AED4E6552B135E2AF565844101E377EA9A52AA125`的技术与E01—E08测试范围。** 正文已全文读取，G01—G09形成在先。五项动作在settings/Grant/DPAPI/验证中统一，controller.recover的start映射与实际代码相符；公开目录、单CLI、空工具、原文字段及原T11/S3边界保持。真实12小时cookie与一小时token分别记录，原23/26/95ef旧Observe不提升，未知准备写入停止且先查原状态，实际响应/库/CLI证据分别验收，没有多余模型自我证明检查。
+`delegated-execute50-plan.md`准确SHA256 `7DFE168251FD546960CAEA6AED4E6552B135E2AF565844101E377EA9A52AA125`中的五动作、真实HTTP主体、E01—E08及G03—G09条件保持。controller.recover实际映射start，公开目录、单CLI、空工具、原文字段及原T11/S3边界保持；真实12小时cookie与一小时token分别记录，原23/26/95ef旧Observe不提升，未知准备写入停止且先查原状态，实际响应/库/CLI分别验收。其签发前直接RPC读取方式已经退回，并由下述384D准确补充替代。
 
-返修明确复用该候选既有runtime/client.cjs。注册前以真实registered_agent取得安装来源、registry、runtime/authority和根目录；项目登记后使用实际project.id调用selection，再将实际selection/来源版本及authority绑定描述/DPAPI，settings/Grant/token每次写前重新匹配。Reviewer完整读取现有client.ts（相对fe822未修改）及swa.resolveSelection的真实start分支：前者registered_agent和selection各调用对应方法后立即返回，后者仅按真实项目/Agent/model调用selectAgent读取实际安装与原配置，没有进入workerStart或execute。没有构造项目或selection记录、复制原生parser、增加业务API或替代账户来源。
+Worker `msg_bc8abd6bf59e`发现来源读取也受owner门禁约束，Reviewer随后完整读取controller-admission.ts和client.ts并核RuntimeClient：所有swa.*读取要求isProductOwner，RuntimeClient只从SWA_OWNER_CAPABILITY传入该值，无owner的registered_agent/selection会被拒绝。handler中的只读分支不能单独证明客户端可访问，7DFE这部分没有执行通过；不读取内部owner secret、不放宽准入、不新增免鉴权接口。819d97ed原计划hook `msg_ea29f427b587`已获主控`msg_530802abb40d`完整读取回复，此前接受不构成该RPC方式的实际验证。
 
-该接受仅允许原Worker编写并提交两份客户端、描述与必要只读辅助入口集中审核。最终准确安装/实际描述尚未形成，客户端未接受、Grant/token未签发，产品/双Worker和其余失败路径继续未验；Reviewer不签Grant、不重复模型。通知为`msg_4e8c92b2b5c8`，原O07实现与必要校验继续，不等待额外管理回合。03d7ac6f的27FA退回hook已获主控`msg_22d3680f757b`明确完整读取回复，并继续由原Worker在既有窄写域处理Ajv外部ref直接消费者，实际样例/约束和O07累计审核。
+**接受`delegated-execute54-source-plan.md`准确SHA256 `384D188FD31F477500401FE61D36F6C757F2EC7B4C35096C28BFF9D40BB7F066`的来源技术修订和S01—S05测试范围。** 正文已全文读取，依据先行G01—G09及真实生产准入判断。Grant前只读取准确候选VERSION/host产物、实际服务进程/runtime、真实Orca库现存authority及原生来源；没有实际项目时不生成NativeLaunch或项目记录。真实项目登记后，共用同版生产readAgentSettings和安装inspectNativeOpenCodePolicy，绑定原exe/version/config/auth/SQLite/credential/WAL、真实project/root及关闭工具合同，输出仅包含非秘密source_snapshot。每笔准备写入前复核，实际authority尚缺时保持未知，Grant/token前必须取得并固定。helper导入源码和metafile须与准确候选匹配，不能复制选择算法或启动第二个runtime。
+
+token后及任何Worker/模型前，通过正常HTTP/CLI的status/capabilities核其真实公开字段；完整selection由首次真实Worker返回或原持久R取得，与预先绑定来源逐项比对，并以CreateNew的非秘密观测文件保留，原DPAPI不覆盖。原Go/native效果前的当前Grant、选择、R/Dispatch/session/fence检查继续。主控`msg_08260890ed3f`、`msg_7d7525da57e7`、`msg_ca057d7b791c`采用该分阶段方式，并明确不为取得测试返回而扩大capabilities接口；G02已按真实生产消费链修订，不存在公开selection查询时按真实字段与首次实际准入/原R核。384D没有把source_snapshot冒充服务selection或registry，没有增加模型自我证明检查。
+
+384D通知为`msg_8dd6a3e6be9d`。最终准确客户端、实际前置描述和候选稳定身份仍须集中审核，Grant/token尚未签发，产品/双Worker继续未验；Reviewer不签Grant、不重复模型。03d7ac6f的27FA退回hook已获主控`msg_22d3680f757b`明确完整读取回复；Ajv外部ref消费者在既有窄写域随O07累计审核。
+
+## 准确e9fa97e3产品消费者与完整Job退出
+
+**退回准确程序Commit `e9fa97e33e1235577cfef7342942398eb804f1f5`的ACP完整Job退出处理。** 已按fe822至该准确Commit审查新增选择联合、Go序列化与来源验证、每Worker私有账户、初始化/ACP接入、输入准入、完整SQLite结果及直接测试/构建消费者。JSON Schema、TS与Go按Pi/OpenCode account kind分别保留字段，原23和产品权限没有变化；原生46的assistant数据计量已准确修为30622个UTF-8字节。完整产品、安装双Worker及故障验收尚未接受。
+
+| 缺口 | 准确源码与影响 | 原Worker返修和验证要求 |
+| --- | --- | --- |
+| ACP未知Job退出被缓存 | acp-agent-connection.ts调用spawnManagedProviderProcess时未提供完整Job的acceptClose，原默认acceptProviderRootExit只要求根退出。RetryableProcessExitProof会保留root=exited、tree=live/unverifiable的结果，后续close无法重新查询并证明原Job。 | 复用原JsonlRpcAgentConnection的完整Job/真实processless接受条件；完整退出未知时保留原连接和资源，后续关闭继续核同一Job。 |
+| 根退出提前发布会话结束 | 新onExit(listener)过滤不能保护managed.onExit内直接调用的options.onExit；后者经acquire的onExit进入adapter.finish并删除session，发生时只证明managed root退出，私有serve和其他Job成员可能仍存在。 | 同一已证明完整退出路径统一、一次发布订阅和options回调；相应exited/rootVerdict反映真实完整Job，未知保持所属连接可查询/停止，普通无Job ACP语义保持。 |
+
+缺口由实际生产调用关系推导：managed-provider-process使用RetryableProcessExitProof和默认root-only判据；adapter.finish会endAcpStructuredSession并删除原session，后续stopSession对不存在的session直接返回true。原Pi连接已经对owned Job采用严格acceptClose和完整退出后发布，可复用该消费者模式。通知`msg_a77bde6c9899`交回原Worker，补真实所属ACP根/私有serve故障及Job退出证据，不用伪进程、mock或假退出结果。当前未执行破坏性故障或新模型调用。
+
+新SQLite读取代码在真实只读事务中读取指定session的全部消息，检查严格递增但可有间隔的seq、消息身份/时间、fatal UTF-8、实际账户/模型/内容合同、完整最终正文及12MiB边界；返回前复核DB/WAL版本，整体task结果再核journal epoch/sequence和来源身份。它保留实际用量和账单费用未知，超限或不完整失败，不剪裁成果。新增备份故障消费者基于真实native DB的SQLite backup，仅改所属副本；这些实现静态检查通过不等于该消费者已实际执行。
+
+已读取49/51/52原始入口与日志：49 strict和架构0，广包Go实际1，app的Relay Git/交付用例失败、httpapi的Workbench缺明确publication/SQL输入，未作同条件基线比较，不归类为既有失败；51 strict、gofmt/MJS语法与三个CLI传输前Go用例0，四项同安装真实TestOrca未运行。52同pin Node24.21完整check:contracts实际0，Redocly20项警告、264样例及生成一致性通过；准确Ajv修改注册既有外部SWA Schema并补示例基URI，约束和样例保留。build17入口要求准确干净e9fa，原SOURCE及日志指向同Commit、Node24.21和复用的四个未变native输入，build-exit为0；完整功能仍标NOT_RUN。Reviewer没有重复完整构建。
+
+Reviewer实际运行`check-revision.ps1 -Previous fe822783c92bd6a303b4f83157351e6b159e68f4 -Candidate e9fa97e33e1235577cfef7342942398eb804f1f5`为0：成熟marked18.1.0读取该提交三份Markdown，六个本地链接无缺失，旧§15锚点仍存在；本报告WORKING的同库检查和Git空白检查均0。上述检查不替代缺陷返修或最终实际路径。
