@@ -41,6 +41,8 @@
 
 ## 当前云机验证
 
+Windows第二same-artifact诊断c114/run39850886633/job120076397118成功/其他native与S0skip，06已审原HTML。原4aef两CIM观测仅known_exit=false，均唯一PID7288/creation1792700119902与原known一致；query=true/count137/invalid0/身份完整true/unknownabsenttrue，无timeout/queryfailure/parseerror，二native退出快照remaining均1。仅可确定同一已观察身份仍列出，role/ppid来源尚UNKNOWN，service FAIL保留；下一只read原ready角色关联，准确reporter a4049835…已接受，无新full/产品/服务。LinuxEINTR方案6314ebb…已接受，原Poll0/PidfdOpen位置未证与真实正timeout API MRE分别报告，实施/局部结果仍NR，旧4244包不复活、生成0。
+
 当前Pi包4244实际失效，原exec63472最终FAILED/observer_exited_during_hold：原observer stderr20:09:37UTC为interrupted system call/exit1，service随后normal0；Root20:35:18读会话确认。内部owned0/allpidfds两原件不补外部final双空，shutdownUNKNOWN保留。用户已获最小失败证据与旧包不可execute说明；尚无human/Grant/token/driver/model生成，旧review原件不改，INVALIDATED.md新增说明。03仅只读定位EINTR真实调用面和必要MRE计划，不重启替换原服务或伪闭合资源。先前独立SOURCE仍私有保留。
 
 Windows第一只读诊断c268/run39849110411/job120070215194全部成功，其他3nativejob及S0run39849110462跳过；06已核原件。原4aef前7exit0/ACL2true、ready存在/serve0、helper6、unknown0、native退出观察2、CIM6/all_exitedfalse、无unsettled，原FAIL不升级，明确不同于117初始化失败。仅同artifact追加两CIM强门字段的reporter计划已接受，待末稿CR后只读取，不完整build/服务/model重跑；具体CIM子因仍UNKNOWN。

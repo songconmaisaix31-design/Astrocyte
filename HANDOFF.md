@@ -1,5 +1,7 @@
 # SWA 主线接续
 
+Windows第二窄只读取证c114/run39850886633/job120076397118实际0、其他native3job与S0run39850886762均skip，06已核原HTML。原4aef两CIM观测query=true/count137/invalid0/identity完整true/unknown_absent=true，唯known_identities_exited=false；各唯一PID7288/creation1792700119902与原已观察身份相同，无截断，monotonic542.477→1192.1112ms。两native退出观测remaining_count同为1，相距254ms。helper无timeout/signal/termination/queryfailure/parseerror，故不是查询异常、缺字段或PID复用；具体角色/父子关系仍UNKNOWN，不能据此称产品泄漏。仅reporter追加原ready时刻角色与numeric父子关联计划/末稿a4049835…已06接受，下一仍只读sameartifact，不newfull/服务。LinuxEINTR计划6314ebb…亦已接受：仅新ignored observer丢弃EINTR未完轮并保原期限/身份/两fresh门，真实pipe/自进程信号MRE与原Poll0现场未证范围分开；源码/运行结果尚未验，原包不复活。
+
 当前Pi拟包4244已失效，不能execute或复用用户可能迟到的旧包同意：Root20:35:18UTC读原exec63472实际close1，observer stderr原20:09:37.155仅`interrupted system call`，owner safe分类observer_exited_during_hold，serve随后正常0/null、observer1/null。原service stderr两条internal all_observed_pidfds_exited=true/owned_count0保留，但外部observer仅首4身份/completefalse，没有final双空，owner-result shutdown仍UNKNOWN。根因调用点/原资源外部结算待03只读定位，不当成55m期限到期、不重启替换原服务；已向用户明示旧包失效，human/Grant/token/driver/model均未执行，生成0。原PKG新增INVALIDATED.md，原review JSON/SHA及所有原件保持。SOURCE仍独立私有保留，不读key正文。
 
 Windows第一轮只读取证实际成功：c268的run39849110411/job120070215194全部6steps0，旧diag/VS/full均skip；S0 run39849110462整体Skipped/无矩阵分配。原4aef真实7前序exit0、installedACL两bool true、service helper6、ready存在/serve0、unknown进程观察0/native退出观察2、CIM exit6/all_exitedfalse、modeUNKNOWN/unsettled不存在，过滤原错误无白名单行。06已限定接受原件，原完整FAIL不升级；排除首初始化失败说法，具体CIM子因仍UNKNOWN。仅reporter追加同原artifact两CIM判据投影计划已接受，等待精确末稿CR后只诊断读取，不新full/服务。

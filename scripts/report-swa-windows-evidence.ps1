@@ -84,6 +84,22 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
         }
         $cimExit = $actual.actual_cim_process_exit
         $cimReport = $actual.actual_cim_report
+        $rootPid = Get-RetainedNumber $actual.pid
+        if ($rootPid -ne 'UNKNOWN' -and ($rootPid -lt 1 -or $rootPid -gt [uint32]::MaxValue -or [math]::Floor($rootPid) -ne $rootPid)) { $rootPid = 'UNKNOWN' }
+        $rootCreation = 'UNKNOWN'
+        if ($rootPid -ne 'UNKNOWN' -and $actual.events -is [array]) {
+            $spawnEvents = @($actual.events | Where-Object { $_.type -ceq 'actual-spawn' -and (Get-RetainedNumber $_.pid) -ceq $rootPid })
+            if ($spawnEvents.Count -eq 1) { $rootCreation = Get-RetainedNumber $spawnEvents[0].creation_time_ms }
+            if ($rootCreation -ne 'UNKNOWN' -and ($rootCreation -lt 1 -or [math]::Floor($rootCreation) -ne $rootCreation)) { $rootCreation = 'UNKNOWN' }
+        }
+        $readyObservation = $null
+        if ($cimReport.observations -is [array] -and @($cimReport.observations | Where-Object { $_.known_identities_exited -is [bool] -and $_.known_identities_exited -eq $false }).Count -gt 0) {
+            $readyFile = Join-Path $EvidenceRoot 'smoke/readiness-eof/ready-service-observation.json'
+            if (Test-Path -LiteralPath $readyFile -PathType Leaf) {
+                $readyObservation = Get-Content -LiteralPath $readyFile -Raw | ConvertFrom-Json
+                if ($readyObservation.source_revision -cne $source) { throw 'The retained ready observation source revision differs' }
+            }
+        }
         $termination = 'UNKNOWN'
         if ($null -ne $cimExit -and $cimExit.PSObject.Properties.Name -contains 'actual_helper_termination') {
             $termination = if ($null -eq $cimExit.actual_helper_termination) { $null } elseif ($cimExit.actual_helper_termination -is [pscustomobject]) { [ordered]@{ signal_sent = Get-RetainedBoolean $cimExit.actual_helper_termination.signal_sent } } else { 'UNKNOWN' }
@@ -123,12 +139,27 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
                     $projected.observed_processes_same_pid_truncated = 'UNKNOWN'
                     if ($row.actual_matches -is [array]) {
                         $matches = @($row.actual_matches | Select-Object -First 8)
-                        $projected.actual_matches = @($matches | ForEach-Object { [ordered]@{ pid = Get-RetainedNumber $_.pid; creation_time_ms = if ($_.PSObject.Properties.Name -contains 'creation_time_ms' -and $null -eq $_.creation_time_ms) { $null } else { Get-RetainedNumber $_.creation_time_ms } } })
+                        $projected.actual_matches = @($matches | ForEach-Object {
+                            $matchPid = Get-RetainedNumber $_.pid
+                            $matchCreation = if ($_.PSObject.Properties.Name -contains 'creation_time_ms' -and $null -eq $_.creation_time_ms) { $null } else { Get-RetainedNumber $_.creation_time_ms }
+                            $identity = [ordered]@{ pid = $matchPid; creation_time_ms = $matchCreation; ready_identity_match_count = 'UNKNOWN'; ready_observed_role = 'UNKNOWN'; ready_observed_parent_pid = 'UNKNOWN'; ready_observed_named_job_membership = 'UNKNOWN' }
+                            if ($matchPid -ne 'UNKNOWN' -and $matchPid -gt 0 -and $matchPid -le [uint32]::MaxValue -and [math]::Floor($matchPid) -eq $matchPid -and $null -ne $matchCreation -and $matchCreation -ne 'UNKNOWN' -and $matchCreation -gt 0 -and [math]::Floor($matchCreation) -eq $matchCreation -and $readyObservation.members -is [array]) {
+                                $readyMatches = @($readyObservation.members | Where-Object { (Get-RetainedNumber $_.pid) -ceq $matchPid -and (Get-RetainedNumber $_.creation_time_ms) -ceq $matchCreation })
+                                $identity.ready_identity_match_count = $readyMatches.Count
+                                if ($readyMatches.Count -eq 1) {
+                                    $member = $readyMatches[0]
+                                    $identity.ready_observed_role = if ($member.role -is [string] -and $member.role -cin @('serve', 'runtime', 'server', 'daemon')) { $member.role } else { 'UNKNOWN' }
+                                    $identity.ready_observed_parent_pid = Get-RetainedNumber $member.parent_pid
+                                    $identity.ready_observed_named_job_membership = Get-RetainedBoolean $member.actual_named_job_membership
+                                }
+                            }
+                            $identity
+                        })
                         $projected.actual_matches_truncated = $row.actual_matches.Count -gt 8
                         if ($actual.observed_processes -is [array]) {
                             $matchPids = @($matches | ForEach-Object { Get-RetainedNumber $_.pid } | Where-Object { $_ -ne 'UNKNOWN' })
                             $known = @($actual.observed_processes | Where-Object { $_.pid -in $matchPids })
-                            $projected.observed_processes_same_pid = @($known | Select-Object -First 8 | ForEach-Object { [ordered]@{ pid = Get-RetainedNumber $_.pid; creationTimeMs = Get-RetainedNumber $_.creationTimeMs } })
+                            $projected.observed_processes_same_pid = @($known | Select-Object -First 8 | ForEach-Object { [ordered]@{ pid = Get-RetainedNumber $_.pid; creationTimeMs = Get-RetainedNumber $_.creationTimeMs; ppid = Get-RetainedNumber $_.ppid; parent_pid = Get-RetainedNumber $_.parent_pid } })
                             $projected.observed_processes_same_pid_count = $known.Count
                             $projected.observed_processes_same_pid_truncated = $known.Count -gt 8
                         }
@@ -143,6 +174,8 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
         }
         $details = [ordered]@{
             diagnostic_only = $true; prior_run = $priorRun; source_revision = $source; complete_service_acceptance = 'FAIL'
+            actual_pid = $rootPid
+            root_creation_time_ms = $rootCreation
             actual_cim_process_exit = [ordered]@{
                 exit = if ($null -ne $cimExit -and $cimExit.PSObject.Properties.Name -contains 'exit' -and $null -eq $cimExit.exit) { $null } else { Get-RetainedNumber $cimExit.exit }
                 signal = Get-RetainedNullableText $cimExit 'signal'

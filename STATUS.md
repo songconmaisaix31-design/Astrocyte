@@ -1,5 +1,7 @@
 # SWA 当前状态
 
+最新Windows窄诊断c114/run39850886633/job120076397118成功，其他native与S0均skip；06已核。原4aef唯一失败判据为同一known身份未退出：两CIM各唯一PID7288/creation1792700119902，与原known同值，query/字段完整/unknownabsent均true、count137/invalid0；两native观测也各剩1。CIM无timeout/queryfailure/parseerror，排除查询异常及PID复用解释；原service FAIL不变，尚无该身份role/ppid，不能判断产品或辅助来源。下一只读原ready成员的角色投影源码已接受，未新full/服务。Linuxobserver EINTR最小计划已接受但尚无局部执行结果，4244旧包仍失效，model0。
+
 Pi具体拟授权包4244当前失效：原owned observer于20:09:37UTC记录`interrupted system call`并退出1，原serve随后正常0，Root20:35:18读取会话才确认；外部final双空缺失，最终shutdownUNKNOWN。内部两条owned0/全部pidfd退出原记录保留，不能替代完整外部结算。已明确通知用户旧包不能执行/不能用于替换服务；原review及元数据保留，PKG/INVALIDATED.md说明状态。human/Grant/token/driver与模型生成仍未执行，SOURCE私有保留。03只读定位实际EINTR调用面和后继最小真实MRE计划，不改产品或自动重启；下文原baseline存活/截止时间均是失效前记录。
 
 Windows c268只读取证run39849110411/job120070215194成功，其他native3job跳过，S0run39849110462整体Skipped无额外build。原4aef数据确认：前7阶段0/安装ACL两true、ready存在、serve0、helper6、unknown0、native退出观察2、CIM6/all_exitedfalse、无unsettled。06限定接受，完整service仍FAIL，具体CIM失败判据待同artifact下一窄投影，不能沿用117 owner因或声称发生泄漏。当前不新full/服务/model重跑。
