@@ -10,6 +10,8 @@ import { deriveRemoteRuntimeTerminalCreateHandle } from '../../../third_party/or
 import { getRepoMainWorktreeId } from '../../../third_party/orca-v1.4.230/src/shared/worktree/id'
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
+import { quotePowerShellNativeArgument } from '../../../third_party/orca-v1.4.230/src/shared/powershell-native-argument'
+import { resolveWindowsShellLaunchArgs } from '../../../third_party/orca-v1.4.230/src/main/providers/windows-shell-args'
 import { createIncrementalNdjsonFramer } from '../../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { invocationSchema, helperReply, nativeObject, nativeError, commandSchema, capabilityRequirementsSchema, agentSelectionSchema, scopeSchema, type AgentSelection, type Invocation, type Scope } from './contracts'
@@ -113,8 +115,12 @@ async function createController(context: RpcContext, project: string, workspace:
   const node = process.env.SWA_NODE_EXECUTABLE
   const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
   if (!node) throw new Error('installed_node_missing')
+  const launchScope = await runtime.resolveTerminalWorkspaceLaunchScope(`id:${workspace}`)
+  const command = `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}`
+  if (process.platform !== 'win32' || launchScope.connectionId || !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
   const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
     (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
+      command, env: { SWA_CONTROLLER_HELPER: '1' }, shellOverride: 'pwsh.exe', startupCommandDelivery: 'fast',
       launchConfig: { agentCommand: `"${node}"`, agentArgs: `"${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
       title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
     }))
