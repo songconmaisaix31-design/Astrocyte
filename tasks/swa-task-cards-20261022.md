@@ -41,7 +41,9 @@
 
 ## 当前云机验证
 
-Pi每Worker HOME合同A七文件在工作区实现且独立限定接受，403项实际JSON/Zod形状检查、33项Go子项及264examples/生成一致性通过；旧账户分支不改，完整执行B尚待共享端口与真实来源审查，三个Linux拒绝门保留，不提交不完整执行批次或运行半树strict。按用户优先阶跃星辰的选择，首实际目标为custom provider `stepfun`、模型`step-3.5-flash`、API `openai-completions`和`https://api.stepfun.com/v1`；实际目录包含该ID，生成、兼容性与N仍未验。
+Pi每Worker HOME合同A七文件在工作区实现且独立限定接受，403项实际JSON/Zod形状检查、33项Go子项及264examples/生成一致性通过；旧账户分支不改。完整执行B的主稿d8031c43…与内部端口76fac972…已独立接受并冻结，02/03正在原互斥写域实施；三个Linux拒绝门保留，不提交不完整执行批次或运行半树strict。按用户优先阶跃星辰的选择，首实际目标为custom provider `stepfun`、模型`step-3.5-flash`、API `openai-completions`和`https://api.stepfun.com/v1`；实际目录包含该ID，生成、兼容性与N仍未验。
+
+B局部检查原件保留：`pi-source-boundaries-r1/`依赖解析失败、r2为jsonc-parser UMD相对引用加载失败、r3实际5PASS/3FAIL且空原型对象与相同JSON深度比较不等；均先报告最小复现/根因/局部结果，没有启动full。共用生产打包规则及严格解析返回值窄修后，`pi-source-boundaries-r4/`实际8PASS/0fail/0skip、首末摘要一致；严格JSON/重复键、安全断言未放宽。真实文件/FD/锁及官方source/纯模型metadata不代表原生协议。共享队列8项、真实UTF8/EOF reader 6项和Go当前准入5组/47子项亦局部通过；全批B源码CR、无模型RPC、最终strict及新安装仍待完成。私密来源provision工具没有实际创建来源，无模型runner没有启动，模型生成调用0。
 
 独立修复`8fb6397971f2c259e491668c32f666ef86eddd34`只含Linux bootstrap及一个真实D组件case，获06准确源码与原件限定接受。实际准入后紧贴spawn前设置/读回077；普通Node/fs子进程默认创建0700目录/0600文件，父测试仍022，真实EOF/fullD/forced=false及前后两源摘要一致，唯一case实际1PASS/0fail/0skip/退出0。执行`bash .verification/cloud-setup/pi-private-creation-local-r1.sh`，原件为同名前缀log/exit及sources-r1.sha256。开发源码控制仅复用875安装同ABI Node/PTY；未修改875、未重旧D14/完整构建，不代表Pi JSONL或Agent模型通过，设置异常仍UNKNOWN。
 

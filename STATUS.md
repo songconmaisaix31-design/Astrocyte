@@ -12,7 +12,9 @@
 
 授权辅助工具两源已由`10563b86`原样提交至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。按用户选择先验证阶跃星辰，首个Pi目标采用自定义provider `stepfun`、`step-3.5-flash`、`openai-completions`和`https://api.stepfun.com/v1`；该模型已在真实目录中出现，生成及兼容性仍未验。现有Codex helper不自动改成Pi；OpenCode Linux/StepFun目前仅有只读范围计划。
 
-Pi每Worker HOME的新账户形状已在七文件工作区变更中实现并获独立限定接受：403项JSON/Zod形状检查、33项Go子项与264个示例/生成一致性通过。旧账户分支保持，实际新账户执行及成果路径尚未接通，三个Linux执行拒绝门保留；暂未提交该不完整执行批次，也未以局部检查替代完整strict。原生流、最后写入锁、真实请求ID、发布与完整成果的共享端口仍在审查。
+Pi每Worker HOME的新账户形状已在七文件工作区变更中实现并获独立限定接受：403项JSON/Zod形状检查、33项Go子项与264个示例/生成一致性通过。完整执行B的原生流、写入锁、实际请求ID、发布与成果端口已冻结，由原02/03负责人实施；准确方案为`pi-native-raw-source-contract.md`（d8031c43…）与`pi-linux-internal-ports-supplement.md`（76fac972…）。三个Linux执行拒绝门仍保留，尚未提交不完整执行批次或运行半树strict；B全批源码、真实无模型RPC及最终适用检查尚未接受。
+
+B开发的局部文件检查前三轮依次在依赖解析、jsonc-parser的UMD加载及空原型对象比较失败；先报告最小复现、根因和局部结果，再修正生产共用打包规则及严格解析返回值。原严格JSON/重复键和安全断言保留。第四轮实际8PASS/0fail/0skip，覆盖真实目录/来源叶文件、有界FD、proper-lockfile 4.1.2、锁替换/消失、设置语义及官方源码与纯模型metadata，原件`pi-source-boundaries-r4/`；前3轮保留。另有共享写队列8项、真实字节流reader 6项及Go当前准入5组/47子项局部通过，均不代表完整B、Pi RPC、账号、模型或同S安装通过。无模型runner与私密来源创建工具只有源码审查及有限静态检查，均未执行；生成调用仍为0。
 
 Linux专属原生启动器的私有创建默认值已提交`8fb6397971f2c259e491668c32f666ef86eddd34`并获06独立限定接受：真实准入之后、spawn之前设置并读回077；所有该启动器的Linux原生子进程继承，daemon及Windows不改变。唯一development-source组件检查实际1PASS/0fail/0skip，普通Node/fs子进程默认创建目录0700、文件0600，父测试进程仍为022，真实EOF及完整D收尾、forced=false通过，前后两源摘要一致。原件`.verification/cloud-setup/pi-private-creation-local-r1.log`及`pi-private-creation-sources-r1.sha256`；875安装仅提供同ABI Node/PTY输入，未修改旧安装，未重复旧D14或完整构建。该检查不代表Pi JSONL、Agent或模型通过；设置/readback异常仍保持UNKNOWN。
 
