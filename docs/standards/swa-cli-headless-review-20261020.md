@@ -2317,7 +2317,7 @@ Reviewer独立`inspect-idempotency92.mjs`实际0，原件`idempotency92-binding-
 
 **接受准确`f35beaaedf4598ddce413c59da6792341e9eb0aa`的四项真实Run消费者及来源检查修订。** 七份完整差异已读：四mjs现读取runs且legacy=0，分别核实际controller/pane/consumer_generation及唯一root，记录存在立即检查；旧coordinator_runs作为独立状态继续计数，原并发、幂等、context变化、恢复和故障断言保留。来源检查仅将未进入实际安装metafile的native-idempotency加入既有明确测试排除域；controller-inspection及全部程序/Go/构建/原生输入与准确893保持。
 
-Reviewer独立`review-f35-source.mjs`实际0，原件`f35-source-actual-independent.log`与`f35-source-independent.json`：准确干净f35、七条差异路径、实际相关源码、全部必要产品输入相同、成熟YAML原六项策略及实际metafile排除均核。首次Reviewer脚本在Windows绝对路径ESM加载阶段停止，没有执行来源函数；改用标准file URL后上述检查实际0，没有编译或原生调用。准确两份Markdown的Git/marked检查0，六个本地链接及旧§15锚点保持；主控64451493准确四份事实源差异已全部读取，89个本地链接无缺失。
+Reviewer独立`review-f35-source.mjs`实际0，原件`f35-source-actual-independent.log`与`f35-source-independent.json`：准确干净f35、七条差异路径、实际相关源码、全部必要产品输入相同、成熟YAML原六项策略及实际metafile排除均核，没有编译或原生调用。准确两份Markdown的Git/marked检查0，六个本地链接及旧§15锚点保持；主控64451493准确四份事实源差异已全部读取，89个本地链接无缺失。
 
 **接受94a按既有stop权限完成原92 controller及已观察helper出生身份退出的限定范围。** 最终消费者SHA256为`D646D5AC562ACE274EF8D6E9D84840C2CA7B1FA639D1CC2F8F41CF906FFA6FB3`，已核实际摘要和Parser0，close-intent含真实UTC、原Task/Dispatch和阶段。94实际1在原stdout的Protected DACL前置停止，尚无close-intent或关闭请求；原文件owner为CurrentUser、仅同用户继承权限，未设置Protected。原92字节和DACL保持，94a以CreateNew保存同字节私有副本并设保护DACL，摘要两者均为`5805128B044A46687EB1DBAF571EF5B1D7A61D348C069CA6D45C9E555FEB85DE`，原件和94失败保留。
 
@@ -2327,7 +2327,7 @@ Reviewer独立`review-f35-source.mjs`实际0，原件`f35-source-actual-independ
 
 **接受95在同893-install88/89服务上的既定非模型幂等检查。** 准确f35消费者使用原91绑定，实际驱动0，全部24条原CLI输出、实际退出/时间/request_id已独立核；并发open和完成重放同一controller，并发task与完成重放同一Run/root，close并发及完成重放完成，另一controller也经实际关闭。五项workdir、spec、真实context/版本及其他controller payload变化拒绝request_mismatch，foreign controller查询原任务拒绝scope_denied；原请求和两级真实子回执保持。
 
-Reviewer独立`review-idempotency95.ps1`及mjs实际0，原件`idempotency95-complete-independent.log`：真实SQLite七个原请求全部completed，实际Run按controller/pane/generation唯一、root恰一、固定context与真实版本变化拒绝相符；真实workspace执行关联准确指向当前项目、Grant caller、settings2及同Run/root。95阶段前后仅新增Run、root及该执行关联各一、receipt七，其余三库计数和来源保持；这些阶段原件与后继Flow96的当前业务状态分别审核。两controller各有两次实际进程出生身份退出样本，58份导出不含真实DeepSeek key或本次token，原生库mtime保持。Reviewer前两次只读核脚本分别补核真实执行关联和结构化字段顺序，未重跑95产品调用；最终以标准结构化等值完成上述核查。
+Reviewer独立`review-idempotency95.ps1`及mjs实际0，原件`idempotency95-complete-independent.log`：真实SQLite七个原请求全部completed，实际Run按controller/pane/generation唯一、root恰一、固定context与真实版本变化拒绝相符；真实workspace执行关联准确指向当前项目、Grant caller、settings2及同Run/root。95阶段前后仅新增Run、root及该执行关联各一、receipt七，其余三库计数和来源保持；这些阶段原件与后继Flow96的当前业务状态分别审核。两controller各有两次实际进程出生身份退出样本，58份导出不含真实DeepSeek key或本次token，原生库mtime保持。Reviewer没有重跑95产品调用。
 
 本轮接受限于原三个无模型幂等案例。实际逐效果边界响应丢失、runtime重启pending查询、Worker start/send并发与断连重放、不同R的close/create/start交错四项仍未验，不以24条命令或编译结果扩大接受。原92失败、94前置失败及全部原件保留，Flow96沿同安装进行真实双Worker验收，模型、重叠、指定停止和完整成果仍待实际证据。原95ef/5187及89服务/只读Job工具保持，未调用Aliyun；2b64fcfb两个hook已分别获主控`msg_12e573547662`、`msg_f4c1f132120d`全文读取回复，唤起均已确认，本Task继续。
 
@@ -2354,3 +2354,23 @@ Reviewer完整核原inspect96-pty.ts的真实DaemonClient连接、原PID/nonce/J
 原analyze96.mjs及flow96-diagnostic.json已完整读取，Reviewer补充只读核`review-flow96.mjs`实际0，原件`flow96-length-independent.log`：按真实两pending receipt内invocation及原JSON序列化，两帧分别12431/12480字符、12719/12822 UTF8字节，均低于原16KiB chunk。首帧字符数与真实JSON错误位置12431相同；这是原存储输入与错误位置的关联，实际每字节写入顺序仍未捕获。没有据此登记跨chunk已经复现，也没有构造替代请求或重发原R。
 
 主控已明确原89准确所属处置授权：原stop下可单新close R处理原96 controller；原owner EOF若残留，仅在重核原893来源、serve6224出生、私有Job DACL和全部成员出生/路径后处置该具名Job。21806保持至两次完整空清单及全部旧身份退出，原95ef/Orca保持，原未知R不变；Reviewer只审核实际原件，不执行关闭、终止或新Grant。准确新程序及测试结果继续由原Worker提供，当前计划接受不登记程序修复、实际component或T13通过。
+
+## 准确6778源码与101静态检查
+
+**接受准确`6778a66faf6d1ca7b50658f23966db3e406f38c6`的三项产品源码返修、两项必要消费者及101严格/架构检查限定范围。** 七份完整Commit差异已读。普通sendTerminal仅在driving且requireWriteSettlement路径进入原perPTY/generation队列，覆盖全部text/chunks/后缀及实际write settlement；队首和原beforeWrite异步钩子前后检查signal、handle/PTY和generation。回复等待位于该队列之外，实际模型并发仍须真实区间验证；其他输入路径及原chunk算法保持。
+
+helperCall以局部AbortController接原120秒deadline，Promise.all同时持有写入和实际回复，finally取消写入并释放订阅/timer；未写排队项到队首失败，部分交付仍unknown，不重发旧R。helper保留原JSON/schema及错误边界，在finally关闭readline/stdin；原正确引用的PowerShell启动命令追加exit原LASTEXITCODE，处理原-NoExit下Node结束后的shell生命周期。原launch token/identify/祖先/出生/pane、Grant/工具和真实固定来源保持，没有引入新调度器或协议。
+
+controller-fault新增显式helper-only模式，沿原实际owner、Job、父链及持有句柄验证，仅给helper终止权限，root句柄只读等待，分别记录实际终止PID和两目标退出，默认控制端/服务模式保持。Flow后续输入以该次实际send R命名并CreateNew，完整正文、请求及原业务断言保持，支持component和最终安装分别保留原件。这些属于主控NoExit生命周期及两阶段真实验证要求；动态helper-only结果尚未取得。
+
+Reviewer独立`review-controller101.mjs`实际0，原件`controller101-source-independent.log`：101 SOURCE=f35及原三产品source.diff与准确6778一致，工作树干净，五份产品/测试源码等于准确Commit；严格退出0、47包架构退出0。101入口及原日志已读，目录内实际fault binary存在，原Worker报告Go构建/格式和Flow语法0；此处未将其存在或报告当作实际故障通过。Reviewer没有重复编译。准确两份Markdown的Git/成熟marked检查0，六个本地链接和旧§15锚点保持。
+
+计划准确细化`752D733059F1DED177635D0E188CD03DC9D08EC540B543A14F2F64745F49F1E0`全文及摘要已核，41734C八个真实公开文件具体化和helper-only/Flow原件保全均在先行七条件范围内。component真实长输入/并发、开发候选真实双Worker、正式ZIP/最终安装同候选T13顺序保持；新程序须新准确来源及绑定，未变native可复用，未命中的取消/部分写/parser窗口仍NOT_RUN。源码限定接受已送原Worker`msg_0862612fff91`，允许连续原计划，不增加通用批准等待。
+
+## 原89的明确原生观察关闭入口及102拒绝
+
+**接受93C7D5CF4F2CC38C8B0A1B6362E82E47E89C95F55E6A481FB08D28AAFB4380A8消费者的明确native_inspection关闭分支。** 新辅助文件assert-controller-inspection.mjs准确SHA256为`6D85A960158637BC58231D9D50F372B48D23FFD818B00FB17CB4822477F3595D`，两个正文及原同生产inspection、Job schema均完整读取，实际摘要与独立Parser0已核。分支显式指定真实原生观察，核原DB、source、DataRoot/安装、原响应路径、60秒新鲜度、七个完整owner字段和实际session/incarnation；再用当前CIM核两出生、准确image及父链，沿原open completed和DPAPI/Grant范围单次新close R。默认94a入口保持，没有fallback或修改产品准入。
+
+Reviewer只读当前50264/49128的真实CIM，父进程分别3824/50264，原出生及实际pwsh/893安装Node路径相符；没有发关闭或修改ACL。原89 Job为`Local\SWAService95379a87-5c72-4127-acd5-deea6645637c`，100原完整成员七个及出生/路径/CurrentUser+SYSTEM保护DACL已读，21806继续持有。该客户端限定接受已送原Worker`msg_4095845b3298`，实际关闭按独立原件审核。
+
+**102没有证明原89 controller或服务关闭，后继退出证据仍不足。** 新close R `bb82920e-2b18-41f6-8178-8a5356bbb39f`真实返回operation_in_progress，消息为原Task或Worker创建仍持有reservation；驱动1保留。独立`review-close102.mjs`实际0，原件`close102-independent.log`：真实close receipt缺席，原96两start父R仍pending/helper-input，当前原生owner观察此前通过；不把该拒绝称为成功、未知R重试或权限放宽。原Worker按主控已授owner EOF及必要同Job核实后处置继续，完整空清单与全部旧身份退出另验。原95ef/5187、Orca和全部原R保持；246ac0cf计划hook获主控`msg_12e909d2894b`全文读取回复，5aa退回hook获`msg_6222198ed5b6`全文读取回复，唤起均已确认，本Task继续。
