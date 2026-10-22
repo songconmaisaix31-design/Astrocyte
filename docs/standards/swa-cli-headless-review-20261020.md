@@ -2344,3 +2344,13 @@ Reviewer完整核原inspect96-pty.ts的真实DaemonClient连接、原PID/nonce/J
 **退回60F009计划的两项覆盖缺口。** C96-02仍将实际队列覆盖留到最终T13，须补主控已要求的最终归档前针对性真实服务/SQLite/PTY/原调用链检查，记录96两输入实际UTF8长度、完整原上下文、同/跨真实chunk并发及各自JSON/request_id完整到达后再正式包装；不能mock、伪造身份或截短输入。原writer只在suffix delay检查signal，writeChunks不查；须明确队首和每chunk/后缀之前核实际signal、handle/PTY/generation，未写超时请求不晚发，已部分交付保持unknown，订阅/定时器/排队Promise有确定结束条件。未命中的真实失败窗口保持未验；没有要求重复未变模型/native或新增调度系统。
 
 上述准确返修范围已送原Worker`msg_9748a38e6e22`及主控`msg_a2c5414c736a`，原Worker负责补计划和全部实现，不修改893服务或错用91到新来源。原89服务工具32198及完整Job只读句柄21806保持，具体所属处置由主控安排；原95ef/5187及Orca保全。ed972b49限定接受hook获主控`msg_c5abee194210`全文读取准确报告及三独立原件后回复，唤起已确认，当前Task继续。
+
+## 96准确修订计划及归档前真实验证
+
+**接受准确`44DDD0E5B03039D95A1D36711E54F9BCBDEA6A4FD32128E3C9D79CC529273DB2`的controller96-write-plan.md修订。** 全文及实际摘要已核，对照先行七项独立条件，补齐成熟perPTY/generation机制覆盖整个writeAction、队首及每chunk/后缀的signal和当前身份复核、异步原钩子前后复核、同时持有真实写入settlement和回复的Promise、原helper解析失败后的readline/stdin收尾。原请求/NDJSON/schema/身份和unknown语义保持，未命中的取消、部分交付及生命周期窗口登记静态范围与NOT_RUN，不能冒充动态通过。
+
+严格及架构检查后，先以准确未压缩成品经原install脚本进行独占component安装和真实新来源准备，再在正式归档前运行真实传输检查：同controller两次show并发、超过真实16KiB chunk的公开a/b正文selected_context之task.create与show并发；核各自原R/真实回复及完整SQLite context正文、Run/root/两child、所属退出和保全。按实际序列化输入长度判断跨chunk，没有达到时立即停止且不计通过。主控随后`msg_e7676f1f9ab2`明确要求开发候选真实两Worker诊断也先于正式ZIP；该最新顺序已送原Worker`msg_23c625c250c0`继续执行。开发结果分别记录，最终ZIP/普通安装仍须同候选真实双start、模型重叠、指定停止及完整成果，不以component结果替代T13。
+
+原analyze96.mjs及flow96-diagnostic.json已完整读取，Reviewer补充只读核`review-flow96.mjs`实际0，原件`flow96-length-independent.log`：按真实两pending receipt内invocation及原JSON序列化，两帧分别12431/12480字符、12719/12822 UTF8字节，均低于原16KiB chunk。首帧字符数与真实JSON错误位置12431相同；这是原存储输入与错误位置的关联，实际每字节写入顺序仍未捕获。没有据此登记跨chunk已经复现，也没有构造替代请求或重发原R。
+
+主控已明确原89准确所属处置授权：原stop下可单新close R处理原96 controller；原owner EOF若残留，仅在重核原893来源、serve6224出生、私有Job DACL和全部成员出生/路径后处置该具名Job。21806保持至两次完整空清单及全部旧身份退出，原95ef/Orca保持，原未知R不变；Reviewer只审核实际原件，不执行关闭、终止或新Grant。准确新程序及测试结果继续由原Worker提供，当前计划接受不登记程序修复、实际component或T13通过。
