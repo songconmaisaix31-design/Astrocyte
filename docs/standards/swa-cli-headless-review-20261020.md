@@ -2176,3 +2176,11 @@ Linux job119643340844实际检出的PR合并Commit为`89ff401aecc725ade76a4e9713
 73使用真实`go test -mod=readonly ./internal/adapters/sqlite -run '^TestTasteProfileActualMigrationUpgrade$' -count=1 -v`实际0，SOURCE=d829及完整source.diff与准确3fadb一致。Reviewer独立`review-migration73.mjs`实际0，原件`migration73-independent.log`：实际保存目录taste-profile-actual-303335430中旧25份SQL逐份与准确源码一致；只读实际state.sqlite含28个准确迁移ID、两Taste表且human profile为0，唯一真实备份仍为旧25个准确ID且无Taste表，两库mtime保持。没有重跑迁移或构造数据库。准确d829三份、3fadb两份Markdown的Git/成熟marked检查分别0，本地链接各六个无缺失，旧§15锚点保持。
 
 主控`6e4ba81cf853dfd945335226dff362a6a7f75bf9`相对eee780的三份准确差异已完整读取，原3bcf/62/67、draft PR、CI窄域和OpenMausBot参考仅按真实限定范围记录；QUESTIONS/S3/T11及最终同安装双Worker未提升。独立Git/marked检查0，44个本地链接无缺失，这些管理事实随本轮限定接受。4aa077c4的68客户端hook获主控`msg_81ff405f9296`明确全文读取四份摘要、真实67描述及两个独立结果后回复，唤起已确认；原Worker实际准备继续，不新增管理等待或用户批准。
+
+## 75实际前置失败与后继故障消费者
+
+75一次实际运行准确准备客户端，New-OrcaPreservation的目录Created通知自检抛出异常，退出1，发生在ReadSource、HTTP和主try之前。原execute75-outer.log及唯一notification-probe实件保留，已经创建的delegated-execute/version-home不删除、不覆盖或盲重跑。Reviewer独立`review-preflight75.mjs`实际0，原件`preflight75-independent.log`：真实三库全部原业务计数保持、全部认证身份行0，没有项目、Grant、token、会话或Worker效果；私有目录仅有空version-home、没有DPAPI，原SQLite mtime保持。另独立调用原只读Private guard核两个现存目录的实际owner/DACL/无reparse为0。Grant实际执行继续证据不足，未运行HTTP或模型的事实不能登记准备成功。
+
+通知自检的同一异常兼含没有事件和实际FullPath字符串不等两种条件，当前原outer没有记录实际事件，尚不能区分原因。原Worker负责以真实.NET事件诊断并提供已证preflight状态的准确恢复入口；恢复前须核原服务身份、空私有目录、真实无业务效果，后续保持完整来源、真实HTTP、CreateNew凭据及未知效果停止，不伪造事件或批准。通知Worker为`msg_404e9d09fb57`，主控为`msg_5a576a67dd75`。
+
+**退回准确3fadb中三个既有故障消费者在当前3bcf成品上的来源前提。** controller-recovery.mjs:19—20、runtime-restart.mjs:24—25、cli-failure.mjs:25—26均将实际测试仓库HEAD直接要求等于候选VERSION并要求整树clean；当前准确HEAD3fadb与保持的3bcf程序不同，这三条验收入口必在故障效果前停止。应由原Worker在原测试域分别记录真实测试版本与候选版本，继续核必要产品/原生输入未变、成品及服务身份，保留全部真实故障、R、fence及所有权断言。固定公开项目HEAD的检查继续，installed-flow没有该前提；该返修不阻断75前置诊断及实际准备，也不要求为纯文档/策略/测试后继重编成品。通知为`msg_e12f1a63f929`、`msg_c53c3a75df67`；准确返修及实际故障结果待核，d829/72和3fadb/73的限定接受保持。
