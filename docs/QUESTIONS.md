@@ -10,6 +10,8 @@
 
 其他Agent测试沿实际OpenCode2.0.31及原默认deepseek/deepseek-v4-pro继续。原auth.deepseek实际为api、字段仅type/key，原SQLite唯一选定key与legacy一致；单次真实GET https://api.deepseek.com/models返回200并确认默认模型存在，未进行推理或改变原源。完整F18C计划获独立828ca336技术接受，主控核定NativeLaunch联合及原exe/ACP/私有每Worker根/完整SQLite成果于SPEC §21.1.6，原Worker连续实施真实私有无推理、正文及最终同安装双Worker。HTTP保留原CLI默认redirect，检查初始目标及固定逻辑来源，不另增传输保护或批准条件。执行Grant仍须实际签发，技术接受不表示运行通过；用户既有其他Agent测试许可保持。
 
+主控在上述真实测试许可内确认最终安装的受托执行准备范围：原固定公开Git/正文、实际OpenCode/DeepSeek-pro、原生工具为空及既有项目单CLI批准，按实际命令只需observe/start/send/stop/read_context；controller.recover沿start，恢复验收保持。授权客户端、实际执行者和服务主体分别留证，旧Observe项目和凭据不扩大。最终候选、来源/选择、authority、真实项目和一小时时效按原API/DPAPI核验，独立审核后才实际签发。该准备尚未执行，不授原生文件/命令工具或T11人工接管，不要求用户重复通用Agent测试许可。
+
 ## 继续构建与 REA 仓库格式（2026-10-21）
 
 用户要求“继续构建swarm cli，格式上用rea的仓库格式”。构建继续按已确认首版目标、隔离和验收推进；已读取官方 REA 的仓库入口、架构、开发与包定义，来源和当前路径对应见[参考记录](standards/swa-repository-format-20261021.md)。

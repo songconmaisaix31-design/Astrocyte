@@ -2,15 +2,17 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
-最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。真实模型、完整安装及同候选双Worker仍未通过。
+最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。该安装的产品Worker模型、完整安装及同候选双Worker仍未通过。
 
-开发源fe822783已普通push，首次真实原生模型46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功和完整消息，两个所属Job全部退出；strict/architecture47各0。42私有导入/无推理获6636cdf1独立限定接受；准确fe、43最终build/deny、44错模型和45缺policy拒绝及46模型范围获42d70d4e限定接受。当前正在接入Swarm全部Go/TS/选择/Grant/输入/成果消费者，产品Worker、执行Grant、最终同安装双Worker仍未验。F18C/F803合同及原HTTP初始目标边界按SPEC §21.1.5—§21.1.6，已验安装仍f2ab，原95ef/5187保持。
+当前产品接入源e9fa97e3已普通push，51 strict/三个CLI传输前Go用例、52完整合同264样例及生成一致性、build17实际0。49广包Go整体1：Relay启动和Workbench实际输入检查失败，未作同条件基线比较。独立f5393fb4退回e9fa的ACP完整Job退出缓存及根退出提前删除会话两项，原Worker返修并继续53普通安装、Pi IPC及同安装真实验收，产品尚未接受。
 
-用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，其他Agent原生调用仍有NativeLaunch合同缺口，继续补齐。StepFun已核来源未发现，配置路径已询问；模型、真实双Worker、T11/T12仍未通过。
+原生验证来源fe822783的46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功/完整消息及两个Job退出；43—46已验范围获42d70d4e限定接受。执行Grant客户端按384D已接受来源补充准备，真实签发、产品Worker模型、最终同安装双Worker仍未验。F18C/F803合同按SPEC §21.1.5—§21.1.6；已验安装仍f2ab，原95ef/5187保持。
+
+用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，Codex等其他Agent的完整关闭工具及原生调用合同仍有缺口。原生OpenCode已验范围见上一段；StepFun配置路径已询问，产品Worker模型、真实双Worker、T11/T12仍未通过。
 
 保留的95efcc288e32ad8d72d4ef902f32ec130f97fea3安装已完成Observe。compile20/build15/真实ZIP及普通解包20实际0；同安装C08精确7、生命周期四模式130/130/0/6、C09诊断及所属退出获限定接受。原installer复制/native/28233路径和保护范围通过，T02聚合6保留真实消费者未验。Observe凭据位于human22/human-approval/observe-credential.dpapi，到期时间见QUESTIONS；原23消费0，24/25真实失败原件保留。
 
-780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer已安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留真实消费者未验。独立仓库外数据目录的服务、HTTP、五份SQLite和正常关闭均0，实际三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，新结果继续累计独立审查。源码f46已push，后继HTTP故障工具及C09未知字段返修继续；本人Observe尚无执行回执，执行批准、T12及同一最终安装的真实双Worker仍未通过。
+780安装阶段记录：780a35e9ec996494f4188f44229d2568bf38b9a2完整ZIP普通解包后，原installer安装至仓库外780a35e9-install13，实际闭包/native/空Job及端口、保护根和四junction拒绝通过；T02聚合6保留当时真实消费者未验。独立数据目录的服务、HTTP、五份SQLite和正常关闭均0，三个服务进程为Medium。同安装四项EOF/输出中断及所属回收检查实际0，退出130/130/0/6；原Orca保全通过。八项依赖分类及21份成品/九版本许可已核，源码f46及后继返修保留。当时尚无本人Observe执行回执，后续真实批准与26结果见本页当前记录。
 
 系统实际于UTC2026-10-21T14:41:49.500重启，原两Agent于UTC14:38:40退出1073807364，Task恢复ready。原Run已绑定generation3；新Worker ctx_a8f0c302cc3c及Reviewer ctx_40bf84d10b8c沿原Task/树/分支继续，启动均观察到turn_started。本机Orca app6228/runtime a2765d35-0b66-41e6-a8ca-e76d25294927 ready；原S、原库和配置保留，操作前重新核实际进程身份。
 
