@@ -12,6 +12,8 @@
 
 本轮先行复用上述7个实际原生适配器，并逐项评估其他TUI模板的可复用启动、输入、取消、会话和成果入口。缺少结构化接口的Agent继续按其真实终端能力评估，不为凑支持数量另造任务权威或把终端预览当完整成果。
 
+“大部分Agent”的验收分母已询问为7个结构化引擎、45个TUI模板或两组分别多数，当前待答。先行实现顺序不代替该用户决定，也不将名称数量作为已通过比例。
+
 ## 45个TUI模板清单
 
 表中命令是上游检测标识，保持aliases与ID分开；不是本轮直接执行的命令建议。`未声明禁用`仅指该模板没有`detectUnsupportedRuntimes`，不表示Windows/Linux已运行或上游二进制兼容性已验证。`结构化`列表示Orca已有相应注册，其余为当前TUI来源候选。
@@ -71,7 +73,7 @@
 | 引擎 / 原生传输 | 启动与输入/取消入口 | 账号与ToolsOff现状 | 会话与完整成果入口 | 平台源证据 |
 | --- | --- | --- | --- | --- |
 | Pi / jsonl-rpc | `pi/rpc-runtime-registration.ts`、`rpc-launch-resolution.ts`、`rpc-session-adapter.ts`；cancelTurn发abort，stop结束session | `PI_CODING_AGENT_DIR`；SWA已有固定1.0.1的`native-pi-policy.ts`/`private-pi-account.ts`，需真实账号/API/模型匹配 | `pi/pi-transcript-import.ts`、`pi-session-history.ts`及SWA `task-result.ts`的自产JSONL/journal检查 | `supportsSupervisedProviderChildLocation`允许原生local非WSL；Windows另需进程创建时间proof；SWA完整custody平台实现/实测仍各自核 |
-| Codex / app-server | `codex/codex-structured-launch-resolution.ts`、`codex-structured-session-adapter.ts`及`codex-structured-session-teardown.ts` | `CODEX_HOME`；原`codex-structured-permission-policy.ts`的workspace-write/approval并非ToolsOff；SWA基线未有可执行NativeLaunch政策，需02补审 | `codex/codex-cli-conversations.ts`、原生thread/journal翻译与SWA成果消费者待接入 | `supportsCodexStructuredLocation`允许原生local非WSL；实际Windows/Linux账号和完整退出独立检查 |
+| Codex / app-server | `codex/codex-structured-launch-resolution.ts`、`codex-structured-session-adapter.ts`及`codex-structured-session-teardown.ts` | `CODEX_HOME`；原workspace-write/approval并非ToolsOff；0.163无模型目录/配置检查见下节，产品NativeLaunch政策与原账号路由仍待接入 | `codex/codex-cli-conversations.ts`、原生thread/journal；后继真实rollout读取器只接最小内部输入，完整成果消费者未验 | `supportsCodexStructuredLocation`允许原生local非WSL；实际Windows/Linux账号和每Worker完整退出分别检查 |
 | Claude / Claude原CLI的structured SDK桥 | `claude/claude-structured-launch-resolution.ts`、`claude-structured-session-adapter.ts`；cancel/close由原adapter调用真实CLI | `CLAUDE_CONFIG_DIR`；权限模式/canUseTool回调不自动证明模型请求无工具；SWA基线政策与账号私有化待接入 | `claude/claude-cli-conversations.ts`、原journal与SWA成果消费者待接入；不能拿预览冒充完整 | `supportsClaudeStructuredLocation`允许原生local非WSL；不以当前机器无CLI推断平台不支持 |
 | Grok / ACP | `acp/acp-launch-specs.ts`使用grok agent stdio；`acp/acp-structured-session-adapter.ts`的输入/interruptAcpTurn/closeSession | `GROK_HOME`；native spec可选择API key或cached_token；SWA基线配置、私有账号、ToolsOff政策未完成 | `acp/acp-dialects/grok-dialect.ts`、`grok/grok-transcript-import.ts`、`grok/grok-session-history.ts`；实际SWA结果政策待接 | ACP local非WSL且Windows创建时间proof；原spec未作Windows/Linux排除，安装/启动仍待实测 |
 | OpenCode / ACP | `acp/acp-launch-specs.ts`使用opencode acp；原线1.x>=1.18.31或2.x>=2.0.14；输入/取消共用ACP adapter | SWA已有固定2.0.31/DeepSeek-pro的native-opencode-policy/private-opencode-account/opencode-policy-plugin；不能推广为任意版本/提供商已验 | `acp/acp-dialects/opencode-dialect.ts`、原生私有SQLite/journal与SWA `native-opencode-import.ts`/`task-result.ts` | ACP local非WSL，Windows创建时间proof；SWA基线launcher仍Windows专用，Linux后继需独立custody与实际结果 |
@@ -84,8 +86,20 @@ ACP共同定义`acp-structured-agent-definitions.ts`的`approvalEnforcement='orc
 
 ## 每个引擎的实际覆盖记录
 
-本卡只进行了源码与结构化定义核查。当前云机为Linux x86_64；主控已只读核到Codex 0.163.0及login reported，API_KEY未设置不能据此称缺登录。账号值未读取或复制。Codex产品私有启动政策、ToolsOff、模型调用、session接续、完整成果和所属树退出仍须由02/06实际执行后记录。其他六个引擎本卡没有进行登录或模型调用，不能把它们填为已安装/已认证/已启动。
+清单和模板平台声明来自源码核查。当前云机为Linux x86_64，`e14800c1`的Linux安装、PTY/watcher、服务/daemon及服务级正常退出已验，未执行Agent模型或每Worker完整退出D。主控已核Codex 0.163.0及login reported，API_KEY未设置不能据此称缺登录；专题metadata04结果如下。其他六个引擎本卡没有进行登录或模型调用，不能把它们填为已安装/已认证/已启动。
 
 后续逐次记录每个引擎的`installed/version`、`login/config`、`NativeLaunch/ToolsOff`、`start/send/read/stop/resume`、`完整result`和`process custody`的PASS/FAIL/NOT_RUN或unknown及来源；每项分别标Linux和Windows。用户确认Windows x64是目标体系架构，当前未连接Windows主机，其实际候选与链路均为NOT_RUN，不重复询问架构，也不声称可远程执行。
+
+## Codex 0.163的准确来源与已验边界
+
+官方`openai/codex`标签`rust-v0.163.0`固定到提交[`83086188ae0614bd882818ff1aa23f3194962012`](https://github.com/openai/codex/tree/83086188ae0614bd882818ff1aa23f3194962012)。完整原始[`models-manager/models.json`](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/models-manager/models.json)的Git blob为`72a78e0eacf94103f4babda2a5245aba4ce848c1`，SHA256为`943ca7fe1d19ed019054158303f0dbbd80b3bef43b3aa425a71aa7cb3fb52c2b`；没有改写模型字段或伪造provider。正式`model_catalog_json`在启动时选用该完整目录，[provider工厂](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/model-provider/src/provider.rs#L388)构造StaticModelsManager，实际静态目录不被后续远端刷新覆盖。该原目录的真实`gpt-5.5`条目没有code-mode强制值、clock或其他experimental工具声明；模型元数据仍不等同授权上界。
+
+专题metadata04通过真实0.163 app-server检查：47项配置相等、2项工具配置的原始layer来源相等、31项实际feature值相等，`model/list`含真实`gpt-5.5`；原生和消费者退出均0，thread/model请求均为0。原件为`.verification/cloud-setup/codex-policy-review/metadata-run-04/summary.json`，sessionFlags来源版本为`sha256:93e8fa5c2031ffd1690143e4123a12b0e1a04a35c9bfa8b1b874d3c2353fcb74`。该次使用独占0700空CODEX_HOME，account不存在；不能据此否定原已报告登录，也没有证明原账号路由、推理权限或有效工具全集。此前失败原件保留，不用04覆盖其结果。
+
+源码确认公开`environments:[]`可以关闭环境访问，但初始线程和每次turn都要保持空环境，不能接受`cwd/runtimeWorkspaceRoots`重新引入环境；线程`selectedCapabilityRoots`保持空。[工具注册表](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/core/src/tools/spec_plan.rs#L1209)还独立受stable environment、shell、code mode、MCP、模型clock声明、plan、用户输入、delegation、web/image、skills和memory/history等门控制。插件warmup在initialize前发生，需启动时关闭；`--strict-config`防配置错误回落默认值，hooks与legacy notify也分别关闭。完整门逐项核验后仍需实际线程/消费者验证，不能从几个flag或metadata检查声称ToolsOff。
+
+普通app-server没有公开pre-turn有效工具全集查询，也没有公开JSON入口注入Rust `ToolPolicy.allowed_tools=Some([])`。后继必须以准确版本、真实模型、来源与完整组合政策逐项审查，遵守当前项目AllowedTools；未批准的MCP、clock、delegation和其他工具不能默许执行。当前产品NativeLaunch、原账号使用、真实工具集合、模型、同会话输入及完整成果均待02/06验收。
+
+后继Codex成果读取器内部最小输入为`path/privateRoot/nativeId/cwd/model/provider/stopped/nativeVersion:'0.163.0'/source`，另有必填内部`validateExport(serialized)`回调，由真实账号快照的调用方提供。`source`复用现有`nativeConfigurationSource`的`{path,version}`及`dev:ino:birthtimeNs:mtimeNs:size`实际版本；返回`{value,verify,validateExport}`沿已有成果消费结构。读取器核原生文件实际格式和来源，完整原文及最终序列化须经导出检查；调用方继续核原Run/Dispatch/session/fence、providerHandle与进程归属。缺少真实session/turn来源必须拒绝，不新建SourceVersion账本或公共Task协议；这些内部参数不提前冻结账号/NativeLaunch。
 
 模型测试预算不设上限解除本轮费用额度限制；它不产生缺少的供应商账号、Windows机器、原生支持、工具权限、私有资料权限或外部发布许可。固定公开输入、ToolsOff、原request幂等、效果未知、超时/并发和机器资源准入继续有效。后续实现缺口交02，依赖/原生构建和平台候选交05，命令体验交03，真实验收交06；本轮不以任何比例宣称已经完成“大部分Agent适配”。

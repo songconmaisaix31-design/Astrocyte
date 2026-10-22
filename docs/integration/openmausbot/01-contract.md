@@ -42,12 +42,26 @@ CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_
 | 变更回执 | 原 mutation_receipts 的 pending/completed 与子请求 | pending/unknown 保留占用；不能换 request 重发输入 |
 | start / send | 原生 ready；journaled/queued/accepted/handed-to-terminal | 启动或投递阶段，不推导模型完成 |
 | task / worker | 原生 task status、worker state、原生消息与 operation | 按实际字段展示运行、等待、失败、停止；不存在的审批状态保持未知 |
-| 退出 / 释放 | Win32 Job、PTY、原生资源 release_state 与新鲜进程观察 | root 退出不足以确认整树退出；无法确认保持未知 |
+| 退出 / 释放 | 对应平台的Job或Linux所属证明、PTY、原生资源release_state与新鲜进程观察 | 服务级退出和每Worker完整退出分别核验；root退出不足以确认整树退出，无法确认保持未知 |
 | 成果 | 原生 journal 与所选 Agent 自产 transcript/SQLite 输出 | complete/incomplete/unavailable/unknown 分开，坏源或来源变化失败 |
 
 `worker.read --source transcript` 是有界预览，具有原来源 cursor 和 limit（1..1000）。`worker.list` 当前请求原生 page（limit=100），客户端必须尊重 `hasMore`。`task.result` 需要完整 inventory；发现更多页必须明确失败，不把一页当全集。完整成果保持既有总量 12MiB、来源身份、读取一致性及秘密检查，不能截断后标成功。
 
 现有 API 没有承诺与 OpenMausBot 等价的 job 长轮询或统一 SSE。GUI 刷新读取同一 Run/Task/Dispatch 的真实快照；预览续读只能用该来源 cursor。展示时使用原生事件/entry ID 和原有顺序/代次，重复可去重；跨来源无序、缺口或过期游标应重新读快照并保留缺失提示。授权失效后停止受保护读取与变更，不自动换账号或再授权；人类安全停止继续由后端原有规则裁定。
+
+## 平台进程身份与关闭
+
+服务内部`SWA_SERVICE_JOB`与daemon身份沿真实平台联合传递。Windows保持`Local\SWAService<UUID>`、`serve_created_at_ms/daemon_created_at_ms`及原Job核验，原wire不增加Linux字段。Linux使用`platform:'linux'`、`SWAService<UUID>`、`serve_start_ticks/daemon_start_ticks`、`boot_id/owner_uid`和原`serve_pid/daemon_pid/daemon_session/data_root/install_root/source_revision`；ticks和UID为十进制字符串。它们来自实际内核proc身份，不换算为Windows创建时间。Node和Go还核同安装程序、VERSION、原daemon记录及实际祖先归属，旧活daemon不自动接管。
+
+`serve`的`resource_samples`在Linux为一次实际`{platform:'linux',logical_cpus,available_bytes,sampled_at}`观察，未提供CPU百分比；Windows保留原实际阻塞CPU采样数组。该区别不改变Worker自己的资源准入，也不把瞬时内存或CPU数量称为容量承诺。Linux `e14800c1`同安装的服务/daemon正常启动、health和stdin关闭后的服务树退出已验；强杀serve的完整回收仍未知，不能推广为每Worker退出通过。
+
+每Worker Linux完整回收D为已独立接受、正在实现且尚待真实验收的内部合同。最小进程身份为`{platform:'linux',pid,boot_id,start_ticks,owner_uid}`，live身份另核实际程序`name`；`readObservation()`按平台联合返回，Linux不补`creationTimeMs/rootCreationTimeMs`。每Worker独占Node引导器在Agent加载前以真实`PR_SET/PR_GET_CHILD_SUBREAPER`确认，内部IPC绑定随机`custody_id`、原owner/root/native CLI身份及本次`stop_id`；native API版本为`providerLinuxIsolationVersion:1`。
+
+D需要运行内核实际支持subreaper、`pidfd_open/pidfd_send_signal`及`waitid(P_PIDFD)`。glibc/GLIBCXX/CXXABI符号基线或发行版标签不能证明这些内核能力；缺失时拒绝或保持unknown，不降级为裸PID发信号。
+
+D要求原生直接child先由libuv完成close/回收，再仅精确回收已确认收养的直接child。需要两次独立内核`ECHILD`、递增单调时刻、原身份匹配的完整退出proof、父核对后ACK，以及原引导器实际退出，才能判定该Worker完整退出。`WNOHANG=0`、根退出、IPC中断、进程组消失或普通进程表为空均不足。native未创建与引导器从未创建分别记录；已有引导器时仍需完整证明，不能冒充processless。身份、内核查询或父IPC失效保持unknown与占用，不先杀引导器再声称释放。
+
+这些是现有provider内部生命周期接口，不新增HTTP/CLI命令或公共Task字段。普通系统进程的内核测试、实际安装服务、Agent NativeLaunch/ToolsOff、原生模型与成果及N=3场景分别验收；各Agent的Linux来源和成果政策尚未接入时，模型输入前保持不支持。
 
 ## Worker 额度
 
@@ -80,8 +94,10 @@ SWA 退出码保留：0 当前动作成功；2 参数/请求不匹配；3 权限
 
 当前 `controller.open` 使用获准目录登记 folder，Worker 使用 `worktree: 'current'`。已见 session/账号私有根和完整所属资源机制；没有每 Worker 自动 Git worktree 隔离的现成产品证明。开发云 checkout 不构成产品写入隔离验收，工具关闭范围不扩展为代码写入能力。
 
-产品目标并列Windows x64与Linux，Agent来源和逐引擎实际能力见[适配矩阵](02-agent-matrix.md)。45个TUI模板和7个结构化引擎是不同层次，先复用7个原生adapter并逐项评估其余来源；不能将模板探测或某个局部比例称为已适配大部分。上游明确的平台限制单列，不用另一个终端程序冒充同一原生引擎。
+产品目标并列Windows x64与Linux，Agent来源和逐引擎实际能力见[适配矩阵](02-agent-matrix.md)。45个TUI模板和7个结构化引擎是不同层次，先复用7个原生adapter并逐项评估其余来源；“大部分”的验收分母已询问、尚未决定，不能将模板探测或某个局部比例称为已完成。上游明确的平台限制单列，不用另一个终端程序冒充同一原生引擎。
 
 本轮真实模型测试预算不设费用上限。模型账号与当前许可仍须实际存在；固定公开输入、ToolsOff、禁止Aliyun/百炼、超时、原始request/未知效果及机器资源/并发准入继续有效。Windows目标已明确为x64，当前仅Linux可访问；Windows主机、安装物及真实链路未取得证据时保持NOT_RUN。
 
 正式动态检查由02/03/04/05/06按[负责人表](ownership.md)接续。合同与生成类型通过不代表 Windows安装、真实 Agent 调用、并发模型、GUI跨入口或最终 N=3 已通过。
+
+执行失败后先记录最小复现、根因证据和局部验证结果，再开始下一次完整构建；原失败与未知原因保留。普通局部检查及不相关工作继续，不因等待完整构建而冻结。

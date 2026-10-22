@@ -815,6 +815,8 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 本轮目标包括Windows x64与Linux，实际原生Agent来源及逐引擎平台限制见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。本次已确认的人类跨创建者例外仅为`worker.send`：同项目当前settings、动作、目录/固定上下文、原生CLI/模型和外发批准独立准入，不继承创建者Agent Grant，不以其有效为人类权限来源，原创建者关联保留来源。跨创建者`worker.start`仍拒绝，Agent仍严格绑定原Grant与主体，人类自己的start沿原规则。投递前再次核当前批准、原Dispatch/session/selection/代次及原request；当前权限或来源失效不得产生输入。实际实现和真实HTTP/SQLite及原生消费者验证分别记录。真实模型测试预算不设费用上限；固定公开输入、ToolsOff、私有资料/账户保全、超时和资源/并发准入保持。未连接Windows环境不表示平台验收完成。
 
+Linux服务身份使用实际boot_id、原始start_ticks和UID，不填Windows创建时间；现有服务级归属与每Worker完整退出分别核验。后继D内部合同要求独占subreaper引导器、精确pidfd和收养child回收、两次内核ECHILD、父确认及原引导器真实退出；接口已审，正在实现，不能以`e14800c1`服务正常关闭代替Worker验收。准确字段与未知边界见[共享合同](integration/openmausbot/01-contract.md)。Codex 0.163无模型metadata仅证明其实际目录/配置/feature来源，不证明原账号路由、有效工具全集、ToolsOff或推理；NativeLaunch、来源读取及产品模型按独立后继验收，不新增未经消费者支持的公共字段。“大部分Agent”的验收分母见QUESTIONS当前待答项，不擅自用注册数量判通过。
+
 产品底座使用 Go/TypeScript/SQLite，旧 Python 执行内核保持独立研究来源。[H2，第 1 节] summarize 等工具可使用所需 Python 依赖；机制按完整业务意义、来源和验证迁入，保持单一任务执行权威。现行语言决定见 QUESTIONS，早期绝对禁令不再作为当前接入条件。
 
 既有 Go/TypeScript/SQLite 产品保持现有模块与数据。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)集成抽取出的 Orca 无界面执行后台，采用独立 `swa` 命令、安装根、profile、数据库、端点及所属进程；本机 Orca 保持原安装、配置、账户及会话。用户决定与隔离验收见 [QUESTIONS](QUESTIONS.md) 和首版任务。

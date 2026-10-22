@@ -12,7 +12,7 @@
 
 | 阶段 | 需要的可观察结果 | 当前边界 |
 | --- | --- | --- |
-| CLI 候选 | 发现、稳定选择、合法批准、任务、Worker 输入/查询/停止、完整成果和所属退出 | 复用 PR #5；正式 Windows 安装及模型正向链需真实环境 |
+| CLI 候选 | 发现、稳定选择、合法批准、任务、Worker 输入/查询/停止、完整成果和所属退出 | Linux `e14800c1` 安装及服务基础已验；Agent、每Worker完整退出、N=3及Windows安装分别待验 |
 | 组合候选 | 同源码 CLI 与 Web 资产，同一服务、项目、Run 与 Dispatch | 不新增 Electron；Web 连接不创建第二执行库 |
 | 默认 N=3 验收 | 同任务三个不同原生会话真实重叠，停止一个后其余两个继续，同会话追加输入 | N 是本轮可配置测试参数；不形成产品固定槽位 |
 
@@ -20,7 +20,9 @@
 
 基线代码确有固定两席限制：Go 任务验证、TypeScript invocation、原生预留/完成和成果清单均需由02改为读取批准的 `max_workers`。仅更新 A/B 示例不能完成该项。`max_workers=2` 的第三席拒绝继续作为准入用例保留。
 
-产品目标为Windows x64与Linux。当前开发机器为Linux x86_64，可执行Go/Node的构建、合同、类型、适用真实服务与原生链路检查；Linux所属进程树控制及安装路径须实现和验证，不能沿Windows假设通过。Win32 Job、CurrentUser DPAPI和Windows安装保护需要实际Windows环境，当前未连接该机器。已安装CLI、查询返回和进程存在分别不足以证明模型执行、业务完成或完整资源退出。
+产品目标为Windows x64与Linux。Linux x64 glibc候选`e14800c1b207a8c063531fedf014aa0cd2374558`已完成标准构建、归档校验、仓库外解包及私有安装；同安装实际PTY输入/退出、watcher和28253路径闭包通过。实际service/daemon就绪、HTTP health和服务级所属退出通过，stdin正常关闭退出0。证据入口为本轮任务及05交付记录；项目status/controller因没有当前合法Grant为NOT_RUN。每Worker独立完整退出D正在实现，Agent模型、N=3和组合候选仍未验。Win32 Job、CurrentUser DPAPI和Windows安装保护需要实际Windows环境，当前未连接该机器。
+
+Codex 0.163.0的无模型metadata04已确认固定官方完整模型目录、配置来源和运行时feature门；使用独占空CODEX_HOME，thread/model请求均为0。原账号路由、有效工具全集、ToolsOff和推理没有因此通过，准确来源及边界见[Agent矩阵](02-agent-matrix.md)。用户所指“大部分Agent”的验收分母已询问为7个结构化引擎、45个TUI模板或两组分别多数，当前待答；共同基础工作继续，不将名称发现计为适配完成。
 
 ## 开发与产品的隔离
 

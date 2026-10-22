@@ -27,3 +27,17 @@ OpenMausBot 所有引用固定到 [`dbb73a73ae2cba48fdf608e9e22d1d5d91608532`](h
 OpenMausBot/MausBot 名称和吉祥物为其权利人的商标；SWA 使用自身品牌。第三方软件保留各自许可，实际复制任何源码或资产前须继续核该文件及其 `NOTICE`/`third_party` 来源，由05收集必要许可与声明。当前只参考结构和交互，不把 Apache-2.0 概括成全仓、全部资产均可任意复制。
 
 上传的 `Grok-Bot-0.75.0-REPORT.md` 为静态分析材料。附件给出的 SHA-256 为 `ca3f3b1366f5b9d1ad6215dc6c32f427f7e90d106252d7eb655c2f9aaf491377`；其内容不作为闭源发行包代码许可、动态测试通过或本次新权限授权。本轮不移植闭源代码、付费认证、云电脑、语音或连接器市场。
+
+## Linux与Codex后继来源
+
+以下是基线之后的实际源码或固定官方来源，与上表的`6195f4cf`来源范围分开。实现、接口计划和动态结果各按对应验证条件记录。
+
+| 来源 | 采用方式与归属 | 已有证据及后继条件 |
+| --- | --- | --- |
+| `cmd/swa/process_linux.go`、`service_ownership.go`；Orca `daemon/swa-service-job.ts`、`swa-linux-process-identity.ts` | 02/03复用原daemon与真实Linux proc/pidfd/subreaper，保持平台身份联合 | `e14800c1`真实安装服务/daemon/health、正常stdin关闭0；原始ticks/UID/boot身份不能冒充Win32创建时间，每Worker D另验 |
+| `runtime/swa-orca/src/linux-provider-bootstrap.ts`；Orca `provider-process/swa-linux-provider-process-tree.ts`、`native/swa-provider-process-linux.h`及node-pty补丁 | 02实现每Worker引导器/内核API，05负责固定补丁/产物与API probe；不增加调度器 | D接口/计划已独立接受、实现中；须真实subreaper、精确pidfd、两次ECHILD、父确认与wrapper退出，普通进程测试和模型分别验收 |
+| 官方Codex `rust-v0.163.0` / `83086188ae0614bd882818ff1aa23f3194962012` 的 `config/src/config_toml.rs`、`model-provider/src/provider.rs`、`models-manager/src/manager.rs`、`models-manager/models.json` | 只读核正式启动目录及实际模型来源；保持未修改完整catalog与真实provider，不复制账号或篡改模型字段 | 完整catalog blob/SHA256及metadata04实际源门已核，准确范围见[矩阵](02-agent-matrix.md)；目录源不等同ToolsOff授权上界 |
+| 同提交 `app-server-protocol/src/protocol/v2/thread.rs`、`core/src/tools/spec_plan.rs`、`core/src/tools/mod.rs`、`ext/extension-api/src/tool_policy.rs`及实际扩展 | 01/02与专题逐源核环境、工具和公开协议；源文件均在`codex-rs/`下 | 空环境语义明确；模型声明、各扩展及启动前副作用仍独立核验，无公开JSON通用ToolPolicy注入或pre-turn有效工具全集；不以metadata替代线程/模型实测 |
+| SWA `runtime/swa-orca/src/native-pi-policy.ts`的`nativeConfigurationSource` | 后继Codex只读成果消费者复用已有文件身份/版本形状 | 读取前后核实际来源，原会话/模型/父层进程关联由调用方继续核；真实rollout格式和完整成果未验时拒绝，不创造公共字段 |
+
+Codex源代码的读取与引用保持官方[Apache-2.0 LICENSE](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/LICENSE)和[NOTICE](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/NOTICE)边界；当前为源码参考及完整官方模型目录核验，不表示第三方依赖许可或品牌权利一并授予。实际随包复制的文件仍由05逐项记录来源及许可。
