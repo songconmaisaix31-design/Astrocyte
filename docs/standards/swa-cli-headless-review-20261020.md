@@ -2260,3 +2260,17 @@ Reviewer独立`review-controller84.mjs`实际0，原件`controller84-independent
 **原67完整Job退出继续证据不足。** Worker及主控报告86重新打开原具名Job为ERROR_FILE_NOT_FOUND，未执行TerminateJobObject，也未创建替代Job；不能把不可查询改记为完整空清单。原83父R仍pending，85a的三残留与EOF6保留。主控`msg_587f117df8b1`明确限定后继为同67真实daemon的listSessions、原session/incarnation/cwd/出生来源核对、一次原kill及原空闲退休，再核实际退出；原Job不可查询的限制仍保留。Reviewer完整读取cleanup67-daemon87.ts及其真实源码打包入口：连接原PID/launchNonce及服务归属的原DaemonClient，没有自动创建runtime；两次实际inventory及出生身份检查后只杀指定原session，空清单后才请求shutdownIfIdle，未改R或SQL。实际原生清理及全部已观察身份退出结果仍待核，该有限证明不替代已缺失的完整Job证明。
 
 原67未知与新候选分别保留来源和资源事实；准确新构建可继续，实际后继服务和Grant须满足主控限定的原所属清理及独立新DataRoot/runtime/来源条件，不错配旧82 DPAPI，不宣称旧EOF恢复为正常退出。73835fe0的Windows证据不足hook已获主控`msg_4e8b24f4a033`全文读取准确报告、原CI和独立结果后回复，实际唤起已确认。Windows定向SQLite复验由原Worker在控制端检查后串行执行，未改原时限或扩大范围，当前Task继续。
+
+## 87e原生清理的有限退出证明
+
+**接受87e对原67指定session及全部已观察出生身份的实际清理范围。** 原DaemonClient的kill和shutdownIfIdle及真实路由已核。87b在bundle的ESM格式处失败，87c在真实inventory的cwd=null比较处停止，87d原getCwd也返回null并停止，均未到kill-intent；原件保留。主控`msg_b5063d6bdb78`明确以真实daemon PID/nonce/原服务归属、原terminal/incarnation及全出生路径/两次一致库存判定所属，cwd缺失如实保留，允许只对原session一次原kill及空闲退休，没有伪造路径、协议或Actor。
+
+87e实际清理退出0，终端为`term_afd4ccc0b217bd82cd4c843cbf8ed114`、incarnation为`1dd634e4-7c23-4b3d-92db-b0651cdbc8d5`、PID50820；其原session/所属与原83 expected_controller匹配。真实kill返回空对象，后继原native inventory为空，shutdownIfIdle返回retiring=true；原daemon46744、OpenConsole55220和pwsh50820的实际持有句柄退出码分别0、0、1，均已退出。两次完整CIM查询原六身份均缺席，保留original_job_query=unavailable；实际cwd仍null，不将sessionId中的路径称为观测cwd。
+
+Reviewer独立`review-cleanup87e.mjs`实际0，原件`cleanup87e-independent.log`：真实inventory、动作意图、原kill/退休回执、三句柄及两次六身份观察与85a出生记录一致，原Orca前后保全passed；只读真实旧库中的83父R仍为pending，receipt全部字段保持，没有SQL补结算。独立`review-cleanup87e-current.ps1`实际0，原件`cleanup87e-current-independent.log`于UTC05:48:52再次核原六出生身份均已不存在，Reviewer没有发清理调用或终止进程。原FD5由Worker前后实际检查，原95ef/5187保持；主控`msg_01e2506e06b3`已明确该已观察范围可承接独立新服务。
+
+该接受不补足原具名Job的全成员退出证明，旧EOF6、86不可查询及83父R pending继续保留；不把原正常关闭或历史资源处理全部登记为通过。新候选仍须独立准确安装、服务/runtime、真实项目/authority和Grant/DPAPI，不复用或覆盖旧82绑定。
+
+准确893fb885的build19实际退出0，SOURCE、完整入口及日志已读，Node24.21与四个原507/build11 native均按原证据复制，没有重编native；实际闭包28251路径，原检查明确native认证和功能验收NOT_RUN。普通归档/提取安装88及服务89入口已读，安装和真实helper结果仍待完整原件，不将构建成功计为T13通过。
+
+5eab3922的893源码限定接受与旧67退出证据不足hook分别获主控`msg_be0efa8926f7`、`msg_064436444de9`完整读取回复，两项唤起已确认。本Task继续新候选的真实验收及原Windows必要复验。
