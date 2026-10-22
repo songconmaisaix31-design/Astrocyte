@@ -28,8 +28,15 @@ function contains(parent, child) {
 await plainDirectory(source)
 await plainDirectory(dirname(destination))
 for (let current = dirname(destination); ; current = dirname(current)) {
-  try { await lstat(join(current, '.git')); throw new Error('The installation must be outside a Git checkout') }
+  const marker = join(current, '.git')
+  let metadata
+  try { metadata = await lstat(marker) }
   catch (error) { if (error.code !== 'ENOENT') throw error }
+  if (metadata) {
+    if (metadata.isSymbolicLink() || !metadata.isDirectory() || (await readdir(marker)).length) throw new Error('The installation must be outside a Git checkout')
+    const after = await lstat(marker)
+    if (after.isSymbolicLink() || !after.isDirectory() || after.dev !== metadata.dev || after.ino !== metadata.ino) throw new Error('The Git metadata path changed during validation')
+  }
   if (dirname(current) === current) break
 }
 try { await lstat(destination); throw new Error('The install destination already exists') }
