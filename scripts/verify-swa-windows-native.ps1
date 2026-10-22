@@ -77,7 +77,7 @@ try {
     Set-Content -LiteralPath (Join-Path $logs 'archive-check.log') -Value ('ZIP SHA256=' + $hash + '; ordinary .NET extraction completed without overwrite')
     $package = Join-Path $packages $name
     $install = Join-Path $installs $name
-    $checker = Join-Path $checkout 'scripts/check-swa-runtime.mjs'
+    $checker = Join-Path $package 'scripts/check-swa-runtime.mjs'
     Invoke-Logged 'extracted-check' (Join-Path $package 'node/node.exe') @($checker, '--candidate', $package)
     $env:SWA_CI_PHASE = 'install'
     try {
@@ -87,7 +87,7 @@ try {
         Set-Content -LiteralPath (Join-Path $logs 'install.exit.txt') -Value 1
         throw
     }
-    Invoke-Logged 'installed-check' (Join-Path $install 'node/node.exe') @($checker, '--candidate', $install)
+    Invoke-Logged 'installed-check' (Join-Path $install 'node/node.exe') @((Join-Path $install 'scripts/check-swa-runtime.mjs'), '--candidate', $install)
     $actual = (& (Join-Path $install 'swa.exe') --version).Trim()
     if ($LASTEXITCODE -ne 0 -or $actual -cne $revision -or (Get-Content -LiteralPath (Join-Path $install 'VERSION') -Raw).Trim() -cne $revision) { throw 'The installed source version differs' }
     $acl = Get-Acl -LiteralPath $install
