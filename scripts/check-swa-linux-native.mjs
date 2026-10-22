@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative } from 'node:path'
@@ -45,5 +46,6 @@ export async function checkLinuxNative(candidate) {
     } finally { await active.unsubscribe() }
     await rm(directory, { recursive: true })
   } catch (error) { throw new Error('Linux watcher failed; retained ' + directory, { cause: error }) }
+  process.stdout.write(execFileSync(process.execPath, [join(import.meta.dirname, 'check-swa-linux-provider.mjs'), '--addon', ptyPath], { encoding: 'utf8', timeout: 40_000 }))
   console.log(JSON.stringify({ native_platform: process.platform, native_arch: process.arch, glibc: process.report.getReport().header.glibcVersionRuntime, node: process.version, pty_binary: ptyPath, actual_pty: observed, actual_watcher: 'create_observed', agent_acceptance: 'NOT_RUN' }))
 }

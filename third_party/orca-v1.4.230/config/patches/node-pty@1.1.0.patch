@@ -632,6 +632,17 @@ index 7b4b9e1f990fbf95b51528bb56dc9717f5b87532..2ae787c5bd4f3eba470584dc658a01a5
    }
  }
  #endif
+@@ -787,1 +941,5 @@
++#if defined(__linux__)
++#include "swa-provider-process-linux.h"
++#endif
++
+ /**
+@@ -791,1 +949,4 @@
+ Napi::Object init(Napi::Env env, Napi::Object exports) {
++#if defined(__linux__)
++  RegisterSwaProviderProcessLinux(env, exports);
++#endif
 diff --git a/src/unixTerminal.ts b/src/unixTerminal.ts
 index 98733dc0cd752b554bd94e45904ca341ad141bba..3dd5ad9b3124dbd5ba7f76679b26650dad503ec6 100644
 --- a/src/unixTerminal.ts

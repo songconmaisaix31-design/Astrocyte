@@ -17,7 +17,7 @@ patchedDependencies:
   '@vscode/windows-process-tree@0.8.0': 9da74aa3d17243aa53dcdc95c9f06e97437e7fbccf098aeb017579e2d24cbac2
   '@xterm/addon-serialize@0.15.0-beta.301': b35533fe252e7e45433150170348889f4e08a6c17f7017ac34ea694d831fec7f
   '@xterm/xterm@6.1.0-beta.304': 87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156
-  node-pty@1.1.0: e8bc0de94dc02036833f92059fc6e000fea00e113811193382164deab7c7ea60
+  node-pty@1.1.0: caa608258ef3f57b28596eb392d3737ff08decdd48813bd3d7bc76a7660a996c
   ws@8.22.0: 9393e04dd9a90b01eb7aa35fcd5b1431b5038ce999fbbd82651136193ba51f14
 
 importers:
@@ -126,7 +126,7 @@ importers:
         version: 6.2.3
       node-pty:
         specifier: 1.1.0
-        version: 1.1.0(patch_hash=e8bc0de94dc02036833f92059fc6e000fea00e113811193382164deab7c7ea60)
+        version: 1.1.0(patch_hash=caa608258ef3f57b28596eb392d3737ff08decdd48813bd3d7bc76a7660a996c)
       posthog-node:
         specifier: 5.52.5
         version: 5.52.5
@@ -5764,7 +5764,7 @@ snapshots:
       undici: 6.29.1
       which: 6.0.1
 
-  node-pty@1.1.0(patch_hash=e8bc0de94dc02036833f92059fc6e000fea00e113811193382164deab7c7ea60):
+  node-pty@1.1.0(patch_hash=caa608258ef3f57b28596eb392d3737ff08decdd48813bd3d7bc76a7660a996c):
     dependencies:
       node-addon-api: 7.1.1
 

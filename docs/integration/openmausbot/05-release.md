@@ -1,20 +1,41 @@
 # SWA-05 安装交付与 CI
 
-## 双平台后续计划
+## 双平台交付范围
 
-用户已将目标扩大为 Windows x64 与 Linux。本次续作基线为 `b7447f4a1af3ef80a2fe921d561c70d86d46fe9e`；实际机器为 Linux x64 glibc，5个CPU、33GiB内存、25GiB可用磁盘，有 Python 3.12、GCC/G++、make。现有 node-pty 尚无本机编译产物。Windows 原生安装和运行需要独立 Windows 环境，不能用 Linux 交叉编译代替。
+产品构建入口支持 Windows x64 与 Linux x64 glibc，CLI 与组合形态共享服务和协议。当前云机器为 Linux x64 glibc，使用 Python 3.12、GCC/G++ 14.2.0 和 make。Windows 原生候选由独立 GitHub Windows 2025 runner 验证，Linux 交叉编译结果只证明编译。
 
-05计划保留 Windows 构建入口与复用证据，增加 Linux x64 glibc 的 CLI/组合候选。复用已固定的 Node 24.21.0 Linux 官方输入、上游 N-API 8 编译配置与 Linux node-pty 产物定义；不安装整个 Orca 工作区、不编译 Windows 原生模块。实际构建使用私有平铺依赖、打过既定补丁的 node-pty、固定 node-gyp、明确 Python 及真实本机编译器。下载始终保留 TLS 和原 SHA 校验。
+Linux 构建复用已固定的 Node 24.21.0 官方归档、可执行文件和 headers 摘要、上游 N-API 8 配置与 Linux node-pty 产物定义。构建使用私有平铺依赖、冻结补丁、固定 node-gyp、明确 Python 及真实本机编译器；pnpm 采用官方普通可迁移 cmd-shim 配置，不注入开发机 NODE_PATH。下载保留 TLS 和原 SHA 校验。
 
 Linux布局为 `node/node`、`swa`、`server`、`runtime`；Windows 保持原 `.exe`。组合形态仍使用同源 `web` 与同一服务。05维护构建、平台化闭包检查、Linux仓库外私有安装器和许可。02/03维护运行时、客户端路径及真实进程归属。Linux安装器只接受新建绝对目标，拒绝符号链接、目录重叠、保护根、覆盖，保持当前用户私有权限。候选用 `PLATFORM` 说明本机目标，不能把 glibc x64 产物声明成 musl、arm64 或所有发行版通用。
 
-验证顺序为冻结安装/strict、实际 Node 和 patched PTY 编译与加载、真实 PTY 输入输出及退出、文件观察模块加载、Go CLI/server、本机两个形态候选、仓库外安装、实际 HTTP/SQLite/GUI 与所属退出。Windows 运行结果保持未执行。模型与多Worker最终验收仍由06使用准确安装物执行。计划先由独立审查者核准；失败保留原始产物和日志，不以替身或放宽验证条件获得通过。
+验证包括冻结安装、完整 strict、实际 Node 和 patched PTY 编译与加载、真实 PTY 输入输出及退出、文件观察事件、Go CLI/server、普通归档解包、仓库外私有安装、实际服务与所属退出。模型、多 Worker 与组合形态跨入口验收由06使用准确安装物执行，分别记录结果。
 
-该计划已获独立审查者条件接受。新候选的 `PLATFORM` 仅接受 `win32-x64` 与 `linux-x64-glibc`；缺文件只兼容旧 Windows 候选。Linux 安装器还拒绝目标真实祖先含 `.git` 文件或目录，保护目标位于仓库之外。实际本地负向检查已确认 Git 祖先与符号链接祖先在创建目标前被拒绝；这不代表候选安装已经执行。
+新候选的 `PLATFORM` 仅接受 `win32-x64` 与 `linux-x64-glibc`；缺文件只兼容旧 Windows 候选。Linux 安装器在写入前拒绝目标祖先中的真实 Git 元数据，包括 `.git` 文件、符号链接、非空目录和不可读取标记；只允许平台放置的普通空 `.git` 目录，并复核目录身份。显式保护根独立生效。新目标独占创建后逐顶层条目复制，拒绝覆盖，目录权限为0700、普通文件为0600、必要可执行文件为0700。
 
-本机已完成官方 Node Linux 归档及 headers 的原固定 SHA 缓存预热（`linux-warm-inputs.log`，退出0）、新增精确 procfs 依赖的 Go sumdb/`go mod verify` 校验（退出0）、项目依赖清单一致性检查（`linux-dependency-inventory.log`，退出0）。Go 二进制许可复制读取实际 `go version -m -json`，现有两个二进制共15个模块的 LICENSE/NOTICE 复制已验证（`linux-go-license-check.log`，退出0）；新候选还须核新二进制实际模块。Linux 原生编译、候选、安装与服务检查等待主控冻结准确干净源码后执行。
+Go 许可清单读取实际二进制的 `go version -m -json`，再核只读模块版本与来源。CLI04 实际复制16个模块的 LICENSE/NOTICE，包含精确固定的 `github.com/prometheus/procfs v0.22.0`；Go sumdb、`go mod verify` 和仓库依赖清单检查均已通过。
 
-本轮开发基线为 `6195f4cfb6b32aedd43845443c029ecc11d5578d`，包含 PR #5 的 CLI 实现。当前云机器为 Linux x64。Windows x64 安装候选、Windows ACL、原生 Job 和真实模型验收尚未执行。源码与工作目录由主控统一提交，不能把当前未提交工作树打成可发布候选。
+源码由主控统一提交。标准构建在开始、结束时核查准确 SHA 与干净源码；开发库和未提交工作树不能替代正式候选。
+
+## Linux CLI04 实际安装
+
+准确源码为 `e14800c1b207a8c063531fedf014aa0cd2374558`。构建、普通 tar.gz 归档与 SHA-256 校验、仓库外普通解包、严格安装和安装后版本/闭包检查均退出0。实际 Node 24.21.0 装载私有编译的 x64 PTY，输入回显及退出、watcher create 事件通过，闭包为28253条路径。安装根 owner 为当前 uid1000，目录0700。
+
+- 原候选：`dist/swa-linux-cli-e14800c1-04`。
+- 普通解包：`/workspace/swa-linux-packages/swa-linux-cli-e14800c1-04`。
+- 安装根：`/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`。
+- 构建/安装证据：`.verification/swa-linux/evidence/e14800c1b207a8c063531fedf014aa0cd2374558-cli-04/`，含原始日志、SOURCE、两个退出码和安装版本。
+
+03使用同一原样安装在18793运行生产 `swa serve`：真实 runtime、daemon、server readiness 与 HTTP health200通过；正常关闭 stdin 后 serve 退出0，生产归属检查与独立 pidfd 观察确认全部所属进程退出。证据为 `.verification/cloud-setup/linux-service-smoke-cli04.log` 与 `/workspace/swa-cli-smoke-e14800c1-1792661325429/smoke-evidence/`。项目 status 与 controller 需要当前项目 Grant，正向检查仍为 NOT_RUN。此结果不代表 Agent、模型、多 Worker 或组合 GUI 验收。
+
+保留的前三次尝试分别为：`1961dfba` CLI01 构建在符号链接闭包检查失败；`559c621b` CLI02 构建成功、安装因空平台 Git 标记误判失败；`f71eec93` CLI03 构建成功、安装因复制到已独占创建的根失败。每次在新提交后重新完整构建，旧日志、候选及失败 partial 均保留；CLI04 使用 `e14800c1` 的正式修正源码。
+
+## Linux Provider 原生扩展开发检查
+
+D阶段扩展原 node-pty Unix addon，公开 `providerLinuxIsolationVersion:1` 及已审核的 subreaper、waitid、pidfd、精确回收接口。05负责补丁、官方 pnpm 生成的 patch hash、builder 复制和 probe；02负责产品头与生命周期。新 checker 在独立 Node 子进程中使用真实普通父子进程，验证错误父属拒绝、运行中禁止回收、实际 TERM 退出、WNOWAIT不消费、精确回收、已关闭句柄拒绝和两次独立 ECHILD。没有模拟 Agent 或模型协议。
+
+开发 R1/R2 的内核功能检查通过，但真实 ELF 检查发现 C++ 运行库符号超过上游兼容范围，保留失败原件。02修正后 R3 编译、原 N-API 8 检查、实际内核 probe 与上游 `SERVER_SLOT_GLIBC_FLOOR` 检查均退出0，最高需要 GLIBC2.28、GLIBCXX3.4.22、CXXABI1.3.9。日志为 `.verification/cloud-setup/linux-provider-addon-03.log`。标准 Linux builder 已纳入同一上游兼容性门禁；R3仍是未提交源码的开发库，正式D候选、Agent与模型结果须另行取得。
+
+符号兼容性门槛与内核能力分别核查。运行还要求实际支持 subreaper、pidfd_open、pidfd_send_signal 和 waitid(P_PIDFD)；能力缺失立即拒绝，不切换为裸 PID 信号。上游符号门禁的发行版标签不代表已在这些发行版的全部内核上运行。
 
 ## 开发依赖与检查
 
@@ -34,6 +55,10 @@ go test -count=1 -mod=readonly -v ./cmd/swa
 ## Windows x64 候选
 
 首批提交 `faea9d4a` 的 [GitHub Actions run 39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 已有公开页面记录：`swa-foundation` 的 Ubuntu 与 Windows 两个 job 实际成功；原 `check` 两个平台退出1，整体 run 为 Failure。这仅覆盖该提交的基础检查，不能证明后续 Linux 安装代码、Windows native 候选或模型通过。页面证据保存在本机 `.verification/cloud-setup/github-run.html`。
+
+独立工作流 `.github/workflows/swa-windows-native.yml` 用于在 Windows 2025 上执行真实 CLI 候选、完整 native 装载、.NET ZIP/SHA-256、普通仓库外解包、原安装器、安装后完整 checker/版本/精确 ACL，以及无 Grant 的服务 readiness、health 和正常关闭。进程环境只保留所需系统工具，发现目录与数据在 RUNNER_TEMP 独占新建，不注入账户或模型凭据。产物上传仅包括明确白名单日志及成功候选 ZIP/摘要，排除 data/home/环境。工作流与03生命周期测试在 `139a777a4341b22df0de6e5db1c9b259586cf8df` 提交；[首轮实际 run 39757398493](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39757398493) 的六步工具准备成功，driver约1秒后退出1。公开日志要求登录，API当前拒绝访问，具体原因尚未取得，不能推断已进入原生编译。Windows native/安装/Job 尚无通过结论。
+
+诊断提交 `0209d004dd170cb049394f2a0ae67d154cb03f5a` 的 [run 39758336431](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758336431) 明确在 `preflight-toolchain` 失败：PowerShell `Get-Command` 返回的两个实际 Node 路径被作为单个命令执行。修正按 PATH 顺序取首个实际 Application，Node、Go、Git 共三处，固定版本断言保持启用。原两次失败保留，后续结果以新准确提交的实际 run 为准。
 
 构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。编译器选择继续使用现有 MSVC 2022 配置，不修改全局 PATH。
 
@@ -57,9 +82,9 @@ pnpm build:swa --output '本仓库 dist 下另一个尚不存在的绝对候选�
 
 候选仍沿原安装脚本安装到仓库外不存在的新目录。安装、版本、私有 ACL、实际 native 装载、服务及所属资源退出必须在 Windows 中核实；Linux 上的编译不能代替这些检查。原始校验和、TLS、原生复用来源及许可证检查保持启用。CLI 候选先交06验收；组合候选形成后在该准确安装重新完成跨入口与可配置 N Worker 验收。此任务不创建公开 Release 或发布环境。
 
-## 本次实际证据
+## 首轮开发检查记录
 
-日志保存在本机忽略目录 `.verification/cloud-setup/`，不包含凭据。
+下表保留首轮对应开发源码的原始结果，不代替后继准确候选验收。日志保存在本机忽略目录 `.verification/cloud-setup/`，不包含凭据。
 
 | 命令或行为 | 本次结果 | 日志 |
 |---|---|---|
