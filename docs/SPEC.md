@@ -811,6 +811,8 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 ### 21.1 既有产品的旧方向与首版 CLI 边界
 
+本轮[六卡整合任务](../tasks/swa-task-cards-20261022.md)沿用本节执行权威与授权，以CLI候选优先、共享React工作台的组合候选随后推进；准确基线、来源与文件归属见[整合入口](integration/openmausbot/00-context.md)。共享身份、状态、请求恢复、退出码与数量合同见[01合同](integration/openmausbot/01-contract.md)。本轮最终验收默认N=3且可配置，N是测试参数，不构成产品固定上限；旧两Worker记录保留其原范围。`max_workers`为任务批准的安全正整数额度，pending/unknown start保持占用，超限不得静默缩减。`max_workers=2`时第三席拒绝继续作为原准入用例。完整成果遇到当前原生分页容量不足必须明确失败。任务文件的公开形状见`swa-cli.schema.json`的`taskSpec`，HTTP命令仍传`spec_file`，不新增inline spec。
+
 产品底座使用 Go/TypeScript/SQLite，旧 Python 执行内核保持独立研究来源。[H2，第 1 节] summarize 等工具可使用所需 Python 依赖；机制按完整业务意义、来源和验证迁入，保持单一任务执行权威。现行语言决定见 QUESTIONS，早期绝对禁令不再作为当前接入条件。
 
 既有 Go/TypeScript/SQLite 产品保持现有模块与数据。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)集成抽取出的 Orca 无界面执行后台，采用独立 `swa` 命令、安装根、profile、数据库、端点及所属进程；本机 Orca 保持原安装、配置、账户及会话。用户决定与隔离验收见 [QUESTIONS](QUESTIONS.md) 和首版任务。
@@ -836,7 +838,7 @@ CLI/HTTP 复用 App 的项目主体、批准及动作准入；具体原生源码
 
 合法已认证人类的自有安全停止保留原规则：严格核项目和原生进程所属，执行批准撤销及旧上下文版本不阻断安全停止；Agent的执行与撤销准入保持。关闭控制端与创建任务/Worker的准入必须共同核原生持久占用：创建先保留时，关闭须拒绝或等待其明确结算；关闭先保留时，新建及输入拒绝，unknown保持原屏障。关闭helper不能代替停止所属独立Worker。
 
-完整成果沿准确d7已审[方案§5.5](https://github.com/songconmaisaix31-design/swarm-anything/blob/d7f21242259739cfb49a4f68a19a1a8f28bcec32/docs/standards/swa-cli-headless-20261020.md)、§21.1.2及T07/T13实施。`worker read`保留原生有界预览与游标；`task result`从已核所属的实际原生journal及对应Agent自产transcript取得内容，采用成熟严格解析，检查身份、格式、读取一致性及12MiB上限，不迁移、修补或换源。terminal只有有界输出时明确标注，不能作为完整成果通过。计划停止A时分别返回真实状态、已有部分和incomplete/unavailable/unknown；坏源或来源变化明确失败。B的完整成果、固定业务判据和全部相关资源退出/归档/释放仍为根Task完成条件，不追加A完成条件。实际项目执行目标来自稳定AgentSelection并核现有批准；新数据根不预置Grant，服务启动不签发token。候选携带真实首次人工授权步骤及必要使用说明，真实结果按同一安装候选核验。
+完整成果沿准确d7已审[方案§5.5](https://github.com/songconmaisaix31-design/swarm-anything/blob/d7f21242259739cfb49a4f68a19a1a8f28bcec32/docs/standards/swa-cli-headless-20261020.md)、§21.1.2及T07/T13实施。`worker read`保留原生有界预览与游标；`task result`从已核所属的实际原生journal及对应Agent自产transcript取得内容，采用成熟严格解析，检查身份、格式、读取一致性及12MiB上限，不迁移、修补或换源。terminal只有有界输出时明确标注，不能作为完整成果通过。指定停止一项Worker时分别返回真实状态、已有部分和incomplete/unavailable/unknown；坏源或来源变化明确失败。其余Worker的完整成果、预定业务成功判据和全部相关资源退出/归档/释放仍为根Task完成条件；指定停止项保持停止状态，不追加其成功完成条件。旧A/B用例保留其原范围。本轮N=3须验证停止一项后其余至少两项保留原身份继续及一次同session追加输入，额度是上限，不强迫创建满额Worker。实际项目执行目标来自稳定AgentSelection并核现有批准；新数据根不预置Grant，服务启动不签发token。候选携带真实首次人工授权步骤及必要使用说明，真实结果按同一安装候选核验。
 
 CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实施。`--json`在stdout只发布一个完整结果，stderr保存诊断；已成功解析并校验的原请求ID及实际selector须在失败或取消时保留，未知身份省略。真实HTTP ErrorV1转换为既有CLI envelope，完整HTTP原件保存在既有`error.data`，HTTP trace与命令原请求ID各保留其来源；原生结果及错误数据保持。真实网络效果未知时只查询原请求，不重发；取消当前CLI等待返回130，不据此停止Worker。stdout实际不可写时将已知关联和实际影响保留到stderr并非零退出，不再次发布结果。
 

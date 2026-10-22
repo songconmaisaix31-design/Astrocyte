@@ -3198,6 +3198,7 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SwaTaskSpecV1: components["schemas"]["taskSpec"];
         SwaRegisteredAgentV1: components["schemas"]["registeredAgent"];
         SwaAgentCapabilitiesV1: components["schemas"]["capabilities"];
         SwaAgentSelectionV1: components["schemas"]["agentSelection"];
@@ -7784,6 +7785,21 @@ export interface components {
             dispatch_id?: string;
             result?: unknown;
             error?: components["schemas"]["nativeError"];
+        };
+        /** @description Contents of the approved task specification file selected by command.spec_file, not inline HTTP command fields. max_workers is the authorized task Worker quota; its maximum is the JavaScript safe-integer precision boundary, not a runtime capacity guarantee. Current permissions, reservations, resources and complete-inventory limits are checked separately. */
+        taskSpec: {
+            goal: string;
+            source_repo: string;
+            source_revision: string;
+            success_criteria: string[];
+            max_workers: number;
+            context?: {
+                references?: {
+                    material_id?: string;
+                    revision?: number;
+                }[] | null;
+                files?: string[] | null;
+            } | null;
         };
         registeredAgent: {
             /** @constant */

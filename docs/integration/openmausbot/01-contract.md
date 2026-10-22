@@ -1,0 +1,81 @@
+# CLI 与 GUI 的共享执行合同
+
+本合同以[准确基线](00-context.md)及现有 `OrcaCommand`、`OrcaEnvelope`、原生记录为输入。后续源码以各卡准确提交为准；表中的接口位置不表示动态验收通过。
+
+## 单一服务与授权
+
+公共入口为 `POST /api/v1/local-projects/{id}/orca/commands`，定义于 [OpenAPI](../../../contracts/openapi.yaml)，动作和返回外形定义于 [JSON Schema](../../../contracts/swa-cli.schema.json)。HTTP 适配器调用 Workspace App `ExecuteOrca`；CLI、GUI 不直接读写原生 SQLite。执行权威仍为产品私有 Orca Run/Task/Dispatch，Workspace 仅保存项目/Grant 与原生关联，不增加 Mission/Claim 或第二任务状态。
+
+CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_TOKEN`。浏览器复用现有人类 session/CSRF；服务将 path project 与真实调用者绑定，再核当前项目动作、目录、模型和控制权限。启动服务不创建授权。注册、安装、配置、可启动和 start/send/read/stop/resume/tools 控制能力分别使用真实 observation，`available` 不表示当前提供商已经实测。
+
+当前投递前准入还核原任务关联的`GrantAgentID == actor.ID`。因此Agent令牌经CLI创建的任务，不能仅凭GUI人类会话获得同一任务的worker.start/send权限；观察和符合原规则的人类安全停止分别核权。人类自己创建的任务沿其当前主体准入，不能把两个不同主体合称为已具备同等输入权。组合验收中的跨入口追加输入存在这一明确缺口，本轮不放宽绑定或暗中继承原Agent批准。
+
+| 动作组 | App 权限 | 范围与副作用 |
+| --- | --- | --- |
+| status、capabilities、controller.show、task.show/list/result、worker.show/list/read、request.show | observe | 读当前项目关联；task.result 还核导出目录 |
+| controller.open/recover、task.create、worker.start | start | 固定项目、目录、上下文与原生身份 |
+| worker.send、task.complete | send | 原 Dispatch 的追加输入或根任务完成 |
+| controller.close、worker.stop/release | stop | 指定原生所属；人类自有安全停止沿现规则 |
+
+## 身份与来源
+
+| 对象/真实字段 | 来源与绑定 | 客户端约束 |
+| --- | --- | --- |
+| project / project_id | Workspace 注册项目与当前批准 | body/path/caller 必须一致；不能切换项目复用 token |
+| controller | 原生 PTY helper selector 与不可伪造调用者身份 | 不是展示角色或用户输入的进程号 |
+| runtime_id、authority_domain | 实际运行时与本地 mutation authority | 重启/代次变化后重新核对；不凭旧 PID 接管 |
+| run_id、root task / task_id | controller 的持久 task.create 回执和原生 Run/root Task | child Task 的 parent_id 必须指向同 root |
+| dispatch_id | 原生 Worker Dispatch | start 回执和后续查询指向同 Task/Run，停止仅作用于该 Dispatch |
+| session_id、operation_id、runtime_fence、consumer_generation | structured 原生会话及输入绑定 | 只能由实际宿主记录证明；不是浏览器生成的 Worker 身份 |
+| request_id | 调用者提供的规范 UUID，绑定原动作、body 和回执 | 变更操作及 request.show 必需；Idempotency-Key 与 body 一致；效果未知查询原键 |
+| settings_revision / context | 当前项目配置与固定版本上下文 | 输入前重新准入；变化或撤销依原服务拒绝 |
+
+展示名称和职责来自已有注册/配置。持久角色、执行引擎、原生会话与一次 Dispatch 是不同对象；未有角色后端时不增加可执行身份。CLI 与 GUI 都保留服务返回的真实字段，`result` 是原生对象，按动作校验后展示，不能把所有返回改造成未经服务支持的统一终态。
+
+## 状态、回执与恢复
+
+| 层次 | 已有来源或词语 | 解释 |
+| --- | --- | --- |
+| HTTP / envelope | HTTP status、ok、error | 传输及当前动作结果；HTTP 200 不证明任务完成 |
+| 变更回执 | 原 mutation_receipts 的 pending/completed 与子请求 | pending/unknown 保留占用；不能换 request 重发输入 |
+| start / send | 原生 ready；journaled/queued/accepted/handed-to-terminal | 启动或投递阶段，不推导模型完成 |
+| task / worker | 原生 task status、worker state、原生消息与 operation | 按实际字段展示运行、等待、失败、停止；不存在的审批状态保持未知 |
+| 退出 / 释放 | Win32 Job、PTY、原生资源 release_state 与新鲜进程观察 | root 退出不足以确认整树退出；无法确认保持未知 |
+| 成果 | 原生 journal 与所选 Agent 自产 transcript/SQLite 输出 | complete/incomplete/unavailable/unknown 分开，坏源或来源变化失败 |
+
+`worker.read --source transcript` 是有界预览，具有原来源 cursor 和 limit（1..1000）。`worker.list` 当前请求原生 page（limit=100），客户端必须尊重 `hasMore`。`task.result` 需要完整 inventory；发现更多页必须明确失败，不把一页当全集。完整成果保持既有总量 12MiB、来源身份、读取一致性及秘密检查，不能截断后标成功。
+
+现有 API 没有承诺与 OpenMausBot 等价的 job 长轮询或统一 SSE。GUI 刷新读取同一 Run/Task/Dispatch 的真实快照；预览续读只能用该来源 cursor。展示时使用原生事件/entry ID 和原有顺序/代次，重复可去重；跨来源无序、缺口或过期游标应重新读快照并保留缺失提示。授权失效后停止受保护读取与变更，不自动换账号或再授权；人类安全停止继续由后端原有规则裁定。
+
+## Worker 额度
+
+任务文件沿用 `goal/source_repo/source_revision/success_criteria/max_workers/context`。`max_workers` 是本任务获准创建 Worker 的总额度，取安全正整数 1..9007199254740991；数值上界是跨 Go/JavaScript 的整数精度边界，不是已验证资源容量。模型、项目权限、机器能力与当前运行资源仍独立准入。
+
+公共Schema描述现有任务文件，生成类型不将文件读取变为inline HTTP接口。`context`可省略或为null；引用与文件仍由原项目上下文读取器逐项核权。既有文本校验存在层次差异：Go拒绝全空白goal但仅检查成功判据数组非空，原TypeScript还要求每条判据字符串非空。当前合同补充不改变这些业务文本规则，不能把单个Schema通过等同于所有后端准入通过。
+
+默认验收 N=3 时使用 `max_workers >= N` 的任务，三个独立 Dispatch/session 必须有真实模型执行区间重叠。N 不写成产品固定上限，也不把 `max_workers=2` 用例的第三席拒绝改为成功。pending/unknown start 继续占用额度，并发预留沿原持久事务核查。资源边界用例明确设置`max_workers=N`，占满后第N+1席应被拒绝；若`max_workers>N`，则第N+1席仍按真实剩余额度及其他准入规则处理。当前没有排队替代拒绝的公共合同，不能偷偷减少 N。
+
+当前额度计数包含该root已创建的全部child Task及尚未落Task的pending预留；child完成或其资源释放不会自动归还创建名额。这是固定任务可创建/预留的Worker总席位上限，不能解释成无限顺序补位的并发池。改变回收语义须另行修订准入及测试。
+
+`max_workers` 为上限，允许少于上限的任务；根任务完成仍要求预定 success_criteria 和所有相关 Worker/资源明确结算。被指定停止项保留 stopped/cancelled 及已有部分；其他 Worker 的完整成果和资源退出独立核查。分页或完整成果容量不足时报告明确限制。
+
+## 命令兼容与退出
+
+| 用户操作 | SWA 现有命令 | OpenMausBot 仅作参考 |
+| --- | --- | --- |
+| 发现和选择 | capabilities；worker start 的 agent/model 经稳定选择 | bots/models/engine；不导入其账号服务 |
+| 提交与查询 | controller open；task create/show/list；worker start/show/list | run 的使用路径；不增加第二调度器 |
+| 观察与追加 | worker read/send；request show | messages/send/events；不声称已有相同事件协议 |
+| 选择性停止 | worker stop/release；controller close 另核全域空闲 | interrupt；不能默认 stop 所有任务 |
+| 完整导出 | task result --output-dir；task complete | export；不采用预览截断为完整成果 |
+| 等待 | 当前查询组合，新增 wait 必须先固定原生终态/分页语义 | wait 只参考，当前不新增未经支持的命令 |
+
+SWA 退出码保留：0 当前动作成功；2 参数/请求不匹配；3 权限/批准/身份拒绝；4 不可用/不支持；5 资源拒绝；6 效果或退出未知；7 其他失败；130 当前 CLI 等待取消。OpenMausBot 的6用于 team diff，不能照用。CLI 等待的 Ctrl-C 不停止 Worker。`serve` 的 Ctrl-C/EOF 管理其所属进程，分别按 readiness、已知失败及完整退出证据保留0/130/7/6，不等同于普通查询取消。
+
+业务 `--json` stdout 仅一个 envelope，进度/诊断写 stderr；帮助和版本是文本元数据。GUI 关闭页面只解除观察，不能关闭其附着的 CLI 服务。组合包可配置安装根内静态 Web 目录，沿同 HTTP 后台提供资产，缺资产明确失败，不自动创建第二运行时。
+
+## 工作目录与未验范围
+
+当前 `controller.open` 使用获准目录登记 folder，Worker 使用 `worktree: 'current'`。已见 session/账号私有根和完整所属资源机制；没有每 Worker 自动 Git worktree 隔离的现成产品证明。开发云 checkout 不构成产品写入隔离验收，工具关闭范围不扩展为代码写入能力。
+
+正式动态检查由02/03/04/05/06按[负责人表](ownership.md)接续。合同与生成类型通过不代表 Windows安装、真实 Agent 调用、并发模型、GUI跨入口或最终 N=3 已通过。

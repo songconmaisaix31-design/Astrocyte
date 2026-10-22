@@ -3,6 +3,30 @@
   "$id": "https://astrocyte.local/contracts/swa-cli.schema.json",
   "title": "SWA native execution command and response",
   "$defs": {
+    "taskSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["goal", "source_repo", "source_revision", "success_criteria", "max_workers"],
+      "properties": {
+        "goal": {"type": "string", "minLength": 1},
+        "source_repo": {"type": "string", "minLength": 1},
+        "source_revision": {"type": "string", "minLength": 1},
+        "success_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "max_workers": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "context": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "references": {"type": ["array", "null"], "items": {
+              "type": "object", "additionalProperties": false,
+              "properties": {"material_id": {"type": "string"}, "revision": {"type": "integer"}}
+            }},
+            "files": {"type": ["array", "null"], "items": {"type": "string"}}
+          }
+        }
+      },
+      "description": "Contents of the approved task specification file selected by command.spec_file, not inline HTTP command fields. max_workers is the authorized task Worker quota; its maximum is the JavaScript safe-integer precision boundary, not a runtime capacity guarantee. Current permissions, reservations, resources and complete-inventory limits are checked separately."
+    },
     "registeredAgent": {
       "type": "object", "additionalProperties": false,
       "required": ["schema", "id", "adapter", "execution_mode", "registered", "source", "source_revision", "registry", "runtime"],
