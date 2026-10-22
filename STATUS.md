@@ -4,9 +4,11 @@
 
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。该安装的产品Worker模型、完整安装及同候选双Worker仍未通过。
 
-当前产品接入源e9fa97e3已普通push，51 strict/三个CLI传输前Go用例、52完整合同264样例及生成一致性、build17实际0。49广包Go整体1：Relay启动和Workbench实际输入检查失败，未作同条件基线比较。独立f5393fb4退回e9fa的ACP完整Job退出缓存及根退出提前删除会话两项，原Worker返修并继续53普通安装、Pi IPC及同安装真实验收，产品尚未接受。
+当前产品接入源e9fa97e3已普通push，51 strict/三个CLI传输前Go用例、52完整合同264样例及生成一致性、build17实际0。49广包Go整体1：Relay启动和Workbench实际输入检查失败，未作同条件基线比较。独立f5393fb4退回e9fa的ACP完整Job退出缓存及根退出提前删除会话两项，原Worker返修并继续准确最终安装真实验收，产品尚未接受。
 
-原生验证来源fe822783的46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功/完整消息及两个Job退出；43—46已验范围获42d70d4e限定接受。执行Grant客户端按384D已接受来源补充准备，真实签发、产品Worker模型、最终同安装双Worker仍未验。F18C/F803合同按SPEC §21.1.5—§21.1.6；已验安装仍f2ab，原95ef/5187保持。
+e9fa完整ZIP/普通解包53实际0，仓库外install53复制/native/28243闭包和保护拒绝通过；T02实际6保留真实消费者未验。同安装真实Pi1.0.1的无推理RPC/node-script与完整Job回归56获01386648限定接受，55入口manifest错误退出1保留。来源后继64DD沿384D仅共用生产settings bundle，获同报告技术接受；e9fa ACP返修及最终准确安装验收继续。
+
+原生验证来源fe822783的46实际0：OpenCode2.0.31 ACP、单次DeepSeek/pro请求HTTP200/tools0、原session成功/完整消息及两个Job退出；43—46已验范围获42d70d4e限定接受。执行Grant客户端按64DD已接受来源补充准备，真实签发、产品Worker模型、最终同安装双Worker仍未验。F18C/F803合同按SPEC §21.1.5—§21.1.6；原95ef/5187保持。
 
 用户已明确批准Observe，禁止使用Aliyun key，允许阶跃星辰和其他Agent测试。原Worker ctx_fb2c13c28d40完成delegated-observe26实际0：真实仅observe Grant、CurrentUser DPAPI及原23消费、status/capabilities、五项真实403、持久范围和原Orca保全通过。原95ef安装及64509服务保持。真实发现五个已安装Agent；Pi账号源无可用key，Codex OAuth存在，Codex等其他Agent的完整关闭工具及原生调用合同仍有缺口。原生OpenCode已验范围见上一段；StepFun配置路径已询问，产品Worker模型、真实双Worker、T11/T12仍未通过。
 
