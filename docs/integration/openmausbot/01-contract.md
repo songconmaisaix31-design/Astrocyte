@@ -8,7 +8,9 @@
 
 CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_TOKEN`。浏览器复用现有人类 session/CSRF；服务将 path project 与真实调用者绑定，再核当前项目动作、目录、模型和控制权限。启动服务不创建授权。注册、安装、配置、可启动和 start/send/read/stop/resume/tools 控制能力分别使用真实 observation，`available` 不表示当前提供商已经实测。
 
-当前投递前准入还核原任务关联的`GrantAgentID == actor.ID`。因此Agent令牌经CLI创建的任务，不能仅凭GUI人类会话获得同一任务的worker.start/send权限；观察和符合原规则的人类安全停止分别核权。人类自己创建的任务沿其当前主体准入，不能把两个不同主体合称为已具备同等输入权。组合验收中的跨入口追加输入存在这一明确缺口，本轮不放宽绑定或暗中继承原Agent批准。
+人类向CLI Agent创建的任务追加`worker.send`时，独立核验当前人类会话/CSRF、同项目当前settings、send动作、输入目录/固定上下文、所选原生CLI/模型与外发批准。人类不冒领原Agent Grant，也不以创建者Grant仍有效作为其自身权限来源；原link中的创建者、Run/root Task和原request继续保留实际来源。该例外只适用于`worker.send`，不开放跨创建者`worker.start`。人类自己创建的controller/task/start沿原当前项目权限；Agent请求继续严格核创建者Grant/主体及原有效期。观察与人类自有安全停止分别沿原动作核权。
+
+新增权限规则不改变原Dispatch/session、精确AgentSelection、模型、当前settings revision、固定输入/上下文版本、controller consumer generation、runtime fence或原请求幂等。投递前再次核权；人类当前权限撤销/过期、跨项目、来源变化或原生身份变化均不得产生新输入。用户已确认此跨入口追加输入范围；后端实际实现及正反向测试按02/04/06的准确源码和结果登记，不从文案或按钮显示推导已经可执行。
 
 | 动作组 | App 权限 | 范围与副作用 |
 | --- | --- | --- |
@@ -77,5 +79,9 @@ SWA 退出码保留：0 当前动作成功；2 参数/请求不匹配；3 权限
 ## 工作目录与未验范围
 
 当前 `controller.open` 使用获准目录登记 folder，Worker 使用 `worktree: 'current'`。已见 session/账号私有根和完整所属资源机制；没有每 Worker 自动 Git worktree 隔离的现成产品证明。开发云 checkout 不构成产品写入隔离验收，工具关闭范围不扩展为代码写入能力。
+
+产品目标并列Windows x64与Linux，Agent来源和逐引擎实际能力见[适配矩阵](02-agent-matrix.md)。45个TUI模板和7个结构化引擎是不同层次，先复用7个原生adapter并逐项评估其余来源；不能将模板探测或某个局部比例称为已适配大部分。上游明确的平台限制单列，不用另一个终端程序冒充同一原生引擎。
+
+本轮真实模型测试预算不设费用上限。模型账号与当前许可仍须实际存在；固定公开输入、ToolsOff、禁止Aliyun/百炼、超时、原始request/未知效果及机器资源/并发准入继续有效。Windows目标已明确为x64，当前仅Linux可访问；Windows主机、安装物及真实链路未取得证据时保持NOT_RUN。
 
 正式动态检查由02/03/04/05/06按[负责人表](ownership.md)接续。合同与生成类型通过不代表 Windows安装、真实 Agent 调用、并发模型、GUI跨入口或最终 N=3 已通过。

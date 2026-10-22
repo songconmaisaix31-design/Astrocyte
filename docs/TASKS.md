@@ -4,6 +4,8 @@
 
 ## 当前顺序
 
+本轮新增已确认范围为：人类按同项目当前权限独立向CLI Agent任务追加`worker.send`，Windows x64与Linux双平台，以及大部分Agent适配；真实模型测试预算不设费用上限。跨创建者start、原生工具、私有资料、原request/未知效果及资源准入不据此放宽。01按[Agent矩阵](integration/openmausbot/02-agent-matrix.md)列全部45个TUI来源和7个结构化引擎，02优先接通已有真实原生adapter及Linux所属控制，03/04消费已审合同，05准备两平台实际候选，06按可访问环境核验。当前仅Linux可访问，Windows主机/安装/链路未验保持NOT_RUN；不重复询问已确认x64或模型预算。
+
 本次用户要求执行上传的[六张任务卡](../tasks/swa-task-cards-20261022.md)，从main `6445149`与PR #5 `6778a66f`的准确本地集成开始。顺序为01共享合同→02运行时/03 CLI→05 CLI候选→06 CLI真实验收；04现有React工作台与共享服务随后进入05组合候选及06跨入口验收，GUI不阻塞CLI候选。当前合同和逐文件归属见[整合入口](integration/openmausbot/00-context.md)。最终验收默认N=3、可配置；旧至少两Worker要求及历史报告保留原验收范围，当前N=3不得由旧结果替代。旧机授权与运行状态不移植到本云机。
 
 用户最新确认首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。准确396e的完整无界面方案及测试计划已独立接受，接口按SPEC §21.1、写域及验收按首版任务，同一Worker正在实现；实际依赖准备及原服务窗口由STATUS维护。下方原 M2—M6 保留后续规划，MCP 与完整 S3 不自动成为该首版前置。现有权限及未验范围按 QUESTIONS/STATUS 保持。

@@ -813,6 +813,8 @@ Windows 与 Linux CI 分开记录环境、SOURCE_SHA、实际命令和结果。�
 
 本轮[六卡整合任务](../tasks/swa-task-cards-20261022.md)沿用本节执行权威与授权，以CLI候选优先、共享React工作台的组合候选随后推进；准确基线、来源与文件归属见[整合入口](integration/openmausbot/00-context.md)。共享身份、状态、请求恢复、退出码与数量合同见[01合同](integration/openmausbot/01-contract.md)。本轮最终验收默认N=3且可配置，N是测试参数，不构成产品固定上限；旧两Worker记录保留其原范围。`max_workers`为任务批准的安全正整数额度，pending/unknown start保持占用，超限不得静默缩减。`max_workers=2`时第三席拒绝继续作为原准入用例。完整成果遇到当前原生分页容量不足必须明确失败。任务文件的公开形状见`swa-cli.schema.json`的`taskSpec`，HTTP命令仍传`spec_file`，不新增inline spec。
 
+本轮目标包括Windows x64与Linux，实际原生Agent来源及逐引擎平台限制见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。本次已确认的人类跨创建者例外仅为`worker.send`：同项目当前settings、动作、目录/固定上下文、原生CLI/模型和外发批准独立准入，不继承创建者Agent Grant，不以其有效为人类权限来源，原创建者关联保留来源。跨创建者`worker.start`仍拒绝，Agent仍严格绑定原Grant与主体，人类自己的start沿原规则。投递前再次核当前批准、原Dispatch/session/selection/代次及原request；当前权限或来源失效不得产生输入。实际实现和真实HTTP/SQLite及原生消费者验证分别记录。真实模型测试预算不设费用上限；固定公开输入、ToolsOff、私有资料/账户保全、超时和资源/并发准入保持。未连接Windows环境不表示平台验收完成。
+
 产品底座使用 Go/TypeScript/SQLite，旧 Python 执行内核保持独立研究来源。[H2，第 1 节] summarize 等工具可使用所需 Python 依赖；机制按完整业务意义、来源和验证迁入，保持单一任务执行权威。现行语言决定见 QUESTIONS，早期绝对禁令不再作为当前接入条件。
 
 既有 Go/TypeScript/SQLite 产品保持现有模块与数据。最新[首版可控 Swarm CLI 任务](../tasks/swa-cli-v1-20261020.md)集成抽取出的 Orca 无界面执行后台，采用独立 `swa` 命令、安装根、profile、数据库、端点及所属进程；本机 Orca 保持原安装、配置、账户及会话。用户决定与隔离验收见 [QUESTIONS](QUESTIONS.md) 和首版任务。

@@ -2,6 +2,8 @@
 
 SWA 输入为 `main@6445149358f5799fc5a786eb59ff494cddbec72e` 与 PR #5 `6778a66faf6d1ca7b50658f23966db3e406f38c6` 的本地集成 `6195f4cfb6b32aedd43845443c029ecc11d5578d`。下列 SWA 路径均在该基线实际存在；后续变更由[负责人表](ownership.md)指定负责人验证。
 
+本轮新增人类跨创建者`worker.send`独立当前准入、Windows x64/Linux和更广Agent适配的来源与实现缺口见[Agent矩阵](02-agent-matrix.md)。该矩阵以真实45项TUI配置与7项结构化runtime catalog为输入，逐项区分模板/原生adapter/产品政策/实际执行；OpenMausBot交互参考不扩大SWA的Agent账号、工具或平台能力。
+
 OpenMausBot 所有引用固定到 [`dbb73a73ae2cba48fdf608e9e22d1d5d91608532`](https://github.com/songconmaisaix31-design/OpenMausBot/tree/dbb73a73ae2cba48fdf608e9e22d1d5d91608532)。本轮通过 HTTPS Git 读取该准确对象，并核对引用路径。本轮采用方式为既有 SWA 代码直接复用或改造、OpenMausBot 结构/交互参考；本表不表示复制其实现。
 
 | 现有 SWA 能力与路径 | 固定参考路径 | 采用方式与负责人 | 验证条件 |
