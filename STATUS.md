@@ -12,6 +12,8 @@
 
 本轮GitHub [39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 的准确来源 `faea9d4a` 有Ubuntu与Windows两项foundation任务通过；完整check任务仍失败。Windows原生构建在 [39758793164](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758793164) 的build阶段失败；[39760430188](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39760430188) 只读取原失败artifact的诊断成功，完整构建任务跳过。诊断取得node-gyp原始VS探测的 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` 与找不到VS报错；尚不能据此认定机器没有VS，下一步只运行真实工具链的局部复现。可复用安装和启动说明及失败先报告规则已保存到云环境草稿，尚未发布快照。
 
+VS局部探测来源`369680ec`已普通push，实际 [39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 的工具准备成功、probe退出1、artifact上传成功，完整候选与旧完整检查均跳过。当前公开摘要不足以定位这一轮实际异常；静态核查发现probe传入的RUNNER_TEMP工作目录违反原下载器的candidate目录限制，且漏查下载退出码。修正仅涉及局部探测调用，保留下载器保护规则，后继先复现非法参数拒绝再运行合法目录下探测，不重启完整构建。
+
 以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
 
 当前源码893fb8852e15109ca9a99f1bd51d83ea249a37b8已普通push，参数窄修/84严格检查获5eab3922限定接受。build19、完整ZIP/普通解包88及安装复制/native/28251闭包/保护拒绝通过，汇总6保留功能未验。新89服务在64508/runtime6aec5c49真实就绪，90两次来源一致、authority为空、业务/模型0，准备91及实际helper/最终同安装双Worker继续。旧67的87e指定session/三句柄/六已观察身份退出获2197a441限定接受，原EOF6/Job不可查询/83父R pending保持。原Worker持有89 TTY32198和Job观察21806，原Orca/95ef/5187保持。

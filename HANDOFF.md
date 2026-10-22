@@ -6,6 +6,8 @@ Linux最近已验组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd
 
 Windows真实CI第三轮 `39758793164` build失败；只读诊断 `39760430188` 成功读取原artifact，完整构建被跳过。原node-gyp12.3.0报VS探测 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`，尚未证明VS缺失。05按已审计划只做Node24.21/原finder/官方Developer Shell局部复现，06独立审查，主控串行提交推送；每次失败必须先向用户交代最小复现、根因证据、局部验证结果，随后才可启动下一轮完整构建。不得用完整build取代局部诊断。
 
+局部probe来源`369680ec`已push；实际run39763935502仅probe失败（工具准备与artifact上传成功），完整候选与旧完整检查跳过。该轮公开错误只有exit1，未证实到达finder。静态已发现下载器只允许repo/build/candidate6alnum而probe误传RUNNER_TEMP，且缺下载exit核查；05/06按原helper不变修正调用，下一次仍仅局部probe，先实际负测原参数拒绝，再观察合法目录的原finder/Developer Shell。不得将静态发现写成已取到该轮原始异常。
+
 旧CLI04来源e148的服务正常关闭证据继续保持其原范围。Codex0.163结果读取已提交，原ChatGPT OAuth不可克隆到多个私有HOME作为并发保全证明；02与专题负责人按官方API-key stdin登录、各Worker私有HOME和ToolsOff计划推进最小NativeLaunch接口，无真实安全配置key时保留未配置/NOT_RUN。06的真实N驱动已实现并提交，但不把help/负向或准备公开输入算模型通过。上游7个structured与45个TUI模板的“大部分”范围问题尚待用户选择，继续已明确的适配工作。
 
 工具与缓存位于 `.verification/cloud-setup`，新 shell 可读取该目录 `activate.sh`；固定 Node24.16.0/pnpm11.27.0/Go1.27.2。实际 filtered frozen 与模块校验、应用构建和开发启动已通过；全量 Go 失败与独立适用检查见任务和 `docs/validation/swa-product`。未知请求只查原 request，不换键重放；工具关闭和公开固定输入边界仍保留。
