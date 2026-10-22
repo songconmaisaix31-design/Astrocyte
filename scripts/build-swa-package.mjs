@@ -113,13 +113,16 @@ await mkdir(join(nodeDir, 'Release'))
 const library = NODE_RUNTIME_PIN.windowsImportLibs['win32-x64']
 await fetchPinned(library.file, library.sha256, join(nodeDir, 'Release', 'node.lib'))
 environment.PATH = nodeDirectory + ';' + environment.PATH
-environment.npm_config_msvs_version = '2022'
+const msvsVersion = values['msvs-version'] ?? '2022'
+environment.npm_config_msvs_version = msvsVersion
+const effectiveGyp = JSON.parse(capture(node, ['-e', 'const gyp=require(process.argv[1])();gyp.parseArgv([process.execPath,process.argv[2],"rebuild"]);console.log(JSON.stringify({msvs_version:gyp.opts["msvs-version"]}))', sourceRequire.resolve('node-gyp/lib/node-gyp.js'), gyp]))
+if (effectiveGyp.msvs_version !== msvsVersion) throw new Error('The effective node-gyp MSVC selection conflicts with the requested compiler year')
 environment.npm_config_devdir = join(work, 'gyp-cache')
 // 原生源码使用UTF-8；编译参数只作用于本候选的子进程。
 for (const key of Object.keys(environment)) if (/^(?:CL|_CL_)$/i.test(key)) delete environment[key]
 environment.CL = '/utf-8'
-console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL }))
-const reuse = values['native-source'] ? await prepareNativeReuse({ candidate: values['native-source'], work: values['native-work'], evidence: values['native-evidence'], node, python, gyp }) : null
+console.log(JSON.stringify({ stage: 'native-msvc-options', CL: environment.CL, msvs_version: msvsVersion }))
+const reuse = values['native-source'] ? await prepareNativeReuse({ candidate: values['native-source'], work: values['native-work'], evidence: values['native-evidence'], node, python, gyp, msvsVersion }) : null
 const built = [], copied = []
 for (const [index, name] of nativePackages.entries()) {
   if (reuse && await reuseNativePackage({ name, index, runtime, reuse })) { copied.push(name); continue }

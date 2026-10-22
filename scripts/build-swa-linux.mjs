@@ -13,6 +13,7 @@ import linuxFloor from '../third_party/orca-v1.4.230/config/scripts/verify-linux
 
 const values = packageOptions(), target = currentTarget()
 if (target !== 'linux-x64-glibc') throw new Error('Linux SWA packaging currently requires native Linux x64 glibc')
+if (values['msvs-version'] !== undefined) throw new Error('The Windows --msvs-version option does not apply to Linux')
 if (values['native-source'] || values['node-inputs']) throw new Error('Linux uses hash-verified pinned cache inputs and a fresh native build; Windows reuse options are not applicable')
 const output = resolve(values.output), inside = relative(join(root, 'dist'), output)
 if (!inside || inside === '..' || inside.startsWith('../') || isAbsolute(inside)) throw new Error('Choose a new candidate directory inside dist')

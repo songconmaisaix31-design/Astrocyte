@@ -7,11 +7,12 @@ import { parseArgs } from 'node:util'
 
 export function packageOptions(args = process.argv.slice(2), environment = process.env) {
   const { values } = parseArgs({ args, options: {
-    output: { type: 'string' }, edition: { type: 'string', default: 'cli' }, python: { type: 'string' },
+    output: { type: 'string' }, edition: { type: 'string', default: 'cli' }, python: { type: 'string' }, 'msvs-version': { type: 'string' },
     'node-inputs': { type: 'string' }, 'native-source': { type: 'string' },
     'native-work': { type: 'string' }, 'native-evidence': { type: 'string' }
   }, allowPositionals: false })
   if (!['cli', 'combined'].includes(values.edition)) throw new Error('The edition must be cli or combined')
+  if (values['msvs-version'] !== undefined && !['2022', '2026'].includes(values['msvs-version'])) throw new Error('The Windows MSVC selection must be 2022 or 2026')
   const python = values.python ?? environment.SWA_BUILD_PYTHON
   if (!python || !isAbsolute(python)) throw new Error('Provide an absolute --python or SWA_BUILD_PYTHON executable')
   if (!values.output || !isAbsolute(values.output)) throw new Error('An explicit absolute --output inside dist is required')

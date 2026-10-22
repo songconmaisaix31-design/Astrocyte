@@ -41,7 +41,8 @@ async function equalTree(left, right, ignored = new Set(), prefix = '') {
   return true
 }
 
-export async function prepareNativeReuse({ candidate, work, evidence, node, python, gyp }) {
+export async function prepareNativeReuse({ candidate, work, evidence, node, python, gyp, msvsVersion }) {
+  if (!['2022', '2026'].includes(msvsVersion)) throw new Error('The requested native reuse compiler year is unavailable')
   for (const path of [candidate, work, evidence]) if (!isAbsolute(path)) throw new Error('Native reuse sources must be explicit absolute paths')
   candidate = await plainPath(candidate, true)
   work = await plainPath(work, true)
@@ -71,13 +72,17 @@ export async function prepareNativeReuse({ candidate, work, evidence, node, pyth
   const compilerSettings = text => {
     const file = ts.createSourceFile('package.mjs', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS)
     const selected = []
+    let literalMsvsVersion = null
     const visit = node => {
-      if (ts.isBinaryExpression(node) && ts.isPropertyAccessExpression(node.left) && node.left.expression.getText(file) === 'environment' && ['CL', 'PATH', 'npm_config_msvs_version', 'npm_config_devdir'].includes(node.left.name.text)) selected.push(node.getText(file))
+      if (ts.isBinaryExpression(node) && ts.isPropertyAccessExpression(node.left) && node.left.expression.getText(file) === 'environment' && ['CL', 'PATH', 'npm_config_msvs_version', 'npm_config_devdir'].includes(node.left.name.text)) {
+        selected.push(node.getText(file))
+        if (node.left.name.text === 'npm_config_msvs_version' && ts.isStringLiteral(node.right)) literalMsvsVersion = node.right.text
+      }
       ts.forEachChild(node, visit)
     }
     visit(file)
     if (selected.length !== 4) throw new Error('The actual native compiler settings are unavailable')
-    return selected
+    return { assignments: selected, literalMsvsVersion }
   }
   const pythonInfo = JSON.parse(execFileSync(python, ['-c', 'import json,sys; print(json.dumps({"executable":sys.executable,"version":list(sys.version_info[:3])}))'], { encoding: 'utf8', windowsHide: true }))
   const gypPackage = JSON.parse(await readFile(join(dirname(dirname(gyp)), 'package.json'), 'utf8'))
@@ -87,7 +92,11 @@ export async function prepareNativeReuse({ candidate, work, evidence, node, pyth
   const priorPackage = JSON.parse(git('runtime/swa-orca/package.json'))
   const priorGyp = priorPackage.devDependencies['node-gyp']
   if (!log.includes(`gyp info using node-gyp@${priorGyp}`) || !log.includes(JSON.stringify({ stage: 'native-python-preflight', executable: await realpath(python), version: pythonInfo.version.join('.') }))) throw new Error('The original native compiler provenance is unconfirmed')
-  if (!log.includes('gyp info find VS using VS2022 (')) throw new Error('The original Visual Studio provenance is unavailable')
+  const priorSettings = compilerSettings(git('scripts/build-swa-package.mjs'))
+  const declaredYears = ['2022', '2026'].filter(year => log.includes(JSON.stringify({ stage: 'native-msvc-options', CL: '/utf-8', msvs_version: year })))
+  const actualYears = ['2022', '2026'].filter(year => log.includes('gyp info find VS using VS' + year + ' ('))
+  const priorYear = declaredYears.length === 1 ? declaredYears[0] : declaredYears.length === 0 && priorSettings.literalMsvsVersion === '2022' && log.includes(JSON.stringify({ stage: 'native-msvc-options', CL: '/utf-8' })) ? '2022' : null
+  if (!priorYear || actualYears.length !== 1 || actualYears[0] !== priorYear || priorSettings.literalMsvsVersion !== null && priorSettings.literalMsvsVersion !== priorYear) throw new Error('The original requested and actual Visual Studio provenance is unavailable or inconsistent')
   const gypInputs = (lock, version) => {
     const inputs = {}, pending = [`node-gyp@${version}`]
     while (pending.length) {
@@ -100,7 +109,7 @@ export async function prepareNativeReuse({ candidate, work, evidence, node, pyth
     }
     return inputs
   }
-  const commonUnchanged = sourceFunction(git('scripts/build-swa-native.mjs')) === sourceFunction(await readFile(join(root, 'scripts/build-swa-native.mjs'), 'utf8')) && isDeepStrictEqual(compilerSettings(git('scripts/build-swa-package.mjs')), compilerSettings(await readFile(join(root, 'scripts/build-swa-package.mjs'), 'utf8'))) && git('third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs') === await readFile(join(root, 'third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs'), 'utf8') && git('third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts') === await readFile(join(root, 'third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'), 'utf8') && isDeepStrictEqual(gypInputs(priorLock, priorGyp), gypInputs(currentLock, gypPackage.version))
+  const commonUnchanged = priorYear === msvsVersion && sourceFunction(git('scripts/build-swa-native.mjs')) === sourceFunction(await readFile(join(root, 'scripts/build-swa-native.mjs'), 'utf8')) && isDeepStrictEqual(priorSettings, compilerSettings(await readFile(join(root, 'scripts/build-swa-package.mjs'), 'utf8'))) && git('third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs') === await readFile(join(root, 'third_party/orca-v1.4.230/config/scripts/orcad-prebuild-slot-contents.mjs'), 'utf8') && git('third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts') === await readFile(join(root, 'third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'), 'utf8') && isDeepStrictEqual(gypInputs(priorLock, priorGyp), gypInputs(currentLock, gypPackage.version))
   if (!await equalFile(node, join(candidate, 'node', 'node.exe'))) throw new Error('Native reuse Node differs from the successful candidate')
   return { candidate, runtime: join(candidate, 'runtime'), work, evidence, revision, commonUnchanged, log }
 }

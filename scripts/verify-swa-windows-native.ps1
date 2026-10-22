@@ -2,7 +2,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$PnpmCli,
-    [Parameter(Mandatory)][string]$Python
+    [Parameter(Mandatory)][string]$Python,
+    [ValidateSet('2022', '2026')][string]$MsvsVersion = '2026'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,9 +57,32 @@ try {
     Invoke-Logged 'frozen-install' $node @($PnpmCli, '--filter', 'astrocyte', '--filter', '@astrocyte/web', '--filter', '@swa/orca-runtime', '--filter', '@orca/process-host', 'install', '--frozen-lockfile')
     Invoke-Logged 'go-download' $go @('mod', 'download')
     Invoke-Logged 'go-verify' $go @('mod', 'verify')
+    $env:SWA_CI_PHASE = 'msvc-toolchain'
+    $major = if ($MsvsVersion -ceq '2026') { 18 } else { 17 }
+    $toolset = if ($MsvsVersion -ceq '2026') { 'v145' } else { 'v143' }
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+    $metadataJSON = & $vswhere -products '*' -version ('[' + $major + '.0,' + ($major + 1) + '.0)') -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
+    if ($LASTEXITCODE -ne 0) { throw 'The official selected Visual Studio discovery failed' }
+    $installations = @($metadataJSON | ConvertFrom-Json | Sort-Object { [version]$_.installationVersion } -Descending)
+    if ($installations.Count -eq 0) { throw 'The explicitly selected Visual Studio x64 toolchain is not installed' }
+    $selected = $installations[0]
+    if (-not $selected.isComplete -or ([version]$selected.installationVersion).Major -ne $major) { throw 'The selected Visual Studio installation is incomplete or has the wrong version' }
+    & (Join-Path $selected.installationPath 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> (Join-Path $logs 'toolchain-devshell.log')
+    if (-not $env:VCINSTALLDIR -or -not $env:VSCMD_VER -or ([version]$env:VSCMD_VER).Major -ne $major) { throw 'The official developer environment did not establish the selected compiler version' }
+    $actualVS = [IO.Path]::GetFullPath((Join-Path $env:VCINSTALLDIR '..'))
+    if (-not $actualVS.Equals([IO.Path]::GetFullPath($selected.installationPath), [StringComparison]::OrdinalIgnoreCase)) { throw 'The developer environment belongs to a different Visual Studio installation' }
+    $msbuild = Join-Path $selected.installationPath 'MSBuild/Current/Bin/MSBuild.exe'
+    if (-not (Test-Path -LiteralPath $msbuild -PathType Leaf) -or -not $env:WindowsSdkDir -or -not $env:WindowsSDKVersion -or -not (Test-Path -LiteralPath (Join-Path $env:WindowsSdkDir ('Include/' + $env:WindowsSDKVersion)) -PathType Container)) { throw 'The selected actual MSBuild or Windows SDK is missing' }
+    $compiler = (Get-Command cl -CommandType Application | Select-Object -First 1).Source
+    if (-not [IO.Path]::GetFullPath($compiler).StartsWith(([IO.Path]::GetFullPath($selected.installationPath).TrimEnd('\') + '\VC\Tools\MSVC\'), [StringComparison]::OrdinalIgnoreCase) -or $compiler -notmatch '\\bin\\Hostx64\\x64\\cl\.exe$') { throw 'The actual x64 compiler is outside the selected installation' }
+    $compilerVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($compiler)
+    $env:npm_config_msvs_version = $MsvsVersion
+    $gypOptions = & $node -e 'const{createRequire}=require("node:module");const r=createRequire(process.cwd()+"/runtime/swa-orca/package.json");const gyp=r("node-gyp/lib/node-gyp.js")();gyp.parseArgv([process.execPath,r.resolve("node-gyp/bin/node-gyp.js"),"rebuild"]);console.log(JSON.stringify({msvs_version:gyp.opts["msvs-version"]}))'
+    if ($LASTEXITCODE -ne 0 -or ($gypOptions | ConvertFrom-Json).msvs_version -cne $MsvsVersion) { throw 'The effective node-gyp compiler selection conflicts with the explicit CI selection' }
+    [ordered]@{ selected_msvs_version = $MsvsVersion; actual_vs_path = $actualVS; actual_vs_version = $selected.installationVersion; developer_environment_version = $env:VSCMD_VER; expected_gyp_toolset = $toolset; actual_msbuild = $msbuild; actual_sdk_version = $env:WindowsSDKVersion; actual_cl_path = $compiler; actual_cl_file_version = $compilerVersion.FileVersion; actual_cl_product_version = $compilerVersion.ProductVersion; effective_gyp_msvs_version = ($gypOptions | ConvertFrom-Json).msvs_version; native_compilation = 'NOT_RUN' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logs 'toolchain-preflight.log')
     $name = 'swa-windows-cli-' + $revision
     $candidate = Join-Path $checkout ('dist/' + $name)
-    Invoke-Logged 'build' $node @($PnpmCli, 'build:swa', '--output', $candidate, '--edition', 'cli', '--python', $Python)
+    Invoke-Logged 'build' $node @($PnpmCli, 'build:swa', '--output', $candidate, '--edition', 'cli', '--python', $Python, '--msvs-version', $MsvsVersion)
     $artifacts = Join-Path $env:RUNNER_TEMP 'swa-artifacts'
     $packages = Join-Path $env:RUNNER_TEMP 'swa-packages'
     $installs = Join-Path $env:RUNNER_TEMP 'swa-installs'

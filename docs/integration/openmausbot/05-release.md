@@ -80,14 +80,26 @@ go test -count=1 -mod=readonly -v ./cmd/swa
 
 `3f4a4ea278d2cdf58711c8c6dee22797241b3780` 的 [run 39758793164](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758793164) 在 build 阶段失败。只读诊断 [run 39760430188](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39760430188) 实际成功读取原 artifact，发现固定 node-gyp12.3.0 的 VS 探测报 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`。这不能证明 VS 未安装；完整构建保持关闭，后续仅使用固定 Node24.21、未修改 finder、官方 vswhere 与 Developer Shell 做局部观察，不扩大原 maxBuffer、不升级依赖。
 
-局部探测来源 `369680ec88d24a33e00d535b6c3eda0041809d1d` 的 [run 39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 退出1，未产生 baseline 摘要，实际首个失败阶段尚未知。静态核查另发现该探测的下载 work 路径不符合原下载 helper 的限定目录，已准备仅局部纠正：旧非法参数由原 helper 实际拒绝后，改用其许可根内的独占目录；立即核下载 exit，并提供固定阶段及过滤有界异常注释。原下载守卫、TLS、SHA不变，实际 Windows 纠正结果待取得。诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
+局部探测来源 `369680ec88d24a33e00d535b6c3eda0041809d1d` 的 [run 39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 退出1，未产生 baseline 摘要，实际首个失败阶段未知。静态核查另发现下载 work 路径不符合原 helper 的限定目录。后继局部检查已实际复现旧非法参数在 HTTP 前拒绝，exit1、stage=validate、ArgumentException且目标不存在；合法独占 work 的下载、SHA 和真实 Node 通过。原下载守卫、TLS、SHA保持启用。
 
-构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。编译器选择继续使用现有 MSVC 2022 配置，不修改全局 PATH。
+来源 `2c02388612759f4665d3b0ae515d4cfd466ec8de` 的 [run 39765889558](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39765889558) 完整记录局部三阶段后任务仍退出1。真实数据分开证明：原配置2022拒绝已安装的VS2026；VSSetup JSON 为1451733字节，原 default execFile 在1048576字节报 MAXBUFFER，而C#枚举78312字节成功；仅选择2026后 finder 成功，官方同安装 Developer Shell 下再次成功且不触发 MAXBUFFER。其 `cl /Bv` 无输入退出2只作为版本观察。Linux真实 PowerShell7.5.5 的六项普通进程最小复现进一步证明：原 runner 追加退出逻辑将已记录的非零观察传播为整体1；显式分类收尾为0，未知native退出与真实异常仍失败，日志 `.verification/cloud-setup/powershell-local/exit-classification-r1.log`。此项仅证明 shell 语义。
+
+尾部分类修正来源 `1d27fd3c` 的 [run 39767392238](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39767392238) 已实际成功，完整候选明确跳过。实际固定Node24.21/node-gyp12.3：原2022仍拒绝，selection2026与官方DevShell2026均成功，DevShell下为v145、SDK10.0.26100.0与实际cl19.51.36260.0。原 `cl /Bv` 退出2完整保留且不称编译；VSSetup完整输出1446335字节，C#为77972字节。未编译native、未安装候选、未启动服务或模型。原失败均保留，不以此局部成功宣布Windows发行通过。
+
+诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
+
+构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。
+
+Windows builder 的 `--msvs-version` 只接受2022或2026，缺省保留2022。随包Node实际执行未修改的 node-gyp.parseArgv，配置优先级造成有效选项与明确选择不符时立即失败。Linux显式收到此Windows参数会在构建前拒绝。CI driver 明确选择2026，先使用真实 vswhere 与同安装官方 Developer Shell，核VS18、真实MSBuild/SDK和Hostx64/x64编译器路径；driver也可明确选择2022，此时所有门一致使用VS17。`expected_gyp_toolset` 是原node-gyp源码的year映射，实际原生构建输出和真实产物仍须单独核验。没有修改全局 PATH、默认缓冲区或工具依赖。
+
+原native复用记录现需核明确选择year与原成功node-gyp日志实际year一致，跨year按原路径重新编译，来源不明确直接拒绝。旧2022记录仅在成功日志、原Git源码AST中的literal2022和实际VS2022日志同时成立时识别，不凭缺字段推断。原Node、headers、Python、锁依赖、源码、补丁、原二进制及完整成功构建来源检查保持启用。局部参数检查、真实gyp配置优先级/冲突拒绝、Linux提前拒绝与实际PowerShell语法检查通过；新Windows native编译、安装和正向复用仍NOT_RUN。
 
 ```powershell
 $env:SWA_PNPM_CLI = '已安装 pnpm 11.27.0 的绝对 JavaScript 入口'
 $python = '已安装 Python 3 的绝对可执行文件路径'
 pnpm build:swa --output '本仓库 dist 下尚不存在的绝对候选目录' --python $python --edition cli
+# 先进入所选VS2026安装的官方Developer PowerShell，再明确选择2026。
+pnpm build:swa --output '本仓库 dist 下另一个尚不存在的绝对候选目录' --python $python --edition cli --msvs-version 2026
 ```
 
 CLI 是默认形态，不需要前端构建或浏览器。组合形态使用同一源码，通过 `--edition combined` 执行真实 `web` 构建并生成 Vite manifest，复制 `web/dist` 到候选的 `web`，同时保存前端依赖的原许可证。根与前端 package、依赖清单、锁文件保存在候选 `metadata`，不会覆盖私有 runtime 的 package。
