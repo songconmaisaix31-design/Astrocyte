@@ -51,6 +51,8 @@ CLI形态不需要网页或浏览器。组合形态的`EDITION`必须为`combine
 
 网页目录必须属于同一次安装，包含真实`index.html`和Vite资产清单；目录或资产经过重解析点、符号链接、文件缺失或edition不符时启动拒绝。省略`--web-dir`只提供API，继承环境中的`ASTROCYTE_WEB_DIR`不自动启用网页。附着于该服务的浏览器页面关闭后，CLI服务继续由原所属stdin管理。
 
+`SWA_CODEX_API_KEY_HOME`和`SWA_CLAUDE_API_KEY_HOME`只在启动进程中分别选择显式、独立的Codex和Claude API-key来源目录。省略或设为空时保持未配置，不回退到普通`CODEX_HOME`、`CLAUDE_CONFIG_DIR`、发现目录、默认账户目录或原OAuth登录。非空值必须为实际普通目录的绝对路径，路径不得经过符号链接或重解析点，并须彼此及与安装、产品数据、原profile/账户保护根、普通或默认Codex/Claude目录互不包含。Go入口只核目录路径元数据，不读取`auth.json`、`settings.json`或`.credentials`；Node仍须在使用前核来源根的owner-only权限、原生配置和账号来源身份、项目及私有Worker目录边界。路径传递成功不表示凭据有效、原生Agent可启动、ToolsOff或模型调用已通过，也不发行human会话或项目Grant。Claude后继只接受显式来源`settings.json`中的literal `env.ANTHROPIC_API_KEY`，不使用OAuth、AUTH_TOKEN或helper。不要把key值放入这两个目录变量、命令参数或日志。
+
 该命令在前台持有所属stdin，输出实际Node/HTTP readiness后持续运行。关闭该stdin或Ctrl+C请求关闭本次所属服务；不要把stdin预先重定向为空。服务监听显式`127.0.0.1`端口，冲突返回退出码5。依赖或所属证据不足会明确拒绝；不会另选端口或启动本机Orca。进程、SQLite、profile、IPC、会话、缓存和临时目录均归本次私有根。
 
 ## 项目授权与调用身份

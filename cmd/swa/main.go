@@ -35,6 +35,8 @@ swa request show --controller C|--project P --request-id UUID --json
 
 查询和控制使用 SWA_ENDPOINT、SWA_PROJECT_ID、SWA_PROJECT_TOKEN。
 SWA_PROJECT_TOKEN 必须来自当前项目授权。后台启动不会发行项目授权。
+SWA_CODEX_API_KEY_HOME 仅选择显式独立的 Codex API-key 来源目录；缺省未配置，不使用原 CODEX_HOME 登录。
+SWA_CLAUDE_API_KEY_HOME 仅选择显式独立的 Claude API-key 来源目录；缺省未配置，不使用原 Claude 登录。
 可用 --endpoint 明确指定已启动的回环 HTTP 服务；查询不会启动服务。
 serve 的数据目录、可选 profile 与网页目录必须是绝对路径；R 是本机 Orca/账户保护目录列表，Windows 用分号分隔，Linux 用冒号分隔。
 --web-dir 仅接受 combined 安装中的 web 绝对目录，由同一 HTTP 服务提供网页。

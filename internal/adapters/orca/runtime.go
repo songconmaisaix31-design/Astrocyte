@@ -28,7 +28,9 @@ type Config struct {
 	DiscoveryAppData      string
 	DiscoveryLocalAppData string
 	DiscoveryCodexHome    string
+	CodexAPIKeyHome       string
 	DiscoveryClaudeHome   string
+	ClaudeAPIKeyHome      string
 	DiscoveryPiHome       string
 	ProtectedRoots        []string
 	OwnerCapability       string
@@ -97,7 +99,77 @@ func New(config Config) (*Runtime, error) {
 			return nil, errors.New("product root overlaps a protected Orca or Agent root")
 		}
 	}
+	codexHome, err := apiKeySourceHome(config.CodexAPIKeyHome, config, config.ClaudeAPIKeyHome)
+	if err != nil {
+		return nil, err
+	}
+	config.CodexAPIKeyHome = codexHome
+	claudeHome, err := apiKeySourceHome(config.ClaudeAPIKeyHome, config, config.CodexAPIKeyHome)
+	if err != nil {
+		return nil, err
+	}
+	config.ClaudeAPIKeyHome = claudeHome
 	return &Runtime{config: config}, nil
+}
+
+func apiKeySourceHome(input string, config Config, otherSource string) (string, error) {
+	if input == "" {
+		return "", nil
+	}
+	invalid := errors.New("explicit native API-key source home must be an independent plain absolute directory")
+	if !filepath.IsAbs(input) || plainInstalledPath(input) != nil {
+		return "", invalid
+	}
+	info, err := os.Stat(input)
+	if err != nil || !info.IsDir() {
+		return "", invalid
+	}
+	source, err := filepath.EvalSymlinks(input)
+	if err != nil {
+		return "", invalid
+	}
+	roots := append([]string{
+		config.InstallRoot, config.DataRoot, config.AgentProfile, otherSource,
+		config.DiscoveryCodexHome, os.Getenv("CODEX_HOME"), os.Getenv("SWA_DISCOVERY_CODEX_HOME"), filepath.Join(config.DiscoveryHome, ".codex"),
+		config.DiscoveryClaudeHome, os.Getenv("CLAUDE_CONFIG_DIR"), os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"), filepath.Join(config.DiscoveryHome, ".claude"),
+	}, config.ProtectedRoots...)
+	for _, root := range roots {
+		if root == "" {
+			continue
+		}
+		actual, err := metadataRoot(root)
+		if err != nil || contains(actual, source) || contains(source, actual) {
+			return "", invalid
+		}
+	}
+	return source, nil
+}
+
+// 尚未创建的保护目录也保留边界，只解析已有祖先的路径元数据。
+func metadataRoot(input string) (string, error) {
+	if !filepath.IsAbs(input) {
+		return "", errors.New("source protection requires an absolute root")
+	}
+	current := filepath.Clean(input)
+	var missing []string
+	for {
+		_, err := os.Lstat(current)
+		if err == nil {
+			actual, err := filepath.EvalSymlinks(current)
+			if err != nil {
+				return "", err
+			}
+			for index := len(missing) - 1; index >= 0; index-- {
+				actual = filepath.Join(actual, missing[index])
+			}
+			return actual, nil
+		}
+		if !errors.Is(err, os.ErrNotExist) || filepath.Dir(current) == current {
+			return "", err
+		}
+		missing = append(missing, filepath.Base(current))
+		current = filepath.Dir(current)
+	}
 }
 
 func (r *Runtime) ChildEnvironment() []string { return r.environment() }
@@ -143,6 +215,8 @@ func (r *Runtime) environment() []string {
 		"SWA_DISCOVERY_APPDATA="+r.config.DiscoveryAppData,
 		"SWA_DISCOVERY_LOCALAPPDATA="+r.config.DiscoveryLocalAppData,
 		"SWA_DISCOVERY_CODEX_HOME="+r.config.DiscoveryCodexHome,
+		"SWA_CODEX_API_KEY_HOME="+r.config.CodexAPIKeyHome,
+		"SWA_CLAUDE_API_KEY_HOME="+r.config.ClaudeAPIKeyHome,
 		"SWA_DISCOVERY_CLAUDE_HOME="+r.config.DiscoveryClaudeHome,
 		"SWA_DISCOVERY_PI_HOME="+r.config.DiscoveryPiHome,
 		"SWA_NODE_EXECUTABLE="+r.config.NodeExecutable,

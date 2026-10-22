@@ -73,6 +73,8 @@ func TestOrcaCLIMissingCurrentGrantIsDenied(t *testing.T) {
 func TestOrcaCLIHelpDoesNotRequireGrantOrService(t *testing.T) {
 	t.Setenv("SWA_PROJECT_TOKEN", "")
 	t.Setenv("SWA_ENDPOINT", "invalid-endpoint")
+	t.Setenv("SWA_CODEX_API_KEY_HOME", "unvalidated-relative-source")
+	t.Setenv("SWA_CLAUDE_API_KEY_HOME", "unvalidated-relative-source")
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	for _, args := range [][]string{
@@ -84,8 +86,24 @@ func TestOrcaCLIHelpDoesNotRequireGrantOrService(t *testing.T) {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			code := run(ctx, args, &stdout, &stderr)
-			if code != 0 || stderr.Len() != 0 || !strings.Contains(stdout.String(), "swa worker start") || !strings.Contains(stdout.String(), "--web-dir") || !strings.Contains(stdout.String(), "6=效果未知") || strings.Contains(stdout.String(), "invalid-endpoint") {
+			if code != 0 || stderr.Len() != 0 || !strings.Contains(stdout.String(), "swa worker start") || !strings.Contains(stdout.String(), "--web-dir") || !strings.Contains(stdout.String(), "6=效果未知") || strings.Contains(stdout.String(), "invalid-endpoint") || strings.Contains(stdout.String(), "unvalidated-relative-source") {
 				t.Fatalf("帮助依赖了服务或未返回完整本地用法：exit=%d stdout=%q stderr=%q", code, stdout.String(), stderr.String())
+			}
+		})
+	}
+}
+
+func TestOrcaCLIServeRejectsRelativeAPIKeyHomeBeforeStartup(t *testing.T) {
+	for _, key := range []string{"SWA_CODEX_API_KEY_HOME", "SWA_CLAUDE_API_KEY_HOME"} {
+		t.Run(key, func(t *testing.T) {
+			t.Setenv("SWA_CODEX_API_KEY_HOME", "")
+			t.Setenv("SWA_CLAUDE_API_KEY_HOME", "")
+			t.Setenv(key, "unvalidated-relative-source")
+			var stdout, stderr bytes.Buffer
+			code := run(context.Background(), []string{"serve", "--data-dir", t.TempDir(), "--port", "18793", "--protected-roots", t.TempDir(), "--json"}, &stdout, &stderr)
+			requireLocalRefusal(t, code, 2, "validation_failed", "", &stdout)
+			if strings.Contains(stdout.String()+stderr.String(), "unvalidated-relative-source") {
+				t.Fatal("配置拒绝回显了未验证的来源路径")
 			}
 		})
 	}
