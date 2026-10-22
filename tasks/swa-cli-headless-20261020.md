@@ -209,3 +209,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 原Reviewer累计CR补核完整导出和原生错误：最终合并JSON现执行实际key检查；受限RPC错误保留类型/code/有效HTTP status/session，移除原错误详情、body/headers及cause，诊断固定，trace检查提前至通知分发前。普通ACP行为保持，上游秘密错误和原生incoming权限未实际出现的范围只记静态保障。最新严格检查、准确后继成品及真实root/serve退出检查继续，执行批准客户端仍待准确最终描述集中审核，整体任务持续。
 
 准确3bcf返修已push，59严格检查0，build18/普通ZIP与解包60均0；安装60实际6保留T03/T13。真实root62在同安装核官方import/ACP及定向根退出、完整serve Job和双次独立身份缺席均0，无prompt/模型；65四Go二进制编译0，实际四项检查待运行。服务61的普通管道EOF关闭0、三PID两次缺席保留，当前67以TTY保持新私有服务；63/68真实来源/客户端摘要和生产bundle/metafile已交原Reviewer集中审核，未签Grant。Linux CI的六项未知依赖scripts实际失败按独立接受45FE计划窄修为准确版本false，真实归档frozen验证继续；全部最终同候选双Worker和失败恢复仍由本Worker完成，见报告§48。
+
+准确d829六版本依赖安装策略已push；64写SOURCE与source目录同名失败先于安装，69普通frozen install因workspace native的长tlog路径失败，均保留。新独占短目录72普通frozen install及check-dependencies真实0，锁前后相同；主控另确认d829 Linux安装通过，后续S1/Relay等失败在准确main同条件基线也存在。新增028导致既有Taste迁移测试前提不符，主控授窄域后仅补准确28/028并保持全部实际升级断言，73真实SQLite用例0。67/68客户端审核及全部真实Grant/T13继续，产品候选仍为准确3bcf，见报告§49。
