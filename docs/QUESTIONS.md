@@ -1,10 +1,14 @@
 # 用户决定与待定项
 
+## 先使用阶跃星辰验证（2026-10-23，北京时间，已确认）
+
+用户明确回复“先使用阶跃星辰继续验证”。后继先推进能够使用该官方服务的Pi及OpenCode路线，具体Agent、模型、API协议与原生工具关闭分别核验。阶跃星辰凭据只用于其官方服务；Codex/OpenAI、Claude/Anthropic匹配账号的真实测试保持未运行，继续其独立源码工作。公开固定输入、当前项目权限、原请求与未知效果规则、每Worker完整回收及真实N=3要求继续适用，模型费用仍按已确认的不设上限执行。产品human会话与项目Grant的具体委托仍按当前安装的明确批准处理。
+
 ## 人类独立追加输入、双平台与Agent适配（2026-10-22，已确认）
 
 用户在本次云会话明确允许：人类按当前项目权限独立授权后，向CLI Agent创建的任务追加输入。适用动作仅为跨创建者`worker.send`，不推导开放跨创建者`worker.start`。人类自身controller/task/start仍按原当前权限；Agent继续绑定其原创建者Grant。人类权限由同项目当前settings、send动作、目录/固定上下文、所选原生CLI/模型与外发批准独立核验，不借用或继承原Agent Grant；创建者关联仍保留来源。输入前撤销/过期、跨项目、selection/来源/代次变化仍须拒绝，原request与未知效果规则保持。[共享合同](integration/openmausbot/01-contract.md)及02/04/06记录实际实现与测试，不从授权决定推导功能已验。
 
-用户确认产品覆盖Windows与Linux，Windows体系架构为x64；当前仅Linux云机可访问，尚无已连接的Windows主机，Windows实际安装与原生链路保持NOT_RUN。Agent目标为适配大部分现有来源，按[45个TUI模板与7个结构化引擎矩阵](integration/openmausbot/02-agent-matrix.md)逐项评估和实现；先复用真实原生adapter，不把品牌/命令探测或局部比例称为执行适配完成。
+用户确认产品覆盖Windows与Linux，Windows体系架构为x64。交互环境为Linux，Windows-2025 CI可执行原生构建、安装与服务检查，准确来源及实际结果见[STATUS](../STATUS.md)；当前尚无已连接的交互Windows主机，Windows真实Agent/模型/N验收未完成。Agent目标为适配大部分现有来源，按[45个TUI模板与7个结构化引擎矩阵](integration/openmausbot/02-agent-matrix.md)逐项评估和实现；先复用真实原生adapter，不把品牌/命令探测或局部比例称为执行适配完成。
 
 “大部分Agent”的验收分母已由主控异步询问：7个结构化引擎的多数（推荐）、45个TUI模板的多数，或两组分别达到多数；当前尚未收到回答。上述选项不是用户已确认范围，不擅自冻结数量或将模板发现计为执行适配。Linux每Worker归属、Codex受限原生链、Windows共同基础及各来源评估继续进行，不因该待答项停止独立工作。
 
