@@ -4,6 +4,7 @@
 // per write on hosts with slow process creation (#26027), and whose `/reset` + `/inheritance:r`
 // shape behavioural EDR scores as ransomware (#25583). Policy (which SIDs, which flags) lives in
 // JS; this file writes DACLs given as SDDL and reads them back as plain structure.
+// 窄例外是新建私有目录：固定 TokenUser owner 与 User/SYSTEM DACL 在创建时设置。
 
 #include <napi.h>
 #include <windows.h>
@@ -89,6 +90,81 @@ Win32Result ApplyDacl(std::u16string path, const std::u16string& sddl) {
   DWORD status = SetNamedSecurityInfoW(reinterpret_cast<LPWSTR>(path.data()), SE_FILE_OBJECT,
                                        information, nullptr, nullptr, dacl, nullptr);
   return status == ERROR_SUCCESS ? Win32Result{} : Fail("SetNamedSecurityInfoW", status);
+}
+
+Win32Result AbsoluteDirectoryPath(const std::u16string& path, bool* absolute) {
+  *absolute = false;
+  const auto* input = reinterpret_cast<LPCWSTR>(path.c_str());
+  DWORD length = GetFullPathNameW(input, 0, nullptr, nullptr);
+  if (length == 0) return Fail("GetFullPathNameW", GetLastError());
+  std::vector<WCHAR> full(length);
+  DWORD written = GetFullPathNameW(input, length, full.data(), nullptr);
+  if (written == 0) return Fail("GetFullPathNameW", GetLastError());
+  if (written >= length) return Fail("GetFullPathNameW", ERROR_INSUFFICIENT_BUFFER);
+  int comparison = CompareStringOrdinal(input, static_cast<int>(path.size()), full.data(),
+                                         static_cast<int>(written), TRUE);
+  if (comparison == 0) return Fail("CompareStringOrdinal", GetLastError());
+  *absolute = comparison == CSTR_EQUAL;
+  return {};
+}
+
+Win32Result CreatePrivateDirectory(const std::u16string& path, bool* created) {
+  *created = false;
+  HANDLE rawToken = nullptr;
+  if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &rawToken)) {
+    return Fail("OpenProcessToken", GetLastError());
+  }
+  HandlePtr token(rawToken);
+  DWORD size = 0;
+  GetTokenInformation(token.get(), TokenUser, nullptr, 0, &size);
+  if (size == 0) return Fail("GetTokenInformation", GetLastError());
+  std::vector<BYTE> userBuffer(size);
+  if (!GetTokenInformation(token.get(), TokenUser, userBuffer.data(), size, &size)) {
+    return Fail("GetTokenInformation", GetLastError());
+  }
+  PSID user = reinterpret_cast<TOKEN_USER*>(userBuffer.data())->User.Sid;
+  std::vector<BYTE> systemBuffer(SECURITY_MAX_SID_SIZE);
+  DWORD systemSize = static_cast<DWORD>(systemBuffer.size());
+  if (!CreateWellKnownSid(WinLocalSystemSid, nullptr, systemBuffer.data(), &systemSize)) {
+    return Fail("CreateWellKnownSid", GetLastError());
+  }
+  PSID system = systemBuffer.data();
+  PSID trustees[] = {user, system};
+  const ULONG count = EqualSid(user, system) ? 1 : 2;
+  EXPLICIT_ACCESSW entries[2]{};
+  for (ULONG index = 0; index < count; index++) {
+    entries[index].grfAccessPermissions = FILE_ALL_ACCESS;
+    entries[index].grfAccessMode = SET_ACCESS;
+    entries[index].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+    entries[index].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+    entries[index].Trustee.TrusteeType = TRUSTEE_IS_UNKNOWN;
+    entries[index].Trustee.ptstrName = reinterpret_cast<LPWSTR>(trustees[index]);
+  }
+  PACL rawAcl = nullptr;
+  DWORD status = SetEntriesInAclW(count, entries, nullptr, &rawAcl);
+  if (status != ERROR_SUCCESS) return Fail("SetEntriesInAclW", status);
+  LocalPtr acl(rawAcl);
+  SECURITY_DESCRIPTOR descriptor{};
+  if (!InitializeSecurityDescriptor(&descriptor, SECURITY_DESCRIPTOR_REVISION)) {
+    return Fail("InitializeSecurityDescriptor", GetLastError());
+  }
+  if (!SetSecurityDescriptorOwner(&descriptor, user, FALSE)) {
+    return Fail("SetSecurityDescriptorOwner", GetLastError());
+  }
+  if (!SetSecurityDescriptorDacl(&descriptor, TRUE, rawAcl, FALSE)) {
+    return Fail("SetSecurityDescriptorDacl", GetLastError());
+  }
+  if (!SetSecurityDescriptorControl(&descriptor, SE_DACL_PROTECTED, SE_DACL_PROTECTED)) {
+    return Fail("SetSecurityDescriptorControl", GetLastError());
+  }
+  // owner 和受保护 DACL 随新目录一起建立；既有对象不接受任何安全信息写入。
+  SECURITY_ATTRIBUTES attributes{sizeof(attributes), &descriptor, FALSE};
+  if (CreateDirectoryW(reinterpret_cast<LPCWSTR>(path.c_str()), &attributes)) {
+    *created = true;
+    return {};
+  }
+  DWORD error = GetLastError();
+  return error == ERROR_ALREADY_EXISTS ? Win32Result{} : Fail("CreateDirectoryW", error);
 }
 
 Win32Result GrantAccess(std::u16string path, const std::u16string& sid, DWORD mask,
@@ -305,6 +381,31 @@ Napi::Value SetDaclSddl(const Napi::CallbackInfo& info) {
   return env.Undefined();
 }
 
+Napi::Value CreatePrivateDirectoryJs(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+  if (info.Length() != 1 || !info[0].IsString()) {
+    return ThrowTypeError(env, "createPrivateDirectory(path: string)");
+  }
+  const auto path = info[0].As<Napi::String>().Utf16Value();
+  if (path.empty() || path.size() > 32767 || path.find(u'\0') != std::u16string::npos) {
+    return ThrowTypeError(env, "createPrivateDirectory requires an absolute nonempty path without NUL");
+  }
+  bool absolute = false;
+  auto validation = AbsoluteDirectoryPath(path, &absolute);
+  if (!validation.ok()) {
+    ToError(env, validation).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  if (!absolute) return ThrowTypeError(env, "createPrivateDirectory requires an absolute path");
+  bool created = false;
+  auto result = CreatePrivateDirectory(path, &created);
+  if (!result.ok()) {
+    ToError(env, result).ThrowAsJavaScriptException();
+    return env.Undefined();
+  }
+  return Napi::Boolean::New(env, created);
+}
+
 Napi::Value ReadServiceJobMember(const Napi::CallbackInfo& info) {
   auto env = info.Env();
   if (info.Length() != 2 || !info[0].IsString() || !info[1].IsNumber()) return ThrowTypeError(env, "readServiceJobMember(name: string, pid: number)");
@@ -468,6 +569,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set("readServiceJobMember", Napi::Function::New(env, ReadServiceJobMember));
   exports.Set("setDaclSddl", Napi::Function::New(env, SetDaclSddl));
   exports.Set("setDaclSddlAsync", Napi::Function::New(env, SetDaclSddlAsync));
+  exports.Set("createPrivateDirectory", Napi::Function::New(env, CreatePrivateDirectoryJs));
   exports.Set("createFileWithDacl", Napi::Function::New(env, CreateFileWithDaclJs));
   exports.Set("grantAccess", Napi::Function::New(env, GrantAccessJs));
   exports.Set("grantAccessAsync", Napi::Function::New(env, GrantAccessAsync));

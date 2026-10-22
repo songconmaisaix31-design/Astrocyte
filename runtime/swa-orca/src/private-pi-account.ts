@@ -1,7 +1,7 @@
 import { lstat, mkdir, readFile, readdir, realpath } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve, toNamespacedPath } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { createFileWithDacl, currentUserSid, getDaclAces, setDaclSddl } from '@orca/windows-security'
+import { createPrivateDirectory as createWindowsPrivateDirectory, createFileWithDacl, currentUserSid, getDaclAces } from '@orca/windows-security'
 import { z } from 'zod'
 import { nativeConfigurationSource, nativePiSettings, type NativePiPolicySnapshot } from './native-pi-policy'
 import { createPosixPrivateFile, requirePosixPrivatePath } from './private-posix-security'
@@ -37,17 +37,18 @@ function security(path: string, directory: boolean) {
 
 async function createPrivateDirectory(path: string) {
   let created = false
-  try { await mkdir(path, { mode: 0o700 }); created = true }
-  catch (error) {
-    if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error
+  if (process.platform === 'win32') {
+    await actualDirectory(dirname(path))
+    created = createWindowsPrivateDirectory(toNamespacedPath(path))
+  } else {
+    try { await mkdir(path, { mode: 0o700 }); created = true }
+    catch (error) {
+      if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error
+    }
   }
   await actualDirectory(path)
   if (created) {
     if ((await readdir(path)).length) throw new Error('private_pi_directory_not_empty')
-    if (process.platform === 'win32') {
-      const trustees = [...new Set([currentUserSid(), systemSid])]
-      setDaclSddl(toNamespacedPath(path), `D:P${trustees.map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
-    }
   }
   security(path, true)
 }

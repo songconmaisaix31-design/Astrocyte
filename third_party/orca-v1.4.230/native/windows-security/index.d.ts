@@ -41,6 +41,12 @@ export declare function readServiceJobMember(name: string, pid: number): {
 export declare function setDaclSddl(path: string, sddl: string): void
 export declare function setDaclSddlAsync(path: string, sddl: string): Promise<void>
 
+/** 创建时设置 TokenUser owner 与受保护的 User/SYSTEM FullControl OI|CI DACL。
+ * 仅 ERROR_ALREADY_EXISTS 返回 false，既有目标不会被修改。
+ * 调用方保留父目录、路径、类型和 ACL 检查；返回值不证明文件身份。
+ */
+export declare function createPrivateDirectory(path: string): boolean
+
 /** Creates a NEW file already carrying the DACL in `sddl`, then writes `data` into it. */
 export declare function createFileWithDacl(path: string, sddl: string, data: Uint8Array): void
 

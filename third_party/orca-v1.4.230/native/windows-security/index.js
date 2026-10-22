@@ -16,6 +16,7 @@ module.exports = {
   readServiceJobMember: (name, pid) => getAddon().readServiceJobMember(name, pid),
   setDaclSddl: (path, sddl) => getAddon().setDaclSddl(path, sddl),
   setDaclSddlAsync: (path, sddl) => getAddon().setDaclSddlAsync(path, sddl),
+  createPrivateDirectory: (path) => getAddon().createPrivateDirectory(path),
   createFileWithDacl: (path, sddl, data) => getAddon().createFileWithDacl(path, sddl, data),
   grantAccess: (path, sid, mask, options) => getAddon().grantAccess(path, sid, mask, options),
   grantAccessAsync: (path, sid, mask, options) =>

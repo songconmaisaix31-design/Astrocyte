@@ -100,6 +100,12 @@ MSVC选择修复来源 `82e1b09503486c14a9dececb5e3673827894c120` 的完整 [run
 
 后继 driver 在读取 ACL 前即记录 `installed-acl` 阶段，在断言前保存 `logs/installed-acl.json` 的实际 owner 匹配与继承保护两个布尔值，并分别拒绝失败条件。该文件明确列入 artifact 白名单，不输出 SID 或 SDDL；原精确 ACE 检查保持启用。
 
+源码 `11717767f82a8a4070351ff74674aa0d268f79b2` 的 Windows 完整候选在服务检查失败。原 artifact 实际记录前七项退出0，安装根 owner 匹配与继承保护均为真；服务没有确认 readiness，真实 helper 退出1、serve 退出6。原始错误定位到 `private_pi_security_changed`，该次私有 Pi 目录具体 owner/ACE 未记录，保持 UNKNOWN。
+
+来源 `abef1ec374e10ed2281980b8666043778ef3914a` 的 [组件 run 39786376454](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39786376454) 已实际完成诊断。固定117的原四函数与真实同源 Windows native 组件在新普通目录复现原守卫退出1：mkdir 后 owner 为 Administrators；原 DACL-only setter 后及原守卫后，owner 仍未成为当前用户，protected 为真，恰 User/SYSTEM 两条 Allow、type0/flags3/mask2032127。七项守卫谓词仅 owner 为假。该结果是新目录非原子采样，未倒填原117历史目录值，也未运行服务、账户或模型。
+
+共同 native 现新增 `createPrivateDirectory(path): boolean`：`CreateDirectoryW` 创建时携带实际 TokenUser owner 与仅 User/SYSTEM 的 protected FullControl OI/CI DACL。成功创建返回 true；仅 `ERROR_ALREADY_EXISTS` 返回 false，既有路径不接受任何 owner/DACL 修改，其它错误按实际 Win32 code 失败。Pi、OpenCode、Codex 各消费者保留原父路径和目标强检查，Codex 独占创建遇 false 仍拒绝；Linux 保持原 mkdir/0700。返回布尔不证明 HANDLE、目录身份或 SourceVersion。Pi/OpenCode 的原 realpath/lstat 检查不能声明覆盖所有 non-symbolic reparse；Codex 仍沿原 .NET ReparsePoint 门。修正后的 Windows 新建/重复/安全拒绝及实际 Pi 消费者仅组件控制尚待执行，不以源码或 Linux 检查称通过。
+
 诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
 
 构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。

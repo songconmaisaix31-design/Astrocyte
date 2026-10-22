@@ -86,7 +86,7 @@ jobs:
         run: |
           npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-pnpm') --no-audit --no-fund pnpm@11.27.0
           if ($LASTEXITCODE -ne 0) { throw 'Pinned component package manager installation failed' }
-      - name: Observe only the original private Pi directory component
+      - name: Control only the private directory creation component
         shell: pwsh
         run: |
           $env:SWA_PI_PROBE_PHASE = 'preflight'
@@ -103,13 +103,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: swa-windows-private-pi-component-${{ github.sha }}
+          name: swa-windows-private-directory-control-${{ github.sha }}
           path: |
-            .verification/swa-ci/windows-private-pi/driver-result.json
-            .verification/swa-ci/windows-private-pi/preparation.json
-            .verification/swa-ci/windows-private-pi/metadata-process.json
-            .verification/swa-ci/windows-private-pi/*.exit.txt
-            .verification/swa-ci/windows-private-pi/metadata/result.json
+            .verification/swa-ci/windows-private-directory/driver-result.json
+            .verification/swa-ci/windows-private-directory/preparation.json
+            .verification/swa-ci/windows-private-directory/metadata-process.json
+            .verification/swa-ci/windows-private-directory/*.exit.txt
+            .verification/swa-ci/windows-private-directory/control/result.json
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

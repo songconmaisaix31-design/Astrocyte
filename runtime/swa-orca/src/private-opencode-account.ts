@@ -1,7 +1,7 @@
 import { lstat, mkdir, readFile, readdir, realpath } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join, relative, resolve, toNamespacedPath } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { createFileWithDacl, currentUserSid, getDaclAces, setDaclSddl } from '@orca/windows-security'
+import { createFileWithDacl, createPrivateDirectory, currentUserSid, getDaclAces } from '@orca/windows-security'
 import { z } from 'zod'
 import { assertNativeOpenCodeCurrent, openCodeBuiltinPlugins, type NativeOpenCodeSnapshot } from './native-opencode-policy'
 import { nativeConfigurationSource } from './native-pi-policy'
@@ -34,12 +34,16 @@ function security(path: string, directory: boolean) {
 
 async function directory(path: string) {
   let created = false
-  try { await mkdir(path, { mode: 0o700 }); created = true }
-  catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error }
+  if (process.platform === 'win32') {
+    await actualDirectory(dirname(path))
+    created = createPrivateDirectory(toNamespacedPath(path))
+  } else {
+    try { await mkdir(path, { mode: 0o700 }); created = true }
+    catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error }
+  }
   await actualDirectory(path)
   if (created) {
     if ((await readdir(path)).length) throw new Error('private_opencode_directory_not_empty')
-    if (process.platform === 'win32') setDaclSddl(toNamespacedPath(path), `D:P${[...new Set([currentUserSid(), systemSid])].map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
   }
   security(path, true)
 }

@@ -1,7 +1,7 @@
 import { lstatSync, readdirSync, realpathSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname, join, toNamespacedPath } from 'node:path'
-import { currentUserSid, setDaclSddl } from '@orca/windows-security'
+import { createPrivateDirectory } from '@orca/windows-security'
 import { z } from 'zod'
 import { spawnManagedProviderProcess, type ManagedProviderProcess } from '../../../third_party/orca-v1.4.230/src/main/provider-process/managed-provider-process'
 import type { SwaInitializationProcess, SwaProviderJobLauncher } from '../../../third_party/orca-v1.4.230/src/main/provider-process/provider-process-launch'
@@ -18,13 +18,14 @@ function absent(path: string) {
   fail('unexpected_existing_file')
 }
 async function directory(path: string, exclusive = false) {
-  let created = false
-  try { await mkdir(path, { mode: 0o700 }); created = true } catch (error) {
-    if (exclusive || !(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error
-  }
-  if (created && process.platform === 'win32') {
-    const trustees = [...new Set([currentUserSid(), 'S-1-5-18'])]
-    setDaclSddl(toNamespacedPath(path), `D:P${trustees.map(sid => `(A;OICI;FA;;;${sid})`).join('')}`)
+  if (process.platform === 'win32') {
+    requireNativeCodexPrivatePath(dirname(path), true)
+    const created = createPrivateDirectory(toNamespacedPath(path))
+    if (exclusive && !created) throw Object.assign(new Error('private_codex_directory_exists'), { code: 'EEXIST' })
+  } else {
+    try { await mkdir(path, { mode: 0o700 }) } catch (error) {
+      if (exclusive || !(error instanceof Error) || !('code' in error) || error.code !== 'EEXIST') throw error
+    }
   }
   requireNativeCodexPrivatePath(path, true)
 }

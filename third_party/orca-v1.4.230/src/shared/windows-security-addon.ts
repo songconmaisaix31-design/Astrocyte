@@ -92,6 +92,9 @@ export function trustedPackagePath(resolved: string, roots: readonly string[]): 
  * a resurrected broad DACL fails that verify, which evicts the directory to retry under the budget.
  */
 function prepare(raw: WindowsSecurityAddon): WindowsSecurity {
+  if (typeof raw.createPrivateDirectory !== 'function') {
+    throw new Error('Windows private directory creation is unavailable')
+  }
   const writes = new Map<string, Promise<unknown>>()
   const inPathOrder = (path: string, write: (namespaced: string) => Promise<void>) => {
     const namespaced = toNamespacedPath(path)
@@ -115,6 +118,7 @@ function prepare(raw: WindowsSecurityAddon): WindowsSecurity {
       setDaclSddl: (path, sddl) => raw.setDaclSddl(toNamespacedPath(path), sddl),
       setDaclSddlAsync: (path, sddl) =>
         inPathOrder(path, (namespaced) => raw.setDaclSddlAsync(namespaced, sddl)),
+      createPrivateDirectory: (path) => raw.createPrivateDirectory(toNamespacedPath(path)),
       createFileWithDacl: (path, sddl, data) =>
         raw.createFileWithDacl(toNamespacedPath(path), sddl, data),
       grantAccess: (path, sid, mask, options) =>
