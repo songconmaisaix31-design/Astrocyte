@@ -15,6 +15,7 @@ import { replayJournal } from '../../../third_party/orca-v1.4.230/src/main/nativ
 import { renderJournalState } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-reducer'
 import { iterateJournalEpochRows, readJournalSessionEpoch } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-row-table'
 import { agentSelectionSchema, nativeObject, structuredInputBindingSchema, type AgentSelection, type Scope } from './contracts'
+import { readNativeOpenCodeSessionSource } from './opencode-session-result'
 
 const maximum = 12 * 1024 * 1024
 const sourceWitnesses = new Map<string, { path: string; identity: string; nativeSession: string; bytes: Buffer }>()
@@ -63,7 +64,11 @@ function originalWorkerSelection(runtime: OrcaRuntimeService, scope: Scope, disp
     AND (json_extract(receipt, '$.native.dispatchId')=? OR json_extract(receipt, '$.swa_input_binding.dispatch_id')=?)`).all(db.getOrCreateLocalMutationCallerFingerprint(), scope.project_id, scope.run_id, scope.root_task_id, dispatchId, dispatchId))
   if (rows.length !== 1) return fail('The original native Worker selection is unavailable or ambiguous')
   const selection = agentSelectionSchema.parse(nativeObject(JSON.parse(rows[0]!.receipt)).selection)
-  if (record.provider !== selection.agent_id || record.options?.model !== selection.model || !('variable' in record.accountHome) || record.accountHome.variable !== 'PI_CODING_AGENT_DIR' || record.accountHome.path !== selection.native_launch.account.private_home) return fail('The native output account or model differs from its original selection')
+  if (record.provider !== selection.agent_id || record.options?.model !== selection.model) return fail('The native output Agent or model differs from its original selection')
+  const account = selection.native_launch.account
+  if (account.kind === 'pi-native-api-key') {
+    if (!('variable' in record.accountHome) || record.accountHome.variable !== 'PI_CODING_AGENT_DIR' || record.accountHome.path !== account.private_home) return fail('The native output Pi account changed')
+  } else if (!('kind' in record.accountHome) || record.accountHome.kind !== 'opencode' || record.accountHome.locator.kind !== 'private' || record.accountHome.locator.root !== join(account.private_root, record.sessionId)) return fail('The native output OpenCode account changed')
   return selection
 }
 
@@ -174,10 +179,10 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   const sessionId = sessionIdFromStructuredWorkerIncarnation(resource.process_incarnation)
   const host = getStructuredAgentSessionHost(), record = sessionId && host?.deps.store.getRecord(sessionId)
   if (!sessionId || !host || !record) return { availability: 'unavailable', reason: 'native_session_record_not_observed', worker_state: nativeWorker.state }
-  if (!/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation || record.sessionId !== sessionId || record.provider !== 'pi' || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The actual native Worker source identity is unavailable')
+  if (!/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation || record.sessionId !== sessionId || !['pi', 'opencode'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The actual native Worker source identity is unavailable')
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
-  if (!head) return { availability: 'unavailable', reason: 'native_pi_link_not_observed', worker_state: nativeWorker.state }
-  if (head.handle.transport !== 'jsonl-rpc' || head.handle.agent !== 'pi') return fail('The actual native Pi source link has a different provider')
+  if (!head) return { availability: 'unavailable', reason: 'native_provider_link_not_observed', worker_state: nativeWorker.state }
+  if (head.handle.agent !== record.provider || head.handle.transport !== (record.provider === 'pi' ? 'jsonl-rpc' : 'acp')) return fail('The actual native source link has a different provider')
   const data = process.env.SWA_DATA_DIR
   if (!data || !isAbsolute(data) || !host) return fail('The actual private source root is unavailable')
   const root = await realpath(data), workerRoot = join(root, 'workers', sessionId)
@@ -206,6 +211,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
   const data = await realpath(privateData)
   const outputs = []
   const checks: { sessionId: string; signature: string; epoch: string; sequence: number; path: string; identity: string | null; size: number | null; mtime: string | null }[] = []
+  const nativeChecks: (() => Promise<void>)[] = []
   let used = Buffer.byteLength(JSON.stringify(summary))
   for (const row of workers) {
     const worker = row.worker, dispatch = db.getDispatchContextById(worker.dispatchId)
@@ -214,18 +220,26 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     const sessionId = sessionIdFromStructuredWorkerIncarnation(resource.process_incarnation)
     if (!sessionId || !/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation) return fail('The native Worker session incarnation is missing or changed')
     const record = host.deps.store.getRecord(sessionId)
-    if (!record || record.sessionId !== sessionId || record.provider !== 'pi' || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The provider record has a different native identity or workspace')
+    if (!record || record.sessionId !== sessionId || !['pi', 'opencode'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The provider record has a different native identity or workspace')
     const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
-    if (!head || head.handle.transport !== 'jsonl-rpc' || head.handle.agent !== 'pi' || !isAbsolute(head.handle.nativeId)) return fail('The verified native Pi provider link is unavailable')
+    if (!head || head.handle.agent !== record.provider || head.handle.transport !== (record.provider === 'pi' ? 'jsonl-rpc' : 'acp') || record.provider === 'pi' && !isAbsolute(head.handle.nativeId)) return fail('The verified native provider link is unavailable')
     const signature = sourceSignature(record)
     const selection = originalWorkerSelection(runtime, scope, worker.dispatchId, record)
     if (!host.deps.resolveWorkspacePath) return fail('The actual native workspace resolution port is unavailable')
     const cwd = await realpath(await host.deps.resolveWorkspacePath(workspaceId))
-    const sessionRoot = join(selection.native_launch.account.private_home, 'sessions')
-    await exactPrivatePath(data, sessionRoot)
-    if (!equalPath(await realpath(sessionRoot), sessionRoot)) return fail('The private native session directory changed its real identity')
-    const nativeSession = await readNativePiSessionSource(head.handle.nativeId, sessionRoot, cwd, sessionId, nativeWorker.state === 'stopped', selection)
-    if (nativeSession.header) {
+    const account = selection.native_launch.account
+    let nativeSession
+    if (account.kind === 'opencode-native-api-key') {
+      const native = await readNativeOpenCodeSessionSource({ selection, sessionId, nativeId: head.handle.nativeId, cwd, stopped: nativeWorker.state === 'stopped', projectId: scope.project_id })
+      nativeSession = native.value
+      nativeChecks.push(native.verify)
+    } else {
+      const sessionRoot = join(account.private_home, 'sessions')
+      await exactPrivatePath(data, sessionRoot)
+      if (!equalPath(await realpath(sessionRoot), sessionRoot)) return fail('The private native session directory changed its real identity')
+      nativeSession = await readNativePiSessionSource(head.handle.nativeId, sessionRoot, cwd, sessionId, nativeWorker.state === 'stopped', selection)
+    }
+    if ('header' in nativeSession && nativeSession.header) {
       const parent = head.forkedFromKey ? record.providerHandleChain.find(link => agentSessionProviderHandleKey(link.handle) === head.forkedFromKey) : undefined
       if (nativeSession.header.parentSession !== undefined && (!parent || parent.handle.nativeId !== nativeSession.header.parentSession) || head.origin === 'forked' && nativeSession.header.parentSession === undefined) return fail('The actual native session fork source differs from its provider handle chain')
     }
@@ -245,6 +259,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     outputs.push({ ...row, source: { native_session_id: sessionId, selection, location: record.location, fence: record.lease.runtimeFence, provider_link: head, owner_process: record.lease.ownerProcess ? { pid: record.lease.ownerProcess.pid, creation_time_ms: record.lease.ownerProcess.processStartTimeMs, runtime_id: record.lease.ownerProcess.runtime ?? null } : null }, native_session: nativeSession, journal: { session_id: sessionId, epoch: journal.state.epoch, rows: rows.map(item => ({ epoch: item.epoch, seq: item.seq, ts: item.ts, row: JSON.parse(item.rowJson) })), snapshot }, usage: nativeSession.usage })
   }
   for (const check of checks) {
+    if (nativeChecks.length && check.identity === null && check.path.endsWith('opencode.db')) continue
     try {
       const latest = await stat(check.path, { bigint: true })
       if (check.identity === null || !equalPath(await realpath(check.path), check.path) || `${latest.dev}:${latest.ino}:${latest.birthtimeNs}` !== check.identity || latest.size !== BigInt(check.size!) || latest.mtimeNs.toString() !== check.mtime) return fail('Native source changed before the complete task result was returned')
@@ -252,6 +267,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       if (check.identity !== null || !(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error
     }
   }
+  for (const verify of nativeChecks) await verify()
   for (const check of checks) {
     const unchanged = await readPrivateJournal(data, host.deps.journalDatabase.stateDirectory, journalDB => {
       const sequence = z.object({ seq: z.number().nullable() }).parse(journalDB.prepare('SELECT MAX(seq) AS seq FROM journal_rows WHERE session_id=? AND epoch=?').get(check.sessionId, check.epoch)).seq

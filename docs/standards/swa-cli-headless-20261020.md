@@ -1472,6 +1472,18 @@ inspect-opencode38实际0，只读实际private SQLite得到credential表0条。
 
 46首次真实模型实际0，原a.txt完整固定公开文本经原OpenCode2.0.31 ACP发送。policy在每次hook/HTTP前复核原exe/manifest/config/auth/数据库及WAL存在状态和实际版本、私有配置/auth/plugin字节，官方active connection.resolve只在内存核真实key。原database_source.version使用标准JSON表示真实DB和WAL版本，无秘密或额外账本；SHM锁状态不作为凭据内容来源。最终实际Agent/session/模型、context工具和HTTP body工具为空，初始POST为https://api.deepseek.com/chat/completions、model=deepseek-v4-pro、HTTP200，唯一实际模型请求。原生底层follow按已核定范围保持，未声明禁止网络跳转。
 
-实际原session为ses_e9faef009ffeNz0OBEXx0psmUh，ACP end_turn、478条真实更新，SQLite idle_outcome=succeeded，保留5条完整原生消息及26912字节assistant数据；导出前检查实际秘密值未出现。导入Job与ACP Job分别两次完整清单为空，全部已观察native/private serve身份两次缺席，原source保持，FD5检查0。原件为opencode46/result.json、import-result.json、cleanup.json、opencode46.log/exit及46-build准确SOURCE/source.diff；只读observation记录真实会话状态，没有新增模型调用。47最新strict TypeScript和architecture各实际0，47个Go package边界通过。
+实际原session为ses_e9faef009ffeNz0OBEXx0psmUh，ACP end_turn、478条真实更新，SQLite idle_outcome=succeeded，保留5条完整原生消息及30622个UTF-8字节的assistant数据；导出前检查实际秘密值未出现。导入Job与ACP Job分别两次完整清单为空，全部已观察native/private serve身份两次缺席，原source保持，FD5检查0。原件为opencode46/result.json、import-result.json、cleanup.json、opencode46.log/exit及46-build准确SOURCE/source.diff；只读observation记录真实会话状态，没有新增模型调用。47最新strict TypeScript和architecture各实际0，47个Go package边界通过。
 
 该结果覆盖原生私有账户、真实协议/模型及所属收尾；未创建产品Worker Dispatch，没有代替SWA执行Grant、产品选择/输入/完整成果、最终ZIP或同安装双Worker。当前由同一Worker继续全部直接消费者与同一最终安装的实际并发、停止A、B保全/继续、完整成果和失败恢复，不重跑已验模型只为管理记录。
+
+## 46. 产品消费者、完整SQLite结果与执行Grant准备
+
+产品选择和Go/TypeScript/JSON Schema现为严格Pi/OpenCode联合，生成的API类型沿真实命令更新。每个OpenCode Worker在实际project/session路径持有独立私有账户、官方初始化及ACP两个真实Job；初始化在等待前交原ProviderAcquisitionStarts持有，停止与未知退出保持原资源。ACP使用实际exe身份、同server插件状态、真实NativeLaunch来源和每次输入的原R/Dispatch/session/fence及当前Grant；恢复失败不建立替代会话，输入只接受原固定文本，实际build和最终DeepSeek模型在输入前确认。
+
+原生事件按真实ACP方法、通知和实际身份记录，使用实际主机单调时间；没有生成Pi生命周期事件。记录保留实际Orca session/fence、managed root/native exe/native server创建身份和原始ACP正文更新。完整成果使用真实只读SQLite事务读取session_v2和全部session_message，保留原生元数据、实际消息ID、严格递增但可有间隔的seq、原生时间、完整JSON及用量来源；UTF-8、账户/模型/工具、12MiB上限和读取期间DB/WAL变化均失败即终止。原SHM仅锁状态，不作内容版本。双Worker、原生来源、SQLite备份故障和runtime恢复消费者已按各自原生格式接续，实际运行保持待验。
+
+48 strict/架构实际0，首次广包Go因错误包路径与缺实际输出目录失败。修正配置后的49 strict/47包架构实际0，四包Go整体实际1：app的Relay Git创建/controlled CLI交付检查失败，httpapi的Workbench缺明确真实publication/SQL输入；未作同条件基线比较，不将其归类为旧失败。51最新strict、Go格式、MJS语法和三项实际CLI传输前拒绝检查均0；四项同安装真实TestOrca尚未运行，不能把跳过计为通过。
+
+51的Node24.16合并契约命令在Redocly报告有效后以libuv断言退出3221226505，原失败保留。实际Node24.21 lint0；完整示例检查发现原验证器没有向Ajv注册SWA外部Schema。主控msg_38239dd33f71授scripts/validate-examples.mjs窄写域，现使用原Ajv2020/JSON解析注册实际Schema并给匿名示例正确基URI，全部约束与样例保留。52沿安装同pin Node24.21运行完整check:contracts实际0：Redocly20项警告、264样例和生成一致性通过。
+
+执行批准使用新的独立受托客户端，不扩大原95ef仅Observe范围。原Reviewer按G01—G09退回首个27FA计划后，准确返修为7DFE168251FD546960CAEA6AED4E6552B135E2AF565844101E377EA9A52AA125：五项observe/start/send/stop/read_context、原controller.recover实际映射start、现有client.cjs registered_agent及真实项目登记后的selection消费者、实际authority/完整来源绑定、CurrentUser DPAPI与未知写入先查不重发。计划及准确客户端/最终实际描述须独立接受，最终候选身份稳定后才签发；当前没有新执行Grant或产品模型。95ef/5187及本机Orca保留，2026-10-22 UTC03:35恢复后FD5实际通过；继续全部最终安装和同候选双Worker验收。

@@ -90,6 +90,9 @@ export async function buildSWARuntime(output) {
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
     'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),
     'task-result.cjs': join(runtime, 'src', 'task-result.ts'),
+    'opencode-session-result.cjs': join(runtime, 'src', 'opencode-session-result.ts'),
+    'private-opencode-account.cjs': join(runtime, 'src', 'private-opencode-account.ts'),
+    'native-opencode-policy.cjs': join(runtime, 'src', 'native-opencode-policy.ts'),
     'journal-open.cjs': join(upstream, 'src/main/native-chat/agent-session-journal/journal-open.ts'),
     'parcel-watcher-process-entry.js': join(upstream, 'src/main/ipc/parcel-watcher-process-entry.ts'),
     'daemon-entry.js': join(upstream, 'src/main/daemon/daemon-entry.ts'),
@@ -112,6 +115,12 @@ export async function buildSWARuntime(output) {
     for (const input of Object.keys(result.metafile.inputs)) inputs.add(input)
     await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
+  const policyDirectory = join(output, 'opencode-policy')
+  await mkdir(policyDirectory)
+  const policy = await build({ ...common, entryPoints: [join(runtime, 'src/opencode-policy-plugin.ts')], outfile: join(policyDirectory, 'server.js'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' } })
+  for (const input of Object.keys(policy.metafile.inputs)) inputs.add(input)
+  await writeFile(join(policyDirectory, 'server.js.metafile.json'), JSON.stringify(policy.metafile, null, 2) + '\n', { flag: 'wx' })
+  await writeFile(join(policyDirectory, 'package.json'), JSON.stringify({ name: 'swa-opencode-policy', version: '1.0.0', type: 'module', exports: './server.js' }) + '\n', { flag: 'wx' })
   const pkg = JSON.parse(await readFile(join(output, 'package.json'), 'utf8'))
   if (pkg.type !== 'commonjs') throw new Error('The deployed runtime must preserve CommonJS child entry semantics')
   await copyInlinedLicenses(output, inputs)

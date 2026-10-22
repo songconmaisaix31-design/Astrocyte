@@ -6,18 +6,10 @@ import { isDeepStrictEqual } from 'node:util'
 import { parse, type ParseError } from 'jsonc-parser'
 import { z } from 'zod'
 import { nativeConfigurationSource } from './native-pi-policy'
+import { nativeOpenCodeLaunchPolicySchema } from './contracts'
 
 const sourceSchema = z.strictObject({ path: z.string().min(1), version: z.string().min(1) })
-export const nativeOpenCodePolicySchema = z.strictObject({
-  schema: z.literal('swa.native-launch.v1'),
-  account: z.strictObject({
-    kind: z.literal('opencode-native-api-key'), provider: z.literal('deepseek'), source_home: z.string().min(1),
-    config_source: sourceSchema, auth_source: sourceSchema, database_source: sourceSchema,
-    credential_id: z.string().min(1), credential_updated_at: z.number().int().nonnegative(), private_root: z.string().min(1),
-    model_target: z.strictObject({ model_id: z.literal('deepseek-v4-pro'), api: z.literal('opencode-native-deepseek'), base_url: z.literal('https://api.deepseek.com') })
-  }),
-  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('opencode-cli-2.0.31') })
-})
+export const nativeOpenCodePolicySchema = nativeOpenCodeLaunchPolicySchema
 export type NativeOpenCodePolicy = z.infer<typeof nativeOpenCodePolicySchema>
 export type NativeOpenCodeSnapshot = { policy: NativeOpenCodePolicy; key: string; sources: z.infer<typeof sourceSchema>[]; absentSources: string[] }
 const nativeKey = z.strictObject({ type: z.literal('key'), key: z.string().min(1) })

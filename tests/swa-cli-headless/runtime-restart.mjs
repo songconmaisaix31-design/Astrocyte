@@ -16,7 +16,7 @@ for (const key of ['config', 'state', 'output']) assert.ok(values[key] && isAbso
 const config = JSON.parse(await readFile(values.config, 'utf8'))
 for (const key of ['candidate', 'data_root', 'project_root', 'source_directory', 'evidence_directory', 'service_readiness_file']) assert.ok(isAbsolute(config[key]))
 assert.ok(config.project_id && config.agent && config.model && process.env.SWA_PROJECT_TOKEN)
-assert.equal(config.agent, 'pi')
+assert.ok(['pi', 'opencode'].includes(config.agent))
 const candidate = await realpath(config.candidate), data = await realpath(config.data_root), project = await realpath(config.project_root)
 const sourceDirectory = await realpath(config.source_directory), source = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
 assert.match(source, /^[0-9a-f]{40}$/)

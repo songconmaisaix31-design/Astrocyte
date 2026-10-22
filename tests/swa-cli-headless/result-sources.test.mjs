@@ -9,6 +9,7 @@ import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { pathToFileURL } from 'node:url'
 import { readJSONL } from './read-jsonl.mjs'
+import { checkOpenCodeResultSources } from './opencode-result-sources.mjs'
 
 const { values } = parseArgs({ options: { candidate: { type: 'string' }, 'flow-evidence': { type: 'string' }, output: { type: 'string' }, case: { type: 'string' } }, allowPositionals: false })
 for (const name of ['candidate', 'flow-evidence', 'output']) if (!values[name] || !isAbsolute(values[name])) throw new Error(`Actual absolute ${name} is required`)
@@ -26,6 +27,11 @@ const workers = actual.result.native.workers
 const complete = workers.filter(worker => worker.native_session.availability === 'complete')
 assert.ok(complete.length >= 1)
 const worker = complete.at(-1), sessionId = worker.source.native_session_id
+if (worker.source.selection.agent_id === 'opencode') {
+  assert.equal(values.case, undefined)
+  await checkOpenCodeResultSources({ candidate, flow, worker, output: values.output })
+  process.exit(0)
+}
 const originalFile = worker.native_session.path, originalBytes = await readFile(originalFile)
 assert.ok(originalBytes.length > 1200)
 const cases = ['complete', 'round_trip_valid', 'missing', 'truncated', 'invalid_utf8', 'damaged_json', 'over_limit', 'wrong_filename', 'outside_root', 'replaced_after_read', 'prefix_changed_after_read', 'unknown_content_block', 'non_string_text', 'assistant_string_content', 'missing_message_timestamp', 'missing_usage_tokens', 'unknown_entry_type', 'missing_model_change_field', 'empty_final_content']

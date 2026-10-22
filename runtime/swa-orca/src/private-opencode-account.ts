@@ -5,6 +5,7 @@ import { createFileWithDacl, currentUserSid, getDaclAces, setDaclSddl } from '@o
 import { z } from 'zod'
 import { assertNativeOpenCodeCurrent, openCodeBuiltinPlugins, type NativeOpenCodeSnapshot } from './native-opencode-policy'
 import { nativeConfigurationSource } from './native-pi-policy'
+import { privateStructuredOpenCodeEnvironment } from '../../../third_party/orca-v1.4.230/src/main/opencode/opencode-structured-account-home'
 
 const systemSid = 'S-1-5-18'
 const samePath = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
@@ -66,7 +67,33 @@ export function privateOpenCodeConfig(root: string, plugin: string, correlation:
   }
 }
 
-export async function materializePrivateOpenCodeAccount(snapshot: NativeOpenCodeSnapshot, sessionId: string, plugin: string, correlation: string) {
+async function pluginSources(snapshot: NativeOpenCodeSnapshot, plugin: string) {
+  await actualDirectory(plugin)
+  for (const name of ['package.json', 'server.js']) {
+    const source = await nativeConfigurationSource(join(plugin, name))
+    if (!samePath(source.path, join(plugin, name)) || (await lstat(source.path)).isSymbolicLink()) throw new Error('private_opencode_plugin_redirected')
+    if (!snapshot.sources.some(item => isDeepStrictEqual(item, source))) snapshot.sources.push(source)
+  }
+}
+
+export async function readPrivateOpenCodeBinding(snapshot: NativeOpenCodeSnapshot, root: string, plugin: string) {
+  await actualDirectory(root)
+  security(root, true)
+  const file = join(root, 'config/opencode/opencode.json')
+  await actualDirectory(dirname(file))
+  const info = await lstat(file)
+  if (!info.isFile() || info.isSymbolicLink() || !samePath(await realpath(file), file)) throw new Error('private_opencode_file_redirected')
+  security(file, false)
+  const config = z.object({ plugins: z.array(z.union([z.string(), z.strictObject({ package: z.string(), options: z.object({ correlation: z.string().regex(/^[a-f0-9]{64}$/) }) })])) }).parse(JSON.parse(await readFile(file, 'utf8')))
+  const entries = config.plugins.filter((entry): entry is Exclude<typeof entry, string> => typeof entry !== 'string' && samePath(entry.package, plugin))
+  if (entries.length !== 1) throw new Error('private_opencode_policy_binding_missing')
+  await pluginSources(snapshot, plugin)
+  const correlation = entries[0]!.options.correlation
+  await verifyPrivateOpenCodeAccount(snapshot, root, plugin, correlation)
+  return { root, plugin, correlation }
+}
+
+export async function materializePrivateOpenCodeAccount(snapshot: NativeOpenCodeSnapshot, sessionId: string, plugin: string, correlation: string, reuse = false) {
   if (!/^[a-zA-Z0-9_-]+$/.test(sessionId) || !/^[a-f0-9]{64}$/.test(correlation)) throw new Error('private_opencode_worker_identity_invalid')
   const data = await realpath(z.string().parse(process.env.SWA_DATA_DIR))
   if (!samePath(dirname(snapshot.policy.account.private_root), join(data, 'opencode'))) throw new Error('private_opencode_root_changed')
@@ -83,15 +110,14 @@ export async function materializePrivateOpenCodeAccount(snapshot: NativeOpenCode
     }
   }
   await directory(root)
-  if ((await readdir(root)).length) throw new Error('private_opencode_existing_account_unreviewed')
+  if ((await readdir(root)).length) {
+    if (!reuse) throw new Error('private_opencode_existing_account_unreviewed')
+    await readPrivateOpenCodeBinding(snapshot, root, await realpath(plugin))
+    return root
+  }
   for (const name of privateDirectories) await directory(join(root, name))
   const actualPlugin = await realpath(plugin)
-  await actualDirectory(actualPlugin)
-  for (const name of ['package.json', 'server.js']) {
-    const source = await nativeConfigurationSource(join(actualPlugin, name))
-    if (!samePath(source.path, join(actualPlugin, name)) || (await lstat(source.path)).isSymbolicLink()) throw new Error('private_opencode_plugin_redirected')
-    if (!snapshot.sources.some(item => isDeepStrictEqual(item, source))) snapshot.sources.push(source)
-  }
+  await pluginSources(snapshot, actualPlugin)
   writePrivateJSON(join(root, 'data/opencode/auth.json'), { deepseek: { type: 'api', key: snapshot.key } })
   writePrivateJSON(join(root, 'config/opencode/opencode.json'), privateOpenCodeConfig(root, actualPlugin, correlation, snapshot))
   await verifyPrivateOpenCodeAccount(snapshot, root, actualPlugin, correlation)
@@ -114,20 +140,5 @@ export async function verifyPrivateOpenCodeAccount(snapshot: NativeOpenCodeSnaps
 }
 
 export function privateOpenCodeEnvironment(root: string, inherited: Readonly<Record<string, string>>) {
-  const allowed = new Set(['SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT', 'PATH', 'NUMBER_OF_PROCESSORS', 'PROCESSOR_ARCHITECTURE', 'PROCESSOR_IDENTIFIER', 'OS', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TERM', 'COLORTERM', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY'])
-  const env: Record<string, string> = {}
-  for (const [key, value] of Object.entries(inherited)) {
-    const name = key.toUpperCase()
-    if (!allowed.has(name)) continue
-    if (env[name] !== undefined && env[name] !== value) throw new Error('native_environment_case_collision')
-    env[name] = value
-  }
-  return Object.assign(env, {
-    HOME: join(root, 'home'), USERPROFILE: join(root, 'home'), XDG_DATA_HOME: join(root, 'data'), XDG_CACHE_HOME: join(root, 'cache'),
-    XDG_CONFIG_HOME: join(root, 'config'), XDG_STATE_HOME: join(root, 'state'), OPENCODE_CONFIG_DIR: join(root, 'config/opencode'),
-    OPENCODE_DB: join(root, 'data/opencode/opencode.db'), ProgramData: join(root, 'programdata'), APPDATA: join(root, 'appdata'),
-    LOCALAPPDATA: join(root, 'localappdata'), TEMP: join(root, 'temp'), TMP: join(root, 'temp'),
-    OPENCODE_CONFIG_PROJECT_DISABLE: '1', OPENCODE_DISABLE_CLAUDE_CODE: '1', OPENCODE_DISABLE_MODELS_FETCH: '1',
-    OPENCODE_DISABLE_FILEWATCHER: '1', OPENCODE_DISABLE_FFF: '1', OPENCODE_PRINT_LOGS: '1'
-  })
+  return privateStructuredOpenCodeEnvironment(root, inherited)
 }

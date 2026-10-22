@@ -7908,7 +7908,7 @@ export interface components {
             path: string;
             version: string;
         };
-        nativeLaunchPolicy: {
+        nativePiLaunchPolicy: {
             /** @constant */
             schema: "swa.native-launch.v1";
             account: {
@@ -7934,6 +7934,38 @@ export interface components {
                 native_contract: "pi-cli-1.0.1";
             };
         };
+        nativeOpenCodeLaunchPolicy: {
+            /** @constant */
+            schema: "swa.native-launch.v1";
+            account: {
+                /** @constant */
+                kind: "opencode-native-api-key";
+                /** @constant */
+                provider: "deepseek";
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                config_source: components["schemas"]["nativeConfigurationSource"];
+                database_source: components["schemas"]["nativeConfigurationSource"];
+                credential_id: string;
+                credential_updated_at: number;
+                private_root: string;
+                model_target: {
+                    /** @constant */
+                    model_id: "deepseek-v4-pro";
+                    /** @constant */
+                    api: "opencode-native-deepseek";
+                    /** @constant */
+                    base_url: "https://api.deepseek.com";
+                };
+            };
+            tools: {
+                /** @constant */
+                mode: "disabled";
+                /** @constant */
+                native_contract: "opencode-cli-2.0.31";
+            };
+        };
+        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"];
         agentSelection: {
             agent_id: string;
             adapter: string;

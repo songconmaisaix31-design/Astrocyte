@@ -1,6 +1,6 @@
 import { readFile, realpath, stat } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { delimiter, isAbsolute, join } from 'node:path'
+import { delimiter, dirname, extname, isAbsolute, join } from 'node:path'
 import { parse as parseTOML } from 'smol-toml'
 import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
@@ -16,6 +16,8 @@ import { readAgentSettings, type AgentSettingsSnapshot } from './agent-settings'
 import { parsePiModelOptionId } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-options'
 import { agentCapabilitiesSchema, agentSelectionSchema, registeredAgentSchema, type AgentSelection, type CapabilityRequirements } from './contracts'
 import { inspectNativePiPolicy } from './native-pi-policy'
+import { inspectNativeOpenCodePolicy, readOpenCodeCredential } from './native-opencode-policy'
+import { parse as parseJSONC, type ParseError } from 'jsonc-parser'
 
 type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
 const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
@@ -24,7 +26,7 @@ const available = (reason: string, source: string) => observation('available', r
 const object = z.record(z.string(), z.unknown())
 const text = (value: unknown): string | undefined => typeof value === 'string' && value.trim() ? value : undefined
 
-async function optionalConfiguration(file: string, format: 'json' | 'toml' = 'json') {
+async function optionalConfiguration(file: string, format: 'json' | 'toml' | 'jsonc' = 'json') {
   let contents: string
   let sourceVersion: string
   try {
@@ -37,7 +39,10 @@ async function optionalConfiguration(file: string, format: 'json' | 'toml' = 'js
   }
   const info = await stat(file, { bigint: true })
   if (sourceVersion !== `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}`) throw new Error('The selected native Agent configuration changed during reading')
-  return { value: object.parse(format === 'toml' ? parseTOML(contents) : JSON.parse(contents)), version: `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}` }
+  const errors: ParseError[] = []
+  const value: unknown = format === 'toml' ? parseTOML(contents) : format === 'jsonc' ? parseJSONC(contents, errors, { allowTrailingComma: true }) : JSON.parse(contents)
+  if (errors.length) throw new Error('The selected native configuration is not valid JSONC')
+  return { value: object.parse(value), version: `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}` }
 }
 
 // 认证内容只用于判断来源类型；返回值只包含非秘密配置事实。
@@ -85,6 +90,24 @@ async function configuration(agent: string, snapshot: AgentSettingsSnapshot, req
     const defaultModel = text(config?.value.defaultModel)
     return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, sourceHome: accountHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
   }
+  if (agent === 'opencode') {
+    const sourceHome = process.env.SWA_DISCOVERY_OPENCODE_HOME || home
+    if (!isAbsolute(sourceHome)) throw new Error('The selected OpenCode source home must be absolute')
+    const config = await optionalConfiguration(join(sourceHome, '.config/opencode/opencode.jsonc'), 'jsonc')
+    const auth = await optionalConfiguration(join(sourceHome, '.local/share/opencode/auth.json'))
+    const entry = auth?.value.deepseek === undefined ? undefined : object.parse(auth.value.deepseek)
+    const model = requestedModel ?? text(config?.value.model)
+    const file = join(sourceHome, '.local/share/opencode/opencode.db')
+    let databaseVersion = 'absent', databaseKeyMatches = false
+    try {
+      const info = await stat(file, { bigint: true })
+      databaseVersion = `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}`
+      const credential = readOpenCodeCredential(file)
+      databaseKeyMatches = credential.key === entry?.key
+      databaseVersion += `;${credential.id};${credential.updatedAt}`
+    } catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error }
+    return { model, provider: model === 'deepseek/deepseek-v4-pro' ? 'deepseek' : undefined, account: entry?.type === 'api' && text(entry.key) && databaseKeyMatches ? 'opencode-native-key-database' : undefined, sourceHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'};${databaseVersion}` }
+  }
   return { model: undefined, provider: undefined, account: undefined, version: 'native-configuration-unobserved' }
 }
 
@@ -124,6 +147,7 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
       const command = resolveStructuredAgentCommand(id, spec?.ignoreAgentCommandSetting ? {} : { agentCmdOverrides: snapshot.launch.agentCmdOverrides }, { pathEnv, homePath: snapshot.home }, { command: spec?.command ?? id })
       if (isAbsolute(command)) {
         executable = await realpath(command)
+        if (id === 'opencode' && extname(executable).toLowerCase() === '.cmd') executable = await realpath(join(dirname(executable), 'node_modules/@opencode/cli/bin/opencode.exe'))
         const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
         version = result.version ?? undefined
         installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe')
@@ -137,11 +161,12 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
     agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session'), control, ...(requirements ? { requirements } : {}) })
     let selection: AgentSelection | undefined
     if (projectId && enabled.status === 'available' && executable && version && proven) {
-      if (id !== 'pi' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
-      const { provider, modelId } = parsePiModelOptionId(config.model)
-      if (snapshot.settings.agentDefaultArgs?.pi?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Pi extra arguments have not been approved')
-      const native = await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, provider, modelId, env: discoveryEnvironment() })
-      selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })
+      if ((id !== 'pi' && id !== 'opencode') || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
+      if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
+      const native = id === 'pi'
+        ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, ...parsePiModelOptionId(config.model), env: discoveryEnvironment() })
+        : await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
+      selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider: native.policy.account.provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })
     }
     details.set(id, { selection, configuration: config })
   }

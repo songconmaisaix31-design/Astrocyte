@@ -12,6 +12,7 @@ export async function importPrivateOpenCodeCredential(input: {
   node: string; entry: string; executable: string; cwd: string;
   inherited: Readonly<Record<string, string>>;
   observe(resource: NativeOpenCodeImportResource): void
+  beforeInput?(): Promise<() => void>
 }) {
   const { snapshot } = input
   await verifyPrivateOpenCodeAccount(snapshot, input.root, input.plugin, input.correlation)
@@ -49,6 +50,9 @@ export async function importPrivateOpenCodeCredential(input: {
   try {
     await tree.ready()
     await verifyPrivateOpenCodeAccount(snapshot, input.root, input.plugin, input.correlation)
+    const finalAdmission = await input.beforeInput?.()
+    assertNativeOpenCodeCurrent(snapshot)
+    finalAdmission?.()
     await new Promise<void>((resolve, reject) => managed.child.stdin.end(body, (error?: Error | null) => { body.fill(0); if (error) reject(new Error('native_opencode_import_stdin_failed')); else resolve() }))
     await Promise.race([Promise.all([managed.exitPromise, streamsClosed]), new Promise<never>((_resolve, reject) => { timer = setTimeout(() => reject(new Error('native_opencode_import_exit_unknown')), 30_000) })])
   } finally {

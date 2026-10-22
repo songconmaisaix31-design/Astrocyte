@@ -1,5 +1,7 @@
 import type { AuthMethod } from './generated/acp-protocol.generated'
 
+export class AcpInputAdmissionError extends Error {}
+
 export class AcpRpcError extends Error {
   constructor(
     readonly code: number,

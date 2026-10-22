@@ -25,7 +25,7 @@ export const settingsSourceSchema = z.strictObject({
   kind: z.enum(['native', 'orca-profile']), path: z.string().min(1).optional(), revision: z.number().int().nonnegative().optional()
 })
 const nativeConfigurationSourceSchema = z.strictObject({ path: z.string().min(1), version: z.string().min(1) })
-export const nativeLaunchPolicySchema = z.strictObject({
+export const nativePiLaunchPolicySchema = z.strictObject({
   schema: z.literal('swa.native-launch.v1'),
   account: z.strictObject({
     kind: z.literal('pi-native-api-key'), provider: z.string().min(1), source_home: z.string().min(1),
@@ -35,6 +35,17 @@ export const nativeLaunchPolicySchema = z.strictObject({
   }),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') })
 })
+export const nativeOpenCodeLaunchPolicySchema = z.strictObject({
+  schema: z.literal('swa.native-launch.v1'),
+  account: z.strictObject({
+    kind: z.literal('opencode-native-api-key'), provider: z.literal('deepseek'), source_home: z.string().min(1),
+    config_source: nativeConfigurationSourceSchema, auth_source: nativeConfigurationSourceSchema, database_source: nativeConfigurationSourceSchema,
+    credential_id: z.string().min(1), credential_updated_at: z.number().int().nonnegative(), private_root: z.string().min(1),
+    model_target: z.strictObject({ model_id: z.literal('deepseek-v4-pro'), api: z.literal('opencode-native-deepseek'), base_url: z.literal('https://api.deepseek.com') })
+  }),
+  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('opencode-cli-2.0.31') })
+})
+export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema])
 export type NativeLaunchPolicy = z.infer<typeof nativeLaunchPolicySchema>
 export const agentSelectionSchema = z.strictObject({
   agent_id: z.string().min(1), adapter: z.string().min(1), execution_mode: z.literal('structured'),

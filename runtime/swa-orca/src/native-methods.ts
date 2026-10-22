@@ -17,6 +17,7 @@ import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
 import { createPrivatePiHome } from './private-pi-account'
+import { createPrivateOpenCodeRoot } from './private-opencode-account'
 import { deliverNativeWorkerInput } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { authority, controllerOwnerSchema, controllerScope, exactController, observeControllerExited, recorded } from './controller-scope'
@@ -172,6 +173,7 @@ export const SWA_METHODS = [
     checkpoint(context, { project_id: invocation.project.id, workdir, stage: 'workspace-registration' })
     return effect(async () => {
       await createPrivatePiHome(invocation.project.id)
+      await createPrivateOpenCodeRoot(invocation.project.id)
       const repo = await runtime.addRepo(workdir, 'folder')
       const workspace = getRepoMainWorktreeId(repo)
       return createController(context, invocation.project.id, workspace, receipt => checkpoint(context, receipt))

@@ -22,7 +22,7 @@ import type { StructuredAgentAdapterContext } from './structured-agent-runtime-r
 import { sealStructuredSessionChild } from './structured-session-child-env'
 import type { AgentSessionAccountHome } from '../../shared/agent-session-account-home'
 import type { PiDisabledToolsPolicy } from '../pi/rpc-launch'
-import type { SwaProviderJobLauncher } from '../provider-process/provider-process-launch'
+import type { SwaProviderJobLauncher, SwaOpenCodeToolsPolicy } from '../provider-process/provider-process-launch'
 import type { AgentJournalMessageItem } from '../../shared/agent-session-journal-types'
 
 export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
@@ -33,6 +33,7 @@ export type StructuredAgentLaunchAdmission = {
   accountHome?(sessionId: string, agent: string, currentHome: AgentSessionAccountHome): Promise<AgentSessionAccountHome>
   environment?(sessionId: string, agent: string, currentEnvironment: Record<string, string>): Promise<Record<string, string>>
   disabledPiTools?(sessionId: string, agent: string): Promise<PiDisabledToolsPolicy>
+  disabledOpenCodeTools?(sessionId: string, agent: string): Promise<SwaOpenCodeToolsPolicy>
   providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
   beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
@@ -91,6 +92,7 @@ export type StructuredAgentLaunchBasis = {
   visuals(): Promise<NativeChatVisualsLaunch | null>
   commandSettings(): StructuredAgentCommandSettings
   disabledPiTools?(): Promise<PiDisabledToolsPolicy>
+  disabledOpenCodeTools?(): Promise<SwaOpenCodeToolsPolicy>
   providerJobLauncher?(): Promise<SwaProviderJobLauncher>
   /** For a part that found no program: refreshes the environment, after which both environment
    *  reads return the refreshed one. Absent when the runtime never retries. */
@@ -200,7 +202,8 @@ async function composedPart<L>(
     environment: () => environments.agent(),
     visuals: once(async () => (await sources.prepareVisuals?.(record.sessionId)) ?? null),
     commandSettings: once(() => selectedCommands ?? sources.resolveCommandSettings?.() ?? {}),
-    ...(launchAdmission?.disabledPiTools ? { disabledPiTools: () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent) } : {}),
+    ...(definition.agent === 'pi' && launchAdmission?.disabledPiTools ? { disabledPiTools: () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent) } : {}),
+    ...(definition.agent === 'opencode' && launchAdmission?.disabledOpenCodeTools ? { disabledOpenCodeTools: () => launchAdmission!.disabledOpenCodeTools!(identity.sessionId, definition.agent) } : {}),
     ...(launchAdmission?.providerJobLauncher ? { providerJobLauncher: () => launchAdmission!.providerJobLauncher!(identity.sessionId, definition.agent) } : {}),
     ...(refresh
       ? {

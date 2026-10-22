@@ -8,7 +8,7 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 随包 Node 为上游固定的官方 Windows x64 `24.21.0`。发行输入及真实 node.exe 均核上游固定 SHA256，完整 Node LICENSE 位于安装包 `node/LICENSE`。native 模块使用该版本的 headers/node.lib 编译；没有使用本机 Orca 的 Node、native 二进制或可写状态。
 
-本阶段Worker使用实际安装的 `@earendil-works/pi-coding-agent 1.0.1` 原生CLI和其真实provider实现，Agent及provider/model必须明确选择。已审政策限定既有原生API-key来源及三类已核API，原auth/models只读，所选有效材料在私有DataRoot中按受保护ACL独占创建；原账号不会进入安装包。固定RPC/关闭工具参数、原生状态、来源及当前批准在效果前核查；认证、工具关闭及实际模型仍须按当前测试计划获得真实验证。
+产品使用实际安装的 `@earendil-works/pi-coding-agent 1.0.1` 或 `@opencode/cli 2.0.31` 原生CLI及其真实provider实现，Agent及provider/model必须明确选择。Pi政策限定既有原生API-key来源及三类已核API；OpenCode限定原DeepSeek/deepseek-v4-pro、官方Plugin hook及同版正式auth import。原auth/models/config及原生凭据库只读，所选有效材料在私有DataRoot中按受保护ACL独占创建；原账号和OpenCode原生exe不进入安装包。产品policy是随包ESM目录，保持原CLI默认HTTP行为；原生RPC/ACP、关闭工具、实际插件状态、来源及当前批准在效果前核查。完整产品认证、工具关闭和模型验收继续按当前测试计划执行。
 
 运行依赖和构建工具的准确输入记录在 `runtime/swa-orca/package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml` 及 `dependencies.lock.json`。pnpm deploy 按锁导出包含 workspace 的独立依赖闭包，安装复制实际内容；每个第三方包的许可和 notices 随其原始 package 内容保留。node-pty、windows-process-tree 及Windows安全模块的相关补丁属于获准来源适配，Worker及服务Job保护须使用该候选实际编译的native能力。node-gyp12.3.0和TypeScript6.0.3为构建/检查工具；Electron43.7.8与新增@types包为开发类型输入，安装使用ignore-scripts且prod deploy保持原规则。真实声明、锁与安装已经同步。
 

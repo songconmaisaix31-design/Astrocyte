@@ -6,13 +6,13 @@ import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { resolveWindowsCmdShim } from '@orca/process-host/windows-cmd-shim-resolution'
 import { z } from 'zod'
-import { nativeLaunchPolicySchema, type NativeLaunchPolicy } from './contracts'
+import { nativePiLaunchPolicySchema, type NativeLaunchPolicy } from './contracts'
 
 const objectSchema = z.record(z.string(), z.unknown())
 const cliPackageSchema = z.object({ name: z.literal('@earendil-works/pi-coding-agent'), version: z.literal('1.0.1'), type: z.literal('module'), bin: z.object({ pi: z.literal('dist/bundle/cli.js') }) })
 const aiPackageSchema = z.object({ name: z.literal('@earendil-works/pi-ai'), version: z.literal('1.0.1') })
 const credentialSchema = z.strictObject({ type: z.literal('api_key'), key: z.string().min(1), env: z.record(z.string(), z.string()).optional() })
-const targetSchema = nativeLaunchPolicySchema.shape.account.shape.model_target
+const targetSchema = nativePiLaunchPolicySchema.shape.account.shape.model_target
 const providerFields = new Set(['name', 'baseUrl', 'api', 'headers', 'compat', 'authHeader', 'models', 'modelOverrides'])
 const modelFields = new Set(['id', 'name', 'api', 'baseUrl', 'reasoning', 'thinkingLevelMap', 'input', 'inputLimits', 'cost', 'promptCache', 'contextWindow', 'maxTokens', 'samplingParams', 'headers', 'compat'])
 const overrideFields = new Set([...modelFields].filter(key => !['id', 'api', 'baseUrl'].includes(key)))
@@ -193,7 +193,7 @@ export async function inspectNativePiPolicy(input: { executable: string; version
     const handler = apiRegistry.getApiProvider(target.data.api)
     if (handler?.api !== target.data.api || typeof handler.stream !== 'function' || typeof handler.streamSimple !== 'function') throw new Error('native_model_api_unreviewed')
   }
-  const policy = nativeLaunchPolicySchema.parse({ schema: 'swa.native-launch.v1', account: { kind: 'pi-native-api-key', provider: input.provider, source_home: sourceHome, auth_source: auth.source, models_source: modelsSource, private_home: privateHome, model_target: target.data }, tools: { mode: 'disabled', native_contract: 'pi-cli-1.0.1' } })
+  const policy = nativePiLaunchPolicySchema.parse({ schema: 'swa.native-launch.v1', account: { kind: 'pi-native-api-key', provider: input.provider, source_home: sourceHome, auth_source: auth.source, models_source: modelsSource, private_home: privateHome, model_target: target.data }, tools: { mode: 'disabled', native_contract: 'pi-cli-1.0.1' } })
   if (!isDeepStrictEqual(auth.source, await nativeConfigurationSource(authPath)) || !isDeepStrictEqual(modelsSource, await optionalSource(modelsPath))) throw new Error('native_configuration_changed_during_read')
   for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources]) {
     if (source && !isDeepStrictEqual(source, await nativeConfigurationSource(source.path))) throw new Error('native_cli_source_changed_during_read')

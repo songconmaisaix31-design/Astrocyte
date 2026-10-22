@@ -41,10 +41,11 @@ import {
   withNativeChatVisualsEnv
 } from '../native-chat/native-chat-visuals-delivery'
 import type { AcpLaunchSpec } from './acp-launch-specs'
+import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
 import { acpSessionNotRestoredItem } from './acp-session-reopen-failure'
 import { loadAcpVisualsSkill, type AcpLaunchVisualsDeps } from './acp-structured-launch-visuals'
 
-export type AcpStructuredLaunch = {
+export type AcpStructuredLaunch = Pick<ProviderProcessLaunch, 'swaJobIPC' | 'swaEventDirectory' | 'swaOpenCodePolicy'> & {
   spec: AcpLaunchSpec
   command: string
   args: string[]
@@ -216,11 +217,12 @@ export function acpStructuredLaunchPart(
 ): StructuredAgentLaunchPartResolver<AcpStructuredLaunch> {
   return async (basis, identity) => {
     const { record } = basis
+    const restricted = await basis.disabledOpenCodeTools?.()
     const { env, envToDelete, command } = await resolveAcpLaunchInvocation(
       spec,
       record.accountHome,
       {
-        resolveEnvironment: basis.baseEnvironment,
+        resolveEnvironment: restricted ? basis.environment : basis.baseEnvironment,
         resolveLaunchEnv: () => basis.launchEnv(),
         resolveCommandSettings: basis.commandSettings,
         refreshEnvironmentAfterMiss: basis.refreshAfterMissingProgram,
@@ -232,7 +234,7 @@ export function acpStructuredLaunchPart(
       }
     )
     const cwd = await basis.launchDirectory()
-    const visuals = spec.visualsSkill ? await basis.visuals() : null
+    const visuals = !restricted && spec.visualsSkill ? await basis.visuals() : null
     // Again at every launch: the binary on PATH may have changed since the chat was created.
     const launchVersion = await probeAcpLaunchVersion(
       spec,
@@ -257,12 +259,17 @@ export function acpStructuredLaunchPart(
       : null
     // The chat's own mode, as the host decided it for this start; a start naming none asks.
     const fullAccess = basis.permissionMode === 'full-access'
+    if (restricted && (spec.agent !== 'opencode' || fullAccess || restricted.nativeContract !== 'opencode-cli-2.0.31')) throw new Error('The restricted OpenCode launch contract changed')
+    const launcher = restricted ? await basis.providerJobLauncher?.() : undefined
+    if (restricted && !launcher) throw new Error('The restricted OpenCode launch has no owned process Job')
+    const nativeArgs = spec.args({ fullAccess, pluginDir: skill?.pluginDir ?? null })
     const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
     return {
       launch: {
         spec,
-        command,
-        args: spec.args({ fullAccess, pluginDir: skill?.pluginDir ?? null }),
+        command: launcher?.node ?? command,
+        args: launcher ? [launcher.entry, JSON.stringify({ command, args: nativeArgs })] : nativeArgs,
+        ...(launcher ? { swaJobIPC: true as const, swaEventDirectory: launcher.eventDirectory, swaOpenCodePolicy: restricted } : {}),
         fullAccess,
         resume: head
           ? {
@@ -276,6 +283,7 @@ export function acpStructuredLaunchPart(
             }
           : null
       },
+      ...(launcher ? { cliRuntimeCommand: command } : {}),
       env: withNativeChatVisualsEnv({ ...env, ...skill?.env }, skill ? visuals : null),
       inheritedEnvToDelete: [
         ...STRUCTURED_CHILD_ENV_TO_DELETE,

@@ -12,6 +12,7 @@ export type LegacyAgentSessionAccountHome = {
 
 export type OpenCodeAccountLocator =
   | { kind: 'managed'; managedProfileId: string }
+  | { kind: 'private'; root: string }
   // The user's own environment, read at every launch.
   | { kind: 'unmanaged' }
 
@@ -59,6 +60,7 @@ export function agentSessionAccountHomesEqual(
       left.locator.managedProfileId === right.locator.managedProfileId
     )
   }
+  if (left.locator.kind === 'private') return right.locator.kind === 'private' && left.locator.root === right.locator.root
   return right.locator.kind === 'unmanaged'
 }
 
@@ -128,5 +130,6 @@ export function isAgentSessionAccountHome(value: unknown): value is AgentSession
       PROFILE_ID.test(locator.managedProfileId)
     )
   }
+  if (locator.kind === 'private') return 'root' in locator && isBoundedAccountString(locator.root, MAX_PATH_LENGTH)
   return locator.kind === 'unmanaged'
 }

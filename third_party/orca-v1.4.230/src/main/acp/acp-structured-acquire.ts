@@ -40,6 +40,7 @@ import type { AcpStructuredSessionAdapterDeps } from './acp-structured-session-a
 import { AcpStructuredTurns, type AcpStructuredTurnsDeps } from './acp-structured-turns'
 import { RequestPermissionResponseSchema } from './generated/acp-protocol.generated'
 import { createStructuredAgentSessionLogger } from '../native-chat/agent-session-wire/structured-agent-session-logger'
+import type { SwaInitializationProcess } from '../provider-process/provider-process-launch'
 
 /** Frames an agent may send before its session exists; past this they are dropped. */
 const MAX_EARLY_FRAMES = 2_048
@@ -53,6 +54,7 @@ export async function acquireAcpStructuredSession(input: {
   abandoned: () => boolean
   /** Registers the connection so a close during the acquire can stop it. */
   track: (connection: AcpStructuredConnection) => void
+  trackInitialization: (resource: SwaInitializationProcess) => void
   /** The process's exit, observed while or after the session exists. */
   onExit: (session: AcpStructuredSession | null) => void
   /** The protocol broke with the process perhaps still running. Null while starting: then the
@@ -78,6 +80,10 @@ export async function acquireAcpStructuredSession(input: {
   }
   closedBeforeSpawn()
   const launch = await prepareAcpStructuredLaunch(deps, acquire, closedBeforeSpawn)
+  if (launch.swaOpenCodePolicy) {
+    await launch.swaOpenCodePolicy.initialize(input.trackInitialization, launch.cwd)
+    closedBeforeSpawn()
+  }
   let session: AcpStructuredSession | null = null
   // A slot rather than a `let`: closures read it, and control-flow narrowing cannot see them write.
   const slot: { lane: AcpStructuredLane | null; reattaching: boolean } = {
@@ -113,7 +119,8 @@ export async function acquireAcpStructuredSession(input: {
       args: launch.args,
       cwd: launch.cwd,
       env: launch.env,
-      envToDelete: launch.envToDelete
+      envToDelete: launch.envToDelete,
+      ...(launch.swaJobIPC ? { swaJobIPC: launch.swaJobIPC, swaEventDirectory: launch.swaEventDirectory, swaOpenCodePolicy: launch.swaOpenCodePolicy } : {})
     },
     {
       clientInfo: { name: 'orca', version: '1' },
@@ -239,6 +246,7 @@ export async function acquireAcpStructuredSession(input: {
         slot.reattaching = false
         attaching.translator.finishLoad()
       } catch (error) {
+        if (launch.swaOpenCodePolicy) throw error
         takeover = acpReopenTakeover(error, resume, {
           over: connection.closed || acquire.signal?.aborted === true,
           now: now(),
@@ -258,6 +266,14 @@ export async function acquireAcpStructuredSession(input: {
     options.adoptSession(started.response, started.kind === 'new' ? 'new' : 'loaded')
     liveLane.apply(liveLane.translator.contextModels(started.response.models, now()))
     const restoreSkipped = await restoreAcpSessionOptions(connection, options, acquire.options)
+    if (launch.swaOpenCodePolicy) {
+      if (restoreSkipped.length) throw new Error('The restricted OpenCode session options could not be restored')
+      await connection.setMode('build')
+      const selected = await connection.setConfigOption('model', launch.swaOpenCodePolicy.model)
+      if (selected.configOptions.find(option => option.id === 'model')?.currentValue !== launch.swaOpenCodePolicy.model) throw new Error('The restricted OpenCode native model was not confirmed')
+      options.adoptConfigOptions(selected.configOptions)
+      await connection.verifySwaSession(started.sessionId)
+    }
     const mode = spec.permissionModeConfig
     if (mode) {
       // Unlike a saved pick, a refusal fails the start: the session would run another posture.

@@ -114,13 +114,84 @@ type OrcaNativeModelTarget struct {
 }
 
 type OrcaNativeLaunchAccount struct {
-	Kind         string                         `json:"kind"`
-	Provider     string                         `json:"provider"`
-	SourceHome   string                         `json:"source_home"`
-	AuthSource   OrcaNativeConfigurationSource  `json:"auth_source"`
-	ModelsSource *OrcaNativeConfigurationSource `json:"models_source"`
-	PrivateHome  string                         `json:"private_home"`
-	ModelTarget  OrcaNativeModelTarget          `json:"model_target"`
+	Kind                string                         `json:"kind"`
+	Provider            string                         `json:"provider"`
+	SourceHome          string                         `json:"source_home"`
+	AuthSource          OrcaNativeConfigurationSource  `json:"auth_source"`
+	ModelsSource        *OrcaNativeConfigurationSource `json:"models_source"`
+	PrivateHome         string                         `json:"private_home"`
+	ModelTarget         OrcaNativeModelTarget          `json:"model_target"`
+	ConfigSource        OrcaNativeConfigurationSource  `json:"config_source"`
+	DatabaseSource      OrcaNativeConfigurationSource  `json:"database_source"`
+	CredentialID        string                         `json:"credential_id"`
+	CredentialUpdatedAt int64                          `json:"credential_updated_at"`
+	PrivateRoot         string                         `json:"private_root"`
+}
+
+func nativeAccountFields(kind string) ([]string, error) {
+	common := []string{"kind", "provider", "source_home", "auth_source", "model_target"}
+	switch kind {
+	case "pi-native-api-key":
+		return append(common, "models_source", "private_home"), nil
+	case "opencode-native-api-key":
+		return append(common, "config_source", "database_source", "credential_id", "credential_updated_at", "private_root"), nil
+	default:
+		return nil, fmt.Errorf("unsupported native account kind %q", kind)
+	}
+}
+
+func (account OrcaNativeLaunchAccount) MarshalJSON() ([]byte, error) {
+	type wire OrcaNativeLaunchAccount
+	fields, err := nativeAccountFields(account.Kind)
+	if err != nil {
+		return nil, err
+	}
+	encoded, err := json.Marshal(wire(account))
+	if err != nil {
+		return nil, err
+	}
+	var all map[string]json.RawMessage
+	if err := json.Unmarshal(encoded, &all); err != nil {
+		return nil, err
+	}
+	selected := make(map[string]json.RawMessage, len(fields))
+	for _, field := range fields {
+		selected[field] = all[field]
+	}
+	return json.Marshal(selected)
+}
+
+func (account *OrcaNativeLaunchAccount) UnmarshalJSON(data []byte) error {
+	type wire OrcaNativeLaunchAccount
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	var kind string
+	if err := json.Unmarshal(fields["kind"], &kind); err != nil {
+		return err
+	}
+	allowed, err := nativeAccountFields(kind)
+	if err != nil {
+		return err
+	}
+	if len(fields) != len(allowed) {
+		return errors.New("native account fields do not match their kind")
+	}
+	for _, field := range allowed {
+		value, exists := fields[field]
+		if !exists || field != "models_source" && bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+			return fmt.Errorf("native account field %s is missing", field)
+		}
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	var decoded wire
+	if err := decoder.Decode(&decoded); err != nil {
+		return err
+	}
+	*account = OrcaNativeLaunchAccount(decoded)
+	return nil
 }
 
 type OrcaNativeLaunchTools struct {
@@ -563,6 +634,15 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 	policy := selection.NativeLaunch
 	account := policy.Account
 	target := account.ModelTarget
+	if account.Kind == "opencode-native-api-key" {
+		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "opencode-cli-2.0.31" || selection.AgentID != "opencode" || selection.Version != "2.0.31" || selection.ExecutionMode != "structured" || account.Provider != "deepseek" || selection.Provider != "deepseek" || selection.Model != "deepseek/deepseek-v4-pro" || target.ModelID != "deepseek-v4-pro" || target.API != "opencode-native-deepseek" || target.BaseURL != "https://api.deepseek.com" || account.CredentialID == "" || account.CredentialUpdatedAt < 0 || account.PrivateHome != "" || account.ModelsSource != nil {
+			return projectError(apierrors.EvidenceMissing, "the selected native OpenCode account and disabled-tool policy are unverified")
+		}
+		if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateRoot) || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "opencode" || account.AuthSource.Path != filepath.Join(account.SourceHome, ".local", "share", "opencode", "auth.json") || account.ConfigSource.Path != filepath.Join(account.SourceHome, ".config", "opencode", "opencode.jsonc") || account.DatabaseSource.Path != filepath.Join(account.SourceHome, ".local", "share", "opencode", "opencode.db") || account.AuthSource.Version == "" || account.ConfigSource.Version == "" || account.DatabaseSource.Version == "" {
+			return projectError(apierrors.EvidenceMissing, "the selected native OpenCode sources and project root are incomplete")
+		}
+		return nil
+	}
 	endpoint, err := url.Parse(target.BaseURL)
 	if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
 		return projectError(apierrors.EvidenceMissing, "the selected native account and disabled-tool policy are unverified")

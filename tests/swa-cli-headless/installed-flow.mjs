@@ -81,11 +81,12 @@ async function events(source) {
   assert.ok(source.process.pid > 0 && source.process.creation_time_ms > 0)
   const rel = relative(dataRoot, source.provider_events)
   assert.ok(rel && !rel.startsWith('..') && !isAbsolute(rel))
-  const rows = await readJSONL(candidate, source.provider_events)
+  const allRows = await readJSONL(candidate, source.provider_events)
+  const rows = source.provider === 'opencode' ? allRows.filter(row => row.session_id === source.native_session_id && row.runtime_fence === source.fence && row.process.pid === source.process.pid && row.process.creationTimeMs === source.process.creation_time_ms) : allRows
   for (const row of rows) {
     assert.equal(row.process.pid, source.process.pid)
     assert.equal(row.process.creationTimeMs, source.process.creation_time_ms)
-    assert.equal(row.projection, 'actual_native_cli_lifecycle_and_delta_fields')
+    assert.equal(row.projection, source.provider === 'opencode' ? 'actual_native_acp_lifecycle_and_delta_fields' : 'actual_native_cli_lifecycle_and_delta_fields')
     assert.ok(row.native_cli?.pid > 0 && row.native_cli.creationTimeMs > 0 && row.native_cli.pid !== row.process.pid)
   }
   const previous = eventSources.get(source.native_session_id)
@@ -93,9 +94,11 @@ async function events(source) {
   eventSources.set(source.native_session_id, { source, rows })
   return rows
 }
-const delta = row => row.record.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && row.record.assistantMessageEvent.delta.length > 0
-const starts = rows => rows.filter(row => row.record.type === 'agent_start')
-const ends = rows => rows.filter(row => row.record.type === 'agent_end')
+const delta = row => row.protocol === 'acp'
+  ? row.event === 'session/update' && row.detail.kind === 'known' && ['agent_message_chunk', 'agent_thought_chunk'].includes(row.detail.notification.update.sessionUpdate) && row.detail.notification.update.content?.type === 'text' && row.detail.notification.update.content.text.length > 0
+  : row.record.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && row.record.assistantMessageEvent.delta.length > 0
+const starts = rows => rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record.type === 'agent_start')
+const ends = rows => rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record.type === 'agent_end')
 async function freshProcessRows() { return new Promise((resolve, reject) => processAPI.getAllProcesses(rows => rows ? resolve(rows) : reject(new Error('Actual native process snapshot unavailable')), 4)) }
 async function requireRootGone(processIdentity) {
   const checks = []
@@ -240,10 +243,10 @@ const beforeTurn = [...beforeStop.state.items.values()].find(item => item.body.k
 assert.ok(beforeTurn && beforeTurn.body.state === 'running', 'The exact native stop target was not running at its accepted journal mark')
 assert.ok(!ends(eventsAAfterStop).some(row => Date.parse(row.observed_at) < nativeStopA.row.stopEvent.at), 'The actual native turn ended before the native stop was processed')
 const endedTurn = outputA.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === targetTurnId)
-const actualNativeAbort = eventsAAfterStop.find(row => row.record.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted' && Date.parse(row.observed_at) >= nativeStopA.row.stopEvent.at)
+const actualNativeAbort = eventsAAfterStop.find(row => (row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted') && Date.parse(row.observed_at) >= nativeStopA.row.stopEvent.at)
 assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' && endedTurn.body.outcome === undefined || endedTurn.body.outcome === 'cancellation' && actualNativeAbort), 'The active stop was not proven by the native interrupted turn or actual native cancellation')
-const actualLast = outputB.native_session.entries.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1)
-const fullText = typeof actualLast.message.content === 'string' ? actualLast.message.content : actualLast.message.content.filter(row => row.type === 'text').map(row => row.text).join('\n')
+const actualLast = outputB.native_session.format === 'opencode-sqlite-v2' ? outputB.native_session.messages.filter(row => row.type === 'assistant').at(-1).data : outputB.native_session.entries.filter(row => row.type === 'message' && row.message.role === 'assistant').at(-1).message
+const fullText = typeof actualLast.content === 'string' ? actualLast.content : actualLast.content.filter(row => row.type === 'text').map(row => row.text).join('\n')
 assert.ok(fullText.length > 1200, 'The actual long-output case did not occur')
 for (const worker of result.workers) {
   const sourceInfo = worker.journal

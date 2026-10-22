@@ -5,8 +5,9 @@ import {
   type ManagedProviderProcess,
   type ProviderProcessExit
 } from '../provider-process/managed-provider-process'
-import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
-import { AcpAuthRequiredError, AcpConnectionClosedError } from './acp-errors'
+import type { ProviderProcessLaunch, SwaOpenCodeToolsPolicy } from '../provider-process/provider-process-launch'
+import { SwaProviderProcessTree } from '../provider-process/swa-provider-process-tree'
+import { AcpAuthRequiredError, AcpConnectionClosedError, AcpInputAdmissionError } from './acp-errors'
 import { resolveAcpPeerOptions, type AcpPeerOptions } from './acp-peer-limits'
 import { AcpSessionRuntime, type AcpSessionRuntimeOptions } from './acp-session-runtime'
 
@@ -46,6 +47,9 @@ export class AcpAgentConnection extends AcpSessionRuntime {
   private readonly managed: ManagedProviderProcess
   private readonly lifecycle: { closing: boolean; error?: Error }
   private readonly diagnoseLifecycle: (message: string) => void
+  private readonly tree?: SwaProviderProcessTree
+  private readonly swaPolicy?: SwaOpenCodeToolsPolicy
+  private swaSessionId?: string
   readonly spawned: Promise<void>
 
   constructor(
@@ -56,6 +60,9 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     // Validate before spawning so invalid limits cannot leave an unowned child.
     const peer = resolveAcpPeerOptions({ ...options.peer, closeOnInputEnd: false })
     const { signIn } = options
+    const tree = launch.swaJobIPC ? new SwaProviderProcessTree() : undefined
+    if (launch.swaOpenCodePolicy && !tree) throw new Error('The restricted OpenCode process has no Job')
+    if (tree) launch.swaOpenCodePolicy?.attach(tree)
     let signedOut = (): void => {}
     let unreadable = (): void => {}
     // A sign-in line is never kept or logged; only a whole, valid one is an answer.
@@ -75,17 +82,21 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       }
       return true
     }
-    const managed = spawnManagedProviderProcess(launch, {
+    let managed: ManagedProviderProcess
+    try { managed = spawnManagedProviderProcess(launch, {
       spawnImpl,
       site: 'acp-agent-teardown',
       ...(options.onOutput ? { onOutput: options.onOutput } : {}),
-      ...(signIn
+      ...(launch.swaOpenCodePolicy
+        ? { onStderrLine: (line: string, cut: boolean) => launch.swaOpenCodePolicy!.stderr(line, cut), stderrLineMaxChars: SIGN_IN_LINE_MAX_CHARS }
+        : signIn
         ? {
             onStderrLine: (line: string, cut: boolean) => signInLine(line, 'stderr', cut),
             stderrLineMaxChars: SIGN_IN_LINE_MAX_CHARS
           }
         : {})
-    })
+    }) } catch (error) { tree?.closeBeforeSpawnFailure(); throw error }
+    tree?.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }), true)
     const lifecycle: { closing: boolean; error?: Error } = { closing: false }
     const diagnose = (message: string): void => {
       try {
@@ -101,12 +112,12 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       onAuthAnswered: (signedIn) => signIn?.answered?.(signedIn),
       onClose: (error) => {
         lifecycle.error ??= error
-        if (lifecycle.closing || managed.rootVerdict === 'exited') {
+        if (lifecycle.closing || !tree && managed.rootVerdict === 'exited') {
           return
         }
-        void managed.close().then(
+        void managed.close(tree).then(
           (result) => {
-            if (result.root !== 'exited') {
+            if (result.root !== 'exited' || tree && result.tree !== 'exited') {
               diagnose('ACP agent exit was not proven after transport failure')
             }
           },
@@ -116,10 +127,12 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       }
     })
     this.managed = managed
+    this.tree = tree
+    this.swaPolicy = launch.swaOpenCodePolicy
     this.lifecycle = lifecycle
     this.diagnoseLifecycle = diagnose
     const { child } = managed
-    this.spawned = new Promise((resolve) => {
+    this.spawned = new Promise<void>((resolve) => {
       if (child.pid !== undefined) {
         resolve()
         return
@@ -131,6 +144,11 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       }
       child.once('spawn', done)
       child.once('error', done)
+    }).then(() => tree?.ready())
+    void this.spawned.catch(() => undefined)
+    if (this.swaPolicy) this.subscribe(event => {
+      try { this.swaPolicy!.trace('session/update', event) }
+      catch { void this.close(new Error('The restricted OpenCode trace could not be retained')) }
     })
     child.on('error', (error) => super.close(error))
     signedOut = () => {
@@ -144,7 +162,7 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     managed.onExit((exit) => {
       const error =
         lifecycle.error ??
-        new AcpConnectionClosedError(managed.stderrTail().trim() || `${launch.command} exited`)
+        new AcpConnectionClosedError(launch.swaOpenCodePolicy ? 'The restricted OpenCode process exited' : managed.stderrTail().trim() || `${launch.command} exited`)
       super.close(error)
       try {
         options.onExit?.(error, { expected: lifecycle.closing, exit })
@@ -174,15 +192,37 @@ export class AcpAgentConnection extends AcpSessionRuntime {
   /** Reports retained cleanup uncertainty; false does not prove descendant exit. */
   get processTreeUnproven(): boolean {
     const result = this.lastCloseResult
-    return this.exited && (result?.tree === 'unverifiable' || result?.tree === 'live')
+    return this.exited && (this.tree ? result?.tree !== 'exited' : result?.tree === 'unverifiable' || result?.tree === 'live')
   }
 
   stderrTail(): string {
-    return this.managed.stderrTail().trim()
+    return this.swaPolicy ? 'Restricted OpenCode native process' : this.managed.stderrTail().trim()
+  }
+
+  async verifySwaSession(sessionId: string): Promise<void> {
+    if (!this.swaPolicy) return
+    await this.swaPolicy.ready()
+    await this.swaPolicy.verifySession(sessionId)
+    this.swaSessionId = sessionId
+  }
+
+  override async prompt(prompt: Parameters<AcpSessionRuntime['prompt']>[0], meta?: Parameters<AcpSessionRuntime['prompt']>[1], beforeSend?: () => void): ReturnType<AcpSessionRuntime['prompt']> {
+    if (this.swaPolicy) {
+      try {
+        if (!this.swaSessionId || prompt.some(item => item.type !== 'text') || prompt.some(item => item.type === 'text' && /^\s*\//u.test(item.text))) throw new Error('Restricted OpenCode input changed')
+        await this.verifySwaSession(this.swaSessionId)
+        beforeSend?.()
+      } catch (error) { throw new AcpInputAdmissionError('Restricted OpenCode input was rejected before native delivery', { cause: error }) }
+      this.swaPolicy.trace('session/prompt', { sessionId: this.swaSessionId, prompt })
+    } else beforeSend?.()
+    const response = await super.prompt(prompt, meta)
+    this.swaPolicy?.trace('session/prompt/response', { sessionId: this.swaSessionId, response })
+    return response
   }
 
   onExit(listener: (exit: ProviderProcessExit) => void): void {
     this.managed.onExit((exit) => {
+      if (this.tree && this.tree.treeVerdict !== 'exited') return
       try {
         listener(exit)
       } catch (failure) {
@@ -203,8 +243,8 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     this.lifecycle.closing ||= this.managed.rootVerdict !== 'exited'
     this.drainNotifications(error)
     return this.managed
-      .close()
-      .then((result) => result.root === 'exited')
+      .close(this.tree)
+      .then((result) => result.root === 'exited' && (!this.tree || result.tree === 'exited'))
       .finally(() => super.close(error))
   }
 }

@@ -23,7 +23,7 @@ import type {
   StructuredAgentSessionCommandRun
 } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import { ACP_COMPACT_PROMPT } from './acp-compaction-turn'
-import { AcpAgentError, AcpAuthRequiredError, AcpConnectionClosedError } from './acp-errors'
+import { AcpAgentError, AcpAuthRequiredError, AcpConnectionClosedError, AcpInputAdmissionError } from './acp-errors'
 import type { AcpStructuredConnection } from './acp-structured-connection'
 import type { AcpStructuredLane } from './acp-structured-lane'
 import type { ContentBlock } from './generated/acp-protocol.generated'
@@ -203,7 +203,7 @@ export class AcpStructuredTurns {
     const meta = lane.translator.injectsPromptIdentity
       ? { promptId, requestId: promptId }
       : undefined
-    const answered = this.deps.connection.prompt(send.prompt, meta)
+    const answered = this.deps.connection.prompt(send.prompt, meta, send.beforeEffect)
     if (this.steers.length > 0) {
       this.cancelForSteer()
     }
@@ -217,6 +217,12 @@ export class AcpStructuredTurns {
         this.finish(send)
       },
       (error: unknown) => {
+        if (this.active === send && error instanceof AcpInputAdmissionError) {
+          lane.apply(lane.translator.promptFailed(send.clientMessageId, error, this.deps.now()))
+          this.reject(send.clientMessageId, agentSessionFailureFact('hostFault', { neverReachedAgent: true }))
+          this.finish(send)
+          return
+        }
         if (this.active !== send || error instanceof AcpConnectionClosedError) {
           // A lost connection: the session's end settles the send, as unknown.
           return

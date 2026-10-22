@@ -43,11 +43,14 @@ import { readAcpRecoveryHistory } from './acp-recovery-history'
 import { stopAcpChildren, acpChildStopCapabilities } from './acp-structured-child-stop'
 import { AcpConversationCopies } from './acp-conversation-copies'
 import { supportsAcpStructuredLocation } from './acp-structured-location-support'
+import type { SwaInitializationProcess } from '../provider-process/provider-process-launch'
+
+type AcquisitionProcess = AcpStructuredConnection | SwaInitializationProcess
 
 export class AcpStructuredSessionAdapter implements StructuredAgentSessionAdapter {
   /** Live children, and ones whose exit is not yet proven; a proven exit removes its entry. */
   private readonly sessions = new Map<string, AcpStructuredSession>()
-  private readonly starts = new ProviderAcquisitionStarts<AcpStructuredConnection>()
+  private readonly starts = new ProviderAcquisitionStarts<AcquisitionProcess>()
   private readonly copies: AcpConversationCopies
 
   constructor(private readonly deps: AcpStructuredSessionAdapterDeps) {
@@ -89,7 +92,7 @@ export class AcpStructuredSessionAdapter implements StructuredAgentSessionAdapte
 
   private async start(
     input: StructuredAgentSessionAcquireInput,
-    attempt: ProviderStartAttempt<AcpStructuredConnection>
+    attempt: ProviderStartAttempt<AcquisitionProcess>
   ): Promise<AgentSessionAcquisition> {
     const sessionId = input.identity.sessionId
     const generation = this.deps.mintGeneration?.() ?? randomUUID()
@@ -99,6 +102,7 @@ export class AcpStructuredSessionAdapter implements StructuredAgentSessionAdapte
         deps: this.deps,
         generation,
         abandoned: () => attempt.signal.aborted,
+        trackInitialization: resource => this.starts.track(attempt, resource),
         track: (connection) => {
           this.starts.track(attempt, connection)
           this.deps.spec.launchGate?.retain(connection)

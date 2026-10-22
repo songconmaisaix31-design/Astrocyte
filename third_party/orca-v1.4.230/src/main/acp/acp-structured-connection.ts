@@ -15,6 +15,8 @@ export type AcpStructuredConnection = Pick<
   | 'cancel'
   | 'setConfigOption'
   | 'setModel'
+  | 'setMode'
+  | 'verifySwaSession'
   | 'requestExtension'
   | 'subscribe'
   | 'closed'
@@ -36,7 +38,7 @@ export type ConnectAcpAgent<Connection = AcpStructuredConnection> = (
 
 /** Resolves once `connection`'s process exits, `signal` aborts, or `ms` pass, whichever is first. */
 export function waitForAcpExit(
-  connection: AcpStructuredConnection,
+  connection: { readonly exited: boolean; onExit(listener: () => void): void },
   ms: number,
   signal: AbortSignal
 ): Promise<void> {
