@@ -2093,3 +2093,11 @@ token后及任何Worker/模型前，通过正常HTTP/CLI的status/capabilities�
 已读取49/51/52原始入口与日志：49 strict和架构0，广包Go实际1，app的Relay Git/交付用例失败、httpapi的Workbench缺明确publication/SQL输入，未作同条件基线比较，不归类为既有失败；51 strict、gofmt/MJS语法与三个CLI传输前Go用例0，四项同安装真实TestOrca未运行。52同pin Node24.21完整check:contracts实际0，Redocly20项警告、264样例及生成一致性通过；准确Ajv修改注册既有外部SWA Schema并补示例基URI，约束和样例保留。build17入口要求准确干净e9fa，原SOURCE及日志指向同Commit、Node24.21和复用的四个未变native输入，build-exit为0；完整功能仍标NOT_RUN。Reviewer没有重复完整构建。
 
 Reviewer实际运行`check-revision.ps1 -Previous fe822783c92bd6a303b4f83157351e6b159e68f4 -Candidate e9fa97e33e1235577cfef7342942398eb804f1f5`为0：成熟marked18.1.0读取该提交三份Markdown，六个本地链接无缺失，旧§15锚点仍存在；本报告WORKING的同库检查和Git空白检查均0。上述检查不替代缺陷返修或最终实际路径。
+
+f5393fb4两项hook均获主控明确完整读取回复：e9fa退回`msg_baf565d18fb3`对应`msg_256464bbc5f1`，384D限定接受`msg_1fab0d024d13`对应`msg_af83ff50b903`，本次唤起已确认。原Worker已在工作树实现严格acceptClose、统一完整退出后发布和真实processless处理，准确返修Commit及实际ACP所属故障仍待核，未提前登记程序接受。
+
+**接受54来源补充的准确后继SHA256 `64DD11A6A2C87CE7C1230AB3F249F7676D0E748CB69FEF629106307DB30EB010`，范围沿384D。** 全文及摘要已读取；唯一来源入口调整为同生产agent-settings.cjs随当前必要ACP返修整包导出，metafile/准确源码一致仍核。它取代自有目录另行esbuild导入方式，不复制parser或selection规则，不增加公开API/权限或独立runtime。通知为`msg_cf1100ecd2ff`，客户端与最终实际描述仍待集中审核。
+
+**接受e9fa安装53的实际Pi node-script IPC无推理回归56。** 原入口run-pi55.ps1和native-pi-startup.mjs已完整读取，实际候选Node24.21启动真实pi.cmd及其原Node解释器/cli.js，私有空账户仅发送get_state，offline、原生工具及扩展/上下文入口关闭。实际session为`01a161c6-53ea-766d-ad75-5b66b01d8a16`，模型id为unknown，messageCount/pendingMessageCount均0，未复制原凭据、未进行推理。55首次原件退出1，真实Job已收尾，失败来自检查入口错误的manifest路径；后继入口改用Node原findPackageJSON，56实际退出0，55原件保留。
+
+Reviewer自有`review-pi56.mjs`实际0，原件`pi56-independent.log`：成熟stream-json读取全部56 JSONL，按实际root 51724/出生1792641749666和native node-script 50768/出生1792641749770关联成员，核两次完整Job为空、两次全部已观察出生身份缺席，均forced=false；真实result与安装VERSION一致，before/after原Orca保全passed。Reviewer没有重新启动Pi或模型。53之后FD5来源摘要核对及只读Assert-SwaService独立执行0，原95ef/5187保持。Pi正向模型仍未验，完整产品/e9fa ACP返修/最终同候选安装及双Worker仍未接受；该回归不替代这些范围。通知为`msg_75d7101ae0dd`。
