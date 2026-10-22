@@ -1,20 +1,27 @@
 import assert from 'node:assert/strict'
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 
-const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode'].map(name => [name, { type: 'string' }])), allowPositionals: false })
+const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision'].map(name => [name, { type: 'string' }])), allowPositionals: false })
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
 assert.ok(values['protected-roots'] && /^\d+$/.test(values.port))
 const candidate = await realpath(values.candidate), evidence = values.evidence, dataParent = values['data-parent']
 assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, 'node', 'node.exe').toLowerCase())
 await mkdir(evidence)
 const source = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
+assert.match(source, /^[0-9a-f]{40}$/)
+if (values['source-revision'] !== undefined) {
+  assert.match(values['source-revision'], /^[0-9a-f]{40}$/)
+  assert.equal(source, values['source-revision'])
+}
+assert.equal(execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true }).trim(), source)
 const requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
 const native = requireRuntime('@vscode/windows-process-tree')
+const security = requireRuntime('@orca/windows-security')
 const sourceRoot = await realpath(join(dirname(import.meta.filename), '..', '..'))
 assert.ok(process.env.ProgramFiles && isAbsolute(process.env.ProgramFiles))
 const powershell = await realpath(join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe'))
@@ -23,6 +30,74 @@ const records = []
 const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-close']
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
+async function observeReadyService(ready, child, data, created) {
+  const actualData = await realpath(data), endpoint = `http://127.0.0.1:${Number(values.port)}`
+  const samePath = (actual, expected) => {
+    assert.equal(typeof actual, 'string')
+    assert.equal(actual.toLowerCase(), expected.toLowerCase())
+  }
+  samePath(ready.install_root, candidate)
+  samePath(ready.data_root, actualData)
+  samePath(ready.readiness?.dataRoot, actualData)
+  samePath(ready.readiness?.node, join(candidate, 'node', 'node.exe'))
+  assert.match(ready.readiness.runtimeId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  assert.equal(ready.http, endpoint)
+  const response = await fetch(endpoint + '/api/v1/health', { redirect: 'error', signal: AbortSignal.timeout(5000) })
+  assert.equal(response.status, 200)
+  const health = await response.json()
+  assert.deepEqual(health, { schema_version: 1, status: 'ok', service: 'astrocyte' })
+  const metadata = JSON.parse(await readFile(join(actualData, 'orca-runtime.json'), 'utf8'))
+  assert.equal(metadata.runtimeId, ready.readiness.runtimeId)
+  assert.equal(metadata.pid, ready.runtime_pid)
+  const daemon = JSON.parse(await readFile(join(actualData, 'daemon', 'daemon-v49.pid'), 'utf8'))
+  const job = daemon.swa_service_job
+  assert.match(job.name, /^Local\\SWAService[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  assert.equal(job.platform, undefined)
+  assert.equal(job.source_revision, source)
+  samePath(job.data_root, actualData)
+  samePath(job.install_root, candidate)
+  assert.equal(job.serve_pid, child.pid)
+  assert.ok(Number.isSafeInteger(created) && created > 0)
+  assert.equal(job.serve_created_at_ms, created)
+  assert.equal(job.daemon_pid, daemon.pid)
+  assert.ok(Number.isSafeInteger(job.daemon_created_at_ms) && job.daemon_created_at_ms > 0)
+  assert.match(job.daemon_session, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  assert.equal(job.daemon_session, daemon.launchNonce)
+  const expected = [
+    { role: 'serve', pid: child.pid, created, name: 'swa.exe' },
+    { role: 'runtime', pid: ready.runtime_pid, name: 'node.exe' },
+    { role: 'server', pid: ready.server_pid, name: 'server.exe' },
+    { role: 'daemon', pid: job.daemon_pid, created: job.daemon_created_at_ms, name: 'node.exe' }
+  ]
+  assert.equal(new Set(expected.map(member => member.pid)).size, expected.length)
+  const rows = await processes(), user = security.currentUserSid(), members = []
+  for (const member of expected) {
+    assert.ok(Number.isSafeInteger(member.pid) && member.pid > 0)
+    const actual = security.readServiceJobMember(job.name, member.pid)
+    assert.equal(actual.name, job.name)
+    assert.equal(actual.pid, member.pid)
+    assert.ok(Number.isSafeInteger(actual.creationTimeMs) && actual.creationTimeMs > 0)
+    if (member.created !== undefined) assert.equal(actual.creationTimeMs, member.created)
+    assert.equal(actual.ownerSid, user)
+    assert.equal(actual.protected, true)
+    const trustees = new Set([user, 'S-1-5-18'])
+    assert.equal(actual.aces.length, trustees.size)
+    for (const ace of actual.aces) {
+      assert.equal(ace.flags, 0)
+      assert.equal(ace.mask, 0x1f003f)
+      assert.equal(trustees.delete(ace.sid), true)
+    }
+    assert.equal(trustees.size, 0)
+    const process = rows.find(row => row.pid === member.pid)
+    assert.ok(process)
+    assert.equal(process.creationTimeMs, actual.creationTimeMs)
+    assert.equal(process.name.toLowerCase(), member.name)
+    if (member.role === 'runtime' || member.role === 'server') assert.equal(process.ppid, child.pid)
+    members.push({ role: member.role, pid: member.pid, creation_time_ms: actual.creationTimeMs, name: process.name, parent_pid: process.ppid, actual_named_job_membership: true })
+  }
+  // 只保存核验所需字段，daemon PID 原记录中的 nonce 不进入证据。
+  return { source_revision: source, runtime_id: ready.readiness.runtimeId, data_root: actualData, health, service_job_name: job.name, members, job_owner_and_dacl_verified: true, observed_at: new Date().toISOString() }
+}
 for (const mode of selectedModes) {
   const directory = join(evidence, mode)
   await mkdir(directory)
@@ -69,7 +144,8 @@ for (const mode of selectedModes) {
       events.push({ type: 'actual-stdout-envelope', ok: readiness.ok, observed_at_ms: Date.now() })
     }
     if (!acted && mode === 'readiness-eof' && readiness?.ok) {
-      assert.equal(readiness.install_root.toLowerCase(), candidate.toLowerCase())
+      const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs)
+      await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
       child.stdin.end()
       acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
@@ -163,5 +239,5 @@ for (const mode of selectedModes) {
   records.push(record)
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
 }
-await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: false, remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
+await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: false, project_status_check: 'NOT_RUN', controller_check: 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED')) process.exitCode = 6
