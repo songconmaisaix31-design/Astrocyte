@@ -1,5 +1,7 @@
 # SWA 当前状态
 
+Windows普通组件`ffd3f7bb`实际PASS：run39857119838/job120098097243全部steps0/artifact0，其他native及S0均skip，06已核原HTML。真实root5532/child2152及两后代在两native批识别，正常EOF/Wait0/stdioEOF/stdin无错后两native剩0、原CIM两完整空匹配/间隔300.8149ms；不代表Job/产品服务，旧4aef FAIL和历史链UNKNOWN保留。后继一次完整候选尚未运行；已纠正“tag不触发S0”的错误假设，正在仅为`ci/swa-windows-*`专用测试tag排S0两job，普通push/PR/其它tag不变。准确源审后用三facts+此CI变更的新fullS、新tag一次触发，不重复Linuxbuild/安装或组件。
+
 最新Windows只读e929/run39853536500成功/S0及其他native skip，06已核。原4aef根1280/create1792700293571，唯一剩项7288/create1792700119902早173669ms/ppid8780/ready匹配0；latest同次子集仅2行缺目标，完整父链/Job归属UNKNOWN，不补历史union，旧FAIL不改。已接受pure4cb66241…/collector f0f6f824…两源，身份/时间门收紧且unknown整支永久锁、正Job身份和原关闭强门保留。实际历史标量回归tJsdhp为0/stderr0/5输入前后同：verified-root条件式旧必要门true，新函数两次predates-parent，06限定接受；不冒称完整链回放或native通过。下一仅process-tree单组件和普通父子进程实际关闭控制，尚不新full。
 
 Linux EINTR局部验证0，06已核真实Poll0的63/26次EINTR、PidfdOpen未复现及正常资源收尾，旧具体syscall/旧external UNKNOWN保留。新capsule6269/b3fb/403fe与check-only0已接受。Root新exec13657当前持有OWN02，runtime`e5df3e0d-ae5c-46a2-9388-f5a65d429d53`/serve223474，截止21:58:07.346UTC；新PKG02 review SHA`055b97213e876b4deb1a1fed893474204fe04a81943165eab16dee85fadb4170`已有fresh10intents、原三wire、本地verify0/HTTP0/model0及01准确限定接受。已向用户请求此新包human/CAS/Grant/token/StepFun Pi N3和两cleanup范围明确委托，待答前不执行。旧4244永远失效；新基线完整最终D尚待正常EOF后的实际外部两fresh观察，不能由初始proof或旧结果替代。
