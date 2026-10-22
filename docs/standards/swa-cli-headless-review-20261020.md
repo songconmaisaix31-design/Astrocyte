@@ -2164,3 +2164,15 @@ Reviewer独立`review-execute68.mjs`实际0，原件`execute68-independent.log`�
 Reviewer独立`review-execute67-service.ps1`实际0，原件`execute67-service-independent.log`：私有描述、实际PID/创建时间/程序/父进程、监听归属、metadata、VERSION、CLI版本、host产物和health全部匹配。准确候选仍为3bcf-install60，数据为3bcf-service67，runtime为`9ea24e54-4f25-44d1-ae2c-72462e92e130`，serve55300、host53008、http46428，创建时间分别UTC04:39:46.262484、04:39:47.309058、04:39:48.482722，端点64508。Reviewer没有写入或轮询原服务工具17950/5187；原95ef服务及已到期Observe保持，未调用Aliyun。
 
 2b4b9d22的3bcf/62与CI计划两个hook分别获主控`msg_d51e98d35289`、`msg_cd18a2caf6d6`明确完整读取回复，实际唤起已确认。本轮客户端接受不结算当前Task/Dispatch；CI准确配置与真实安装/基线比较、Grant实际准备及产品验收继续累计，尚未接受完整CI或产品。
+
+## d829依赖策略与3fadb迁移测试前提
+
+**接受准确`d82958a0dd48ab87ea6e77a6d69d6305bf3d11b9`的六项安装脚本策略及实际Windows普通frozen安装范围，接受准确`3fadb0bc3aa69a62b1c9b3c772cb518ec57d768b`的迁移测试前提修订和真实SQLite升级用例。** 两提交全部差异已读。六项准确版本false与45FE已接受计划一致，原严格未知拒绝、esbuild规则、依赖/锁和受控native保持；3fadb仅将真实迁移文件前提增加到28/028，原25项旧版本、两Taste表、备份、完整ID、幂等和无human profile断言全部保留。两提交没有改产品权限、原S1/Relay接口、现有3bcf程序或native输入，没有要求重复未变成品和模型。
+
+64实际Git完整归档后因Windows的SOURCE文件与source目录冲突，在安装前停止；69普通安装因两个workspace native的MSBuild长tlog路径失败，两份原错误保留。72改用独占短目录c72和同一真实Git归档/私有store，实际命令为`pnpm install --frozen-lockfile --verify-store-integrity --store-dir <实际私有store>`，没有ignore-scripts或关闭strictDepBuilds；实际退出0，随后check-dependencies实际0。源码归档117429167字节，准确依赖输入逐字节相符，锁前后SHA256均为`F7A1BC8DAE51770233894041E0F3A415A3C68AEA57BF06A235159D5E3498D3EA`。Reviewer完整读取64/72入口、72实际配置和日志，独立`review-ci72.mjs`实际0，原件`ci72-independent.log`；成熟yaml解析核准确变化仅为六规则，真实归档摘要、四份依赖输入、锁、退出和后继日志均核。
+
+Linux job119643340844实际检出的PR合并Commit为`89ff401aecc725ade76a4e97132e6165d4d990a1`，由d829与main `50c2aaff28a54310b1d290190859d6cc6cc1faec`组成，pnpm11.27 frozen install真实成功。后续pnpm check内Go仍退出1；Reviewer读取其完整日志并与同平台main job119638841884的全部失败名称集合比较，基线68项、候选69项，唯一新增为TestTasteProfileActualMigrationUpgrade，移除0项。该比较支持定位新增测试前提，不代表原68项失败已修复、整体CI通过或全部失败原因相同；后继build/浏览器等未执行范围保持，3fadb的Linux后继结果尚待原件。
+
+73使用真实`go test -mod=readonly ./internal/adapters/sqlite -run '^TestTasteProfileActualMigrationUpgrade$' -count=1 -v`实际0，SOURCE=d829及完整source.diff与准确3fadb一致。Reviewer独立`review-migration73.mjs`实际0，原件`migration73-independent.log`：实际保存目录taste-profile-actual-303335430中旧25份SQL逐份与准确源码一致；只读实际state.sqlite含28个准确迁移ID、两Taste表且human profile为0，唯一真实备份仍为旧25个准确ID且无Taste表，两库mtime保持。没有重跑迁移或构造数据库。准确d829三份、3fadb两份Markdown的Git/成熟marked检查分别0，本地链接各六个无缺失，旧§15锚点保持。
+
+主控`6e4ba81cf853dfd945335226dff362a6a7f75bf9`相对eee780的三份准确差异已完整读取，原3bcf/62/67、draft PR、CI窄域和OpenMausBot参考仅按真实限定范围记录；QUESTIONS/S3/T11及最终同安装双Worker未提升。独立Git/marked检查0，44个本地链接无缺失，这些管理事实随本轮限定接受。4aa077c4的68客户端hook获主控`msg_81ff405f9296`明确全文读取四份摘要、真实67描述及两个独立结果后回复，唤起已确认；原Worker实际准备继续，不新增管理等待或用户批准。
