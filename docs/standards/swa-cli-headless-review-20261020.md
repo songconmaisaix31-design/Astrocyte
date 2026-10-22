@@ -2374,3 +2374,13 @@ Reviewer独立`review-controller101.mjs`实际0，原件`controller101-source-in
 Reviewer只读当前50264/49128的真实CIM，父进程分别3824/50264，原出生及实际pwsh/893安装Node路径相符；没有发关闭或修改ACL。原89 Job为`Local\SWAService95379a87-5c72-4127-acd5-deea6645637c`，100原完整成员七个及出生/路径/CurrentUser+SYSTEM保护DACL已读，21806继续持有。该客户端限定接受已送原Worker`msg_4095845b3298`，实际关闭按独立原件审核。
 
 **102没有证明原89 controller或服务关闭，后继退出证据仍不足。** 新close R `bb82920e-2b18-41f6-8178-8a5356bbb39f`真实返回operation_in_progress，消息为原Task或Worker创建仍持有reservation；驱动1保留。独立`review-close102.mjs`实际0，原件`close102-independent.log`：真实close receipt缺席，原96两start父R仍pending/helper-input，当前原生owner观察此前通过；不把该拒绝称为成功、未知R重试或权限放宽。原Worker按主控已授owner EOF及必要同Job核实后处置继续，完整空清单与全部旧身份退出另验。原95ef/5187、Orca和全部原R保持；246ac0cf计划hook获主控`msg_12e909d2894b`全文读取回复，5aa退回hook获`msg_6222198ed5b6`全文读取回复，唤起均已确认，本Task继续。
+
+## 103原89具名Job退出及当前通信限制
+
+**接受103对原89准确具名Job和全部七个已观察出生身份的实际退出范围。** 正常owner EOF实际6保持；之后按主控msg_99db5f427819原授权，重核893安装/VERSION、原serve6224出生及daemon所属记录、CurrentUser+SYSTEM保护DACL、完整成员/出生/父链/路径和实际持有句柄，仅对`Local\SWAService95379a87-5c72-4127-acd5-deea6645637c`调用TerminateJobObject。该次实际调用为UTC06:39:08.7837289，后继原件退出0；被终止的daemon3824、OpenConsole8948、PTY50264、helper49128持有句柄均实际退出1。
+
+Reviewer完整读取close89-job103.ps1及原100/103原件，独立`review-service89-close103.mjs`和`review-service89-close103-current.ps1`均实际0，原件`service89-close103-actual-independent.log`、`service89-close103-birth-independent.log`：两次完整Job清单均为空，全部七身份两次缺席，原21806独立只读观察的两份完整空清单同时核对；终止前出生时间用.NET DateTimeOffset按实际ticks核对，当前CIM亦确认原七出生身份缺席。103阶段Orca前后检查passed，Worker原FD5前后检查保留；Reviewer没有执行关闭、终止或新Grant。真实库内原96两start仍pending/helper-input，102 close receipt仍缺席，没有把强制资源退出登记为正常EOF或未知R完成。
+
+**当前原Orca可用性与后续真实验收证据不足。** UTC07:08:25只读观察原Orca主PID6228缺席，原子进程12576及daemon32280仍存在，原`C:/Users/DW/AppData/Roaming/orca/orca-runtime.json`缺失；原生heartbeat、check及escalation均返回runtime_unavailable，未确认消息投递。103时段的Orca保全结果与当前故障分别记录，当前故障原因及发生过程未知，不能由103历史通过推断当前可用。Reviewer没有重启原Orca、终止其残留进程、读取或修改用户作品。
+
+现存component104-checks只记录SOURCE=6778及工作树差异的严格/语法检查退出0；其入口和退出原件已读，两个后继测试文件尚未提交，未据此接受准确新测试源码。新候选构建、实际component传输/helper-only、开发双Worker及最终ZIP同安装T13仍未完成独立验收，新来源/Grant绑定不能由原91替代。须恢复原Orca运行时及主控原生通信后继续这些依赖条件；当前不签Grant、不运行模型或处置其他进程。f50ef850的6778限定接受及102证据不足hook此前分别获主控`msg_4010b45320f0`、`msg_a8ca5119cb89`全文读取回复，实际唤起已确认；本段103结论的原生投递受当前运行时故障限制。
