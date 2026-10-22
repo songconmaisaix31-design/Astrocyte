@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { once } from 'node:events'
-import { mkdir, mkdtemp, readFile, realpath, symlink } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, symlink, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
@@ -143,6 +143,53 @@ test('actual Linux custody admits one native process and closes after two kernel
   assert.equal(await actual.output.wait('ECHO '), 'ECHO public-input')
   const proof = await closed(actual)
   assert.equal(proof.forced, false)
+})
+
+test('dedicated Linux bootstrap gives native children private default file modes', async () => {
+  const savedMask = process.umask(0o022)
+  let managed, tree, closeCompleted = false
+  try {
+    const ordinaryFixture = join(directory, 'ordinary-node-private-modes.mjs')
+    // 普通文件控制不设置子进程 mask，必须实际继承生产 bootstrap 的设置。
+    await writeFile(ordinaryFixture, `import { closeSync, mkdirSync, openSync, statSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+const target = join(process.argv[2], 'default-created-directory')
+mkdirSync(target)
+const file = join(target, 'public-text.txt')
+const fd = openSync(file, 'wx')
+try { writeFileSync(fd, 'public ordinary filesystem fixture\\n') } finally { closeSync(fd) }
+console.log('PUBLIC_MODES ' + JSON.stringify({ pid: process.pid, uid: process.getuid(), mask: process.umask(), directory: statSync(target).mode & 0o777, file: statSync(file).mode & 0o777 }))
+process.stdin.on('end', () => console.log('PUBLIC_EOF'))
+process.stdin.resume()
+`, { mode: 0o600, flag: 'wx' })
+    tree = new SwaProviderProcessTree()
+    managed = spawnManagedProviderProcess({ command: process.execPath, args: [compiled.get('entry'), JSON.stringify({ command: ordinaryFixture, args: [directory] })], cwd: directory, swaJobIPC: true }, { site: 'linux-private-creation-fixture', acceptClose: result => result.root === 'exited' && result.tree === 'exited' })
+    const output = linesFrom(managed.child.stdout), messages = []
+    managed.child.on('message', message => messages.push(message))
+    tree.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }), true)
+    await timeout(tree.ready(), 'Actual ordinary Node fixture readiness was not confirmed')
+    const observed = JSON.parse((await output.wait('PUBLIC_MODES ')).slice('PUBLIC_MODES '.length))
+    assert.equal(observed.pid, tree.readObservation().nativeCLI.pid)
+    assert.equal(observed.uid, process.getuid())
+    assert.equal(observed.mask, 0o077)
+    assert.equal(observed.directory, 0o700)
+    assert.equal(observed.file, 0o600)
+    assert.equal(process.umask(), 0o022, 'The dedicated bootstrap must not change its parent mask')
+    const stdoutEnded = once(managed.child.stdout, 'end')
+    managed.child.stdin.end()
+    assert.equal(await output.wait('PUBLIC_EOF'), 'PUBLIC_EOF')
+    const proof = await closed({ tree, managed, output, messages, nativePid: observed.pid })
+    closeCompleted = true
+    await timeout(stdoutEnded, 'Actual ordinary Node fixture stdout did not reach EOF')
+    assert.equal(proof.forced, false)
+  } finally {
+    try {
+      if (managed && !closeCompleted) {
+        const result = await timeout(managed.close(tree), 'Actual ordinary Node fixture cleanup remains unknown', 20_000)
+        assert.deepEqual(result, { root: 'exited', tree: 'exited' })
+      }
+    } finally { process.umask(savedMask) }
+  }
 })
 
 test('actual setsid and double-fork descendants survive root exit until their own custody reaps them', async () => {

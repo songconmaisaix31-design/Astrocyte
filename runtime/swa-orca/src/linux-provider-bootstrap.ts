@@ -172,6 +172,9 @@ export async function runLinuxNativeCLI(): Promise<void> {
     } else {
       process.stdin.pause()
       let spawnObserved = false, spawnFailure: Error & { code?: string } | undefined
+      // 仅此专属 bootstrap 设置私有创建默认值，原生子进程继承；失败仍沿未知收尾。
+      process.umask(0o077)
+      if (process.umask() !== 0o077) throw new Error('SWA Linux native private creation mask was not confirmed')
       child = spawnProcess({ program: program.program, args: [...(program.kind === 'node-script' ? [program.entry] : []), ...launch.args], env, stdio: ['pipe', 'pipe', 'pipe'] })
       child.once('error', error => { spawnFailure = error; if (child?.pid !== undefined) fail(error) })
       child.once('spawn', () => {
