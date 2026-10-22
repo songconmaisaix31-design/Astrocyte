@@ -10,7 +10,11 @@
 
 阶跃星辰官方模型目录已实际校验：无认证HEAD为401，单次带认证GET为200，返回33个模型，含`step-3.5-flash`；生成调用为0。06已独立核验结果权限与摘要，仅接受目录读取成功，不代表余额、模型生成或Pi接入。先前权限核验的私有临时来源已删除，当前凭据仅留会话内存，工作区无密钥文件，密钥未进入Git、命令参数、输出或云草稿。本次GET使用私有TTY且没有创建密钥文件。云草稿已增`api.stepfun.com`并保存，仍需环境设置中的保存与发布。Codex/OpenAI、Claude/Anthropic对应来源仍缺，不能共用该凭据。
 
-授权辅助工具两源已由`10563b86`原样提交至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。Pi后继每Worker HOME、新账户分支、最后写入锁与原生请求ID计划仍在审查，三个Linux执行拒绝门保留；OpenCode Linux/StepFun目前仅有只读范围计划。
+授权辅助工具两源已由`10563b86`原样提交至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。按用户选择先验证阶跃星辰，首个Pi目标采用自定义provider `stepfun`、`step-3.5-flash`、`openai-completions`和`https://api.stepfun.com/v1`；该模型已在真实目录中出现，生成及兼容性仍未验。现有Codex helper不自动改成Pi；OpenCode Linux/StepFun目前仅有只读范围计划。
+
+Pi每Worker HOME的新账户形状已在七文件工作区变更中实现并获独立限定接受：403项JSON/Zod形状检查、33项Go子项与264个示例/生成一致性通过。旧账户分支保持，实际新账户执行及成果路径尚未接通，三个Linux执行拒绝门保留；暂未提交该不完整执行批次，也未以局部检查替代完整strict。原生流、最后写入锁、真实请求ID、发布与完整成果的共享端口仍在审查。
+
+Linux专属原生启动器的私有创建默认值已提交`8fb6397971f2c259e491668c32f666ef86eddd34`并获06独立限定接受：真实准入之后、spawn之前设置并读回077；所有该启动器的Linux原生子进程继承，daemon及Windows不改变。唯一development-source组件检查实际1PASS/0fail/0skip，普通Node/fs子进程默认创建目录0700、文件0600，父测试进程仍为022，真实EOF及完整D收尾、forced=false通过，前后两源摘要一致。原件`.verification/cloud-setup/pi-private-creation-local-r1.log`及`pi-private-creation-sources-r1.sha256`；875安装仅提供同ABI Node/PTY输入，未修改旧安装，未重复旧D14或完整构建。该检查不代表Pi JSONL、Agent或模型通过；设置/readback异常仍保持UNKNOWN。
 
 最近已验Linux组合安装来源为`8752ec991668071d59ff5fca4cf99690568ff90c`，实际根`/workspace/swa-linux-installs/swa-linux-combined-8752ec99-common-dir-01`。唯一完整build、普通archive/SHA、仓库外解包和严格安装均0，Node24.21、真实PTY/watcher/kernel probe、28312闭包与manifest2+4通过。装内原件D11=11PASS，同S源码诊断3PASS，均0skip；四原件candidate/install字节及首末SHA一致。组合服务health200、首页/4资产字节/hash/MIME、同源301、正常EOF0/null通过；内部双owned0/全部pidfd退出，外部本轮4身份双空、相距53.65ms。06已独立核原件限定接受；服务已停，无human/Grant/controller/账号/模型。原证据与handoff见[本轮任务](tasks/swa-task-cards-20261022.md)。
 

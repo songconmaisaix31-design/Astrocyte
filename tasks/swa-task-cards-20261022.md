@@ -41,6 +41,10 @@
 
 ## 当前云机验证
 
+Pi每Worker HOME合同A七文件在工作区实现且独立限定接受，403项实际JSON/Zod形状检查、33项Go子项及264examples/生成一致性通过；旧账户分支不改，完整执行B尚待共享端口与真实来源审查，三个Linux拒绝门保留，不提交不完整执行批次或运行半树strict。按用户优先阶跃星辰的选择，首实际目标为custom provider `stepfun`、模型`step-3.5-flash`、API `openai-completions`和`https://api.stepfun.com/v1`；实际目录包含该ID，生成、兼容性与N仍未验。
+
+独立修复`8fb6397971f2c259e491668c32f666ef86eddd34`只含Linux bootstrap及一个真实D组件case，获06准确源码与原件限定接受。实际准入后紧贴spawn前设置/读回077；普通Node/fs子进程默认创建0700目录/0600文件，父测试仍022，真实EOF/fullD/forced=false及前后两源摘要一致，唯一case实际1PASS/0fail/0skip/退出0。执行`bash .verification/cloud-setup/pi-private-creation-local-r1.sh`，原件为同名前缀log/exit及sources-r1.sha256。开发源码控制仅复用875安装同ABI Node/PTY；未修改875、未重旧D14/完整构建，不代表Pi JSONL或Agent模型通过，设置异常仍UNKNOWN。
+
 - 集成基线提交：`6195f4cfb6b32aedd43845443c029ecc11d5578d`，保留两个父提交的来源。
 - Go 1.27.2 模块下载与 `go mod verify` 实际通过；此前 `storage.googleapis.com` 代理拒绝已解除。
 - Linux 实际安装采用四个开发目标的 filtered frozen 命令，690 条供应链策略通过；完整六工作区的首次安装因 Windows-native 工作区在 Linux 运行 node-gyp 而失败，原失败日志保留，未关闭安全校验。
