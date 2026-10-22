@@ -2184,3 +2184,13 @@ Linux job119643340844实际检出的PR合并Commit为`89ff401aecc725ade76a4e9713
 通知自检的同一异常兼含没有事件和实际FullPath字符串不等两种条件，当前原outer没有记录实际事件，尚不能区分原因。原Worker负责以真实.NET事件诊断并提供已证preflight状态的准确恢复入口；恢复前须核原服务身份、空私有目录、真实无业务效果，后续保持完整来源、真实HTTP、CreateNew凭据及未知效果停止，不伪造事件或批准。通知Worker为`msg_404e9d09fb57`，主控为`msg_5a576a67dd75`。
 
 **退回准确3fadb中三个既有故障消费者在当前3bcf成品上的来源前提。** controller-recovery.mjs:19—20、runtime-restart.mjs:24—25、cli-failure.mjs:25—26均将实际测试仓库HEAD直接要求等于候选VERSION并要求整树clean；当前准确HEAD3fadb与保持的3bcf程序不同，这三条验收入口必在故障效果前停止。应由原Worker在原测试域分别记录真实测试版本与候选版本，继续核必要产品/原生输入未变、成品及服务身份，保留全部真实故障、R、fence及所有权断言。固定公开项目HEAD的检查继续，installed-flow没有该前提；该返修不阻断75前置诊断及实际准备，也不要求为纯文档/策略/测试后继重编成品。通知为`msg_e12f1a63f929`、`msg_c53c3a75df67`；准确返修及实际故障结果待核，d829/72和3fadb/73的限定接受保持。
+
+## 79真实路径修订与75显式恢复入口
+
+**接受watch79-normalized/actual-inputs.json冻结的准备客户端后继`F72D42D2E36BDF33F6752B45EFC71018A99D4F6E06F27A60486D1D6EBD82E046`及保全模块`CBABA9130FA99410AEB54E48009EAD152EC7D300698311C3CAAB9927384D92E9`，范围为实际67上75已证preflight部分状态的恢复。** guard、消费者及来源helper三个摘要与68相同，四份实际摘要均独立核过；新准备客户端正文完整读取，保全模块准确差异完整读取。该模块当前按此SHA256冻结，不宣称上述工作树修订已经包含在3fadb Commit中，后继准确提交继续核。
+
+77实际.NET Created记录约5毫秒、78按75相同forward路径输入复现：Created确实存在，事件FullPath与Join-Path结果原字符串不等，系统GetFullPath规范后相等。模块现仅规范ProbeDirectory及实际两路径比较，并区分没有事件和路径不符；订阅、实际写入通知文件、Wait-Event、finally清理、原文件/ACL/进程/监听保全条件全部保持。79用同forward输入执行原模块，Created及原Orca/FD5/67身份检查实际0。Reviewer没有另造事件或重跑保全写入。
+
+恢复入口必须显式提供PreflightResumeEvidence，准确限定原execute75-preparation及其唯一普通probe文件；原delegated-execute和version-home须同SID私有DACL、无reparse，前者仅有后者且后者为空，保留所有原件。新证据目录仍CreateNew；第一笔实际ReadSource在任何session/HTTP之前要求authority/source_snapshot为null、唯一inspect-only bootstrap及全部业务表0，之后才按原真实cookie/CSRF、五动作、完整来源/authority、未知写停止及CurrentUser DPAPI/CreateNew流程继续。没有删除、移动、覆盖75状态或重签未知token，没有放宽产品权限。
+
+独立`review-watch79.ps1`实际0，原件`watch79-independent.log`：冻结四客户端/模块摘要、真实78原两路径规范相等、79实际Created文件和原preservation通过、77实际来源JSON与68前置逐字节相同及新客户端Parser均核。此前独立75只读计数和空私有ACL观察共同提供该恢复的实际前提。真实Grant、DPAPI消费、产品Worker/T13仍未发生或接受，三个故障消费者来源前提返修继续，Reviewer不执行准备或签Grant。
