@@ -158,6 +158,16 @@ export function piRpcLaunchPart(
       resolveWorkingDirectory: () => cwd
     })
     const previous = agentSessionProviderHandleChainHead(record.providerHandleChain)
+    if (toolsOff) {
+      if (!toolsOff.sessionPolicy || previous) throw new Error('Native Pi requires a new per-session source')
+      toolsOff.sessionPolicy.assertCurrent()
+      const canonicalCommand = await realpath(command)
+      toolsOff.sessionPolicy.assertCurrent()
+      return {
+        launch: { command: canonicalCommand, fullAccess: false, toolsOff, ...(swaJobLauncher ? { swaJobLauncher } : {}), previous: null },
+        env: withoutPiCallerEnv(env), inheritedEnvToDelete: PI_RPC_SESSION_ENV_TO_DELETE
+      }
+    }
     let sessionFile: string | undefined
     let forkFile: string | undefined
     let replacement: PiRpcResolvedLaunch['replacement']
@@ -198,8 +208,7 @@ export function piRpcLaunchPart(
     return {
       launch: {
         command,
-        fullAccess: toolsOff ? false : isAgentChatPermissionMode(permissionMode) && permissionMode === 'full-access' && (deps.resolveFullAccess?.() ?? true),
-        ...(toolsOff ? { toolsOff } : {}),
+        fullAccess: isAgentChatPermissionMode(permissionMode) && permissionMode === 'full-access' && (deps.resolveFullAccess?.() ?? true),
         ...(swaJobLauncher ? { swaJobLauncher } : {}),
         previous,
         ...(sessionFile ? { sessionFile } : {}),

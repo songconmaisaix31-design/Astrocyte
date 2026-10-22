@@ -32,7 +32,7 @@ export type StructuredAgentLaunchAdmission = {
   validate(sessionId: string, agent: string, command: string): Promise<void>
   accountHome?(sessionId: string, agent: string, currentHome: AgentSessionAccountHome): Promise<AgentSessionAccountHome>
   environment?(sessionId: string, agent: string, currentEnvironment: Record<string, string>): Promise<Record<string, string>>
-  disabledPiTools?(sessionId: string, agent: string): Promise<PiDisabledToolsPolicy>
+  disabledPiTools?(sessionId: string, agent: string, cwd: string, environment: Readonly<Record<string, string>>): Promise<PiDisabledToolsPolicy>
   disabledOpenCodeTools?(sessionId: string, agent: string): Promise<SwaOpenCodeToolsPolicy>
   disabledCodexTools?(sessionId: string, agent: string): Promise<SwaCodexToolsPolicy>
   disabledClaudeTools?(sessionId: string, agent: string): Promise<SwaClaudeToolsPolicy>
@@ -192,6 +192,7 @@ async function composedPart<L>(
   permissionMode?: AgentChatPermissionMode
 ): Promise<StructuredAgentLaunchPart<L> & { cwd: string }> {
   const record = admittedRecord(definition, sources.store, identity.sessionId)
+  const launchDirectory = once(() => resolveAgentSessionLaunchDirectory(sources, record))
   const selectedCommands = launchAdmission ? await launchAdmission.commandSettings(identity.sessionId, definition.agent) : undefined
   const launchEnv = once(() => sources.resolveAgentLaunchEnv?.(definition.agent) ?? {})
   const readEnvironments = () => ({
@@ -205,13 +206,13 @@ async function composedPart<L>(
   const refresh = launchAdmission ? undefined : sources.refreshAfterMissingProgram
   const basis: StructuredAgentLaunchBasis = {
     record,
-    launchDirectory: once(() => resolveAgentSessionLaunchDirectory(sources, record)),
+    launchDirectory,
     baseEnvironment: () => environments.base(),
     launchEnv,
     environment: () => environments.agent(),
     visuals: once(async () => (await sources.prepareVisuals?.(record.sessionId)) ?? null),
     commandSettings: once(() => selectedCommands ?? sources.resolveCommandSettings?.() ?? {}),
-    ...(definition.agent === 'pi' && launchAdmission?.disabledPiTools ? { disabledPiTools: () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent) } : {}),
+    ...(definition.agent === 'pi' && launchAdmission?.disabledPiTools ? { disabledPiTools: async () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent, await launchDirectory(), await environments.agent()) } : {}),
     ...(definition.agent === 'opencode' && launchAdmission?.disabledOpenCodeTools ? { disabledOpenCodeTools: () => launchAdmission!.disabledOpenCodeTools!(identity.sessionId, definition.agent) } : {}),
     ...(definition.agent === 'codex' && launchAdmission?.disabledCodexTools ? { disabledCodexTools: () => launchAdmission!.disabledCodexTools!(identity.sessionId, definition.agent) } : {}),
     ...(definition.agent === 'claude' && launchAdmission?.disabledClaudeTools ? { disabledClaudeTools: () => launchAdmission!.disabledClaudeTools!(identity.sessionId, definition.agent) } : {}),

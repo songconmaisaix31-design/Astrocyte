@@ -1,10 +1,13 @@
-import { lstat, mkdir, readFile, readdir, realpath } from 'node:fs/promises'
+import { lstat, mkdir, readdir, realpath } from 'node:fs/promises'
+import * as fs from 'node:fs'
+import { lockSync } from 'proper-lockfile'
 import { dirname, isAbsolute, join, resolve, toNamespacedPath } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { createPrivateDirectory as createWindowsPrivateDirectory, createFileWithDacl, currentUserSid, getDaclAces } from '@orca/windows-security'
 import { z } from 'zod'
-import { nativeConfigurationSource, nativePiSettings, type NativePiPolicySnapshot } from './native-pi-policy'
+import { nativeConfigurationSource, nativePiSettings, readNativePiFile, type NativePiLegacyPolicySnapshot, type NativePiPerSessionSnapshot } from './native-pi-policy'
 import { createPosixPrivateFile, requirePosixPrivatePath } from './private-posix-security'
+import { parseStrictPiJson } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 
 const fullControl = 0x1f01ff
 const systemSid = 'S-1-5-18'
@@ -89,9 +92,9 @@ async function readPrivateJSON(file: string) {
   const info = await lstat(file)
   if (!info.isFile() || info.isSymbolicLink() || !samePath(await realpath(file), resolve(file))) throw new Error('private_pi_file_redirected')
   security(file, false)
-  const source = await nativeConfigurationSource(file)
+  const { source, bytes } = readNativePiFile(file, 64 * 1024)
   let value: unknown
-  try { value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(file))) }
+  try { value = parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) }
   catch { throw new Error('private_pi_file_invalid_json') }
   security(file, false)
   if (!isDeepStrictEqual(source, await nativeConfigurationSource(file))) throw new Error('private_pi_file_changed_during_read')
@@ -107,7 +110,7 @@ async function requireAbsent(file: string) {
   throw new Error('private_pi_models_configuration_appeared')
 }
 
-export async function verifyPrivatePiAccount(snapshot: NativePiPolicySnapshot) {
+export async function verifyPrivatePiAccount(snapshot: NativePiLegacyPolicySnapshot) {
   const home = snapshot.policy.account.private_home
   await actualDirectory(home)
   security(home, true)
@@ -121,7 +124,7 @@ export async function verifyPrivatePiAccount(snapshot: NativePiPolicySnapshot) {
   }
 }
 
-export async function materializePrivatePiAccount(snapshot: NativePiPolicySnapshot) {
+export async function materializePrivatePiAccount(snapshot: NativePiLegacyPolicySnapshot) {
   const home = snapshot.policy.account.private_home
   await actualDirectory(home)
   security(home, true)
@@ -141,6 +144,131 @@ export async function materializePrivatePiAccount(snapshot: NativePiPolicySnapsh
   }
   await preparePrivatePiEnvironment(home)
   await verifyPrivatePiAccount(snapshot)
+}
+
+export async function initializePrivatePiWorkerRoot() {
+  const data = await realpath(z.string().min(1).parse(process.env.SWA_DATA_DIR))
+  await actualDirectory(data)
+  const root = join(data, 'pi-workers')
+  await createPrivateDirectory(root)
+  return root
+}
+
+export async function createPrivatePiProjectRoot(projectId: string) {
+  if (!z.uuid().safeParse(projectId).success || projectId !== projectId.toLowerCase()) throw new Error('private_pi_project_identity_invalid')
+  const root = join(await initializePrivatePiWorkerRoot(), projectId)
+  await createPrivateDirectory(root)
+  return root
+}
+
+export async function createPrivatePiSessionHome(privateRoot: string, sessionId: string) {
+  if (!z.uuid().safeParse(sessionId).success || sessionId !== sessionId.toLowerCase()) throw new Error('private_pi_session_identity_invalid')
+  await actualDirectory(privateRoot)
+  security(privateRoot, true)
+  const data = await realpath(z.string().min(1).parse(process.env.SWA_DATA_DIR))
+  if (!samePath(dirname(privateRoot), join(data, 'pi-workers')) || !z.uuid().safeParse(privateRoot.slice(dirname(privateRoot).length + 1)).success) throw new Error('private_pi_worker_root_invalid')
+  const home = join(privateRoot, sessionId)
+  if (process.platform === 'win32') {
+    if (!createWindowsPrivateDirectory(toNamespacedPath(home))) throw new Error('private_pi_session_home_exists')
+  } else await mkdir(home, { mode: 0o700 })
+  await actualDirectory(home)
+  security(home, true)
+  if ((await readdir(home)).length) throw new Error('private_pi_directory_not_empty')
+  return home
+}
+
+export async function materializePrivatePiSessionAccount(snapshot: NativePiPerSessionSnapshot, sessionId: string) {
+  const home = await createPrivatePiSessionHome(snapshot.policy.account.private_root, sessionId)
+  const trustees = process.platform === 'win32' ? [...new Set([currentUserSid(), systemSid])] : []
+  const acl = process.platform === 'win32' ? `O:${currentUserSid()}D:P${trustees.map(sid => `(A;;FA;;;${sid})`).join('')}` : ''
+  for (const [name, value] of [['auth.json', snapshot.auth], ['models.json', snapshot.models], ['settings.json', nativePiSettings]] as const) {
+    security(home, true)
+    if (value === null) { await requireAbsent(join(home, name)); continue }
+    const bytes = Buffer.from(JSON.stringify(value) + '\n')
+    if (bytes.length > 64 * 1024) throw new Error('private_pi_projection_exceeds_bound')
+    if (process.platform === 'linux') createPosixPrivateFile(join(home, name), bytes)
+    else createFileWithDacl(toNamespacedPath(join(home, name)), acl, bytes)
+  }
+  await preparePrivatePiEnvironment(home)
+  await verifyPrivatePiSessionAccount(snapshot, sessionId)
+  return home
+}
+
+export async function verifyPrivatePiSessionAccount(snapshot: NativePiPerSessionSnapshot, sessionId: string) {
+  if (!z.uuid().safeParse(sessionId).success) throw new Error('private_pi_session_identity_invalid')
+  const home = join(snapshot.policy.account.private_root, sessionId)
+  await actualDirectory(home)
+  security(home, true)
+  for (const name of environmentDirectories) { await actualDirectory(join(home, name)); security(join(home, name), true) }
+  for (const [name, expected] of [['auth.json', snapshot.auth], ['models.json', snapshot.models]] as const) {
+    if (expected === null) await requireAbsent(join(home, name))
+    else if (!isDeepStrictEqual(await readPrivateJSON(join(home, name)), expected)) throw new Error('private_pi_account_configuration_changed')
+  }
+  const guard = acquirePrivatePiSettingsGuardSync(join(home, 'settings.json'))
+  try { guard.assertCurrent() } finally { guard.release() }
+}
+
+const activeSettingsGuards = new Set<string>()
+const lockIdentity = (info: fs.BigIntStats) => `${info.dev}:${info.ino}:${info.birthtimeNs}`
+
+// 复用4.1.2公开fs扩展点；只删除本次真实创建且仍同身份的锁目录。
+export function acquirePrivatePiSettingsGuardSync(settingsPath: string) {
+  security(dirname(settingsPath), true)
+  security(settingsPath, false)
+  if (!samePath(fs.realpathSync.native(settingsPath), settingsPath)) throw new Error('private_pi_settings_redirected')
+  const path = fs.realpathSync.native(settingsPath)
+  const key = process.platform === 'win32' ? path.toLowerCase() : path
+  if (activeSettingsGuards.has(key)) throw new Error('private_pi_settings_guard_active')
+  activeSettingsGuards.add(key)
+  const lockPath = path + '.lock'
+  let owned: string | undefined, created = false, failed: Error | undefined, released = false
+  const fail = () => { failed ??= Object.assign(new Error('private_pi_lock_identity_unverifiable'), { code: 'EPI_LOCK_IDENTITY' }); return failed }
+  function currentLock() {
+    if (failed || !owned) throw fail()
+    try { const info = fs.lstatSync(lockPath, { bigint: true }); if (!info.isDirectory() || info.isSymbolicLink() || lockIdentity(info) !== owned || !samePath(fs.realpathSync.native(lockPath), lockPath)) throw fail() }
+    catch { throw fail() }
+  }
+  const facade = { ...fs,
+    mkdirSync: ((target: fs.PathLike) => {
+      if (String(target) !== lockPath || created) throw fail()
+      fs.mkdirSync(target)
+      created = true
+      const info = fs.lstatSync(lockPath, { bigint: true })
+      if (!info.isDirectory() || info.isSymbolicLink() || !samePath(fs.realpathSync.native(lockPath), lockPath)) throw fail()
+      owned = lockIdentity(info)
+    }) as typeof fs.mkdirSync,
+    rmdirSync: ((target: fs.PathLike) => {
+      if (String(target) !== lockPath) throw fail()
+      currentLock()
+      try { fs.rmdirSync(target) } catch { throw fail() }
+    }) as typeof fs.rmdirSync
+  }
+  let release: (() => void) | undefined
+  try { release = lockSync(path, { realpath: false, fs: facade, retries: 0, onCompromised: () => { fail() } }) }
+  catch { if (!created) activeSettingsGuards.delete(key); throw fail() }
+  function assertCurrent() {
+    if (released) throw new Error('private_pi_settings_guard_released')
+    currentLock()
+    security(path, false)
+    const { source, bytes } = readNativePiFile(path, 64 * 1024)
+    let value: unknown
+    try { value = parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) }
+    catch { throw new Error('private_pi_settings_invalid') }
+    if (!isDeepStrictEqual(value, nativePiSettings)) throw new Error('private_pi_settings_changed')
+    currentLock()
+    return source
+  }
+  return {
+    assertCurrent,
+    release() {
+      if (released) { if (failed) throw failed; return }
+      released = true
+      // 原release先停自己的timer/entry，再经facade验证实际rmdir对象。
+      try { release!() } catch { throw fail() }
+      if (failed) throw failed
+      activeSettingsGuards.delete(key)
+    }
+  }
 }
 
 export function privatePiEnvironment(home: string, inherited: Readonly<Record<string, string>>) {

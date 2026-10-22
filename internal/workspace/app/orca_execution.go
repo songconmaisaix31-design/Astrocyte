@@ -141,6 +141,8 @@ func nativeAccountFields(kind string) ([]string, error) {
 	switch kind {
 	case "pi-native-api-key":
 		return append(common, "models_source", "private_home"), nil
+	case "pi-native-api-key-per-session":
+		return append(common, "models_source", "private_root"), nil
 	case "opencode-native-api-key":
 		return append(common, "config_source", "database_source", "credential_id", "credential_updated_at", "private_root"), nil
 	case "codex-native-api-key":
@@ -679,11 +681,11 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 		return nil
 	}
 	endpoint, err := url.Parse(target.BaseURL)
-	if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
+	if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.ExternalTarget != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key-per-session" || account.Provider == "" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
 		return projectError(apierrors.EvidenceMissing, "the selected native account and disabled-tool policy are unverified")
 	}
-	if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateHome) || filepath.Base(account.PrivateHome) != projectID || filepath.Base(filepath.Dir(account.PrivateHome)) != "pi" || account.AuthSource.Version == "" || account.AuthSource.Path != filepath.Join(account.SourceHome, "auth.json") || account.ModelsSource != nil && (account.ModelsSource.Version == "" || account.ModelsSource.Path != filepath.Join(account.SourceHome, "models.json")) {
-		return projectError(apierrors.EvidenceMissing, "the selected native account source and project home are incomplete")
+	if !filepath.IsAbs(account.SourceHome) || filepath.Clean(account.SourceHome) != account.SourceHome || !filepath.IsAbs(account.PrivateRoot) || filepath.Clean(account.PrivateRoot) != account.PrivateRoot || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "pi-workers" || account.PrivateHome != "" || account.AuthSource.Version == "" || account.AuthSource.Path != filepath.Join(account.SourceHome, "auth.json") || account.ModelsSource != nil && (account.ModelsSource.Version == "" || account.ModelsSource.Path != filepath.Join(account.SourceHome, "models.json")) {
+		return projectError(apierrors.EvidenceMissing, "the selected native account source and per-session project root are incomplete")
 	}
 	return nil
 }

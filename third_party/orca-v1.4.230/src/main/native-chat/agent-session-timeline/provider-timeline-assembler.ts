@@ -19,6 +19,7 @@ import { readAgentJournalTurn } from '../../../shared/agent-session-turn-record'
 import type { StructuredAgentSessionCommandRun } from '../agent-session-wire/structured-agent-session-adapter'
 import type { AgentSessionDeltaCoalescerDeps } from '../agent-session-wire/agent-session-delta-coalescer'
 import type { StructuredAgentSessionSinkAdmission } from '../agent-session-wire/structured-agent-session-event-sink'
+import type { ProviderTimelinePublishedReport } from '../agent-session-wire/structured-agent-session-transition'
 import {
   PROVIDER_TIMELINE_OVER_BUDGET,
   providerTimelineBudgetAdmits,
@@ -54,7 +55,7 @@ export type ProviderTimelineAssembler = {
   beginCommand(command: StructuredAgentSessionCommandRun): void
   forgetCommand(turnId: string): void
   /** Observes this event's own transition, never a preliminary settlement or dropped event. */
-  apply(event: ProviderTimelineEvent, onPublished?: () => void): ProviderTimelineApplyResult
+  apply(event: ProviderTimelineEvent, onPublished?: (report: ProviderTimelinePublishedReport) => void): ProviderTimelineApplyResult
   /** The turn id of the open turn, as its row and a client's Stop name it. */
   readonly openTurnId: string | null
   /** Writes the text the coalescing window holds. */
@@ -118,7 +119,7 @@ export function createProviderTimelineAssembler(
   const applyDecided = (
     event: ProviderTimelineDecidedEvent,
     journal: ProviderTimelineTextHost['journal'],
-    onPublished?: () => void
+    onPublished?: (report: ProviderTimelinePublishedReport) => void
   ): ProviderTimelineApplyResult => {
     const serials = state.serials()
     const decision = decideProviderTimelineEvent(
@@ -164,7 +165,7 @@ export function createProviderTimelineAssembler(
 
   const apply = (
     event: ProviderTimelineEvent,
-    onPublished?: () => void
+    onPublished?: (report: ProviderTimelinePublishedReport) => void
   ): ProviderTimelineApplyResult => {
     const journal = deps.sink.journalItems()
     const settled = journal ? endSettledTurn(journal) : null
@@ -175,7 +176,7 @@ export function createProviderTimelineAssembler(
       case 'text.delta':
         return applyProviderTimelineTextDelta(textHost(journal), event)
       case 'text.close':
-        return applyProviderTimelineTextClose(textHost(journal), event)
+        return applyProviderTimelineTextClose(textHost(journal), event, onPublished)
       case 'activity': {
         const open = state.open
         if (state.ended || !open) {

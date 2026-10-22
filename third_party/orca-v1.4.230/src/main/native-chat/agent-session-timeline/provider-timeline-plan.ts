@@ -10,7 +10,7 @@ import type {
   StructuredAgentSessionEventSink,
   StructuredAgentSessionSinkAdmission
 } from '../agent-session-wire/structured-agent-session-event-sink'
-import type { StructuredAgentSessionTransitionStep } from '../agent-session-wire/structured-agent-session-transition'
+import type { ProviderTimelinePublishedReport, StructuredAgentSessionTransitionStep } from '../agent-session-wire/structured-agent-session-transition'
 
 /** The sink calls the assembler needs: one-operation transitions, and the journal as it stands. */
 export type ProviderTimelineSink = Required<
@@ -45,7 +45,7 @@ export class ProviderTimelinePlan {
 
   submit(
     sink: ProviderTimelineSink,
-    onPublished?: () => void
+    onPublished?: (report: ProviderTimelinePublishedReport) => void
   ): StructuredAgentSessionSinkAdmission {
     if (this.steps.length > 0) {
       const admission = sink.tryAppendTransition({

@@ -1,5 +1,10 @@
 import type { SwaProviderProcessTree } from './swa-provider-process-tree'
 import type { SpawnOptions as ClaudeSdkSpawnOptions } from '@anthropic-ai/claude-agent-sdk'
+import type { PiRpcState } from '../pi/rpc-protocol'
+import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
+import type { ProviderWriteAdmission } from './provider-stdio-write-queue'
+import type { ProviderTimelineEvent } from '../native-chat/agent-session-timeline/provider-timeline-event'
+import type { ProviderTimelinePublishedReport } from '../native-chat/agent-session-wire/structured-agent-session-transition'
 
 export type SwaInitializationProcess = {
   close(): Promise<boolean>
@@ -59,6 +64,48 @@ export type SwaClaudeToolsPolicy = {
   closed(): void
 }
 
+export type PiRawContext = { sequence: number }
+export type PiWriteContext = { frame: JsonlRpcRecord; line: string; clientMessageId?: string }
+export type PiLocalFailure = {
+  stage: 'source' | 'approval' | 'settings' | 'write' | 'protocol' | 'stdout' | 'custody' | 'persistence'
+  code: 'source_changed' | 'approval_changed' | 'settings_unverifiable' | 'write_unsettled' | 'protocol_unverifiable' | 'stdout_incomplete' | 'custody_unverifiable' | 'trace_unavailable'
+  writeAttempted?: boolean
+}
+export type PiPolicyRequestOptions = {
+  timeoutMs?: number | null
+  id?: string
+  beforeWrite?: ProviderWriteAdmission
+  onReply?: (frame: JsonlRpcRecord, context: PiRawContext) => void
+}
+export type PiPolicyConnection = {
+  request(command: string, params?: Record<string, unknown>, options?: PiPolicyRequestOptions): Promise<unknown>
+}
+export type PiObservedProjection = {
+  sourceSequence: number
+  eventType: ProviderTimelineEvent['type']
+  clientMessageId?: string
+  acquisitionGeneration: string
+  providerItem?: string
+  report: ProviderTimelinePublishedReport
+}
+export type SwaPiSessionPolicy = {
+  nativeContract: 'pi-cli-1.0.1'
+  attach(tree: SwaProviderProcessTree): void
+  assertSpawn(launch: ProviderProcessLaunch): void
+  hasRecordedOwner(): boolean
+  ready(connection: PiPolicyConnection, context: { acquisitionGeneration: string }): Promise<PiRpcState>
+  verifyCurrent(connection: PiPolicyConnection): Promise<PiRpcState>
+  assertCurrent(): void
+  prepareInput(clientMessageId: string, frame: JsonlRpcRecord): Promise<() => void>
+  beforeWrite(context: PiWriteContext): () => void
+  rawRecord(frame: unknown, line: string, response?: { id: string; command: string }): PiRawContext
+  writeSettled(context: PiWriteContext, outcome: 'resolved' | 'rejected', phase: { writeAttempted: boolean; cleanupCompleted: boolean }): void
+  beginStop(input: { turnId: string | null }): void
+  projectionPublished(observed: PiObservedProjection): void
+  failure(reason: PiLocalFailure): void
+  closed(): void
+}
+
 export type ProviderProcessLaunch = {
   command: string
   args: string[]
@@ -73,6 +120,7 @@ export type ProviderProcessLaunch = {
   swaEventDirectory?: string
   swaOpenCodePolicy?: SwaOpenCodeToolsPolicy
   swaCodexPolicy?: SwaCodexToolsPolicy
+  swaPiPolicy?: SwaPiSessionPolicy
 }
 
 export type SwaProviderJobLauncher = { node: string; entry: string; eventDirectory: string }

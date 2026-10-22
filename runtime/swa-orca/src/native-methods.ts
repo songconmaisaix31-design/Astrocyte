@@ -21,7 +21,7 @@ import { invocationSchema, helperReply, nativeObject, nativeError, commandSchema
 import { discoverAgents, selectAgent, registeredAgent } from './agent-discovery'
 import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
-import { createPrivatePiHome } from './private-pi-account'
+import { createPrivatePiProjectRoot } from './private-pi-account'
 import { createPrivateOpenCodeRoot } from './private-opencode-account'
 import { createPrivateCodexRoot } from './private-codex-account'
 import { deliverNativeWorkerInput } from './worker-input'
@@ -196,7 +196,7 @@ export const SWA_METHODS = [
     const workdir = await realpath(invocation.command.workdir)
     checkpoint(context, { project_id: invocation.project.id, workdir, stage: 'workspace-registration' })
     return effect(async () => {
-      await createPrivatePiHome(invocation.project.id)
+      await createPrivatePiProjectRoot(invocation.project.id)
       await createPrivateOpenCodeRoot(invocation.project.id)
       await createPrivateCodexRoot(invocation.project.id)
       const repo = await runtime.addRepo(workdir, 'folder')

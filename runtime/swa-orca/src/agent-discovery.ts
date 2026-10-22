@@ -1,7 +1,7 @@
 import { readFile, realpath, stat } from 'node:fs/promises'
-import { realpathSync, statSync } from 'node:fs'
-import { createHash } from 'node:crypto'
-import { delimiter, dirname, extname, isAbsolute, join, normalize, resolve } from 'node:path'
+import { lstatSync, mkdirSync, opendirSync, realpathSync, rmdirSync, statSync } from 'node:fs'
+import { createHash, randomBytes } from 'node:crypto'
+import { delimiter, dirname, extname, isAbsolute, join, normalize, resolve, toNamespacedPath } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { parse as parseTOML } from 'smol-toml'
 import { z } from 'zod'
@@ -15,11 +15,18 @@ import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/
 import { readAgentSettings, type AgentSettingsSnapshot } from './agent-settings'
 import { parsePiModelOptionId } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-options'
 import { agentCapabilitiesSchema, agentSelectionSchema, registeredAgentSchema, type AgentSelection, type CapabilityRequirements } from './contracts'
-import { inspectNativePiPolicy } from './native-pi-policy'
+import { assertNativePiSourcesCurrent, inspectNativePiPolicy, inspectNativePiSources, readNativePiFile, requireNativePiSourceHome } from './native-pi-policy'
+import { runProcess } from '@orca/process-host'
+import { parseCliVersion } from '../../../third_party/orca-v1.4.230/src/shared/app-version'
+import { parseStrictPiJson } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 import { inspectNativeOpenCodePolicy, readOpenCodeCredential } from './native-opencode-policy'
 import { parse as parseJSONC, type ParseError } from 'jsonc-parser'
 import { inspectNativeCodexAccountSource, inspectNativeCodexPolicy } from './native-codex-policy'
 import { inspectNativeClaudeAccountSource, inspectNativeClaudePolicy } from './native-claude-policy'
+import { createPrivateDirectory as createWindowsPrivateDirectory } from '@orca/windows-security'
+import { createPrivateClaudeDirectory, requireNativeClaudePath } from './claude-file-security'
+import { preparePrivatePiEnvironment, privatePiEnvironment } from './private-pi-account'
+import { assertPiStartupSources } from './pi-session-policy'
 
 type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
 const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
@@ -47,6 +54,71 @@ async function optionalConfiguration(file: string, format: 'json' | 'toml' | 'js
   return { value: object.parse(value), version: `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}` }
 }
 
+function optionalPiConfiguration(file: string) {
+  try {
+    const info = lstatSync(file)
+    if (!info.isFile() || info.isSymbolicLink()) throw new Error('native_pi_configuration_leaf_invalid')
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return undefined
+    throw new Error('native_pi_configuration_leaf_unverifiable')
+  }
+  const { source, bytes } = readNativePiFile(file, 64 * 1024, true)
+  return { value: object.parse(parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(bytes))), version: source.version }
+}
+
+async function readFixedPiVersion(executable: string, env: Record<string, string>) {
+  const sources = await inspectNativePiSources(executable, '1.0.1', env)
+  if (!sources.interpreter) throw new Error('native_pi_interpreter_unverifiable')
+  const data = realpathSync(z.string().min(1).parse(process.env.SWA_DATA_DIR))
+  requireNativeClaudePath(data, { directory: true, private: false })
+  const parent = lstatSync(data, { bigint: true }), root = join(data, `.pi-version-${randomBytes(16).toString('hex')}`)
+  if (process.platform === 'win32') {
+    if (!createWindowsPrivateDirectory(toNamespacedPath(root))) throw new Error('native_pi_version_directory_exists')
+  } else mkdirSync(root, { mode: 0o700 })
+  requireNativeClaudePath(data, { directory: true, private: false })
+  const currentParent = lstatSync(data, { bigint: true })
+  if (currentParent.dev !== parent.dev || currentParent.ino !== parent.ino || currentParent.birthtimeNs !== parent.birthtimeNs) throw new Error('native_pi_version_parent_changed')
+  requireNativeClaudePath(root, { directory: true, private: true })
+  const home = join(root, 'home'), cwd = join(root, 'cwd')
+  createPrivateClaudeDirectory(home); createPrivateClaudeDirectory(cwd)
+  await preparePrivatePiEnvironment(home)
+  // 官方 wrapper 在 --version 前调用 enableCompileCache；此固定控制值关闭 Node 磁盘缓存。
+  const childEnv: Record<string, string> = { ...privatePiEnvironment(home, env), NODE_DISABLE_COMPILE_CACHE: '1' }
+  const directories = [...new Set([root, home, cwd, ...['APPDATA', 'LOCALAPPDATA', 'TEMP', 'TMP', 'TMPDIR', 'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'XDG_CACHE_HOME', 'XDG_STATE_HOME', 'XDG_RUNTIME_DIR', 'XDG_CONFIG_DIRS', 'XDG_DATA_DIRS'].map(key => childEnv[key]).filter((path): path is string => !!path)])].sort()
+  const allowed = new Set(directories)
+  const inventory = () => directories.map(path => {
+    requireNativeClaudePath(path, { directory: true, private: true })
+    const info = lstatSync(path, { bigint: true }), directory = opendirSync(path)
+    try {
+      for (let entry = directory.readSync(); entry; entry = directory.readSync()) {
+        if (!allowed.has(join(path, entry.name)) || !entry.isDirectory() || entry.isSymbolicLink()) throw new Error('native_pi_version_directory_changed')
+      }
+    } finally { directory.closeSync() }
+    return { path, dev: info.dev, ino: info.ino, birthtimeNs: info.birthtimeNs, mtimeNs: info.mtimeNs, size: info.size }
+  })
+  // 缺席 global settings 使固定 SettingsManager 读取回调返回 undefined；projectTrusted:false 不读项目设置。
+  assertPiStartupSources(home, cwd, sources.entry.path)
+  const before = inventory()
+  assertNativePiSourcesCurrent(sources)
+  let terminated = false
+  const result = await runProcess({ program: sources.interpreter.path, args: [sources.entry.path, '--version'], cwd, env: childEnv, timeoutMs: 5_000, maxOutputBytes: 4_096, killOnOutputLimit: true, onChildTerminated: () => { terminated = true } })
+  // timeout/输出未知时保留该实际目录，不在仍可能存活的子进程下清理或宣称无写入。
+  if (!terminated || result.timedOut || result.outputTruncated || result.code !== 0 || result.stderr !== '') return undefined
+  assertPiStartupSources(home, cwd, sources.entry.path)
+  if (!isDeepStrictEqual(inventory(), before)) throw new Error('native_pi_version_directory_changed')
+  assertNativePiSourcesCurrent(sources)
+  const version = parseCliVersion(result.stdout)
+  // 仅对已完整 close 且库存未变化的本次独占空目录做 rmdir，绝不递归删除。
+  const created = new Map(before.map(info => [info.path, info]))
+  for (const path of [...directories].sort((a, b) => b.length - a.length)) {
+    requireNativeClaudePath(path, { directory: true, private: true })
+    const expected = created.get(path), current = lstatSync(path, { bigint: true })
+    if (!expected || current.dev !== expected.dev || current.ino !== expected.ino || current.birthtimeNs !== expected.birthtimeNs) throw new Error('native_pi_version_directory_changed')
+    rmdirSync(path)
+  }
+  return version === '1.0.1' ? version : undefined
+}
+
 // 认证内容只用于判断来源类型；返回值只包含非秘密配置事实。
 export function codexProtectedRoots(snapshot: AgentSettingsSnapshot, projectRoot: string) {
   return [projectRoot, process.env.SWA_AGENT_PROFILE, snapshot.settings.agentDefaultEnv?.codex?.CODEX_HOME, snapshot.settings.agentDefaultEnv?.claude?.CLAUDE_CONFIG_DIR,
@@ -71,17 +143,19 @@ async function configuration(agent: string, snapshot: AgentSettingsSnapshot, req
     return { model: 'claude-opus-5', provider: 'anthropic', account: 'claude-native-api-key', sourceHome: account.sourceHome, version: account.authSource.version }
   }
   if (agent === 'pi') {
+    if (!projectRoot) return { model: undefined, provider: undefined, account: undefined, sourceHome: undefined, version: 'project-source-unverified' }
     const accountHome = snapshot.settings.agentDefaultEnv?.pi?.PI_CODING_AGENT_DIR ?? (process.env.SWA_DISCOVERY_PI_HOME || join(home, '.pi', 'agent'))
     if (!isAbsolute(accountHome)) throw new Error('The selected Pi account home must be absolute')
-    const config = await optionalConfiguration(join(accountHome, 'settings.json'))
-    const auth = await optionalConfiguration(join(accountHome, 'auth.json'))
+    const sourceHome = await requireNativePiSourceHome({ sourceHome: accountHome, protectedRoots: codexProtectedRoots(snapshot, projectRoot), env: process.env })
+    const config = optionalPiConfiguration(join(sourceHome, 'settings.json'))
+    const auth = optionalPiConfiguration(join(sourceHome, 'auth.json'))
     const explicit = requestedModel === undefined ? undefined : parsePiModelOptionId(requestedModel)
     const provider = explicit?.provider ?? text(config?.value.defaultProvider)
     const entry = provider && auth?.value[provider] ? object.parse(auth.value[provider]) : undefined
     const oauth = entry?.type === 'oauth' && text(entry.access) && text(entry.refresh) && typeof entry.expires === 'number' && Number.isFinite(entry.expires)
     const account = oauth ? 'pi-oauth-file' : entry?.type === 'api_key' && text(entry.key) ? 'pi-api-key-file' : undefined
     const defaultModel = text(config?.value.defaultModel)
-    return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, sourceHome: accountHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
+    return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, sourceHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
   }
   if (agent === 'opencode') {
     const sourceHome = process.env.SWA_DISCOVERY_OPENCODE_HOME || home
@@ -141,8 +215,13 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
       if (isAbsolute(command)) {
         executable = await realpath(command)
         if (id === 'opencode' && extname(executable).toLowerCase() === '.cmd') executable = await realpath(join(dirname(executable), 'node_modules/@opencode/cli/bin/opencode.exe'))
-        const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
-        version = result.version ?? undefined
+        if (id === 'pi') {
+          try { version = await readFixedPiVersion(executable, env) }
+          catch { version = undefined }
+        } else {
+          const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
+          version = result.version ?? undefined
+        }
         installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe')
       } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution')
     }
@@ -157,7 +236,7 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
       if (id !== 'pi' && id !== 'opencode' && id !== 'codex' && id !== 'claude' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
       if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
       const native = id === 'pi'
-        ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, ...parsePiModelOptionId(config.model), env: discoveryEnvironment() })
+        ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, ...parsePiModelOptionId(config.model), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
         : id === 'opencode' ? await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
           : id === 'codex' ? await inspectNativeCodexPolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'codex', projectId), catalogPath: join(await realpath(process.env.SWA_INSTALL_ROOT!), 'runtime/codex-policy/models.json'), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
             : await inspectNativeClaudePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'claude', projectId), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })

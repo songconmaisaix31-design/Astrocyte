@@ -8036,7 +8036,33 @@ export interface components {
                 native_contract: "claude-cli-2.1.284-sdk-0.3.284";
             };
         };
-        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"] | components["schemas"]["nativeClaudeLaunchPolicy"];
+        nativePiPerSessionLaunchPolicy: {
+            /** @constant */
+            schema: "swa.native-launch.v1";
+            account: {
+                /** @constant */
+                kind: "pi-native-api-key-per-session";
+                provider: string;
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                models_source: components["schemas"]["nativeConfigurationSource"] | null;
+                private_root: string;
+                model_target: {
+                    model_id: string;
+                    /** @enum {unknown} */
+                    api: "openai-responses" | "openai-completions" | "azure-openai-responses";
+                    /** Format: uri */
+                    base_url: string;
+                };
+            };
+            tools: {
+                /** @constant */
+                mode: "disabled";
+                /** @constant */
+                native_contract: "pi-cli-1.0.1";
+            };
+        };
+        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"] | components["schemas"]["nativeClaudeLaunchPolicy"] | components["schemas"]["nativePiPerSessionLaunchPolicy"];
         agentSelection: {
             agent_id: string;
             adapter: string;

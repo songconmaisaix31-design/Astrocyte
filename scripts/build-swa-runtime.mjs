@@ -90,6 +90,7 @@ export async function buildSWARuntime(output) {
     'swa-provider-process-tree.cjs': join(upstream, 'src/main/provider-process/swa-provider-process-tree.ts'),
     'managed-provider-process.cjs': join(upstream, 'src/main/provider-process/managed-provider-process.ts'),
     'agent-connection.cjs': join(upstream, 'src/main/jsonl-rpc/agent-connection.ts'),
+    'pi-protocol.cjs': join(upstream, 'src/main/pi/rpc-protocol.ts'),
     'acp-agent-connection.cjs': join(upstream, 'src/main/acp/acp-agent-connection.ts'),
     'agent-settings.cjs': join(runtime, 'src', 'agent-settings.ts'),
     'agent-cli-version-probe.cjs': join(upstream, 'src', 'main/agent-cli-version-probe.ts'),

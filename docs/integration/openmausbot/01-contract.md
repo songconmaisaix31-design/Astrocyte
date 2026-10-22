@@ -79,6 +79,26 @@ D要求原生直接child先由libuv完成close/回收，再仅精确回收已确
 
 ## 原生Agent后继准入
 
+Pi新增strict分支`pi-native-api-key-per-session`，以`private_root`表示canonical `SWA_DATA_DIR/pi-workers/<实际projectId>`空项目容器；其余provider、source_home、auth_source、required且可null的models_source、三键model_target保持原Pi来源/目标规则。旧`pi-native-api-key/private_home`严格解析及项目HOME原义保留，两分支均配`tools:{mode:'disabled',native_contract:'pi-cli-1.0.1'}`；不能靠工具合同名字区分布局，新旧目录字段也不能混收。新主动start/send须用新kind及完整已审policy、当前source/Grant和原输入批准；Schema通过不替代实际准入，不表示账号、受管输入或模型已验。
+
+实际每Worker HOME只能由新private_root和真实Orca sessionId派生。选型早于session UUID生成，不能回填原selection/hash；真实流程先mint/register Worker identity，再accountHome exclusive投影，随后持久record。已有record必须同原R/Dispatch/session/HOME，EEXIST不作为本次fresh，也不覆盖重导入。Pi原生UUID/sessionFile另沿真实get_state和provider handle核验；不能混用两种session ID。每Worker隔离不能代替同Worker settings锁内有界读取、cwd/.pi/settings.json首次spawn和每效果前absence、完整raw及原R/journal/成果接线。B内部接口按下文冻结合同约束，受管Host/Grant、真实输入及模型另行验收。
+
+迁移要求新start/send拒绝旧kind；历史记录与原private_home不改写，旧记录查询及原资源安全stop/release沿其原record、lease/owner和完整Job/Linux D证明，不因新选型失败而失去停止路径。旧完整成果若来源不足明确不可用，未知请求保原R、HOME和资源，不换键重投。该兼容规则不授予新的账号、模型、human或Grant权限。
+
+Pi B的跨模块类型、完整签名和错误前置以[SPEC §21.1.5](../../SPEC.md#2115-原生账号关闭工具及实际请求政策)为准；均是冻结实施目标，不是安装或执行结论。`requireNativePiSourceHome({sourceHome,protectedRoots,env}):Promise<string>`仅metadata，必须先于discovery读取auth/settings；无授权projectRoot则unknown且不读。full inspect与首次dynamic import/probe前复核固定官方原件/执行闭包，版本probe用已pin装内Node+entry。private HOME和record真实存在后，`inspectPrivatePiModelMetadata(...)`才从实际models投影调用纯composer，返回PiApprovedModelMetadata；observedAvailableModels另取真实完整RPC回执及sourceSequence，二者不互相补造，不将默认配置当远端可用性或价格证明。factory/launch/session共用同policy；connection紧贴实际managed spawn、无await调用`assertSpawn(launch:ProviderProcessLaunch):void`，核最终sealed argv/env、当前Grant与来源。真实owner提交后ready才写首custody并发startup RPC，preowner DTO不缓存补证；01/03共享端口以最终实际类型为准。
+
+共享queue的write保留原前三参数并增加同步onSettled(ProviderWriteSettlement)，settlement恰有outcome/writeAttempted/cleanupCompleted。真实queue entry的异步批准、无settings锁阶段调用`prepareInput(clientMessageId:string,frame:JsonlRpcRecord):Promise<()=>void>`，从原binding.body经成熟preparePiRpcPrompt核实际frame，并返回原binding/frame同步重核闭包供最后finalAdmission；不新增pending、不表示accepted。最终同步批准/输入重核→本次settings锁/有界读，再核prepared/binding/序列化frame并持久write_intent→真实write→finally清债→callback/drain→同步observer→resolve/成功flush；写后失败不报neverReachedAgent，observer失败须使queue terminal。peer request的id/beforeWrite/onReply复用唯一pending，actualcid取原Submission，raw检查和onReply先于删除/结算；30秒prompt ACK只是preflight，accepted只来自唯一完整user echo，timeout不复活、不换R。
+
+ProviderTimelinePublishedReport保真实journalEpoch、published及每step的written/itemId|null或settlementId，原resolver/wrote/bound.publish分别产生事实；onPublished经transition/plan/assembler/lane传递，不能由入队或callback发生推已落盘。PiObservedProjection只带真实cause sequence、现有eventType、实际generation和该report，完整raw/文件/journal仍需回读核对，coalesced文本不宣称每delta独立fsync；不新建JournalStepWriter或请求账本。
+
+关闭必须同一latched链：真实EOF+D final→await beforeExitPublication仅排空native projections并确认sink.written→policy.closed持久custody_closed→await原onExit/exitDelivery的生命周期tail写入→verifiedExit/listeners/close成功和releaseAfterExit。所有acquire/retained/rootVerdict/lastCloseResult旁路也受此链约束；超时、写入或tail失败保unknown与资源。取消可以有完整关闭来源而模型partial，物理退出不补协议完整，void onLifecycle不等于全部宿主异步lease已结算。
+
+factory input `approveStop():()=>void`首次沿唯一pending的原parent/child stop R捕获cleanup闭包；idle cancel和直接requested close幂等进入beginStop，后续stopping仅允许abort/get_state。原row/hash/fence/owner/consumer及资源须同步末核，不重新借用新输入Grant；source/account与永久failure门保留。
+
+同步inputBinding从原checkpoint取真实parent/child R/body/session/fence，与原Submission/cid核同；实际submit前native前缀基线之后才关联user echo/native entry。latest R、完整原件、journal和root Worker库存须在全部async verify后同步末核再无await导出。local错误只记录固定safe stage/code，未知raw/error拒绝，不清洗后伪称完整；原stop receipt与内部stop_id、Orca/native UUID、owner runtime/service epoch分别核来源。Linux新kind主动准入须保完整policy/source/current Grant，`assertOwnedJob()`的Linux分支必须同步调用`policy.assertCurrent()`；Windows原Job/members检查保留。strict JSONL constructor独立路径提前return，绕过旧`observeProviderRecord`，后者仍拒Linux且仅作旧Windows中性投影；OpenCode保护全保留。
+
+真实无账号CLI的两项metadata、EOF/完整D及原两回复完整严格DTO离线消费已验；不升级为受管peer、Host/Grant、真实输入/停止/完整成果、ToolsOff实际交互、模型、N3、Windows或新同S安装通过。统一coherent检查/候选仍须完成。原403/33/264通过仅限A的形状/serde/示例。
+
 `6890522e`安装实现的NativeLaunch分支仅为Pi与OpenCode，独立Codex rollout读取器已有。本轮Codex与Claude单分支合同已冻结，Schema及直接消费者同步实施；字段形状不表示实际账号、SDK启动、ToolsOff或模型通过，原始事件与完整成果接线均须另验。Claude沿SPEC固定CLI2.1.284/SDK0.3.284、anthropic/claude-opus-5、三键model_target及单auth_source，不新增HTTP认证合同。Codex来源仅接受显式非秘密路径`SWA_CODEX_API_KEY_HOME`，不回退普通CODEX_HOME、Orca账号选择或原ChatGPT登录。空配置允许服务启动并报告Codex未配置；路径非法早拒，合法目录缺少实际API-key来源仍为未配置，不把目录存在当认证通过。
 
 该source与普通CODEX_HOME、SWA_DISCOVERY_CODEX_HOME、缺省`~/.codex`、安装/data/每Worker私有根、已知受保护账号根以及项目/公开输入目录均不得同路径或存在祖先/后代重叠。Go只做现有路径元数据核验与显式传递，不读取旧auth或解析Orca账号；Node继续核选中managed-home、真实来源和当前版本。拒绝链接或重解析路径，source实际根须owner-only，不要求`/workspace`等普通祖先均为0700。

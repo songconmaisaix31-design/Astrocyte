@@ -22,6 +22,16 @@ import type {
 } from './structured-agent-session-event-sink'
 import type { StructuredAgentSessionSinkQueue } from './structured-agent-session-event-sink-queue'
 import { structuredAgentSessionJournalAppendOptions } from './structured-agent-session-journal-append-options'
+import { agentJournalItemKey } from '../../../shared/agent-session-journal-item-key'
+
+export type ProviderTimelinePublishedReport = {
+  journalEpoch: string
+  published: boolean
+  steps: readonly (
+    | { kind: 'item'; written: boolean; itemId: string | null }
+    | { kind: 'settlement'; written: boolean; settlementId: string }
+  )[]
+}
 
 /** What a transition step reads: rows by key, every row, and the turns they joined. */
 export type StructuredAgentSessionTransitionJournal = Pick<
@@ -63,7 +73,7 @@ export type StructuredAgentSessionTransition = {
   /** Announce the writes once they land, when any step wrote. */
   publish: boolean
   /** Host-internal delivery after these writes and their parent publication, in queue order. */
-  onPublished?: () => void
+  onPublished?: (report: ProviderTimelinePublishedReport) => void
 }
 
 const STEP_OVERFLOW = 'structured agent-session transition step exceeded its reserved size'
@@ -96,13 +106,17 @@ function transitionAppend(
       finalTail: transition.finalTail,
       run: async (bound) => {
         const { journal, fence } = bound
+        const journalEpoch = journal.epoch
+        const steps = [...transition.steps]
+        const resolvedItemIds: (string | null)[] = steps.map(() => null)
         const wrote = await journal.appendSteps(
-          transition.steps.map((step): JournalStep =>
+          steps.map((step, index): JournalStep =>
             step.kind === 'item'
               ? {
                   kind: 'item',
                   resolve: () => {
                     const resolved = step.resolve(journal)
+                    resolvedItemIds[index] = resolved ? agentJournalItemKey(resolved.identity) : null
                     if (
                       resolved &&
                       estimateStructuredAgentSessionItemBytes(resolved.identity, resolved.body) >
@@ -126,10 +140,20 @@ function transitionAppend(
                 }
           )
         )
-        if (transition.publish && wrote.includes(true)) {
+        if (journal.epoch !== journalEpoch || wrote.length !== steps.length) {
+          throw new Error('Structured transition publication source changed')
+        }
+        const published = transition.publish && wrote.includes(true)
+        if (published) {
           bound.publish()
         }
-        transition.onPublished?.()
+        transition.onPublished?.({
+          journalEpoch,
+          published,
+          steps: steps.map((step, index) => step.kind === 'item'
+            ? { kind: 'item', written: wrote[index] === true, itemId: wrote[index] === true ? resolvedItemIds[index]! : null }
+            : { kind: 'settlement', written: wrote[index] === true, settlementId: step.settlementId })
+        })
       }
     })
 }

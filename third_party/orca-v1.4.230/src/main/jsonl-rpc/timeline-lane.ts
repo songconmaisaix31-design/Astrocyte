@@ -7,6 +7,12 @@ import type { ProviderTimelineEvent } from '../native-chat/agent-session-timelin
 import { createLegacyProviderTimelineIdentityScheme } from '../native-chat/agent-session-timeline/provider-timeline-identity'
 import type { ProviderTimelineSink } from '../native-chat/agent-session-timeline/provider-timeline-plan'
 import type { StructuredAgentSessionCommandRun } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
+import type { ProviderTimelinePublishedReport } from '../native-chat/agent-session-wire/structured-agent-session-transition'
+
+export type JsonlRpcTimelineObservation = {
+  sourceSequence: number
+  onPublished(event: ProviderTimelineEvent, report: ProviderTimelinePublishedReport): void
+}
 
 const MAX_HELD_EVENTS = 256
 const MAX_HELD_BYTES = 4 * 1024 * 1024
@@ -27,7 +33,7 @@ export type JsonlRpcTimelineLaneDeps = {
 export class JsonlRpcTimelineLane {
   private readonly assembler: ProviderTimelineAssembler
   private readonly identity: ReturnType<typeof createLegacyProviderTimelineIdentityScheme>
-  private readonly held: { event: ProviderTimelineEvent; bytes: number }[] = []
+  private readonly held: { event: ProviderTimelineEvent; bytes: number; observation?: JsonlRpcTimelineObservation }[] = []
   private heldBytes = 0
   private draining = false
   private ended = false
@@ -65,7 +71,7 @@ export class JsonlRpcTimelineLane {
     this.assembler.forgetCommand(turnId)
   }
 
-  apply(events: readonly ProviderTimelineEvent[]): void {
+  apply(events: readonly ProviderTimelineEvent[], observation?: JsonlRpcTimelineObservation): void {
     if (this.ended) {
       return
     }
@@ -75,7 +81,7 @@ export class JsonlRpcTimelineLane {
         this.fail('Agent timeline queue capacity exceeded')
         return
       }
-      this.held.push({ event, bytes })
+      this.held.push({ event, bytes, ...(observation ? { observation } : {}) })
       this.heldBytes += bytes
       this.retry()
     }
@@ -91,7 +97,9 @@ export class JsonlRpcTimelineLane {
     try {
       while (this.held.length > 0 && !this.ended) {
         const entry = this.held[0]
-        const result = this.assembler.apply(entry.event)
+        const result = this.assembler.apply(entry.event, entry.observation
+          ? report => entry.observation!.onPublished(entry.event, report)
+          : undefined)
         if (!result.admission.accepted) {
           if (result.admission.reason !== 'backpressure') {
             this.fail(result.admission.reason)

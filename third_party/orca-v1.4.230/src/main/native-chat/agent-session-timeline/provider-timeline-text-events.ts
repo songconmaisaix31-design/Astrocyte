@@ -2,7 +2,7 @@
 
 import { AGENT_JOURNAL_THREAD_SCOPE } from '../../../shared/agent-session-journal-types'
 import type { StructuredAgentSessionSinkAdmission } from '../agent-session-wire/structured-agent-session-event-sink'
-import type { StructuredAgentSessionTransitionJournal } from '../agent-session-wire/structured-agent-session-transition'
+import type { ProviderTimelinePublishedReport, StructuredAgentSessionTransitionJournal } from '../agent-session-wire/structured-agent-session-transition'
 import type { ProviderTimelineHold } from './provider-timeline-budget'
 import { PROVIDER_TIMELINE_OVER_BUDGET } from './provider-timeline-budget'
 import type { ProviderTimelineDropRule } from './provider-timeline-decision'
@@ -91,7 +91,8 @@ function settledNamedItem(host: ProviderTimelineTextHost, key: string): boolean 
 
 export function applyProviderTimelineTextClose(
   host: ProviderTimelineTextHost,
-  event: Extract<ProviderTimelineEvent, { type: 'text.close' }>
+  event: Extract<ProviderTimelineEvent, { type: 'text.close' }>,
+  onPublished?: (report: ProviderTimelinePublishedReport) => void
 ): ProviderTimelineApplyResult {
   const { streams, state } = host
   if (state.ended) {
@@ -112,5 +113,5 @@ export function applyProviderTimelineTextClose(
     // The close settles the item for full snapshots too.
     plan.onAdmitted(() => state.close(stream.key, turnOf(stream.scope)))
   }
-  return { admission: plan.submit(host.sink) }
+  return { admission: plan.submit(host.sink, onPublished) }
 }

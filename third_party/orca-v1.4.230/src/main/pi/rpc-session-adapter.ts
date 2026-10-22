@@ -12,7 +12,7 @@ import {
   type StructuredAgentSessionAdapter
 } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import { providerSpawnedProcessIdentity } from '../provider-process/provider-spawned-process-identity'
-import { ProviderAcquisitionStarts } from '../provider-process/provider-acquisition-starts'
+import { ProviderAcquisitionStarts, type ProviderAcquisitionConnection } from '../provider-process/provider-acquisition-starts'
 import { buildPiRpcLaunch } from './rpc-launch'
 import { piRpcProviderLink, type PiRpcResolvedLaunch } from './rpc-launch-resolution'
 import { PiRpcSession, type PiRpcSessionDeps, type PiRpcConnection } from './rpc-session'
@@ -31,7 +31,7 @@ export type PiRpcSessionAdapterDeps = PiRpcSessionDeps & {
 export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
   private readonly sessions = new Map<string, PiRpcSession>()
   private readonly acquiring = new Set<string>()
-  private readonly starts = new ProviderAcquisitionStarts<PiRpcConnection>()
+  private readonly starts = new ProviderAcquisitionStarts<ProviderAcquisitionConnection>()
   private readonly retiring = new Set<Promise<void>>()
   constructor(private readonly deps: PiRpcSessionAdapterDeps) {}
 
@@ -78,7 +78,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       }
       const spec = buildPiRpcLaunch(launch)
       const fresh = !launch.sessionFile && !launch.forkFile
-      session = new PiRpcSession(input, randomUUID(), spec, this.deps, fresh, launch.toolsOff)
+      session = new PiRpcSession(input, randomUUID(), spec, this.deps, fresh, launch.toolsOff, resource => this.starts.track(attempt, resource))
       this.sessions.set(id, session)
       this.starts.track(attempt, session.connection)
       const spawned = providerSpawnedProcessIdentity(
@@ -104,6 +104,13 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       }
     } catch (error) {
       if (!session) {
+        if (attempt.connection) {
+          const result = await attempt.connection.close().catch(() => false)
+          const exited = typeof result === 'boolean' ? result : result.root === 'exited' && result.tree === 'exited'
+          if (exited) throw new AgentSessionAcquisitionExitProvenError(error)
+          this.starts.retainFailed(id, attempt.connection)
+          throw new AgentSessionAcquisitionExitUnprovenError(error)
+        }
         throw error instanceof AgentSessionPreSpawnError ||
           error instanceof AgentSessionAcquisitionExitUnprovenError
           ? error
@@ -123,8 +130,10 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
 
   dispatch: StructuredAgentSessionAdapter['dispatch'] = async (input) => {
     const session = this.session(input.sessionId, input.fence)
+    session.policy?.assertCurrent()
     let prompt
     try {
+      if (session.policy && (input.body.role !== 'user' || input.body.blocks.some(block => block.type !== 'text'))) throw new PiRpcPromptError('native_pi_text_only_input_required', agentSessionFailureFact('attachmentInvalid', { attachment: { reason: 'unsupportedType' } }))
       prompt = await preparePiRpcPrompt(input.body)
     } catch (error) {
       this.deps.logger.warn('Pi prompt could not be prepared', {
@@ -165,6 +174,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
     if (input.turnId !== undefined && input.turnId !== turnId) {
       return { cancelled: false }
     }
+    session.policy?.beginStop({ turnId })
     if (!turnId && !session.turns.holdsDispatch) {
       return { cancelled: false }
     }
@@ -200,6 +210,7 @@ export class PiRpcSessionAdapter implements StructuredAgentSessionAdapter {
       try {
         await session.connection.request('get_state', {}, { timeoutMs: 1_000 })
       } catch (error) {
+        if (session.policy) throw new Error('native_pi_stop_checkpoint_unverifiable')
         this.deps.logger.warn('Pi checkpoint could not be read before stopping', {
           scope: 'pi-stop-checkpoint',
           sessionId: id,

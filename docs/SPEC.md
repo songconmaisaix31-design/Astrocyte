@@ -979,10 +979,28 @@ type NativeLaunchPolicy = {
     }
   }
   tools: { mode: 'disabled'; native_contract: 'claude-cli-2.1.284-sdk-0.3.284' }
+} | {
+  schema: 'swa.native-launch.v1'
+  account: {
+    kind: 'pi-native-api-key-per-session'
+    provider: string
+    source_home: string
+    auth_source: { path: string; version: string }
+    models_source: { path: string; version: string } | null
+    private_root: string
+    model_target: {
+      model_id: string
+      api: 'openai-responses' | 'openai-completions' | 'azure-openai-responses'
+      base_url: string
+    }
+  }
+  tools: { mode: 'disabled'; native_contract: 'pi-cli-1.0.1' }
 }
 ```
 
-上述联合按account.kind及对应tools.native_contract严格验证，不允许交叉组合。本节后续Pi来源、参数和RPC细则适用于pi-native-api-key；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。Codex新增分支已通过接口审查，直接消费者正在实施；字段定稿不表示真实账号、工具集合、Worker或模型已验。其auth_source固定为显式source_home下auth.json，catalog_source为实际安装根的`runtime/codex-policy/models.json`，内容须匹配固定官方完整原件。private_root为实际`SWA_DATA_DIR/codex/<projectId>`，每Worker的CODEX_HOME为其下`<sessionId>`，复用原LegacyAccountHome的CODEX_HOME变量/路径表示。selection继续绑定实际executable、version=0.163.0、model=gpt-5.5、provider=openai和configuration_version，不新增凭据ID、邮箱、账号值或独立配置账本。
+上述联合按account.kind及对应tools.native_contract严格验证；两个Pi分支共用`pi-cli-1.0.1`，其他Agent的工具合同不能错配。本节后续Pi来源、目标和原生参数规则同时约束两个Pi分支，目录布局和主动输入准入则按各自kind区分；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。Codex新增分支已通过接口审查，直接消费者正在实施；字段定稿不表示真实账号、工具集合、Worker或模型已验。其auth_source固定为显式source_home下auth.json，catalog_source为实际安装根的`runtime/codex-policy/models.json`，内容须匹配固定官方完整原件。private_root为实际`SWA_DATA_DIR/codex/<projectId>`，每Worker的CODEX_HOME为其下`<sessionId>`，复用原LegacyAccountHome的CODEX_HOME变量/路径表示。selection继续绑定实际executable、version=0.163.0、model=gpt-5.5、provider=openai和configuration_version，不新增凭据ID、邮箱、账号值或独立配置账本。
+
+Pi新增`pi-native-api-key-per-session`的strict合同，`private_root`精确指canonical `SWA_DATA_DIR/pi-workers/<实际projectId>`项目容器，不能带private_home或请求者提供的session字段；旧`pi-native-api-key/private_home`字段及解析语义保留。新主动start/send拒绝旧kind，须有完整已审policy、当前source、Grant与原输入批准；旧记录查询与原资源的安全stop/release继续沿原record、lease、provider handle和完整退出证明，不重新选择新分支。Schema解析或生成类型通过不替代这些实际准入门，也不表示账号、受管输入或模型已验。
 
 Codex通过官方`login --with-api-key`的私有stdin向各Worker独立HOME导入获准API key；登录子进程和app-server分别沿真实Job或Linux D结算，登录未知时不能重导入或提前启动模型进程。来源仅为显式`SWA_CODEX_API_KEY_HOME`，空配置允许服务启动并报告Codex未配置，合法目录缺auth同样未配置，不回退普通CODEX_HOME或读取原ChatGPT凭据。来源路径、当前账号、工具政策、原始事件、完整成果及平台归属须分别核验；设置路径本身不代表账号可用。Go/TS/Schema和直接消费者同步实施，维持原HTTP action/envelope，不自动取得人类会话或Grant。
 
@@ -1002,15 +1020,119 @@ Codex真实通知在journal合并前写入原`provider-events.ndjson`，保留�
 
 原model、所选override、内置及合成model的samplingParams只允许缺省或空对象，任何自有字段使整源拒绝。产品不开放每请求options/samplingParams/provider/onPayload/headers变换或任意RPC透传，逐命令strict DTO只提供原prompt/steer/follow_up、abort、状态、准确模型/thinking及固定关闭设置；当前固定输入仅text，prompt只含message、原生streamingBehavior和原请求标识。真实RPC→session.prompt→Agent loop→sdk/ModelRuntime的生产者、空扩展/资源及私有设置共同封闭请求覆盖；不能仅以get_state或no-tools证明最终请求安全，不替换原生provider或事后重写请求。
 
-private_home固定DataRoot/pi/<实际项目UUID>，不同项目不共享。已批准controller.open只创建空目录，发现不复制账号；秘密写入前用成熟Windows API设置并读回当前用户/SYSTEM保护DACL，拒绝重定向、未知owner、其他写入主体及与原Orca/账号/安装根重叠。当前Grant/CLI/model/tools批准后才将同一已验证来源投影到独占新auth/models文件；只读源、私有原生锁与运行写入分开。已有同项目Worker仅在来源/版本/provider/政策完全相同时复用，未知副本或不同来源且原资源未释放时拒绝，不能覆盖换账号。
+旧`pi-native-api-key`的private_home固定DataRoot/pi/<实际项目UUID>，保持历史项目共享HOME原义；它不能被悄改为容器或session路径。旧解析不授予新输入许可，已有记录不迁移、不覆盖账号或改写原selection/R。来源不足的旧完整成果明确不可用，安全stop/release独立保留原资源路径。
 
-内部`StructuredAgentLaunchAdmission.accountHome(sessionId,agent,currentHome):Promise<AgentSessionAccountHome>`从create前已登记的真实Worker identity/Dispatch及原父子R解析原选择。在prepareStructuredAgentSessionCreateForWorktree的resolve intent后、attach fingerprint前，原agentSessionAccountHome生成`{variable:'PI_CODING_AGENT_DIR',path:private_home}`并进入原record；非产品宿主沿原生产者，产品缺少R关联即拒绝。实际launch part完成后复核command/accountHome/env/argv，仍用原CLI、provider-process和seal。
+新分支要求controller.open只准备空项目容器，发现不复制账号；实际HOME为`join(private_root,真实Orca sessionId)`。create流程先生成UUID并登记StructuredWorkerIdentity，再由accountHome准备初次projection，随后持久化同一record/lease；首次无record不能补造身份。只有本次exclusive创建成功才写受控auth/models/settings，EEXIST不等于fresh，不覆盖或修复旧目录。已有record只核同原R/Dispatch/session及HOME，不重新导入；auth、settings、models-store、cache、sessions及临时/XDG目录均从本Worker HOME派生，不在项目容器共享。原来源保持只读，只在当前Grant/CLI/model/tools批准后投影明确已授权的API来源，不克隆旧profile。秘密写入前仍须建立并核验Windows当前用户/SYSTEM保护DACL，或Linux实际owner及HOME的0700权限，拒绝重定向、未知owner、其他写入主体和与原账号/Orca/安装根重叠；这些路径与来源门由实际消费者实现并验证。
+
+内部`StructuredAgentLaunchAdmission.accountHome(sessionId,agent,currentHome):Promise<AgentSessionAccountHome>`从create前已登记的真实Worker identity/Dispatch及原父子R解析原选择。在prepareStructuredAgentSessionCreateForWorktree的resolve intent后、attach fingerprint前，新分支将`{variable:'PI_CODING_AGENT_DIR',path:join(private_root,sessionId)}`写入同一record；旧记录中的private_home原值不改。Pi原生get_state.sessionId与Orca sessionId分别核真实来源，不能要求相等；sessionFile须属于本Worker HOME/sessions。实际launch part完成后复核command/accountHome/env/argv，仍用原CLI、provider-process和seal；未知输入保原R和原HOME，不另建session或重投。
 
 受限builder只在精确contract/实际版本及toolsOff政策成立时允许fullAccess=false；不得强设full-access。固定argv为--mode rpc、--offline、--no-approve、明确--provider/--model、--no-tools、--no-extensions、--no-skills、--no-prompt-templates、--no-themes、--no-context-files；原记录需要的绝对--session/--fork互斥，全部extraArgs拒绝。环境仅保留SYSTEMROOT、WINDIR、SYSTEMDRIVE、COMSPEC、PATHEXT、PATH、NUMBER_OF_PROCESSORS、PROCESSOR_ARCHITECTURE、PROCESSOR_IDENTIFIER、OS、LANG、LC_ALL、LC_CTYPE、TERM、COLORTERM及既有HTTP_PROXY/HTTPS_PROXY/ALL_PROXY/NO_PROXY，再明确写产品私有HOME/USERPROFILE/APPDATA/LOCALAPPDATA/TEMP/TMP、项目账号根、PI_OFFLINE=1、PI_SKIP_VERSION_CHECK=1和原seal身份。其他账号/key、NODE_OPTIONS/NODE_EXTRA_CA_CERTS、owner capability及原Orca身份不继承，网络配置值不输出或改动。
 
-私有settings固定compaction.enabled=false、retry.enabled=false、retry.provider.maxRetries=0、cacheWarming='off'；用真实set_auto_compaction/set_auto_retry成功回执再次关闭，并核get_state.autoCompactionEnabled=false，retry结合原回执/同版本源码/实际私有设置，不造状态字段。offline仅关闭原生启动刷新；模型仍须完成真实provider请求。no-approve使原项目设置为空，不能从公开项目重开资源、重试或请求变换。
+私有settings固定compaction.enabled=false、retry.enabled=false、retry.provider.maxRetries=0、cacheWarming='off'；用真实set_auto_compaction/set_auto_retry成功回执再次关闭，并核get_state.autoCompactionEnabled=false，retry结合原回执/同版本源码/实际私有设置，不造状态字段。原生setter回执不证明异步磁盘save完成；新分支要求以同官方proper-lockfile4.1.2、同settings路径和realpath:false进行锁内有界读，实际stdin.write前再取新同步锁窗并末核，不能以每Worker HOME或早期snapshot代替。具体内部端口按下列冻结目标实施，实际执行仍待验。offline仅关闭原生启动刷新；模型仍须完成真实provider请求。no-approve/no-context-files不证明关闭cwd/.pi/settings.json；新分支先要求固定cwd该文件在首spawn及每次效果前均不存在，出现即拒绝，不换cwd或删字段后继续。
 
-首次和每次后续输入在serialized handOver等待后、adapter.dispatch前重读来源身份/版本/存在状态、逐类重解析/投影，并逐项比较实际私有auth/models/settings。Pi真实get_available_models/get_state证明provider/model/API/baseUrl、samplingParams及sessionId/sessionFile；原fence/归属由原R/Dispatch/session、expectedRuntimeFence及current consumer分别证明。继续核当前Go批准、原selection/model_target、停止/释放和完整所属Job；秘密只在内存比较，任一失配或未知拒绝。仅已审disabled政策映射为空required tools，空ProjectActionScope.Tools本身不证明Native关闭工具。
+**Pi内部B合同：冻结目标，实际执行待验。** 以下只扩展既有provider、queue、timeline、admission及成果消费者，不增加HTTP、NativeLaunch字段或JournalStepWriter/store协议。普通非SWA行为保持；A的形状/serde/示例结果不证明这些接线已经完成。
+
+来源与私有metadata的明确入口为：
+
+```typescript
+declare function requireNativePiSourceHome(input: {
+  sourceHome: string; protectedRoots: readonly string[]; env: NodeJS.ProcessEnv
+}): Promise<string>
+type PiApprovedModelMetadata = {
+  provider: string; models: readonly PiModelDTO[]
+  modelsSource: NativeConfigurationSource | null
+}
+declare function inspectPrivatePiModelMetadata(input: {
+  sources: NativePiSources; privateHome: string; provider: string
+  target: NativePiModelTarget
+  expectedModels: NativePiPerSessionSnapshot['models']
+}): Promise<PiApprovedModelMetadata>
+```
+
+requireNativePiSourceHome只核canonical普通私有目录和双向protectedRoots隔离，不读auth/settings或返回key。discovery无已授权projectRoot时报告unknown且不读；有项目时须在任何settings/auth读取前调用，full inspect新增required protectedRoots并在dynamic import/config/auth前再次调用。protectedRoots覆盖真实项目、原/managed账号及profile、安装/DATA、明确source和既有受保护根；不存在的保护根只核祖先与规范拼接，不伪造文件版本。固定官方1.0.1原件及已审启动/纯metadata模块清单先核字节hash和身份，再保存SourceVersion并在效果前重核，不能只凭manifest.version、首次stat或另一副本的hash。Pi discovery的版本效果也先过该来源门，再用已pin装内Node执行同entry的有界--version和固定安全诊断；受限launch不重复probe、不读取previous/sessionFile/forkFile，出现则拒绝，不借旧resume切换HOME。
+
+私有目录入口为initializePrivatePiWorkerRoot():Promise<string>、createPrivatePiProjectRoot(projectId):Promise<string>、createPrivatePiSessionHome(privateRoot,sessionId):Promise<string>；后者由materializePrivatePiSessionAccount(snapshot,sessionId):Promise<string>直接消费，verifyPrivatePiSessionAccount(snapshot,sessionId):Promise<void>只校原HOME。host初始化worker根，controller.open只准备空项目容器；实际mint/register后才exclusive创建HOME。metadata函数必须在该HOME已materialized且record真实存在后，以实际私有models文件或已证absence调用固定官方纯ModelConfig/composer，前后核投影/版本，不接收key、不调用auth/refresh/ModelRuntime。policy保存该真实approvedModelMetadata；原get_available_models回执另保存observedAvailableModels={sourceSequence,models:实际完整数组}，逐项核批准metadata、重复pair/额外provider及selected tuple恰一次，不将纯metadata冒充available，不过滤原回执或伪造默认库存。配置默认context/token/cost不构成远端能力或实际账单证明。
+
+disabledPiTools factory在当前批准/record/session/fence后创建唯一policy，launch与session复用同一实例。connection在实际managed spawn紧前同步调用assertSpawn(launch:ProviderProcessLaunch):void，消费最终sealed argv/env并核当前Grant、来源及受限启动配置，调用与spawn之间不插入await。attach(tree)只绑定原tree；真实onSpawned提交host owner后，ready(connection,{acquisitionGeneration:实际PiRpcSession.generation}):Promise<PiRpcState>才核tree.ready、owner/root/native并durable写首custody，再接管原set_auto_*和get_state。preowner unsolicited DTO直接失败，不缓存等后补owner。verifyCurrent只在入native队列前执行真实RPC；assertCurrent与末写守卫同步且不发RPC，避免在active queue等待自身。
+
+同entry的共享写入类型为：
+
+```typescript
+type ProviderWriteCleanup = () => void
+type ProviderWriteFinalAdmission = () => void | ProviderWriteCleanup
+type ProviderWriteAdmission = () => Promise<void | ProviderWriteFinalAdmission>
+type ProviderWriteSettlement = {
+  outcome: 'resolved' | 'rejected'; writeAttempted: boolean; cleanupCompleted: boolean
+}
+type PiRawContext = { sequence: number }
+type PiWriteContext = {
+  frame: JsonlRpcRecord; line: string; clientMessageId?: string
+}
+type PiLocalFailure = {
+  stage: 'source' | 'approval' | 'settings' | 'write' | 'protocol' | 'stdout' | 'custody' | 'persistence'
+  code: 'source_changed' | 'approval_changed' | 'settings_unverifiable' | 'write_unsettled'
+    | 'protocol_unverifiable' | 'stdout_incomplete' | 'custody_unverifiable' | 'trace_unavailable'
+  writeAttempted?: boolean
+}
+```
+
+queue的write(line,signal?,beforeWrite?,onSettled?:(fact:ProviderWriteSettlement)=>void):Promise<void>保留原前三参数；beginClose(error:Error):void只停止新条目和未写输入，不拆reader/已发pending。prompt在真实queue entry的异步批准、无settings锁阶段调用prepareInput(clientMessageId,frame):Promise<()=>void>：同步读取原binding.body，经成熟preparePiRpcPrompt异步准备并与实际frame比较，返回同步重核原binding/frame的闭包，组合进最后finalAdmission；prepare不表示accepted、不写stdin或新增pending表。顺序为await旧批准/early检查及prepareInput（无锁）→同步finalAdmission/输入重核/assertCurrent→policy.beforeWrite取得本次acquirePrivatePiSettingsGuardSync(settingsPath)并有界读，再核prepared input、当前binding和line序列化frame一致后，核真实native前缀基线/fsync write_intent→writeAttempted=true紧邻实际write→finally close FD/release→callback/drain齐备→同步onSettled→resolve/reject，成功才flush。guard只暴露assertCurrent/release，不跨RPC或模型等待；真实cleanup未结算不能先terminal，写后失败不得变neverReachedAgent。onSettled持久化失败须抛固定safe错误，使queue永久terminal，不靠不抛的failure通知假装阻住下一项。
+
+peer/connection的request(command,params?,options?):Promise<unknown>新增options.id、beforeWrite和onReply(frame:JsonlRpcRecord,context:PiRawContext):void，保留timeoutMs。id只取真实Submission.id/operation，Map.set/写前查碰撞，不换id重试；使用唯一原pending表，30秒prompt ACK期限含批准与排队。strict raw在任何warn/return/delete前取得同pending上下文，递归strict DTO、重复键、秘密和来源检查/append后同步onReply，最后才删entry/清timer/resolve；unknown、重复、timeout后id与idless不当下一项ACK。原line保留，不由本地错误造native帧；8MiB行、真实末LF/fatal UTF8/EOF与12MiB aggregate/100000行门继续。ACK只表preflight，不能触发accepted；新受限lane只从唯一完整user message_end回显关联原Submission，agent_start只开cycle。真实accepted早于ACK时不能被后回执倒写，peer永久失败不因late ACK复活。
+
+timeline发布只报告原transition真实resolver、appendSteps的wrote及bound.publish事实：
+
+```typescript
+type ProviderTimelinePublishedReport = {
+  journalEpoch: string; published: boolean
+  steps: readonly (
+    | { kind: 'item'; written: boolean; itemId: string | null }
+    | { kind: 'settlement'; written: boolean; settlementId: string }
+  )[]
+}
+type PiObservedProjection = {
+  sourceSequence: number; eventType: ProviderTimelineEvent['type']
+  clientMessageId?: string; acquisitionGeneration: string; providerItem?: string
+  report: ProviderTimelinePublishedReport
+}
+type SwaPiSessionPolicy = {
+  nativeContract: 'pi-cli-1.0.1'
+  assertSpawn(launch: ProviderProcessLaunch): void
+  attach(tree: SwaProviderProcessTree): void
+  ready(connection: PiPolicyConnection, context: { acquisitionGeneration: string }): Promise<PiRpcState>
+  verifyCurrent(connection: PiPolicyConnection): Promise<PiRpcState>
+  assertCurrent(): void
+  prepareInput(clientMessageId: string, frame: JsonlRpcRecord): Promise<() => void>
+  beforeWrite(context: PiWriteContext): ProviderWriteCleanup
+  rawRecord(frame: unknown, line: string, response?: { id: string; command: string }): PiRawContext
+  writeSettled(context: PiWriteContext, outcome: 'resolved' | 'rejected',
+    phase: { writeAttempted: boolean; cleanupCompleted: boolean }): void
+  beginStop(input: { turnId: string | null }): void
+  projectionPublished(observed: PiObservedProjection): void
+  failure(reason: PiLocalFailure): void
+  closed(): void
+}
+```
+
+onPublished(report)沿transition→plan→assembler→lane传递；itemId来自实际resolver和原agentJournalItemKey，settlementId不推成全部mutation keys。只有wrote为true才称写过，published还须真实bound.publish返回；no-op报告false。held entry保同cause的sourceSequence/observer，text.delta进入coalescer不虚报落盘，text.close/flush才带真实report；报告含前序barrier不等于全由当前帧创建。projectionPublished(observed:PiObservedProjection):void只消费实际回调，仍须replay SQLite核epoch/row/结算，不能用callback发生或admission替代written。input.accepted可能仅改变opener，不补造user row，也不发不存在的user.message/assistant.message timeline事件；custody_closed后的本地生命周期tail不带伪造native sourceSequence或追加native投影。
+
+关闭端口beforeExitPublication?:()=>Promise<void>和兼容void|Promise<void>的onExit只共享一个latched publication Promise，固定次序为：
+
+1. beginClose停新写，保raw/pending及真实已写callback，等待真实EOF和D trusted完整final。
+2. await beforeExitPublication，仅finalize/flush/retry现native projections→drained→sink.written恰ok；不close、不等待自身verifiedExit，不提前turns.end/session.ended/release。
+3. 同policy.closed()核写入、source、EOF、D和上道barrier，durable custody_closed；已核取消允许完整关闭来源，模型仍是partial。
+4. 调用并await原onExit返回的exitDelivery；此时才生成原生命周期tail，strict lane不使用旧2秒race，tail真实drained/written后才发原void onLifecycle ended。该事件不声称已await宿主全部lease写。
+5. 最后置verifiedExit、通知listeners、允许close成功和releaseAfterExit。session/adapter close、acquire异常、retained connection及下次acquire都消费同一链，不能借raw lastCloseResult/root gone旁路。失败/超时保持unknown和原资源，不吞错误后release；preowner异常只做真实D独立cleanup，不造leaseowner或closed来源。
+
+policy通过inputBinding(clientMessageId):StructuredInputBinding同步读取原reserveInput/beforeInput checkpoint，缺失/多条、body fingerprint、session/fence或字节变更即拒，不新建请求表。writer cid同时核host Submission；write_intent中的真实submit前native文件基线为已证ENOENT或同FD完整前缀/leaf，不借以前相同正文。user echo、原native文件条目和journal按全部字段/真实顺序逐一对应；native entry id只取文件，raw message_end早于append不表文件已持久。task-result沿真实parent/child R、latest submittedSequence与原journal核最新输入后的完整assistant/settled/idle；snapshot all与observed available分开，pending/queued/unknown、取消或length不能用旧complete通过。
+
+结果沿现Witness/nativeChecks/finalNativeChecks，在全部异步读取后紧贴发布/导出同步重核raw/native FD/path/SourceVersion及前缀、journal epoch/last sequence、latest R库存、root children/Worker资源、原fence、独立owner runtime与service epoch及D final/实时owner，再无await导出。原生JSONL append无fsync只称observed；不能由物理D退出补raw/模型完整。failure(reason:PiLocalFailure):void永久保存首个固定失败并阻新效果，不抛二次异常妨碍收尾；writeSettled自身保存失败仍须向queue抛safe错误以阻flush。原错误/stack/credential不进trace或logger，未知字段/错误默认拒。合法stop只在真实beginStop与原host stop receipt下接纳完整取消DTO的精确Request aborted/Request was aborted，不用子串或aborted标签放行任意error，不把内部stop_id当原R。
+
+factory input `approveStop():()=>void`首次沿唯一pending的原parent/child stop R捕获cleanup闭包；idle cancel和直接requested close也须幂等进入beginStop。后续stopping仅允许abort/get_state，闭包同步末核原row/hash/fence/owner/consumer及资源，不重新借用新输入Grant；source/account和永久failure门继续生效。
+
+Linux新Pi分支沿完整已审policy/source/current Grant进入主动准入；`PiRpcSession.assertOwnedJob()`遇Linux observation必须存在该policy并同步调用`policy.assertCurrent()`，不套Windows成员结构。Windows仍核原Job assigned、root未退及真实native CLI的members/creationTimeMs。strict JSONL constructor以同policy走独立路径并提前return，不调用旧`observeProviderRecord`；该旧函数仍仅支持Windows中性投影，Linux拒绝保留，OpenCode的Linux保护也全部保留。两处主动阶段入口在上述前置下准入。
+
+真实无账号CLI窗口已验证两项metadata请求、EOF及完整D；原两回复随后通过完整严格DTO离线消费。该证据不覆盖生产受管peer、Host/Grant、真实input/abort/原生JSONL/完整成果、ToolsOff实际交互、模型、N3、Windows或新同S安装。统一coherent strict/契约/架构及准确候选仍须完成；原403形状、33项Go serde和264示例仅复用其A范围，不升级为B或平台执行通过。
 
 原生API key没有TTL字段时有效期为unknown，其余条件满足可以真实请求，账号远程有效性仍由实际结果证明。有实际明确期限的来源每次要求`expires_at - 当前时间 > 本次已批准最长执行时间 + 30秒`，期限或执行上限缺证、余量不足或到期拒绝；此未知拒绝不适用于原格式没有TTL的key。可能输入后继续按§21.1.2保全原R/operation/Job，不重选或重放。
 

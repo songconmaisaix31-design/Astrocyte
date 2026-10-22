@@ -7,7 +7,7 @@ import {
 import type { ProviderProcessLaunch } from '../provider-process/provider-process-launch'
 import { STRUCTURED_CHILD_ENV_TO_DELETE } from '../runtime/structured-session-child-env'
 import { isAbsolute } from 'node:path'
-import type { SwaProviderJobLauncher } from '../provider-process/provider-process-launch'
+import type { SwaProviderJobLauncher, SwaPiSessionPolicy } from '../provider-process/provider-process-launch'
 
 export type PiDisabledToolsPolicy = {
   nativeContract: 'pi-cli-1.0.1'
@@ -15,6 +15,7 @@ export type PiDisabledToolsPolicy = {
   modelId: string
   api: 'openai-responses' | 'openai-completions' | 'azure-openai-responses'
   baseUrl: string
+  sessionPolicy?: SwaPiSessionPolicy
 }
 
 export type PiRpcLaunchOptions = {
@@ -73,14 +74,16 @@ export function buildPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLa
   if (options.toolsOff) {
     const policy = options.toolsOff
     if (policy.nativeContract !== 'pi-cli-1.0.1' || options.fullAccess || !policy.provider || !policy.modelId || !['openai-responses', 'openai-completions', 'azure-openai-responses'].includes(policy.api) || !policy.baseUrl || options.extraArgs?.length) throw new Error('Native Pi disabled-tool launch policy is invalid')
-    if (options.sessionFile !== undefined && !isAbsolute(options.sessionFile) || options.forkFile !== undefined && (!isAbsolute(options.forkFile) || options.sessionFile !== undefined)) throw new Error('Native Pi requires one absolute session or fork source')
+    if (!policy.sessionPolicy || options.sessionFile !== undefined || options.forkFile !== undefined) throw new Error('Native Pi requires its per-session policy and a new native session')
+    policy.sessionPolicy.assertCurrent()
     const launcher = options.swaJobLauncher
     if (!launcher || ![launcher.node, launcher.entry, launcher.eventDirectory, options.command].every(isAbsolute)) throw new Error('Native Pi requires its owning Job launcher')
     const args = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', policy.provider, '--model', policy.modelId, '--no-tools', '--no-extensions', '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', ...(options.sessionFile ? ['--session', options.sessionFile] : []), ...(options.forkFile ? ['--fork', options.forkFile] : [])]
     return {
       command: launcher.node, cwd: options.cwd,
       args: ['--max-old-space-size=1024', launcher.entry, JSON.stringify({ command: options.command, args })],
-      env: { ...options.env }, envToDelete: [...(options.envToDelete ?? [])], swaJobIPC: true, swaEventDirectory: launcher.eventDirectory
+      env: { ...options.env }, envToDelete: [...(options.envToDelete ?? [])], swaJobIPC: true, swaEventDirectory: launcher.eventDirectory,
+      swaPiPolicy: policy.sessionPolicy
     }
   }
   if (!options.fullAccess) {

@@ -5,7 +5,8 @@ import type {
 } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import type { ProviderTimelineEvent } from '../native-chat/agent-session-timeline/provider-timeline-event'
 import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
-import type { JsonlRpcTimelineLane } from '../jsonl-rpc/timeline-lane'
+import type { JsonlRpcTimelineLane, JsonlRpcTimelineObservation } from '../jsonl-rpc/timeline-lane'
+import type { PiRawContext } from '../provider-process/provider-process-launch'
 import { PiRpcContextUsage } from './rpc-context-usage'
 import { PiRpcMessages } from './rpc-messages'
 import { PiRpcPromptDelivery, piRpcFailureFact } from './rpc-prompt-delivery'
@@ -15,6 +16,8 @@ import { piRpcMessageSchema } from './rpc-protocol'
 
 export type PiRpcTurnDeps = {
   retrySignIn?: boolean
+  correlatedPrompts?: boolean
+  observation?: (context: PiRawContext) => JsonlRpcTimelineObservation
   lane: JsonlRpcTimelineLane
   generation: string
   send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>) => Promise<void>
@@ -44,6 +47,7 @@ export class PiRpcTurns {
   private ended = false
   private failure?: string
   private lastStopReason?: string
+  private rawContext?: PiRawContext
 
   constructor(private readonly deps: PiRpcTurnDeps) {
     this.messages = new PiRpcMessages(deps.generation, this.context)
@@ -52,20 +56,21 @@ export class PiRpcTurns {
       current: (revision) =>
         !this.ended && this.settling && !this.compacting && revision === this.revision,
       settled: (state) => {
-        this.deps.lane.apply(this.context.setModel(state.model ?? undefined, Date.now()))
+        this.apply(this.context.setModel(state.model ?? undefined, Date.now()))
         this.finish()
       },
       failed: deps.failed
     })
     this.delivery = new PiRpcPromptDelivery({
       retrySignIn: deps.retrySignIn,
+      correlatedPrompts: deps.correlatedPrompts,
       send: (frame, beforeWrite) =>
         deps.send({ ...frame, streamingBehavior: this.working ? 'steer' : 'followUp' }, beforeWrite),
       settled: deps.settled,
       failed: deps.failed,
       accepted: (id, at) => {
         this.open(at)
-        this.deps.lane.apply([{ type: 'input.accepted', clientMessageId: id, requestedAt: at }])
+        this.apply([{ type: 'input.accepted', clientMessageId: id, requestedAt: at }])
       },
       commandOnly: () => {
         this.skipInitialUserEcho = false
@@ -104,7 +109,10 @@ export class PiRpcTurns {
     return this.delivery.submit(id, at, frame, before)
   }
 
-  receive(frame: JsonlRpcRecord): void {
+  setRawContext(context: PiRawContext): void { this.rawContext = context }
+
+  receive(frame: JsonlRpcRecord, context?: PiRawContext): void {
+    if (context) this.rawContext = context
     if (this.ended) {
       return
     }
@@ -121,7 +129,7 @@ export class PiRpcTurns {
         }
         this.touch()
         this.open(at)
-        this.skipInitialUserEcho = this.delivery.consumeNext()
+        this.skipInitialUserEcho = this.deps.correlatedPrompts ? false : this.delivery.consumeNext()
         return
       case 'message_start':
       case 'message_update':
@@ -130,7 +138,9 @@ export class PiRpcTurns {
         const message = piRpcMessageSchema.safeParse(frame.message)
         if (message.success && message.data.role === 'user' && frame.type === 'message_end') {
           // agent_start already accepted the first prompt; user echoes consume queued inputs.
-          if (this.skipInitialUserEcho) {
+          if (this.deps.correlatedPrompts) {
+            this.delivery.consumeUserEcho(message.data)
+          } else if (this.skipInitialUserEcho) {
             this.skipInitialUserEcho = false
           } else {
             this.delivery.consumeNext()
@@ -143,14 +153,14 @@ export class PiRpcTurns {
               ? (message.data.errorMessage ?? 'Pi request failed')
               : undefined
         }
-        this.deps.lane.apply(this.messages.message(frame, at))
+        this.apply(this.messages.message(frame, at))
         return
       }
       case 'tool_execution_start':
       case 'tool_execution_update':
       case 'tool_execution_end':
         this.touch()
-        this.deps.lane.apply(this.messages.tool(frame))
+        this.apply(this.messages.tool(frame))
         return
       case 'turn_end':
         this.refreshUsage()
@@ -166,7 +176,7 @@ export class PiRpcTurns {
       case 'auto_compaction_start':
         this.revision++
         this.compacting = true
-        this.deps.lane.apply(this.context.compacting())
+        this.apply(this.context.compacting())
         return
       case 'compaction_end':
       case 'auto_compaction_end':
@@ -183,10 +193,10 @@ export class PiRpcTurns {
         return
       case 'auto_retry_start':
         this.touch()
-        this.deps.lane.apply([piRpcRetryActivity(frame)])
+        this.apply([piRpcRetryActivity(frame)])
         return
       case 'auto_retry_end':
-        this.deps.lane.apply([piRpcRetryActivity(frame)])
+        this.apply([piRpcRetryActivity(frame)])
         if (frame.success === true) {
           this.failure = undefined
           this.lastStopReason = undefined
@@ -245,7 +255,7 @@ export class PiRpcTurns {
     this.lastStopReason = undefined
     this.stopped = false
     this.skipInitialUserEcho = true
-    this.deps.lane.apply([{ type: 'turn.open', turn: this.active, at }])
+    this.apply([{ type: 'turn.open', turn: this.active, at }])
   }
 
   private probe(): void {
@@ -281,7 +291,7 @@ export class PiRpcTurns {
       state: this.stopped ? 'interrupted' : 'completed',
       outcome
     })
-    this.deps.lane.apply(events)
+    this.apply(events)
     this.active = undefined
     this.settling = false
     this.messages.reset()
@@ -293,7 +303,7 @@ export class PiRpcTurns {
       .request('get_session_stats')
       .then((value) => {
         if (!this.ended) {
-          this.deps.lane.apply(this.context.stats(value, Date.now()))
+          this.apply(this.context.stats(value, Date.now()))
         }
       })
       .catch((error: unknown) => this.deps.diagnostic?.(error))
@@ -301,5 +311,10 @@ export class PiRpcTurns {
   private touch(): void {
     this.revision++
     this.settling = false
+  }
+
+  private apply(events: readonly ProviderTimelineEvent[]) {
+    if (this.deps.correlatedPrompts && !this.rawContext) throw new Error('native_pi_projection_source_missing')
+    this.deps.lane.apply(events, this.rawContext && this.deps.observation?.(this.rawContext))
   }
 }

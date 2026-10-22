@@ -80,7 +80,7 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 	}
 	// 此处只验证持久化与效果前授权；选择与 Run 标识是规则输入，不声称原生来源已观察。
 	sourceHome := filepath.Join(directory, "account-rule-input")
-	selection := workspace.OrcaAgentSelection{AgentID: "pi", Adapter: "pi", ExecutionMode: "structured", Executable: filepath.Join(directory, "uninvoked-native-entry"), Version: "1.0.1", Model: "openai/gpt-rule-input", Provider: "openai", ExternalTarget: "pi", ConfigurationVersion: "unobserved-admission-input", NativeLaunch: workspace.OrcaNativeLaunchPolicy{Schema: "swa.native-launch.v1", Account: workspace.OrcaNativeLaunchAccount{Kind: "pi-native-api-key", Provider: "openai", SourceHome: sourceHome, AuthSource: workspace.OrcaNativeConfigurationSource{Path: filepath.Join(sourceHome, "auth.json"), Version: "unobserved-admission-input"}, PrivateHome: filepath.Join(directory, "pi", project.ID), ModelTarget: workspace.OrcaNativeModelTarget{ModelID: "gpt-rule-input", API: "openai-responses", BaseURL: "https://api.openai.com"}}, Tools: workspace.OrcaNativeLaunchTools{Mode: "disabled", NativeContract: "pi-cli-1.0.1"}}}
+	selection := workspace.OrcaAgentSelection{AgentID: "pi", Adapter: "pi", ExecutionMode: "structured", Executable: filepath.Join(directory, "uninvoked-native-entry"), Version: "1.0.1", Model: "openai/gpt-rule-input", Provider: "openai", ExternalTarget: "pi", ConfigurationVersion: "unobserved-admission-input", NativeLaunch: workspace.OrcaNativeLaunchPolicy{Schema: "swa.native-launch.v1", Account: workspace.OrcaNativeLaunchAccount{Kind: "pi-native-api-key-per-session", Provider: "openai", SourceHome: sourceHome, AuthSource: workspace.OrcaNativeConfigurationSource{Path: filepath.Join(sourceHome, "auth.json"), Version: "unobserved-admission-input"}, PrivateRoot: filepath.Join(directory, "pi-workers", project.ID), ModelTarget: workspace.OrcaNativeModelTarget{ModelID: "gpt-rule-input", API: "openai-responses", BaseURL: "https://api.openai.com"}}, Tools: workspace.OrcaNativeLaunchTools{Mode: "disabled", NativeContract: "pi-cli-1.0.1"}}}
 	invocation := workspace.OrcaInvocation{Command: workspace.OrcaCommand{Action: "worker.send", Controller: "approval-input-controller", DispatchID: "approval-input-dispatch", RequestID: uuid.NewString(), InputFile: "input.txt"}, Caller: workspace.OrcaExecutionCaller{ID: human.ID, Kind: human.Kind, ProjectID: project.ID, SettingsRevision: project.Settings.Revision}, Project: project, Scope: workspace.OrcaScope{ProjectID: project.ID, Controller: "approval-input-controller", RunID: "approval-input-run", RootTaskID: "approval-input-root", AuthorityDomain: "approval-input-authority", Context: packet}, Input: &inputs[0], Selection: &selection}
 	link := workspace.OrcaExecutionLink{ProjectID: project.ID, GrantAgentID: creator, SettingsRevision: project.Settings.Revision, AuthorityDomain: invocation.Scope.AuthorityDomain, RunID: invocation.Scope.RunID, RootTaskID: invocation.Scope.RootTaskID, CreatedAt: time.Now().UTC()}
 	if err := db.SaveOrcaExecutionLink(ctx, link); err != nil {
@@ -238,6 +238,23 @@ func TestOrcaDeliveryOriginalCreatorStillAuthorizedSQLite(t *testing.T) {
 				}
 				input.check(t, false)
 			}
+		})
+	}
+}
+
+func TestOrcaDeliveryLegacyPiInputRejectedSQLite(t *testing.T) {
+	for _, action := range []string{"worker.start", "worker.send"} {
+		t.Run(action, func(t *testing.T) {
+			input := newDeliveryAdmissionInput(t, "delivery-current-human")
+			account := &input.invocation.Selection.NativeLaunch.Account
+			account.Kind = "pi-native-api-key"
+			account.PrivateHome = filepath.Join(filepath.Dir(filepath.Dir(account.PrivateRoot)), "pi", input.project.ID)
+			account.PrivateRoot = ""
+			if action == "worker.start" {
+				input.invocation.Command.Action, input.invocation.Command.DispatchID = action, ""
+				input.invocation.Command.TaskID, input.invocation.Command.Name, input.invocation.Command.Agent, input.invocation.Command.Model = input.invocation.Scope.RootTaskID, "explicit-review", "pi", input.invocation.Selection.Model
+			}
+			input.check(t, false)
 		})
 	}
 }

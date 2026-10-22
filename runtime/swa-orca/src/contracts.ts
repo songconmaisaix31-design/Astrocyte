@@ -36,6 +36,16 @@ export const nativePiLaunchPolicySchema = z.strictObject({
   }),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') })
 })
+export const nativePiPerSessionLaunchPolicySchema = z.strictObject({
+  schema: z.literal('swa.native-launch.v1'),
+  account: z.strictObject({
+    kind: z.literal('pi-native-api-key-per-session'), provider: z.string().min(1), source_home: z.string().min(1),
+    auth_source: nativeConfigurationSourceSchema, models_source: nativeConfigurationSourceSchema.nullable(),
+    private_root: z.string().min(1),
+    model_target: z.strictObject({ model_id: z.string().min(1), api: z.enum(['openai-responses', 'openai-completions', 'azure-openai-responses']), base_url: z.url() })
+  }),
+  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') })
+})
 export const nativeOpenCodeLaunchPolicySchema = z.strictObject({
   schema: z.literal('swa.native-launch.v1'),
   account: z.strictObject({
@@ -65,7 +75,7 @@ export const nativeClaudeLaunchPolicySchema = z.strictObject({
   }),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('claude-cli-2.1.284-sdk-0.3.284') })
 })
-export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema, nativeCodexLaunchPolicySchema, nativeClaudeLaunchPolicySchema])
+export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema, nativeCodexLaunchPolicySchema, nativeClaudeLaunchPolicySchema, nativePiPerSessionLaunchPolicySchema])
 export type NativeLaunchPolicy = z.infer<typeof nativeLaunchPolicySchema>
 export const agentSelectionSchema = z.strictObject({
   agent_id: z.string().min(1), adapter: z.string().min(1), execution_mode: z.literal('structured'),

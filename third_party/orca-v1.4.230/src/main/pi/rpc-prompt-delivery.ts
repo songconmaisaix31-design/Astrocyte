@@ -8,6 +8,8 @@ import type { AgentSessionDispatchOutcome } from '../native-chat/agent-session-w
 import type { JsonlRpcRecord } from '../jsonl-rpc/peer'
 import { piRpcPromptReplySchema } from './rpc-protocol'
 import { ProviderWriteAdmissionError } from '../provider-process/provider-stdio-write-queue'
+import { strictPiMessageSchema } from './rpc-protocol'
+import { isDeepStrictEqual } from 'node:util'
 
 type Submission = {
   id: string
@@ -16,11 +18,13 @@ type Submission = {
   bytes: number
   accepted: boolean
   retries: number
+  acknowledged?: boolean
   /** Pi's last sign-in refusal, while the prompt waits to be re-sent. */
   signInRefusal?: string
 }
 type DeliveryDeps = {
   retrySignIn?: boolean
+  correlatedPrompts?: boolean
   send: (frame: JsonlRpcRecord, beforeWrite?: () => Promise<void | (() => void)>) => Promise<void>
   accepted: (id: string, at: number) => void
   commandOnly: () => void
@@ -67,6 +71,7 @@ export class PiRpcPromptDelivery {
     if (this.ended) {
       throw new Error('Pi prompt queue unavailable')
     }
+    if (this.deps.correlatedPrompts && (this.waiting.length || [...this.pending].some(item => item.id === id))) throw new Error('native_pi_input_lane_unavailable')
     const bytes = Buffer.byteLength(JSON.stringify(frame))
     if (this.pending.size >= 128 || this.heldBytes + bytes > 32 * 1024 * 1024) {
       return {
@@ -87,26 +92,39 @@ export class PiRpcPromptDelivery {
         throw new Error('Pi ended before writing the prompt')
       }
       this.deps.beforeWrite?.()
-      this.acknowledgements.push(submission)
+      if (!this.deps.correlatedPrompts) this.acknowledgements.push(submission)
       this.waiting.push(submission)
       admittedToWriter = true
-      await this.deps.send(frame, before)
+      await this.deps.send(this.deps.correlatedPrompts ? { ...frame, id } : frame, before)
+      if (this.deps.correlatedPrompts) {
+        submission.acknowledged = true
+        this.finishIfConsumed(submission)
+      }
       return { state: 'admitted' }
     } catch (error) {
-      this.remove(submission)
+      if (!this.deps.correlatedPrompts || !admittedToWriter || error instanceof ProviderWriteAdmissionError) this.remove(submission)
       this.deps.refused?.()
+      if (this.deps.correlatedPrompts && submission.accepted) return { state: 'accepted', providerIdentity: { provider: 'orca', clientMessageId: id } }
       if (!admittedToWriter || error instanceof ProviderWriteAdmissionError) return piRejection({ ...agentSessionFailureFact('hostFault'), neverReachedAgent: true })
       return { state: 'unknown', reason: 'Pi prompt write did not settle' }
     }
   }
 
   consumeNext(): boolean {
+    if (this.deps.correlatedPrompts) throw new Error('native_pi_input_requires_user_echo')
     const submission = this.waiting[0]
     if (!submission) {
       return false
     }
     this.accept(submission)
     return true
+  }
+
+  consumeUserEcho(value: unknown): void {
+    if (!this.deps.correlatedPrompts) throw new Error('native_pi_echo_policy_unavailable')
+    const submission = this.waiting[0], parsed = strictPiMessageSchema.safeParse(value)
+    if (this.waiting.length !== 1 || !submission?.frame || !parsed.success || parsed.data.role !== 'user' || !isDeepStrictEqual(parsed.data.content, [{ type: 'text', text: submission.frame.message }])) throw new Error('native_pi_user_echo_unbound')
+    this.accept(submission)
   }
 
   reply(frame: JsonlRpcRecord): void {
@@ -225,7 +243,7 @@ export class PiRpcPromptDelivery {
     }
   }
   private finishIfConsumed(submission: Submission): void {
-    if (!this.waiting.includes(submission) && !this.acknowledgements.includes(submission)) {
+    if (!this.waiting.includes(submission) && (this.deps.correlatedPrompts ? submission.acknowledged : !this.acknowledgements.includes(submission))) {
       this.pending.delete(submission)
     }
   }
