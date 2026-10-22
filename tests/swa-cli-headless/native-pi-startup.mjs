@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
+import { createRequire, findPackageJSON } from 'node:module'
+import { pathToFileURL } from 'node:url'
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -27,7 +28,9 @@ try {
   assert.equal(job.nativeCLI.kind, 'node-script')
   assert.ok(job.nativeCLI.entry && job.nativeCLI.program && job.nativeCLI.pid !== job.rootPid)
   assert.ok(job.members.some(row => row.pid === job.nativeCLI.pid && row.creationTimeMs === job.nativeCLI.creationTimeMs))
-  manifest = JSON.parse(await readFile(join(dirname(job.nativeCLI.entry), '../package.json'), 'utf8'))
+  const manifestPath = findPackageJSON(pathToFileURL(job.nativeCLI.entry))
+  assert.ok(manifestPath)
+  manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
   assert.equal(manifest.version, '1.0.1')
   assert.ok(state && !records.some(row => ['agent_start', 'message_start', 'message_update', 'message_end', 'agent_end'].includes(row.type)))
 } finally { closed = await connection.close(); assert.deepEqual(closed, { root: 'exited', tree: 'exited' }) }

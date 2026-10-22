@@ -140,7 +140,7 @@ export class AcpSessionRuntime {
       throw new Error(`Not an ACP extension method: ${method}`)
     }
     await this.initialize()
-    return this.peer.request(method, params, { timeoutMs: null })
+    return this.peer.request(method, params, { timeoutMs: null }).catch((error: unknown) => { throw this.normalizeError(error) })
   }
 
   /** Copies saved session `sessionId` into a new one the agent saves (`session/fork`) and answers
@@ -210,7 +210,7 @@ export class AcpSessionRuntime {
     if (!method.startsWith('_')) {
       throw new Error('ACP extension methods require an underscore')
     }
-    return this.peer.request(method, params, { timeoutMs })
+    return this.peer.request(method, params, { timeoutMs }).catch((error: unknown) => { throw this.normalizeError(error) })
   }
   async setModel(modelId: string, meta?: Meta): Promise<SetSessionModelResponse> {
     const params: SetSessionModelRequest = {
@@ -262,7 +262,12 @@ export class AcpSessionRuntime {
 
   private call<T>(method: string, params: unknown, schema: z.ZodType<T>): Promise<T> {
     return callAcpSession(this.peer, method, params, schema, this.options.onAuthAnswered)
+      .catch((error: unknown) => { throw this.normalizeError(error) })
   }
+
+  protected normalizeError(error: unknown): unknown { return error }
+
+  protected admitNotification(_method: string, _params: unknown): boolean { return true }
 
   private handleRequest(method: string, params: unknown, context: AcpRequestContext): unknown {
     if (method !== 'session/request_permission') {
@@ -292,6 +297,7 @@ export class AcpSessionRuntime {
   }
 
   private handleNotification(method: string, params: unknown): void {
+    if (!this.admitNotification(method, params)) return
     if (method !== 'session/update') {
       try {
         this.options.onExtensionNotification?.(method, params)

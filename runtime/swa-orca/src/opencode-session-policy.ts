@@ -67,9 +67,9 @@ export function createOpenCodeSessionPolicy(input: {
       await importPrivateOpenCodeCredential({ snapshot, root, plugin, correlation, node: launcher.node, entry: launcher.entry, executable: input.executable, cwd, inherited: process.env as Record<string, string>, beforeInput: input.approve,
         observe({ managed, tree: importTree }) {
           track({
-            async close() { const result = await managed.close(importTree); return result.root === 'exited' && result.tree === 'exited' },
-            onExit(listener) { managed.onExit(() => { if (importTree.treeVerdict === 'exited') listener() }) },
-            get exited() { return managed.rootVerdict === 'exited' && importTree.treeVerdict === 'exited' },
+            async close() { const result = await managed.close(importTree); return result.root === 'exited' && (result.tree === 'exited' || managed.processless) },
+            onExit(listener) { managed.onExit(() => { if (importTree.treeVerdict === 'exited' || managed.processless) listener() }) },
+            get exited() { return managed.rootVerdict === 'exited' && (importTree.treeVerdict === 'exited' || managed.processless) },
             stderrTail() { return 'Restricted OpenCode account initialization' }
           })
         }

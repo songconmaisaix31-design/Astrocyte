@@ -203,3 +203,7 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 原Reviewer接受准确F803导入修订后，42/43真实私有原生无推理检查实际0，原Reviewer独立只读核42的真实库/12私有目录DACL/两个完整Job及FD5后限定接受；43另实际核最终Agent权限。44错误模型被原native policy拒绝且HTTP0，45缺policy无active且真实private verifier拒绝、零prompt/HTTP，均0。46首次原固定公开正文实际0，唯一原DeepSeek/pro POST返回HTTP200/tools0，ACP end_turn/478更新、原session succeeded/5消息、两个Job全部退出；47最新strict/architecture各0。继续完整产品选择/Go DTO/Grant/输入/ACP trace/完整成果消费者和最终同安装双Worker，不以原生模型阶段结束任务，见报告§45。
 
 完整Pi/OpenCode选择联合、每Worker私有账户/初始化与ACP Job、输入及恢复准入、真实ACP trace、完整12MiB SQLite成果和直接消费者已实现，最终实际路径仍待安装验证。49 strict/架构0，广包Go整体1保留实际Relay及Workbench环境失败，未作基线比较；51最新strict/格式/语法/三项CLI传输前Go0。主控授窄域修复原Ajv外部ref消费者后，52使用同pin Node24.21完整check:contracts0、264样例及生成一致性通过，原24.16 libuv失败保持。执行Grant计划按原Reviewer G01—G09返修为准确7DFE，固定实际五动作和完整selection/authority绑定；独立接受客户端和最终候选稳定后才签发，不改旧Observe。全部实际TestOrca、最终普通安装、真实同候选双Worker及失败恢复继续由本Worker完成，当前未登记整体接受，见报告§46。
+
+准确e9fa已push，build17与完整ZIP/提取53实际0，安装53已核复制、28243闭包/native及保护拒绝，汇总6仍保留未验。Pi55路径断言1原件保留，采用成熟findPackageJSON后真实Pi56 RPC/Job退出0，原Reviewer独立0，限定无推理范围。e9fa CR的ACP完整Job接受条件和过早退出发布已返修，58 strict/Parser/语法0，准确后继源码和真实原生根/serve故障检查继续；所需最终安装随该必要返修更新。执行批准当前按已接受384D/64DD实际来源补充，沿同生产只读函数和实际R，不使用私有owner或新增公开selection字段，客户端/最终实际描述待集中核，未签发新Grant或运行产品模型。原95ef/5187保持，见报告§47。
+
+原Reviewer累计CR补核完整导出和原生错误：最终合并JSON现执行实际key检查；受限RPC错误保留类型/code/有效HTTP status/session，移除原错误详情、body/headers及cause，诊断固定，trace检查提前至通知分发前。普通ACP行为保持，上游秘密错误和原生incoming权限未实际出现的范围只记静态保障。最新严格检查、准确后继成品及真实root/serve退出检查继续，执行批准客户端仍待准确最终描述集中审核，整体任务持续。

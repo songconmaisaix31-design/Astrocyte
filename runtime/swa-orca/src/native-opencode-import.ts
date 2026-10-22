@@ -33,8 +33,8 @@ export async function importPrivateOpenCodeCredential(input: {
   const body = Buffer.from(JSON.stringify([{ id: original.id, integrationID: 'deepseek', label: original.label, active: true, value: { type: 'key', key: original.key } }]))
   const tree = new SwaProviderProcessTree()
   let imported = 0, stdoutBytes = 0, otherStderrLines = 0
-  const managed = spawnManagedProviderProcess({ command: input.node, args: [input.entry, JSON.stringify({ command: input.executable, args: ['auth', 'import', '--standalone'] })], cwd: input.cwd, env, envToDelete: Object.keys(process.env).filter(name => !(name in env)), swaJobIPC: true }, {
-    site: 'native-opencode-account-import', lifetime: 'one-shot', acceptClose: value => value.root === 'exited' && value.tree === 'exited',
+  const managed: ManagedProviderProcess = spawnManagedProviderProcess({ command: input.node, args: [input.entry, JSON.stringify({ command: input.executable, args: ['auth', 'import', '--standalone'] })], cwd: input.cwd, env, envToDelete: Object.keys(process.env).filter(name => !(name in env)), swaJobIPC: true }, {
+    site: 'native-opencode-account-import', lifetime: 'one-shot', acceptClose: value => value.root === 'exited' && (value.tree === 'exited' || managed.processless),
     onStderrLine(line, cut) { if (!cut && line.trimEnd() === 'Imported 1 credential') imported++; else otherStderrLines++; return true }
   })
   tree.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }), true)
@@ -59,7 +59,7 @@ export async function importPrivateOpenCodeCredential(input: {
     body.fill(0)
     clearTimeout(timer)
     closed = await managed.close(tree)
-    if (closed.root !== 'exited' || closed.tree !== 'exited') throw new Error('native_opencode_import_cleanup_unknown')
+    if (closed.root !== 'exited' || closed.tree !== 'exited' && !managed.processless) throw new Error('native_opencode_import_cleanup_unknown')
   }
   if (managed.child.exitCode !== 0 || managed.child.signalCode !== null || imported !== 1 || stdoutBytes !== 0) throw new Error('native_opencode_import_failed')
   assertNativeOpenCodeCurrent(snapshot)

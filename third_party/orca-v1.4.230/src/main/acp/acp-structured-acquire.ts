@@ -15,7 +15,7 @@ import {
 } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import { providerTimelineSink } from '../native-chat/agent-session-timeline/provider-timeline-plan'
 import { providerSpawnedProcessIdentity } from '../provider-process/provider-spawned-process-identity'
-import { AcpAgentError } from './acp-errors'
+import { AcpAgentError, AcpRpcError } from './acp-errors'
 import { acpPrivateTempConnect } from './acp-private-temp'
 import { acpAuthenticationRequired, acpSignInRequiredRefusal } from './acp-turn-failures'
 import {
@@ -127,7 +127,7 @@ export async function acquireAcpStructuredSession(input: {
       ...(acquire.onOutput ? { onOutput: acquire.onOutput } : {}),
       ...(spec.signIn ? { signIn: spec.signIn } : {}),
       onPermission: (request, context) => {
-        if (!session?.turns.acceptsRequests) {
+        if (launch.swaOpenCodePolicy || !session?.turns.acceptsRequests) {
           // No prompt of Orca's runs (a turn the agent began itself included), or a Stop or steer
           // is cutting it short: nobody is there to ask.
           return { outcome: { outcome: 'cancelled' } }
@@ -145,7 +145,10 @@ export async function acquireAcpStructuredSession(input: {
           .handle('session/request_permission', request, context)
           .then((reply) => RequestPermissionResponseSchema.parse(reply))
       },
-      onRequest: (method, params, context) => prompts.handle(method, params, context),
+      onRequest: (method, params, context) => {
+        if (launch.swaOpenCodePolicy) throw new AcpRpcError(-32601, 'Native tools are disabled')
+        return prompts.handle(method, params, context)
+      },
       onExtensionNotification: (method, params) =>
         whenLane(() =>
           slot.lane?.apply(
@@ -160,7 +163,7 @@ export async function acquireAcpStructuredSession(input: {
         deps.logger?.warn('ACP agent protocol diagnostic', {
           scope: 'acp-diagnostic',
           sessionId,
-          message
+          message: launch.swaOpenCodePolicy ? 'restricted_native_diagnostic_withheld' : message
         }),
       // The protocol broke while the process may still run; the connection is already ending it.
       // Its stdout ending alone is not this: the agent may still answer Stop's cancel or exit.

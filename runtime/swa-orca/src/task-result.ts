@@ -212,6 +212,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
   const outputs = []
   const checks: { sessionId: string; signature: string; epoch: string; sequence: number; path: string; identity: string | null; size: number | null; mtime: string | null }[] = []
   const nativeChecks: (() => Promise<void>)[] = []
+  const exportChecks: ((text: string) => void)[] = []
   let used = Buffer.byteLength(JSON.stringify(summary))
   for (const row of workers) {
     const worker = row.worker, dispatch = db.getDispatchContextById(worker.dispatchId)
@@ -233,6 +234,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       const native = await readNativeOpenCodeSessionSource({ selection, sessionId, nativeId: head.handle.nativeId, cwd, stopped: nativeWorker.state === 'stopped', projectId: scope.project_id })
       nativeSession = native.value
       nativeChecks.push(native.verify)
+      exportChecks.push(native.validateExport)
     } else {
       const sessionRoot = join(account.private_home, 'sessions')
       await exactPrivatePath(data, sessionRoot)
@@ -277,6 +279,8 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     if (!current || sourceSignature(current) !== check.signature || !unchanged) return fail('Native result sources changed before the complete result was returned')
   }
   const result = { ...summary, workers: outputs, source: 'native_journal_and_native_cli_session', collected_at: new Date().toISOString() }
-  if (Buffer.byteLength(JSON.stringify(result)) > maximum) return fail('The full result exceeds the declared 12 MiB export bound; no partial export is returned')
+  const serialized = JSON.stringify(result)
+  if (Buffer.byteLength(serialized) > maximum) return fail('The full result exceeds the declared 12 MiB export bound; no partial export is returned')
+  for (const validate of exportChecks) validate(serialized)
   return result
 }

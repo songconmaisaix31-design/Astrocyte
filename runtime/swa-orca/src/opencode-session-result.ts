@@ -74,7 +74,8 @@ export async function readNativeOpenCodeSessionSource(input: { selection: AgentS
   const value = { format: 'opencode-sqlite-v2' as const, availability: complete ? 'complete' : 'incomplete', reason: complete ? null : 'no_complete_final_assistant_message', persistence: 'observed', path, native_id: input.nativeId, session, messages, usage: { known: usage.some(row => row.tokens !== null), value: usage, source: 'actual_native_message_usage', billed_cost: { known: false, value: null, reason: 'native_cost_fields_do_not_prove_billed_amount' } } }
   const serialized = JSON.stringify(value)
   if (Buffer.byteLength(serialized) > maximum || serialized.includes(snapshot.key)) throw new Error('native_opencode_result_bound_or_credential_violation')
+  const validateExport = (text: string) => { if (text.includes(snapshot.key)) throw new Error('native_opencode_result_contains_credential') }
   const verify = async () => { if (!isDeepStrictEqual(before, await versions(path))) throw new Error('native_opencode_result_changed_during_collection') }
   await verify()
-  return { value, verify }
+  return { value, verify, validateExport }
 }
