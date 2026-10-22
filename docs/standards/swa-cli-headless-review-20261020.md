@@ -2232,3 +2232,21 @@ launchConfig仍用于保存启动配置并触发原agentLaunchTokenFor生成真�
 计划沿既有controller/T13真实消费者，准确新程序构建/安装后核helper实际启动和R、再执行双Worker/指定停止/完整成果；未变四native/Node可按准确来源复用，没有新增自我证明模型。原83 R和3bcf/82独立保留，原67未知PTY先按现有inventory及出生身份观察，只处置同67整个所属服务/Job，取得两次完整成员和已观察身份退出证据后才安排后继来源。该范围不授权清除未知原R或伪造完成，具体实际退出与新来源/凭据仍独立核；Reviewer不关闭服务、签Grant或修改实现。
 
 此前fde3a91b的82限定接受获主控`msg_46d6f90182f2`完整读回；83证据不足获`msg_3f82ad7241a6`完整读回；a3d37243启动缺口退回获`msg_c254bc57f789`完整读回，三项实际唤起均已确认。新准确实现、旧67所属退出、新候选及实际产品验收继续，不结算Task。
+
+## 后继CI按实际平台核查
+
+Ubuntu job119649240667实际检出合并源`356905dd1317d7006cb6cd53ad23932dbf5ab2ab`，父版本为main6e4ba81c及Worker5c75001e，frozen install成功、后续Go仍退出1。Reviewer独立`review-ci5c.mjs`实际0，原件`ci5c-independent.log`：与main50c2同平台原日志比较，失败名称同为68项，无新增/删除，Taste迁移前提失败已消失。此结果限于已读日志，不登记完整CI、build或e2e通过。
+
+**Windows job119649240350的新增迁移前置失败原因证据不足。** 原完整日志与main50c2的Windows job119638842033逐项比较，失败名称81对79，新增为同一父用例TestRelayRepositoryCleanupActualSQLiteLifecycle及其actual_database_failure子例，不能沿用Linux的无新增结论。实际同一合并源356905dd的普通frozen成功，Go整体1；子例11.12秒，在cmd/server/relay_repository_cleanup_test.go:35—36的RunMigrations返回非nil处分支停止，尚未创建cleanup provider或主动关闭数据库。
+
+Reviewer取得该准确Git合并对象并只读核源码：原清理测试、startRelayRepositoryCleanup和SQLite adapter.go与main50c2逐字节相同；迁移目录唯一增加028_orca_execution_links.sql，原27份保持。测试在TempDir/Open/全部迁移之前建立10秒context，RunMigrations本来返回带具体迁移及原cause的错误，但测试丢弃该错误，只输出固定失败文本。时限耗尽是与时长及源码相符的推断，原日志没有ctx.Err或具体迁移错误，不能据此认定028 SQL有错、清理行为回归或简单延长时限即可修复。
+
+独立`review-ciwindows.mjs`实际0，原件`ciwindows-independent.log`，核完整日志、准确合并对象和上述相同源码/迁移差异；Reviewer没有编译、迁移或启动服务。已向主控`msg_ca0924d99290`报告必要复验范围：原Worker在控制端启动检查之后串行对准确合并源与基线运行原真实SQLite两子例，保留原10秒及业务断言；需要归因时只补实际返回err、ctx.Err及耗时证据后按原条件复验，不mock、改SQL或扩大旧S3。实际复验仍未执行或接受。
+
+主控b0306af5的四份管理差异及QUESTIONS已完整读取，Git/成熟marked检查0、89个本地链接无缺失；旧Observe、原工具/S3/T11及82实际范围分别保留。其83父R与/native子请求表述已通知主控精确化：独立实际查询仅父R pending，所有后缀子请求为空。该文案随后继准确管理提交核，不阻断原产品修复。b159计划接受hook获主控`msg_4a29fd7e4cf8`全文读回确认，当前Task继续。
+
+## 原67的EOF及所属资源观察
+
+原Worker按已确认范围结束67的owner生命周期，实际退出6，原stderr保留delivery_unknown及完整所属后代未退出的错误；没有登记正常关闭通过。service67-close85a原件在EOF前记录六个实际出生身份和完整Job成员，之后两次均仍有daemon46744、OpenConsole55220、pwsh50820；原serve/host/http已退出。83父R/pty-spawn继续pending，缺少Task/Worker不能作为资源退出依据。
+
+主控`msg_965a24b63bee`明确允许原Worker对该67具名Job再次核准确来源、CurrentUser+SYSTEM DACL和全部出生身份后使用TerminateJobObject，随后两次完整空清单及全部已观察身份退出证明；仅针对该所属Job，原95ef/5187和Orca保持。Reviewer完整读取close67-job86.ps1与ServiceJobObservation.cs的原Kernel API调用、完整成员查询和权限/身份检查，没有执行终止；86实际结果仍待审核，强制收尾将与原EOF6分别记录，不冒充正常关闭。
