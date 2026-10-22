@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { constants } from 'node:fs'
 import { copyFile, lstat, mkdir, readFile, readdir, realpath } from 'node:fs/promises'
-import { isAbsolute, join, relative } from 'node:path'
+import { dirname, isAbsolute, join, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 
 export function packageOptions(args = process.argv.slice(2), environment = process.env) {
@@ -28,6 +30,39 @@ export async function buildPython(path) {
   const version = info.version
   if (!Array.isArray(version) || version.length !== 3 || !version.every(Number.isSafeInteger) || version.some(value => value < 0) || version[0] !== 3 || version[1] < 6) throw new Error('The selected interpreter must be Python 3.6 or newer within Python 3')
   return { executable, version: version.join('.') }
+}
+
+function codexCatalogFiles(inventory) {
+  const pin = inventory.codex_model_catalog
+  if (pin?.version !== '0.163.0' || pin.source_file !== 'assets/codex-0.163.0/models.json' || pin.installed_file !== 'runtime/codex-policy/models.json') throw new Error('The pinned Codex catalog inventory is missing or incompatible')
+  return [
+    { source: pin.source_file, installed: pin.installed_file, sha256: pin.sha256 },
+    ...['LICENSE', 'NOTICE'].map(name => ({ source: 'assets/codex-0.163.0/' + name, installed: 'third-party-licenses/codex@0.163.0/' + name, sha256: pin.license_files?.[name]?.sha256 }))
+  ]
+}
+
+async function verifyCodexCatalogFile(path, sha256) {
+  const stat = await lstat(path)
+  if (!stat.isFile() || stat.isSymbolicLink() || !/^[a-f0-9]{64}$/.test(sha256 ?? '') || createHash('sha256').update(await readFile(path)).digest('hex') !== sha256) throw new Error('A Codex catalog asset differs from its original pin: ' + path)
+}
+
+export async function copyCodexCatalog(sourceRoot, candidate) {
+  const inventory = JSON.parse(await readFile(join(sourceRoot, 'dependencies.lock.json'), 'utf8'))
+  const files = codexCatalogFiles(inventory)
+  for (const file of files) {
+    const source = join(sourceRoot, file.source), destination = join(candidate, file.installed)
+    await verifyCodexCatalogFile(source, file.sha256)
+    await mkdir(dirname(destination), { recursive: true })
+    await copyFile(source, destination, constants.COPYFILE_EXCL)
+    await verifyCodexCatalogFile(destination, file.sha256)
+  }
+  return { version: inventory.codex_model_catalog.version, sha256: inventory.codex_model_catalog.sha256, files: files.length }
+}
+
+export async function checkCodexCatalog(candidate) {
+  const inventory = JSON.parse(await readFile(join(candidate, 'metadata', 'dependencies.lock.json'), 'utf8'))
+  for (const file of codexCatalogFiles(inventory)) await verifyCodexCatalogFile(join(candidate, file.installed), file.sha256)
+  return { version: inventory.codex_model_catalog.version, sha256: inventory.codex_model_catalog.sha256 }
 }
 
 export async function checkWebAssets(directory) {

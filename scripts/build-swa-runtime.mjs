@@ -2,6 +2,7 @@ import { createRequire } from 'node:module'
 import { copyFile, lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { root } from './process.mjs'
+import { copyCodexCatalog } from './swa-package-config.mjs'
 
 const runtime = join(root, 'runtime', 'swa-orca')
 const requireRuntime = createRequire(join(runtime, 'package.json'))
@@ -128,6 +129,7 @@ export async function buildSWARuntime(output) {
   const pkg = JSON.parse(await readFile(join(output, 'package.json'), 'utf8'))
   if (pkg.type !== 'commonjs') throw new Error('The deployed runtime must preserve CommonJS child entry semantics')
   await copyInlinedLicenses(output, inputs)
+  console.log(JSON.stringify({ stage: 'codex-catalog-assets', ...await copyCodexCatalog(root, dirname(output)) }))
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {

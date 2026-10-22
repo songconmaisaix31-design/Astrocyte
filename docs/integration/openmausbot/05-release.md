@@ -33,9 +33,27 @@ Go 许可清单读取实际二进制的 `go version -m -json`，再核只读模�
 
 D阶段扩展原 node-pty Unix addon，公开 `providerLinuxIsolationVersion:1` 及已审核的 subreaper、waitid、pidfd、精确回收接口。05负责补丁、官方 pnpm 生成的 patch hash、builder 复制和 probe；02负责产品头与生命周期。新 checker 在独立 Node 子进程中使用真实普通父子进程，验证错误父属拒绝、运行中禁止回收、实际 TERM 退出、WNOWAIT不消费、精确回收、已关闭句柄拒绝和两次独立 ECHILD。没有模拟 Agent 或模型协议。
 
-开发 R1/R2 的内核功能检查通过，但真实 ELF 检查发现 C++ 运行库符号超过上游兼容范围，保留失败原件。02修正后 R3 编译、原 N-API 8 检查、实际内核 probe 与上游 `SERVER_SLOT_GLIBC_FLOOR` 检查均退出0，最高需要 GLIBC2.28、GLIBCXX3.4.22、CXXABI1.3.9。日志为 `.verification/cloud-setup/linux-provider-addon-03.log`。标准 Linux builder 已纳入同一上游兼容性门禁；R3仍是未提交源码的开发库，正式D候选、Agent与模型结果须另行取得。
+开发 R1/R2 的内核功能检查通过，但真实 ELF 检查发现 C++ 运行库符号超过上游兼容范围，保留失败原件。R1 使用 `unordered_set` 引入较新 GLIBCXX 符号；改用 `set` 后，R2 仍经 node-addon-api 的 `NAPI_NOEXCEPT` finalizer 模板引入 `CXXABI_1.3.15`。最小复现是对保留的原库运行上游符号检查，实际符号和调用位置记录在 `linux-provider-addon-01-abi-symbols.log`、`linux-provider-addon-02-finalizer-callsite.log` 和 `linux-provider-addon-02-floor.log`。
+
+02使用官方 `napi_create_external` 与独立 C finalizer 修正后，R3 编译、原 N-API 8 检查、实际内核 probe 与上游 `SERVER_SLOT_GLIBC_FLOOR` 检查均退出0，最高需要 GLIBC2.28、GLIBCXX3.4.22、CXXABI1.3.9。日志为 `.verification/cloud-setup/linux-provider-addon-03.log`。R3只证明该开发库；标准 Linux builder 已纳入同一上游兼容性门禁，后继正式安装证据见 combined01。
 
 符号兼容性门槛与内核能力分别核查。运行还要求实际支持 subreaper、pidfd_open、pidfd_send_signal 和 waitid(P_PIDFD)；能力缺失立即拒绝，不切换为裸 PID 信号。上游符号门禁的发行版标签不代表已在这些发行版的全部内核上运行。
+
+## Linux combined01 实际安装
+
+准确源码 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd` 已执行标准 combined 构建、tar.gz/SHA-256、仓库外普通解包、严格安装与同安装版本/闭包检查，全部退出0。证据目录为 `.verification/swa-linux/evidence/6890522e43d7b81e99b09ca94acc27b9d3a5c7dd-combined-01/`，保留 SOURCE、build/install 原始日志及两个退出码。原候选为 `dist/swa-linux-combined-6890522e-01`，解包位于 `/workspace/swa-linux-packages/swa-linux-combined-6890522e-01`，安装位于 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`，没有修改旧 CLI04。
+
+实际 bundled Node 24.21.0 完成 PTY 回显/退出、watcher create、Linux provider isolation v1 的真实收养、精确回收和两次 ECHILD 检查。闭包为28307条路径，真实 Vite manifest 有2个条目、4份资源引用；安装根0700、owner为uid1000。02同安装检查14 PASS、0 SKIP、退出0，其中11项直接使用装内原 Tree、managed provider、entry 与 node-pty，3项是同 SHA 源码的身份/私有文件诊断。日志 `.verification/cloud-setup/linux-provider-tree-installed-6890522e-01.log`，不将外部诊断编译称为装内业务模块。
+
+03使用同一原安装执行 `swa serve --web-dir <install>/web`：health200、首页及4份 manifest 资产的 HTTP200、实际字节与 MIME 通过；`/index.html` 的标准301指向同源 `./`。正常关闭 stdin 后 serve 退出0，生产双次空树与独立四身份 pidfd、两次完整空扫描确认所属进程退出。证据为 `.verification/cloud-setup/linux-combined-service-smoke-6890522e-02.log` 和 `/workspace/swa-cli-smoke-6890522e-combined-1792664829113/smoke-evidence/`。首次检查脚本误拒标准301的失败保留，局部修正检查后复验，没有重建或修改安装。以上不包含项目 Grant、controller、Agent模型、N=3 或浏览器交互验收。
+
+## Codex 官方目录资产
+
+后继构建加入完整官方 Codex 0.163.0 模型目录。`assets/codex-0.163.0/` 保留同 Commit `83086188ae0614bd882818ff1aa23f3194962012` 的原 models.json、LICENSE 和 NOTICE，原目录 Git blob 为 `72a78e0eacf94103f4babda2a5245aba4ce848c1`，完整 SHA-256 为 `943ca7fe1d19ed019054158303f0dbbd80b3bef43b3aa425a71aa7cb3fb52c2b`。现有 `dependencies.lock.json` 保存来源、tag、Commit、原路径、blob、三文件摘要和安装路径，不修改任何模型字段。
+
+两个平台的既有 runtime builder 统一核源文件与固定摘要，独占复制目录到 `runtime/codex-policy/models.json`，许可全文进入 `third-party-licenses/codex@0.163.0/`。现有装内 checker 强制核 metadata 中的新 pin 与三份原件；旧安装使用其原 checker，保持原物。运行时固定 SHA、SourceVersion 和原生 config 门由原业务负责人实现。
+
+局部验证已核官方 tree 的三个 blob、SHA、复制后的完整字节、源路径不可用时的独立资产检查，并实际拒绝重复复制、逐一缺失文件和无 pin 的旧真实 inventory。日志为 `.verification/cloud-setup/codex-catalog-assets-check.log`，依赖清单和三脚本语法检查退出0。此证据仅覆盖资产复制与闭包；尚未构建含该后继资产的新候选，认证、模型与工具关闭仍未由本项证明。
 
 ## 开发依赖与检查
 
@@ -60,6 +78,10 @@ go test -count=1 -mod=readonly -v ./cmd/swa
 
 诊断提交 `0209d004dd170cb049394f2a0ae67d154cb03f5a` 的 [run 39758336431](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758336431) 明确在 `preflight-toolchain` 失败：PowerShell `Get-Command` 返回的两个实际 Node 路径被作为单个命令执行。修正按 PATH 顺序取首个实际 Application，Node、Go、Git 共三处，固定版本断言保持启用。原两次失败保留，后续结果以新准确提交的实际 run 为准。
 
+`3f4a4ea278d2cdf58711c8c6dee22797241b3780` 的 [run 39758793164](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758793164) 在 build 阶段失败。只读诊断 [run 39760430188](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39760430188) 实际成功读取原 artifact，发现固定 node-gyp12.3.0 的 VS 探测报 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`。这不能证明 VS 未安装；完整构建保持关闭，后续仅使用固定 Node24.21、未修改 finder、官方 vswhere 与 Developer Shell 做局部观察，不扩大原 maxBuffer、不升级依赖。
+
+局部探测来源 `369680ec88d24a33e00d535b6c3eda0041809d1d` 的 [run 39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 退出1，未产生 baseline 摘要，实际首个失败阶段尚未知。静态核查另发现该探测的下载 work 路径不符合原下载 helper 的限定目录，已准备仅局部纠正：旧非法参数由原 helper 实际拒绝后，改用其许可根内的独占目录；立即核下载 exit，并提供固定阶段及过滤有界异常注释。原下载守卫、TLS、SHA不变，实际 Windows 纠正结果待取得。诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
+
 构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。编译器选择继续使用现有 MSVC 2022 配置，不修改全局 PATH。
 
 ```powershell
@@ -72,7 +94,7 @@ CLI 是默认形态，不需要前端构建或浏览器。组合形态使用同�
 
 两个形态都写入准确源码 `VERSION` 与 `EDITION`。`EDITION` 仅接受 `cli` 或 `combined`；旧候选没有该文件时仅按原 CLI 闭包核查，不声明 GUI 能力。组合候选缺少 index、manifest、实际资源文件、manifest 内部导入，或资源经符号链接逃逸时立即失败。manifest 检查只证明引用闭包；实际页面与 API 行为仍须独立 HTTP、浏览器与原生执行验收。
 
-组合候选沿相同 `swa serve` 服务，通过显式 `--web-dir` 绑定本安装的 `web`。该参数与私有服务环境由 02/03 实现，05 只生成资产，不启动第二个 runtime。服务接口完成并经真实候选验证前，不声明组合形态已经运行通过。
+组合候选沿相同 `swa serve` 服务，通过显式 `--web-dir` 绑定本安装的 `web`。该参数与私有服务环境由 02/03 实现，05 生成资产；Linux combined01 的实际服务与 HTTP 范围见前文，Windows 组合服务仍须实际验证。
 
 ```powershell
 pnpm build:swa --output '本仓库 dist 下另一个尚不存在的绝对候选目录' --python $python --edition combined

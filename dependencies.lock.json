@@ -117,6 +117,28 @@
     "go.sum",
     "requirements-validation.txt"
   ],
+  "codex_model_catalog": {
+    "version": "0.163.0",
+    "source": "https://github.com/openai/codex",
+    "tag": "rust-v0.163.0",
+    "revision": "83086188ae0614bd882818ff1aa23f3194962012",
+    "upstream_path": "codex-rs/models-manager/models.json",
+    "git_blob": "72a78e0eacf94103f4babda2a5245aba4ce848c1",
+    "sha256": "943ca7fe1d19ed019054158303f0dbbd80b3bef43b3aa425a71aa7cb3fb52c2b",
+    "source_file": "assets/codex-0.163.0/models.json",
+    "installed_file": "runtime/codex-policy/models.json",
+    "license": "Apache-2.0",
+    "license_files": {
+      "LICENSE": {
+        "git_blob": "4606e72e042564097e8780d66c1d4dcb611869bd",
+        "sha256": "d17f227e4df5da1600391338865ce0f3055211760a36688f816941d58232d8dc"
+      },
+      "NOTICE": {
+        "git_blob": "2805899d56d0332d175cfc613c67d45d6f006db7",
+        "sha256": "9d71575ecfd9a843fc1677b0efb08053c6ba9fd686a0de1a6f5382fd3c220915"
+      }
+    }
+  },
   "validation_python": {
     "requirements": "requirements-validation.txt",
     "dependencies": {

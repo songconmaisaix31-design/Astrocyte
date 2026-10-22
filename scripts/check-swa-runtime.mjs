@@ -5,7 +5,7 @@ import { lstat, readFile, readdir, realpath } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
-import { checkWebAssets } from './swa-package-config.mjs'
+import { checkCodexCatalog, checkWebAssets } from './swa-package-config.mjs'
 import { NODE_RUNTIME_ASSETS } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 
 const { values } = parseArgs({ options: { candidate: { type: 'string' }, native: { type: 'boolean' } }, allowPositionals: false })
@@ -47,13 +47,14 @@ if (!values.native) {
     else if (!entry.isFile()) throw new Error(`Unsupported candidate payload: ${actual}`)
   }
   await walk(candidate)
+  const codexCatalog = await checkCodexCatalog(candidate)
   const web = edition === 'combined' ? await checkWebAssets(join(candidate, 'web')) : null
   const actual = execFileSync(join(candidate, linux ? 'swa' : 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true }).trim()
   assert.equal(actual, expected)
   for (const file of [linux ? 'install-swa.mjs' : 'install-swa.ps1', 'USAGE.md', 'LICENSE', 'ORCA_LICENSE', 'THIRD_PARTY_SWA.md']) assert.ok((await readFile(join(candidate, file))).length > 0)
   const result = execFileSync(node, ['--max-old-space-size=1024', import.meta.filename, '--candidate', candidate, '--native'], { encoding: 'utf8', windowsHide: true, env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=1024' }, timeout: 30_000 })
   process.stdout.write(result)
-  console.log(JSON.stringify({ candidate, source_revision: expected, platform, edition, legacy_edition: legacy, web_manifest: web, closure_paths: seen.size, native_authentication: 'NOT_RUN', functional_acceptance: 'NOT_RUN', gui_http_acceptance: 'NOT_RUN' }))
+  console.log(JSON.stringify({ candidate, source_revision: expected, platform, edition, legacy_edition: legacy, web_manifest: web, codex_catalog: codexCatalog, closure_paths: seen.size, native_authentication: 'NOT_RUN', functional_acceptance: 'NOT_RUN', gui_http_acceptance: 'NOT_RUN' }))
 } else {
   assert.equal(process.version, 'v24.21.0')
   const requireRuntime = createRequire(join(runtime, 'package.json'))

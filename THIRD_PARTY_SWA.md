@@ -10,6 +10,8 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 Linux 进程身份读取使用 `github.com/prometheus/procfs v0.22.0`（Apache-2.0），原始 LICENSE 与 NOTICE 按实际 Go 二进制的模块构建信息复制到 `third-party-licenses/go/`。其他实际编入 CLI/server 的 Go 模块也从固定模块源码复制原许可与 notices；声明清单、`go.mod`、`go.sum` 随候选 metadata 保留。许可证复制和当前机器的 PTY 检查不代替完整 Agent 验收。
 
+Codex 模型目录使用官方 `openai/codex rust-v0.163.0` 的完整原件，准确 Commit `83086188ae0614bd882818ff1aa23f3194962012`，上游路径为 `codex-rs/models-manager/models.json`。源码原件位于 `assets/codex-0.163.0/models.json`，构建原样复制到安装的 `runtime/codex-policy/models.json`；Git blob 与完整 SHA-256 记录在 `dependencies.lock.json`。同 Commit 的原始 Apache-2.0 LICENSE 与 NOTICE 全文复制到 `third-party-licenses/codex@0.163.0/`，NOTICE 中的 Ratatui MIT 来源保留。此资产不包含 Codex CLI、账号或模型授权，也不单独证明工具关闭或模型可用。
+
 产品使用实际安装的 `@earendil-works/pi-coding-agent 1.0.1` 或 `@opencode/cli 2.0.31` 原生CLI及其真实provider实现，Agent及provider/model必须明确选择。Pi政策限定既有原生API-key来源及三类已核API；OpenCode限定原DeepSeek/deepseek-v4-pro、官方Plugin hook及同版正式auth import。原auth/models/config及原生凭据库只读，所选有效材料在私有DataRoot中按受保护ACL独占创建；原账号和OpenCode原生exe不进入安装包。产品policy是随包ESM目录，保持原CLI默认HTTP行为；原生RPC/ACP、关闭工具、实际插件状态、来源及当前批准在效果前核查。完整产品认证、工具关闭和模型验收继续按当前测试计划执行。
 
 运行依赖和构建工具的准确输入记录在 `runtime/swa-orca/package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml` 及 `dependencies.lock.json`。pnpm deploy 按锁导出包含 workspace 的独立依赖闭包，安装复制实际内容；每个第三方包的许可和 notices 随其原始 package 内容保留。node-pty、windows-process-tree 及Windows安全模块的相关补丁属于获准来源适配，Worker及服务Job保护须使用该候选实际编译的native能力。node-gyp12.3.0和TypeScript6.0.3为构建/检查工具；Electron43.7.8与新增@types包为开发类型输入，安装使用ignore-scripts且prod deploy保持原规则。真实声明、锁与安装已经同步。
