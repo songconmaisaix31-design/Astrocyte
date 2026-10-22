@@ -41,6 +41,12 @@
 
 ## 当前云机验证
 
+Windows CLI准确`1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da`最新完整候选实际通过：newtag ci/swa-windows-1d3006fe-incarnation-01/run39858402174/native120102466532全部steps0，driver21:35:33→21:38:50UTC0、evidence与CLI ZIP/SHA上传0、job21:39:06完成。标准构建/普通解包/严格安装/readiness-eof正常服务关闭通过，其余native及S0矩阵skip；未下载artifact，不虚构archiveSHA/PID或额外内部原件，旧4aef FAIL/历史链UNKNOWN保持。Linux安装仍为aefe组合版，与此不同S，不重复build。
+
+当前Pi唯一拟包为PKG02 review SHA055b97213e876b4deb1a1fed893474204fe04a81943165eab16dee85fadb4170；Root exec13657亲持OWN02/runtime e5df3e0d-ae5c-46a2-9388-f5a65d429d53/serve223474至21:58:07.346UTC。verify0/原三wire/fresh10intents与独立限定审查齐备，明确委托已问待答，human/Grant/token/driver/model0；最终新D还须真实正常EOF结算。旧4244不复用，新包也因身份变化/到期失效。云环境draft8保存未发布，分支integration/swa-task-cards未合main；真实StepFun N3、Windows模型与大部分Agent验收未完成。
+
+以下保留此前阶段的原时点记录；当前来源和结论以上两段为准。
+
 Windows普通组件准确ffd3f7bb/run39857119838/job120098097243实际0/artifact0，其余native和S0 skip，06已独立接受：两live批143行/实际4身份含root5532与child2152，正常EOF/Wait0/双stdioEOF/stdin无错；两native剩0、原CIM0/2完整143行查询/matches0/间隔300.8149ms。原4aef完整FAIL/缺失链UNKNOWN不改，组件不代Job/服务。用户已获最小缺口/证据/局部结果；后继full尚未执行，已纠正原tag无S0假设，05只补专用`ci/swa-windows-*`push tag的两S0排除门，普通branch/PR/其它tag保持。准确源审后由Root三facts+此CI变更构成新S，先查新tag不存在再一次普通push，不重复组件/Linuxbuild，不先branchpush fullmarker。
 
 Windows最终只读e929/run39853536500/job120085698236成功、其他native及S0skip，06已核。原4aef根1280/create1792700293571、唯一剩项7288/create1792700119902早173669ms/ppid8780/ready匹配0；latest同次子集2行缺目标，不补union，完整父链/Job归属/PID复用根因UNKNOWN、旧FAIL保留。03 pure4cb66241…/collector f0f6f824…及实际历史标量tJsdhp exit0已06限定接受；旧必要birth门在verified-root条件下true，新实际函数两次predates-parent，5输入首末同/stderr0，不冒称完整回放或native通过。保unknown整支/永久incomplete锁、正常root缺席边界、正Job known和原2native/2CIM/内部Job强门，下一仅process-tree单组件普通进程真实EOF/Wait控制，不新full。

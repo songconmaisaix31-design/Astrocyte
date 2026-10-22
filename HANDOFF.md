@@ -1,5 +1,15 @@
 # SWA 主线接续
 
+当前交付来源：Windows CLI为`1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da`，Linux组合版仍为已安装的`aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`，两者不同S。新Windows专用tag`ci/swa-windows-1d3006fe-incarnation-01`一次普通push0后实际run39858402174/native120102466532全部steps成功，标准driver21:35:33→21:38:50UTC为0，evidence与CLI ZIP/SHA上传0，job21:39:06完成；标准流程涵盖build、普通ZIP解包、严格安装、无授权readiness-eof服务及正常关闭。四其他native skip，S0run39858402202为Skipped且无矩阵，CI-tag两if门控已实际生效。当前只读原HTML，未下载artifact，不填写archiveSHA/PID/额外内部字段。旧4aef FAIL及原历史父链UNKNOWN保持。
+
+当前唯一拟执行Pi包为`/workspace/swa-pi-n3-packet-aefe6c4b-20261023-02/review.json`，SHA`055b97213e876b4deb1a1fed893474204fe04a81943165eab16dee85fadb4170`，原同S工具53ce/consumer608e，本地verify0、01准确包与06新基线限定接受，human/Grant/token/driver/model生成仍0。Root亲持exec13657，OWN02/runtime`e5df3e0d-ae5c-46a2-9388-f5a65d429d53`/serve223474，原截止`2026-10-22T21:58:07.346Z`；最新检查仍held、observer stderr0。明确委托问题已提出且待答；收到本新包当前同意并确认原身份/余时足够后才可执行helper `-mode execute-authorized`。两cleanup true仍仅提案，旧4244永不执行；新服务变化/退出/到期也使055b失效，不换runtime借用同意。结束仍须原owner正常EOF并独立核新完整D，初始proof与旧结果不能替代；Windows真实Agent/model/N尚未运行。
+
+云环境配置草稿已保存revision8，含StepFun网络域名，不含密钥值，仍需用户在环境设置保存发布后生效；当前开发在`integration/swa-task-cards`，不宣称main已包含本支线或已发布产品。OpenCode只读可行性报告f7c9e2fc…确认所选原生generic route的公开插件口不能保证redirect:error延续到真实fetch，暂不计适配通过；context可在有条件来源闭合后修改副本，其它hook与native执行边界仍需独立处理。报告在ignored `opencode-bun-closure-20261023/feasibility-fetch-02/report.md`，没有执行SDK/CLI/模型。
+
+## 阶段原件记录
+
+以下保留各阶段当时的结果、待验状态与下一动作；当前来源、实际结论及待委托包以上三段为准。
+
 Windows普通进程单组件已实际通过：准确`ffd3f7bb08489e854e524584051c5d791f4b18f5`，run39857119838/job120098097243，正式步骤21:26:01→21:27:46UTC为0，artifact0、其余四native及S0run39857119881均skip，06已独立核原HTML。两live批各143行、实际owned4含root5532/child2152及两真实后代，unknown/excluded0；正常EOF后root/child Wait0、stdio EOF齐、stdin无错；两native批剩0/root缺席/owned0/unknown0，原CIM0、两143行完整查询/matches0、间隔300.8149ms。只证明普通组件，不升级原4aef服务FAIL或缺失历史链。用户已获缺口/实际标量/Win局部三项，下一完整候选仅新增三facts及S0专用CI-tag门控：审查发现旧check.yml也响应tag，原“tag无S0”的判断已明确纠正；两if仅排`refs/tags/ci/swa-windows-` push，普通branch/PR/其它tag保持。准确源码检查及审查后才构成新fullS、核新tag不存在并一次普通push，不先push full-marker branch、不重跑组件或Linux安装。
 
 Windows最终只读取证e929/run39853536500/job120085698236成功，其他native3job及S0run39853536586均skip，06已核原HTML。原4aef根为PID1280/creation1792700293571；两native与CIM仍各剩唯一7288/creation1792700119902，其创建时间数值早173669ms、原observed数字ppid8780、ready双键匹配数0。latest同次raw-PPID子集仅2行，根吻合但目标缺失，chain UNKNOWN/MISSING_SNAPSHOT_NODE，不用历史union补链，旧归属/Jobmembership/PID复用根因未证，原FAIL保留。停止追加读取；03两源pure4cb66241…/collector f0f6f824…已06接受：同batch incarnation/创建顺序、unknown整支与永久incomplete锁、正常root缺席无候选不造unknown、正Job身份保known及原2native/2CIM强门保持。真实标量回归`.verification/cloud-setup/windows-historical-scalar-r1-tJsdhp/`实际0/stderr0/5输入首末同，06已核；旧必要birth谓词在verified-root条件下为true，新实际函数两次均predates-parent。这不复现缺失完整父链，closure replay NR；下一只构建process-tree单组件并跑真实普通父子进程/正常EOF退出控制，不新full。
