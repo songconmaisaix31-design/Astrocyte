@@ -86,6 +86,12 @@ go test -count=1 -mod=readonly -v ./cmd/swa
 
 尾部分类修正来源 `1d27fd3c` 的 [run 39767392238](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39767392238) 已实际成功，完整候选明确跳过。实际固定Node24.21/node-gyp12.3：原2022仍拒绝，selection2026与官方DevShell2026均成功，DevShell下为v145、SDK10.0.26100.0与实际cl19.51.36260.0。原 `cl /Bv` 退出2完整保留且不称编译；VSSetup完整输出1446335字节，C#为77972字节。未编译native、未安装候选、未启动服务或模型。原失败均保留，不以此局部成功宣布Windows发行通过。
 
+MSVC选择修复来源 `82e1b09503486c14a9dececb5e3673827894c120` 的完整 [run 39769388709](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39769388709) 仍失败，原日志和partial保留。只读诊断成功读取该次原artifact，实际错误为 `spawnSync git ENOENT`；补充栈明确为 `build-swa-package.mjs:45` 的 capture 调到148行最终源码检查，尚未写 VERSION。该结果不能作为完整候选或安装通过。
+
+来源 `bfb28a829eb44a377e90e7654343575e3a9f3b0d` 的 [局部 run 39772717647](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39772717647) 已实际成功：固定Node24.21与失败82源码的唯一PATH赋值，在官方Developer Shell之前、之后都复现同一问题。真实继承环境只有 `Path`，Git正常；对象展开后的普通字典执行原大写PATH赋值会同时留下 `PATH` 与 `Path`，新值含undefined，bare Git随即ENOENT。保留真实旧值并仅用一个PATH键的局部对照，两阶段都Git退出0且HEAD与当前probe一致。公开数据仅有键名、计数、状态和版本匹配，没有PATH值或原stderr。证据在 `.verification/cloud-setup/windows-path-job-119803972890.html`。Node24.21官方child_process文档的Windows环境键规则与此实际结果一致。
+
+正式修正仅规范Windows builder的PATH：原键必须唯一且为string，保存原值、删除旧键，再以单一PATH加入随包Node目录。原nativeSettings仍有四个受核赋值，PATH赋值源码改变会使旧原生复用输入比较不等，按原路径重新编译；没有放宽既有来源、校验和或生命周期检查。局部生产环境规则和语法检查通过，尚未执行包含此修正的新完整Windows候选。
+
 诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
 
 构建需要已有 Python、MSVC、PowerShell 7、固定 pnpm JavaScript 入口，以及干净的准确源码提交。Python 必须显式提供绝对路径，优先级为 `--python`、`SWA_BUILD_PYTHON`；显式无效值立即失败，不切换解释器。脚本核查实际解释器文件、`sys.executable` 与版本。固定 node-gyp 12.3.0 的 `lib/find-python.js` 支持范围为 `>=3.6.0`；本入口明确接受 Python 3.6 及以上的 Python 3，不承诺未来主版本。

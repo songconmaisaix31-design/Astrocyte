@@ -112,7 +112,11 @@ const nodeDir = join(headerRoot, `node-v${NODE_RUNTIME_PIN.version}`)
 await mkdir(join(nodeDir, 'Release'))
 const library = NODE_RUNTIME_PIN.windowsImportLibs['win32-x64']
 await fetchPinned(library.file, library.sha256, join(nodeDir, 'Release', 'node.lib'))
-environment.PATH = nodeDirectory + ';' + environment.PATH
+const pathKeys = Object.keys(environment).filter(key => key.toLowerCase() === 'path')
+if (pathKeys.length !== 1 || typeof environment[pathKeys[0]] !== 'string') throw new Error('The native build requires one actual PATH environment key')
+const previousPath = environment[pathKeys[0]]
+delete environment[pathKeys[0]]
+environment.PATH = nodeDirectory + ';' + previousPath
 const msvsVersion = values['msvs-version'] ?? '2022'
 environment.npm_config_msvs_version = msvsVersion
 const effectiveGyp = JSON.parse(capture(node, ['-e', 'const gyp=require(process.argv[1])();gyp.parseArgv([process.execPath,process.argv[2],"rebuild"]);console.log(JSON.stringify({msvs_version:gyp.opts["msvs-version"]}))', sourceRequire.resolve('node-gyp/lib/node-gyp.js'), gyp]))
