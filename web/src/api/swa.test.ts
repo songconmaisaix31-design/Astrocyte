@@ -60,10 +60,13 @@ describe('SWA 工作台使用同一生产 Go HTTP 边界', () => {
   it('缺失 CSRF 的真实人工 POST 被拒绝，不进入运行时', async () => {
     const recorded = recordedClient(server);
     await recorded.client.GET('/auth/session');
-    const result = await recorded.client.POST('/local-projects/{id}/orca/commands', { params: { path: { id: projectID } }, body: { action: 'status' } });
-    expect(result.response.status).toBe(403);
-    expect(result.error).toHaveProperty('error.code', 'scope_denied');
-    expect(recorded.responses).toHaveLength(2);
+    for (const body of [{ action: 'status' as const }, { action: 'worker.send' as const, controller: 'not-started-controller', dispatch_id: 'not-started-dispatch', input_file: 'not-created-input.txt', request_id: crypto.randomUUID() }]) {
+      const result = await recorded.client.POST('/local-projects/{id}/orca/commands', { params: { path: { id: projectID } }, body });
+      expect(result.response.status).toBe(403);
+      expect(result.error).toHaveProperty('error.code', 'scope_denied');
+      expect(recorded.requests.at(-1)!.headers.has('X-CSRF-Token')).toBe(false);
+    }
+    expect(recorded.responses).toHaveLength(3);
     expect(server.query('SELECT COUNT(*) AS count FROM orca_execution_links')[0].count).toBe(0);
   });
 

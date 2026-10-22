@@ -17,24 +17,27 @@ export function SwaWorkspace() {
   return <SectionCard title="SWA 执行工作台" padded>
     <div className={styles.workspace}>
       <p className={styles.note}>连接 CLI 使用的同一项目与任务。当前人工会话和项目批准由服务逐次核查；关闭页面保留后台任务。</p>
+      <button className="ac-button secondary compact" type="button" disabled={projects.loading} onClick={projects.retry}>刷新项目权限快照</button>
       <QueryState state={projects} empty={data => !data.items.length} emptyTitle="尚无已登记项目，请先在共同工作区登记并审阅权限">{data => <label className={styles.form}>选择已登记项目<select aria-label="SWA 项目" value={projectID} disabled={projects.loading || projects.stale} onChange={event => setProjectID(event.target.value)}><option value="">请选择项目</option>{data.items.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}</QueryState>
       <a href="/workspace?tab=overview">管理项目与批准范围</a>
-      {project && !projects.stale && <ProjectRuntime key={`${project.id}:${project.settings.revision}`} project={project} />}
+      {project && <ProjectRuntime key={project.id} project={project} disabled={projects.loading || projects.stale} />}
     </div>
   </SectionCard>;
 }
 
-function ProjectRuntime({ project }: { project: Project }) {
-  const status = useReadApi(signal => swaApi.command(project.id, { action: 'status' }, signal), { key: project.id });
-  const capabilities = useReadApi(signal => swaApi.command(project.id, { action: 'capabilities' }, signal), { key: project.id, enabled: !!status.data && !status.error });
+function ProjectRuntime({ project, disabled }: { project: Project; disabled: boolean }) {
+  const snapshotKey = `${project.id}:${project.settings.revision}`;
+  const status = useReadApi(signal => swaApi.command(project.id, { action: 'status' }, signal), { key: snapshotKey, enabled: !disabled });
+  const capabilities = useReadApi(signal => swaApi.command(project.id, { action: 'capabilities' }, signal), { key: snapshotKey, enabled: !disabled && !!status.data && !status.error });
   const [controller, setController] = useState(''), [taskID, setTaskID] = useState('');
   const [attached, setAttached] = useState<{ controller: string; taskID: string } | null>(null);
   const [workdir, setWorkdir] = useState(project.root);
   const open = useSwaCommand(project.id, 'controller.open');
-  const available = !!status.data && !status.loading && !status.stale && !!capabilities.data && !capabilities.stale;
+  const available = !disabled && !!status.data && !status.loading && !status.stale && !!capabilities.data && !capabilities.stale;
   const canStart = available && project.settings.allow_agent_control && project.settings.allowed_actions?.includes('start');
   return <div className={styles.workspace}>
     <p className={styles.identity}>项目 · {project.name} · {project.id} · 权限版本 {project.settings.revision}</p>
+    <p className={styles.note}>页面权限快照仅用于表单提示。提交时，服务会独立核查当前人工身份、项目动作、目录及模型批准；可提交不代表操作已经获准。</p>
     <QueryState state={status}>{reply => <details><summary>执行服务 · 已取得状态快照</summary><p className={styles.note}>查询完成仅证明本次观察。任务状态和资源退出仍以各自原生记录为准。</p><pre className={styles.output}>{observationJSON(reply)}</pre></details>}</QueryState>
     {!!status.data && <QueryState state={capabilities}>{reply => <details><summary>实际 Agent 与逐项能力</summary><p className={styles.note}>注册、安装、配置、可启动和控制能力分别核实。此清单不创建 Worker。</p><pre className={styles.output}>{observationJSON(reply.result)}</pre></details>}</QueryState>}
     <details><summary>新建 Controller 与固定任务</summary><p className={styles.note}>以下路径指向当前服务机器。页面不上传文件或修改项目批准；任务规格文件中的 max_workers 限制总创建和预留名额，释放 Worker 不归还名额。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void open.run({ action: 'controller.open', project_id: project.id, workdir: workdir.trim() }, reply => { if (!reply.controller) throw new Error('回执缺少真实 Controller，请查询原请求'); setController(reply.controller); }); }}><label>已批准的服务端工作目录<input required value={workdir} onChange={event => setWorkdir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={!canStart || open.pending || !!open.unresolved}>创建 Controller</button></form><OperationState command={open} onRecovered={reply => { if (reply.controller) setController(reply.controller); }} />
@@ -43,10 +46,10 @@ function ProjectRuntime({ project }: { project: Project }) {
     <form className={styles.form} onSubmit={event => { event.preventDefault(); setAttached({ controller: controller.trim(), taskID: taskID.trim() }); }}>
       <label>CLI 回执中的 Controller<input required value={controller} onChange={event => setController(event.target.value)} /></label>
       <label>同一任务的根 Task ID<input required value={taskID} onChange={event => setTaskID(event.target.value)} /></label>
-      <button className="ac-button compact" disabled={!status.data || status.loading || status.stale || !controller.trim() || !taskID.trim()} type="submit">连接已有任务</button>
+      <button className="ac-button compact" disabled={disabled || !status.data || status.loading || status.stale || !controller.trim() || !taskID.trim()} type="submit">连接已有任务</button>
     </form>
     <p className={styles.note}>可连接 CLI 的真实任务，也可使用上方已批准文件建立任务。所有操作使用同一执行服务与原生身份。</p>
-    {attached && capabilities.data && <TaskWorkspace key={`${attached.controller}:${attached.taskID}`} project={project} capabilities={capabilities.data} {...attached} />}
+    {attached && !disabled && capabilities.data && <TaskWorkspace key={`${attached.controller}:${attached.taskID}`} project={project} capabilities={capabilities.data} {...attached} />}
   </div>;
 }
 
@@ -91,8 +94,8 @@ function WorkerWorkspace({ project, controller, dispatchID, onChanged }: { proje
     <QueryState state={detail}>{reply => <details><summary>原生身份、业务状态和资源观察</summary><pre className={styles.output}>{observationJSON(reply.result)}</pre></details>}</QueryState>
     <form className={styles.form} onSubmit={event => { event.preventDefault(); setReadCursor(cursor.trim()); transcript.retry(); }}><label>继续读取游标（空值从头）<input value={cursor} onChange={event => setCursor(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={detail.loading || detail.stale || !detail.data || transcript.loading}>读取实际会话</button></form>
     {readCursor !== null && <QueryState state={transcript}>{reply => <Transcript reply={reply} />}</QueryState>}
-    <form className={styles.form} onSubmit={event => { event.preventDefault(); void command.run({ action: 'worker.send', controller, dispatch_id: dispatchID, input_file: inputFile.trim() }, () => { detail.retry(); onChanged(); }); }}><label>追加输入的已批准服务端 UTF-8 文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={blocked || !inputFile.trim() || !project.settings.allowed_actions?.includes('send')}>提交此 Worker 的输入</button></form>
-    <p className={styles.note}>当前接口读取项目中的明确文件；浏览器文本上传尚无共享合同。模型输入仍受当前项目批准、原生工具范围和账号限制。CLI Agent 创建的任务绑定原调用身份；人工会话可观察与安全停止，跨身份启动或追加输入会由服务拒绝。</p>
+    <form className={styles.form} onSubmit={event => { event.preventDefault(); void command.run({ action: 'worker.send', controller, dispatch_id: dispatchID, input_file: inputFile.trim() }, () => { detail.retry(); onChanged(); }); }}><label>追加输入的已批准服务端 UTF-8 文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={blocked || !inputFile.trim() || !project.settings.allow_agent_control || !project.settings.allowed_actions?.includes('send')}>提交此 Worker 的输入</button></form>
+    <p className={styles.note}>当前接口读取项目中的明确文件；浏览器文本上传尚无共享合同。人工会话可按当前项目的独立批准向 CLI Agent 创建的任务追加输入；服务逐次核查动作、目录、模型和原生工具范围，不继承原 Agent Grant。任务与 Worker 的原创建来源保留，跨主体启动新 Worker 仍受原绑定限制。</p>
     <button className="ac-button secondary compact" type="button" disabled={stopBlocked} onClick={() => setConfirmStop(true)}>停止此 Worker…</button>
     {confirmStop && <div className={styles.confirm}><p>确认停止 Dispatch {dispatchID}？服务将核对其所属资源；其他 Worker 保留。操作提交不代表资源已经退出。</p><button className="ac-button compact" type="button" disabled={stopBlocked} onClick={() => { setConfirmStop(false); void stop.run({ action: 'worker.stop', controller, dispatch_id: dispatchID }, () => { detail.retry(); onChanged(); }); }}>确认停止 {dispatchID}</button><button className="ac-button secondary compact" type="button" onClick={() => setConfirmStop(false)}>取消</button></div>}
     <OperationState command={command} controller={controller} onRecovered={() => { detail.retry(); onChanged(); }} />

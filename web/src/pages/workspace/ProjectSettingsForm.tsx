@@ -18,7 +18,7 @@ export function ProjectSettingsForm({ project, agents, disabled, onChanged }: { 
   const changed = settings.revision !== project.settings.revision;
   const cliOptions = [...new Map([...(agents.data?.items ?? []).map(agent => [agent.id, { value: agent.id, label: agent.display_name }] as const), ...(settings.external_model_cli ? [[settings.external_model_cli, { value: settings.external_model_cli, label: settings.external_model_cli }] as const] : [])]).values()];
   return <details><summary>项目小权限与模型处理许可</summary><form className={styles.form} onSubmit={event => {
-    event.preventDefault(); const request = command.prepare({ expected_version: project.settings.revision, expected_revision: settings.revision, settings: { ...settings, allowed_subdirs: lines(subdirs), allow_agent_control: false } });
+    event.preventDefault(); const request = command.prepare({ expected_version: project.settings.revision, expected_revision: settings.revision, settings: { ...settings, allowed_subdirs: lines(subdirs) } });
     void command.run(() => localProjectsApi.setSettings(project.id, request.body, request.key), result => { setSettings(result.project.settings); setSubdirs(result.project.settings.allowed_subdirs.join('\n')); onChanged(); }, '已保存项目许可；既有会话继续输入前将重新核对权限');
   }}>
     <p className={styles.note}>A 默认只读主动纳入的固定版本资料。B 和 C 独立选择；本机 CLI 不代表模型在本机，处理许可仅覆盖此项目与所选客户端。</p>
@@ -32,7 +32,8 @@ export function ProjectSettingsForm({ project, agents, disabled, onChanged }: { 
       <fieldset><legend>明确允许读取的客户端历史</legend><SelectField label="历史客户端" value={historyCLI} onChange={setHistoryCLI} options={[{ value: '', label: '选择客户端…' }, ...cliOptions]} /><TextField label="允许读取的历史绝对目录" value={historyRoot} onChange={setHistoryRoot} hint="仅用于查找属于此项目的会话；不推导全局历史目录，不扫描磁盘。" /><button className="ac-button secondary compact" type="button" disabled={!historyCLI || !historyRoot.trim()} onClick={() => { setSettings({ ...settings, history_roots: { ...settings.history_roots, [historyCLI]: historyRoot.trim() } }); setHistoryRoot(''); }}>加入此项目的历史读取范围</button>{!settings.history_roots && <p>服务未提供历史读取范围，当前不允许发现历史。</p>}{Object.entries(settings.history_roots ?? {}).map(([historyClient, path]) => <p key={historyClient}>{historyClient} · {path}<button className="ac-button secondary compact" type="button" onClick={() => { const next = { ...settings.history_roots }; delete next[historyClient]; setSettings({ ...settings, history_roots: next }); }}>移除此历史范围</button></p>)}</fieldset>
       <p className={styles.note}>保存此选择允许所选 CLI 按既有配置处理你选择的项目上下文，可能发送至其外部模型。安装、配置、可启动和原生能力仍须独立核实。</p>
       <fieldset><legend>允许的原生操作</legend>{Object.entries(actions).map(([action, label]) => <label key={action}><input type="checkbox" style={{ width: 'auto' }} checked={settings.allowed_actions.includes(action)} onChange={event => setSettings({ ...settings, allowed_actions: event.target.checked ? [...settings.allowed_actions, action] : settings.allowed_actions.filter(value => value !== action) })} /> {label}</label>)}</fieldset>
-      <p className={styles.note}>应用 Agent 自动派发尚待动作范围确认，当前关闭；设置只能由你保存。客户端工具范围未获支持时不会自动开放命令或文件工具。</p>
+      <label><input type="checkbox" style={{ width: 'auto' }} checked={settings.allow_agent_control} onChange={event => setSettings({ ...settings, allow_agent_control: event.target.checked })} /> 允许此项目的 Agent 控制操作</label>
+      <p className={styles.note}>此开关只允许服务按本项目的动作、目录和模型许可继续核查，不会签发 Agent Grant、启动 Worker 或调用模型。其他任务主体的授权不会被继承；客户端工具范围未获支持时不会开放命令或文件工具。</p>
     </fieldset><CommandState {...command} /><button className="ac-button" type="submit" disabled={disabled || command.pending || changed}>保存此项目许可</button>
   </form></details>;
 }
