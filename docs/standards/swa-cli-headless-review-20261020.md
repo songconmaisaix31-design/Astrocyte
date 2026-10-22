@@ -2066,3 +2066,9 @@ Reviewer实际使用安装Node24.21.0执行自有`review-opencode42.mjs`，退�
 27FA的其余E01—E08覆盖真实session/三个HTTP拒绝、实际独占新项目、真实返回主体/Agent执行者、UTC一小时token、CurrentUser DPAPI、未知写请求停止、真实库与CLI消费及原23/26/95ef保全；未发现需新增模型自我证明检查。准备前后执行表保持基线的检查支持确认没有Controller/Task/Worker或模型效果，未触发的网络未知分支保持未验。原件摘要及计划尚未作为客户端或签发接受，最终候选身份/selection尚未冻结，本次没有签发Grant或启动后继模型。修订通知为`msg_abc56a9a198c`、主控为`msg_84e5b2e484af`。
 
 主控工具等待异常跨UTC21:41至03:33后，原Task/Dispatch于UTC03:36收到恢复通知并继续；没有重启或结算。原FD5只读身份guard恢复后实际0，旧Observe到期不续签。42d70d4e的原生接受和计量修复两个hook分别获主控`msg_9fdd638b6b7b`、`msg_e12907e497de`明确完整读取回复；准确main031dc三份后继记录已读，STATUS范围措辞普通修复由主控继续，当前未借时间流逝新增验收结论。
+
+**接受返修计划`delegated-execute50-plan.md`准确SHA256 `7DFE168251FD546960CAEA6AED4E6552B135E2AF565844101E377EA9A52AA125`的技术与E01—E08测试范围。** 正文已全文读取，G01—G09形成在先。五项动作在settings/Grant/DPAPI/验证中统一，controller.recover的start映射与实际代码相符；公开目录、单CLI、空工具、原文字段及原T11/S3边界保持。真实12小时cookie与一小时token分别记录，原23/26/95ef旧Observe不提升，未知准备写入停止且先查原状态，实际响应/库/CLI证据分别验收，没有多余模型自我证明检查。
+
+返修明确复用该候选既有runtime/client.cjs。注册前以真实registered_agent取得安装来源、registry、runtime/authority和根目录；项目登记后使用实际project.id调用selection，再将实际selection/来源版本及authority绑定描述/DPAPI，settings/Grant/token每次写前重新匹配。Reviewer完整读取现有client.ts（相对fe822未修改）及swa.resolveSelection的真实start分支：前者registered_agent和selection各调用对应方法后立即返回，后者仅按真实项目/Agent/model调用selectAgent读取实际安装与原配置，没有进入workerStart或execute。没有构造项目或selection记录、复制原生parser、增加业务API或替代账户来源。
+
+该接受仅允许原Worker编写并提交两份客户端、描述与必要只读辅助入口集中审核。最终准确安装/实际描述尚未形成，客户端未接受、Grant/token未签发，产品/双Worker和其余失败路径继续未验；Reviewer不签Grant、不重复模型。通知为`msg_4e8c92b2b5c8`，原O07实现与必要校验继续，不等待额外管理回合。03d7ac6f的27FA退回hook已获主控`msg_22d3680f757b`明确完整读取回复，并继续由原Worker在既有窄写域处理Ajv外部ref直接消费者，实际样例/约束和O07累计审核。
