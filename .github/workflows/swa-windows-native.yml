@@ -68,13 +68,13 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
-          run-id: 39758793164
-          name: swa-windows-native-evidence-3f4a4ea278d2cdf58711c8c6dee22797241b3780
+          run-id: 39769388709
+          name: swa-windows-native-evidence-82e1b09503486c14a9dececb5e3673827894c120
           path: ${{ runner.temp }}/swa-prior-windows-evidence
       - name: Report only the previous run's filtered build errors
         shell: pwsh
         run: |
-          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '3f4a4ea278d2cdf58711c8c6dee22797241b3780'
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '82e1b09503486c14a9dececb5e3673827894c120'
   visual-studio-discovery-probe:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025

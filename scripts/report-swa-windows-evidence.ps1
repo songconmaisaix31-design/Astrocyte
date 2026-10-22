@@ -27,7 +27,7 @@ foreach ($line in $selected) {
     if ($sanitized.Length -gt 500) { $sanitized = $sanitized.Substring(0, 500) + ' [line truncated]' }
     $safe.Add($sanitized)
 }
-$message = 'Prior run39758793164; source=' + $source + '; phase=build; filtered original errors:' + "`n" + ($safe -join "`n")
+$message = 'Prior run39769388709; source=' + $source + '; phase=build; filtered original errors:' + "`n" + ($safe -join "`n")
 if (-not $safe.Count) { $message += '[no whitelisted error line found; root cause remains unknown]' }
 if ($message.Length -gt 8000) { $message = $message.Substring(0, 8000) + ' [original artifact retained]' }
 $escaped = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
