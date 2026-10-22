@@ -156,7 +156,7 @@ func processParents() (parents map[uint32]uint32, result error) {
 	}
 }
 
-func perform(candidate, data, ownerFile, database, protected, inspectionFile string) (report map[string]any, result error) {
+func perform(candidate, data, ownerFile, database, protected, inspectionFile string, helperOnly bool) (report map[string]any, result error) {
 	report = map[string]any{"actual_exit": false}
 	install, err := canonical(candidate)
 	if err != nil {
@@ -261,7 +261,7 @@ func perform(candidate, data, ownerFile, database, protected, inspectionFile str
 		return process, nil
 	}
 	for _, expected := range []processIdentity{owner.Process, owner.Helper} {
-		process, err := openProcess(expected.PID, true)
+		process, err := openProcess(expected.PID, !helperOnly || expected.PID == owner.Helper.PID)
 		if err != nil || process.Created != expected.Created || !samePath(filepath.Base(process.Image), expected.Name) {
 			return report, errors.Join(errors.New("所持目标句柄的创建身份或程序不符"), err)
 		}
@@ -348,7 +348,12 @@ func perform(candidate, data, ownerFile, database, protected, inspectionFile str
 	}
 	report["controller"], report["service_job"], report["actual_held_chains"] = owner.Controller, jobOwner, chains
 	report["actual_inspection_file"], report["protected_process_ids"] = inspectionFile, protected
-	for _, pid := range []uint32{owner.Helper.PID, owner.Process.PID} {
+	targets := []uint32{owner.Helper.PID}
+	if !helperOnly {
+		targets = append(targets, owner.Process.PID)
+	}
+	terminated := []uint32{}
+	for _, pid := range targets {
 		state, err := windows.WaitForSingleObject(held[pid].Handle, 0)
 		if err != nil {
 			return report, err
@@ -362,7 +367,9 @@ func perform(candidate, data, ownerFile, database, protected, inspectionFile str
 		if err := windows.TerminateProcess(held[pid].Handle, 1); err != nil {
 			return report, err
 		}
+		terminated = append(terminated, pid)
 	}
+	report["helper_only"], report["terminated_process_ids"] = helperOnly, terminated
 	for _, pid := range []uint32{owner.Helper.PID, owner.Process.PID} {
 		state, err := windows.WaitForSingleObject(held[pid].Handle, 10000)
 		if err != nil || state != windows.WAIT_OBJECT_0 {
@@ -382,17 +389,18 @@ func main() {
 	inspection := flag.String("inspection-output", "", "新鲜真实 daemon 观察")
 	output := flag.String("output", "", "实际故障原件")
 	serviceRequest := flag.String("service-request-file", "", "真实服务故障请求原件")
+	helperOnly := flag.Bool("helper-only", false, "只终止所持helper句柄并等待原Shell实际退出")
 	flag.Parse()
 	var report map[string]any
 	var err error
 	if *serviceRequest != "" {
-		if *candidate != "" || *data != "" || *owner != "" || *database != "" || *protected != "" || *inspection != "" {
+		if *candidate != "" || *data != "" || *owner != "" || *database != "" || *protected != "" || *inspection != "" || *helperOnly {
 			fmt.Fprintln(os.Stderr, "服务故障请求与控制端故障参数不能同时提供")
 			os.Exit(2)
 		}
 		report, err = performServiceFault(*serviceRequest)
 	} else {
-		report, err = perform(*candidate, *data, *owner, *database, *protected, *inspection)
+		report, err = perform(*candidate, *data, *owner, *database, *protected, *inspection, *helperOnly)
 	}
 	if err != nil {
 		report["error"] = err.Error()

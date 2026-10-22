@@ -66,9 +66,8 @@ async function helperCall(runtime: OrcaRuntimeService, controller: string, reque
   if (!ptyId) return fail('operation_unknown', 'The native helper is unavailable')
   let stop = () => {}
   let timer: ReturnType<typeof setTimeout> | undefined
-  let rejectReply: (error: Error) => void = () => {}
+  const writeAbort = new AbortController()
   const response = new Promise<z.infer<typeof helperReply>>((resolve, reject) => {
-    rejectReply = reject
     const framer = createIncrementalNdjsonFramer(value => {
       const parsed = helperReply.safeParse(value)
       if (!parsed.success || parsed.data.request_id !== requestId || parsed.data.controller !== controller) return
@@ -77,15 +76,20 @@ async function helperCall(runtime: OrcaRuntimeService, controller: string, reque
       if (rejected.kind === 'line-too-long') reject(new OrchestrationError('operation_unknown', 'Controller response exceeded the declared bound'))
     }, { maxLineBytes: 16 * 1024 * 1024 })
     stop = runtime.subscribeToTerminalData(ptyId, data => framer.feed(stripVTControlCharacters(data)))
-    timer = setTimeout(() => reject(new OrchestrationError('operation_unknown', 'The controller action may have reached its exact PTY')), 120_000)
+    timer = setTimeout(() => {
+      writeAbort.abort()
+      reject(new OrchestrationError('operation_unknown', 'The controller action may have reached its exact PTY'))
+    }, 120_000)
   })
   try {
-    const written = await runtime.sendTerminal(controller, { text: JSON.stringify({ type: 'swa_controller_action', request_id: requestId, action, ...(invocation ? { invocation } : {}) }), enter: true }, { inputKind: 'driving', requireWriteSettlement: true })
-    if (!written.accepted) rejectReply(new OrchestrationError('operation_unknown', 'The controller input settlement is unknown'))
-    const reply = await response
+    const write = runtime.sendTerminal(controller, { text: JSON.stringify({ type: 'swa_controller_action', request_id: requestId, action, ...(invocation ? { invocation } : {}) }), enter: true }, { inputKind: 'driving', requireWriteSettlement: true, signal: writeAbort.signal }).then(written => {
+      if (!written.accepted) throw new OrchestrationError('operation_unknown', 'The controller input settlement is unknown')
+    })
+    const [, reply] = await Promise.all([write, response])
     if (reply.error) throw new OrchestrationError(reply.error.code, reply.error.message)
     return reply
   } finally {
+    writeAbort.abort()
     clearTimeout(timer)
     stop()
   }
@@ -116,7 +120,7 @@ async function createController(context: RpcContext, project: string, workspace:
   const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
   if (!node) throw new Error('installed_node_missing')
   const launchScope = await runtime.resolveTerminalWorkspaceLaunchScope(`id:${workspace}`)
-  const command = `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}`
+  const command = `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}; exit $LASTEXITCODE`
   if (process.platform !== 'win32' || launchScope.connectionId || !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
   const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
     (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {

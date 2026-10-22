@@ -186,11 +186,12 @@ for (let index = 0; index < startArgs.length; index++) {
 const repeatedStopA = await cli(stopCommandA.args)
 assert.equal(native(repeatedStopA).state, 'stopped')
 idempotency.push({ action: 'worker.stop', request: stopCommandA.args.at(-1), original: stopA, replay: repeatedStopA })
-const followupFile = join(inputDirectory, 'b-followup.txt')
+const sendRequest = request()
+const followupFile = join(inputDirectory, `b-followup-${sendRequest}.txt`)
 await writeFile(followupFile, 'A已按固定条件停止。请在当前同一会话根据下列实际A部分输出和准确公开原文，完成最终Median设计及验证说明；逐项覆盖原固定业务条件并引用文件位置。保持原Mean不变，禁止声称已运行程序测试。\n实际A读取回执：\n' + JSON.stringify(partialA) + '\n固定公开原文：\n' + JSON.stringify(source) + '\n', { flag: 'wx' })
-const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', request()]
+const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', dispatchB, '--input-file', followupFile, '--request-id', sendRequest]
 const originalSend = await cli(sendArgs), repeatedSend = await cli(sendArgs)
-const sendResult = native(originalSend), sendRequest = sendArgs.at(-1)
+const sendResult = native(originalSend)
 assert.equal(sendResult.request_id, sendRequest)
 assert.equal(sendResult.native_request_id, `${sendRequest}/native`)
 assert.equal(sendResult.agent, values.agent)

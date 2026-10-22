@@ -149,7 +149,8 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
         throw new Error('invalid_terminal_send')
       }
       await assertTerminalInputWithinLimitWithYield(action.text)
-      const writeSettlement = await this.writeTerminalAction(
+      const writeSettlement = await this.writeTerminalSendAction(
+        handle,
         pty.pty.ptyId,
         action,
         payload,
@@ -183,7 +184,7 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
       throw new Error('terminal_not_writable')
     }
 
-    const writeSettlement = await this.writeTerminalAction(leaf.ptyId, action, payload, options)
+    const writeSettlement = await this.writeTerminalSendAction(handle, leaf.ptyId, action, payload, options)
 
     return {
       handle,
@@ -194,6 +195,35 @@ export abstract class OrcaRuntimeWithControllerKnowsPtyIsLive extends OrcaRuntim
           ? Buffer.byteLength(payload, 'utf8')
           : 0
     }
+  }
+
+  private async writeTerminalSendAction(
+    handle: string,
+    ptyId: string,
+    action: { text?: string; enter?: boolean; interrupt?: boolean },
+    payload: string,
+    options: RuntimeTerminalWriteOptions
+  ): Promise<WriteSettlement | undefined> {
+    if (options.inputKind !== 'driving' || !options.requireWriteSettlement) {
+      return this.writeTerminalAction(ptyId, action, payload, options)
+    }
+    const generation = this.getPtyLifecycleGeneration(ptyId)
+    const assertCurrent = (): void => {
+      options.signal?.throwIfAborted()
+      this.assertLiveTerminalHandleTargetsPty(handle, ptyId)
+      this.assertAgentPromptGeneration(ptyId, generation)
+    }
+    return this.serializeAgentPromptSubmission(ptyId, generation, async () => {
+      assertCurrent()
+      return this.writeTerminalAction(ptyId, action, payload, {
+        ...options,
+        beforeWrite: async id => {
+          assertCurrent()
+          await options.beforeWrite?.(id)
+          assertCurrent()
+        }
+      })
+    })
   }
 
   async sendTerminalAgentPrompt(

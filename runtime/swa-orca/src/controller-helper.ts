@@ -52,14 +52,19 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
 
 async function main() {
   const lines = createInterface({ input: process.stdin, terminal: false, crlfDelay: Infinity })
-  for await (const line of lines) {
-    const command = helperInput.parse(JSON.parse(line))
-    try {
-      const result = await execute(command.action, command.request_id, command.invocation)
-      process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, result }) + '\n')
-    } catch (error) {
-      process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, error: nativeError(error) }) + '\n')
+  try {
+    for await (const line of lines) {
+      const command = helperInput.parse(JSON.parse(line))
+      try {
+        const result = await execute(command.action, command.request_id, command.invocation)
+        process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, result }) + '\n')
+      } catch (error) {
+        process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, error: nativeError(error) }) + '\n')
+      }
     }
+  } finally {
+    lines.close()
+    process.stdin.destroy()
   }
 }
 main().catch(error => { process.stderr.write(JSON.stringify(nativeError(error)) + '\n'); process.exitCode = 1 })
