@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
+import { constants, closeSync, fsyncSync, lstatSync, openSync, realpathSync, statSync, writeFileSync } from 'node:fs'
 import { lstat, mkdir, open, readFile, realpath, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -12,14 +13,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { publicCase, publicFiles, publicRevision, publicSource } from './public-case-definition.mjs'
 import { codexEnds, codexStarts, isCodexDelta, originalLinuxTreeProof, validateCodexEventView, validateLinuxFinalCustody } from './codex-event-view.mjs'
+import { isLinuxPiTarget, isPiDelta, originalPiTreeProof, piEnds, piStarts, readPiPrivateJson, validatePiEventView, validatePiLaunchRecord, validatePiSelection } from './pi-event-view.mjs'
 
 const help = `真实安装物多Worker验收；不会签发Grant、启动服务或直接调用原生Agent。
 使用同安装Node运行本文件，显式传入：
 --candidate ABS --data-root ABS --project ABS --project-id ID --endpoint LOOPBACK
 --agent ID --model ID --output ABS_NEW_DIRECTORY [--workers 3]
-Windows Pi/OpenCode另需--service-log ABS；Linux Codex另需--source-repository ABS。
+Windows Pi/OpenCode另需--service-log ABS；Linux Codex/Pi另需--source-repository ABS。
+Linux StepFun Pi仅workers=3，另需--pi-launch-record ABS --pi-launch-sha256 SHA256，取自本次serve owner原件。
 SWA_PROJECT_TOKEN仅通过受保护环境提供。来源、ToolsOff、当前Grant或完整资源证据缺失时不发送worker.start。
-支持Windows Pi/OpenCode与Linux Codex0.163.0的真实来源；缺项目化静态配置仍在启动前NOT_RUN。
+支持Windows Pi/OpenCode、Linux Codex0.163.0与封闭StepFun Pi1.0.1来源；缺项目化静态配置仍在启动前NOT_RUN。
 业务成果必须由真实Reviewer/Agent控制端审阅；驱动不会自动生成通过记录。
 退出：0=已执行断言与成果交接完成，1=失败，2=参数无效，3=未运行/前置不足；最终接受另由Reviewer决定。
 `
@@ -40,13 +43,16 @@ const within = (parent, child) => {
 }
 let values, workers
 try {
-  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
+  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers', 'pi-launch-record', 'pi-launch-sha256'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
   values.workers ??= '3'
   if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error()
   workers = Number(values.workers)
   for (const key of ['candidate', 'data-root', 'project', 'output']) if (!values[key] || !isAbsolute(values[key])) throw new Error()
   if (process.platform === 'win32' && (!values['service-log'] || !isAbsolute(values['service-log']))) throw new Error()
-  if (process.platform === 'linux' && values.agent === 'codex' && (!values['source-repository'] || !isAbsolute(values['source-repository']))) throw new Error()
+  if (process.platform === 'linux' && ['codex', 'pi'].includes(values.agent) && (!values['source-repository'] || !isAbsolute(values['source-repository']))) throw new Error()
+  if (process.platform === 'linux' && values.agent === 'pi') {
+    if (!isLinuxPiTarget(process.platform, values.agent, values.model, workers) || !isAbsolute(values['pi-launch-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['pi-launch-sha256'] ?? '')) throw new Error()
+  } else if (values['pi-launch-record'] !== undefined || values['pi-launch-sha256'] !== undefined) throw new Error()
   for (const key of ['project-id', 'endpoint', 'agent', 'model']) if (!values[key]?.trim()) throw new Error()
   const endpoint = new URL(values.endpoint)
   if (endpoint.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(endpoint.hostname) || !endpoint.port || endpoint.username || endpoint.password || endpoint.pathname !== '/' || endpoint.search || endpoint.hash) throw new Error()
@@ -57,6 +63,8 @@ try {
 }
 
 process.umask(0o077)
+const piLinux = isLinuxPiTarget(process.platform, values.agent, values.model, workers)
+const linuxStructured = process.platform === 'linux' && (values.agent === 'codex' || piLinux)
 const token = process.env.SWA_PROJECT_TOKEN
 const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.model, model_execution: 'NOT_RUN', acceptance: 'REQUIRES_INDEPENDENT_REVIEW', checks: [], commands: [], unknown_requests: [], provider_events: [], started_workers: [] }
 let output, candidate, dataRoot, project, inputDirectory, swa, runtimeId, controller, rootTask, runId, database, requireRuntime, processAPI, daemonOwner
@@ -66,6 +74,13 @@ const sessionOwners = new Map()
 const stopRequests = new Map(), releaseRequests = new Map()
 const approvedFiles = new Map()
 const codexViews = new Map()
+const piViews = new Map()
+let piLaunch, piSourceHome, piSourceRoot, piExecutable
+let piProtocol
+const piMetadata = new Map()
+const piRecords = new Map(), piNativeFiles = new Map()
+const piDriverSources = new Map()
+const piPrivateSources = new Map()
 const check = (name, detail) => report.checks.push({ name, status: 'PASS', detail })
 const native = reply => object(object(reply.result).native)
 async function ordinary(path, directory) {
@@ -79,6 +94,63 @@ async function ordinary(path, directory) {
     if (dirname(current) === current) return canonical
   }
 }
+async function piSourceMetadata(path, directory) {
+  assert.equal(await ordinary(path, directory), path, 'pi_source_path_must_be_canonical')
+  const info = await lstat(path, { bigint: true })
+  assert.equal(info.uid, BigInt(process.getuid()))
+  assert.equal(info.mode & 0o7777n, directory ? 0o700n : 0o600n)
+  if (!directory) assert.equal(info.nlink, 1n)
+  return { path, version: `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`, identity: `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.uid}:${info.mode}:${info.nlink}` }
+}
+async function readPiOwnedLaunch(revision, daemon) {
+  const path = await ordinary(values['pi-launch-record'], false)
+  const { value, bytes, source: before } = readPiPrivateJson(path, 16 * 1024, piProtocol.parseStrictPiJson)
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), values['pi-launch-sha256'], 'pi_owned_launch_hash_changed')
+  const launch = validatePiLaunchRecord(value, { installation: candidate, source_revision: revision, data_root: dataRoot, endpoint: values.endpoint })
+  assert.equal(launch.serve_pid, daemon.swa_service_job.serve_pid)
+  const serve = await observeSource('incarnation', launch.serve_pid)
+  assert.equal(serve.absent, false)
+  assert.equal(serve.incarnation.boot_id, daemon.swa_service_job.boot_id)
+  assert.equal(serve.incarnation.start_ticks, daemon.swa_service_job.serve_start_ticks)
+  assert.equal(serve.incarnation.owner_uid, daemon.swa_service_job.owner_uid)
+  assert.equal(await realpath(`/proc/${launch.serve_pid}/exe`), join(candidate, 'swa'))
+  piSourceHome = launch.pi_source_home
+  piSourceRoot = await piSourceMetadata(piSourceHome, true)
+  const roots = [candidate, dataRoot, project, await ordinary(values['source-repository'], true), process.env.CODEX_HOME, process.env.CLAUDE_CONFIG_DIR, process.env.SWA_AGENT_PROFILE, ...(process.env.SWA_PROTECTED_ROOTS?.split(':') ?? [])].filter(Boolean)
+  for (const root of roots) {
+    const canonical = await realpath(root)
+    assert.ok(!within(canonical, piSourceHome) && !within(piSourceHome, canonical), 'pi_source_overlaps_protected_root')
+  }
+  piMetadata.set(path, before)
+  for (const name of ['auth.json', 'models.json', 'settings.json']) {
+    const file = join(piSourceHome, name)
+    piMetadata.set(file, await piSourceMetadata(file, false))
+  }
+  return { value: launch, serve: serve.incarnation, source: before }
+}
+async function verifyPiMetadata() {
+  if (!piLinux) return
+  assert.ok(piLaunch, 'pi_owned_launch_not_observed')
+  assert.deepEqual(await piSourceMetadata(piSourceHome, true), piSourceRoot, 'pi_source_root_changed')
+  for (const [path, expected] of piMetadata) assert.deepEqual(await piSourceMetadata(path, false), expected, 'pi_source_or_launch_metadata_changed')
+  assert.deepEqual(await observeSource('incarnation', piLaunch.value.serve_pid), { absent: false, incarnation: piLaunch.serve }, 'pi_owned_serve_changed')
+  assert.equal(await realpath(`/proc/${piLaunch.value.serve_pid}/exe`), join(candidate, 'swa'))
+}
+async function verifyPiDriverSources(revision) {
+  const repository = await ordinary(values['source-repository'], true)
+  for (const name of ['run-installed.mjs', 'public-case-definition.mjs', 'codex-event-view.mjs', 'prepare-source-observer.mjs', 'source-observer-entry.ts', 'extract-observer-source.py', 'pi-event-view.mjs', 'pi-source-observer-entry.ts']) {
+    const relativePath = 'tests/swa-product-acceptance/' + name
+    const path = await ordinary(fileURLToPath(new URL('./' + name, import.meta.url)), false)
+    assert.equal(path, join(repository, relativePath), 'pi_driver_not_from_explicit_source_repository')
+    const before = await stat(path, { bigint: true })
+    assert.ok(before.size > 0n && before.size <= 1024n * 1024n)
+    const actual = await readFile(path), original = execFileSync('git', ['--no-pager', 'show', `${revision}:${relativePath}`], { cwd: repository, timeout: 30_000, maxBuffer: 1024 * 1024, env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_PAGER: 'cat' } })
+    assert.ok(actual.equals(original), 'pi_driver_source_differs_from_installed_revision')
+    const info = await stat(path, { bigint: true }), version = value => `${value.dev}:${value.ino}:${value.birthtimeNs}:${value.mtimeNs}:${value.size}`
+    assert.equal(version(info), version(before))
+    piDriverSources.set(path, { version: version(info), sha256: createHash('sha256').update(actual).digest('hex') })
+  }
+}
 const safeText = text => {
   assert.ok(!token || !text.includes(token), 'credential_in_output_refused')
   return text
@@ -89,7 +161,7 @@ const save = async (name, value) => {
 }
 async function verifyObserverSources() {
   assert.ok(observer, 'same_revision_observer_not_prepared')
-  for (const expected of [...observer.manifest.inputs, observer.manifest.journal_module, observer.manifest.observer]) {
+  for (const expected of [...observer.manifest.inputs, observer.manifest.journal_module, observer.manifest.observer, ...(piLinux ? [observer.manifest.protocol_module, observer.manifest.protocol_metafile] : [])]) {
     const path = await ordinary(expected.path, false)
     assert.ok(within(observer.root, path) || within(join(candidate, 'runtime'), path), 'observer_input_outside_approved_sources')
     const before = await stat(path, { bigint: true })
@@ -104,7 +176,7 @@ async function observeSource(mode, input) {
   await verifyObserverSources()
   const node = join(candidate, 'node/node')
   const args = mode === 'incarnation' ? [observer.manifest.observer.path, mode, String(input)] : [observer.manifest.observer.path, mode]
-  const text = execFileSync(node, args, { input: mode === 'decode-record' ? input : undefined, encoding: 'utf8', timeout: 10_000, maxBuffer: 1024 * 1024, cwd: observer.home, env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: observer.home, TMPDIR: observer.home }, stdio: ['pipe', 'pipe', 'pipe'] })
+  const text = execFileSync(node, args, { input: mode !== 'incarnation' ? input : undefined, encoding: 'utf8', timeout: 10_000, maxBuffer: 1024 * 1024, cwd: observer.home, env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: observer.home, TMPDIR: observer.home }, stdio: ['pipe', 'pipe', 'pipe'] })
   await verifyObserverSources()
   return object(JSON.parse(text))
 }
@@ -173,7 +245,12 @@ async function queryWorker(dispatch) {
   return observed
 }
 async function originalStartBinding(worker, workerSource) {
-  const request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
+  let request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
+  if (piLinux) for (const deadline = Date.now() + 30_000; request.current_input?.state !== 'accepted' && Date.now() < deadline;) {
+    assert.ok(!['unknown', 'failed'].includes(request.current_input?.state), 'pi_original_input_unresolved')
+    await delay(100)
+    request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
+  }
   assert.equal(request.state, 'completed', 'original_start_not_completed')
   const binding = object(object(request.receipt).swa_input_binding)
   const input = object(request.current_input)
@@ -201,6 +278,14 @@ async function originalStartBinding(worker, workerSource) {
     assert.equal(selection.native_launch.tools.mode, 'disabled')
     assert.equal(selection.native_launch.tools.native_contract, 'codex-cli-0.163.0')
   }
+  if (piLinux) {
+    await verifyPiMetadata()
+    const selection = object(object(request.receipt).selection)
+    assert.deepEqual(selection, workerSource.selection, 'original_pi_selection_changed')
+    validatePiSelection(selection, { executable: piExecutable, sourceHome: piSourceHome, privateRoot: join(dataRoot, 'pi-workers', values['project-id']) })
+    for (const source of [selection.native_launch.account.auth_source, selection.native_launch.account.models_source]) assert.equal((await piSourceMetadata(source.path, false)).version, source.version, 'pi_original_source_version_changed')
+    assert.ok(selection.configuration_version.includes(`;${piMetadata.get(join(piSourceHome, 'settings.json')).version};${piMetadata.get(join(piSourceHome, 'auth.json')).version};`), 'pi_actual_configuration_version_changed')
+  }
   return binding
 }
 async function sessionRecord(workerSource) {
@@ -210,26 +295,28 @@ async function sessionRecord(workerSource) {
   const journalSource = { path, identity: `${before.dev}:${before.ino}:${before.birthtimeNs}` }
   const journal = new DatabaseSync(path, { readOnly: true })
   try {
-    if (values.agent === 'codex') {
+    if (values.agent === 'codex' || piLinux) {
       const actual = journal.prepare(`SELECT session_id,
         CASE WHEN length(CAST(record_json AS BLOB)) BETWEEN 1 AND 1048576 THEN record_json ELSE NULL END AS record_json
         FROM agent_session_records WHERE session_id=?`).get(workerSource.native_session_id)
       assert.ok(actual && typeof actual.record_json === 'string', 'actual_session_record_missing_or_exceeds_bound')
       assert.equal(actual.session_id, workerSource.native_session_id)
-      const decoded = await observeSource('decode-record', actual.record_json)
+      const decoded = await observeSource(piLinux ? 'decode-pi-record' : 'decode-record', actual.record_json)
       assert.equal(decoded.schema_version, 2)
       assert.equal(decoded.session_id, actual.session_id)
       assert.equal(decoded.provider, values.agent)
       assert.equal(decoded.model, values.model)
-      assert.equal(decoded.head.handle.agent, 'codex')
-      assert.equal(decoded.head.handle.transport, 'codex-app-server')
+      assert.equal(decoded.head.handle.agent, values.agent)
+      assert.equal(decoded.head.handle.transport, piLinux ? 'jsonl-rpc' : 'codex-app-server')
       assert.equal(decoded.lease.runtimeKind, 'native')
       assert.equal(decoded.lease.sessionId, actual.session_id)
       assert.equal(decoded.lease.handoffStage, null)
       assert.equal(decoded.lease.unreconciled, false)
       const after = await stat(path, { bigint: true })
       assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, journalSource.identity, 'session_journal_replaced')
-      return { journal_source: journalSource, session_id: decoded.session_id, provider: decoded.provider, model: decoded.model, head: decoded.head, lease: decoded.lease }
+      if (piLinux) assert.deepEqual(decoded.account_home, { variable: 'PI_CODING_AGENT_DIR', path: join(dataRoot, 'pi-workers', values['project-id'], decoded.session_id) })
+      if (piLinux) piRecords.set(decoded.session_id, { path, projection: decoded })
+      return { journal_source: journalSource, session_id: decoded.session_id, provider: decoded.provider, model: decoded.model, head: decoded.head, lease: decoded.lease, ...(piLinux ? { account_home: decoded.account_home, journal_epoch: journal.prepare('SELECT epoch FROM journal_sessions WHERE session_id=?').get(decoded.session_id)?.epoch } : {}) }
     }
     const row = journal.prepare(`SELECT session_id,
       json_extract(record_json, '$.schemaVersion') AS schema_version,
@@ -274,10 +361,10 @@ async function verifySessionOwner(record, workerSource, owner, worker) {
     assert.ok(record.lease.runtimeFence > owner.binding.runtime_fence)
     assert.equal(record.lease.deathEvidence?.kind, 'exit-observed')
     assert.equal(record.lease.deathEvidence?.ownerFence, owner.binding.runtime_fence)
-    if (values.agent === 'codex') {
+    if (linuxStructured) {
       assert.ok(worker.stop?.reply && stopRequests.get(worker.dispatch_id)?.request_id === worker.stop.request_id, 'released_owner_has_no_original_stop_response')
       assert.equal(native(worker.stop.reply).state, 'stopped')
-      const final = validateLinuxFinalCustody(workerSource.custody, codexViews.get(workerSource.native_session_id))
+      const final = validateLinuxFinalCustody(workerSource.custody, (piLinux ? piViews : codexViews).get(workerSource.native_session_id))
       assert.deepEqual(final.observation.root, owner.incarnation)
     } else {
       assert.ok(stopped.has(worker.dispatch_id) && worker.stop?.proof, 'released_owner_has_no_original_complete_job_proof')
@@ -287,7 +374,7 @@ async function verifySessionOwner(record, workerSource, owner, worker) {
   }
   assert.equal(workerSource.process.runtime_id, owner.process.runtime)
   assert.equal(workerSource.process.pid, owner.process.pid)
-  if (values.agent === 'codex') {
+  if (linuxStructured) {
     const { runtime_id, ...expected } = workerSource.process
     assert.deepEqual(expected, owner.incarnation)
     const observed = await observeSource('incarnation', owner.process.pid)
@@ -312,22 +399,22 @@ async function events(workerSource) {
     assert.match(process.runtime, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'actual_process_runtime_incarnation_missing')
     assert.deepEqual(beforeRecord.head, workerSource.provider_link, 'provider_source_head_differs_from_actual_record')
     owner = { binding, process, head: beforeRecord.head, journal_source: beforeRecord.journal_source }
-    if (values.agent === 'codex') {
+    if (linuxStructured) {
       const observed = await observeSource('incarnation', process.pid)
       assert.equal(observed.absent, false)
       owner.incarnation = observed.incarnation
     }
   }
   await verifySessionOwner(beforeRecord, workerSource, owner, worker)
-  assert.ok(Number.isSafeInteger(workerSource.process.pid) && (values.agent === 'codex' || workerSource.process.creation_time_ms > 0))
+  assert.ok(Number.isSafeInteger(workerSource.process.pid) && (linuxStructured || workerSource.process.creation_time_ms > 0))
   const path = await ordinary(workerSource.provider_events, false)
   assert.ok(within(dataRoot, path), 'provider_source_outside_private_root')
-  const handle = await open(path, 'r')
+  const handle = await open(path, piLinux ? constants.O_RDONLY | constants.O_NOFOLLOW : 'r')
   let rows
   try {
     const before = await handle.stat({ bigint: true })
-    assert.ok(before.size > 0n && before.size <= BigInt(values.agent === 'codex' ? 12 : 64) * 1024n * 1024n, 'provider_source_bound')
-    if (values.agent === 'codex') {
+    assert.ok(before.size > 0n && before.size <= BigInt(linuxStructured ? 12 : 64) * 1024n * 1024n, 'provider_source_bound')
+    if (linuxStructured) {
       let aggregate = before.size
       for (const [otherPath, value] of witnesses) if (otherPath !== path) aggregate += BigInt(value.bytes.length)
       assert.ok(aggregate <= 12n * 1024n * 1024n, 'aggregate_provider_bytes_exceed_bound')
@@ -339,6 +426,7 @@ async function events(workerSource) {
     assert.equal(bytes.length, Number(before.size))
     assert.equal(bytes.at(-1), 10, 'provider_source_incomplete_record')
     new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+    if (piLinux) await observeSource('validate-pi-trace', bytes)
     rows = []
     for await (const item of Readable.from([bytes]).pipe(jsonlParser.asStream())) rows.push(item.value)
     const after = await stat(path, { bigint: true })
@@ -348,7 +436,7 @@ async function events(workerSource) {
     await verifySessionOwner(afterRecord, workerSource, owner, worker)
     if (beforeRecord.lease.claimStatus === afterRecord.lease.claimStatus) assert.deepEqual(afterRecord, beforeRecord, 'session_owner_changed_during_event_read')
     else assert.ok(beforeRecord.lease.claimStatus === 'live' && afterRecord.lease.claimStatus === 'released', 'unreviewed_session_owner_transition')
-    witnesses.set(path, { signature, bytes })
+    witnesses.set(path, { signature, bytes, ...(piLinux ? { source_version: `${before.dev}:${before.ino}:${before.birthtimeNs}:${before.mtimeNs}:${before.size}` } : {}) })
   } finally { await handle.close() }
   if (values.agent === 'opencode') rows = rows.filter(row => row.session_id === workerSource.native_session_id && row.runtime_fence === workerSource.fence)
   if (values.agent === 'codex') {
@@ -367,6 +455,27 @@ async function events(workerSource) {
     let aggregate = Buffer.byteLength(JSON.stringify(rows))
     for (const [session, value] of sources) if (session !== workerSource.native_session_id) aggregate += Buffer.byteLength(JSON.stringify(value.rows))
     assert.ok(aggregate <= 12 * 1024 * 1024, 'aggregate_actual_provider_sources_exceed_bound')
+  } else if (piLinux) {
+    assert.equal(workerSource.runtime_epoch, runtimeId)
+    const view = validatePiEventView(rows, { session: workerSource.native_session_id, fence: owner.binding.runtime_fence, runtimeEpoch: runtimeId, process: workerSource.process, executable: piExecutable, nodeExecutable: join(candidate, 'node/node'), sessionFile: owner.head.handle.nativeId, home: beforeRecord.account_home.path, journalEpoch: beforeRecord.journal_epoch })
+    await piSourceMetadata(beforeRecord.account_home.path, true)
+    await piSourceMetadata(join(beforeRecord.account_home.path, 'settings.json'), false)
+    for (const name of ['auth.json', 'models.json']) {
+      const path = join(beforeRecord.account_home.path, name), source = view.ready.sources.find(value => value.path === path)
+      assert.equal((await piSourceMetadata(path, false)).version, source.version, 'pi_private_projection_source_changed')
+      piPrivateSources.set(path, source)
+    }
+    const previous = piViews.get(workerSource.native_session_id)
+    if (previous) {
+      assert.deepEqual(view.custody, previous.custody)
+      assert.deepEqual(view.nativeCLI, previous.nativeCLI)
+      assert.deepEqual(view.ready, previous.ready)
+    } else {
+      assert.deepEqual(await observeSource('incarnation', view.nativeCLI.pid), { absent: false, incarnation: { platform: 'linux', pid: view.nativeCLI.pid, boot_id: view.nativeCLI.boot_id, start_ticks: view.nativeCLI.start_ticks, owner_uid: view.nativeCLI.owner_uid } })
+      assert.deepEqual(view.custody.owner, daemonOwner)
+    }
+    if (view.finalRow) assert.deepEqual(workerSource.custody, view.finalRow.detail)
+    piViews.set(workerSource.native_session_id, view)
   } else for (const row of rows) {
     assert.equal(row.process.pid, workerSource.process.pid)
     assert.equal(row.process.creationTimeMs, workerSource.process.creation_time_ms)
@@ -379,17 +488,54 @@ async function events(workerSource) {
   sources.set(workerSource.native_session_id, { source: workerSource, rows })
   return rows
 }
-const isDelta = row => row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
+const isDelta = row => row.protocol === 'pi-jsonl-rpc' ? isPiDelta(row) : row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
   ? row.event === 'session/update' && row.detail?.kind === 'known' && ['agent_message_chunk', 'agent_thought_chunk'].includes(row.detail.notification?.update?.sessionUpdate) && row.detail.notification.update.content?.type === 'text' && !!row.detail.notification.update.content.text
   : row.record?.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && !!row.record.assistantMessageEvent.delta
-const starts = rows => values.agent === 'codex' ? codexStarts(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
-const ends = rows => values.agent === 'codex' ? codexEnds(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
+const starts = rows => piLinux ? piStarts(rows) : values.agent === 'codex' ? codexStarts(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
+const ends = rows => piLinux ? piEnds(rows) : values.agent === 'codex' ? codexEnds(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
+async function piReplayNativeInventory(view) {
+  const path = view.ready.session_file
+  const before = await piSourceMetadata(path, false)
+  const handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW)
+  const version = info => `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+  let bytes
+  try {
+    const info = await handle.stat({ bigint: true })
+    assert.equal(version(info), before.version)
+    assert.ok(info.size > 0n && info.size <= 12n * 1024n * 1024n, 'pi_replay_native_bound')
+    const buffer = Buffer.alloc(Number(info.size) + 1)
+    let size = 0
+    while (size < buffer.length) {
+      const read = await handle.read(buffer, size, buffer.length - size, null)
+      if (!read.bytesRead) break
+      size += read.bytesRead
+    }
+    assert.equal(size, Number(info.size), 'pi_replay_native_changed_during_read')
+    assert.equal(version(await handle.stat({ bigint: true })), before.version)
+    assert.deepEqual(await piSourceMetadata(path, false), before)
+    bytes = buffer.subarray(0, size)
+  } finally { await handle.close() }
+  const checked = await observeSource('validate-pi-native', bytes)
+  assert.equal(checked.header.id, view.ready.session_id)
+  const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+  assert.equal(bytes.at(-1), 10)
+  const entries = text.slice(0, -1).split('\n').map(line => piProtocol.parseStrictPiJson(line))
+  assert.equal(entries.length, checked.record_count)
+  return { path, source_version: before.version, sha256: createHash('sha256').update(bytes).digest('hex'), entry_ids: entries.slice(1).map(entry => entry.id) }
+}
 async function settledReplay(args, original) {
   const status = await cli(['request', 'show', '--controller', controller, '--request-id', requestId(args)])
   assert.equal(status.result.state, 'completed', 'unknown_request_must_not_replay')
   const executionCounts = async () => Promise.all([...sources.values()].map(async ({ source: actual }) => {
     const rows = await events(actual)
-    return { session: actual.native_session_id, fence: actual.fence, starts: starts(rows), ends: ends(rows) }
+    const counts = { session: actual.native_session_id, fence: actual.fence, starts: starts(rows), ends: ends(rows) }
+    if (piLinux) {
+      const view = piViews.get(actual.native_session_id)
+      counts.prompt_writes = rows.filter(row => row.event === 'write_intent' && row.detail.command === 'prompt')
+      counts.user_echoes = rows.filter(row => row.event === 'native_record' && row.detail.frame.type === 'message_end' && row.detail.frame.message.role === 'user')
+      counts.native = await piReplayNativeInventory(view)
+    }
+    return counts
   }))
   const before = await executionCounts()
   const replay = await cli(args)
@@ -400,7 +546,7 @@ async function settledReplay(args, original) {
   assert.deepEqual(await executionCounts(), before, 'replay_started_another_native_operation')
   await delay(300)
   assert.deepEqual(await executionCounts(), before, 'replay_native_execution_count_changed_after_response')
-  check('completed_request_replay.native_execution_counts', { request_id: requestId(args), sessions: before.map(row => ({ session: row.session, fence: row.fence, starts: row.starts.length, ends: row.ends.length })), observation_ms: 300 })
+  check('completed_request_replay.native_execution_counts', { request_id: requestId(args), sessions: before.map(row => ({ session: row.session, fence: row.fence, starts: row.starts.length, ends: row.ends.length, ...(piLinux ? { prompt_writes: row.prompt_writes.length, user_echoes: row.user_echoes.length, native_entry_ids: row.native.entry_ids, native_sha256: row.native.sha256 } : {}) })), observation_ms: 300 })
   return replay
 }
 async function proveWindowsTree(workerSource, checkpoint) {
@@ -452,21 +598,29 @@ async function proveWindowsTree(workerSource, checkpoint) {
 async function stopWorker(worker, active = false) {
   assert.ok(!stopRequests.has(worker.dispatch_id) && !releaseRequests.has(worker.dispatch_id), 'preserve_original_stop_or_release_request')
   const args = ['worker', 'stop', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
-  const priorEvents = values.agent === 'codex' ? await events(worker.source) : null
-  stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
+  const priorEvents = linuxStructured ? await events(worker.source) : null
+  if (!piLinux) stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
   let checkpoint
-  if (values.agent === 'codex') checkpoint = { sequence: priorEvents.at(-1).sequence, request_id: requestId(args) }
+  if (linuxStructured) {
+    checkpoint = { sequence: priorEvents.at(-1).sequence, request_id: requestId(args) }
+    if (piLinux && active) {
+      const cycle = piViews.get(worker.source.native_session_id).active
+      assert.ok(cycle && !cycle.end && !cycle.settled, 'pi_active_stop_checkpoint_is_not_running')
+      Object.assign(checkpoint, { cid: cycle.cid, running: true })
+    }
+  }
   else {
     const log = await stat(await ordinary(values['service-log'], false), { bigint: true })
     checkpoint = active || !worker.source_checkpoint ? { identity: `${log.dev}:${log.ino}:${log.birthtimeNs}`, size: log.size.toString() } : worker.source_checkpoint
   }
+  if (piLinux) stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
   const reply = await cli(args)
   assert.equal(native(reply).state, 'stopped')
   worker.stop = { request_id: requestId(args), args, reply, proof: null, active_stop_requested: active }
   let proof
-  if (values.agent === 'codex') {
-    const rows = await events(worker.source), view = codexViews.get(worker.source.native_session_id)
-    proof = originalLinuxTreeProof(rows, view, checkpoint)
+  if (linuxStructured) {
+    const rows = await events(worker.source), view = (piLinux ? piViews : codexViews).get(worker.source.native_session_id)
+    proof = piLinux ? originalPiTreeProof(rows, view, checkpoint, active) : originalLinuxTreeProof(rows, view, checkpoint)
     for (const expected of [view.custody.root, view.custody.nativeState.identity]) {
       const observed = await observeSource('incarnation', expected.pid)
       assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(expected), 'original_stopped_process_identity_still_alive')
@@ -502,7 +656,8 @@ async function readTranscript(dispatch) {
 
 async function readCompleteNativeFile(value) {
   assert.ok(within(dataRoot, await ordinary(value.path, false)), 'native_rollout_outside_private_root')
-  const handle = await open(value.path, 'r')
+  if (piLinux) await piSourceMetadata(value.path, false)
+  const handle = await open(value.path, piLinux ? constants.O_RDONLY | constants.O_NOFOLLOW : 'r')
   let bytes
   try {
     const before = await handle.stat({ bigint: true })
@@ -523,7 +678,228 @@ async function readCompleteNativeFile(value) {
   } finally { await handle.close() }
   assert.equal(bytes.at(-1), 10)
   assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(bytes), value.content, 'complete_native_export_differs_from_actual_file')
+  if (piLinux) piNativeFiles.set(value.path, { source_version: value.source_version, bytes })
   return bytes
+}
+
+async function piNativeRows(value) {
+  assert.equal(value.format, 'pi-session-jsonl')
+  const bytes = await readCompleteNativeFile(value)
+  const checked = await observeSource('validate-pi-native', bytes)
+  const rows = []
+  for await (const item of Readable.from([bytes]).pipe(jsonlParser.asStream())) rows.push(item.value)
+  assert.equal(rows.length, checked.record_count)
+  assert.equal(rows.length, value.record_count)
+  assert.deepEqual(rows[0], checked.header)
+  assert.equal(checked.header.id, value.native_id)
+  assert.equal(checked.header.cwd, project)
+  assert.ok(value.path.endsWith(`_${value.native_id}.jsonl`))
+  let parent = null
+  const ids = new Set()
+  for (const entry of rows.slice(1)) {
+    assert.ok(!ids.has(entry.id) && entry.parentId === parent, 'pi_native_parent_chain_changed')
+    ids.add(entry.id); parent = entry.id
+    if (entry.type === 'model_change') { assert.equal(entry.provider, 'stepfun'); assert.equal(entry.modelId, 'step-3.5-flash') }
+  }
+  return { bytes, header: checked.header, entries: rows.slice(1) }
+}
+
+async function verifyPiJournalInputs(worker, original, bindings, actualNative) {
+  const view = piViews.get(original.source.native_session_id)
+  assert.ok(view && view.ready.session_id === worker.native_session.native_id && view.ready.session_file === worker.native_session.path)
+  const folded = foldJournal({ sessionId: worker.journal.session_id, epoch: worker.journal.epoch })
+  for (const row of worker.journal.rows) assert.equal(folded.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
+  const actual = folded.finish()
+  assert.equal(actual.damage, null); assert.equal(actual.newer, null)
+  for (const submission of actual.state.submissions.values()) assert.ok(!['pending', 'unknown'].includes(submission.dispatchState), 'pi_unresolved_journal_input')
+  const messages = actualNative.entries.filter(entry => entry.type === 'message')
+  const raw = sources.get(original.source.native_session_id).rows.filter(row => row.event === 'native_record' && row.detail.frame.type === 'message_end')
+  assert.deepEqual(messages.map(entry => entry.message), raw.map(row => row.detail.frame.message), 'pi_raw_and_native_full_messages_differ')
+  const submitted = []
+  for (const binding of bindings) {
+    const status = object((await cli(['request', 'show', '--controller', controller, '--request-id', binding.parent_request])).result.current_input)
+    assert.equal(status.state, 'accepted'); assert.deepEqual(status.binding, binding)
+    const submission = actual.state.submissions.get(binding.operation_id), receipt = actual.state.receipts.get(binding.operation_id)
+    assert.deepEqual(submission, status.submission)
+    assert.equal(submission?.dispatchState, 'accepted')
+    assert.equal(submission?.fence, original.source.fence)
+    assert.equal(submission?.payloadFingerprint, observer.module.fingerprintPiBody(binding.session_id, binding.body))
+    assert.equal(submission?.clientMessageId, binding.operation_id)
+    assert.ok(Number.isSafeInteger(submission?.submittedSequence) && submission.submittedSequence > 0)
+    assert.equal(receipt?.providerItemId, submission.providerItemId)
+    assert.equal(receipt?.clientMessageId, binding.operation_id)
+    assert.equal(receipt?.cursor.epoch, worker.journal.epoch)
+    assert.ok(Number.isSafeInteger(receipt?.cursor.sequence) && receipt.cursor.sequence > 0 && receipt.cursor.sequence <= actual.state.lastSequence)
+    const item = actual.state.items.get(actual.state.aliases.get(submission.providerItemId) ?? submission.providerItemId)
+    assert.equal(item?.body.kind, 'message'); assert.equal(item.body.role, 'user')
+    assert.equal(item.agentId, undefined)
+    assert.deepEqual(item.body.blocks, binding.body.blocks)
+    assert.equal(item.turnScope?.kind, 'turn')
+    assert.equal(actual.state.itemFences.get(item.itemId), binding.runtime_fence)
+    const prompt = view.prompts.filter(value => value.cid === binding.operation_id)
+    assert.equal(prompt.length, 1)
+    assert.deepEqual(prompt[0].write.detail.binding, binding)
+    assert.ok(prompt[0].echo && prompt[0].write.settled && prompt[0].write.reply)
+    const rawIndex = raw.indexOf(prompt[0].echo)
+    assert.ok(rawIndex >= 0 && messages[rawIndex].message.role === 'user')
+    const baseline = prompt[0].write.detail.native_baseline
+    if (baseline.source) {
+      assert.equal(baseline.source.path, worker.native_session.path)
+      assert.equal(baseline.source.version.split(':').slice(0, 3).join(':'), worker.native_session.source_version.split(':').slice(0, 3).join(':'))
+      assert.ok(baseline.bytes >= 0 && baseline.bytes < actualNative.bytes.length)
+      const prefix = actualNative.bytes.subarray(0, baseline.bytes)
+      assert.equal(createHash('sha256').update(prefix).digest('hex'), baseline.sha256)
+      if (prefix.length) {
+        await observeSource('validate-pi-native', prefix)
+        for await (const value of Readable.from([prefix]).pipe(jsonlParser.asStream())) assert.notEqual(value.value.id, messages[rawIndex].id, 'pi_user_entry_predates_original_submit')
+      }
+    } else assert.equal(baseline.absent, true)
+    const turn = actual.state.items.get(item.turnScope.turnItemId)
+    assert.equal(turn?.body.kind, 'turn'); assert.equal(turn.agentId, undefined)
+    assert.equal(actual.state.itemFences.get(turn.itemId), binding.runtime_fence)
+    submitted.push({ sequence: submission.submittedSequence, cid: binding.operation_id, nativeEntry: messages[rawIndex], baseline, turn })
+  }
+  submitted.sort((a, b) => a.sequence - b.sequence)
+  assert.equal(submitted.length, view.prompts.length)
+  for (const [index, row] of submitted.entries()) {
+    if (index) {
+      assert.ok(row.sequence > submitted[index - 1].sequence)
+      assert.ok(!row.baseline.absent, 'pi_later_input_has_no_original_prefix')
+    }
+    assert.equal(row.cid, view.prompts[index].cid, 'pi_original_submission_order_changed')
+  }
+  for (const submission of actual.state.submissions.values()) if (submission.dispatchState === 'accepted') assert.ok(bindings.some(binding => binding.operation_id === submission.clientMessageId))
+  const latest = submitted.at(-1)
+  assert.ok(latest)
+  for (const projection of view.projections) {
+    const report = projection.detail.report
+    assert.equal(report.journalEpoch, worker.journal.epoch)
+    for (const step of report.steps.filter(value => value.written)) {
+      const rows = worker.journal.rows.filter(value => value.epoch === report.journalEpoch && value.row.fence === original.source.fence)
+      if (step.kind === 'settlement') assert.ok(rows.some(value => value.row.kind === 'lifecycle-batch' && value.row.settlementId === step.settlementId), 'pi_written_settlement_missing_from_actual_journal')
+      else {
+        const sameItem = itemId => itemId === step.itemId || (actual.state.aliases.get(itemId) ?? itemId) === (actual.state.aliases.get(step.itemId) ?? step.itemId)
+        assert.ok(rows.some(value => value.row.kind === 'item' && sameItem(value.row.itemId) || value.row.kind === 'lifecycle-batch' && value.row.mutations.some(mutation => mutation.kind === 'item' && sameItem(mutation.itemId))), 'pi_written_item_missing_from_actual_journal')
+      }
+    }
+  }
+  check('pi.actual_chunks_and_full_native_messages', { session_id: original.source.native_session_id, native_id: view.ready.session_id, native_message_count: messages.length,
+    cycles: view.cycles.map(cycle => ({ cid: cycle.cid, delta_count: cycle.deltas.length, assistant_messages: cycle.completedMessages.map(message => ({ timestamp: message.final.detail.frame.message.timestamp, content_indices: [...message.blocks.keys()], block_ends_observed: [...message.blocks.values()].every(block => !!block.ended), stop_reason: message.final.detail.frame.message.stopReason })) })) })
+  if (worker.native_session.availability === 'complete') {
+    const final = messages.at(-1), finalRaw = raw.at(-1)
+    assert.equal(final.message.role, 'assistant'); assert.equal(final.message.stopReason, 'stop')
+    assert.equal(final.id, worker.native_session.final.entry_id)
+    assert.equal(worker.native_session.final.text, final.message.content.filter(block => block.type === 'text').map(block => block.text).join(''))
+    assert.equal(latest.turn?.body.kind, 'turn'); assert.equal(latest.turn.body.state, 'completed'); assert.equal(latest.turn.body.outcome, 'success')
+    const cycle = view.cycles.at(-1)
+    assert.equal(cycle.cid, latest.cid)
+    assert.ok(cycle.end && cycle.settled && cycle.idle && cycle.finalMessage === finalRaw)
+    const closes = view.projections.filter(row => row.detail.eventType === 'text.close' && row.detail.sourceSequence === finalRaw.sequence)
+    assert.ok(closes.length)
+    for (const close of closes) {
+      const candidates = view.projections.filter(row => row.sequence <= close.sequence && row.detail.providerItem === close.detail.providerItem)
+      const itemIds = new Set(candidates.flatMap(row => row.detail.report.steps.filter(step => step.kind === 'item' && step.written).map(step => step.itemId)).filter(itemId => observer.module.matchesPiJournalItem(itemId, original.source.native_session_id, close.detail.providerItem)))
+      assert.ok(itemIds.size)
+      // 原transition可同时写barrier；只把真实本turn的assistant item作为当前文本证据。
+      const assistantItems = [...itemIds].map(itemId => actual.state.items.get(actual.state.aliases.get(itemId) ?? itemId)).filter(item => item?.body.kind === 'message' && item.body.role === 'assistant' && item.turnScope?.turnItemId === latest.turn.itemId)
+      assert.ok(assistantItems.length)
+      for (const item of assistantItems) {
+        assert.equal(item.agentId, undefined)
+        assert.equal(item.turnScope?.turnItemId, latest.turn.itemId)
+        assert.equal(actual.state.itemFences.get(item.itemId), original.source.fence)
+        const index = final.message.content.findIndex((block, part) => close.detail.providerItem.endsWith(`:${part}:${block.type === 'text' ? 'assistant' : 'reasoning'}`))
+        assert.ok(index >= 0)
+        const block = final.message.content[index]
+        assert.equal(item.body.blocks.flatMap(value => value.type === 'text' ? [value.text] : []).join(''), block.type === 'text' ? block.text : block.thinking)
+      }
+    }
+  } else assert.equal(original.stop?.active_stop_requested, true, 'pi_only_real_stopped_worker_may_be_partial')
+}
+
+function piRootInventory() {
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    db.exec('BEGIN')
+    const receiptsWhere = `FROM mutation_receipts WHERE json_valid(receipt)=1 AND method='swa.controllerDeliver'
+      AND json_extract(receipt,'$.project_id')=? AND json_extract(receipt,'$.run_id')=? AND json_extract(receipt,'$.root_task_id')=?`
+    const params = [values['project-id'], runId, rootTask]
+    const bound = db.prepare(`SELECT COUNT(*) AS count,SUM(LENGTH(CAST(receipt AS BLOB))) AS bytes FROM mutation_receipts WHERE request_id IN
+      (SELECT request_id ${receiptsWhere} UNION SELECT request_id||'/native' ${receiptsWhere})`).get(...params, ...params)
+    assert.ok(bound.count <= 100_000 && (bound.bytes ?? 0) <= 12 * 1024 * 1024)
+    const receipts = db.prepare(`SELECT caller_fingerprint,request_id,method,state,payload_hash,receipt FROM mutation_receipts WHERE request_id IN
+      (SELECT request_id ${receiptsWhere} UNION SELECT request_id||'/native' ${receiptsWhere}) ORDER BY caller_fingerprint,request_id`).all(...params, ...params)
+    for (const receipt of receipts) assert.ok(!['pending', 'unknown'].includes(receipt.state), 'pi_root_has_unresolved_original_request')
+    const taskBound = db.prepare('SELECT COUNT(*) AS count,SUM(LENGTH(CAST(spec AS BLOB))) AS bytes FROM tasks WHERE run_id=? AND (id=? OR parent_id=?)').get(runId, rootTask, rootTask)
+    assert.ok(taskBound.count <= 101 && (taskBound.bytes ?? 0) <= 12 * 1024 * 1024)
+    const tasks = db.prepare('SELECT id,run_id,parent_id,status,spec FROM tasks WHERE run_id=? AND (id=? OR parent_id=?) ORDER BY id').all(runId, rootTask, rootTask)
+    assert.equal(tasks.filter(row => row.parent_id === rootTask).length, workers)
+    const run = db.prepare('SELECT id,coordinator_handle,consumer_generation FROM runs WHERE id=?').get(runId)
+    assert.equal(run.coordinator_handle, controller)
+    const dispatches = db.prepare(`SELECT d.id,d.run_id,d.task_id,d.status,d.assignee_handle,d.assignee_orca_session_id,d.process_incarnation,d.contract_version,d.capability_revoked_at,
+      w.runtime_epoch,w.state,w.stage,w.agent_terminal_handle FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id
+      LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id WHERE d.run_id=? AND t.parent_id=? ORDER BY d.id LIMIT 101`).all(runId, rootTask)
+    assert.equal(dispatches.length, workers)
+    assert.deepEqual(dispatches.map(row => row.id).sort(), report.started_workers.map(row => row.dispatch_id).sort())
+    const resources = db.prepare(`SELECT id,origin_dispatch_id,owner_dispatch_id,terminal_handle,process_incarnation,ownership_state,release_state
+      FROM worker_terminal_resources WHERE origin_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? AND t.parent_id=?)
+      OR owner_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? AND t.parent_id=?) ORDER BY id LIMIT 101`).all(runId, rootTask, runId, rootTask)
+    assert.equal(resources.length, workers)
+    const value = JSON.stringify({ run, tasks, receipts, dispatches, resources })
+    assert.ok(Buffer.byteLength(value) <= 12 * 1024 * 1024)
+    return value
+  } finally { db.close() }
+}
+
+function piFinalSourceCheck(inventory, result) {
+  assert.equal(piRootInventory(), inventory, 'pi_complete_root_or_original_request_inventory_changed')
+  const version = info => `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+  const privateFile = path => {
+    assert.equal(realpathSync(path), path)
+    const info = lstatSync(path, { bigint: true })
+    assert.ok(info.isFile() && !info.isSymbolicLink() && info.uid === BigInt(process.getuid()) && (info.mode & 0o7777n) === 0o600n && info.nlink === 1n)
+    return info
+  }
+  assert.equal(realpathSync(piSourceHome), piSourceHome)
+  const rootInfo = lstatSync(piSourceHome, { bigint: true })
+  assert.ok(rootInfo.isDirectory() && !rootInfo.isSymbolicLink() && rootInfo.uid === BigInt(process.getuid()) && (rootInfo.mode & 0o7777n) === 0o700n)
+  assert.equal(version(rootInfo), piSourceRoot.version, 'pi_source_root_changed_before_export')
+  for (const [path, expected] of piMetadata) assert.equal(version(privateFile(path)), expected.version, 'pi_source_metadata_changed_before_export')
+  for (const [path, expected] of piNativeFiles) assert.equal(version(privateFile(path)), expected.source_version, 'pi_native_source_changed_before_export')
+  for (const [path, expected] of piPrivateSources) assert.equal(version(privateFile(path)), expected.version, 'pi_private_projection_changed_before_export')
+  for (const snapshot of piRecords.values()) {
+    const home = snapshot.projection.account_home.path, info = lstatSync(home, { bigint: true })
+    assert.equal(realpathSync(home), home)
+    assert.ok(info.isDirectory() && !info.isSymbolicLink() && info.uid === BigInt(process.getuid()) && (info.mode & 0o7777n) === 0o700n)
+    privateFile(join(home, 'settings.json'))
+  }
+  for (const expected of [...observer.manifest.inputs, observer.manifest.journal_module, observer.manifest.observer, observer.manifest.protocol_module, observer.manifest.protocol_metafile]) {
+    assert.equal(realpathSync(expected.path), expected.path)
+    assert.equal(version(statSync(expected.path, { bigint: true })), expected.version, 'pi_observer_source_changed_before_export')
+  }
+  for (const [path, expected] of piDriverSources) assert.equal(version(statSync(path, { bigint: true })), expected.version, 'pi_driver_changed_before_export')
+  assert.deepEqual(observer.module.observeIncarnation(piLaunch.value.serve_pid), { absent: false, incarnation: piLaunch.serve })
+  assert.deepEqual(observer.module.observeIncarnation(daemonOwner.pid), { absent: false, incarnation: daemonOwner })
+  // 产品完整导出已含原 trace/native content，不能重复把同一原件另计一次。
+  assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 12 * 1024 * 1024, 'pi_total_export_observation_exceeds_bound')
+  for (const worker of result.workers) {
+    const session = worker.source.native_session_id, snapshot = piRecords.get(session)
+    assert.ok(snapshot)
+    const db = new DatabaseSync(snapshot.path, { readOnly: true })
+    try {
+      const original = db.prepare(`SELECT CASE WHEN length(CAST(record_json AS BLOB)) BETWEEN 1 AND 1048576 THEN record_json ELSE NULL END AS value
+        FROM agent_session_records WHERE session_id=?`).get(session)
+      assert.ok(typeof original?.value === 'string')
+      assert.deepEqual(observer.module.decodePiRecord(piProtocol.parseStrictPiJson(original.value)), snapshot.projection, 'pi_record_or_original_owner_changed_before_export')
+      assert.equal(db.prepare('SELECT epoch FROM journal_sessions WHERE session_id=?').get(session)?.epoch, worker.journal.epoch)
+      assert.equal(db.prepare('SELECT MAX(seq) AS seq FROM journal_rows WHERE session_id=? AND epoch=?').get(session, worker.journal.epoch)?.seq, worker.journal.rows.at(-1)?.seq ?? 0)
+    } finally { db.close() }
+    const owner = sessionOwners.get(session), view = piViews.get(session)
+    for (const incarnation of [owner.incarnation, view.custody.nativeState.identity]) {
+      const observed = observer.module.observeIncarnation(incarnation.pid)
+      if (snapshot.projection.lease.claimStatus === 'live') assert.deepEqual(observed, { absent: false, incarnation })
+      else assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(incarnation))
+    }
+  }
 }
 
 async function codexNativeUserTexts(value) {
@@ -597,6 +973,7 @@ async function run() {
   assert.ok(['cli', 'combined'].includes(edition), 'unknown_candidate_edition')
   assert.match(revision, /^[0-9a-f]{40}$/)
   assert.equal(execFileSync(swa, ['--version'], { encoding: 'utf8', timeout: 30_000, windowsHide: true }).trim(), revision)
+  if (piLinux) await verifyPiDriverSources(revision)
   Object.assign(report, { source_revision: revision, candidate, data_root: dataRoot, project, endpoint: values.endpoint, platform, edition })
   check('candidate.version', revision)
   inputDirectory = join(project, '.verification', 'swa-product-input')
@@ -637,19 +1014,30 @@ async function run() {
   approvedFiles.set(specFile, specText)
   check('public.originals', { revision: source.revision, max_workers: workers })
   if (!token) throw new NotRun('current_project_grant_token_not_supplied_no_human_bootstrap')
-  if (!(process.platform === 'win32' && ['pi', 'opencode'].includes(values.agent) || process.platform === 'linux' && values.agent === 'codex' && values.model === 'gpt-5.5')) throw new NotRun('selected_platform_and_agent_source_contract_not_implemented')
+  if (!(process.platform === 'win32' && ['pi', 'opencode'].includes(values.agent) || process.platform === 'linux' && values.agent === 'codex' && values.model === 'gpt-5.5' || piLinux)) throw new NotRun('selected_platform_and_agent_source_contract_not_implemented')
   requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
-  if (values.agent === 'codex') {
+  if (linuxStructured) {
     const processNode = await stat('/proc/self/exe', { bigint: true }), installedNode = await stat(node, { bigint: true })
     assert.equal(`${processNode.dev}:${processNode.ino}`, `${installedNode.dev}:${installedNode.ino}`, 'actual_running_node_inode_differs_from_installation')
     const toolEnvironment = { PATH: process.env.PATH ?? '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: output, TMPDIR: output }
-    const prepared = execFileSync(node, [fileURLToPath(new URL('./prepare-source-observer.mjs', import.meta.url)), '--candidate', candidate, '--source-repository', await ordinary(values['source-repository'], true), '--output', join(output, 'source-observer')], { timeout: 90_000, maxBuffer: 4096, encoding: 'utf8', stdio: 'pipe', env: toolEnvironment })
+    const prepared = execFileSync(node, [fileURLToPath(new URL('./prepare-source-observer.mjs', import.meta.url)), '--candidate', candidate, '--source-repository', await ordinary(values['source-repository'], true), '--output', join(output, 'source-observer'), ...(piLinux ? ['--profile', 'stepfun-pi-n3'] : [])], { timeout: 90_000, maxBuffer: 4096, encoding: 'utf8', stdio: 'pipe', env: toolEnvironment })
     const root = join(output, 'source-observer'), manifestFile = await ordinary(join(root, 'manifest.json'), false)
     assert.ok((await stat(manifestFile)).size <= 4 * 1024 * 1024)
     observer = { root, home: join(root, 'observer-home'), manifest: JSON.parse(await readFile(manifestFile, 'utf8')) }
     assert.equal(observer.manifest.installed_revision, revision)
+    if (piLinux) assert.equal(observer.manifest.profile, 'stepfun-pi-n3')
     await mkdir(observer.home, { mode: 0o700 })
     await verifyObserverSources()
+    if (piLinux) {
+      piProtocol = requireRuntime('./pi-protocol.cjs')
+      assert.equal(typeof piProtocol.parseStrictPiJson, 'function')
+      observer.module = createRequire(observer.manifest.observer.path)(observer.manifest.observer.path)
+      assert.equal(typeof observer.module.decodePiRecord, 'function')
+      assert.equal(typeof observer.module.observeIncarnation, 'function')
+      assert.equal(typeof observer.module.matchesPiJournalItem, 'function')
+      assert.equal(typeof observer.module.fingerprintPiBody, 'function')
+      await verifyObserverSources()
+    }
     check('same_revision_read_only_observer', JSON.parse(prepared))
   } else {
     assert.ok(within(dataRoot, await ordinary(values['service-log'], false)), 'select_only_this_services_private_log')
@@ -658,7 +1046,7 @@ async function run() {
   const daemon = JSON.parse(await readFile(await ordinary(join(dataRoot, 'daemon', 'daemon-v49.pid'), false), 'utf8'))
   assert.equal(daemon.swa_service_job.source_revision, revision)
   assert.ok(samePath(daemon.swa_service_job.data_root, dataRoot) && samePath(daemon.swa_service_job.install_root, candidate))
-  if (values.agent === 'codex') {
+  if (linuxStructured) {
     assert.equal(daemon.swa_service_job.platform, 'linux')
     const current = await observeSource('incarnation', daemon.pid)
     assert.equal(current.absent, false)
@@ -666,6 +1054,7 @@ async function run() {
     assert.equal(daemonOwner.boot_id, daemon.swa_service_job.boot_id)
     assert.equal(daemonOwner.start_ticks, daemon.swa_service_job.daemon_start_ticks)
     assert.equal(daemonOwner.owner_uid, daemon.swa_service_job.owner_uid)
+    if (piLinux) piLaunch = await readPiOwnedLaunch(revision, daemon)
   } else {
     const security = requireRuntime('@orca/windows-security')
     daemonOwner = security.readServiceJobMember(daemon.swa_service_job.name, daemon.pid)
@@ -703,6 +1092,15 @@ async function run() {
     assert.equal(agent.configured.account_source, 'codex-native-api-key')
     await ordinary(agent.installed.executable, false)
   }
+  if (piLinux) {
+    assert.equal(agent.installed.version, '1.0.1')
+    assert.equal(agent.configured.provider, 'stepfun')
+    assert.equal(agent.configured.account_source, 'pi-api-key-file')
+    piExecutable = await ordinary(agent.installed.executable, false)
+    assert.equal(piExecutable, agent.installed.executable)
+    await verifyPiMetadata()
+    check('pi.independent_owned_source', { launch: piLaunch.source, source_home: piSourceHome, provider: 'stepfun', model: values.model, auth: 'NOT_READ_BY_DRIVER' })
+  }
   Object.assign(report, { runtime_id: runtimeId, capabilities })
   const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])
   controller = opened.controller
@@ -714,7 +1112,7 @@ async function run() {
   Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
   await settledReplay(createArgs, created)
   const startArgs = []
-  const beforeStarts = values.agent === 'codex' ? null : await stat(values['service-log'], { bigint: true })
+  const beforeStarts = linuxStructured ? null : await stat(values['service-log'], { bigint: true })
   const sourceCheckpoint = beforeStarts ? { identity: `${beforeStarts.dev}:${beforeStarts.ino}:${beforeStarts.birthtimeNs}`, size: beforeStarts.size.toString() } : null
   for (const [index, input] of inputs.entries()) {
     assert.ok(within(inputDirectory, await ordinary(input.input_file, false)))
@@ -744,10 +1142,22 @@ async function run() {
   for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
+  if (piLinux) {
+    await Promise.all(report.started_workers.map(worker => events(worker.source)))
+    assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_id)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_file)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.nativeCLI.pid)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.acquisition_generation)).size, workers)
+  }
   let overlap
   for (const deadline = Date.now() + 180_000; Date.now() < deadline;) {
     const lists = await Promise.all(report.started_workers.map(worker => events(worker.source)))
     assert.ok(lists.every(rows => starts(rows).length === 1 && ends(rows).length === 0), 'turn_ended_before_all_worker_overlap')
+    if (piLinux) for (const worker of report.started_workers) {
+      const cycle = piViews.get(worker.source.native_session_id).active
+      assert.ok(cycle && !cycle.end && !cycle.settled, 'pi_run_ended_before_all_worker_overlap')
+    }
     const deltas = lists.map(rows => rows.filter(isDelta))
     if (deltas.every(rows => rows.length >= 2)) {
       const from = Math.max(...deltas.map(rows => rows[0].monotonic_ms)), to = Math.min(...deltas.map(rows => rows.at(-1).monotonic_ms))
@@ -764,13 +1174,24 @@ async function run() {
   for (const worker of survivors) {
     assert.deepEqual(identity((await queryWorker(worker.dispatch_id)).source), identity(worker.source))
     const rows = await events(worker.source)
-    assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
+    if (!piLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
   }
   for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
-    if ((await Promise.all(survivors.map(worker => events(worker.source)))).every(rows => ends(rows).length === 1)) break
+    const lists = await Promise.all(survivors.map(worker => events(worker.source)))
+    if (lists.every((rows, index) => ends(rows).length === 1 && (!piLinux || piViews.get(survivors[index].source.native_session_id).cycles[0]?.idle))) break
     await delay(500)
   }
   for (const worker of survivors) assert.equal(ends(await events(worker.source)).length, 1, 'survivor_first_turn_not_complete')
+  if (piLinux) {
+    const proof = target.stop.proof
+    for (const worker of survivors) {
+      const view = piViews.get(worker.source.native_session_id)
+      assert.deepEqual(view.custody.owner, piViews.get(target.source.native_session_id).custody.owner)
+      const rows = await events(worker.source)
+      assert.ok(rows.some(row => isPiDelta(row) && row.monotonic_ms > proof.stop_intent.monotonic_ms && row.monotonic_ms > proof.row.monotonic_ms), 'pi_survivor_has_no_same_daemon_monotonic_delta_after_full_stop')
+      assert.ok(view.cycles[0].idle, 'pi_survivor_not_idle_before_followup')
+    }
+  }
   const follow = survivors[0], followupFile = join(inputDirectory, 'followup.txt'), sendRequest = randomUUID()
   const followup = await readFile(await ordinary(followupFile, false), 'utf8')
   assert.equal(followup, prepared.followup, 'public_followup_changed_before_send')
@@ -811,6 +1232,7 @@ async function run() {
   report.changed_original_request_refusal = mismatched
   await settledReplay(target.stop.args, target.stop.reply)
   for (const worker of report.started_workers) worker.transcript = await readTranscript(worker.dispatch_id)
+  const piInventory = piLinux ? piRootInventory() : null
   const exported = await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'result-' + randomUUID())])
   const result = native(exported)
   assert.equal(result.workers.length, workers)
@@ -827,7 +1249,8 @@ async function run() {
     const body = await readFile(original.actual_input_file, 'utf8')
     assert.equal(originalRequest.receipt.invocation.input.text, body)
     const textOf = message => typeof message.content === 'string' ? message.content : message.content.filter(part => part.type === 'text').map(part => part.text).join('\n')
-    const userTexts = worker.native_session.format === 'codex-rollout-jsonl' ? await codexNativeUserTexts(worker.native_session) : worker.native_session.format === 'opencode-sqlite-v2'
+    const piNative = piLinux ? await piNativeRows(worker.native_session) : undefined
+    const userTexts = piNative ? piNative.entries.filter(entry => entry.type === 'message' && entry.message.role === 'user').map(entry => textOf(entry.message)) : worker.native_session.format === 'codex-rollout-jsonl' ? await codexNativeUserTexts(worker.native_session) : worker.native_session.format === 'opencode-sqlite-v2'
       ? worker.native_session.messages.filter(message => message.type === 'user').map(message => message.data.text)
       : worker.native_session.entries.filter(entry => entry.type === 'message' && entry.message.role === 'user').map(entry => textOf(entry.message))
     const originalText = binding.body.blocks.filter(block => block.type === 'text').map(block => block.text).join('\n')
@@ -844,6 +1267,22 @@ async function run() {
       assert.equal(worker.provider_events.record_count, actualRows.length)
       await verifyCodexJournalInputs(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding])
     }
+    if (piLinux) {
+      const actualRows = await events(original.source)
+      const view = piViews.get(original.source.native_session_id)
+      assert.equal(worker.native_session.native_id, view.ready.session_id)
+      assert.equal(worker.native_session.path, view.ready.session_file)
+      assert.equal(worker.provider_events.format, 'pi-native-rpc-events-ndjson')
+      assert.equal(worker.provider_events.path, original.source.provider_events, 'pi_export_trace_path_not_original_source')
+      const rawBytes = await readCompleteNativeFile(worker.provider_events)
+      const actualWitness = witnesses.get(original.source.provider_events)
+      assert.equal(worker.provider_events.source_version, actualWitness.source_version, 'pi_export_trace_version_not_actual_snapshot')
+      assert.ok(rawBytes.equals(actualWitness.bytes), 'pi_export_trace_differs_from_actual_original_source')
+      const validated = await observeSource('validate-pi-trace', rawBytes)
+      assert.equal(validated.record_count, actualRows.length)
+      assert.equal(worker.provider_events.record_count, actualRows.length)
+      await verifyPiJournalInputs(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding], piNative)
+    }
     const journal = new DatabaseSync(original.source.journal_database, { readOnly: true })
     try {
       for (const row of worker.journal.rows) {
@@ -856,7 +1295,7 @@ async function run() {
   const stoppedOutput = result.workers.find(worker => worker.worker.dispatchId === target.dispatch_id)
   const mark = stoppedOutput.journal.rows.find(row => row.row.kind === 'tombstone' && row.row.stopEvent?.reason === 'evict' && row.row.stopEvent.at >= stoppedAt)
   assert.ok(mark, 'actual_active_stop_mark_missing')
-  for (const worker of survivors) assert.ok((await events(worker.source)).some(row => isDelta(row) && Date.parse(row.observed_at) > mark.row.stopEvent.at), 'survivor_has_no_actual_delta_after_native_stop_mark')
+  if (!piLinux) for (const worker of survivors) assert.ok((await events(worker.source)).some(row => isDelta(row) && Date.parse(row.observed_at) > mark.row.stopEvent.at), 'survivor_has_no_actual_delta_after_native_stop_mark')
   const fold = foldJournal({ sessionId: stoppedOutput.journal.session_id, epoch: stoppedOutput.journal.epoch })
   for (const row of stoppedOutput.journal.rows.filter(row => row.seq < mark.seq)) assert.equal(fold.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
   const prior = fold.finish()
@@ -865,9 +1304,20 @@ async function run() {
   assert.ok([...prior.state.items.values()].some(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId && item.body.state === 'running'))
   const endedTurn = stoppedOutput.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId)
   const stoppedEvents = await events(target.source)
-  const actualAbort = stoppedEvents.find(row => Date.parse(row.observed_at) >= mark.row.stopEvent.at && (row.protocol === 'codex-app-server' ? row.event === 'notification' && row.detail.method === 'turn/completed' && row.detail.frame.params.turn.status === 'interrupted' : row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record?.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted'))
-  assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' || endedTurn.body.outcome === 'cancellation' && actualAbort), 'active_native_turn_cancellation_not_proven')
-  await save('actual-result.json', exported)
+  const actualAbort = stoppedEvents.find(row => row.protocol === 'pi-jsonl-rpc'
+    ? row.event === 'native_record' && row.detail.frame.type === 'message_end' && row.detail.frame.message.role === 'assistant' && row.detail.frame.message.stopReason === 'aborted' && row.sequence > target.stop.proof.stop_intent.sequence
+    : Date.parse(row.observed_at) >= mark.row.stopEvent.at && (row.protocol === 'codex-app-server' ? row.event === 'notification' && row.detail.method === 'turn/completed' && row.detail.frame.params.turn.status === 'interrupted' : row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record?.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted'))
+  if (piLinux) {
+    assert.ok(actualAbort && endedTurn && (endedTurn.body.state === 'interrupted' || endedTurn.body.outcome === 'cancellation'), 'pi_actual_same_cycle_abort_missing')
+    assert.equal(target.stop.proof.stop_intent.detail.turn_id, mark.row.stopEvent.turnId, 'pi_stop_turn_differs_from_actual_journal_mark')
+    assert.equal(target.stop.proof.stop_intent.detail.cid, sessionOwners.get(target.source.native_session_id).binding.operation_id)
+  } else assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' || endedTurn.body.outcome === 'cancellation' && actualAbort), 'active_native_turn_cancellation_not_proven')
+  if (piLinux) {
+    await verifyPiMetadata(); await verifyObserverSources()
+    piFinalSourceCheck(piInventory, result)
+    const fd = openSync(join(output, 'actual-result.json'), constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600)
+    try { writeFileSync(fd, safeText(JSON.stringify(exported, null, 2) + '\n')); fsyncSync(fd) } finally { closeSync(fd) }
+  } else await save('actual-result.json', exported)
   for (const worker of survivors) await stopWorker(worker)
   for (const worker of report.started_workers) {
     const args = ['worker', 'release', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
@@ -898,7 +1348,7 @@ async function run() {
   report.business_review = review
   report.status = 'EXECUTED_ASSERTIONS_COMPLETED'
   report.model_execution = 'ACTUAL_NATIVE_EVENTS_OBSERVED'
-  report.scenarios = { cli_multiworker: 'REQUIRES_INDEPENDENT_REVIEW', input_chunk_observation: 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
+  report.scenarios = { cli_multiworker: 'REQUIRES_INDEPENDENT_REVIEW', input_chunk_observation: piLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_PI_CHUNKS' : 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
   completed = true
 }
 

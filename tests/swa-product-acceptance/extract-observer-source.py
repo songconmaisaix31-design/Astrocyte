@@ -12,7 +12,12 @@ import zipfile
 
 
 def main():
-    archive_name, repository_name, revision, target_name = sys.argv[1:]
+    arguments = sys.argv[1:]
+    profile = None
+    if len(arguments) == 6 and arguments[-2:] == ["--profile", "stepfun-pi-n3"]:
+        profile = arguments[-1]
+        arguments = arguments[:4]
+    archive_name, repository_name, revision, target_name = arguments
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("source_revision_invalid")
     repository = Path(repository_name)
@@ -30,6 +35,13 @@ def main():
         "third_party/orca-v1.4.230/tsconfig.json",
         "third_party/orca-v1.4.230/config/tsconfig.node.json",
     ]
+    if profile == "stepfun-pi-n3":
+        allowed.extend([
+            "third_party/orca-v1.4.230/src/main/pi/rpc-protocol.ts",
+            "scripts/build-swa-runtime.mjs",
+            "third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts",
+            "third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts",
+        ])
     git_environment = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_PAGER="cat")
     result = subprocess.run(
         ["git", "--no-pager", "-C", str(repository), "ls-tree", "-rz", "--full-tree", revision, "--", *allowed],

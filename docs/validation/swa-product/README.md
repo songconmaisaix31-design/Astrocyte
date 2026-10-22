@@ -71,3 +71,32 @@ Linux Codex只消费原provider-events.ndjson中的raw_line/frame、实际thread
 正式观察器准备也已对同117版本的3480原blob和119编译输入核对。正式bundle与原型的SHA比较曾退出1；独立逐字节审查确认190处差异仅为输出深度产生的95条来源注释和95个CommonJS工厂键，原失败记录保留。随后仅对现成正式bundle `d77b6a2d3240c7e30b3c941c97459e054dd3fe79cca7b2c5bfc33eee9fc78543` 运行原五项有界观察，实际5/5通过：活父PID、已回收子PID缺席、公开package非Session拒绝、AGENTS非JSON拒绝及PID0拒绝。证据为 `.verification/swa-product-acceptance/linux-codex-observer-final-r1/component-checks-formal.json`；未重新导出或编译，typed Session与模型继续未验。
 
 当前117 Linux组合安装的构建、安装、D11装内+3同SHA诊断和同服务静态HTTP/正常退出已独立接受；该安装没有后继项目化capabilities修复，不能据此宣称其Codex静态配置或N可用。新驱动原生动态、完整typed Session、delta/stop/send/replay、真实账号与模型仍NOT_RUN，相关控制分支仅源码审查，不用参数或组件成功升级为N=3。退出0仅表示当次已执行断言及成果交接完成，最终里程碑由独立审查决定。
+
+## Linux StepFun Pi N3 扩展
+
+新增驱动路径限定 Linux x64 glibc、官方 Pi1.0.1、`stepfun/step-3.5-flash`、`openai-completions`、`https://api.stepfun.com/v1` 和 `workers=3`。账户种类为 `pi-native-api-key-per-session`，工具合同为 `pi-cli-1.0.1` 的 disabled。原 Windows Pi/OpenCode、Linux Codex选择及其历史结果保留原范围；Pi扩展没有改变旧分支的N=3..100规则。
+
+Linux Pi必须额外提供 `--pi-launch-record ABS` 与 `--pi-launch-sha256 64hex`。它们取自本次真实owned serve产生的六键记录：installation、source_revision、data_root、endpoint、serve_pid、pi_source_home。driver在start前核文件、摘要、同安装S、实际服务owner与独立批准的SOURCE；不从首个Worker的selection反推批准来源，也不读取来源key。
+
+```sh
+"$installedNode" "$sourceRepository/tests/swa-product-acceptance/run-installed.mjs" \
+  --candidate "$installRoot" --data-root "$dataRoot" --project "$publicProject" \
+  --project-id "$projectId" --endpoint "$endpoint" \
+  --agent pi --model stepfun/step-3.5-flash --workers 3 \
+  --source-repository "$sourceRepository" --output "$newEvidence" \
+  --pi-launch-record "$ownedPiLaunchRecord" --pi-launch-sha256 "$pinnedPiLaunchSha256"
+```
+
+封闭Pi授权包逐同S Git blob和SHA核对八个执行源：`run-installed.mjs`、`public-case-definition.mjs`、`codex-event-view.mjs`、`prepare-source-observer.mjs`、`source-observer-entry.ts`、`extract-observer-source.py`、`pi-event-view.mjs`、`pi-source-observer-entry.ts`，均位于 `tests/swa-product-acceptance/`。测试与本README不算执行依赖。最终安装VERSION的commit必须包含这些准确源码；不将后继HEAD驱动称为旧安装同S来源。
+
+观察器使用 `prepare-source-observer.mjs --profile stepfun-pi-n3`。除同S源码归档及装内journal-open外，还必须消费实际装内纯 `runtime/pi-protocol.cjs` 和对应metafile，核同S builder的唯一entry映射、输入及首末SourceVersion；缺文件、strict导出或依赖就拒绝，不回退开发树的jsonc-parser或重新编一份协议实现。旧875安装仅可用于其真实缺件拒绝，不能充当Pi B或N3正向候选。
+
+三个Worker必须分别绑定真实Orca session、`DATA/pi-workers/<projectId>/<sessionId>`的独占0700 HOME、native UUIDv7、sessionFile及bootstrap/native身份；三个HOME的实际dev/ino互异。每次事件读取重核同journal的record/head/lease/accountHome、原fence及两个runtime身份。输入、停止、回放和未知效果均沿原R、真实binding与journal查询；ACK不代替accepted，user echo仍须与原FD读取的完整native entry及前缀关联。
+
+N3重叠、活动停止与其余Worker继续输出使用同一真实宿主incarnation及服务epoch的monotonic来源比较；不跨owner比较performance.now，也不以墙钟代替先后证明。正常停止仍需原D可信final、真实EOF、projection drain/written和durable custody_closed；未知保留原资源，不补Worker或换请求。完整成果及真实业务审阅仍按前述交接执行。
+
+本次Pi驱动七源已完成实现并提交独立源码审查。本地四个JS语法、Python AST及help实际通过；专属测试实际5PASS/0FAIL/0skip，覆盖封闭参数、真实公开package拒绝为launch/trace、真实普通文件的权限/链接/字节界限/UTF-8/递归重复key，以及真实875在任何产品CLI或编译前因缺Pi纯模块早拒。文件读取调用真实driver consumer，严格JSON使用已审development纯protocol `563dc4d5…`，不回退另一parser；缺VERSION专属负向仍未验。首轮development观察器编译因helper把无扩展名路径直接返回而失败，原exit1保留；改用成熟esbuild扩展名解析后仅复验编译，实际0、123个实际输入及七源首末稳定，新观察器产物未执行。没有重跑五项或生成成功Session/native帧/候选/launch/凭据样本。
+
+独立源码复审补齐了有界artifact读取、同cycle活动取消、原trace完整字节、逐message/contentIndex的六型增量及实际journal回执/写入来源；这些主链已获01/04分别限定接受。集中返修后的三个受影响JS语法及新观察器续编实际0、127个实际输入，七源首末一致；仍仅为development编译，产物未执行。thinkingLevel消费实际批准枚举、首次metadata及真实绑定成功写响应，没有把先前无账号实测窗口的off值外推为产品保证。该最末view差异的语法记录与此前源hash分别保存。
+
+同S观察器准备和安装正向、真实账户、N3模型、input/abort/成果、HTTP/Grant/human及Windows Pi新路径仍为 `NOT_RUN`。上述普通文件与development编译不证明这些执行结果。实际模型窗口仍须准确封闭包、当前合法项目授权、B及安装前置通过后由root单独批准。
