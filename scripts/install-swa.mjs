@@ -68,7 +68,7 @@ const check = root => {
 check(source)
 process.umask(0o077)
 await mkdir(destination, { mode: 0o700 })
-await cp(source, destination, { recursive: true, dereference: false, force: false, errorOnExist: true })
+for (const name of await readdir(source)) await cp(join(source, name), join(destination, name), { recursive: true, dereference: false, force: false, errorOnExist: true })
 await tree(destination, true)
 assert.equal((await lstat(destination)).mode & 0o777, 0o700)
 check(destination)
