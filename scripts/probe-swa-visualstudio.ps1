@@ -1,6 +1,6 @@
 #Requires -Version 7.2
 [CmdletBinding()]
-param([Parameter(Mandatory)][string]$PnpmCli)
+param([Parameter(Mandatory)][string]$PnpmCli, [switch]$PathOnly)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $env:SWA_VS_PROBE_PHASE = 'preflight'
@@ -48,11 +48,13 @@ $extracted = Join-Path $work 'node'
 [IO.Compression.ZipFile]::ExtractToDirectory($archive, $extracted, $false)
 $node = Join-Path $extracted 'node-v24.21.0-win-x64/node.exe'
 if ((Get-Item -LiteralPath $node).Length -ne $asset.executableSize -or (Get-FileHash -LiteralPath $node -Algorithm SHA256).Hash.ToLowerInvariant() -cne $asset.executableSha256 -or (& $node --version).Trim() -cne 'v24.21.0') { throw 'The actual pinned Node executable differs' }
-$finder = (& $developmentNode --input-type=module -e 'import{createRequire}from"node:module";let r=createRequire(process.cwd()+"/runtime/swa-orca/package.json");console.log(r.resolve("node-gyp/lib/find-visualstudio.js"));').Trim()
-if ($LASTEXITCODE -ne 0) { throw 'The exact locked finder is unavailable' }
+if (-not $PathOnly) {
+    $finder = (& $developmentNode --input-type=module -e 'import{createRequire}from"node:module";let r=createRequire(process.cwd()+"/runtime/swa-orca/package.json");console.log(r.resolve("node-gyp/lib/find-visualstudio.js"));').Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'The exact locked finder is unavailable' }
+}
 $probe = Join-Path $checkout 'scripts/probe-swa-visualstudio.mjs'
 # 与原失败 builder 相同的配置入口，真实工具版本仍由官方环境发现。
-$env:npm_config_msvs_version = '2022'
+if (-not $PathOnly) { $env:npm_config_msvs_version = '2022' }
 function Publish-Probe([string]$Title, [object]$Value) {
     $message = $Value | ConvertTo-Json -Depth 12 -Compress
     $message = [regex]::Replace($message, '(?i)https?://\S+', '[URL omitted]')
@@ -60,6 +62,30 @@ function Publish-Probe([string]$Title, [object]$Value) {
     if ($message.Length -gt 8000) { $message = $message.Substring(0, 8000) + '[bounded summary]' }
     $escaped = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
     Write-Host ('::warning title=' + $Title + '::' + $escaped)
+}
+if ($PathOnly) {
+    $env:SWA_VS_PROBE_PHASE = 'path-and-git'
+    $git = (Get-Command git -CommandType Application | Select-Object -First 1).Source
+    $pathProbe = Join-Path $checkout 'scripts/probe-swa-windows-path.mjs'
+    $before = Join-Path $evidence 'path-before-devshell.json'
+    & $node $pathProbe --git $git --phase before-devshell --output $before 2> (Join-Path $evidence 'path-before-devshell.log')
+    $beforeExit = $LASTEXITCODE
+    if (Test-Path -LiteralPath $before -PathType Leaf) { Publish-Probe 'Actual PATH and Git before Developer Shell' (Get-Content -LiteralPath $before -Raw | ConvertFrom-Json) }
+    if ($beforeExit -ne 0) { throw 'The initial bounded PATH/Git observation did not finish' }
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+    $metadataJSON = & $vswhere -products '*' -version '[18.0,19.0)' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -format json -utf8 -nologo
+    if ($LASTEXITCODE -ne 0) { throw 'Official PATH probe Visual Studio discovery failed' }
+    $installations = @($metadataJSON | ConvertFrom-Json | Sort-Object { [version]$_.installationVersion } -Descending)
+    if ($installations.Count -eq 0 -or -not $installations[0].isComplete) { throw 'The PATH probe requires an actual complete VS2026 x64 installation' }
+    $selected = $installations[0]
+    & (Join-Path $selected.installationPath 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation *> (Join-Path $evidence 'path-devshell-entry.log')
+    if (-not $env:VCINSTALLDIR -or ([version]$env:VSCMD_VER).Major -ne 18 -or -not [IO.Path]::GetFullPath((Join-Path $env:VCINSTALLDIR '..')).Equals([IO.Path]::GetFullPath($selected.installationPath), [StringComparison]::OrdinalIgnoreCase)) { throw 'The PATH probe developer environment does not match the selected real installation' }
+    $after = Join-Path $evidence 'path-after-devshell.json'
+    & $node $pathProbe --git $git --phase after-devshell --output $after 2> (Join-Path $evidence 'path-after-devshell.log')
+    $afterExit = $LASTEXITCODE
+    if (Test-Path -LiteralPath $after -PathType Leaf) { Publish-Probe 'Actual PATH and Git after Developer Shell' (Get-Content -LiteralPath $after -Raw | ConvertFrom-Json) }
+    if ($afterExit -ne 0) { throw 'The final bounded PATH/Git observation did not finish' }
+    exit 0
 }
 $baseline = Join-Path $evidence 'baseline.json'
 $env:SWA_VS_PROBE_PHASE = 'baseline-finder'

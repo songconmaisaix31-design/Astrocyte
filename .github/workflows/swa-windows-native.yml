@@ -8,7 +8,7 @@ on:
         required: false
         default: false
       probe_visual_studio:
-        description: 'Run only the pinned Visual Studio discovery MRE'
+        description: 'Run only the pinned Windows toolchain and PATH MRE'
         type: boolean
         required: false
         default: false
@@ -79,6 +79,9 @@ jobs:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025
     timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,14 +94,26 @@ jobs:
         run: |
           npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-pnpm') --no-audit --no-fund pnpm@11.27.0
           if ($LASTEXITCODE -ne 0) { throw 'Pinned pnpm installation failed' }
-      - name: Observe the original finder and the official developer environment
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39769388709
+          name: swa-windows-native-evidence-82e1b09503486c14a9dececb5e3673827894c120
+          path: ${{ runner.temp }}/swa-path-prior-evidence
+      - name: Read the original call site and fetch its exact source
+        shell: pwsh
+        run: |
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-path-prior-evidence') -ExpectedRevision '82e1b09503486c14a9dececb5e3673827894c120'
+          git fetch --no-tags --depth=1 origin 82e1b09503486c14a9dececb5e3673827894c120
+          if ($LASTEXITCODE -ne 0) { throw 'The exact failed build source is unavailable' }
+      - name: Observe actual build PATH and Git resolution
         shell: pwsh
         run: |
           $env:SWA_VS_PROBE_PHASE = 'driver-invocation'
           try {
-            & ./scripts/probe-swa-visualstudio.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs')
+            & ./scripts/probe-swa-visualstudio.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs') -PathOnly
           } catch {
-            $phases = @('driver-invocation', 'preflight', 'frozen-prerequisites', 'original-node-pin', 'download-work-guard', 'pinned-node-download', 'pinned-node-verification', 'baseline-finder', 'official-vs-discovery', 'experimental-probe-selection', 'official-developer-shell', 'developer-shell-finder', 'actual-compiler-version')
+            $phases = @('driver-invocation', 'preflight', 'frozen-prerequisites', 'original-node-pin', 'download-work-guard', 'pinned-node-download', 'pinned-node-verification', 'path-and-git', 'baseline-finder', 'official-vs-discovery', 'experimental-probe-selection', 'official-developer-shell', 'developer-shell-finder', 'actual-compiler-version')
             $phase = if ($env:SWA_VS_PROBE_PHASE -cin $phases) { $env:SWA_VS_PROBE_PHASE } else { 'unknown' }
             $detail = $_.Exception.Message
             if ($detail -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') { $detail = '[sensitive exception text omitted]' }

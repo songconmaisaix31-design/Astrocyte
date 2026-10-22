@@ -13,7 +13,7 @@ $result = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Raw 
 if ($result.status -cne 'FAIL' -or $result.failed_stage -cne 'build') { throw 'This is not the expected original failed build artifact' }
 $buildLog = Join-Path $EvidenceRoot 'logs/build.log'
 if (-not (Test-Path -LiteralPath $buildLog -PathType Leaf)) { throw 'The original build log is missing' }
-$selected = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:)' } | Select-Object -Last 100)
+$selected = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:|scripts[\\/]build-swa-(?:package|native)\.mjs:[0-9]+:[0-9]+)' } | Select-Object -Last 100)
 $safe = [Collections.Generic.List[string]]::new()
 foreach ($line in $selected) {
     if ($line -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') {
