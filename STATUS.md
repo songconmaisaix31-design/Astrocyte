@@ -6,11 +6,11 @@
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生检查；原生 N=3、Agent账号与模型验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
-已提交运行时`489be745`包含Codex独立API-key HOME/受控启动/真实流与完整成果核查、Claude Linux结果reader、Pi Linux安全前置；R6 strict0/30源无漂移及独立限定接受保持，不算账号或模型验收。Windows安装ACL为`5f450e59`；此前117的service-smoke失败、旧目录owner未知，abef普通目录MRE定位DACL-only不改Admin owner后，`0ab2956d`显式owner新目录组件十项通过。后继同S875的最新双平台事实见下段；Linux Pi仍拒绝实际执行，Claude A/B仅源码开发，不能计多数Agent已适配。
+已提交运行时`489be745`包含Codex独立API-key HOME/受控启动/真实流与完整成果核查、Claude Linux结果reader、Pi Linux安全前置；Windows安装ACL为`5f450e59`、显式owner新目录组件为`0ab2956d`。后继同S875双平台安装事实见下段。Claude受限启动与完整成果接线已独立限定接受并提交`9131d882620796c3b9b4c8599e992ba400ab55c7`：合同/实际SDK来源、当前授权与取消末核、有界恢复、真实SDK对象/CLI全文分源、最新R及完整树关闭已接通；最终strict R2退出0，29957输入首末一致。尚无包含该源码的新安装或真实SDK启动；builtin来源未审全时继续不可用，Linux Pi仍拒绝实际执行，不能计多数Agent已适配。
 
-阶跃星辰官方模型目录已实际校验：无认证HEAD为401，单次带认证GET为200，返回33个模型，含`step-3.5-flash`；生成调用为0。06已独立核验结果权限与摘要，仅接受目录读取成功，不代表余额、模型生成或Pi接入。凭据只留当前会话内存，未写入仓库、命令参数、输出或云快照；云草稿已增`api.stepfun.com`并保存，仍需环境设置中的保存与发布。Codex/OpenAI、Claude/Anthropic对应来源仍缺，不能共用该凭据。
+阶跃星辰官方模型目录已实际校验：无认证HEAD为401，单次带认证GET为200，返回33个模型，含`step-3.5-flash`；生成调用为0。06已独立核验结果权限与摘要，仅接受目录读取成功，不代表余额、模型生成或Pi接入。先前权限核验的私有临时来源已删除，当前凭据仅留会话内存，工作区无密钥文件，密钥未进入Git、命令参数、输出或云草稿。本次GET使用私有TTY且没有创建密钥文件。云草稿已增`api.stepfun.com`并保存，仍需环境设置中的保存与发布。Codex/OpenAI、Claude/Anthropic对应来源仍缺，不能共用该凭据。
 
-授权辅助工具两源已原样提升至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。Claude A4已获独立源码接受；B整批源码审查及统一strict仍进行中，未证安全的preowner SDK对象永久拒绝，原时间单调门保留，builtin启动来源未审全时继续不可用。
+授权辅助工具两源已由`10563b86`原样提交至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。Pi后继每Worker HOME、新账户分支、最后写入锁与原生请求ID计划仍在审查，三个Linux执行拒绝门保留；OpenCode Linux/StepFun目前仅有只读范围计划。
 
 最近已验Linux组合安装来源为`8752ec991668071d59ff5fca4cf99690568ff90c`，实际根`/workspace/swa-linux-installs/swa-linux-combined-8752ec99-common-dir-01`。唯一完整build、普通archive/SHA、仓库外解包和严格安装均0，Node24.21、真实PTY/watcher/kernel probe、28312闭包与manifest2+4通过。装内原件D11=11PASS，同S源码诊断3PASS，均0skip；四原件candidate/install字节及首末SHA一致。组合服务health200、首页/4资产字节/hash/MIME、同源301、正常EOF0/null通过；内部双owned0/全部pidfd退出，外部本轮4身份双空、相距53.65ms。06已独立核原件限定接受；服务已停，无human/Grant/controller/账号/模型。原证据与handoff见[本轮任务](tasks/swa-task-cards-20261022.md)。
 
