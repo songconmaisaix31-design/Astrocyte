@@ -964,18 +964,37 @@ type NativeLaunchPolicy = {
     }
   }
   tools: { mode: 'disabled'; native_contract: 'codex-cli-0.163.0' }
+} | {
+  schema: 'swa.native-launch.v1'
+  account: {
+    kind: 'claude-native-api-key'
+    provider: 'anthropic'
+    source_home: string
+    auth_source: { path: string; version: string }
+    private_root: string
+    model_target: {
+      model_id: 'claude-opus-5'
+      api: 'anthropic-messages'
+      base_url: 'https://api.anthropic.com'
+    }
+  }
+  tools: { mode: 'disabled'; native_contract: 'claude-cli-2.1.284-sdk-0.3.284' }
 }
 ```
 
 上述联合按account.kind及对应tools.native_contract严格验证，不允许交叉组合。本节后续Pi来源、参数和RPC细则适用于pi-native-api-key；OpenCode原生合同见§21.1.6。credential_updated_at为原生credential.time_updated的实际Unix毫秒，不能用观察时间替代。Codex新增分支已通过接口审查，直接消费者正在实施；字段定稿不表示真实账号、工具集合、Worker或模型已验。其auth_source固定为显式source_home下auth.json，catalog_source为实际安装根的`runtime/codex-policy/models.json`，内容须匹配固定官方完整原件。private_root为实际`SWA_DATA_DIR/codex/<projectId>`，每Worker的CODEX_HOME为其下`<sessionId>`，复用原LegacyAccountHome的CODEX_HOME变量/路径表示。selection继续绑定实际executable、version=0.163.0、model=gpt-5.5、provider=openai和configuration_version，不新增凭据ID、邮箱、账号值或独立配置账本。
 
-Codex通过官方`login --with-api-key`的私有stdin向各Worker独立HOME导入获准API key；登录子进程和app-server分别沿真实Job或Linux D结算，登录未知时不能重导入或提前启动模型进程。来源仅为显式`SWA_CODEX_API_KEY_HOME`，空配置允许服务启动并报告Codex未配置，合法目录缺auth同样未配置，不回退普通CODEX_HOME或读取原ChatGPT凭据。来源路径、当前账号、工具政策、原始事件、完整成果及平台归属须分别核验；设置路径本身不代表账号可用。Claude新增分支仍仅规划，未进入上述联合：拟固定原生CLI2.1.284与SDK0.3.284，采用`--bare`与`tools:[]`的API-key路线，来源仅为显式`SWA_CLAUDE_API_KEY_HOME/settings.json`中的literal `env.ANTHROPIC_API_KEY`，不回退原账号或执行helper。bare禁用OAuth/keychain，不能把原OAuth登录作为该路线可用的证据。准确来源与未验范围见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。Go/TS/Schema和直接消费者同步实施，维持原HTTP action/envelope，不自动取得人类会话或Grant。
+Codex通过官方`login --with-api-key`的私有stdin向各Worker独立HOME导入获准API key；登录子进程和app-server分别沿真实Job或Linux D结算，登录未知时不能重导入或提前启动模型进程。来源仅为显式`SWA_CODEX_API_KEY_HOME`，空配置允许服务启动并报告Codex未配置，合法目录缺auth同样未配置，不回退普通CODEX_HOME或读取原ChatGPT凭据。来源路径、当前账号、工具政策、原始事件、完整成果及平台归属须分别核验；设置路径本身不代表账号可用。Go/TS/Schema和直接消费者同步实施，维持原HTTP action/envelope，不自动取得人类会话或Grant。
+
+Claude单分支合同已冻结，直接消费者正在实施，字段通过不表示账号、SDK启动、ToolsOff或模型已验。固定实际CLI2.1.284与SDK0.3.284，selection的model/provider为claude-opus-5/anthropic；SDK的实际sdk.mjs、package和manifest同根来源进入configuration_version及当前来源检查。auth_source仅为显式`SWA_CLAUDE_API_KEY_HOME/settings.json`的真实版本，只接受严格`{env:{ANTHROPIC_API_KEY:<literal string>}}`，其它字段或来源整体拒绝；不回退原账号、读取OAuth/AUTH_TOKEN或执行helper。source实际根owner-only并与账号、安装/data、私有根和项目双向隔离，普通祖先不要求0700。private_root固定实际`SWA_DATA_DIR/claude/<projectId>`，各session的configRoot为其下`<sessionId>/config`，原accountHome保留`CLAUDE_CONFIG_DIR`变量/路径；key只在内部快照及受控child环境中，不复制来源settings或增加credential ID/config_source。bare禁用OAuth/keychain，不能把原OAuth登录作为该路线可用的证据。准确公开来源与未验范围见[适配矩阵](integration/openmausbot/02-agent-matrix.md)。
+
+Claude的固定native contract要求bare、tools空、disable-slash、strict空MCP和无session hooks等完整组合，并核首次启动前的政策面与每轮实际输入，不能以literal或事后的system/init工具数组替代安全门。SDK Query构造会发起或排队initialize；owner持久化后ready核真实身份并等待该原promise与受限metadata，不重复请求或伪称延迟初始化。实际SDK对象JSONL标为actual_sdk_messages，与CLI原始JSONL全文、原journal分别保留；原R/body/session/fence及真实user replay UUID须关联到原件主链和最新输入，result UUID不冒充user UUID。完整树、durable来源/handle/journal和最终库存校验通过后才发布退出；原root退出不替代该证明。相关实现和平台验收仍另行记录。
 
 Codex每个新thread固定真实model/provider、`environments:[]/selectedCapabilityRoots:[]/dynamicTools:[]`、禁止模型fallback且持久化；不得用`cwd/runtimeWorkspaceRoots`重新引入环境。原生reply须提供并核对实际thread/model/provider/history/path，缺失时拒绝或保留unknown，不以请求参数补造。每次turn/start固定原thread、本次输入的原clientUserMessageId、model和空environments，只允许批准的纯文本；活跃turn的同会话追加沿原turn/steer与实际expectedTurnId，绑定本次send自己的原R/operation/clientUserMessageId，不复用start的operation，也不增加目录、工具、模型或capability覆盖。启动的strict config、完整工具组合门、当前来源与项目权限在投递前再次核验；API-key或模型catalog不替代ToolsOff证据。
 
 Codex真实通知在journal合并前写入原`provider-events.ndjson`，保留同session/fence的序号、host观察时刻、原生method/params与已审raw line；delta来自实际agentMessage/reasoning通知，不能拆分最终assistant全文。该来源和完整rollout/journal共同受12MiB导出上限、FD有界读、前后SourceVersion及秘密检查。原opaque native响应的`source.process/source.owner_process`是bootstrap所属身份：Windows保持`{pid,creation_time_ms,runtime_id}`，Linux为`{platform:'linux',pid,boot_id,start_ticks,owner_uid,runtime_id}`，ticks/UID为十进制字符串；native CLI身份单独取真实custody观测，不代替lease PID。最终tree事实由受控Tree的只读`readFinalObservation()`取得，未知或processless不返回完整tree proof；原root退出、stderr JSON或interrupt回执不足以释放。只有实际最终事实成功持久化后才能向session host发布退出；真实未创建bootstrap的processless沿原独立受证分支处理。这些新增来源由实际消费者另验，不以689的D14替代，也不增加无人消费的JSON Schema定义。
 
-路径为实际canonical来源，version沿原配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后继出现视为变化。政策与原settings source/revision/configuration_version、原R/checkpoint共同固定原生选择，不保存凭据或另建账号账本。model_target绑定实际合成modelId/API/baseUrl，成熟URL解析拒绝账号信息、秘密查询、动态模板和未批准目标。API只允许已核最终请求消费者的openai-responses、openai-completions、azure-openai-responses，其他API保持政策unknown，不换模型或来源。
+路径为实际canonical来源，version沿原配置snapshot的实际文件身份/版本；models_source=null要求实际不存在，后继出现视为变化。政策与原settings source/revision/configuration_version、原R/checkpoint共同固定原生选择，不保存凭据或另建账号账本。model_target绑定实际合成modelId/API/baseUrl，成熟URL解析拒绝账号信息、秘密查询、动态模板和未批准目标。Pi分支API只允许已核最终请求消费者的openai-responses、openai-completions、azure-openai-responses；OpenCode、Codex及Claude按各自上述固定目标，不换模型或来源。
 
 原账号目录只读。原auth只接受该provider实际支持的原生api_key条目及literal key；非空credential.env、OAuth/refresh、models apiKey/oauth、命令或环境引用拒绝。auth和models使用成熟JSON及原ModelConfig的JSONC/schema，准确方案§13.3逐类表作为本节固定字段和投影清单：只保留所选provider/model/override及原composer顺序；未知有效字段、无法唯一合成的目标、虚拟模型、候选/网关路由拒绝。key及三层headers用同版本isCommandConfigValue/getConfigValueEnvVarNames只读分类，保留原生literal与转义语义；Headers成熟解析，大小写不敏感拒绝Authorization、Proxy-Authorization、X-Api-Key、Api-Key、Cookie、Set-Cookie。不能原块复制、删除不允许字段后继续、改凭据类型或复制refresh来宣称原账号保全。
 

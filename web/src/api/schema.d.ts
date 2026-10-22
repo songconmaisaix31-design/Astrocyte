@@ -8009,7 +8009,34 @@ export interface components {
                 native_contract: "codex-cli-0.163.0";
             };
         };
-        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"];
+        nativeClaudeLaunchPolicy: {
+            /** @constant */
+            schema: "swa.native-launch.v1";
+            account: {
+                /** @constant */
+                kind: "claude-native-api-key";
+                /** @constant */
+                provider: "anthropic";
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                private_root: string;
+                model_target: {
+                    /** @constant */
+                    model_id: "claude-opus-5";
+                    /** @constant */
+                    api: "anthropic-messages";
+                    /** @constant */
+                    base_url: "https://api.anthropic.com";
+                };
+            };
+            tools: {
+                /** @constant */
+                mode: "disabled";
+                /** @constant */
+                native_contract: "claude-cli-2.1.284-sdk-0.3.284";
+            };
+        };
+        nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"] | components["schemas"]["nativeClaudeLaunchPolicy"];
         agentSelection: {
             agent_id: string;
             adapter: string;

@@ -30,6 +30,7 @@ const QUERY_CLOSED_MESSAGE = 'Query closed before response received'
 
 /** 0.3.251 ships getSettings() but redacts it from the Query declaration; the typeof guard below is its degradation path. */
 type ClaudeQuerySettingsReader = { getSettings?: () => Promise<unknown> }
+type ClaudeQueryHooksReader = { getHooksListing?: () => Promise<unknown> }
 
 export function claudeQuerySettingsReader(query: Query): (() => Promise<unknown>) | null {
   const reader = (query as unknown as ClaudeQuerySettingsReader).getSettings
@@ -107,6 +108,8 @@ export type ClaudeControlSurface = {
   /** Untimed: a slow start is still a start, and the child's exit closes the query under it. */
   initializationResult: () => Promise<unknown>
   getSettings: (options?: ClaudeControlOptions) => Promise<unknown>
+  getHooksListing: (options?: ClaudeControlOptions) => Promise<unknown>
+  mcpServerStatus: (options?: ClaudeControlOptions) => Promise<unknown>
   /** The `/context` breakdown; older CLIs reject the request and the caller shows nothing. */
   getContextUsage: (options?: ClaudeControlOptions) => Promise<unknown>
 }
@@ -117,10 +120,21 @@ type InterruptingQuery = {
   }) => Promise<SDKControlInterruptResponse | undefined>
 }
 
-export function createClaudeControlSurface(query: Query): ClaudeControlSurface {
+export function createClaudeControlSurface(query: Query, restricted?: { reject(subtype: string): never }): ClaudeControlSurface {
+  const allowed = <T>(subtype: string, run: () => Promise<T>, timeoutMs?: number | null) => {
+    const result = runClaudeControl(subtype, run, timeoutMs)
+    return restricted ? result.catch(() => { throw new ClaudeControlRequestError(subtype, 'native_claude_control_failed') }) : result
+  }
+  const mutation = <T>(subtype: string, run: () => Promise<T>, timeoutMs?: number) => {
+    if (restricted) {
+      try { restricted.reject(subtype) }
+      catch { return Promise.reject(new ClaudeControlRequestError(subtype, 'native_claude_control_rejected')) }
+    }
+    return allowed(subtype, run, timeoutMs)
+  }
   return {
     interrupt: (options) =>
-      runClaudeControl(
+      allowed(
         'interrupt',
         () =>
           (query as unknown as InterruptingQuery).interrupt(
@@ -131,45 +145,52 @@ export function createClaudeControlSurface(query: Query): ClaudeControlSurface {
     cancelAsyncMessage: (uuid, options) => {
       const cancel = claudeQueryAsyncCanceller(query)
       return cancel
-        ? runClaudeControl('cancel_async_message', () => cancel(uuid), options?.timeoutMs).then(
+        ? allowed('cancel_async_message', () => cancel(uuid), options?.timeoutMs).then(
             (cancelled) => cancelled === true
           )
         : Promise.resolve(false)
     },
     setModel: (model, options) =>
-      runClaudeControl('set_model', () => query.setModel(model), options?.timeoutMs).then(() => {}),
+      mutation('set_model', () => query.setModel(model), options?.timeoutMs).then(() => {}),
     setPermissionMode: (mode, options) =>
-      runClaudeControl(
+      mutation(
         'set_permission_mode',
         () => query.setPermissionMode(mode),
         options?.timeoutMs
       ).then(() => {}),
     applyFlagSettings: (settings, options) =>
-      runClaudeControl(
+      mutation(
         'apply_flag_settings',
         () => query.applyFlagSettings(settings),
         options?.timeoutMs
       ).then(() => {}),
     stopTask: (taskId, options) =>
-      runClaudeControl('stop_task', () => query.stopTask(taskId), options?.timeoutMs).then(
+      mutation('stop_task', () => query.stopTask(taskId), options?.timeoutMs).then(
         () => {}
       ),
     supportedModels: (options) =>
-      runClaudeControl('list_models', () => query.supportedModels(), options?.timeoutMs),
+      mutation('list_models', () => query.supportedModels(), options?.timeoutMs),
     initializationResult: () =>
-      runClaudeControl('initialize', () => query.initializationResult(), null),
+      allowed('initialize', () => query.initializationResult(), null),
     getContextUsage: (options) =>
-      runClaudeControl('get_context_usage', () => query.getContextUsage(), options?.timeoutMs),
+      mutation('get_context_usage', () => query.getContextUsage(), options?.timeoutMs),
     getSettings: (options) => {
       const read = claudeQuerySettingsReader(query)
       return read
-        ? runClaudeControl('get_settings', read, options?.timeoutMs)
+        ? allowed('get_settings', read, options?.timeoutMs)
         : Promise.reject(
             new ClaudeControlRequestError(
               'get_settings',
               'this SDK exposes no get_settings request'
             )
           )
-    }
+    },
+    getHooksListing: (options) => {
+      const read = (query as unknown as ClaudeQueryHooksReader).getHooksListing
+      return typeof read === 'function'
+        ? allowed('get_hooks_listing', () => read.call(query), options?.timeoutMs)
+        : Promise.reject(new ClaudeControlRequestError('get_hooks_listing', 'native_claude_hooks_listing_unavailable'))
+    },
+    mcpServerStatus: (options) => allowed('mcp_status', () => query.mcpServerStatus(), options?.timeoutMs)
   }
 }

@@ -118,6 +118,12 @@ export async function dispatchClaudeTurn(
   },
   beforeDispatch?: () => Promise<void | (() => void)>
 ): Promise<AgentSessionDispatchOutcome> {
+  if (session.swaClaudePolicy) {
+    if (!beforeDispatch || !input.clientMessageId || input.body.kind !== 'message' || input.body.role !== 'user' || input.body.sentAs || input.body.command || !input.body.blocks.length || input.body.blocks.some(block => block.type !== 'text') || input.body.blocks.some(block => block.type === 'text' && block.text.trimStart().startsWith('/'))) {
+      throw new AgentSessionPreDispatchError('native_claude_plain_text_required')
+    }
+    session.swaClaudePolicy.assertCurrent()
+  }
   let content: unknown[]
   try {
     content = await claudeDispatchMessageContent(input.body)
@@ -131,6 +137,19 @@ export async function dispatchClaudeTurn(
   // whether Claude runs a command, so the two cannot disagree about which frame settles this.
   const acceptsResult = claudeDispatchInvokesSlashCommand(content)
   const sentUuid = input.sentUuid ?? randomUUID()
+  const originalAdmission = beforeDispatch
+  if (session.swaClaudePolicy) {
+    const policy = session.swaClaudePolicy
+    beforeDispatch = async () => {
+      const finalAdmission = await originalAdmission!()
+      await policy.verifyCurrent(session.connection)
+      return () => {
+        finalAdmission?.()
+        policy.assertCurrent()
+        policy.recordDispatch({ phase: 'handoff', clientMessageId: input.clientMessageId!, sentUuid, providerSessionId: session.providerSessionId })
+      }
+    }
+  }
   const arm = () => {
     ++session.dispatchSequence
     // A context report asked for before this send may land after it and misstate the context.

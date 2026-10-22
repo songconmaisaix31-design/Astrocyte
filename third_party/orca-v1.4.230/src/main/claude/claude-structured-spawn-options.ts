@@ -9,7 +9,24 @@ import type {
   ClaudeStructuredSdkOptions
 } from './claude-structured-launch-resolution'
 import type { ClaudeSession } from './claude-structured-session-state'
-import { restoredClaudeStructuredSessionOptions } from './claude-structured-options'
+
+/** 固定官方版本的公开构造，不读取账号或启动 SDK。 */
+export function nativeClaudeSdkOptions(input: { nativeId: string; resume: boolean }): ClaudeStructuredSdkOptions {
+  if (typeof input.resume !== 'boolean' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(input.nativeId)) {
+    throw new Error('native_claude_session_identity_invalid')
+  }
+  return {
+    model: 'claude-opus-5', tools: [], mcpServers: {}, strictMcpConfig: true,
+    agents: {}, plugins: [], skills: [], hooks: {}, additionalDirectories: [],
+    settingSources: [], supportedDialogKinds: [], permissionMode: 'dontAsk',
+    permissionPrompts: 'none', allowDangerouslySkipPermissions: false,
+    includePartialMessages: true, persistSession: true, enableFileCheckpointing: false,
+    systemPrompt: { type: 'preset', preset: 'claude_code' },
+    settings: { disableAllHooks: true, disableSkillShellExecution: true, disableBundledSkills: true, disableClaudeAiConnectors: true, autoMemoryEnabled: false },
+    extraArgs: { bare: null, 'disable-slash-commands': null, 'replay-user-messages': null, 'no-chrome': null },
+    ...(input.resume ? { resume: input.nativeId } : { sessionId: input.nativeId })
+  }
+}
 
 const EFFORT_LEVELS: ReadonlySet<string> = new Set<EffortLevel>([
   'low',
@@ -51,10 +68,19 @@ export type ClaudeStructuredSpawnOptions = {
  * the SDK's types, not the installed binary's: one that binary rejects fails its start.
  */
 export function claudeStructuredSpawnOptions(input: {
-  launch: Pick<ClaudeStructuredLaunch, 'options' | 'resumesTranscript'>
+  launch: Pick<ClaudeStructuredLaunch, 'options' | 'resumesTranscript' | 'swaClaudePolicy'>
   saved: Readonly<Record<string, string>> | undefined
 }): ClaudeStructuredSpawnOptions {
-  const saved = restoredClaudeStructuredSessionOptions(input.saved)
+  if (input.launch.swaClaudePolicy) {
+    if (Object.entries(input.saved ?? {}).some(([key, value]) => key !== 'model' || value !== 'claude-opus-5')) {
+      throw new Error('native_claude_saved_option_rejected')
+    }
+    return { sdkOptions: { ...input.launch.options }, options: new Map([['model', 'claude-opus-5']]), skipped: [], fastModeAtStart: false }
+  }
+  const saved = new Map(['model', 'effort', 'fastMode'].flatMap(key => {
+    const value = input.saved?.[key]
+    return value ? [[key, value] as const] : []
+  }))
   const options = new Map<string, string>()
   const skipped: string[] = []
   let sdkOptions: ClaudeStructuredSdkOptions = { ...input.launch.options }

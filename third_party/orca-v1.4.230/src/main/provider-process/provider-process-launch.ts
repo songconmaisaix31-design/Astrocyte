@@ -1,4 +1,5 @@
 import type { SwaProviderProcessTree } from './swa-provider-process-tree'
+import type { SpawnOptions as ClaudeSdkSpawnOptions } from '@anthropic-ai/claude-agent-sdk'
 
 export type SwaInitializationProcess = {
   close(): Promise<boolean>
@@ -30,6 +31,31 @@ export type SwaCodexToolsPolicy = {
   verifyCurrent(connection: CodexPolicyConnection): Promise<void>
   assertCurrent(): void
   record(parsed: Record<string, unknown>, line: string, responseMethod?: string): 'steer-not-submitted' | 'remote-control-disabled' | void
+  closed(): void
+}
+export type ClaudePolicyConnection = {
+  initializationResult(): Promise<unknown>
+  getSettings(): Promise<unknown>
+  getHooksListing(): Promise<unknown>
+  mcpServerStatus(): Promise<unknown>
+}
+export type ClaudeDispatchObservation =
+  | { phase: 'handoff'; clientMessageId: string; sentUuid: string; providerSessionId: string }
+  | { phase: 'user-replay'; clientMessageId: string; sentUuid: string; providerSessionId: string; providerInputUuid: string }
+export type SwaClaudeToolsPolicy = {
+  nativeContract: 'claude-cli-2.1.284-sdk-0.3.284'
+  model: 'claude-opus-5'
+  launcher: SwaProviderJobLauncher
+  initialize(cwd: string): Promise<() => void>
+  resolveTranscript(nativeId: string): Promise<string | null>
+  assertSpawn(options: ClaudeSdkSpawnOptions): void
+  attach(tree: SwaProviderProcessTree): void
+  ready(connection: ClaudePolicyConnection): Promise<void>
+  verifyCurrent(connection: ClaudePolicyConnection): Promise<void>
+  assertCurrent(): void
+  record(message: Record<string, unknown>): void
+  reject(reason: 'tool_request' | 'user_dialog' | 'elicitation' | 'resume_persistence_failed' | 'non_object_sdk_message' | 'control_request'): never
+  recordDispatch(observed: ClaudeDispatchObservation): void
   closed(): void
 }
 

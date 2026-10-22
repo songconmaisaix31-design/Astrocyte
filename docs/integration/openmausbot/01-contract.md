@@ -79,7 +79,7 @@ D要求原生直接child先由libuv完成close/回收，再仅精确回收已确
 
 ## 原生Agent后继准入
 
-`6890522e`安装实现的NativeLaunch分支仅为Pi与OpenCode，独立Codex rollout读取器已有。本轮Codex单分支合同已冻结，Schema及直接消费者同步实施；Claude仍仅规划，原始事件与完整成果接线均须另验。Codex来源仅接受显式非秘密路径`SWA_CODEX_API_KEY_HOME`，不回退普通CODEX_HOME、Orca账号选择或原ChatGPT登录。空配置允许服务启动并报告Codex未配置；路径非法早拒，合法目录缺少实际API-key来源仍为未配置，不把目录存在当认证通过。
+`6890522e`安装实现的NativeLaunch分支仅为Pi与OpenCode，独立Codex rollout读取器已有。本轮Codex与Claude单分支合同已冻结，Schema及直接消费者同步实施；字段形状不表示实际账号、SDK启动、ToolsOff或模型通过，原始事件与完整成果接线均须另验。Claude沿SPEC固定CLI2.1.284/SDK0.3.284、anthropic/claude-opus-5、三键model_target及单auth_source，不新增HTTP认证合同。Codex来源仅接受显式非秘密路径`SWA_CODEX_API_KEY_HOME`，不回退普通CODEX_HOME、Orca账号选择或原ChatGPT登录。空配置允许服务启动并报告Codex未配置；路径非法早拒，合法目录缺少实际API-key来源仍为未配置，不把目录存在当认证通过。
 
 该source与普通CODEX_HOME、SWA_DISCOVERY_CODEX_HOME、缺省`~/.codex`、安装/data/每Worker私有根、已知受保护账号根以及项目/公开输入目录均不得同路径或存在祖先/后代重叠。Go只做现有路径元数据核验与显式传递，不读取旧auth或解析Orca账号；Node继续核选中managed-home、真实来源和当前版本。拒绝链接或重解析路径，source实际根须owner-only，不要求`/workspace`等普通祖先均为0700。
 

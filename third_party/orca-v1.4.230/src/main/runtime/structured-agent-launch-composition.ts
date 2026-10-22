@@ -22,7 +22,7 @@ import type { StructuredAgentAdapterContext } from './structured-agent-runtime-r
 import { sealStructuredSessionChild } from './structured-session-child-env'
 import type { AgentSessionAccountHome } from '../../shared/agent-session-account-home'
 import type { PiDisabledToolsPolicy } from '../pi/rpc-launch'
-import type { SwaProviderJobLauncher, SwaOpenCodeToolsPolicy, SwaCodexToolsPolicy } from '../provider-process/provider-process-launch'
+import type { SwaProviderJobLauncher, SwaOpenCodeToolsPolicy, SwaCodexToolsPolicy, SwaClaudeToolsPolicy } from '../provider-process/provider-process-launch'
 import type { AgentJournalMessageItem } from '../../shared/agent-session-journal-types'
 
 export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
@@ -35,6 +35,7 @@ export type StructuredAgentLaunchAdmission = {
   disabledPiTools?(sessionId: string, agent: string): Promise<PiDisabledToolsPolicy>
   disabledOpenCodeTools?(sessionId: string, agent: string): Promise<SwaOpenCodeToolsPolicy>
   disabledCodexTools?(sessionId: string, agent: string): Promise<SwaCodexToolsPolicy>
+  disabledClaudeTools?(sessionId: string, agent: string): Promise<SwaClaudeToolsPolicy>
   providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
   beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
@@ -47,6 +48,11 @@ export function installStructuredAgentLaunchAdmission(admission: StructuredAgent
   if (launchAdmission) throw new Error('Structured Agent launch admission is already installed')
   launchAdmission = admission
   return () => { if (launchAdmission === admission) launchAdmission = null }
+}
+
+// 只识别私有受限lane；实际source、批准和启动准入仍由每次policy调用核验。
+export function hasStructuredClaudeToolsAdmission(): boolean {
+  return typeof launchAdmission?.disabledClaudeTools === 'function'
 }
 
 export function admitStructuredAgentAccountHome(sessionId: string, agent: string, currentHome: AgentSessionAccountHome): Promise<AgentSessionAccountHome> {
@@ -95,6 +101,7 @@ export type StructuredAgentLaunchBasis = {
   disabledPiTools?(): Promise<PiDisabledToolsPolicy>
   disabledOpenCodeTools?(): Promise<SwaOpenCodeToolsPolicy>
   disabledCodexTools?(): Promise<SwaCodexToolsPolicy>
+  disabledClaudeTools?(): Promise<SwaClaudeToolsPolicy>
   providerJobLauncher?(): Promise<SwaProviderJobLauncher>
   /** For a part that found no program: refreshes the environment, after which both environment
    *  reads return the refreshed one. Absent when the runtime never retries. */
@@ -207,6 +214,7 @@ async function composedPart<L>(
     ...(definition.agent === 'pi' && launchAdmission?.disabledPiTools ? { disabledPiTools: () => launchAdmission!.disabledPiTools!(identity.sessionId, definition.agent) } : {}),
     ...(definition.agent === 'opencode' && launchAdmission?.disabledOpenCodeTools ? { disabledOpenCodeTools: () => launchAdmission!.disabledOpenCodeTools!(identity.sessionId, definition.agent) } : {}),
     ...(definition.agent === 'codex' && launchAdmission?.disabledCodexTools ? { disabledCodexTools: () => launchAdmission!.disabledCodexTools!(identity.sessionId, definition.agent) } : {}),
+    ...(definition.agent === 'claude' && launchAdmission?.disabledClaudeTools ? { disabledClaudeTools: () => launchAdmission!.disabledClaudeTools!(identity.sessionId, definition.agent) } : {}),
     ...(launchAdmission?.providerJobLauncher ? { providerJobLauncher: () => launchAdmission!.providerJobLauncher!(identity.sessionId, definition.agent) } : {}),
     ...(refresh
       ? {

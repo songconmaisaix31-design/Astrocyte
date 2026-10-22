@@ -13,7 +13,8 @@ import {
 import { createClaudeChildTreeReaper, proveClaudeChildExit } from './claude-agent-sdk-exit-proof'
 import { withTimeout } from '../../shared/promise-timeout-fallback'
 import type { DescendantTreeVerdict } from '../pty-descendant-exit-verification'
-import { createClaudeCodeProcessSpawn } from './claude-agent-sdk-process-spawn'
+import { createClaudeCodeProcessSpawn, type ClaudeSwaInitializationProcess } from './claude-agent-sdk-process-spawn'
+import type { SwaClaudeToolsPolicy } from '../provider-process/provider-process-launch'
 import {
   claudeUnwrittenUserMessageError,
   createClaudeUserMessageQueue
@@ -56,6 +57,7 @@ export type ClaudeStreamJsonLaunch = {
   env?: Record<string, string>
   /** Removed after the child's env is built over Orca's own, as every provider child's are. */
   envToDelete?: readonly string[]
+  swaClaudePolicy?: SwaClaudeToolsPolicy
 }
 
 function withoutKeys(env: Record<string, string>, keys: readonly string[]): Record<string, string> {
@@ -83,6 +85,8 @@ export type ClaudeStreamJsonConnectionHandlers = {
   onExit?: (error: Error, exit?: { expected: boolean }) => void
   /** Any stdout or stderr chunk from the child. */
   onOutput?: () => void
+  onSpawnedProcess?: (resource: ClaudeSwaInitializationProcess) => void
+  onBeforeQuery?: () => void
 }
 
 /**
@@ -104,6 +108,9 @@ export type ClaudeStreamJsonConnection = ClaudeControlSurface & {
   readonly exitVerdict: ClaudeChildExitVerdict
   /** The CLI's executable was not found; a start that failed for it says so. */
   readonly executableMissing?: boolean
+  readonly swaClaudePolicy?: SwaClaudeToolsPolicy
+  readonly swaFullTreeCloseRequired?: true
+  awaitSwaPolicyReady?: () => Promise<void>
   pauseReading?: () => void
   resumeReading?: () => void
   send: (message: Record<string, unknown>, beforeDispatch?: () => Promise<void | (() => void)>) => Promise<void>
@@ -138,6 +145,7 @@ export async function openClaudeStreamJsonConnection(
   spawnImpl: PipedProcessSpawner = spawnProcess,
   queryImpl?: typeof ClaudeAgentSdk.query
 ): Promise<ClaudeStreamJsonConnection> {
+  if (launch.swaClaudePolicy) return openRestrictedClaudeConnection(launch, handlers, spawnImpl, queryImpl)
   const { query } = await loadClaudeAgentSdk()
   const spawner = createClaudeCodeProcessSpawn(spawnImpl, process.platform, handlers.onOutput)
   const inbox = createClaudeUserMessageQueue()
@@ -362,4 +370,175 @@ export async function openClaudeStreamJsonConnection(
     send,
     close
   }
+}
+
+async function openRestrictedClaudeConnection(
+  launch: ClaudeStreamJsonLaunch,
+  handlers: ClaudeStreamJsonConnectionHandlers,
+  spawnImpl: PipedProcessSpawner,
+  queryImpl?: typeof ClaudeAgentSdk.query
+): Promise<ClaudeStreamJsonConnection> {
+  const policy = launch.swaClaudePolicy!
+  if (queryImpl !== undefined || spawnImpl !== spawnProcess) throw new Error('native_claude_substituted_transport_rejected')
+  if (!handlers.onBeforeQuery) throw new Error('native_claude_acquisition_guard_missing')
+  handlers.onBeforeQuery()
+  // SDK 构造会立即 initialize；来源证明和私有状态必须在 SDK 装载之前完成。
+  const startupClosure = await policy.initialize(launch.cwd)
+  if (typeof startupClosure !== 'function') throw new Error('native_claude_startup_admission_missing')
+  handlers.onBeforeQuery()
+  startupClosure()
+  const { query } = await loadClaudeAgentSdk()
+  handlers.onBeforeQuery()
+  startupClosure()
+  const inbox = createClaudeUserMessageQueue()
+  const spawner = createClaudeCodeProcessSpawn(spawnImpl, process.platform, handlers.onOutput, { policy, onSpawnedProcess: handlers.onSpawnedProcess })
+  let permanentFailure = false, readyAttempted = false, ownerBound = false, closing = false, closeProven = false
+  let terminalError: Error | null = null, closePromise: Promise<boolean> | null = null
+  let readyPromise: Promise<void> | undefined
+  let faultReported = false, exitReported = false
+  let closeOwned: () => Promise<boolean> = () => spawner.initializingProcess?.close() ?? Promise.resolve(false)
+  const rejectPolicy = (reason: Parameters<SwaClaudeToolsPolicy['reject']>[0]): never => {
+    permanentFailure = true
+    terminalError ??= new Error('native_claude_policy_rejected')
+    try { policy.reject(reason) }
+    catch {}
+    finally {
+      inbox.fail(terminalError)
+      void closeOwned().catch(() => undefined)
+    }
+    throw terminalError
+  }
+  let session: ReturnType<typeof query>
+  try {
+    handlers.onBeforeQuery()
+    startupClosure()
+    session = query({
+      prompt: inbox.messages,
+      options: {
+        ...launch.options, cwd: launch.cwd, env: { ...launch.env },
+        pathToClaudeCodeExecutable: launch.pathToClaudeCodeExecutable,
+        spawnClaudeCodeProcess: spawner.spawn,
+        canUseTool: async () => {
+          try { return rejectPolicy('tool_request') } catch { return { behavior: 'deny', message: 'native_claude_tools_disabled', interrupt: true } }
+        },
+        onUserDialog: async () => {
+          try { return rejectPolicy('user_dialog') } catch { return { behavior: 'cancelled' } }
+        },
+        onElicitation: async () => {
+          try { return rejectPolicy('elicitation') } catch { return { action: 'cancel' } }
+        }
+      }
+    })
+  } catch {
+    await spawner.initializingProcess?.close().catch(() => false)
+    throw new Error('native_claude_query_construction_failed')
+  }
+  const managed = spawner.managed, child = managed?.child, tree = spawner.swaTree
+  if (!managed || !child || !tree) {
+    await spawner.initializingProcess?.close().catch(() => false)
+    throw new Error('native_claude_actual_process_missing')
+  }
+  let readingBarrier: Promise<void> | null = null, releaseReadingBarrier: (() => void) | null = null
+  const resumeReading = () => { const release = releaseReadingBarrier; readingBarrier = null; releaseReadingBarrier = null; release?.() }
+  const pauseReading = () => {
+    if (!closing && !terminalError && !readingBarrier) readingBarrier = new Promise<void>(resolve => { releaseReadingBarrier = resolve })
+  }
+  const handleEnd = () => {
+    const expected = closing
+    resumeReading()
+    terminalError ??= new Error('native_claude_transport_ended')
+    inbox.fail(terminalError)
+    if (!closing && !faultReported) { faultReported = true; handlers.onFault?.(terminalError) }
+    void closeOwned().then(proven => {
+      if (proven && managed.rootExitObserved && !exitReported) {
+        exitReported = true
+        handlers.onExit?.(terminalError!, { expected })
+      }
+    }).catch(() => undefined)
+  }
+  let readerComplete = false
+  const readerDone = (async () => {
+    const iterator = session[Symbol.asyncIterator]()
+    try {
+      for (;;) {
+        await (readingBarrier ?? Promise.resolve())
+        const next = await iterator.next()
+        if (next.done) { readerComplete = true; break }
+        await (readingBarrier ?? Promise.resolve())
+        if (!isRecord(next.value)) rejectPolicy('non_object_sdk_message')
+        try { policy.record(next.value) }
+        catch { permanentFailure = true; throw new Error('native_claude_sdk_message_rejected') }
+        handlers.onMessage?.(next.value)
+      }
+    } catch {
+      permanentFailure = true
+      terminalError ??= new Error('native_claude_sdk_reader_failed')
+      handleEnd()
+    } finally {
+      if (!readerComplete) {
+        try { await iterator.return?.() }
+        catch { permanentFailure = true; throw new Error('native_claude_sdk_reader_cleanup_failed') }
+      }
+    }
+  })()
+  void readerDone.catch(() => { permanentFailure = true; handleEnd() })
+  const control = createClaudeControlSurface(session, { reject: () => rejectPolicy('control_request') })
+  const connection: ClaudeStreamJsonConnection = {
+    ...control, swaClaudePolicy: policy, swaFullTreeCloseRequired: true,
+    get pid() { return spawner.pid },
+    get closed() { return closing || managed.rootVerdict === 'exited' || terminalError !== null },
+    get executableMissing() { return managed.executableMissing },
+    get exitVerdict() { return { root: managed.rootVerdict, tree: tree.treeVerdict, ...(managed.processless ? { processless: true } : {}) } },
+    pauseReading, resumeReading,
+    awaitSwaPolicyReady() {
+      readyPromise ??= (async () => {
+        readyAttempted = true
+        try {
+          if (closing || terminalError) throw new Error('native_claude_closed_before_ready')
+          await policy.ready(control)
+          ownerBound = true
+          if (closing || terminalError) throw new Error('native_claude_closed_during_ready')
+        } catch {
+          permanentFailure = true
+          terminalError ??= new Error('native_claude_ready_failed')
+          void closeOwned().catch(() => undefined)
+          throw terminalError
+        }
+      })()
+      return readyPromise
+    },
+    send(message, beforeDispatch) {
+      if (!ownerBound || closing || terminalError || permanentFailure || managed.rootVerdict === 'exited' || child.stdin.destroyed || !child.stdin.writable) return Promise.reject(claudeUnwrittenUserMessageError(new Error('native_claude_input_unavailable')))
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: 原 dispatch 构造官方用户 envelope。
+      return inbox.push(message as unknown as SDKUserMessage, beforeDispatch)
+    },
+    close() {
+      if (closeProven) return Promise.resolve(true)
+      closePromise ??= (async () => {
+        closing = true
+        resumeReading()
+        inbox.end()
+        if (!await spawner.closeSwaProcess()) return false
+        inbox.fail(new Error('native_claude_connection_closed'))
+        if (!await withTimeout(readerDone.then(() => true, () => false), CLAUDE_READER_DRAIN_AFTER_EXIT_MS, false) || !readerComplete) { permanentFailure = true; return false }
+        if (permanentFailure || readyAttempted && !ownerBound) return false
+        if (ownerBound) {
+          try { policy.closed() } catch { permanentFailure = true; return false }
+        }
+        closeProven = true
+        spawner.completeSwaClose()
+        return true
+      })().catch(() => { permanentFailure = true; return false }).finally(() => { if (!closeProven) closePromise = null })
+      return closePromise
+    }
+  }
+  closeOwned = () => connection.close()
+  spawner.bindSwaClose(closeOwned)
+  managed.onExit(handleEnd)
+  child.on('error', handleEnd)
+  child.on('close', handleEnd)
+  child.stdin.on('error', handleEnd)
+  try { await tree.ready() }
+  catch { await closeOwned(); throw new Error('native_claude_tree_admission_failed') }
+  return connection
 }

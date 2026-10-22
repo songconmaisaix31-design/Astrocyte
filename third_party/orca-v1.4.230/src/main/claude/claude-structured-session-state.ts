@@ -23,6 +23,8 @@ import type { ClaudeSlashCommandCatalog } from './claude-slash-command-catalog'
 import type { ClaudeAtRestCommandCatalog } from './claude-at-rest-commands'
 import type { ClaudeInitProof } from './claude-structured-init-proof'
 import type { AgentSessionProviderHandleLink } from '../../shared/agent-session-provider-handle'
+import type { SwaClaudeToolsPolicy } from '../provider-process/provider-process-launch'
+import type { ClaudeSwaInitializationProcess } from './claude-agent-sdk-process-spawn'
 
 export type ClaudeAuthDiagnostic = {
   apiKeySourceConfigured: boolean
@@ -150,6 +152,7 @@ export type ClaudeDispatchWaiter = {
 
 export type ClaudeSession = {
   connection: ClaudeStreamJsonConnection
+  swaClaudePolicy?: SwaClaudeToolsPolicy
   providerSessionId: string
   /** Latest main-chain message seen on the live stream, mid-turn included. */
   leafUuid: string | null
@@ -203,6 +206,7 @@ export type ClaudeSession = {
   closeFinalized?: boolean
   /** Set once `ended` has been emitted, so a persistence retry cannot repeat it. */
   closeEnded?: boolean
+  closeEndEvent?: Extract<ClaudeStructuredSessionEvent, { type: 'ended' }>
   translator: ClaudeJournalTranslator | null
   events: StructuredAgentSessionEventSink | undefined
   unbindReadingControl?: () => void
@@ -241,6 +245,7 @@ export type ClaudeSessionExit = {
 
 export type ClaudeAcquisitionAttempt = {
   connection: ClaudeStreamJsonConnection | null
+  initializingProcess: ClaudeSwaInitializationProcess | null
   prompts: ClaudePromptRegistry
   buffered: (() => void)[]
   published: boolean
@@ -261,6 +266,7 @@ export function createClaudeAcquisitionAttempt(
   })
   return {
     connection: null,
+    initializingProcess: null,
     prompts,
     buffered: [],
     published: false,
@@ -340,7 +346,7 @@ export async function cancelClaudeAcquisitionAttempt(
     cancel: () => {
       attempt.cancelled = true
     },
-    connection: () => attempt.connection,
+    connection: () => attempt.connection ?? attempt.initializingProcess,
     exitProven: () => attempt.exitProven,
     finished: attempt.finished
   })

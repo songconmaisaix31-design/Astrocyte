@@ -63,6 +63,15 @@ export function resolveClaudeReplayTurn(
     return null
   }
 
+  if (session.swaClaudePolicy) {
+    // 原件输入身份只来自实际 user replay；result/correlation 不能代替 user UUID。
+    if (!isUserReplay) return null
+    const correlated = readClaudeFrameString(message, 'user_message_uuid') ?? uuid
+    const waiter = [...session.dispatchWaiters, ...session.retiredDispatchWaiters].find(candidate => candidate.sentUuid === correlated)
+    if (!waiter?.clientMessageId) return null
+    session.swaClaudePolicy.recordDispatch({ phase: 'user-replay', clientMessageId: waiter.clientMessageId, sentUuid: waiter.sentUuid, providerSessionId: session.providerSessionId, providerInputUuid: uuid })
+  }
+
   // Newer SDK frames carry the client uuid that caused a turn. A correlation
   // value is authoritative: never fall back to queue order or content, since
   // identical prompts may be in flight across a timeout boundary.
@@ -129,6 +138,7 @@ export function resolveClaudeReplayTurn(
   }
 
   if (isUserReplay) {
+    if (session.swaClaudePolicy) return null
     // Compatibility CLIs may mint a new replay uuid instead of echoing the
     // client uuid. Content is an acceptable join only when it is the sole
     // candidate on one side of the timeout boundary; with active and retired
@@ -157,6 +167,7 @@ export function resolveClaudeReplayTurn(
     return null
   }
   const current = session.dispatchWaiters[0]
+  if (session.swaClaudePolicy) return null
   if (isCompletedCommand && !current?.acceptsResult) {
     return null
   }

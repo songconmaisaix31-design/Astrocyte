@@ -66,7 +66,7 @@ export async function buildSWARuntime(output) {
   const common = {
     absWorkingDir: root, bundle: true, platform: 'node', target: 'node24', format: 'cjs',
     conditions: ['orca-source'], nodePaths: [join(runtime, 'node_modules'), join(root, 'node_modules')],
-    external: ['electron', 'node-pty', '@parcel/watcher', 'fsevents', '@orca/windows-security', '@orca/windows-registry', '@vscode/windows-process-tree'],
+    external: ['electron', 'node-pty', '@parcel/watcher', 'fsevents', '@orca/windows-security', '@orca/windows-registry', '@vscode/windows-process-tree', '@anthropic-ai/claude-agent-sdk'],
     banner: { js: 'var __swaModuleUrl = require("node:url").pathToFileURL(__filename).href;' },
     define: { 'import.meta.url': '__swaModuleUrl', 'process.env.NODE_ENV': '"production"' },
     logOverride: { 'empty-import-meta': 'error' }, metafile: true, sourcemap: false, minify: false,

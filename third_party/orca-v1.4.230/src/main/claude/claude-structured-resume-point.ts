@@ -38,6 +38,10 @@ export function persistClaudeTurnResumePoint(
         })
       )
       .catch((error: unknown) => {
+        if (session.swaClaudePolicy) {
+          // 受限会话的持久化失败保留原拒绝，close/ended 必须等待并传播它。
+          session.swaClaudePolicy.reject('resume_persistence_failed')
+        }
         console.warn('[claude-resume-point] turn-end resume point was not persisted:', {
           sessionId,
           leafUuid,
@@ -50,10 +54,12 @@ export function persistClaudeTurnResumePoint(
       })
   }
   session.resumePointWrite = write
+  if (session.swaClaudePolicy) void write.settled.catch(() => undefined)
 }
 
 /** Close and exit persist the last completed turn, after any in-flight turn-end write settles. */
 export async function settledClaudeTurnEndLeaf(session: ClaudeSession): Promise<string | null> {
   await session.resumePointWrite?.settled
-  return session.turnEndLeafUuid
+  // 停止中的受限会话也保存实际已观察的 user/assistant leaf，供原件返回不完整结果。
+  return session.swaClaudePolicy ? session.leafUuid : session.turnEndLeafUuid
 }

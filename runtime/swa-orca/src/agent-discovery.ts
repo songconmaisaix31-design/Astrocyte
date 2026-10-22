@@ -19,6 +19,7 @@ import { inspectNativePiPolicy } from './native-pi-policy'
 import { inspectNativeOpenCodePolicy, readOpenCodeCredential } from './native-opencode-policy'
 import { parse as parseJSONC, type ParseError } from 'jsonc-parser'
 import { inspectNativeCodexAccountSource, inspectNativeCodexPolicy } from './native-codex-policy'
+import { inspectNativeClaudeAccountSource, inspectNativeClaudePolicy } from './native-claude-policy'
 
 type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
 const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
@@ -63,7 +64,11 @@ async function configuration(agent: string, snapshot: AgentSettingsSnapshot, req
     return { model: 'gpt-5.5', provider: 'openai', account: 'codex-native-api-key', sourceHome: account.sourceHome, version: account.authSource.version }
   }
   if (agent === 'claude') {
-    return { model: undefined, provider: undefined, account: undefined, sourceHome: process.env.SWA_CLAUDE_API_KEY_HOME, version: 'explicit-api-key-policy-unreviewed' }
+    const sourceHome = process.env.SWA_CLAUDE_API_KEY_HOME
+    if (requestedModel !== undefined && requestedModel !== 'claude-opus-5') throw new Error('native_claude_model_unreviewed')
+    if (!sourceHome || !projectRoot) return { model: undefined, provider: undefined, account: undefined, sourceHome, version: 'explicit-api-key-source-unverified' }
+    const account = await inspectNativeClaudeAccountSource({ sourceHome, protectedRoots: codexProtectedRoots(snapshot, projectRoot), env: process.env })
+    return { model: 'claude-opus-5', provider: 'anthropic', account: 'claude-native-api-key', sourceHome: account.sourceHome, version: account.authSource.version }
   }
   if (agent === 'pi') {
     const accountHome = snapshot.settings.agentDefaultEnv?.pi?.PI_CODING_AGENT_DIR ?? (process.env.SWA_DISCOVERY_PI_HOME || join(home, '.pi', 'agent'))
@@ -149,12 +154,13 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
     agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session'), control, ...(requirements ? { requirements } : {}) })
     let selection: AgentSelection | undefined
     if (projectId && enabled.status === 'available' && executable && version && proven) {
-      if (id !== 'pi' && id !== 'opencode' && id !== 'codex' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
+      if (id !== 'pi' && id !== 'opencode' && id !== 'codex' && id !== 'claude' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
       if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
       const native = id === 'pi'
         ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, ...parsePiModelOptionId(config.model), env: discoveryEnvironment() })
         : id === 'opencode' ? await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
-          : await inspectNativeCodexPolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'codex', projectId), catalogPath: join(await realpath(process.env.SWA_INSTALL_ROOT!), 'runtime/codex-policy/models.json'), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
+          : id === 'codex' ? await inspectNativeCodexPolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'codex', projectId), catalogPath: join(await realpath(process.env.SWA_INSTALL_ROOT!), 'runtime/codex-policy/models.json'), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
+            : await inspectNativeClaudePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'claude', projectId), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
       selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider: native.policy.account.provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })
     }
     details.set(id, { selection, configuration: config })

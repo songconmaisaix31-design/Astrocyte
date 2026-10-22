@@ -145,6 +145,8 @@ func nativeAccountFields(kind string) ([]string, error) {
 		return append(common, "config_source", "database_source", "credential_id", "credential_updated_at", "private_root"), nil
 	case "codex-native-api-key":
 		return append(common, "catalog_source", "private_root"), nil
+	case "claude-native-api-key":
+		return append(common, "private_root"), nil
 	default:
 		return nil, fmt.Errorf("unsupported native account kind %q", kind)
 	}
@@ -649,6 +651,15 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 	policy := selection.NativeLaunch
 	account := policy.Account
 	target := account.ModelTarget
+	if account.Kind == "claude-native-api-key" {
+		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "claude-cli-2.1.284-sdk-0.3.284" || selection.AgentID != "claude" || selection.ExternalTarget != "claude" || selection.Version != "2.1.284" || selection.ExecutionMode != "structured" || account.Provider != "anthropic" || selection.Provider != "anthropic" || selection.Model != "claude-opus-5" || target.ModelID != "claude-opus-5" || target.API != "anthropic-messages" || target.BaseURL != "https://api.anthropic.com" || account.PrivateHome != "" || account.ModelsSource != nil || account.CredentialID != "" {
+			return projectError(apierrors.EvidenceMissing, "the selected native Claude API account and disabled-tool policy are unverified")
+		}
+		if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateRoot) || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "claude" || account.AuthSource.Path != filepath.Join(account.SourceHome, "settings.json") || account.AuthSource.Version == "" {
+			return projectError(apierrors.EvidenceMissing, "the selected native Claude source and project root are incomplete")
+		}
+		return nil
+	}
 	if account.Kind == "codex-native-api-key" {
 		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "codex-cli-0.163.0" || selection.AgentID != "codex" || selection.Version != "0.163.0" || selection.ExecutionMode != "structured" || account.Provider != "openai" || selection.Provider != "openai" || selection.Model != "gpt-5.5" || target.ModelID != "gpt-5.5" || target.API != "openai-responses" || target.BaseURL != "https://api.openai.com/v1" || account.PrivateHome != "" || account.ModelsSource != nil || account.CredentialID != "" {
 			return projectError(apierrors.EvidenceMissing, "the selected native Codex API account and disabled-tool policy are unverified")

@@ -56,7 +56,16 @@ export const nativeCodexLaunchPolicySchema = z.strictObject({
   }),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('codex-cli-0.163.0') })
 })
-export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema, nativeCodexLaunchPolicySchema])
+export const nativeClaudeLaunchPolicySchema = z.strictObject({
+  schema: z.literal('swa.native-launch.v1'),
+  account: z.strictObject({
+    kind: z.literal('claude-native-api-key'), provider: z.literal('anthropic'), source_home: z.string().min(1),
+    auth_source: nativeConfigurationSourceSchema, private_root: z.string().min(1),
+    model_target: z.strictObject({ model_id: z.literal('claude-opus-5'), api: z.literal('anthropic-messages'), base_url: z.literal('https://api.anthropic.com') })
+  }),
+  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('claude-cli-2.1.284-sdk-0.3.284') })
+})
+export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema, nativeCodexLaunchPolicySchema, nativeClaudeLaunchPolicySchema])
 export type NativeLaunchPolicy = z.infer<typeof nativeLaunchPolicySchema>
 export const agentSelectionSchema = z.strictObject({
   agent_id: z.string().min(1), adapter: z.string().min(1), execution_mode: z.literal('structured'),

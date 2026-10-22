@@ -1,4 +1,4 @@
-import { constants, type BigIntStats, type Dirent } from 'node:fs'
+import { constants, lstatSync, realpathSync, type BigIntStats, type Dirent } from 'node:fs'
 import { lstat, open, opendir, realpath } from 'node:fs/promises'
 import { basename, isAbsolute, join, normalize, parse, relative, sep } from 'node:path'
 import { Readable } from 'node:stream'
@@ -8,6 +8,7 @@ import { forEachSessionFile } from '../../../third_party/orca-v1.4.230/src/main/
 import { SESSION_FILE_ID_LAYOUTS } from '../../../third_party/orca-v1.4.230/src/main/native-chat/session-file-id-layouts'
 import { proveClaudeTranscriptBranchFromJsonl, replayClaudeTranscriptBranchAncestryFromJsonl } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-transcript-branch-proof'
 import { nativeConfigurationSource } from './native-pi-policy'
+import { requireNativeClaudePath } from './claude-file-security'
 
 const maximum = 12 * 1024 * 1024
 const identifier = z.string().min(1).max(512).refine(value => value === value.trim() && !/[\u0000-\u001f\u007f]/.test(value))
@@ -57,6 +58,7 @@ function samePath(left: string, right: string) { return process.platform === 'wi
 function version(info: BigIntStats) { return `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}` }
 
 async function exactPath(path: string, file: boolean) {
+  if (process.platform === 'win32') requireNativeClaudePath(path, { directory: !file, private: true })
   if (!isAbsolute(path) || path !== normalize(path)) fail('source_path_invalid')
   let current = parse(path).root
   const parts = relative(current, path).split(sep).filter(Boolean)
@@ -68,14 +70,47 @@ async function exactPath(path: string, file: boolean) {
   if (!samePath(await realpath(path), path)) fail('source_redirected')
 }
 
-async function uniqueSource(input: NativeClaudeSessionSourceInput) {
-  const projects = join(input.privateRoot, 'projects')
+async function transcriptInventory(privateRoot: string, nativeId: string, privatePaths: boolean) {
+  if (!isAbsolute(privateRoot) || !z.uuid().safeParse(nativeId).success) fail('binding_invalid')
+  const projects = join(privateRoot, 'projects')
   let visited = 0
   const matches: string[] = []
+  const directories = new Map<string, string>()
+  let fileIdentity: string | undefined
+  const inspect = async (path: string, file: boolean) => {
+    if (privatePaths) requireNativeClaudePath(path, { directory: !file, private: true })
+    await exactPath(path, file)
+  }
+  await inspect(privateRoot, false)
+  directories.set(privateRoot, version(await lstat(privateRoot, { bigint: true })))
+  const verify = () => {
+    for (const [path, signature] of directories) {
+      if (privatePaths || process.platform === 'win32') requireNativeClaudePath(path, { directory: true, private: true })
+      const info = lstatSync(path, { bigint: true })
+      if (!info.isDirectory() || info.isSymbolicLink() || !samePath(realpathSync.native(path), path) || version(info) !== signature) fail('source_changed')
+    }
+    if (matches.length === 0) {
+      try { lstatSync(projects) }
+      catch (error) { if (error instanceof Error && 'code' in error && error.code === 'ENOENT' && !directories.has(projects)) return; throw error }
+      if (!directories.has(projects)) fail('source_changed')
+    }
+    if (matches.length) {
+      if (privatePaths || process.platform === 'win32') requireNativeClaudePath(matches[0]!, { directory: false, private: true })
+      const info = lstatSync(matches[0]!, { bigint: true })
+      if (!info.isFile() || info.isSymbolicLink() || !samePath(realpathSync.native(matches[0]!), matches[0]!) || version(info) !== fileIdentity) fail('source_changed')
+    }
+  }
+  try { await inspect(projects, false) }
+  catch (error) {
+    if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error
+    verify()
+    return { path: null, verify }
+  }
   // 原walker的端口保留；opendir在分配下一项前受总额度约束，不先readdir整个目录。
   const readDirectory = async (path: string): Promise<Dirent[]> => {
-    await exactPath(path, false)
+    await inspect(path, false)
     const before = version(await lstat(path, { bigint: true }))
+    directories.set(path, before)
     const directory = await opendir(path, { bufferSize: 32 })
     const entries: Dirent[] = []
     try {
@@ -87,19 +122,35 @@ async function uniqueSource(input: NativeClaudeSessionSourceInput) {
         entries.push(entry)
       }
     } finally { await directory.close() }
-    await exactPath(path, false)
+    await inspect(path, false)
     if (version(await lstat(path, { bigint: true })) !== before) fail('source_changed')
     return entries
   }
   await forEachSessionFile(projects, 'claude', [], {
     extensions: new Set(['.jsonl']), strictErrors: true, readDirectory,
     directoryPredicate: (_name, depth) => depth === 0,
-    filePredicate: path => SESSION_FILE_ID_LAYOUTS.claude.fileMatchesId(path, input.nativeId)
-  }, path => {
+    filePredicate: path => SESSION_FILE_ID_LAYOUTS.claude.fileMatchesId(path, nativeId)
+  }, async path => {
     matches.push(path)
     if (matches.length > 1) fail('source_ambiguous')
+    const within = relative(projects, path).split(sep)
+    if (within.length !== 2 || basename(path) !== `${nativeId}.jsonl`) fail('source_identity_changed')
+    await inspect(path, true)
+    fileIdentity = version(await lstat(path, { bigint: true }))
   })
-  if (matches.length !== 1 || !samePath(matches[0]!, input.path)) fail('source_identity_changed')
+  verify()
+  return { path: matches[0] ?? null, verify }
+}
+
+/** 仅查询实际私有目录元数据；原件格式与完整性仍由下方读取器证明。 */
+export async function findPrivateClaudeTranscript(privateRoot: string, nativeId: string) {
+  return transcriptInventory(privateRoot, nativeId, true)
+}
+
+async function uniqueSource(input: NativeClaudeSessionSourceInput) {
+  const inventory = await transcriptInventory(input.privateRoot, input.nativeId, false)
+  if (inventory.path === null || !samePath(inventory.path, input.path)) fail('source_identity_changed')
+  inventory.verify()
 }
 
 async function readSnapshot(input: NativeClaudeSessionSourceInput) {
@@ -140,8 +191,6 @@ function inertDuration(row: NativeRow) {
 }
 
 export async function readNativeClaudeSessionSource(input: NativeClaudeSessionSourceInput) {
-  // Windows还缺nonlink reparse的实际拒绝端口，不能把symlink/realpath检查当成完整证明。
-  if (process.platform === 'win32') fail('windows_source_contract_unavailable')
   input = { ...input, source: { ...input.source } }
   if (input.nativeVersion !== '2.1.284' || input.sdkVersion !== '0.3.284' || input.provider !== 'anthropic' || !z.uuid().safeParse(input.nativeId).success || !identifier.safeParse(input.model).success || !z.object({ path: z.string().min(1), version: identifier }).safeParse(input.source).success || typeof input.stopped !== 'boolean' || typeof input.validateExport !== 'function') fail('binding_invalid')
   for (const selector of [input.expectedLeafUuid, input.inputUuid]) if (selector !== null && !identifier.safeParse(selector).success) fail('binding_invalid')

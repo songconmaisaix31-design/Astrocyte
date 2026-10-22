@@ -13,6 +13,7 @@ import {
   AgentSessionPreSpawnError
 } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import type { ClaudeStreamJsonConnection } from './claude-stream-json-connection'
+import type { ClaudeSwaInitializationProcess } from './claude-agent-sdk-process-spawn'
 import type { ClaudeJournalTranslator } from './claude-journal-translator-contract'
 import type { ClaudePromptRegistry } from './claude-structured-prompt-replies'
 import { closeProcessRegistry } from '@orca/process-host/close-process-registry'
@@ -21,23 +22,23 @@ import { settledClaudeTurnEndLeaf } from './claude-structured-resume-point'
 import { settleClaudeTurnEndWaiters } from './claude-request-end-wait'
 import type { StructuredAgentSessionLogger } from '../native-chat/agent-session-wire/structured-agent-session-logger'
 
-/** The root's own exit was seen first-hand. The lease follows the root, so a descendant
- *  left unverified or seen alive does not hold it. A failed spawn had no process to exit. */
+/** 只返回根进程的实际退出观察；受限分支的释放仍另需完整树和持久化证明。 */
 export function claudeRootExitObserved(
-  connection: ClaudeStreamJsonConnection | null | undefined
+  connection: Pick<ClaudeStreamJsonConnection, 'exitVerdict'> | null | undefined
 ): boolean {
   const verdict = connection?.exitVerdict
   return verdict?.root === 'exited' && verdict.processless !== true
 }
 
 export function claudeAcquisitionCleanupError(
-  connection: ClaudeStreamJsonConnection | null | undefined,
+  connection: ClaudeStreamJsonConnection | ClaudeSwaInitializationProcess | null | undefined,
   cause: unknown
 ): Error {
   const verdict = connection?.exitVerdict
   if (verdict?.processless === true) {
     return new AgentSessionPreSpawnError(cause)
   }
+  if (connection?.swaFullTreeCloseRequired) return new AgentSessionAcquisitionExitUnprovenError(cause)
   return claudeRootExitObserved(connection)
     ? new AgentSessionAcquisitionRootExitObservedError(cause)
     : new AgentSessionAcquisitionExitUnprovenError(cause)
@@ -57,11 +58,13 @@ export async function resolveClaudeAcquisitionError(input: {
     for (const prompt of input.prompts.clear()) {
       prompt.settle(null)
     }
-    const closed = (await input.attempt.connection?.close()) ?? true
-    if (input.attempt.connection?.exitVerdict.processless === true) {
+    const resource = input.attempt.connection ?? input.attempt.initializingProcess
+    const closed = (await resource?.close()) ?? true
+    input.attempt.exitProven = closed
+    if (resource?.exitVerdict.processless === true) {
       acquisitionError = new AgentSessionPreSpawnError(input.error)
     } else if (!closed) {
-      acquisitionError = claudeAcquisitionCleanupError(input.attempt.connection, input.error)
+      acquisitionError = claudeAcquisitionCleanupError(resource, input.error)
     }
   }
   return acquisitionError
@@ -103,9 +106,10 @@ async function finalizeClaudePublishedSession(
     prompt.settle(null)
   }
   const connectionClosed = await session.connection.close()
-  session.unbindReadingControl?.()
+  if (!session.connection.swaFullTreeCloseRequired) session.unbindReadingControl?.()
   let rootExitVerdict: Error | undefined
   if (connectionClosed !== true) {
+    if (session.connection.swaFullTreeCloseRequired) return false
     const cleanupError = claudeAcquisitionCleanupError(
       session.connection,
       new Error('provider close unproven')
@@ -118,6 +122,7 @@ async function finalizeClaudePublishedSession(
     }
     rootExitVerdict = cleanupError
   }
+  if (session.connection.swaFullTreeCloseRequired) return finalizeRestrictedClaudePublishedSession(input, session)
   // Queues the session's ending for the host's child records; the adapter delivers it after close.
   // Even a proven close is Orca losing contact, not a Stop the CLI accepted: what still ran ends
   // with no outcome anyone reported.
@@ -172,6 +177,37 @@ async function finalizeClaudePublishedSession(
   return true
 }
 
+async function finalizeRestrictedClaudePublishedSession(input: CloseClaudePublishedSessionInput, session: ClaudeSession): Promise<boolean> {
+  const ended = session.closeEndEvent ??= {
+    type: 'ended', sessionId: input.sessionId, reason: 'claude session closed', cause: 'requested-close',
+    fence: session.fence, acquisitionGeneration: session.acquisitionGeneration, observedAt: Date.now()
+  }
+  session.closePersistence ??= (async () => {
+    if (!input.persistHandle || !session.events?.written || !session.translator) throw new Error('native_claude_durable_close_port_missing')
+    await persistClosedClaudeSession(input, session)
+    if (!(await session.events.written()).ok) throw new Error('native_claude_journal_close_unproven')
+    session.childWork.clear()
+    session.backgroundTasks.clear()
+    session.translator.handle(ended)
+    if (!(await session.events.written()).ok) throw new Error('native_claude_journal_close_unproven')
+  })()
+  try { await session.closePersistence }
+  catch { throw new AgentSessionAcquisitionExitUnprovenError(new Error('native_claude_durable_close_failed')) }
+  session.unbindReadingControl?.()
+  let callbackError: unknown
+  if (!session.closeEnded) {
+    session.closeEnded = true
+    try {
+      input.onEvent?.(ended)
+    } catch (error) { callbackError = error }
+  }
+  session.closeFinalized = true
+  input.sessions.delete(input.sessionId)
+  session.translator?.dispose()
+  if (callbackError !== undefined) throw new AgentSessionAcquisitionExitProvenError(new Error('native_claude_close_callback_failed'))
+  return true
+}
+
 /** The resume point a closed session leaves for the next start, after the close already ended. */
 async function persistClosedClaudeSession(
   input: CloseClaudePublishedSessionInput,
@@ -188,6 +224,7 @@ async function persistClosedClaudeSession(
     await input.persistHandle?.(handle)
     input.onEvent?.({ type: 'handle', ...handle })
   } catch (error) {
+    if (session.connection.swaFullTreeCloseRequired) throw error
     input.logger?.warn("saving a closed Claude session's resume point failed", {
       scope: 'claude-close-resume-point',
       sessionId: input.sessionId,
@@ -278,7 +315,7 @@ export async function closeClaudeSession(input: {
   const attempt = input.acquisitions.get(input.sessionId)
   if (!(await cancelClaudeAcquisitionAttempt(attempt))) {
     const cleanupError = claudeAcquisitionCleanupError(
-      attempt?.connection,
+      attempt?.connection ?? attempt?.initializingProcess,
       new Error('acquisition cancel unproven')
     )
     // Why: cancellation must preserve the same actionable verdict as published-session close.

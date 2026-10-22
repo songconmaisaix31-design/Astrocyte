@@ -18,6 +18,7 @@ import type { ClaudeCommandCatalogProbe } from '../claude/claude-command-catalog
 import { openClaudeStreamJsonConnection } from '../claude/claude-stream-json-connection'
 import type { ClaudeCliFlagSupport } from '../claude/claude-cli-flag-support'
 import { prewarmClaudeCliFlags } from '../claude/claude-cli-flag-prewarm'
+import { hasStructuredClaudeToolsAdmission } from './structured-agent-launch-composition'
 
 export type StructuredClaudeRuntimeAdapterDeps = {
   store: AgentSessionRecordStore
@@ -75,7 +76,8 @@ export function createStructuredClaudeRuntimeAdapter(
   deps: StructuredClaudeRuntimeAdapterDeps
 ): ClaudeStructuredSessionAdapter {
   const { store } = deps
-  if (deps.claudeCliFlags) {
+  const restricted = hasStructuredClaudeToolsAdmission()
+  if (!restricted && deps.claudeCliFlags) {
     // Before any chat launches, so the first one rarely waits on the version check.
     void prewarmClaudeCliFlags({
       cliFlags: deps.claudeCliFlags,
@@ -88,10 +90,10 @@ export function createStructuredClaudeRuntimeAdapter(
     })
   }
   return new ClaudeStructuredSessionAdapter({
-    atRestCommands: new ClaudeAtRestCommandCatalog({
+    ...(!restricted ? { atRestCommands: new ClaudeAtRestCommandCatalog({
       resolveWorkspacePath: deps.resolveWorkspacePath,
       ...(deps.atRestCommandProbe ? { probe: deps.atRestCommandProbe } : {})
-    }),
+    }) } : {}),
     resolveLaunch: deps.resolveLaunch,
     persistHandle: async ({ sessionId, providerSessionId, leafUuid, fence }) => {
       const currentFence = store.getRecord(sessionId)?.lease.runtimeFence ?? fence

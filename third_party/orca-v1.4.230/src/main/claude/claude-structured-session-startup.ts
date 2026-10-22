@@ -70,6 +70,11 @@ export async function readClaudeStartupFacts(input: {
   requestTimeoutMs: number | undefined
   emit: (event: ClaudeStructuredSessionEvent) => void
 }): Promise<ClaudeInitializeFacts> {
+  // openSession 由 Host 在实际 owner 持久化后调用；此处只等待 SDK 已有的 initialize。
+  if (input.connection.swaFullTreeCloseRequired) {
+    if (!input.connection.awaitSwaPolicyReady) throw new Error('native_claude_ready_port_missing')
+    await input.connection.awaitSwaPolicyReady()
+  }
   // The CLI's first answer has no request deadline of its own; the reads after it do.
   const initialization = await Promise.race([
     input.connection
@@ -91,11 +96,9 @@ export async function readClaudeStartupFacts(input: {
   if (input.connection.closed) {
     throw new Error('claude session closed before startup completed')
   }
-  input.emit({
-    type: 'options',
-    sessionId: input.sessionId,
-    models: readClaudeModels(initialization)
-  })
+  if (!input.connection.swaFullTreeCloseRequired) {
+    input.emit({ type: 'options', sessionId: input.sessionId, models: readClaudeModels(initialization) })
+  }
   return {
     init: input.initProof.seen(),
     initProof: input.initProof,
@@ -203,6 +206,11 @@ export async function openClaudeSession(input: {
     if (input.isCurrent()) {
       input.onLateRefusal(error)
     }
+  }
+  if (session.swaClaudePolicy) {
+    session.reportedOptions.model = session.swaClaudePolicy.model
+    session.events?.publish()
+    return { reportedOptions: { model: session.swaClaudePolicy.model } }
   }
   applyClaudeInitializeFacts(session, initialized)
   const result: ClaudeOpenFacts = {

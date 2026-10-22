@@ -28,6 +28,8 @@ import type { StructuredAgentLaunchPartResolver } from '../runtime/structured-ag
 import { claudeSessionIdForOrcaSession } from './claude-structured-session-id'
 import { resolveStructuredAgentCommand } from '../native-chat/structured-agent-command-resolution'
 import { hasExplicitTuiLaunchCommand } from '../../shared/tui-agent-launch-command-override'
+import type { SwaClaudeToolsPolicy } from '../provider-process/provider-process-launch'
+import { nativeClaudeSdkOptions } from './claude-structured-spawn-options'
 
 export { claudeSessionIdForOrcaSession }
 
@@ -50,6 +52,15 @@ export type ClaudeStructuredSdkOptions = Pick<
   | 'settings'
   | 'sessionId'
   | 'resume'
+  | 'tools'
+  | 'mcpServers'
+  | 'strictMcpConfig'
+  | 'agents'
+  | 'skills'
+  | 'hooks'
+  | 'permissionPrompts'
+  | 'persistSession'
+  | 'enableFileCheckpointing'
 >
 
 /**
@@ -86,6 +97,7 @@ export function claudeStructuredPermissionOptions(
 }
 
 export type ClaudeStructuredLaunch = {
+  swaClaudePolicy?: SwaClaudeToolsPolicy
   /** Always Orca's resolved user CLI: the SDK's bundled binaries are excluded from the install. */
   pathToClaudeCodeExecutable: string
   account?: ClaudeStructuredInvocation['account']
@@ -161,7 +173,6 @@ export function claudeStructuredLaunchPart(
   return async (basis, identity) => {
     const { record } = basis
     const accountHome = requireLegacyAgentSessionAccountHome(record.accountHome)
-    const router = getClaudeProfileRouter()
     // A Claude record's chain holds only Claude handles; the launch admission refuses anything else.
     const active = activeProviderContext(record)
     const head = active.head?.handle ?? null
@@ -181,6 +192,34 @@ export function claudeStructuredLaunchPart(
         )
     const continuesChain = head !== null
     const cwd = await basis.launchDirectory()
+    if (basis.disabledClaudeTools) {
+      const policy = await basis.disabledClaudeTools()
+      const env = await basis.environment()
+      if (accountHome.variable !== 'CLAUDE_CONFIG_DIR' || env.CLAUDE_CONFIG_DIR !== accountHome.path) {
+        throw new Error('native_claude_private_home_changed')
+      }
+      const transcript = await policy.resolveTranscript(providerSessionId)
+      if (!head && transcript !== null) throw new Error('native_claude_orphan_resume_source_unproven')
+      const resumesTranscript = head !== null && transcript !== null
+      const resumeLeafUuid = head ? claudeProviderHandleLeafUuid(head) : null
+      if (resumeLeafUuid && !transcript) throw new Error('native_claude_resume_source_missing')
+      const command = await resolveStructuredAgentCommand('claude', basis.commandSettings(), { pathEnv: env.PATH ?? env.Path })
+      return {
+        launch: {
+          pathToClaudeCodeExecutable: command,
+          options: nativeClaudeSdkOptions({ nativeId: providerSessionId, resume: resumesTranscript }),
+          claudeConfigDir: accountHome.path,
+          providerSessionId,
+          resumeLeafUuid,
+          resumesTranscript,
+          continuesChain,
+          swaClaudePolicy: policy
+        },
+        env,
+        inheritedEnvToDelete: Object.keys(process.env).filter(key => !(key in env))
+      }
+    }
+    const router = getClaudeProfileRouter()
     const commandSettings = basis.commandSettings()
     const envDeps: ClaudeEnvDeps & Pick<ClaudeStructuredLaunchPartDeps, 'resolveAuthPolicy'> = {
       ...(hasExplicitTuiLaunchCommand(commandSettings, 'claude')

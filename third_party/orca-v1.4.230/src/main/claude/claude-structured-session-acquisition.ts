@@ -173,7 +173,7 @@ export async function acquireClaudeSession({
           pathToClaudeCodeExecutable: launch.pathToClaudeCodeExecutable,
           options: launch.options,
           cwd: launch.cwd,
-          env: {
+          env: launch.swaClaudePolicy ? { ...launch.env } : {
             ...launch.env,
             // Compared against what the child would otherwise inherit, so the record's
             // account home still wins over a diverging overlay without a needless pin.
@@ -183,10 +183,16 @@ export async function acquireClaudeSession({
               launch.env ? { env: launch.env } : {}
             )
           },
+          ...(launch.swaClaudePolicy ? { swaClaudePolicy: launch.swaClaudePolicy } : {}),
           ...(launch.envToDelete ? { envToDelete: launch.envToDelete } : {})
         },
         {
           onMessage,
+          onBeforeQuery: () => acquisitions.assertCurrent(sessionId, attempt),
+          onSpawnedProcess: (resource) => {
+            attempt.initializingProcess = resource
+            acquisitions.assertCurrent(sessionId, attempt)
+          },
           canUseTool,
           onUserDialog,
           ...(input.onOutput ? { onOutput: input.onOutput } : {}),
@@ -259,6 +265,7 @@ export async function acquireClaudeSession({
       observedAt: deps.now?.() ?? Date.now()
     })
     const session = publication.session
+    if (launch.swaClaudePolicy) session.swaClaudePolicy = launch.swaClaudePolicy
     liveSession = session
     adoptClaudeStructuredSpawnOptions(session, launch.savedOptions)
     acquisitions.deleteIfCurrent(sessionId, attempt)
@@ -288,7 +295,7 @@ export async function acquireClaudeSession({
       translator,
       prompts
     })
-    acquisitions.deleteIfCurrent(sessionId, attempt)
+    if (!attempt.initializingProcess?.swaFullTreeCloseRequired || attempt.exitProven) acquisitions.deleteIfCurrent(sessionId, attempt)
     throw acquisitionError
   } finally {
     attempt.finish()

@@ -1,5 +1,5 @@
-import { constants, lstatSync } from 'node:fs'
-import { lstat, open, realpath, stat } from 'node:fs/promises'
+import { constants, lstatSync, type Dirent } from 'node:fs'
+import { lstat, open, opendir, realpath, stat } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join, relative } from 'node:path'
 import { Readable } from 'node:stream'
 import { isDeepStrictEqual } from 'node:util'
@@ -15,7 +15,7 @@ import type { AgentSessionRecord } from '../../../third_party/orca-v1.4.230/src/
 import Database from '../../../third_party/orca-v1.4.230/src/main/sqlite/sync-database'
 import { replayJournal } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-open'
 import { renderJournalState, type JournalReducerState } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-reducer'
-import { parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
+import { agentJournalItemKey, parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
 import { agentSessionSendBodyFingerprint } from '../../../third_party/orca-v1.4.230/src/shared/structured-agent-session-send-mutation'
 import { SendBodyStructure } from '../../../third_party/orca-v1.4.230/src/shared/rpc-contract/structured-agent-session-message-params'
 import type { OrchestrationDb } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/db/orchestration-db'
@@ -31,6 +31,18 @@ import { codexProtectedRoots } from './agent-discovery'
 import { readAgentSettings } from './agent-settings'
 import { swaLinuxProcessIncarnationSchema } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
 import { swaLinuxChildMessageSchema } from '../../../third_party/orca-v1.4.230/src/main/provider-process/swa-linux-provider-process-tree'
+import { requireNativeClaudePath } from './claude-file-security'
+import { readNativeClaudeSessionSource } from './claude-session-result'
+import { claudeDispatchMessageContent } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-structured-dispatch-content'
+import { createClaudeStreamedBlockRegistry } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-streamed-block-identity'
+import { claudeMessageBody, claudeMessageIdentity, readClaudeMessageEnvelope } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-structured-item-translation'
+import { forEachSessionFile } from '../../../third_party/orca-v1.4.230/src/main/ai-vault/session-scanner-discovery'
+import { SESSION_FILE_ID_LAYOUTS } from '../../../third_party/orca-v1.4.230/src/main/native-chat/session-file-id-layouts'
+import { assertNativeClaudeCurrent, inspectNativeClaudePolicy } from './native-claude-policy'
+import { verifyPrivateClaudeAccount } from './private-claude-account'
+import { validateClaudeExport } from './claude-session-policy'
+import { claudeProviderHandleLeafUuid } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle-encoding'
+import { isRootClaudeFrame } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-turn-opening'
 
 const maximum = 12 * 1024 * 1024
 const sourceWitnesses = new Map<string, { path: string; identity: string; nativeSession: string; bytes: Buffer }>()
@@ -70,6 +82,16 @@ const equalPath = (left: string, right: string) => process.platform === 'win32' 
 const sourceSignature = (record: AgentSessionRecord) =>
   JSON.stringify({ session: record.sessionId, location: record.location, account: record.accountHome, options: record.options, fence: record.lease.runtimeFence, claim: record.lease.claimStatus, owner: record.lease.ownerProcess, death: record.lease.deathEvidence, unreconciled: record.lease.unreconciled, head: agentSessionProviderHandleChainHead(record.providerHandleChain) })
 
+function sourceTransport(agent: string) {
+  switch (agent) {
+    case 'pi': return 'jsonl-rpc'
+    case 'opencode': return 'acp'
+    case 'codex': return 'codex-app-server'
+    case 'claude': return 'claude-sdk'
+    default: return fail('The native output provider has no complete source contract')
+  }
+}
+
 function originalWorkerSelection(runtime: OrcaRuntimeService, scope: Scope, dispatchId: string, record: AgentSessionRecord) {
   const db = runtime.getOrchestrationDb()
   const rows = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
@@ -85,6 +107,8 @@ function originalWorkerSelection(runtime: OrcaRuntimeService, scope: Scope, disp
     if (!('variable' in record.accountHome) || record.accountHome.variable !== 'PI_CODING_AGENT_DIR' || record.accountHome.path !== account.private_home) return fail('The native output Pi account changed')
   } else if (account.kind === 'codex-native-api-key') {
     if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CODEX_HOME' || record.accountHome.path !== join(account.private_root, record.sessionId)) return fail('The native output Codex account changed')
+  } else if (account.kind === 'claude-native-api-key') {
+    if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CLAUDE_CONFIG_DIR' || record.accountHome.path !== join(account.private_root, record.sessionId, 'config')) return fail('The native output Claude account changed')
   } else if (!('kind' in record.accountHome) || record.accountHome.kind !== 'opencode' || record.accountHome.locator.kind !== 'private' || record.accountHome.locator.root !== join(account.private_root, record.sessionId)) return fail('The native output OpenCode account changed')
   return { selection, binding: receipt.swa_input_binding === undefined ? null : structuredInputBindingSchema.parse(receipt.swa_input_binding) }
 }
@@ -94,13 +118,17 @@ const processSchema = z.union([
   z.strictObject({ pid: z.number().int().positive(), creation_time_ms: z.number().positive(), runtime_id: z.string().min(1) })
 ])
 const boundInputBody = SendBodyStructure.extend({ from: z.unknown().optional() })
-const traceRowSchema = z.strictObject({ protocol: z.literal('codex-app-server'), projection: z.literal('actual_native_app_server_frames'), session_id: z.string().min(1), runtime_fence: z.number().int().nonnegative(), runtime_epoch: z.string().min(1), sequence: z.number().int().positive(), observed_at: z.iso.datetime(), monotonic_ms: z.number().nonnegative(), event: z.enum(['custody', 'policy_ready', 'thread_opened', 'notification', 'custody_closed']), process: processSchema, native_cli: z.record(z.string(), z.unknown()), detail: z.unknown() })
+const traceIdentity = { session_id: z.string().min(1), runtime_fence: z.number().int().nonnegative(), runtime_epoch: z.string().min(1), sequence: z.number().int().positive(), observed_at: z.iso.datetime(), monotonic_ms: z.number().nonnegative(), process: processSchema, native_cli: z.record(z.string(), z.unknown()), detail: z.unknown() }
+const traceRowSchema = z.discriminatedUnion('protocol', [
+  z.strictObject({ ...traceIdentity, protocol: z.literal('codex-app-server'), projection: z.literal('actual_native_app_server_frames'), event: z.enum(['custody', 'policy_ready', 'thread_opened', 'notification', 'custody_closed']) }),
+  z.strictObject({ ...traceIdentity, protocol: z.literal('claude-agent-sdk'), projection: z.literal('actual_sdk_messages'), event: z.enum(['custody', 'policy_ready', 'sdk_message', 'dispatch_binding', 'custody_closed']) })
+])
 
-async function readCodexTrace(input: { path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean }) {
+async function readStructuredTrace(input: { agent: 'codex' | 'claude'; path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean; requirePrivatePath(path: string): void }) {
   const { record, binding } = input
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
-  if (!binding || binding.agent !== 'codex' || binding.session_id !== record.sessionId || binding.dispatch_id === '' || !head || head.mintedAtFence !== binding.runtime_fence || head.handle.nativeId !== input.nativeId || head.origin !== 'created' || head.forkedFromKey) return fail('The original Codex owner fence or provider handle is unavailable')
-  requireNativeCodexPrivatePath(input.path, false)
+  if (!binding || binding.agent !== input.agent || record.provider !== input.agent || binding.session_id !== record.sessionId || binding.dispatch_id === '' || !head || head.mintedAtFence !== binding.runtime_fence || head.handle.nativeId !== input.nativeId || head.origin !== 'created' || head.forkedFromKey) return fail('The original native owner fence or provider handle is unavailable')
+  input.requirePrivatePath(input.path)
   const source = await nativeConfigurationSource(input.path)
   const handle = await open(input.path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
   let content: string
@@ -118,20 +146,24 @@ async function readCodexTrace(input: { path: string; record: AgentSessionRecord;
   const rows: z.infer<typeof traceRowSchema>[] = []
   for await (const item of Readable.from([Buffer.from(content)]).pipe(parser.asStream())) { if (rows.length >= 100_000) return fail('The complete provider event inventory exceeds its bound'); rows.push(traceRowSchema.parse(item.value)) }
   const first = rows[0]
-  if (!first || first.event !== 'custody') return fail('The original Codex custody observation is missing')
+  if (!first || first.event !== 'custody') return fail('The original native custody observation is missing')
   for (const [index, row] of rows.entries()) {
-    if (row.sequence !== index + 1 || row.session_id !== record.sessionId || row.runtime_fence !== binding.runtime_fence || row.runtime_epoch !== input.runtimeId || !isDeepStrictEqual(row.process, first.process) || !isDeepStrictEqual(row.native_cli, first.native_cli) || index && row.monotonic_ms < rows[index - 1]!.monotonic_ms) return fail('The original provider event source changed its session, owner or sequence')
+    if (row.protocol !== (input.agent === 'codex' ? 'codex-app-server' : 'claude-agent-sdk') || row.sequence !== index + 1 || row.session_id !== record.sessionId || row.runtime_fence !== binding.runtime_fence || row.runtime_epoch !== input.runtimeId || !Number.isFinite(Date.parse(row.observed_at)) || !isDeepStrictEqual(row.process, first.process) || !isDeepStrictEqual(row.native_cli, first.native_cli) || index && row.monotonic_ms < rows[index - 1]!.monotonic_ms) return fail('The original provider event source changed its protocol, session, owner or sequence')
     if ((row.event === 'notification' || row.event === 'thread_opened')) {
       const detail = nativeObject(row.detail)
       if (typeof detail.raw_line !== 'string' || !isDeepStrictEqual(JSON.parse(detail.raw_line), detail.frame)) return fail('The raw native provider frame differs from its projection')
     }
     if (row.event === 'custody_closed' && index !== rows.length - 1) return fail('The native provider source contains input after its complete closure')
   }
-  if (rows.filter(row => row.event === 'policy_ready').length !== 1) return fail('The actual native Codex policy observation is missing or ambiguous')
-  const opened = rows.filter(row => row.event === 'thread_opened')
-  if (opened.length !== 1) return fail('The actual native Codex thread reply is missing or ambiguous')
-  const reply = nativeObject(nativeObject(opened[0]!.detail).frame), actualThread = nativeObject(nativeObject(reply.result).thread)
-  if (actualThread.id !== input.nativeId || typeof actualThread.path !== 'string' || !isAbsolute(actualThread.path)) return fail('The actual native Codex thread or rollout changed')
+  if (rows.filter(row => row.event === 'policy_ready').length !== 1) return fail('The actual native policy observation is missing or ambiguous')
+  let actualThread: Record<string, unknown> | undefined
+  if (input.agent === 'codex') {
+    const opened = rows.filter(row => row.event === 'thread_opened')
+    if (opened.length !== 1) return fail('The actual native Codex thread reply is missing or ambiguous')
+    const reply = nativeObject(nativeObject(opened[0]!.detail).frame)
+    actualThread = nativeObject(nativeObject(reply.result).thread)
+    if (actualThread.id !== input.nativeId || typeof actualThread.path !== 'string' || !isAbsolute(actualThread.path)) return fail('The actual native Codex thread or rollout changed')
+  }
   const closed = rows.at(-1)?.event === 'custody_closed' ? nativeObject(rows.at(-1)!.detail) : null
   if ('platform' in first.process) {
     const observed = nativeObject(first.detail)
@@ -161,9 +193,9 @@ async function readCodexTrace(input: { path: string; record: AgentSessionRecord;
     if (!closed || owner !== null || record.lease.runtimeFence <= binding.runtime_fence || record.lease.deathEvidence?.kind !== 'exit-observed' || record.lease.deathEvidence.ownerFence !== binding.runtime_fence) return fail('The released native source has no exact complete owner death evidence')
   } else if (record.lease.claimStatus !== 'live' || !owner || owner.pid !== first.process.pid || owner.runtime !== first.process.runtime_id || record.lease.runtimeFence !== binding.runtime_fence || 'creation_time_ms' in first.process && owner.processStartTimeMs !== first.process.creation_time_ms) return fail('The live native source differs from its current exact owner')
   if (input.requireClosed && !closed) return fail('The complete native result requires its actual full-tree closure')
-  const verify = async () => { requireNativeCodexPrivatePath(input.path, false); if (!isDeepStrictEqual(source, await nativeConfigurationSource(input.path))) return fail('The provider event source changed before export') }
+  const verify = async () => { input.requirePrivatePath(input.path); if (!isDeepStrictEqual(source, await nativeConfigurationSource(input.path))) return fail('The provider event source changed before export') }
   await verify()
-  return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, source, rows, value: { format: 'codex-provider-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
+  return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, source, rows, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : 'claude-sdk-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
 }
 
 const inputReceiptRow = z.object({ request_id: z.string(), state: z.enum(['pending', 'completed']), payload_hash: z.string(), receipt: z.string(), child_caller: z.string().nullable(), child_method: z.string().nullable(), child_state: z.string().nullable(), child_payload_hash: z.string().nullable(), child_receipt: z.string().nullable() })
@@ -175,39 +207,39 @@ const inputReceiptQuery = `FROM mutation_receipts parent LEFT JOIN mutation_rece
   AND (json_extract(parent.receipt,'$.swa_input_binding.dispatch_id')=?
     OR json_extract(parent.receipt,'$.native.dispatchId')=? OR json_extract(parent.receipt,'$.invocation.command.dispatch_id')=?)`
 
-export function readCodexInputInventory(db: OrchestrationDb, scope: Scope, dispatchId: string) {
+export function readStructuredInputInventory(db: OrchestrationDb, scope: Scope, dispatchId: string) {
   const parameters = [db.getOrCreateLocalMutationCallerFingerprint(), scope.project_id, scope.run_id, scope.root_task_id, dispatchId, dispatchId, dispatchId]
   const bound = z.object({ count: z.number().int(), bytes: z.number().nullable() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,
     SUM(LENGTH(CAST(parent.receipt AS BLOB))+COALESCE(LENGTH(CAST(child.receipt AS BLOB)),0)) AS bytes ${inputReceiptQuery}`).get(...parameters))
-  if (bound.count < 1 || bound.count > 100_000 || (bound.bytes ?? 0) > maximum) return fail('The complete original Codex input request inventory is missing or exceeds its bound')
+  if (bound.count < 1 || bound.count > 100_000 || (bound.bytes ?? 0) > maximum) return fail('The complete original native input request inventory is missing or exceeds its bound')
   const rows = z.array(inputReceiptRow).parse(db.db.prepare(`SELECT parent.request_id,parent.state,parent.payload_hash,parent.receipt,
     child.caller_fingerprint AS child_caller,child.method AS child_method,child.state AS child_state,
     child.payload_hash AS child_payload_hash,child.receipt AS child_receipt ${inputReceiptQuery}
     ORDER BY parent.request_id,child.caller_fingerprint`).all(...parameters))
-  if (rows.length !== bound.count || new Set(rows.map(row => row.request_id)).size !== rows.length) return fail('The original Codex input request or native child is ambiguous')
-  if (rows.some(row => row.state !== 'completed')) return fail('An original Codex input request is still pending or unknown')
+  if (rows.length !== bound.count || new Set(rows.map(row => row.request_id)).size !== rows.length) return fail('The original native input request or native child is ambiguous')
+  if (rows.some(row => row.state !== 'completed')) return fail('An original native input request is still pending or unknown')
   return { rows, signature: JSON.stringify(rows) }
 }
 
-function codexInputBindings(inventory: ReturnType<typeof readCodexInputInventory>, input: { scope: Scope; dispatchId: string; sessionId: string; fence: number; selection: AgentSelection }) {
+function structuredInputBindings(inventory: ReturnType<typeof readStructuredInputInventory>, input: { scope: Scope; dispatchId: string; sessionId: string; fence: number; selection: AgentSelection }) {
   const bindings: z.infer<typeof structuredInputBindingSchema>[] = []
   for (const row of inventory.rows) {
     const receipt = nativeObject(JSON.parse(row.receipt))
-    if (row.state !== 'completed') return fail('An original Codex input request is still pending or unknown')
+    if (row.state !== 'completed') return fail('An original native input request is still pending or unknown')
     const child = row.child_receipt === null ? null : nativeObject(JSON.parse(row.child_receipt))
     const native = receipt.native === undefined ? null : nativeObject(receipt.native)
     if (receipt.action === 'worker.send' && receipt.child_request === `${row.request_id}/native` && receipt.swa_input_binding === undefined && row.child_method === 'swa.workerSend' && row.child_state === 'completed' && native?.state === 'rejected' && native.effects_applied === false && native.native_request_id === receipt.child_request && native.request_id === row.request_id && nativeObject(native.source).kind === 'native_pre_input_admission' && nativeObject(native.source).child_request === receipt.child_request && child !== null && child.swa_input_binding === undefined && child.state === 'rejected' && child.effects_applied === false && child.native_request_id === receipt.child_request && child.request_id === row.request_id && nativeObject(child.source).kind === 'native_pre_input_admission' && nativeObject(child.source).child_request === receipt.child_request) continue
-    if (!child || row.child_state !== 'completed' || row.child_method !== (receipt.action === 'worker.start' ? 'orchestration.workerStart' : 'swa.workerSend')) return fail('The original Codex input native settlement is unavailable')
+    if (!child || row.child_state !== 'completed' || row.child_method !== (receipt.action === 'worker.start' ? 'orchestration.workerStart' : 'swa.workerSend')) return fail('The original native input settlement is unavailable')
     const binding = structuredInputBindingSchema.parse(receipt.swa_input_binding)
     const invocation = nativeObject(receipt.invocation), command = nativeObject(invocation.command), originalScope = nativeObject(invocation.scope)
-    if (binding.parent_request !== row.request_id || binding.child_request !== `${row.request_id}/native` || binding.child_request !== receipt.child_request || binding.agent !== 'codex' || binding.dispatch_id !== input.dispatchId || binding.session_id !== input.sessionId || binding.runtime_fence !== input.fence || !isDeepStrictEqual(binding, child.swa_input_binding) || !isDeepStrictEqual(receipt.selection, input.selection) || !isDeepStrictEqual(invocation.selection, input.selection) || command.request_id !== row.request_id || command.action !== receipt.action || nativeObject(invocation.project).id !== input.scope.project_id || originalScope.run_id !== input.scope.run_id || originalScope.root_task_id !== input.scope.root_task_id) return fail('The original Codex input changed its request, operation, Dispatch or session binding')
+    if (binding.parent_request !== row.request_id || binding.child_request !== `${row.request_id}/native` || binding.child_request !== receipt.child_request || binding.agent !== input.selection.agent_id || binding.dispatch_id !== input.dispatchId || binding.session_id !== input.sessionId || binding.runtime_fence !== input.fence || !isDeepStrictEqual(binding, child.swa_input_binding) || !isDeepStrictEqual(receipt.selection, input.selection) || !isDeepStrictEqual(invocation.selection, input.selection) || command.request_id !== row.request_id || command.action !== receipt.action || nativeObject(invocation.project).id !== input.scope.project_id || originalScope.run_id !== input.scope.run_id || originalScope.root_task_id !== input.scope.root_task_id) return fail('The original native input changed its request, operation, Dispatch or session binding')
     bindings.push(binding)
   }
-  if (!bindings.length || new Set(bindings.map(binding => binding.operation_id)).size !== bindings.length) return fail('The original Codex input operations are missing or ambiguous')
+  if (!bindings.length || new Set(bindings.map(binding => binding.operation_id)).size !== bindings.length) return fail('The original native input operations are missing or ambiguous')
   return bindings
 }
 
-function assertCodexInputCompletion(bindings: ReturnType<typeof codexInputBindings>, state: JournalReducerState, nativeId: string, native: { availability: string; final: { turn_id: string; text: string } | null }, events: Awaited<ReturnType<typeof readCodexTrace>>['rows']) {
+function assertCodexInputCompletion(bindings: ReturnType<typeof structuredInputBindings>, state: JournalReducerState, nativeId: string, native: { availability: string; final: { turn_id: string; text: string } | null }, events: Awaited<ReturnType<typeof readStructuredTrace>>['rows']) {
   if ([...state.submissions.values()].some(submission => submission.dispatchState === 'pending' || submission.dispatchState === 'unknown')) return fail('The native Codex journal still has queued, pending or unknown input')
   const providerItems = new Set<string>(), submissions = []
   for (const binding of bindings) {
@@ -230,6 +262,73 @@ function assertCodexInputCompletion(bindings: ReturnType<typeof codexInputBindin
     const completed = events.filter(row => row.event === 'notification' && nativeObject(row.detail).method === 'turn/completed').map(row => nativeObject(nativeObject(nativeObject(row.detail).frame).params))
     if (!completed.some(params => params.threadId === nativeId && nativeObject(params.turn).id === native.final!.turn_id && nativeObject(params.turn).status === 'completed' && nativeObject(params.turn).error == null)) return fail('The final Codex turn has no exact actual provider completion notification')
   }
+}
+
+async function claudeInputObservations(bindings: ReturnType<typeof structuredInputBindings>, state: JournalReducerState, nativeId: string, events: Awaited<ReturnType<typeof readStructuredTrace>>['rows']) {
+  if ([...state.submissions.values()].some(value => value.dispatchState === 'pending' || value.dispatchState === 'unknown')) return fail('The native Claude journal still has queued, pending or unknown input')
+  const dispatches = events.filter(row => row.event === 'dispatch_binding').map(row => ({ sequence: row.sequence, value: nativeObject(row.detail) }))
+  const users = events.filter(row => row.event === 'sdk_message' && nativeObject(row.detail).type === 'user').map(row => ({ sequence: row.sequence, value: nativeObject(row.detail) }))
+  const observations: { operationId: string; inputUuid: string; sentUuid: string; submittedSequence: number; handoffSequence: number; fence: number }[] = []
+  const providerItems = new Set<string>(), matchedUsers = new Set<number>()
+  for (const binding of bindings) {
+    const { from: _sender, ...body } = boundInputBody.parse(binding.body)
+    if (body.blocks.some(block => block.type !== 'text')) return fail('The original Claude input is outside its plain text contract')
+    const submission = state.submissions.get(binding.operation_id), receipt = state.receipts.get(binding.operation_id)
+    if (!submission || submission.clientMessageId !== binding.operation_id || submission.fence !== binding.runtime_fence || submission.dispatchState !== 'accepted' || !submission.providerItemId || !receipt || receipt.providerItemId !== submission.providerItemId || receipt.clientMessageId !== binding.operation_id || receipt.cursor.epoch !== state.epoch || submission.payloadFingerprint !== agentSessionSendBodyFingerprint(binding.session_id, body) || !Number.isSafeInteger(submission.submittedSequence) || submission.submittedSequence! <= 0 || providerItems.has(submission.providerItemId)) return fail('The original Claude input has no exact accepted native journal receipt')
+    providerItems.add(submission.providerItemId)
+    const identity = parseAgentJournalItemKey(submission.providerItemId)
+    if (!identity || identity.provider !== 'claude' || identity.sessionId !== nativeId) return fail('The accepted Claude input has no original native user identity')
+    const handoffs = dispatches.filter(row => row.value.phase === 'handoff' && row.value.clientMessageId === binding.operation_id)
+    const replays = dispatches.filter(row => row.value.phase === 'user-replay' && row.value.clientMessageId === binding.operation_id)
+    if (handoffs.length !== 1 || replays.length !== 1) return fail('The original Claude input has no unique actual SDK handoff and replay')
+    const handoff = handoffs[0]!, replay = replays[0]!
+    if (handoff.value.providerSessionId !== nativeId || replay.value.providerSessionId !== nativeId || typeof handoff.value.sentUuid !== 'string' || !handoff.value.sentUuid || replay.value.sentUuid !== handoff.value.sentUuid || replay.value.providerInputUuid !== identity.uuid || handoff.sequence >= replay.sequence) return fail('The original Claude input changed its actual SDK session or user identity')
+    const actualUsers = users.filter(row => row.value.session_id === nativeId && row.value.uuid === identity.uuid && row.value.isReplay === true && row.value.parent_tool_use_id === null && row.sequence > handoff.sequence && row.sequence < replay.sequence)
+    if (actualUsers.length !== 1) return fail('The accepted Claude input has no unique actual user replay object')
+    const actual = actualUsers[0]!, envelope = readClaudeMessageEnvelope(actual.value)
+    if (!envelope || envelope.role !== 'user' || envelope.isInjectedUserTurn || !isDeepStrictEqual(envelope.content, await claudeDispatchMessageContent(body))) return fail('The actual Claude user replay differs from the original request body')
+    matchedUsers.add(actual.sequence)
+    observations.push({ operationId: binding.operation_id, inputUuid: identity.uuid, sentUuid: handoff.value.sentUuid, submittedSequence: submission.submittedSequence!, handoffSequence: handoff.sequence, fence: binding.runtime_fence })
+  }
+  if (matchedUsers.size !== users.length || dispatches.some(row => !observations.some(value => value.operationId === row.value.clientMessageId))) return fail('The native Claude source contains input without an original accepted request')
+  observations.sort((left, right) => left.submittedSequence - right.submittedSequence)
+  if (!observations.length || new Set(observations.map(value => value.submittedSequence)).size !== observations.length || new Set(observations.map(value => value.sentUuid)).size !== observations.length) return fail('The original Claude input order is missing or ambiguous')
+  return { latest: observations.at(-1)!, observations }
+}
+
+function assertClaudeInputCompletion(input: Awaited<ReturnType<typeof claudeInputObservations>>, state: JournalReducerState, nativeId: string, native: Awaited<ReturnType<typeof readNativeClaudeSessionSource>>['value'], events: Awaited<ReturnType<typeof readStructuredTrace>>['rows']) {
+  for (const item of state.items.values()) if (!item.agentId && item.body.kind === 'turn' && state.itemFences.get(item.itemId) === input.latest.fence && item.body.state === 'running') return fail('The native Claude source still has an active primary turn')
+  if (native.availability !== 'complete') return
+  if (!native.final || !native.final.uuid) return fail('The final native Claude assistant selector is unavailable')
+  const registry = createClaudeStreamedBlockRegistry()
+  const matches: { identity: ReturnType<typeof claudeMessageIdentity>; sequence: number }[] = []
+  const sdk = events.filter(row => row.event === 'sdk_message')
+  for (const row of sdk) {
+    const message = nativeObject(row.detail)
+    if (message.type === 'stream_event') registry.observe(message, Date.parse(row.observed_at))
+    const envelope = readClaudeMessageEnvelope(message)
+    if (envelope?.role === 'assistant' && claudeMessageBody(envelope)) {
+      const identity = registry.reconcile(envelope)?.identity ?? claudeMessageIdentity(envelope)
+      if (message.session_id === nativeId && message.uuid === native.final.uuid && envelope.messageId === native.final.message_id && envelope.parentToolUseId === null) matches.push({ identity, sequence: row.sequence })
+    }
+    if (message.type === 'result' && isRootClaudeFrame(message)) registry.clear()
+  }
+  if (matches.length !== 1 || matches[0]!.sequence <= input.latest.handoffSequence) return fail('The final native Claude assistant has no unique actual SDK identity after the latest input')
+  const actual = matches[0]!, key = agentJournalItemKey(actual.identity), item = state.items.get(state.aliases.get(key) ?? key)
+  if (!item || item.agentId || item.body.kind !== 'message' || item.body.role !== 'assistant' || state.itemFences.get(item.itemId) !== input.latest.fence || item.turnScope?.kind !== 'turn') return fail('The actual Claude assistant has no original primary journal turn')
+  const turn = state.items.get(item.turnScope.turnItemId)
+  if (!turn || turn.agentId || turn.body.kind !== 'turn' || state.itemFences.get(turn.itemId) !== input.latest.fence || turn.body.state !== 'completed' || turn.body.outcome !== 'success') return fail('The final Claude assistant did not complete its actual primary turn')
+  const boundary = events.find(row => row.sequence > actual.sequence && (row.event === 'dispatch_binding' && nativeObject(row.detail).phase === 'handoff' || row.event === 'sdk_message' && (nativeObject(row.detail).type === 'result' && isRootClaudeFrame(nativeObject(row.detail)) || nativeObject(row.detail).type === 'system' && nativeObject(row.detail).subtype === 'init')))
+  if (!boundary || boundary.event !== 'sdk_message') return fail('The final Claude assistant crossed a new input before its primary result')
+  const message = nativeObject(boundary.detail)
+  if (message.type !== 'result' || !isRootClaudeFrame(message) || message.session_id !== nativeId || message.subtype !== 'success' || message.is_error !== false || message.stop_reason !== 'end_turn') return fail('The actual primary Claude result did not complete its final assistant')
+  const primary = message.user_message_uuid, plural = message.user_message_uuids
+  if (typeof primary !== 'string' || !primary || plural !== undefined && (!Array.isArray(plural) || !plural.length || plural.length > 64 || plural.some(value => typeof value !== 'string' || !value) || !plural.includes(primary))) return fail('The actual Claude result has conflicting input correlations')
+  const consumed: string[] = plural === undefined ? [primary] : plural as string[]
+  if (new Set(consumed).size !== consumed.length) return fail('The actual Claude result repeats an input correlation')
+  const bound = consumed.map(sentUuid => input.observations.find(value => value.sentUuid === sentUuid))
+  if (bound.some(value => !value) || bound.some((value, index) => index > 0 && value!.handoffSequence <= bound[index - 1]!.handoffSequence)) return fail('The actual Claude result changed its original input consumption order')
+  if (!consumed.includes(input.latest.sentUuid)) return fail('The final Claude output does not complete the latest original input')
 }
 
 export function readRootResultInventory(db: OrchestrationDb, scope: Scope, workers: { dispatchId: string; taskId: string; runId: string }[]) {
@@ -274,6 +373,42 @@ async function exactPrivatePath(root: string, path: string, missingLeaf = false)
     }
   }
   if (!equalPath(await realpath(dirname(path)), dirname(path))) return fail('The native source parent changed its real path')
+}
+
+export async function findNativeClaudeSessionPath(privateRoot: string, nativeId: string) {
+  if (!z.uuid().safeParse(nativeId).success) return fail('The original native Claude session selector is invalid')
+  requireNativeClaudePath(privateRoot, { directory: true, private: true })
+  const projects = join(privateRoot, 'projects'), matches: string[] = []
+  let visited = 0
+  const readDirectory = async (path: string): Promise<Dirent[]> => {
+    requireNativeClaudePath(path, { directory: true, private: true })
+    const before = lstatSync(path, { bigint: true })
+    const identity = (value: typeof before) => `${value.dev}:${value.ino}:${value.birthtimeNs}:${value.mtimeNs}:${value.size}`
+    const directory = await opendir(path, { bufferSize: 32 }), entries: Dirent[] = []
+    try {
+      for (;;) {
+        const entry = await directory.read()
+        if (!entry) break
+        if (++visited > 4096) return fail('The complete native Claude file inventory exceeds its bound')
+        if (!entry.isFile() && !entry.isDirectory()) return fail('The native Claude file inventory was redirected')
+        entries.push(entry)
+      }
+    } finally { await directory.close() }
+    requireNativeClaudePath(path, { directory: true, private: true })
+    if (identity(lstatSync(path, { bigint: true })) !== identity(before)) return fail('The native Claude file inventory changed during reading')
+    return entries
+  }
+  await forEachSessionFile(projects, 'claude', [], {
+    extensions: new Set(['.jsonl']), strictErrors: true, readDirectory,
+    directoryPredicate: (_name, depth) => depth === 0,
+    filePredicate: path => SESSION_FILE_ID_LAYOUTS.claude.fileMatchesId(path, nativeId)
+  }, path => {
+    matches.push(path)
+    if (matches.length > 1) return fail('The original native Claude session source is ambiguous')
+  })
+  if (matches.length !== 1) return fail('The original native Claude session source is missing')
+  requireNativeClaudePath(matches[0]!, { directory: false, private: true })
+  return matches[0]!
 }
 
 async function readPrivateJournal<T>(data: string, directory: string, read: (database: Database.Database) => T): Promise<T> {
@@ -369,10 +504,10 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   const sessionId = sessionIdFromStructuredWorkerIncarnation(resource.process_incarnation)
   const host = getStructuredAgentSessionHost(), record = sessionId && host?.deps.store.getRecord(sessionId)
   if (!sessionId || !host || !record) return { availability: 'unavailable', reason: 'native_session_record_not_observed', worker_state: nativeWorker.state }
-  if (!/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation || record.sessionId !== sessionId || !['pi', 'opencode', 'codex'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The actual native Worker source identity is unavailable')
+  if (!/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation || record.sessionId !== sessionId || !['pi', 'opencode', 'codex', 'claude'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The actual native Worker source identity is unavailable')
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
   if (!head) return { availability: 'unavailable', reason: 'native_provider_link_not_observed', worker_state: nativeWorker.state }
-  if (head.handle.agent !== record.provider || head.handle.transport !== (record.provider === 'pi' ? 'jsonl-rpc' : record.provider === 'opencode' ? 'acp' : 'codex-app-server')) return fail('The actual native source link has a different provider')
+  if (head.handle.agent !== record.provider || head.handle.transport !== sourceTransport(record.provider)) return fail('The actual native source link has a different provider')
   const data = process.env.SWA_DATA_DIR
   if (!data || !isAbsolute(data) || !host) return fail('The actual private source root is unavailable')
   const root = await realpath(data), workerRoot = join(root, 'workers', sessionId)
@@ -381,9 +516,9 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   await exactPrivatePath(root, workerRoot)
   const ownerProcess = record.lease.ownerProcess
   const original = originalWorkerSelection(runtime, scope, dispatchId, record), selection = original.selection
-  if (record.provider === 'codex') {
-    if (original.binding?.dispatch_id !== dispatchId) return fail('The native Codex source belongs to another Dispatch')
-    const trace = await readCodexTrace({ path: join(workerRoot, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum, requireClosed: resource.release_state === 'released' })
+  if (record.provider === 'codex' || record.provider === 'claude') {
+    if (original.binding?.dispatch_id !== dispatchId) return fail('The native source belongs to another Dispatch')
+    const trace = await readStructuredTrace({ agent: record.provider, path: join(workerRoot, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum, requireClosed: resource.release_state === 'released', requirePrivatePath: path => record.provider === 'claude' ? requireNativeClaudePath(path, { directory: false, private: true }) : requireNativeCodexPrivatePath(path, false) })
     return { availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: trace.fence, runtime_epoch: nativeWorker.runtime_epoch, claim_status: record.lease.claimStatus, selection, process: trace.process, custody: trace.custody, provider_link: head, journal_database: journal, provider_events: trace.source.path, provider_events_source: trace.source, worker_state: nativeWorker.state, release_state: resource.release_state }
   }
   return { availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: record.lease.runtimeFence, claim_status: record.lease.claimStatus,
@@ -417,17 +552,24 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     const sessionId = sessionIdFromStructuredWorkerIncarnation(resource.process_incarnation)
     if (!sessionId || !/^[a-zA-Z0-9_-]+$/.test(sessionId) || dispatch.process_incarnation !== resource.process_incarnation) return fail('The native Worker session incarnation is missing or changed')
     const record = host.deps.store.getRecord(sessionId)
-    if (!record || record.sessionId !== sessionId || !['pi', 'opencode', 'codex'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The provider record has a different native identity or workspace')
+    if (!record || record.sessionId !== sessionId || !['pi', 'opencode', 'codex', 'claude'].includes(record.provider) || record.location.workspaceId !== workspaceId || record.location.wslDistro !== null) return fail('The provider record has a different native identity or workspace')
     const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
-    if (!head || head.handle.agent !== record.provider || head.handle.transport !== (record.provider === 'pi' ? 'jsonl-rpc' : record.provider === 'opencode' ? 'acp' : 'codex-app-server') || record.provider === 'pi' && !isAbsolute(head.handle.nativeId)) return fail('The verified native provider link is unavailable')
+    if (!head || head.handle.agent !== record.provider || head.handle.transport !== sourceTransport(record.provider) || record.provider === 'pi' && !isAbsolute(head.handle.nativeId)) return fail('The verified native provider link is unavailable')
     const signature = sourceSignature(record)
     const original = originalWorkerSelection(runtime, scope, worker.dispatchId, record), selection = original.selection
     if (!host.deps.resolveWorkspacePath) return fail('The actual native workspace resolution port is unavailable')
     const cwd = await realpath(await host.deps.resolveWorkspacePath(workspaceId))
     const account = selection.native_launch.account
-    let nativeSession
-    let providerEvents: Awaited<ReturnType<typeof readCodexTrace>> | undefined
-    let codexInputs: ReturnType<typeof codexInputBindings> | undefined
+    let nativeSession:
+      | Awaited<ReturnType<typeof readNativeOpenCodeSessionSource>>['value']
+      | Awaited<ReturnType<typeof readNativeCodexSessionSource>>['value']
+      | Awaited<ReturnType<typeof readNativeClaudeSessionSource>>['value']
+      | Awaited<ReturnType<typeof readNativePiSessionSource>>
+      | undefined
+    let providerEvents: Awaited<ReturnType<typeof readStructuredTrace>> | undefined
+    let codexInputs: ReturnType<typeof structuredInputBindings> | undefined
+    let claudeInputs: Awaited<ReturnType<typeof claudeInputObservations>> | undefined
+    let collectClaude: ((state: JournalReducerState) => Promise<Awaited<ReturnType<typeof readNativeClaudeSessionSource>>['value']>) | undefined
     let nativeVerified = false
     if (account.kind === 'opencode-native-api-key') {
       const native = await readNativeOpenCodeSessionSource({ selection, sessionId, nativeId: head.handle.nativeId, cwd, stopped: nativeWorker.state === 'stopped', projectId: scope.project_id })
@@ -437,15 +579,15 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       nativeVerified = true
     } else if (account.kind === 'codex-native-api-key') {
       if (original.binding?.dispatch_id !== worker.dispatchId) return fail('The native Codex output belongs to another Dispatch')
-      const inventory = readCodexInputInventory(db, scope, worker.dispatchId)
-      codexInputs = codexInputBindings(inventory, { scope, dispatchId: worker.dispatchId, sessionId, fence: original.binding.runtime_fence, selection })
+      const inventory = readStructuredInputInventory(db, scope, worker.dispatchId)
+      codexInputs = structuredInputBindings(inventory, { scope, dispatchId: worker.dispatchId, sessionId, fence: original.binding.runtime_fence, selection })
       inputInventories.push({ dispatchId: worker.dispatchId, signature: inventory.signature })
       const snapshot = await inspectNativeCodexPolicy({ executable: selection.executable, version: selection.version, sourceHome: account.source_home, projectId: scope.project_id, privateRoot: account.private_root, catalogPath: account.catalog_source.path, env: process.env, protectedRoots: codexProtectedRoots(await readAgentSettings(), cwd) })
       if (!isDeepStrictEqual(snapshot.policy, selection.native_launch)) return fail('The original Codex account source changed before export')
       const privateSource = await verifyPrivateCodexAccount(snapshot, sessionId)
-      providerEvents = await readCodexTrace({ path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released' })
+      providerEvents = await readStructuredTrace({ agent: 'codex', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
       used += Buffer.byteLength(JSON.stringify(providerEvents.value))
-      const path = z.string().min(1).parse(providerEvents.thread.path)
+      const path = z.string().min(1).parse(providerEvents.thread?.path)
       const validateExport = (text: string) => validateCodexExport(snapshot, text)
       const native = await readNativeCodexSessionSource({ path, privateRoot: join(account.private_root, sessionId), nativeId: head.handle.nativeId, cwd, model: selection.model, provider: selection.provider, stopped: nativeWorker.state === 'stopped', nativeVersion: '0.163.0', source: await nativeConfigurationSource(path), validateExport })
       nativeSession = native.value
@@ -461,19 +603,48 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       })
       exportChecks.push(native.validateExport)
       nativeVerified = true
+    } else if (account.kind === 'claude-native-api-key') {
+      if (record.provider !== 'claude' || original.binding?.dispatch_id !== worker.dispatchId) return fail('The native Claude output belongs to another provider or Dispatch')
+      const inventory = readStructuredInputInventory(db, scope, worker.dispatchId)
+      const bindings = structuredInputBindings(inventory, { scope, dispatchId: worker.dispatchId, sessionId, fence: original.binding.runtime_fence, selection })
+      inputInventories.push({ dispatchId: worker.dispatchId, signature: inventory.signature })
+      const nativeSnapshot = await inspectNativeClaudePolicy({ executable: selection.executable, version: selection.version, sourceHome: account.source_home, projectId: scope.project_id, privateRoot: account.private_root, env: process.env, protectedRoots: codexProtectedRoots(await readAgentSettings(), cwd) })
+      if (!isDeepStrictEqual(nativeSnapshot.policy, selection.native_launch)) return fail('The original Claude account source changed before export')
+      await verifyPrivateClaudeAccount(nativeSnapshot, sessionId)
+      const configRoot = join(account.private_root, sessionId, 'config')
+      const trace = await readStructuredTrace({ agent: 'claude', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeClaudePath(path, { directory: false, private: true }) })
+      providerEvents = trace
+      used += Buffer.byteLength(JSON.stringify(trace.value))
+      collectClaude = async state => {
+        claudeInputs = await claudeInputObservations(bindings, state, head.handle.nativeId, trace.rows)
+        const path = await findNativeClaudeSessionPath(configRoot, head.handle.nativeId), source = await nativeConfigurationSource(path)
+        const info = lstatSync(path, { bigint: true })
+        if (`${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}` !== source.version || info.size > BigInt(Math.max(0, maximum - used))) return fail('The complete native Claude source changed or exceeds the remaining result bound')
+        const native = await readNativeClaudeSessionSource({ path, privateRoot: configRoot, nativeId: head.handle.nativeId, cwd, model: selection.model, provider: 'anthropic', stopped: nativeWorker.state === 'stopped', nativeVersion: '2.1.284', sdkVersion: '0.3.284', source, expectedLeafUuid: claudeProviderHandleLeafUuid(head.handle), inputUuid: claudeInputs.latest.inputUuid, validateExport: text => validateClaudeExport(nativeSnapshot, text) })
+        nativeChecks.push(native.verify, trace.verify, async () => { assertNativeClaudeCurrent(nativeSnapshot); await verifyPrivateClaudeAccount(nativeSnapshot, sessionId) })
+        finalNativeChecks.push(() => {
+          assertNativeClaudeCurrent(nativeSnapshot)
+          requireNativeClaudePath(configRoot, { directory: true, private: true })
+          for (const item of [trace.source, source]) {
+            requireNativeClaudePath(item.path, { directory: false, private: true })
+            requireNativeClaudePath(dirname(item.path), { directory: true, private: true })
+            const current = lstatSync(item.path, { bigint: true })
+            if (`${current.dev}:${current.ino}:${current.birthtimeNs}:${current.mtimeNs}:${current.size}` !== item.version) return fail('The native Claude source changed before the final synchronous export')
+          }
+        })
+        exportChecks.push(native.validateExport)
+        return native.value
+      }
+      nativeVerified = true
     } else {
       const sessionRoot = join(account.private_home, 'sessions')
       await exactPrivatePath(data, sessionRoot)
       if (!equalPath(await realpath(sessionRoot), sessionRoot)) return fail('The private native session directory changed its real identity')
       nativeSession = await readNativePiSessionSource(head.handle.nativeId, sessionRoot, cwd, sessionId, nativeWorker.state === 'stopped', selection)
     }
-    if ('header' in nativeSession && nativeSession.header) {
-      const parent = head.forkedFromKey ? record.providerHandleChain.find(link => agentSessionProviderHandleKey(link.handle) === head.forkedFromKey) : undefined
-      if (nativeSession.header.parentSession !== undefined && (!parent || parent.handle.nativeId !== nativeSession.header.parentSession) || head.origin === 'forked' && nativeSession.header.parentSession === undefined) return fail('The actual native session fork source differs from its provider handle chain')
-    }
     const { journal, rows, snapshot } = await readPrivateJournal(data, host.deps.journalDatabase.stateDirectory, journalDB => {
       const bound = z.object({ count: z.number(), bytes: z.number().nullable(), max_seq: z.number().nullable() }).parse(journalDB.prepare('SELECT COUNT(*) AS count, SUM(LENGTH(row_json)) AS bytes, MAX(seq) AS max_seq FROM journal_rows WHERE session_id=? AND epoch=?').get(sessionId, readJournalSessionEpoch(journalDB, sessionId)))
-      used += Buffer.byteLength(JSON.stringify(nativeSession)) + (bound.bytes ?? 0)
+      used += (nativeSession === undefined ? 0 : Buffer.byteLength(JSON.stringify(nativeSession))) + (bound.bytes ?? 0)
       if (used > maximum || bound.count <= 0 || bound.count > 100_000) return fail('The required journal is missing or exceeds the declared result bound')
       const journal = replayJournal(journalDB, sessionId)
       if (!journal || journal.damage || journal.newer || journal.state.lastSequence !== bound.max_seq) return fail('The actual native journal is damaged, incomplete or has a newer schema')
@@ -481,7 +652,18 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       if (rows.length !== bound.count || readJournalSessionEpoch(journalDB, sessionId) !== journal.state.epoch) return fail('Native journal rows changed during their consistent read')
       return { journal, rows, snapshot: renderJournalState(journal.state) }
     })
-    if (codexInputs && providerEvents && 'final' in nativeSession) assertCodexInputCompletion(codexInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
+    if (collectClaude) {
+      nativeSession = await collectClaude(journal.state)
+      used += Buffer.byteLength(JSON.stringify(nativeSession))
+      if (used > maximum) return fail('The complete native Claude result exceeds the aggregate export bound')
+    }
+    if (!nativeSession) return fail('The complete native session source was not observed')
+    if ('header' in nativeSession && nativeSession.header) {
+      const parent = head.forkedFromKey ? record.providerHandleChain.find(link => agentSessionProviderHandleKey(link.handle) === head.forkedFromKey) : undefined
+      if (nativeSession.header.parentSession !== undefined && (!parent || parent.handle.nativeId !== nativeSession.header.parentSession) || head.origin === 'forked' && nativeSession.header.parentSession === undefined) return fail('The actual native session fork source differs from its provider handle chain')
+    }
+    if (codexInputs && providerEvents && 'format' in nativeSession && nativeSession.format === 'codex-rollout-jsonl') assertCodexInputCompletion(codexInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
+    if (claudeInputs && providerEvents && 'format' in nativeSession && nativeSession.format === 'claude-session-jsonl') assertClaudeInputCompletion(claudeInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
     const current = host.deps.store.getRecord(sessionId)
     if (!current || sourceSignature(current) !== signature) return fail('The native provider identity changed during result collection')
     checks.push({ sessionId, signature, epoch: journal.state.epoch, sequence: journal.state.lastSequence, path: nativeSession.path, identity: 'file_identity' in nativeSession ? nativeSession.file_identity ?? null : null, size: 'size' in nativeSession ? nativeSession.size ?? null : null, mtime: 'mtime_ns' in nativeSession ? nativeSession.mtime_ns ?? null : null, nativeVerified })
@@ -505,7 +687,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     const current = host.deps.store.getRecord(check.sessionId)
     if (!current || sourceSignature(current) !== check.signature || !unchanged) return fail('Native result sources changed before the complete result was returned')
   }
-  for (const inventory of inputInventories) if (readCodexInputInventory(db, scope, inventory.dispatchId).signature !== inventory.signature) return fail('An original Codex input request was accepted or changed before the complete result was returned')
+  for (const inventory of inputInventories) if (readStructuredInputInventory(db, scope, inventory.dispatchId).signature !== inventory.signature) return fail('An original native input request was accepted or changed before the complete result was returned')
   if (readRootResultInventory(db, scope, workers.map(row => row.worker)).signature !== rootInventory.signature) return fail('The complete root Worker inventory changed before the result was returned')
   const result = { ...summary, workers: outputs, source: 'native_journal_and_native_cli_session', collected_at: new Date().toISOString() }
   const serialized = JSON.stringify(result)

@@ -14,14 +14,14 @@ await mkdir(join(root, '.verification/codex-native-rules'), { recursive: true })
 const directory = await mkdtemp(join(root, '.verification/codex-native-rules/run-'))
 function compile(name, entry) {
   const output = join(directory, name + '.cjs')
-  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib', 'esm', 'main.js') }, logLevel: 'silent' })
+  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], external: ['*.node'], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib', 'esm', 'main.js') }, logLevel: 'silent' })
   return createRequire(output)(output)
 }
 const { createProviderRecordReader } = compile('record-reader', 'third_party/orca-v1.4.230/src/main/provider-process/provider-record-reader.ts')
 const { nativeCodexAppServerArgs } = compile('configuration', 'runtime/swa-orca/src/native-codex-policy.ts')
 const { createCodexAppServerRecordDispatcher } = compile('dispatcher', 'third_party/orca-v1.4.230/src/main/codex/codex-app-server-record-dispatch.ts')
 const { isCodexSteerNotSubmitted, isApiOnlyCodexRequirements, isDisabledCodexRemoteControl } = compile('session-policy', 'runtime/swa-orca/src/codex-session-policy.ts')
-const { readCodexInputInventory, readRootResultInventory } = compile('task-result', 'runtime/swa-orca/src/task-result.ts')
+const { readStructuredInputInventory, readRootResultInventory } = compile('task-result', 'runtime/swa-orca/src/task-result.ts')
 const { OrchestrationDb } = compile('orchestration-db', 'third_party/orca-v1.4.230/src/main/runtime/orchestration/db/orchestration-db.ts')
 
 // 这些文件仅保存真实文件元数据，验证普通 NDJSON/UTF-8 边界，不仿造原生 Agent 帧。
@@ -115,12 +115,12 @@ test('real SQLite input inventory refuses a scoped product reservation before an
   try {
     const scope = { project_id: randomUUID(), controller: 'uninvoked-contract', run_id: randomUUID(), root_task_id: randomUUID(), authority_domain: 'uninvoked-contract', context: null }
     const dispatchId = randomUUID(), requestId = randomUUID()
-    assert.throws(() => readCodexInputInventory(db, scope, dispatchId), /inventory is missing/)
+    assert.throws(() => readStructuredInputInventory(db, scope, dispatchId), /inventory is missing/)
     const receipt = JSON.stringify({ project_id: scope.project_id, run_id: scope.run_id, root_task_id: scope.root_task_id, action: 'worker.send', child_request: requestId + '/native', invocation: { command: { dispatch_id: dispatchId } } })
     const identity = { callerFingerprint: db.getOrCreateLocalMutationCallerFingerprint(), requestId, method: 'swa.controllerDeliver', payloadHash: createHash('sha256').update(receipt).digest('hex') }
     db.beginMutationReceipt(identity)
     db.checkpointPendingMutationReceipt({ ...identity, receipt })
-    assert.throws(() => readCodexInputInventory(db, scope, dispatchId), /input request is still pending or unknown/)
+    assert.throws(() => readStructuredInputInventory(db, scope, dispatchId), /input request is still pending or unknown/)
     const row = db.getMutationReceipt(identity.callerFingerprint, requestId)
     assert.equal(row.state, 'pending')
     assert.equal(JSON.parse(row.receipt).swa_input_binding, undefined)

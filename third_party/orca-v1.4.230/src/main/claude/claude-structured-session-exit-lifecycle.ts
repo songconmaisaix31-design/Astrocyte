@@ -1,6 +1,7 @@
 import { agentSessionFailureFact, providerDiagnosticOf } from '../../shared/agent-session-failure'
 import { providerExitObserved } from '../native-chat/agent-session-wire/structured-agent-session-failure-text'
 import { settledClaudeTurnEndLeaf } from './claude-structured-resume-point'
+import { drainClaudeChildWork } from './claude-child-work-evidence'
 import {
   claudeRootExitObserved,
   settleClaudeExitedSession
@@ -18,7 +19,7 @@ export type ClaudeExitLifecycle = {
   exits: Map<string, ClaudeSessionExit>
   /** A settled exit's diagnostic, kept for a send admitted before the host heard of the exit. */
   settledExitErrors: Map<string, Error>
-  deps: Pick<ClaudeStructuredSessionAdapterDeps, 'persistHandle' | 'now'>
+  deps: Pick<ClaudeStructuredSessionAdapterDeps, 'persistHandle' | 'now' | 'onEvent' | 'onChildWorkEvidence'>
   emit: (session: ClaudeSession, event: ClaudeStructuredSessionEvent) => void
 }
 
@@ -46,8 +47,8 @@ export function observeClaudeSessionExit(
   lifecycle.exits.set(sessionId, exit)
   exit.publication = closePromise
     .then((proven) => {
-      // A first-hand root exit is final like a proven one: the owner releases the lease on it.
-      if (!proven && !claudeRootExitObserved(session.connection)) {
+      // 受限分支不接受仅根退出；普通分支保留原有根退出语义。
+      if (!proven && (session.connection.swaFullTreeCloseRequired || !claudeRootExitObserved(session.connection))) {
         return undefined
       }
       return settleClaudeUnexpectedExit(lifecycle, sessionId, exit)
@@ -55,8 +56,7 @@ export function observeClaudeSessionExit(
     .catch(() => undefined)
 }
 
-/** Lifecycle recovery is published only after the close ladder ran and proved the tree gone or
- *  observed the root's own exit. */
+/** 受限分支只在完整树和持久化成功后发布恢复；普通分支沿原关闭语义。 */
 export function settleClaudeUnexpectedExit(
   lifecycle: ClaudeExitLifecycle,
   sessionId: string,
@@ -64,6 +64,8 @@ export function settleClaudeUnexpectedExit(
 ): Promise<void> {
   const { exits, deps } = lifecycle
   exit.settlementPromise ??= (async () => {
+    const restricted = exit.connection.swaFullTreeCloseRequired === true
+    if (restricted && await exit.connection.close() !== true) throw new Error('native_claude_exit_tree_unproven')
     exit.session.unbindReadingControl?.()
     if (exits.get(sessionId) !== exit) {
       settleClaudeExitedSession(exit.session)
@@ -71,30 +73,50 @@ export function settleClaudeUnexpectedExit(
     }
     // Persist the last completed turn before publishing the lifecycle
     // event that lets the host release and reacquire this exact child.
-    await persistClaudeSessionHandle(sessionId, exit.session, deps).catch((error: unknown) => {
-      // Recovery still publishes: the record keeps its last durable point, and the loss is logged.
-      console.warn('[claude-resume-point] exit cursor was not persisted:', { sessionId, error })
-    })
+    if (restricted) {
+      await persistClaudeSessionHandle(sessionId, exit.session, deps)
+      if (!exit.session.events?.written || !exit.session.translator) throw new Error('native_claude_exit_journal_port_missing')
+      if (!(await exit.session.events.written()).ok) throw new Error('native_claude_exit_journal_unproven')
+    } else {
+      await persistClaudeSessionHandle(sessionId, exit.session, deps).catch((error: unknown) => {
+        console.warn('[claude-resume-point] exit cursor was not persisted:', { sessionId, error })
+      })
+    }
     if (exits.get(sessionId) !== exit) {
       settleClaudeExitedSession(exit.session)
       return
     }
-    exits.delete(sessionId)
-    lifecycle.settledExitErrors.set(sessionId, exit.error)
     const ended: ClaudeStructuredSessionEvent = {
       type: 'ended',
       sessionId,
-      reason: exit.error.message,
+      reason: restricted ? 'native_claude_session_ended' : exit.error.message,
       // A start that never landed says why it failed. After it landed, only the child's own exit
       // blames the provider; an Orca fault that closed it is Orca's.
       failure: providerExitObserved(exit.error)
-        ? agentSessionFailureFact('providerExited', { detail: providerDiagnosticOf(exit.error) })
+        ? agentSessionFailureFact('providerExited', { detail: restricted ? undefined : providerDiagnosticOf(exit.error) })
         : agentSessionFailureFact('hostFault'),
       cause: 'unexpected-exit',
       fence: exit.session.fence,
       acquisitionGeneration: exit.session.acquisitionGeneration,
       observedAt: deps.now?.() ?? Date.now()
     }
+    if (restricted) {
+      const session = exit.session
+      session.childWork.clear()
+      session.backgroundTasks.clear()
+      session.translator!.handle(ended)
+      if (!(await session.events!.written!()).ok) throw new Error('native_claude_exit_journal_unproven')
+      exits.delete(sessionId)
+      lifecycle.settledExitErrors.set(sessionId, new Error('native_claude_session_ended'))
+      try {
+        deps.onEvent?.(ended)
+        const evidence = drainClaudeChildWork(session, null, deps.now?.() ?? Date.now())
+        if (evidence.length) deps.onChildWorkEvidence?.(sessionId, evidence, session.events)
+      } finally { settleClaudeExitedSession(session) }
+      return
+    }
+    exits.delete(sessionId)
+    lifecycle.settledExitErrors.set(sessionId, exit.error)
     try {
       lifecycle.emit(exit.session, ended)
     } finally {
@@ -131,6 +153,7 @@ export async function persistClaudeSessionHandle(
   session: ClaudeSession,
   deps: Pick<ClaudeStructuredSessionAdapterDeps, 'persistHandle'>
 ): Promise<void> {
+  if (session.connection.swaFullTreeCloseRequired && !deps.persistHandle) throw new Error('native_claude_handle_persistence_missing')
   const leafUuid = await settledClaudeTurnEndLeaf(session)
   await deps.persistHandle?.({
     sessionId,

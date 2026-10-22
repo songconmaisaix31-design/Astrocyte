@@ -21,6 +21,9 @@ import { createOpenCodeSessionPolicy } from './opencode-session-policy'
 import { assertNativeCodexCurrent, inspectNativeCodexPolicy } from './native-codex-policy'
 import { materializePrivateCodexAccount, privateCodexEnvironment, verifyPrivateCodexAccount, verifyUninitializedPrivateCodexAccount } from './private-codex-account'
 import { createCodexSessionPolicy } from './codex-session-policy'
+import { assertNativeClaudeCurrent, inspectNativeClaudePolicy } from './native-claude-policy'
+import { materializePrivateClaudeAccount, privateClaudeEnvironment, verifyPrivateClaudeAccount } from './private-claude-account'
+import { createClaudeSessionPolicy } from './claude-session-policy'
 
 const mutationRowSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), state: z.enum(['pending', 'completed']), receipt: z.string().nullable() })
 
@@ -65,6 +68,8 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         if (!('variable' in record.accountHome) || record.accountHome.variable !== 'PI_CODING_AGENT_DIR' || record.accountHome.path !== account.private_home) throw new Error('The native Pi account changed before launch')
       } else if (account.kind === 'codex-native-api-key') {
         if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CODEX_HOME' || record.accountHome.path !== join(account.private_root, sessionId)) throw new Error('The native Codex account changed before launch')
+      } else if (account.kind === 'claude-native-api-key') {
+        if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CLAUDE_CONFIG_DIR' || record.accountHome.path !== join(account.private_root, sessionId, 'config')) throw new Error('The native Claude account changed before launch')
       } else if (!('kind' in record.accountHome) || record.accountHome.kind !== 'opencode' || record.accountHome.locator.kind !== 'private' || record.accountHome.locator.root !== join(account.private_root, sessionId)) throw new Error('The native OpenCode account changed before launch')
     }
     const current = await selectAgent(runtime, invocation.project.id, original.agent_id, original.model, invocation.project.root)
@@ -92,16 +97,23 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
       return { ...selected, snapshot, kind: 'codex' as const }
     }
+    if (agent === 'claude' && account.kind === 'claude-native-api-key' && original.version === '2.1.284') {
+      const settings = await readAgentSettings()
+      const snapshot = await inspectNativeClaudePolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, privateRoot: account.private_root, env: process.env, protectedRoots: codexProtectedRoots(settings, selected.invocation.project.root) })
+      if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
+      return { ...selected, snapshot, kind: 'claude' as const }
+    }
     throw new Error('The selected native Agent has no reviewed disabled-tool policy')
   }
   type Selected = Awaited<ReturnType<typeof policySnapshot>>
-  function assertCurrent(selected: Selected) { if (selected.kind === 'pi') assertNativePiSnapshotCurrent(selected.snapshot); else if (selected.kind === 'opencode') assertNativeOpenCodeCurrent(selected.snapshot); else assertNativeCodexCurrent(selected.snapshot) }
+  function assertCurrent(selected: Selected) { if (selected.kind === 'pi') assertNativePiSnapshotCurrent(selected.snapshot); else if (selected.kind === 'opencode') assertNativeOpenCodeCurrent(selected.snapshot); else if (selected.kind === 'claude') assertNativeClaudeCurrent(selected.snapshot); else assertNativeCodexCurrent(selected.snapshot) }
   async function binding(selected: Extract<Selected, { kind: 'opencode' }>, sessionId: string) {
     return readPrivateOpenCodeBinding(selected.snapshot, join(selected.snapshot.policy.account.private_root, sessionId), await realpath(join(process.env.SWA_INSTALL_ROOT!, 'runtime/opencode-policy')))
   }
   async function verifyAccount(selected: Selected, sessionId: string, initializing = false) {
     if (selected.kind === 'pi') await verifyPrivatePiAccount(selected.snapshot)
     else if (selected.kind === 'opencode') await binding(selected, sessionId)
+    else if (selected.kind === 'claude') await verifyPrivateClaudeAccount(selected.snapshot, sessionId)
     else if (initializing) verifyUninitializedPrivateCodexAccount(selected.snapshot, sessionId)
     else await verifyPrivateCodexAccount(selected.snapshot, sessionId)
     assertCurrent(selected)
@@ -196,6 +208,14 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         assertCurrent(selected); assertDeliveryGrantCurrent(invocation)
         return { variable: 'CODEX_HOME', path }
       }
+      if (selected.kind === 'claude') {
+        const existing = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
+        const path = join(selected.snapshot.policy.account.private_root, sessionId, 'config')
+        if (existing) await verifyPrivateClaudeAccount(selected.snapshot, sessionId)
+        else if (await materializePrivateClaudeAccount(selected.snapshot, sessionId) !== path) throw new Error('The private native Claude account path changed')
+        assertCurrent(selected); assertDeliveryGrantCurrent(invocation)
+        return { variable: 'CLAUDE_CONFIG_DIR', path }
+      }
       await materializePrivatePiAccount(selected.snapshot)
       assertCurrent(selected)
       assertDeliveryGrantCurrent(invocation)
@@ -207,7 +227,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const selected = await policySnapshot(sessionId, agent)
       await verifyAccount(selected, sessionId, selected.kind === 'codex')
       assertDeliveryGrantCurrent(invocation)
-      return selected.kind === 'pi' ? privatePiEnvironment(selected.snapshot.policy.account.private_home, inherited) : selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : privateCodexEnvironment(selected.snapshot, sessionId)
+      return selected.kind === 'pi' ? privatePiEnvironment(selected.snapshot.policy.account.private_home, inherited) : selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : selected.kind === 'claude' ? privateClaudeEnvironment(selected.snapshot, sessionId) : privateCodexEnvironment(selected.snapshot, sessionId)
     },
     disabledPiTools: async (sessionId, agent) => {
       const { invocation } = await policySnapshot(sessionId, agent)
@@ -238,6 +258,16 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
       if (!record) throw new Error('The native Codex session record is unavailable')
       return createCodexSessionPolicy({ snapshot: selected.snapshot, launcher, sessionId, fence: record.lease.runtimeFence, runtimeEpoch: runtime.getRuntimeId(), record: () => runtime.openedAgentSessionRecordStore()?.getRecord(sessionId) ?? undefined, approveInitialization: () => approved(sessionId, agent, true) })
+    },
+    disabledClaudeTools: async (sessionId, agent) => {
+      const final = await approved(sessionId, agent)
+      const selected = await policySnapshot(sessionId, agent)
+      if (selected.kind !== 'claude') throw new Error('The Claude tools policy cannot admit another Agent')
+      const launcher = await jobLauncher(sessionId, agent)
+      final()
+      const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
+      if (!record) throw new Error('The native Claude session record is unavailable')
+      return createClaudeSessionPolicy({ snapshot: selected.snapshot, launcher, sessionId, fence: record.lease.runtimeFence, runtimeEpoch: runtime.getRuntimeId(), record: () => runtime.openedAgentSessionRecordStore()?.getRecord(sessionId) ?? undefined, approve: () => approved(sessionId, agent) })
     },
     providerJobLauncher: jobLauncher,
     reserveInput: async input => {
