@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { DescendantTreeVerdict } from '../pty-descendant-exit-verification'
 import type { ProviderProcessTree } from './provider-process-close'
 import { isWindowsProcessStartTimeAvailable, readWindowsProcessCreationTime, readWindowsProcessIdentityTableFresh } from '../windows/windows-process-table'
+import { SwaLinuxProviderProcessTree } from './swa-linux-provider-process-tree'
 
 const identitySchema = z.object({ pid: z.number().int().positive(), creationTimeMs: z.number().positive() })
 const observationSchema = z.object({ ownerPid: z.number().int().positive(), rootPid: z.number().int().nonnegative(), rootCreationTimeMs: z.number().nonnegative(), assigned: z.boolean(), rootExited: z.boolean(), limitFlags: z.number().int(), members: z.array(identitySchema) })
@@ -13,7 +14,7 @@ const nativeProgramSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('executable'), program: z.string().min(1) })
 ])
 type NativeCLIIdentity = z.infer<typeof identitySchema> & z.infer<typeof nativeProgramSchema>
-type Observation = z.infer<typeof observationSchema> & { nativeCLI?: NativeCLIIdentity }
+type Observation = z.infer<typeof observationSchema> & { platform?: never; nativeCLI?: NativeCLIIdentity }
 type Identity = z.infer<typeof identitySchema>
 type JobAPI = {
   providerJobIsolationVersion: 1
@@ -26,7 +27,7 @@ type JobAPI = {
 const nativeFunction = z.custom<(...args: unknown[]) => unknown>(value => typeof value === 'function')
 const requireHere = createRequire(__filename)
 
-export class SwaProviderProcessTree implements ProviderProcessTree {
+class SwaWindowsProviderProcessTree implements ProviderProcessTree {
   private readonly native: JobAPI
   private readonly job: object
   private child?: PipedChildProcess
@@ -221,4 +222,18 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
     process.stderr.write(JSON.stringify({ type: 'swa_provider_job_exit_unknown', root: this.root, observations: this.observations.slice(-2) }) + '\n')
     return this.verdict
   }
+}
+
+export class SwaProviderProcessTree implements ProviderProcessTree {
+  private readonly implementation = process.platform === 'linux' ? new SwaLinuxProviderProcessTree() : new SwaWindowsProviderProcessTree()
+  get treeVerdict() { return this.implementation.treeVerdict }
+  get forcedReapAttempted() { return this.implementation.forcedReapAttempted }
+  bind(child: PipedChildProcess, exitState: () => { observed: boolean; processless: boolean }, requireNativeCLI = false) { this.implementation.bind(child, exitState, requireNativeCLI) }
+  ready() { return this.implementation.ready() }
+  closeBeforeSpawnFailure() { this.implementation.closeBeforeSpawnFailure() }
+  capture() { return this.implementation.capture() }
+  refresh() { return this.implementation.refresh() }
+  readObservation() { return this.implementation.readObservation() }
+  releaseProcessless() { this.implementation.releaseProcessless() }
+  reap() { return this.implementation.reap() }
 }

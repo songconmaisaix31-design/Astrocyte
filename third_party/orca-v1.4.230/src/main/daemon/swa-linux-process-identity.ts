@@ -6,10 +6,12 @@ import { z } from 'zod'
 import { parseLinuxStartTicks } from '../agent-hooks/managed-hook-owner-identity'
 import { parseProcessTable } from '../pty-process-table-parser'
 
-export const swaLinuxProcessIdentitySchema = z.strictObject({
+export const swaLinuxProcessIncarnationSchema = z.strictObject({
   platform: z.literal('linux'), pid: z.number().int().positive(), boot_id: z.uuid(),
-  start_ticks: z.string().regex(/^[1-9][0-9]*$/), owner_uid: z.string().regex(/^(?:0|[1-9][0-9]*)$/), name: z.string().min(1)
+  start_ticks: z.string().regex(/^[1-9][0-9]*$/), owner_uid: z.string().regex(/^(?:0|[1-9][0-9]*)$/)
 })
+export const swaLinuxProcessIdentitySchema = swaLinuxProcessIncarnationSchema.extend({ name: z.string().min(1) })
+export type SwaLinuxProcessIncarnation = z.infer<typeof swaLinuxProcessIncarnationSchema>
 export type SwaLinuxProcessIdentity = z.infer<typeof swaLinuxProcessIdentitySchema>
 
 export function isSwaLinuxProcessAbsent(pid: number) {
@@ -21,16 +23,27 @@ export function isSwaLinuxProcessAbsent(pid: number) {
   }
 }
 
-export function readSwaLinuxProcess(pid: number): SwaLinuxProcessIdentity {
+export function readSwaLinuxProcessIncarnation(pid: number): SwaLinuxProcessIncarnation {
   if (process.platform !== 'linux' || !Number.isSafeInteger(pid) || pid <= 0 || !process.getuid) throw new Error('SWA Linux process identity is unavailable')
   const path = `/proc/${pid}`
   const before = parseLinuxStartTicks(readFileSync(`${path}/stat`, 'utf8'))
   const owner = statSync(path).uid
-  const executable = realpathSync(`${path}/exe`)
   const boot = readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim()
   const after = parseLinuxStartTicks(readFileSync(`${path}/stat`, 'utf8'))
-  if (before !== after || owner !== process.getuid() || owner !== statSync(path).uid || executable !== realpathSync(`${path}/exe`)) throw new Error('SWA Linux process identity or owner changed')
-  return swaLinuxProcessIdentitySchema.parse({ platform: 'linux', pid, boot_id: boot, start_ticks: before, owner_uid: String(owner), name: basename(executable) })
+  if (before !== after || owner !== process.getuid() || owner !== statSync(path).uid) throw new Error('SWA Linux process identity or owner changed')
+  return swaLinuxProcessIncarnationSchema.parse({ platform: 'linux', pid, boot_id: boot, start_ticks: before, owner_uid: String(owner) })
+}
+
+export function requireSwaLinuxIncarnation(expected: SwaLinuxProcessIncarnation) {
+  if (!isDeepStrictEqual(readSwaLinuxProcessIncarnation(expected.pid), expected)) throw new Error('SWA Linux process incarnation changed')
+}
+
+export function readSwaLinuxProcess(pid: number): SwaLinuxProcessIdentity {
+  const before = readSwaLinuxProcessIncarnation(pid)
+  const executable = realpathSync(`/proc/${pid}/exe`)
+  requireSwaLinuxIncarnation(before)
+  if (executable !== realpathSync(`/proc/${pid}/exe`)) throw new Error('SWA Linux executable identity changed')
+  return swaLinuxProcessIdentitySchema.parse({ ...before, name: basename(executable) })
 }
 
 export function requireSwaLinuxProcess(expected: SwaLinuxProcessIdentity) {

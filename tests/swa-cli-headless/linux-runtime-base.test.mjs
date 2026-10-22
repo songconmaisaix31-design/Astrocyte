@@ -63,6 +63,9 @@ test('Linux process absence requires its actual proc directory to disappear, inc
       await delay(20)
     }
     assert.throws(() => identity.readSwaLinuxProcess(pid))
+    const incarnation = identity.readSwaLinuxProcessIncarnation(pid)
+    assert.equal(incarnation.pid, pid)
+    identity.requireSwaLinuxIncarnation(incarnation)
     assert.equal(identity.isSwaLinuxProcessAbsent(pid), false)
   } finally {
     parent.stdin.end()

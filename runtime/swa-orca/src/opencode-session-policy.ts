@@ -39,6 +39,7 @@ export function createOpenCodeSessionPolicy(input: {
   const fail = () => { active = false; failure ??= new Error('native_opencode_policy_status_invalid'); rejectReady(failure) }
   const trace = (event: string, detail: unknown) => {
     const observation = tree?.readObservation()
+    if (observation?.platform === 'linux') throw new Error('The native OpenCode policy has no reviewed Linux event contract')
     const body = JSON.stringify({ protocol: 'acp', projection: 'actual_native_acp_lifecycle_and_delta_fields', session_id: input.sessionId, runtime_fence: input.fence, sequence: ++traceSequence, observed_at: new Date().toISOString(), monotonic_ms: performance.now(), event, process: observation ? { pid: observation.rootPid, creationTimeMs: observation.rootCreationTimeMs } : undefined, native_cli: observation?.nativeCLI, native_server: server, detail })
     if (body.includes(snapshot.key)) { fail(); throw new Error('native_opencode_trace_contains_credential') }
     appendFileSync(join(launcher.eventDirectory, 'provider-events.ndjson'), body + '\n', { encoding: 'utf8', flag: 'a' })
@@ -83,6 +84,7 @@ export function createOpenCodeSessionPolicy(input: {
         if (cut || !tree) throw new Error('native_opencode_policy_status_invalid')
         const row = statusSchema.parse(JSON.parse(line.slice('SWA_OPENCODE_POLICY '.length)))
         const birth = readWindowsProcessCreationTime(row.pid), observation = tree.readObservation()
+        if (observation.platform === 'linux') throw new Error('The native OpenCode policy has no reviewed Linux process contract')
         if (row.correlation !== correlation || row.root.toLowerCase() !== root.toLowerCase() || row.sequence !== sequence + 1 || !birth || !observation.members.some(member => member.pid === row.pid && member.creationTimeMs === birth) || server && (server.pid !== row.pid || server.creationTimeMs !== birth)) throw new Error('native_opencode_policy_identity_changed')
         server = { pid: row.pid, creationTimeMs: birth }; sequence = row.sequence
         if (row.state === 'active') {
@@ -102,6 +104,7 @@ export function createOpenCodeSessionPolicy(input: {
       finally { clearTimeout(timer) }
       if (!active || failure || !tree || !server) throw failure ?? new Error('native_opencode_policy_inactive')
       const observation = tree.readObservation()
+      if (observation.platform === 'linux') throw new Error('The native OpenCode policy has no reviewed Linux process contract')
       if (observation.nativeCLI?.kind !== 'executable' || observation.nativeCLI.program.toLowerCase() !== input.executable.toLowerCase() || !observation.members.some(member => member.pid === server!.pid && member.creationTimeMs === server!.creationTimeMs)) throw new Error('native_opencode_policy_process_changed')
     },
     async verifySession(sessionId) {

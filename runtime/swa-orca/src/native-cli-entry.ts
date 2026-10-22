@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { runWithParentJob } from './provider-job-bootstrap'
 
-runWithParentJob(async () => {
+const runWindowsNativeCLI = () => runWithParentJob(async () => {
   const [{ z }, { spawnProcess }, { resolveWindowsCmdShim }, { extname, isAbsolute }, { realpath }] = await Promise.all([
     import('zod'), import('@orca/process-host'), import('@orca/process-host/windows-cmd-shim-resolution'), import('node:path'), import('node:fs/promises')
   ])
@@ -34,7 +34,12 @@ runWithParentJob(async () => {
       resolve()
     })
   })
-}).catch(error => {
+})
+
+const running = process.platform === 'linux'
+  ? import('./linux-provider-bootstrap').then(module => module.runLinuxNativeCLI())
+  : runWindowsNativeCLI()
+running.catch(error => {
   process.stderr.write(JSON.stringify({ code: 'native_cli_job_failed', message: error instanceof Error ? error.message : 'Native CLI Job failed' }) + '\n')
   process.exitCode = 1
 })

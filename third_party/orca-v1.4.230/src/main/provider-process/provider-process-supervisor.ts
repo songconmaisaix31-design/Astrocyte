@@ -272,7 +272,7 @@ export function createProviderSpawnSpec(
 } {
   const childEnv = resolveProviderChildEnv(launch, baseEnv)
   const supervisor =
-    platform === 'win32'
+    platform === 'win32' || platform === 'linux' && launch.swaJobIPC
       ? null
       : supervisedPosixLaunch(
           { command: launch.command, args: launch.args, cwd: launch.cwd },

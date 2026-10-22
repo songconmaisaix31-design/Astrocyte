@@ -224,6 +224,7 @@ export class PiRpcSession {
   private assertOwnedJob() {
     if (!this.toolsOff) return
     const job = this.connection.observeOwnedJob?.()
+    if (job?.platform === 'linux') throw new Error('The native Pi policy has no reviewed Linux result and launch contract')
     if (!job?.assigned || job.rootExited || !job.nativeCLI || !job.members.some(member => member.pid === job.nativeCLI!.pid && member.creationTimeMs === job.nativeCLI!.creationTimeMs)) throw new Error('The actual native Pi Job membership is unavailable')
   }
 

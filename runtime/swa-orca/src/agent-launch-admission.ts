@@ -66,6 +66,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     return { original, invocation, parentRow, childRow }
   }
   async function policySnapshot(sessionId: string, agent: string, requireRecord = true) {
+    if (process.platform === 'linux' && (agent === 'pi' || agent === 'opencode')) throw new Error('The selected native Agent has no reviewed Linux launch and complete-source contract')
     const selected = await originalSelection(sessionId, agent, requireRecord)
     const { original } = selected
     const account = original.native_launch.account
@@ -107,7 +108,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const fresh = await policySnapshot(sessionId, agent)
     await verifyAccount(fresh, sessionId)
     const node = z.string().min(1).parse(process.env.SWA_NODE_EXECUTABLE), install = z.string().min(1).parse(process.env.SWA_INSTALL_ROOT)
-    if (!isAbsolute(node) || !isAbsolute(install) || await realpath(node) !== join(await realpath(install), 'node', 'node.exe')) throw new Error('The installed native Job Node source is unavailable')
+    if (!isAbsolute(node) || !isAbsolute(install) || await realpath(node) !== join(await realpath(install), 'node', process.platform === 'win32' ? 'node.exe' : 'node')) throw new Error('The installed native Job Node source is unavailable')
     const entry = await realpath(join(install, 'runtime', 'native-cli-entry.cjs')), eventDirectory = await createNativeWorkerDirectory(sessionId)
     assertCurrent(fresh); assertDeliveryGrantCurrent(fresh.invocation)
     return { node, entry, eventDirectory }

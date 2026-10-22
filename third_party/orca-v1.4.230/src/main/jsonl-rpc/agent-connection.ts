@@ -233,6 +233,7 @@ export class JsonlRpcAgentConnection {
     if (!this.ownedTree) throw new Error('SWA provider event has no owned Job')
     if (!this.providerEventIdentity) {
       const observed = this.ownedTree.readObservation()
+      if (observed.platform === 'linux') throw new Error('The native JSONL event source has no reviewed Linux contract')
       if (!observed.assigned || observed.rootPid !== this.managed.child.pid || !observed.members.some(row => row.pid === observed.rootPid && row.creationTimeMs === observed.rootCreationTimeMs)) throw new Error('SWA provider event has no actual assigned root identity')
       this.providerEventIdentity = { pid: observed.rootPid, creationTimeMs: observed.rootCreationTimeMs }
     }
