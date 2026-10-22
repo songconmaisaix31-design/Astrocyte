@@ -7,6 +7,11 @@ on:
         type: boolean
         required: false
         default: false
+      probe_visual_studio:
+        description: 'Run only the pinned Visual Studio discovery MRE'
+        type: boolean
+        required: false
+        default: false
   push:
     paths:
       - '.github/workflows/swa-windows-native.yml'
@@ -50,7 +55,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prior-windows-build-diagnostics:
-    if: ${{ (github.event_name == 'workflow_dispatch' && !inputs.build_candidate) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-diagnostics]')) }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && !inputs.build_candidate && !inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025
     timeout-minutes: 10
     permissions:
@@ -70,8 +75,38 @@ jobs:
         shell: pwsh
         run: |
           & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '3f4a4ea278d2cdf58711c8c6dee22797241b3780'
+  visual-studio-discovery-probe:
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+      - name: Prepare only the pinned package manager
+        shell: pwsh
+        run: |
+          npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-pnpm') --no-audit --no-fund pnpm@11.27.0
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned pnpm installation failed' }
+      - name: Observe the original finder and the official developer environment
+        shell: pwsh
+        run: |
+          & ./scripts/probe-swa-visualstudio.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-visualstudio-probe-${{ github.sha }}
+          path: |
+            .verification/swa-ci/vs-probe/*.json
+            .verification/swa-ci/vs-probe/*.log
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   windows-native-candidate:
-    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_candidate) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-full]') && !contains(github.event.head_commit.message, '[swa-windows-diagnostics]')) }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_candidate && !inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-full]') && !contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025
     timeout-minutes: 60
     steps:

@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   swa-foundation:
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[swa-windows-diagnostics]') }}
+    if: ${{ github.event_name != 'push' || (!contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,7 +47,7 @@ jobs:
           go build -mod=readonly -trimpath -ldflags="-X main.version=$revision" -o "$executable" ./cmd/swa
           test "$("$executable" --version)" = "$revision"
   check:
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[swa-windows-diagnostics]') }}
+    if: ${{ github.event_name != 'push' || (!contains(github.event.head_commit.message, '[swa-windows-diagnostics]') && !contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     strategy:
       fail-fast: false
       matrix:
