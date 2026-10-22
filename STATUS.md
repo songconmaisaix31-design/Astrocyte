@@ -2,6 +2,10 @@
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。
 
+程序来源3bcf0c71ba86e607cd63aef3b423d7cc6f5788eb已普通push，五项源码返修/实际根退出62获2b4b9d22限定接受；59严格、build18/ZIP/普通解包60实际0，安装60复制/native/28251闭包及保护拒绝通过、汇总6。67实际服务以TTY17950保持，63/68准确执行客户端和真实来源交审，四Go消费者二进制65编译0但尚未运行。执行Grant、产品Worker模型和最终同安装双Worker仍未验。
+
+draft PR #5后继d82958a0仅补六个准确版本脚本false策略及说明，程序和3bcf安装归属保持。原Linux CI frozen install/1及后继未运行保留，新普通归档frozen及Linux原CI复验继续，45FE技术计划获限定接受；实际配置与CI结果按原件验收。
+
 最近已验安装来源f2ab4fd9155f4f4bb85c74845f3f3ef5eb607caa，产品记录01b23b452a7949f0468859044ff622c0be327398已push。新增Pi原生StepFun custom准入，strict/architecture/真实空auth拒绝、build16及完整ZIP解包29实际0。仓库外install29复制/native/28233路径与保护拒绝通过，完整安装汇总6；同安装四项生命周期130/130/0/6、C08严格7及所属退出获32f254c5限定接受。该安装的产品Worker模型、完整安装及同候选双Worker仍未通过。
 
 当前产品接入源e9fa97e3已普通push，51 strict/三个CLI传输前Go用例、52完整合同264样例及生成一致性、build17实际0。49广包Go整体1：Relay启动和Workbench实际输入检查失败，未作同条件基线比较。独立f5393fb4退回e9fa的ACP完整Job退出缓存及根退出提前删除会话两项，原Worker返修并继续准确最终安装真实验收，产品尚未接受。
