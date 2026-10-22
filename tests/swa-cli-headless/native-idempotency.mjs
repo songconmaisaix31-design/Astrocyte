@@ -100,7 +100,7 @@ database = new DatabaseSync(dbPath, { readOnly: true })
 const remainingCases = ['actual_response_loss_after_each_effect_boundary', 'runtime_restart_pending_queries', 'worker_start_send_concurrent_and_disconnected_replays', 'different_request_close_create_start_interleavings']
 try {
   if (values.case === 'storage') {
-    const counts = () => ({ runs: database.prepare('SELECT COUNT(*) AS total FROM coordinator_runs').get().total, tasks: database.prepare('SELECT COUNT(*) AS total FROM tasks').get().total })
+    const counts = () => ({ runs: database.prepare('SELECT COUNT(*) AS total FROM runs WHERE legacy=0').get().total, legacy_coordinator_runs: database.prepare('SELECT COUNT(*) AS total FROM coordinator_runs').get().total, tasks: database.prepare('SELECT COUNT(*) AS total FROM tasks').get().total })
     const before = counts(), lock = new DatabaseSync(dbPath), refusedR = randomUUID()
     let acquiredAt, refused
     try {
@@ -214,7 +214,12 @@ async function verifyIdempotency() {
   assert.notEqual(restoredContext.mtimeNs, beforeContextChange.mtimeNs)
   await mismatch(taskArgs)
   assert.deepEqual(JSON.parse(database.prepare('SELECT spec FROM tasks WHERE id=?').get(replay.task_id).spec).context, fixedContext)
-  assert.equal(database.prepare('SELECT COUNT(*) AS total FROM coordinator_runs WHERE coordinator_handle=?').get(controller).total, 1)
+  assert.equal(database.prepare('SELECT COUNT(*) AS total FROM runs WHERE coordinator_handle=? AND legacy=0').get(controller).total, 1)
+  const actualRun = database.prepare('SELECT * FROM runs WHERE id=? AND legacy=0').get(replay.run_id)
+  assert.ok(actualRun)
+  assert.equal(actualRun.coordinator_handle, controller)
+  assert.equal(actualRun.coordinator_pane_key, openReceipt.receipt.caller_authority.paneKey)
+  assert.equal(actualRun.consumer_generation, replay.result.native.run.consumer_generation)
   assert.equal(database.prepare('SELECT COUNT(*) AS total FROM tasks WHERE run_id=? AND parent_id IS NULL').get(replay.run_id).total, 1)
   checks.push({ case: 'task_create_same_request_concurrent_completed_and_changed_spec_or_real_context', request: taskR, receipt: taskReceipt, fixedContext, contextVersionChange: { before_mtime_ns: beforeContextChange.mtimeNs.toString(), restored_mtime_ns: restoredContext.mtimeNs.toString(), size: restoredContext.size.toString(), restored_bytes: 'equal', expected_after_restore: 'request_mismatch' }, concurrentUnknownResponses: created.filter(row => row.exit === 6).length })
 
