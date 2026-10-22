@@ -1,19 +1,19 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { access, copyFile, lstat, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
+import { access, copyFile, cp, lstat, mkdir, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
-import { parseArgs } from 'node:util'
 import { root, findGo } from './process.mjs'
 import { NODE_RUNTIME_PIN, NODE_RUNTIME_ASSETS, nodeRuntimeReleaseUrl } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 import { buildSWARuntime } from './build-swa-runtime.mjs'
 import { buildNativePackage, nativePackages, prepareNativeReuse, reuseNativePackage } from './build-swa-native.mjs'
+import { packageOptions, buildPython, checkWebAssets, copyWebLicenses } from './swa-package-config.mjs'
 
-const { values } = parseArgs({ options: { output: { type: 'string' }, 'node-inputs': { type: 'string' }, 'native-source': { type: 'string' }, 'native-work': { type: 'string' }, 'native-evidence': { type: 'string' } }, allowPositionals: false })
-const reuseArguments = ['native-source', 'native-work', 'native-evidence'].filter(key => values[key])
-if (reuseArguments.length !== 0 && reuseArguments.length !== 3) throw new Error('Native reuse requires the explicit candidate, original work and successful evidence together')
+const values = packageOptions()
 if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('This candidate targets Windows x64')
-if (!values.output || !isAbsolute(values.output)) throw new Error('An explicit absolute --output inside dist is required')
+const pythonInfo = await buildPython(values.python)
+const python = pythonInfo.executable
+console.log(JSON.stringify({ stage: 'native-python-preflight', ...pythonInfo }))
 const output = resolve(values.output), beneath = relative(join(root, 'dist'), output)
 if (!beneath || beneath === '..' || beneath.startsWith('..\\') || isAbsolute(beneath)) throw new Error('Choose a new candidate directory inside dist')
 if (values['native-source']) {
@@ -31,7 +31,6 @@ const runtimeSource = join(root, 'runtime', 'swa-orca')
 const sourceRequire = createRequire(join(runtimeSource, 'package.json'))
 const { unzipSync } = sourceRequire('fflate')
 const gyp = sourceRequire.resolve('node-gyp/bin/node-gyp.js')
-const python = await realpath('C:/Python313/python.exe')
 const taskWork = join(root, '.verification', 'swa-cli-headless-20261020')
 const store = join(taskWork, 'pnpm-store')
 await mkdir(store, { recursive: true })
@@ -45,11 +44,10 @@ const environment = { ...process.env, TEMP: temp, TMP: temp, TMPDIR: temp, NODE_
 const run = (program, args, cwd = root) => execFileSync(program, args, { cwd, env: environment, stdio: 'inherit', windowsHide: true, timeout: 20 * 60_000 })
 const capture = (program, args) => execFileSync(program, args, { cwd: root, env: environment, encoding: 'utf8', windowsHide: true, timeout: 60_000 }).trim()
 if (capture(process.execPath, [pnpm, '--version']) !== '11.27.0') throw new Error('The build requires pnpm 11.27.0')
-const pythonInfo = JSON.parse(capture(python, ['-c', 'import json,sys; print(json.dumps({"executable":sys.executable,"version":list(sys.version_info[:3])}))']))
-if (!pythonInfo || typeof pythonInfo.executable !== 'string' || !isAbsolute(pythonInfo.executable) || (await realpath(pythonInfo.executable)).toLowerCase() !== python.toLowerCase()) throw new Error('The actual Python executable differs from the selected native build input')
-const pythonVersion = pythonInfo.version
-if (!Array.isArray(pythonVersion) || pythonVersion.length !== 3 || !pythonVersion.every(Number.isSafeInteger) || pythonVersion.some(value => value < 0) || pythonVersion[0] < 3 || pythonVersion[0] === 3 && pythonVersion[1] < 6) throw new Error('The actual selected Python version is unsupported by node-gyp')
-console.log(JSON.stringify({ stage: 'native-python-preflight', executable: python, version: pythonVersion.join('.') }))
+const revision = capture('git', ['rev-parse', 'HEAD'])
+if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('Exact source revision is unavailable')
+if (capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('Commit the candidate source before building the installable package')
+run(process.execPath, [pnpm, 'typecheck:swa'])
 const distribution = join(root, 'dist')
 await mkdir(distribution, { recursive: true })
 const actualDistribution = await realpath(distribution)
@@ -60,10 +58,17 @@ if (parentRelative === '..' || parentRelative.startsWith('..\\') || isAbsolute(p
 await mkdir(output)
 const runtime = join(output, 'runtime')
 run(process.execPath, [pnpm, '--config.node-linker=hoisted', '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', store])
-const revision = capture('git', ['rev-parse', 'HEAD'])
-if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('Exact source revision is unavailable')
-if (capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('Commit the candidate source before building the installable package')
 await buildSWARuntime(runtime)
+if (values.edition === 'combined') {
+  run(process.execPath, [pnpm, '--dir', 'web', 'build', '--manifest'])
+  await checkWebAssets(join(root, 'web', 'dist'))
+  await cp(join(root, 'web', 'dist'), join(output, 'web'), { recursive: true, errorOnExist: true, force: false })
+  await checkWebAssets(join(output, 'web'))
+  await copyWebLicenses(join(root, 'web'), output, pnpm)
+}
+const metadata = join(output, 'metadata')
+await mkdir(metadata)
+for (const [source, target] of [['package.json', 'package.json'], ['web/package.json', 'web-package.json'], ['dependencies.lock.json', 'dependencies.lock.json'], ['pnpm-lock.yaml', 'pnpm-lock.yaml']]) await copyFile(join(root, source), join(metadata, target))
 const nodeDirectory = join(output, 'node')
 await mkdir(nodeDirectory)
 const nodeAsset = NODE_RUNTIME_ASSETS['win32-x64']
@@ -124,13 +129,16 @@ for (const [index, name] of nativePackages.entries()) {
 delete environment._CL_
 const go = await findGo()
 for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/server']]) {
-  const args = ['build', '-p=4', '-trimpath']
+  const args = ['build', '-mod=readonly', '-p=4', '-trimpath']
   if (name === 'swa.exe') args.push('-ldflags=-X main.version=' + revision)
   run(go, [...args, '-o', join(output, name), entry])
 }
-run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'controller-fault.exe'), './tests/swa-cli-headless/controller-fault'])
-run(go, ['build', '-p=4', '-trimpath', '-o', join(runtime, 'cli-fault-control.exe'), './tests/swa-cli-headless/cli-fault-control'])
+run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', '-o', join(runtime, 'controller-fault.exe'), './tests/swa-cli-headless/controller-fault'])
+run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', '-o', join(runtime, 'cli-fault-control.exe'), './tests/swa-cli-headless/cli-fault-control'])
 for (const [source, target] of [['LICENSE', 'LICENSE'], ['THIRD_PARTY_SWA.md', 'THIRD_PARTY_SWA.md'], ['third_party/orca-v1.4.230/LICENSE', 'ORCA_LICENSE'], ['scripts/install-swa.ps1', 'install-swa.ps1'], ['runtime/swa-orca/USAGE.md', 'USAGE.md']]) await copyFile(join(root, source), join(output, target))
+if (capture('git', ['rev-parse', 'HEAD']) !== revision || capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('The candidate source changed while building; retain this incomplete output for inspection')
 await writeFile(join(output, 'VERSION'), revision + '\n', { flag: 'wx' })
+await writeFile(join(output, 'EDITION'), values.edition + '\n', { flag: 'wx' })
 run(node, [join(root, 'scripts', 'check-swa-runtime.mjs'), '--candidate', output])
+console.log(JSON.stringify({ stage: 'candidate-edition', edition: values.edition }))
 console.log(JSON.stringify({ source_revision: revision, candidate: output, node: NODE_RUNTIME_PIN.version, native_modules_built: built, native_modules_copied: copied }))

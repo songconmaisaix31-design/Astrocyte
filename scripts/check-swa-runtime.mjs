@@ -5,6 +5,7 @@ import { lstat, readFile, readdir, realpath } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { checkWebAssets } from './swa-package-config.mjs'
 
 const { values } = parseArgs({ options: { candidate: { type: 'string' }, native: { type: 'boolean' } }, allowPositionals: false })
 if (!values.candidate || !isAbsolute(values.candidate)) throw new Error('An explicit absolute --candidate is required')
@@ -13,6 +14,11 @@ const runtime = join(candidate, 'runtime')
 const node = join(candidate, 'node', 'node.exe')
 const expected = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
 assert.match(expected, /^[0-9a-f]{40}$/)
+let edition = 'cli', legacy = false
+try { edition = (await readFile(join(candidate, 'EDITION'), 'utf8')).trim() }
+catch (error) { if (error.code !== 'ENOENT') throw error; legacy = true }
+assert.ok(['cli', 'combined'].includes(edition), 'Unknown candidate edition')
+if (!legacy) for (const file of ['package.json', 'web-package.json', 'dependencies.lock.json', 'pnpm-lock.yaml']) assert.ok((await readFile(join(candidate, 'metadata', file))).length > 0)
 const hash = createHash('sha256').update(await readFile(node)).digest('hex')
 assert.equal(hash, 'ba4e6d110e8c1592a1ecd390f6b05f3da124b13871a5be62b341a07a853c6c32')
 
@@ -33,12 +39,13 @@ if (!values.native) {
     else if (!entry.isFile()) throw new Error(`Unsupported candidate payload: ${actual}`)
   }
   await walk(candidate)
+  const web = edition === 'combined' ? await checkWebAssets(join(candidate, 'web')) : null
   const actual = execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true }).trim()
   assert.equal(actual, expected)
   for (const file of ['install-swa.ps1', 'USAGE.md', 'LICENSE', 'ORCA_LICENSE', 'THIRD_PARTY_SWA.md']) assert.ok((await readFile(join(candidate, file))).length > 0)
   const result = execFileSync(node, ['--max-old-space-size=1024', import.meta.filename, '--candidate', candidate, '--native'], { encoding: 'utf8', windowsHide: true, env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=1024' }, timeout: 30_000 })
   process.stdout.write(result)
-  console.log(JSON.stringify({ candidate, source_revision: expected, closure_paths: seen.size, native_authentication: 'NOT_RUN', functional_acceptance: 'NOT_RUN' }))
+  console.log(JSON.stringify({ candidate, source_revision: expected, edition, legacy_edition: legacy, web_manifest: web, closure_paths: seen.size, native_authentication: 'NOT_RUN', functional_acceptance: 'NOT_RUN', gui_http_acceptance: 'NOT_RUN' }))
 } else {
   assert.equal(process.version, 'v24.21.0')
   const requireRuntime = createRequire(join(runtime, 'package.json'))

@@ -22,7 +22,7 @@
     "build:swa": "node --max-old-space-size=1024 scripts/build-swa-package.mjs",
     "test:swa-runtime": "pwsh -NoProfile -File scripts/verify-swa-cli-headless.ps1",
     "check:swa": "node --max-old-space-size=1024 scripts/check-swa-runtime.mjs",
-    "typecheck:swa": "node --max-old-space-size=1024 runtime/swa-orca/node_modules/typescript/bin/tsc --project runtime/swa-orca/tsconfig.json --pretty false"
+    "typecheck:swa": "node --max-old-space-size=8192 runtime/swa-orca/node_modules/typescript/bin/tsc --project runtime/swa-orca/tsconfig.json --pretty false"
   },
   "devDependencies": {
     "@redocly/cli": "2.60.0",
