@@ -1,0 +1,1179 @@
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"flag"
+	"io"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/prometheus/procfs"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+	"golang.org/x/sys/unix"
+)
+
+const caller = "swa-codex-n3-20261022"
+const publicRoot = "/workspace/swa-public-case-20261022/public-project"
+const projectName = "SWA Codex N3 public stats"
+const spaceTitle = "SWA Codex N3 public stats 20261022"
+const requiredGo = "go1.27.2"
+
+var stages = []string{"session", "space", "project", "observe-settings", "observe-grant", "observe-token", "execute-settings", "execute-grant", "execute-token", "revoke"}
+var actions = []string{"read_context", "observe", "start", "send", "stop"}
+
+type executionPackage struct {
+	SchemaVersion      int               `json:"schema_version"`
+	Installation       string            `json:"installation"`
+	Revision           string            `json:"source_revision"`
+	DataRoot           string            `json:"data_root,omitempty"`
+	Project            string            `json:"project"`
+	Endpoint           string            `json:"endpoint"`
+	CodexSourceHome    string            `json:"codex_api_key_home,omitempty"`
+	ProtectedRoots     []string          `json:"protected_roots"`
+	SourceRepository   string            `json:"source_repository"`
+	EvidenceRoot       string            `json:"evidence_root"`
+	ReadyFile          string            `json:"ready_file,omitempty"`
+	ProofFile          string            `json:"live_proof_file,omitempty"`
+	LaunchFile         string            `json:"launch_record_file,omitempty"`
+	ExpectedRuntimeID  string            `json:"expected_runtime_id,omitempty"`
+	ReadySHA           string            `json:"ready_sha256,omitempty"`
+	ProofSHA           string            `json:"live_proof_sha256,omitempty"`
+	LaunchSHA          string            `json:"launch_record_sha256,omitempty"`
+	DriverSHA          string            `json:"driver_sha256,omitempty"`
+	DefinitionSHA      string            `json:"public_definition_sha256,omitempty"`
+	DriverSourceSHA    map[string]string `json:"driver_dependency_sha256,omitempty"`
+	ConsumerSHA        string            `json:"offline_consumer_sha256,omitempty"`
+	HelperSHA          string            `json:"helper_binary_sha256,omitempty"`
+	NodeSHA            string            `json:"installed_node_sha256,omitempty"`
+	SWASHA             string            `json:"installed_swa_sha256,omitempty"`
+	Caller             string            `json:"caller"`
+	Agent              string            `json:"agent"`
+	Model              string            `json:"model"`
+	Workers            int               `json:"workers"`
+	AllowRevoke        bool              `json:"delegate_final_revoke"`
+	RevokeAfterUnknown bool              `json:"delegate_revoke_after_human_unknown"`
+	Requests           map[string]string `json:"request_intents"`
+}
+
+type classifiedError struct {
+	Code      string
+	Stage     string
+	RequestID string
+	HTTP      int
+}
+
+func (e *classifiedError) Error() string { return e.Code }
+func fail(code string) error             { return &classifiedError{Code: code} }
+func require(ok bool, code string) error {
+	if !ok {
+		return fail(code)
+	}
+	return nil
+}
+func safeError(err error) map[string]any {
+	var known *classifiedError
+	if errors.As(err, &known) {
+		return map[string]any{"code": known.Code, "stage": known.Stage, "request_id": known.RequestID, "http_status": known.HTTP}
+	}
+	return map[string]any{"code": "local_operation_failed"}
+}
+
+func hashFile(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	hash := sha256.New()
+	if _, err = io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+func hashBytes(body []byte) string { sum := sha256.Sum256(body); return hex.EncodeToString(sum[:]) }
+func readBounded(path string, maximum int64) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	body, err := io.ReadAll(io.LimitReader(file, maximum+1))
+	if err != nil || int64(len(body)) > maximum {
+		return nil, fail("bounded_file_required")
+	}
+	return body, nil
+}
+func inside(root, path string) bool {
+	rel, err := filepath.Rel(root, path)
+	return err == nil && !filepath.IsAbs(rel) && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+func plain(path string, directory, private bool) error {
+	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
+		return fail("absolute_canonical_path_required")
+	}
+	canonical, err := filepath.EvalSymlinks(path)
+	if err != nil || canonical != path {
+		return fail("ordinary_path_required")
+	}
+	for current := path; ; current = filepath.Dir(current) {
+		info, err := os.Lstat(current)
+		if err != nil || info.Mode()&os.ModeSymlink != 0 {
+			return fail("ordinary_path_required")
+		}
+		if current == path {
+			if directory && !info.IsDir() || !directory && !info.Mode().IsRegular() {
+				return fail("ordinary_path_required")
+			}
+			if private {
+				owner, ok := info.Sys().(*syscall.Stat_t)
+				if !ok || owner.Uid != uint32(os.Getuid()) || info.Mode().Perm() != map[bool]os.FileMode{true: 0700, false: 0600}[directory] || info.Mode()&(os.ModeSetuid|os.ModeSetgid|os.ModeSticky) != 0 {
+					return fail("private_path_required")
+				}
+			}
+		} else if !info.IsDir() {
+			return fail("ordinary_ancestor_required")
+		}
+		if filepath.Dir(current) == current {
+			return nil
+		}
+	}
+}
+func readJSON(path string, value any, private bool) error {
+	if err := plain(path, false, private); err != nil {
+		return err
+	}
+	body, err := readBounded(path, 1<<20)
+	if err != nil {
+		return fail("bounded_json_required")
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(value); err != nil {
+		return fail("invalid_package_json")
+	}
+	if decoder.Decode(new(any)) != io.EOF {
+		return fail("one_json_document_required")
+	}
+	return nil
+}
+func persist(path string, value any) error {
+	body, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return err
+	}
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return err
+	}
+	_, writeErr := file.Write(append(body, '\n'))
+	syncErr := file.Sync()
+	closeErr := file.Close()
+	return errors.Join(writeErr, syncErr, closeErr)
+}
+func checkedEndpoint(raw string) error {
+	u, err := url.Parse(raw)
+	if err != nil || u.Scheme != "http" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || u.Port() == "" || u.Hostname() != "127.0.0.1" && u.Hostname() != "::1" {
+		return fail("explicit_loopback_origin_required")
+	}
+	port, err := strconv.Atoi(u.Port())
+	if err != nil || port < 1 || port > 65535 {
+		return fail("explicit_loopback_origin_required")
+	}
+	return nil
+}
+func childEnvironment(home string) []string {
+	return []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8", "LC_ALL=C.UTF-8", "HOME=" + home, "TMPDIR=" + home, "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0"}
+}
+func driverPath(p executionPackage) string {
+	return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/run-installed.mjs")
+}
+func definitionPath(p executionPackage) string {
+	return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/public-case-definition.mjs")
+}
+func consumerPath() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(filepath.Dir(exe), "public-case-preflight.mjs"), nil
+}
+
+func bindHash(path string, expected *string, prepare bool) error {
+	if err := plain(path, false, false); err != nil {
+		return err
+	}
+	actual, err := hashFile(path)
+	if err != nil {
+		return err
+	}
+	if prepare && *expected == "" {
+		*expected = actual
+	}
+	return require(*expected == actual, "approved_source_bytes_changed")
+}
+func gitSource(p executionPackage, relative, path string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "git", "-c", "core.fsmonitor=false", "-c", "core.hooksPath="+filepath.Join(filepath.Dir(p.Project), "empty-hooks"), "-C", p.SourceRepository, "show", p.Revision+":"+relative)
+	cmd.Env = childEnvironment(p.EvidenceRoot)
+	body, err := runBounded(cmd, 8<<20, 64<<10)
+	if err != nil {
+		return fail("installed_revision_source_unavailable")
+	}
+	actual, err := hashFile(path)
+	if err != nil || actual != hashBytes(body) {
+		return fail("driver_source_differs_from_installed_revision")
+	}
+	return nil
+}
+
+func offline(p *executionPackage, prepare bool) ([]string, error) {
+	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || runtime.Version() != requiredGo {
+		return nil, fail("reviewed_linux_go_required")
+	}
+	if err := checkedEndpoint(p.Endpoint); err != nil {
+		return nil, err
+	}
+	if p.SchemaVersion != 1 || p.Caller != caller || p.Agent != "codex" || p.Model != "gpt-5.5" || p.Workers != 3 || p.Project != publicRoot {
+		return nil, fail("fixed_public_case_scope_required")
+	}
+	if id, err := hex.DecodeString(p.Revision); err != nil || len(id) != 20 || strings.ToLower(p.Revision) != p.Revision {
+		return nil, fail("exact_source_revision_required")
+	}
+	for _, root := range []string{p.Installation, p.SourceRepository, p.Project} {
+		if err := plain(root, true, root != p.SourceRepository); err != nil {
+			return nil, err
+		}
+	}
+	if err := plain(filepath.Dir(p.EvidenceRoot), true, false); err != nil {
+		return nil, err
+	}
+	if !filepath.IsAbs(p.EvidenceRoot) || filepath.Clean(p.EvidenceRoot) != p.EvidenceRoot {
+		return nil, fail("absolute_evidence_root_required")
+	}
+	for _, root := range []string{p.Installation, p.SourceRepository, p.Project} {
+		if inside(root, p.EvidenceRoot) || inside(p.EvidenceRoot, root) {
+			return nil, fail("evidence_overlaps_input_root")
+		}
+	}
+	for _, name := range []string{"VERSION", "PLATFORM", "EDITION"} {
+		if err := plain(filepath.Join(p.Installation, name), false, false); err != nil {
+			return nil, err
+		}
+	}
+	version, err := readBounded(filepath.Join(p.Installation, "VERSION"), 4096)
+	if err != nil || strings.TrimSpace(string(version)) != p.Revision {
+		return nil, fail("installation_version_mismatch")
+	}
+	platform, err := readBounded(filepath.Join(p.Installation, "PLATFORM"), 4096)
+	if err != nil || strings.TrimSpace(string(platform)) != "linux-x64-glibc" {
+		return nil, fail("installation_platform_mismatch")
+	}
+	edition, err := readBounded(filepath.Join(p.Installation, "EDITION"), 4096)
+	if err != nil || strings.TrimSpace(string(edition)) != "cli" && strings.TrimSpace(string(edition)) != "combined" {
+		return nil, fail("installation_edition_mismatch")
+	}
+	consumer, err := consumerPath()
+	if err != nil {
+		return nil, err
+	}
+	executable, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	for _, entry := range []struct {
+		path     string
+		expected *string
+	}{
+		{driverPath(*p), &p.DriverSHA}, {definitionPath(*p), &p.DefinitionSHA}, {consumer, &p.ConsumerSHA}, {executable, &p.HelperSHA},
+		{filepath.Join(p.Installation, "node/node"), &p.NodeSHA}, {filepath.Join(p.Installation, "swa"), &p.SWASHA},
+	} {
+		if err := bindHash(entry.path, entry.expected, prepare); err != nil {
+			return nil, err
+		}
+	}
+	if err := gitSource(*p, "tests/swa-product-acceptance/public-case-definition.mjs", definitionPath(*p)); err != nil {
+		return nil, err
+	}
+	if err := gitSource(*p, "tests/swa-product-acceptance/run-installed.mjs", driverPath(*p)); err != nil {
+		return nil, err
+	}
+	dependencies := []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
+	if prepare && p.DriverSourceSHA == nil {
+		p.DriverSourceSHA = map[string]string{}
+	}
+	if len(p.DriverSourceSHA) != len(dependencies) && !prepare {
+		return nil, fail("exact_driver_dependency_pins_required")
+	}
+	for _, name := range dependencies {
+		relative := "tests/swa-product-acceptance/" + name
+		path := filepath.Join(p.SourceRepository, filepath.FromSlash(relative))
+		expected := p.DriverSourceSHA[name]
+		if err := bindHash(path, &expected, prepare); err != nil {
+			return nil, err
+		}
+		p.DriverSourceSHA[name] = expected
+		if err := gitSource(*p, relative, path); err != nil {
+			return nil, err
+		}
+	}
+	if len(p.DriverSourceSHA) != len(dependencies) {
+		return nil, fail("exact_driver_dependency_pins_required")
+	}
+	if p.Requests == nil {
+		p.Requests = map[string]string{}
+	}
+	seen := map[string]bool{}
+	for _, stage := range stages {
+		if prepare && p.Requests[stage] == "" {
+			id, err := uuid.NewRandom()
+			if err != nil {
+				return nil, err
+			}
+			p.Requests[stage] = id.String()
+		}
+		id, err := uuid.Parse(p.Requests[stage])
+		if err != nil || id.String() != p.Requests[stage] || seen[id.String()] {
+			return nil, fail("distinct_canonical_request_intents_required")
+		}
+		seen[id.String()] = true
+	}
+	if p.RevokeAfterUnknown && !p.AllowRevoke {
+		return nil, fail("independent_revoke_delegation_inconsistent")
+	}
+	var missing []string
+	for _, entry := range []struct{ name, path string }{{"data_root", p.DataRoot}, {"codex_api_key_home", p.CodexSourceHome}} {
+		if entry.path == "" {
+			missing = append(missing, entry.name)
+			continue
+		}
+		if err := plain(entry.path, true, true); err != nil {
+			return nil, err
+		}
+		for _, root := range []string{p.Installation, p.SourceRepository, p.Project, p.EvidenceRoot} {
+			if inside(root, entry.path) || inside(entry.path, root) {
+				return nil, fail("private_runtime_root_overlaps_other_scope")
+			}
+		}
+	}
+	if p.DataRoot != "" && p.CodexSourceHome != "" && (inside(p.DataRoot, p.CodexSourceHome) || inside(p.CodexSourceHome, p.DataRoot)) {
+		return nil, fail("source_overlaps_product_data")
+	}
+	for _, protected := range p.ProtectedRoots {
+		if err := plain(protected, true, false); err != nil {
+			return nil, err
+		}
+		for _, root := range []string{p.Installation, p.DataRoot, p.CodexSourceHome} {
+			if root != "" && (inside(protected, root) || inside(root, protected)) {
+				return nil, fail("runtime_root_overlaps_protected_root")
+			}
+		}
+	}
+	if p.ExpectedRuntimeID == "" {
+		missing = append(missing, "expected_runtime_id")
+	}
+	for _, entry := range []struct {
+		name, path string
+		expected   *string
+	}{{"ready_file", p.ReadyFile, &p.ReadySHA}, {"live_proof_file", p.ProofFile, &p.ProofSHA}, {"launch_record_file", p.LaunchFile, &p.LaunchSHA}} {
+		if entry.path == "" {
+			missing = append(missing, entry.name)
+		} else {
+			if !inside(p.EvidenceRoot, entry.path) || filepath.Base(entry.path) == "auth.json" || filepath.Base(entry.path) == "settings.json" {
+				return nil, fail("service_wire_outside_this_evidence_root")
+			}
+			if err := plain(entry.path, false, true); err != nil {
+				return nil, err
+			}
+			if err := bindHash(entry.path, entry.expected, prepare); err != nil {
+				return nil, err
+			}
+		}
+	}
+	return missing, nil
+}
+
+func checkPublic(p executionPackage) (json.RawMessage, error) {
+	consumer, err := consumerPath()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), consumer, definitionPath(p), p.Project)
+	cmd.Env = childEnvironment(p.EvidenceRoot)
+	stdout, err := runBounded(cmd, 64<<10, 64<<10)
+	if err != nil {
+		return nil, fail("fixed_public_input_verification_failed")
+	}
+	var observed struct {
+		Status string `json:"status"`
+	}
+	if json.Unmarshal(stdout, &observed) != nil || observed.Status != "VERIFIED_FIXED_PUBLIC_INPUT" {
+		return nil, fail("fixed_public_input_verification_failed")
+	}
+	return append(json.RawMessage(nil), stdout...), nil
+}
+
+type readyWire struct {
+	OK        bool   `json:"ok"`
+	HTTP      string `json:"http"`
+	Data      string `json:"data_root"`
+	Install   string `json:"install_root"`
+	NodePID   int    `json:"runtime_pid"`
+	ServerPID int    `json:"server_pid"`
+	Readiness struct {
+		RuntimeID string `json:"runtimeId"`
+		Data      string `json:"dataRoot"`
+		Node      string `json:"node"`
+	} `json:"readiness"`
+}
+type proofWire struct {
+	Type    string `json:"type"`
+	Boot    string `json:"boot_id"`
+	RootPID int    `json:"root_pid"`
+	Members []struct {
+		PID   int    `json:"pid"`
+		Ticks uint64 `json:"start_ticks"`
+	} `json:"members"`
+}
+type daemonWire struct {
+	PID       int `json:"pid"`
+	Ownership struct {
+		Platform    string `json:"platform"`
+		Source      string `json:"source_revision"`
+		Install     string `json:"install_root"`
+		Data        string `json:"data_root"`
+		Boot        string `json:"boot_id"`
+		UID         string `json:"owner_uid"`
+		ServePID    int    `json:"serve_pid"`
+		ServeTicks  string `json:"serve_start_ticks"`
+		DaemonPID   int    `json:"daemon_pid"`
+		DaemonTicks string `json:"daemon_start_ticks"`
+	} `json:"swa_service_job"`
+}
+
+// This is only the original serve owner's non-secret spawn record, not a product wire.
+type launchWire struct {
+	Installation    string `json:"installation"`
+	Revision        string `json:"source_revision"`
+	DataRoot        string `json:"data_root"`
+	Endpoint        string `json:"endpoint"`
+	ServePID        int    `json:"serve_pid"`
+	CodexSourceHome string `json:"codex_api_key_home"`
+}
+
+func readWire(path string, value any, expectedSHA string) error {
+	if err := plain(path, false, true); err != nil {
+		return err
+	}
+	body, err := readBounded(path, 1<<20)
+	if err != nil {
+		return fail("bounded_service_wire_required")
+	}
+	if expectedSHA != "" && hashBytes(body) != expectedSHA {
+		return fail("approved_service_wire_bytes_changed")
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	if _, ownerRecord := value.(*launchWire); ownerRecord {
+		decoder.DisallowUnknownFields()
+	}
+	if err = decoder.Decode(value); err != nil || decoder.Decode(new(any)) != io.EOF {
+		return fail("actual_service_wire_invalid")
+	}
+	return nil
+}
+func serviceIdentity(p executionPackage) (string, error) {
+	var ready readyWire
+	var proof proofWire
+	var daemon daemonWire
+	var launch launchWire
+	if p.ExpectedRuntimeID == "" || p.ReadySHA == "" || p.ProofSHA == "" || p.LaunchSHA == "" {
+		return "", fail("fixed_service_baseline_required")
+	}
+	if err := readWire(p.ReadyFile, &ready, p.ReadySHA); err != nil {
+		return "", err
+	}
+	if err := readWire(p.ProofFile, &proof, p.ProofSHA); err != nil {
+		return "", err
+	}
+	if err := readWire(p.LaunchFile, &launch, p.LaunchSHA); err != nil {
+		return "", err
+	}
+	if err := readWire(filepath.Join(p.DataRoot, "daemon/daemon-v49.pid"), &daemon, ""); err != nil {
+		return "", err
+	}
+	o := daemon.Ownership
+	if !ready.OK || ready.HTTP != p.Endpoint || ready.Data != p.DataRoot || ready.Install != p.Installation || ready.Readiness.Data != p.DataRoot || ready.Readiness.Node != filepath.Join(p.Installation, "node/node") || ready.Readiness.RuntimeID != p.ExpectedRuntimeID || proof.Type != "process_tree_observed" || o.Platform != "linux" || o.Source != p.Revision || o.Install != p.Installation || o.Data != p.DataRoot || o.Boot != proof.Boot || o.ServePID != proof.RootPID || o.DaemonPID != daemon.PID || o.UID != strconv.Itoa(os.Getuid()) || launch.Installation != p.Installation || launch.Revision != p.Revision || launch.DataRoot != p.DataRoot || launch.Endpoint != p.Endpoint || launch.ServePID != o.ServePID || launch.CodexSourceHome != p.CodexSourceHome {
+		return "", fail("actual_service_wire_mismatch")
+	}
+	boot, err := readBounded("/proc/sys/kernel/random/boot_id", 4096)
+	if err != nil || strings.TrimSpace(string(boot)) != proof.Boot {
+		return "", fail("service_boot_mismatch")
+	}
+	var mount unix.Statfs_t
+	if unix.Statfs("/proc", &mount) != nil || mount.Type != unix.PROC_SUPER_MAGIC {
+		return "", fail("kernel_procfs_required")
+	}
+	fs, err := procfs.NewFS("/proc")
+	if err != nil {
+		return "", fail("kernel_procfs_required")
+	}
+	ticks := map[int]uint64{}
+	for _, member := range proof.Members {
+		if member.PID <= 0 || member.Ticks == 0 || ticks[member.PID] != 0 {
+			return "", fail("service_incarnation_incomplete")
+		}
+		ticks[member.PID] = member.Ticks
+	}
+	if strconv.FormatUint(ticks[o.ServePID], 10) != o.ServeTicks || strconv.FormatUint(ticks[daemon.PID], 10) != o.DaemonTicks {
+		return "", fail("service_incarnation_mismatch")
+	}
+	for pid, exe := range map[int]string{o.ServePID: filepath.Join(p.Installation, "swa"), ready.NodePID: filepath.Join(p.Installation, "node/node"), ready.ServerPID: filepath.Join(p.Installation, "server"), daemon.PID: filepath.Join(p.Installation, "node/node")} {
+		if ticks[pid] == 0 {
+			return "", fail("service_incarnation_incomplete")
+		}
+		process, err := fs.Proc(pid)
+		if err != nil {
+			return "", fail("service_process_unavailable")
+		}
+		before, err := process.Stat()
+		if err != nil || before.Starttime != ticks[pid] {
+			return "", fail("service_process_changed")
+		}
+		fd, err := unix.PidfdOpen(pid, 0)
+		if err != nil {
+			return "", fail("service_pidfd_unavailable")
+		}
+		checkErr := func() error {
+			after, err := process.Stat()
+			if err != nil || after.Starttime != before.Starttime {
+				return fail("service_process_changed")
+			}
+			status, err := process.NewStatus()
+			if err != nil || status.TGID != pid {
+				return fail("service_uid_unavailable")
+			}
+			for _, uid := range status.UIDs {
+				if uid != uint64(os.Getuid()) {
+					return fail("service_uid_mismatch")
+				}
+			}
+			info, err := os.Stat(filepath.Join("/proc", strconv.Itoa(pid)))
+			if err != nil {
+				return fail("service_uid_unavailable")
+			}
+			owner, ok := info.Sys().(*syscall.Stat_t)
+			if !ok || owner.Uid != uint32(os.Getuid()) {
+				return fail("service_uid_mismatch")
+			}
+			actual, err := process.Executable()
+			if err != nil || actual != exe {
+				return fail("service_executable_mismatch")
+			}
+			running, err := os.Stat(filepath.Join("/proc", strconv.Itoa(pid), "exe"))
+			if err != nil {
+				return fail("service_executable_unavailable")
+			}
+			installed, err := os.Stat(exe)
+			if err != nil || !os.SameFile(running, installed) {
+				return fail("service_executable_mismatch")
+			}
+			poll := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
+			if _, err := unix.Poll(poll, 0); err != nil || poll[0].Revents != 0 {
+				return fail("service_process_not_live")
+			}
+			return nil
+		}()
+		_ = unix.Close(fd)
+		if checkErr != nil {
+			return "", checkErr
+		}
+	}
+	return ready.Readiness.RuntimeID, nil
+}
+
+type humanClient struct {
+	p              executionPackage
+	client         *http.Client
+	transport      *http.Transport
+	csrf           string
+	unknown        bool
+	grantConfirmed bool
+	projectID      string
+	runtimeID      string
+}
+
+func newHumanClient(p executionPackage) (*humanClient, error) {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(true)
+	transport := &http.Transport{Proxy: nil, Protocols: protocols, DisableKeepAlives: true, MaxIdleConnsPerHost: -1, ResponseHeaderTimeout: 30 * time.Second}
+	client := &http.Client{Jar: jar, Transport: transport, Timeout: 30 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	return &humanClient{p: p, client: client, transport: transport}, nil
+}
+func (c *humanClient) request(stage, method, path string, body any, want int) ([]byte, error) {
+	actualRuntime, err := serviceIdentity(c.p)
+	if err != nil {
+		return nil, err
+	}
+	if actualRuntime != c.runtimeID || actualRuntime != c.p.ExpectedRuntimeID {
+		return nil, fail("fixed_service_runtime_changed")
+	}
+	var payload []byte
+	if body != nil {
+		payload, err = json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+	intent := map[string]any{"local_intent_id": c.p.Requests[stage], "method": method, "path": path, "state": "PREPARED_NO_EFFECT_PROOF"}
+	if len(payload) > 0 {
+		intent["request_id"] = c.p.Requests[stage]
+		intent["body"] = body
+		intent["body_sha256"] = hashBytes(payload)
+	}
+	if stage != "health" && stage != "list-projects" && stage != "list-spaces" {
+		if err := persist(filepath.Join(c.p.EvidenceRoot, "human-"+stage+".intent.json"), intent); err != nil {
+			return nil, err
+		}
+	}
+	req, err := http.NewRequest(method, c.p.Endpoint+path, io.NopCloser(bytes.NewReader(payload)))
+	if err != nil {
+		return nil, err
+	}
+	req.ContentLength = int64(len(payload))
+	req.GetBody = nil
+	req.Close = true
+	if len(payload) == 0 {
+		req.Body = nil
+	}
+	req.Header.Set("Origin", c.p.Endpoint)
+	if len(payload) > 0 {
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Idempotency-Key", c.p.Requests[stage])
+		req.Header.Set("X-CSRF-Token", c.csrf)
+	}
+	response, err := c.client.Do(req)
+	unknown := func(status int) error {
+		if stage != "health" && stage != "list-projects" && stage != "list-spaces" {
+			c.unknown = true
+		}
+		return &classifiedError{Code: "human_effect_or_response_unknown", Stage: stage, RequestID: c.p.Requests[stage], HTTP: status}
+	}
+	if err != nil {
+		return nil, unknown(0)
+	}
+	defer response.Body.Close()
+	result, err := io.ReadAll(io.LimitReader(response.Body, 1<<20+1))
+	if err != nil || len(result) > 1<<20 || response.StatusCode != want {
+		return nil, unknown(response.StatusCode)
+	}
+	if !json.Valid(result) {
+		return nil, unknown(response.StatusCode)
+	}
+	if stage != "health" && stage != "list-projects" && stage != "list-spaces" {
+		if err := persist(filepath.Join(c.p.EvidenceRoot, "human-"+stage+".response-metadata.json"), map[string]any{"stage": stage, "request_id": c.p.Requests[stage], "http_status": response.StatusCode, "response": "COMPLETE_JSON_IN_MEMORY_ONLY"}); err != nil {
+			return nil, unknown(response.StatusCode)
+		}
+	}
+	return result, nil
+}
+func (c *humanClient) command(stage, method, path string, fields map[string]any, want int) ([]byte, error) {
+	fields["schema_version"] = 1
+	fields["request_id"] = c.p.Requests[stage]
+	fields["expected_version"] = 1
+	return c.request(stage, method, path, fields, want)
+}
+func field[T any](body []byte, name string) (T, error) {
+	var value T
+	var envelope map[string]json.RawMessage
+	if json.Unmarshal(body, &envelope) != nil || json.Unmarshal(envelope[name], &value) != nil {
+		return value, fail("actual_response_field_missing")
+	}
+	return value, nil
+}
+func (c *humanClient) receipt(stage string, fields map[string]any) error {
+	fields["stage"] = stage
+	fields["local_intent_id"] = c.p.Requests[stage]
+	fields["runtime_id"] = c.runtimeID
+	fields["state"] = "VERIFIED_BUSINESS_RECEIPT"
+	if err := persist(filepath.Join(c.p.EvidenceRoot, "human-"+stage+".verified-receipt.json"), fields); err != nil {
+		c.unknown = true
+		return &classifiedError{Code: "verified_human_receipt_not_durable", Stage: stage, RequestID: c.p.Requests[stage]}
+	}
+	return nil
+}
+func safeProjectReceipt(p domain.LocalProject) map[string]any {
+	return map[string]any{"project_id": p.ID, "space_id": p.SpaceID, "project_root": p.Root, "name": p.Name, "settings": p.Settings}
+}
+func safeGrantReceipt(grant domain.ProjectGrant) map[string]any {
+	return map[string]any{"project_id": grant.ProjectID, "agent_id": grant.AgentID, "actions": grant.Actions, "expires_at": grant.ExpiresAt, "revoked_at": grant.RevokedAt}
+}
+func (c *humanClient) settings(stage string, p domain.LocalProject, settings domain.ProjectSettings) (domain.LocalProject, error) {
+	body, err := c.command(stage, "PUT", "/api/v1/local-projects/"+p.ID+"/settings", map[string]any{"expected_revision": p.Settings.Revision, "settings": settings}, 200)
+	if err != nil {
+		return p, err
+	}
+	updated, err := field[domain.LocalProject](body, "project")
+	settings.Revision = p.Settings.Revision + 1
+	if err != nil || updated.ID != p.ID || updated.Root != p.Root || !reflect.DeepEqual(updated.Settings, settings) {
+		c.unknown = true
+		return p, fail("actual_settings_cas_receipt_mismatch")
+	}
+	receipt := safeProjectReceipt(updated)
+	receipt["expected_revision"] = p.Settings.Revision
+	if err := c.receipt(stage, receipt); err != nil {
+		return p, err
+	}
+	return updated, nil
+}
+func (c *humanClient) grant(stage string, approved []string) error {
+	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/grants", map[string]any{"agent_id": caller, "actions": approved}, 200)
+	if err != nil {
+		return err
+	}
+	grant, err := field[domain.ProjectGrant](body, "grant")
+	if err != nil || grant.ProjectID != c.projectID || grant.AgentID != caller || !reflect.DeepEqual(grant.Actions, approved) || grant.RevokedAt != nil {
+		c.unknown = true
+		return fail("actual_grant_receipt_mismatch")
+	}
+	c.grantConfirmed = true
+	return c.receipt(stage, safeGrantReceipt(grant))
+}
+func (c *humanClient) token(stage string) (domain.AgentToken, error) {
+	body, err := c.command(stage, "POST", "/api/v1/local-projects/"+c.projectID+"/agent-token", map[string]any{"agent_id": caller}, 200)
+	if err != nil {
+		return domain.AgentToken{}, err
+	}
+	token, err := field[domain.AgentToken](body, "credential")
+	if err != nil || token.ProjectID != c.projectID || token.AgentID != caller || token.Token == "" || !token.ExpiresAt.After(time.Now()) {
+		c.unknown = true
+		return domain.AgentToken{}, fail("actual_token_receipt_mismatch")
+	}
+	if err := c.receipt(stage, map[string]any{"project_id": token.ProjectID, "agent_id": token.AgentID, "expires_at": token.ExpiresAt}); err != nil {
+		return domain.AgentToken{}, err
+	}
+	return token, nil
+}
+func cliMetadata(p executionPackage, token, projectID, action string) (json.RawMessage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "swa"), action, "--json")
+	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_ENDPOINT="+p.Endpoint, "SWA_PROJECT_ID="+projectID, "SWA_PROJECT_TOKEN="+token)
+	body, err := runBounded(cmd, 1<<20, 64<<10)
+	if err != nil || bytes.Contains(body, []byte(token)) {
+		return nil, fail("actual_scoped_metadata_unavailable")
+	}
+	return body, nil
+}
+
+type boundedDiagnostic struct {
+	body  bytes.Buffer
+	limit int
+	total int
+}
+
+func (w *boundedDiagnostic) Write(body []byte) (int, error) {
+	w.total += len(body)
+	remaining := w.limit - w.body.Len()
+	if remaining > 0 {
+		kept := len(body)
+		if kept > remaining {
+			kept = remaining
+		}
+		_, _ = w.body.Write(body[:kept])
+	}
+	return len(body), nil
+}
+func runBounded(cmd *exec.Cmd, stdoutLimit, stderrLimit int) ([]byte, error) {
+	stdout := &boundedDiagnostic{limit: stdoutLimit}
+	stderr := &boundedDiagnostic{limit: stderrLimit}
+	cmd.Stdout, cmd.Stderr = stdout, stderr
+	cmd.WaitDelay = 2 * time.Second
+	err := cmd.Run()
+	if err != nil || stdout.total > stdoutLimit || stderr.total > stderrLimit {
+		return nil, fail("bounded_child_output_unavailable")
+	}
+	return append([]byte(nil), stdout.body.Bytes()...), nil
+}
+func runDriver(p executionPackage, projectID string, token domain.AgentToken) error {
+	if actualRuntime, err := serviceIdentity(p); err != nil || actualRuntime != p.ExpectedRuntimeID {
+		return fail("fixed_service_identity_unavailable_before_driver")
+	}
+	for name, expected := range p.DriverSourceSHA {
+		if err := bindHash(filepath.Join(p.SourceRepository, "tests/swa-product-acceptance", name), &expected, false); err != nil {
+			return err
+		}
+	}
+	for _, source := range []struct{ path, expected string }{{driverPath(p), p.DriverSHA}, {definitionPath(p), p.DefinitionSHA}} {
+		if err := bindHash(source.path, &source.expected, false); err != nil {
+			return err
+		}
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), token.ExpiresAt.Add(-30*time.Second))
+	defer cancel()
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", "codex", "--model", "gpt-5.5", "--workers", "3", "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository)
+	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_PROJECT_TOKEN="+token.Token)
+	cmd.Stdin = os.Stdin
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stderr := &boundedDiagnostic{limit: 256 << 10}
+	cmd.Stderr = stderr
+	if err = cmd.Start(); err != nil {
+		return fail("acceptance_driver_start_failed")
+	}
+	scanner := bufio.NewScanner(stdout)
+	scanner.Buffer(make([]byte, 4096), 64<<10)
+	var lines []map[string]any
+	total := 0
+	var scanErr error
+	for scanner.Scan() {
+		line := append([]byte(nil), scanner.Bytes()...)
+		total += len(line)
+		if total > 256<<10 || bytes.Contains(line, []byte(token.Token)) || !json.Valid(line) {
+			scanErr = fail("driver_output_not_safe")
+			_ = cmd.Process.Kill()
+			break
+		}
+		lines = append(lines, map[string]any{"bytes": len(line), "sha256": hashBytes(line)})
+		var note map[string]json.RawMessage
+		_ = json.Unmarshal(line, &note)
+		var state string
+		_ = json.Unmarshal(note["state"], &state)
+		if state == "ACTUAL_BUSINESS_REVIEW_REQUIRED" {
+			var result string
+			_ = json.Unmarshal(note["result"], &result)
+			if !filepath.IsAbs(result) || !inside(p.EvidenceRoot, result) {
+				scanErr = fail("driver_review_path_outside_evidence")
+				_ = cmd.Process.Kill()
+				break
+			}
+			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"state": state, "result": result, "review_input": "current real Reviewer must provide the original driver's JSON review; no human session is obtained"})
+		}
+	}
+	if scanner.Err() != nil {
+		scanErr = fail("driver_output_incomplete")
+		_ = cmd.Process.Kill()
+	}
+	waitErr := cmd.Wait()
+	if bytes.Contains(stderr.body.Bytes(), []byte(token.Token)) || stderr.total > 256<<10 {
+		return fail("driver_diagnostic_not_safe")
+	}
+	if err := persist(filepath.Join(p.EvidenceRoot, "driver-stdout-identities.json"), lines); err != nil {
+		return err
+	}
+	if err := persist(filepath.Join(p.EvidenceRoot, "driver-stderr-metadata.json"), map[string]any{"bytes": stderr.total, "raw_text_retained": false}); err != nil {
+		return err
+	}
+	if scanErr != nil {
+		return scanErr
+	}
+	if waitErr != nil {
+		return fail("acceptance_driver_failed_preserve_original_requests")
+	}
+	return nil
+}
+func execute(p executionPackage) (report map[string]any, returned error) {
+	report = map[string]any{"authorization": "USER_DELEGATION_MUST_HAVE_BEEN_CONFIRMED_BY_ROOT", "model_acceptance": "REQUIRES_INDEPENDENT_REVIEW", "revoke": "NOT_RUN"}
+	runtimeID, err := serviceIdentity(p)
+	if err != nil {
+		return report, err
+	}
+	human, err := newHumanClient(p)
+	if err != nil {
+		return report, err
+	}
+	human.runtimeID = runtimeID
+	defer human.transport.CloseIdleConnections()
+	defer func() {
+		if human.grantConfirmed && p.AllowRevoke && (!human.unknown || p.RevokeAfterUnknown) {
+			body, err := human.command("revoke", "POST", "/api/v1/local-projects/"+human.projectID+"/grants/revoke", map[string]any{"agent_id": caller}, 200)
+			if err == nil {
+				grant, decodeErr := field[domain.ProjectGrant](body, "grant")
+				if decodeErr != nil || grant.ProjectID != human.projectID || grant.AgentID != caller || grant.RevokedAt == nil {
+					human.unknown = true
+					err = fail("revoke_receipt_unverified")
+				} else {
+					err = human.receipt("revoke", safeGrantReceipt(grant))
+				}
+			}
+			if err != nil {
+				human.unknown = true
+				report["revoke"] = "UNKNOWN"
+				returned = errors.Join(returned, err)
+			} else {
+				report["revoke"] = "CONFIRMED"
+			}
+		}
+		report["human_effect_unknown"] = human.unknown
+		human.csrf = ""
+		human.client.Jar = nil
+		report["service_shutdown"] = "REQUIRES_ORIGINAL_SERVE_OWNER_NORMAL_EOF_AND_WHOLE_TREE_PROOF"
+	}()
+	health, err := human.request("health", "GET", "/api/v1/health", nil, 200)
+	if err != nil {
+		return report, err
+	}
+	var healthBody map[string]any
+	if json.Unmarshal(health, &healthBody) != nil || !reflect.DeepEqual(healthBody, map[string]any{"schema_version": float64(1), "status": "ok", "service": "astrocyte"}) {
+		return report, fail("actual_health_body_mismatch")
+	}
+	session, err := human.request("session", "GET", "/api/v1/auth/session", nil, 200)
+	if err != nil {
+		return report, err
+	}
+	var actor struct {
+		Schema int    `json:"schema_version"`
+		Kind   string `json:"actor_kind"`
+		ID     string `json:"actor_id"`
+		CSRF   string `json:"csrf_token"`
+	}
+	if json.Unmarshal(session, &actor) != nil || actor.Schema != 1 || actor.Kind != "human" || actor.ID != "local-human" || actor.CSRF == "" {
+		human.unknown = true
+		return report, fail("actual_human_session_unverified")
+	}
+	human.csrf = actor.CSRF
+	cookieURL, _ := url.Parse(p.Endpoint + "/api/v1/")
+	hasSessionCookie := false
+	for _, cookie := range human.client.Jar.Cookies(cookieURL) {
+		if cookie.Name == "astrocyte_session" && cookie.Value != "" {
+			hasSessionCookie = true
+		}
+	}
+	if !hasSessionCookie {
+		human.unknown = true
+		return report, fail("actual_human_session_cookie_missing")
+	}
+	if err := human.receipt("session", map[string]any{"schema_version": actor.Schema, "actor_kind": actor.Kind, "actor_id": actor.ID, "session_cookie_present": true}); err != nil {
+		return report, err
+	}
+	for _, entry := range []struct{ stage, path string }{{"list-projects", "/api/v1/local-projects"}, {"list-spaces", "/api/v1/project-spaces"}} {
+		body, err := human.request(entry.stage, "GET", entry.path, nil, 200)
+		if err != nil {
+			return report, err
+		}
+		items, err := field[[]json.RawMessage](body, "items")
+		if err != nil || len(items) != 0 {
+			return report, fail("fresh_private_project_state_required")
+		}
+	}
+	spaceBody, err := human.command("space", "POST", "/api/v1/project-spaces", map[string]any{"title": spaceTitle}, 201)
+	if err != nil {
+		return report, err
+	}
+	space, err := field[struct {
+		ID string `json:"id"`
+	}](spaceBody, "space")
+	if err != nil || uuid.Validate(space.ID) != nil {
+		human.unknown = true
+		return report, fail("actual_space_receipt_missing")
+	}
+	if err := human.receipt("space", map[string]any{"space_id": space.ID, "submitted_title": spaceTitle}); err != nil {
+		return report, err
+	}
+	projectBody, err := human.command("project", "POST", "/api/v1/local-projects", map[string]any{"name": projectName, "root": p.Project, "space_id": space.ID}, 200)
+	if err != nil {
+		return report, err
+	}
+	project, err := field[domain.LocalProject](projectBody, "project")
+	if err != nil || uuid.Validate(project.ID) != nil || project.Root != p.Project || project.SpaceID != space.ID || project.Name != projectName || project.Settings.Revision != 1 || project.Settings.AllowDirectory || project.Settings.AllowAgentControl || len(project.Settings.AllowedActions) != 0 || len(project.Settings.AllowedTools) != 0 || len(project.Settings.HistoryRoots) != 0 || project.Settings.ExternalModelCLI != "" {
+		human.unknown = true
+		return report, fail("actual_project_receipt_mismatch")
+	}
+	human.projectID = project.ID
+	if err := human.receipt("project", safeProjectReceipt(project)); err != nil {
+		return report, err
+	}
+	report["project_id"] = project.ID
+	report["runtime_id"] = runtimeID
+	observe := project.Settings
+	observe.AllowedActions = []string{"observe"}
+	project, err = human.settings("observe-settings", project, observe)
+	if err != nil {
+		return report, err
+	}
+	if err = human.grant("observe-grant", []string{"observe"}); err != nil {
+		return report, err
+	}
+	observing, err := human.token("observe-token")
+	if err != nil {
+		return report, err
+	}
+	status, err := cliMetadata(p, observing.Token, project.ID, "status")
+	if err != nil {
+		return report, err
+	}
+	var statusWire struct {
+		OK        bool   `json:"ok"`
+		RuntimeID string `json:"runtime_id"`
+	}
+	if json.Unmarshal(status, &statusWire) != nil || !statusWire.OK || statusWire.RuntimeID != runtimeID {
+		return report, fail("actual_status_runtime_mismatch")
+	}
+	capabilities, err := cliMetadata(p, observing.Token, project.ID, "capabilities")
+	if err != nil {
+		return report, err
+	}
+	var capabilityWire struct {
+		RuntimeID string `json:"runtime_id"`
+		Result    struct {
+			Source string `json:"source_revision"`
+			Agents []struct {
+				ID        string `json:"id"`
+				Installed struct {
+					Status  string `json:"status"`
+					Version string `json:"version"`
+				} `json:"installed"`
+				Configured struct {
+					Status   string `json:"status"`
+					Model    string `json:"model"`
+					Provider string `json:"provider"`
+					Source   string `json:"account_source"`
+				} `json:"configured"`
+			} `json:"agents"`
+		} `json:"result"`
+	}
+	if json.Unmarshal(capabilities, &capabilityWire) != nil || capabilityWire.RuntimeID != runtimeID || capabilityWire.Result.Source != p.Revision {
+		return report, fail("actual_capability_source_mismatch")
+	}
+	found := false
+	for _, agent := range capabilityWire.Result.Agents {
+		if agent.ID == "codex" {
+			found = agent.Installed.Status == "available" && agent.Installed.Version == "0.163.0" && agent.Configured.Status == "available" && agent.Configured.Model == "gpt-5.5" && agent.Configured.Provider == "openai" && agent.Configured.Source == "codex-native-api-key"
+		}
+	}
+	if !found {
+		return report, fail("codex_source_not_observed_available")
+	}
+	approved := project.Settings
+	approved.AllowDirectory = true
+	approved.AllowedSubdirs = []string{"."}
+	approved.ExpandReferences = false
+	approved.AllowedActions = append([]string{}, actions...)
+	approved.AllowedTools = []string{}
+	approved.ExternalModelCLI = "codex"
+	approved.AllowAgentControl = true
+	project, err = human.settings("execute-settings", project, approved)
+	if err != nil {
+		return report, err
+	}
+	if err = human.grant("execute-grant", actions); err != nil {
+		return report, err
+	}
+	observing.Token = ""
+	credential, err := human.token("execute-token")
+	if err != nil {
+		return report, err
+	}
+	defer func() { credential.Token = "" }()
+	report["expires_at"] = credential.ExpiresAt
+	report["settings_revision"] = project.Settings.Revision
+	err = runDriver(p, project.ID, credential)
+	return report, err
+}
+
+func run() int {
+	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires explicit prior user delegation to the exact reviewed package")
+	packageFile := flag.String("package", "", "absolute private JSON package path; prepare writes a separate .prepared.json")
+	flag.Parse()
+	if flag.NArg() != 0 || (*mode != "prepare" && *mode != "verify" && *mode != "execute-authorized") {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INVALID_ARGUMENTS", "http_calls": 0})
+		return 2
+	}
+	var p executionPackage
+	if err := readJSON(*packageFile, &p, true); err != nil {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
+		return 2
+	}
+	missing, err := offline(&p, *mode == "prepare")
+	if err != nil {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
+		return 2
+	}
+	if *mode == "prepare" {
+		if err = os.Mkdir(p.EvidenceRoot, 0700); err != nil {
+			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
+			return 2
+		}
+	}
+	if err = plain(p.EvidenceRoot, true, true); err != nil {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
+		return 2
+	}
+	public, err := checkPublic(p)
+	if err != nil {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
+		return 2
+	}
+	if len(missing) == 0 {
+		if _, err = serviceIdentity(p); err != nil {
+			missing = append(missing, "actual_service_identity_not_live")
+		}
+	}
+	if *mode == "prepare" {
+		if err = persist(*packageFile+".prepared.json", p); err == nil {
+			err = persist(filepath.Join(p.EvidenceRoot, "public-input-proof.json"), public)
+		}
+		if err != nil {
+			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "LOCAL_EVIDENCE_FAILED", "error": safeError(err), "http_calls": 0})
+			return 2
+		}
+	}
+	if *mode != "execute-authorized" {
+		status := "VERIFIED_LOCAL_ONLY"
+		code := 0
+		if len(missing) > 0 {
+			status = "INCOMPLETE_NO_AUTH"
+			code = 3
+		}
+		note := map[string]any{"status": status, "missing": missing, "http_calls": 0, "model_calls": 0, "user_delegation": "STILL_REQUIRED_FOR_EFFECTS", "package_file": *packageFile}
+		if *mode == "prepare" {
+			note["prepared_package"] = *packageFile + ".prepared.json"
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(note)
+		return code
+	}
+	if len(missing) > 0 {
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "missing": missing, "http_calls": 0})
+		return 3
+	}
+	report, err := execute(p)
+	report["status"] = "EXECUTED_REQUIRES_INDEPENDENT_REVIEW"
+	code := 0
+	if err != nil {
+		report["status"] = "INCOMPLETE_PRESERVE_ORIGINAL_INTENTS"
+		report["error"] = safeError(err)
+		code = 1
+	}
+	if saveErr := persist(filepath.Join(p.EvidenceRoot, "authorization-outcome.json"), report); saveErr != nil {
+		report["status"] = "OUTCOME_WRITE_UNKNOWN"
+		report["error"] = safeError(saveErr)
+		code = 1
+	}
+	_ = json.NewEncoder(os.Stdout).Encode(report)
+	return code
+}
+func main() { os.Exit(run()) }
