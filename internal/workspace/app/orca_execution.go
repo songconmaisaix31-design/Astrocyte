@@ -694,7 +694,9 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 	if err != nil {
 		return result, err
 	}
-	if link.ProjectID != project.ID || link.GrantAgentID != actor.ID || link.SettingsRevision != project.Settings.Revision || link.AuthorityDomain != scope.AuthorityDomain || link.RunID != scope.RunID || link.RootTaskID != scope.RootTaskID {
+	// 人类追加输入重新核准当前项目权限，保留创建者来源及 Agent 原批准绑定。
+	independentHumanInput := actor.Kind == "human" && command.Action == "worker.send"
+	if link.ProjectID != project.ID || !independentHumanInput && link.GrantAgentID != actor.ID || link.SettingsRevision != project.Settings.Revision || link.AuthorityDomain != scope.AuthorityDomain || link.RunID != scope.RunID || link.RootTaskID != scope.RootTaskID {
 		return result, projectError(apierrors.ScopeDenied, "the saved native Run association changed")
 	}
 	if err := s.checkOriginalOrcaGrant(ctx, actor); err != nil {
