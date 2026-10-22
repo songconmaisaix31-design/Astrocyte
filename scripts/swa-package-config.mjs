@@ -87,3 +87,27 @@ export async function copyWebLicenses(webRoot, candidate, pnpm) {
   for (const [name, dependency] of Object.entries({ ...tree[0].dependencies, ...tree[0].optionalDependencies })) await copy(name, dependency)
   return { packages: seen.size }
 }
+
+export async function copyGoLicenses(go, binaries, candidate) {
+  const seen = new Set()
+  for (const binary of binaries) {
+    const build = JSON.parse(execFileSync(go, ['version', '-m', '-json', binary], { encoding: 'utf8', windowsHide: true, timeout: 60_000 }))
+    for (const module of build.Deps ?? []) {
+      const identity = module.Path + '@' + module.Version
+      if (module.Replace) throw new Error('Release module replacements require an explicit source review: ' + identity)
+      if (seen.has(identity)) continue
+      seen.add(identity)
+      const source = JSON.parse(execFileSync(go, ['list', '-mod=readonly', '-m', '-json', module.Path], { encoding: 'utf8', windowsHide: true, timeout: 60_000 }))
+      if (source.Path !== module.Path || source.Version !== module.Version || !source.Dir) throw new Error('The actual Go binary dependency differs from the selected module source: ' + identity)
+      const files = (await readdir(source.Dir)).filter(file => /^(?:licen[cs]e|copying|notice)(?:[.-].*)?$/i.test(file))
+      if (!files.some(file => /^(?:licen[cs]e|copying)(?:[.-].*)?$/i.test(file))) throw new Error('Missing actual Go dependency license: ' + identity)
+      const target = join(candidate, 'third-party-licenses', 'go', identity.replaceAll('/', '__'))
+      await mkdir(target, { recursive: true })
+      for (const file of files) {
+        if (!(await lstat(join(source.Dir, file))).isFile()) throw new Error('Go dependency license must be an ordinary file: ' + identity)
+        await copyFile(join(source.Dir, file), join(target, file))
+      }
+    }
+  }
+  return { modules: seen.size }
+}

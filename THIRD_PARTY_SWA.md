@@ -6,7 +6,9 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 产品复用 Orca 原生 runtime、持久 SQLite、Run/Task/Dispatch、请求 receipt、会话 transcript/journal、PTY/daemon 和已有进程控制。产品自己的组装入口、原生CLI账号/启动政策与授权适配位于 `runtime/swa-orca`，Go CLI/App/HTTP 与关联存储沿现有目录。安装候选的 VERSION 和 `swa --version` 指向实际构建源码 Commit；版本标识不代替功能验收。
 
-随包 Node 为上游固定的官方 Windows x64 `24.21.0`。发行输入及真实 node.exe 均核上游固定 SHA256，完整 Node LICENSE 位于安装包 `node/LICENSE`。native 模块使用该版本的 headers/node.lib 编译；没有使用本机 Orca 的 Node、native 二进制或可写状态。
+随包 Node 为上游固定的官方 `24.21.0`，Windows x64 与 Linux x64 glibc 各使用上游原有平台输入。发行归档、headers及真实可执行文件均核上游固定 SHA256，完整 Node LICENSE 位于安装包 `node/LICENSE`。Windows native 使用该版本 headers/node.lib；Linux从同一冻结补丁源码使用固定 headers 与上游 N-API 8 配置编译 POSIX PTY，没有使用本机 Orca 的 Node、native 二进制或可写状态。
+
+Linux 进程身份读取使用 `github.com/prometheus/procfs v0.22.0`（Apache-2.0），原始 LICENSE 与 NOTICE 按实际 Go 二进制的模块构建信息复制到 `third-party-licenses/go/`。其他实际编入 CLI/server 的 Go 模块也从固定模块源码复制原许可与 notices；声明清单、`go.mod`、`go.sum` 随候选 metadata 保留。许可证复制和当前机器的 PTY 检查不代替完整 Agent 验收。
 
 产品使用实际安装的 `@earendil-works/pi-coding-agent 1.0.1` 或 `@opencode/cli 2.0.31` 原生CLI及其真实provider实现，Agent及provider/model必须明确选择。Pi政策限定既有原生API-key来源及三类已核API；OpenCode限定原DeepSeek/deepseek-v4-pro、官方Plugin hook及同版正式auth import。原auth/models/config及原生凭据库只读，所选有效材料在私有DataRoot中按受保护ACL独占创建；原账号和OpenCode原生exe不进入安装包。产品policy是随包ESM目录，保持原CLI默认HTTP行为；原生RPC/ACP、关闭工具、实际插件状态、来源及当前批准在效果前核查。完整产品认证、工具关闭和模型验收继续按当前测试计划执行。
 

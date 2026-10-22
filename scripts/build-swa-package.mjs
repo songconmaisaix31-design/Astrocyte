@@ -7,7 +7,7 @@ import { root, findGo } from './process.mjs'
 import { NODE_RUNTIME_PIN, NODE_RUNTIME_ASSETS, nodeRuntimeReleaseUrl } from '../third_party/orca-v1.4.230/src/shared/node-runtime-pin.ts'
 import { buildSWARuntime } from './build-swa-runtime.mjs'
 import { buildNativePackage, nativePackages, prepareNativeReuse, reuseNativePackage } from './build-swa-native.mjs'
-import { packageOptions, buildPython, checkWebAssets, copyWebLicenses } from './swa-package-config.mjs'
+import { packageOptions, buildPython, checkWebAssets, copyWebLicenses, copyGoLicenses } from './swa-package-config.mjs'
 
 const values = packageOptions()
 if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('This candidate targets Windows x64')
@@ -68,7 +68,7 @@ if (values.edition === 'combined') {
 }
 const metadata = join(output, 'metadata')
 await mkdir(metadata)
-for (const [source, target] of [['package.json', 'package.json'], ['web/package.json', 'web-package.json'], ['dependencies.lock.json', 'dependencies.lock.json'], ['pnpm-lock.yaml', 'pnpm-lock.yaml']]) await copyFile(join(root, source), join(metadata, target))
+for (const [source, target] of [['package.json', 'package.json'], ['web/package.json', 'web-package.json'], ['dependencies.lock.json', 'dependencies.lock.json'], ['pnpm-lock.yaml', 'pnpm-lock.yaml'], ['go.mod', 'go.mod'], ['go.sum', 'go.sum']]) await copyFile(join(root, source), join(metadata, target))
 const nodeDirectory = join(output, 'node')
 await mkdir(nodeDirectory)
 const nodeAsset = NODE_RUNTIME_ASSETS['win32-x64']
@@ -135,10 +135,12 @@ for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/ser
 }
 run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', '-o', join(runtime, 'controller-fault.exe'), './tests/swa-cli-headless/controller-fault'])
 run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', '-o', join(runtime, 'cli-fault-control.exe'), './tests/swa-cli-headless/cli-fault-control'])
+console.log(JSON.stringify({ stage: 'go-licenses', ...await copyGoLicenses(go, [join(output, 'swa.exe'), join(output, 'server.exe')], output) }))
 for (const [source, target] of [['LICENSE', 'LICENSE'], ['THIRD_PARTY_SWA.md', 'THIRD_PARTY_SWA.md'], ['third_party/orca-v1.4.230/LICENSE', 'ORCA_LICENSE'], ['scripts/install-swa.ps1', 'install-swa.ps1'], ['runtime/swa-orca/USAGE.md', 'USAGE.md']]) await copyFile(join(root, source), join(output, target))
 if (capture('git', ['rev-parse', 'HEAD']) !== revision || capture('git', ['status', '--porcelain', '--untracked-files=normal'])) throw new Error('The candidate source changed while building; retain this incomplete output for inspection')
 await writeFile(join(output, 'VERSION'), revision + '\n', { flag: 'wx' })
 await writeFile(join(output, 'EDITION'), values.edition + '\n', { flag: 'wx' })
+await writeFile(join(output, 'PLATFORM'), 'win32-x64\n', { flag: 'wx' })
 run(node, [join(root, 'scripts', 'check-swa-runtime.mjs'), '--candidate', output])
 console.log(JSON.stringify({ stage: 'candidate-edition', edition: values.edition }))
 console.log(JSON.stringify({ source_revision: revision, candidate: output, node: NODE_RUNTIME_PIN.version, native_modules_built: built, native_modules_copied: copied }))

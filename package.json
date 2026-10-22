@@ -19,7 +19,7 @@
     "test:s1": "node --test tests/s1/acceptance.test.mjs",
     "build": "node scripts/build.mjs",
     "start": "node scripts/start.mjs",
-    "build:swa": "node --max-old-space-size=1024 scripts/build-swa-package.mjs",
+    "build:swa": "node --max-old-space-size=1024 scripts/build-swa.mjs",
     "test:swa-runtime": "pwsh -NoProfile -File scripts/verify-swa-cli-headless.ps1",
     "check:swa": "node --max-old-space-size=1024 scripts/check-swa-runtime.mjs",
     "typecheck:swa": "node --max-old-space-size=8192 runtime/swa-orca/node_modules/typescript/bin/tsc --project runtime/swa-orca/tsconfig.json --pretty false"
