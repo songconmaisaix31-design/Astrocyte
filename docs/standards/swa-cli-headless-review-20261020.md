@@ -2330,3 +2330,17 @@ Reviewer独立`review-f35-source.mjs`实际0，原件`f35-source-actual-independ
 Reviewer独立`review-idempotency95.ps1`及mjs实际0，原件`idempotency95-complete-independent.log`：真实SQLite七个原请求全部completed，实际Run按controller/pane/generation唯一、root恰一、固定context与真实版本变化拒绝相符；真实workspace执行关联准确指向当前项目、Grant caller、settings2及同Run/root。95阶段前后仅新增Run、root及该执行关联各一、receipt七，其余三库计数和来源保持；这些阶段原件与后继Flow96的当前业务状态分别审核。两controller各有两次实际进程出生身份退出样本，58份导出不含真实DeepSeek key或本次token，原生库mtime保持。Reviewer前两次只读核脚本分别补核真实执行关联和结构化字段顺序，未重跑95产品调用；最终以标准结构化等值完成上述核查。
 
 本轮接受限于原三个无模型幂等案例。实际逐效果边界响应丢失、runtime重启pending查询、Worker start/send并发与断连重放、不同R的close/create/start交错四项仍未验，不以24条命令或编译结果扩大接受。原92失败、94前置失败及全部原件保留，Flow96沿同安装进行真实双Worker验收，模型、重叠、指定停止和完整成果仍待实际证据。原95ef/5187及89服务/只读Job工具保持，未调用Aliyun；2b64fcfb两个hook已分别获主控`msg_12e573547662`、`msg_f4c1f132120d`全文读取回复，唤起均已确认，本Task继续。
+
+## 96真实JSON错误及并发完整输入缺口
+
+**退回准确893程序的helperCall同PTY并发完整输入边界；Flow96的产品Worker、模型及T13尚未通过。** 原96驱动实际1，CLI5的worker.start实际6/operation_unknown。两个原父R分别为`9c6159d2-c507-42e7-88fa-c53b0092543f`和`6bb88711-c5ea-4743-8d48-c92fb041ff84`，均为swa.controllerDeliver/pending/helper-input，两个对应/native子请求尚不存在，原件及未知效果保持，不能重发或SQL补完成。
+
+Reviewer完整核原inspect96-pty.ts的真实DaemonClient连接、原PID/nonce/Job归属及session/incarnation/PTY匹配。UTC06:13:45.172的实际文字快照包含helper49128的identify、observe和task回复，随后明确记录JSON错误：Unexpected non-whitespace character after JSON at position 12431。独立`review-flow96.mjs`实际0，原件`flow96-independent.log`：原controller `term_d420f723d67bd4a40e7ac17b83cabcab`、PTY50264/出生1792649388051、helper49128/出生1792649388479及原binding一致；当前真实库核上述两原R和两个缺失子请求，worker_dispatches、worker_terminal_resources、dispatch_contexts计数均0。这些观察不证明全部系统资源缺席或完整Job退出；实际OpenCode执行和模型尚无证据。
+
+准确helperCall使用普通sendTerminal(text, enter=true)；原terminal-input-dispatch和RuntimeTerminalWriter完整读取，前者没有对普通发送使用现有Agent prompt串行机制，后者将text分块、异步submit delay和Enter后缀分开执行。两个调用可在首个Enter前写入第二个JSON，或在多chunk间交错，缺少同PTY完整JSON请求的互斥。真实解析错误与该缺口一致；没有捕获的每字节调度顺序继续未知。helper中JSON.parse位于单条execute的try之外，原外层错误路径设置exitCode1，不能靠吞错继续消费或改串行驱动替代产品修订。
+
+读Worker计划前已独立形成C96-01—C96-07，覆盖完整JSON/chunks/后缀互斥、原真实身份及成熟机制、拒绝/部分交付/unknown及生命周期、原96所属资源、真实同controller双start及完整T13、新准确程序/安装/绑定、实际输入大小及失败窗口。准确计划`60F009037C32CD695931C6529A903097C84207A1A9CA2A1A65421FA71105ABC0`全文及原serializeAgentPromptSubmission实现已读：复用现有perPTY/generation队列的方案方向成立，范围维持三个原文件及现有协议/身份。
+
+**退回60F009计划的两项覆盖缺口。** C96-02仍将实际队列覆盖留到最终T13，须补主控已要求的最终归档前针对性真实服务/SQLite/PTY/原调用链检查，记录96两输入实际UTF8长度、完整原上下文、同/跨真实chunk并发及各自JSON/request_id完整到达后再正式包装；不能mock、伪造身份或截短输入。原writer只在suffix delay检查signal，writeChunks不查；须明确队首和每chunk/后缀之前核实际signal、handle/PTY/generation，未写超时请求不晚发，已部分交付保持unknown，订阅/定时器/排队Promise有确定结束条件。未命中的真实失败窗口保持未验；没有要求重复未变模型/native或新增调度系统。
+
+上述准确返修范围已送原Worker`msg_9748a38e6e22`及主控`msg_a2c5414c736a`，原Worker负责补计划和全部实现，不修改893服务或错用91到新来源。原89服务工具32198及完整Job只读句柄21806保持，具体所属处置由主控安排；原95ef/5187及Orca保全。ed972b49限定接受hook获主控`msg_c5abee194210`全文读取准确报告及三独立原件后回复，唤起已确认，当前Task继续。
