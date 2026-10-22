@@ -75,6 +75,44 @@ jobs:
         shell: pwsh
         run: |
           & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '11717767f82a8a4070351ff74674aa0d268f79b2'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Prepare only the pinned component package manager
+        shell: pwsh
+        run: |
+          npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-pnpm') --no-audit --no-fund pnpm@11.27.0
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned component package manager installation failed' }
+      - name: Observe only the original private Pi directory component
+        shell: pwsh
+        run: |
+          $env:SWA_PI_PROBE_PHASE = 'preflight'
+          try {
+            $python = (& python -c 'import sys; print(sys.executable)').Trim()
+            if ($LASTEXITCODE -ne 0) { throw 'Actual component Python is unavailable' }
+            & ./scripts/probe-swa-windows-private-pi.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs') -Python $python
+          } catch {
+            $phase = $env:SWA_PI_PROBE_PHASE
+            if ($phase -cnotmatch '^[a-z][a-z-]{0,63}$') { $phase = 'unknown' }
+            Write-Host ('::error title=Private Pi component failed::phase=' + $phase + '; kind=' + $_.Exception.GetType().FullName)
+            throw 'The private Pi component failed; see the bounded phase/type metadata'
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-windows-private-pi-component-${{ github.sha }}
+          path: |
+            .verification/swa-ci/windows-private-pi/driver-result.json
+            .verification/swa-ci/windows-private-pi/preparation.json
+            .verification/swa-ci/windows-private-pi/metadata-process.json
+            .verification/swa-ci/windows-private-pi/*.exit.txt
+            .verification/swa-ci/windows-private-pi/metadata/result.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   visual-studio-discovery-probe:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025
