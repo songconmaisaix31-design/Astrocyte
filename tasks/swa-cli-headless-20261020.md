@@ -207,3 +207,5 @@ N08完整稳定字段、真实accountHome生产者、无refresh API key来源、
 准确e9fa已push，build17与完整ZIP/提取53实际0，安装53已核复制、28243闭包/native及保护拒绝，汇总6仍保留未验。Pi55路径断言1原件保留，采用成熟findPackageJSON后真实Pi56 RPC/Job退出0，原Reviewer独立0，限定无推理范围。e9fa CR的ACP完整Job接受条件和过早退出发布已返修，58 strict/Parser/语法0，准确后继源码和真实原生根/serve故障检查继续；所需最终安装随该必要返修更新。执行批准当前按已接受384D/64DD实际来源补充，沿同生产只读函数和实际R，不使用私有owner或新增公开selection字段，客户端/最终实际描述待集中核，未签发新Grant或运行产品模型。原95ef/5187保持，见报告§47。
 
 原Reviewer累计CR补核完整导出和原生错误：最终合并JSON现执行实际key检查；受限RPC错误保留类型/code/有效HTTP status/session，移除原错误详情、body/headers及cause，诊断固定，trace检查提前至通知分发前。普通ACP行为保持，上游秘密错误和原生incoming权限未实际出现的范围只记静态保障。最新严格检查、准确后继成品及真实root/serve退出检查继续，执行批准客户端仍待准确最终描述集中审核，整体任务持续。
+
+准确3bcf返修已push，59严格检查0，build18/普通ZIP与解包60均0；安装60实际6保留T03/T13。真实root62在同安装核官方import/ACP及定向根退出、完整serve Job和双次独立身份缺席均0，无prompt/模型；65四Go二进制编译0，实际四项检查待运行。服务61的普通管道EOF关闭0、三PID两次缺席保留，当前67以TTY保持新私有服务；63/68真实来源/客户端摘要和生产bundle/metafile已交原Reviewer集中审核，未签Grant。Linux CI的六项未知依赖scripts实际失败按独立接受45FE计划窄修为准确版本false，真实归档frozen验证继续；全部最终同候选双Worker和失败恢复仍由本Worker完成，见报告§48。

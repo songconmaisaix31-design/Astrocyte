@@ -12,6 +12,8 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 运行依赖和构建工具的准确输入记录在 `runtime/swa-orca/package.json`、`pnpm-workspace.yaml`、`pnpm-lock.yaml` 及 `dependencies.lock.json`。pnpm deploy 按锁导出包含 workspace 的独立依赖闭包，安装复制实际内容；每个第三方包的许可和 notices 随其原始 package 内容保留。node-pty、windows-process-tree 及Windows安全模块的相关补丁属于获准来源适配，Worker及服务Job保护须使用该候选实际编译的native能力。node-gyp12.3.0和TypeScript6.0.3为构建/检查工具；Electron43.7.8与新增@types包为开发类型输入，安装使用ignore-scripts且prod deploy保持原规则。真实声明、锁与安装已经同步。
 
+普通pnpm安装明确不执行六个准确版本的依赖脚本：watcher2.5.6使用锁内平台预构建包；node-pty1.1.0和windows-process-tree0.8.0的产品native沿固定Node、原补丁及明确构建步骤生成并实际装载；agent-browser0.27.0不执行额外下载或全局shim修改；ssh2 1.17.0和cpu-features0.0.10保留原JavaScript消费者，不构建可选native加速。未知依赖脚本继续按pnpm严格策略拒绝，原esbuild构建规则保持。
+
 构建从实际 esbuild 内联输入所属包复制原始许可全文至安装根目录 `third-party-licenses/<包名>@<版本>/`，作用域包名中的 `/` 使用 `__`。该目录保留 zod4.6.5、yaml2.9.1、diff8.0.4、smol-toml1.9.1、jsonc-parser3.3.1、@streamparser/json0.0.26、tweetnacl1.0.3与0.14.5、proper-lockfile4.1.2 的完整 LICENSE/LICENCE/COPYING/NOTICE；文件名及原版权按实际包内容保留。八项直接依赖作为构建输入安装，间接生产依赖由 pnpm 的实际生产图保留。
 
 开发类型输入另含真实@types/express5.0.6，运行资源补充上游同版emojibase-data17.0.0；准确声明及锁同步保留。TypeScript6.0.3严格完整检查已通过，四个native模块已在固定Node24.21.0下真实编译及装载；完整候选仍须核相同源码及安装闭包。
