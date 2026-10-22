@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"runtime"
 	"strings"
 	"unicode/utf8"
 
@@ -70,11 +71,16 @@ func (o *cliOutput) recovery() {
 	if o.identity.RequestID == "" {
 		return
 	}
-	quote := func(value string) string { return "'" + strings.ReplaceAll(value, "'", "''") + "'" }
+	quote := func(value string) string {
+		if runtime.GOOS == "windows" {
+			return "'" + strings.ReplaceAll(value, "'", "''") + "'"
+		}
+		return "'" + strings.ReplaceAll(value, "'", "'\"'\"'") + "'"
+	}
 	if o.projectID != "" {
-		_, _ = fmt.Fprintf(o.stderr, "PowerShell 查询原请求：swa request show --project %s --request-id %s --json\n", quote(o.projectID), quote(o.identity.RequestID))
+		_, _ = fmt.Fprintf(o.stderr, "查询原请求：swa request show --project %s --request-id %s --json\n", quote(o.projectID), quote(o.identity.RequestID))
 	} else if o.identity.Controller != "" {
-		_, _ = fmt.Fprintf(o.stderr, "PowerShell 查询原请求：swa request show --controller %s --request-id %s --json\n", quote(o.identity.Controller), quote(o.identity.RequestID))
+		_, _ = fmt.Fprintf(o.stderr, "查询原请求：swa request show --controller %s --request-id %s --json\n", quote(o.identity.Controller), quote(o.identity.RequestID))
 	}
 }
 

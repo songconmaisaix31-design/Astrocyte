@@ -1,10 +1,10 @@
 # SWA 无界面 CLI
 
-Windows x64 包包含`swa.exe`、`server.exe`、固定Node24.21.0、私有Orca运行文件、安装入口与许可。`VERSION`和`swa.exe --version`给出同一准确源码提交。当前首版尚未通过同一安装候选的完整真实验收，实际验证范围以随交付的记录为准。
+发行目标包括Windows x64和Linux x64 glibc。Windows入口为`swa.exe`、`server.exe`、`node/node.exe`；Linux入口为`swa`、`server`、`node/node`。两种形态包含固定Node24.21.0、私有Orca运行文件、安装入口与许可。`VERSION`和CLI的`--version`给出同一准确源码提交。当前首版尚未通过同一安装候选的完整真实验收，实际验证范围以随交付的记录为准。
 
 `--help`、子命令的`--help`/`-h`及`--version`输出本地文本，无需项目授权或运行服务。普通业务命令的`--json`在stdout只发布一个JSON结果，诊断在stderr；帮助和版本属于文本元数据，不使用业务结果协议。
 
-## 安装
+## Windows安装
 
 使用PowerShell7.2以上，明确选择实际发行ZIP、尚不存在的解压目录与安装目录，以及本机Orca及账户保护目录。安装目标父目录必须存在。下列变量由使用者设置为实际绝对路径，端口由使用者明确选择；在同一个PowerShell7会话中依次运行以下命令。
 
@@ -19,6 +19,21 @@ $swa = Join-Path $installRoot 'swa.exe'
 ```
 
 `$packageArchive`是实际发行ZIP的绝对文件路径，`$packageRoot`是本次普通解压所得的候选目录。`$protectedRoots`是字符串数组，包含本机Orca安装目录、用户数据/profile目录及实际账户配置目录。安装目录与候选目录均须和保护目录互不包含；途经reparse point的路径会被拒绝。安装仅创建明确目标并设置当前用户私有ACL，已有目标不会覆盖，不修改PATH或注册后台服务。
+
+## Linux安装与启动
+
+Linux候选要求x64 glibc系统，以及内核可查询的`/proc`、pidfd和当前进程的subreaper能力。安装使用已核发行包中的固定Node，不需要安装PowerShell或GUI。下列变量由使用者设置为实际绝对路径；`protected_root`须是已存在的原Orca或账户配置保护目录，多项保护目录在安装命令中重复传入`--protected-root`。
+
+```sh
+"$package_root/node/node" "$package_root/install-swa.mjs" --package "$package_root" --destination "$install_root" --protected-root "$protected_root"
+"$install_root/swa" --version
+"$install_root/swa" --help
+"$install_root/swa" serve --data-dir "$data_root" --port "$port" --protected-roots "$protected_root" --json
+```
+
+安装目录必须不存在，其父目录必须已存在；安装后目录仅当前用户可访问，不修改系统PATH。数据根与安装及账户保护目录互不包含，属于当前用户且权限不得向组或其他用户开放。Linux启动的多项保护目录用冒号分隔。组合候选显式增加`--web-dir "$install_root/web"`，由同一HTTP服务提供工作台。项目、Grant、token和命令协议与下述HTTP授权及CLI步骤相同，平台路径使用实际Linux路径。
+
+Linux服务在本次`serve`进程启用内核subreaper，按照真实boot ID、进程启动ticks、UID和pidfd核对后代，包括脱离会话后重新挂载的进程。正常关闭所属stdin或发送Ctrl-C后，先等待所属Node/HTTP退出，再回收已收养且身份确定的后代，并通过独立的完整进程观察确认退出。只观察到父进程退出不能代表整树释放。强制杀死`serve`或无法查询进程表时不能保证整树回收，仍须保留未知状态并核对原资源。旧Linux服务或daemon仍存活时不自动接管，也不删除其证据。
 
 ## 启动私有服务
 

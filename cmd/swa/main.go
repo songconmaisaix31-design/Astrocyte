@@ -36,7 +36,7 @@ swa request show --controller C|--project P --request-id UUID --json
 查询和控制使用 SWA_ENDPOINT、SWA_PROJECT_ID、SWA_PROJECT_TOKEN。
 SWA_PROJECT_TOKEN 必须来自当前项目授权。后台启动不会发行项目授权。
 可用 --endpoint 明确指定已启动的回环 HTTP 服务；查询不会启动服务。
-serve 的数据目录、可选 profile 与网页目录必须是绝对路径；R 是 Windows 分号分隔的本机 Orca/账户保护目录。
+serve 的数据目录、可选 profile 与网页目录必须是绝对路径；R 是本机 Orca/账户保护目录列表，Windows 用分号分隔，Linux 用冒号分隔。
 --web-dir 仅接受 combined 安装中的 web 绝对目录，由同一 HTTP 服务提供网页。
 task spec 的 max_workers 是任务批准创建或预留的 Worker 总席位；已完成或释放的 child Task 仍计数，不自动归还席位。每次 start 使用独立名称、输入与 request ID。
 业务 --json 调用只输出一个 JSON 结果；help/--help/--version 输出本地文本，不连接服务。

@@ -64,8 +64,8 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if ctx.Err() != nil {
 		return cancelled()
 	}
-	if runtime.GOOS != "windows" {
-		return output.failure("provider_unavailable", "此产品安装候选仅支持 Windows", "inspect_supported_platform", 4)
+	if runtime.GOOS != "windows" && runtime.GOOS != "linux" {
+		return output.failure("provider_unavailable", "此产品安装候选支持 Windows 和 Linux", "inspect_supported_platform", 4)
 	}
 	probe, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(*port))
 	if err != nil {
@@ -106,7 +106,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	native, err := orcaadapter.New(orcaadapter.Config{
 		InstallRoot: install, DataRoot: canonicalData,
-		NodeExecutable:        filepath.Join(install, "node", "node.exe"),
+		NodeExecutable:        filepath.Join(install, "node", serviceProgramName("node")),
 		ClientEntry:           filepath.Join(install, "runtime", "client.cjs"),
 		AgentProfile:          *agentProfile,
 		DiscoveryHome:         discoveryHome,
@@ -131,6 +131,9 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	job, err := ownServiceTree(canonicalData, install)
 	if err != nil {
+		if errors.Is(err, errServiceAlreadyOwned) {
+			return output.failure("orcad_instance_lock_held", err.Error(), "inspect_original_private_service", 5)
+		}
 		if errors.Is(err, errServiceOwnershipUnknown) {
 			return output.failure("operation_unknown", err.Error(), "inspect_original_daemon_and_service_job", 6)
 		}
@@ -203,7 +206,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		return finish(7, "实际服务 Job 身份无法编码")
 	}
 	baseEnv = append(baseEnv, "ASTROCYTE_PORT="+strconv.Itoa(*port), "SWA_LIFECYCLE_STDIN=1", "SWA_SERVICE_JOB="+string(ownership))
-	nodeCommand := exec.Command(filepath.Join(install, "node", "node.exe"), filepath.Join(install, "runtime", "host.cjs"))
+	nodeCommand := exec.Command(filepath.Join(install, "node", serviceProgramName("node")), filepath.Join(install, "runtime", "host.cjs"))
 	nodeCommand.Env, nodeCommand.Dir, nodeCommand.Stderr = baseEnv, install, stderr
 	ready := make(chan nativeStartup, 1)
 	node, err = startOwnedService(nodeCommand, func(stream io.Reader) error {
@@ -238,7 +241,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	endpoint := "http://127.0.0.1:" + strconv.Itoa(*port)
 	listening := make(chan error, 1)
-	serverCommand := exec.Command(filepath.Join(install, "server.exe"))
+	serverCommand := exec.Command(filepath.Join(install, serviceProgramName("server")))
 	serverCommand.Env, serverCommand.Dir, serverCommand.Stderr = append(baseEnv, "ASTROCYTE_WEB_DIR="+webDir), install, stderr
 	server, err = startOwnedService(serverCommand, func(stream io.Reader) error {
 		var announcement struct {
@@ -421,7 +424,7 @@ func readNativeLifecycle(stream io.Reader, ready chan<- nativeStartup, stopped *
 		return err
 	}
 	var final nativeStopped
-	if first.OK && first.Type == "" && first.RuntimeID == "" && first.DataRoot == "" && first.Ownership != nil && first.Readiness.RuntimeID != "" && strings.EqualFold(first.Readiness.DataRoot, data) && strings.EqualFold(first.Readiness.Node, node) {
+	if first.OK && first.Type == "" && first.RuntimeID == "" && first.DataRoot == "" && first.Ownership != nil && first.Readiness.RuntimeID != "" && sameServicePath(first.Readiness.DataRoot, data) && sameServicePath(first.Readiness.Node, node) {
 		ready <- nativeStartup{readiness: first.Readiness, ownership: *first.Ownership}
 		if err := decoder.Decode(&final); err != nil {
 			return err
@@ -437,7 +440,7 @@ func readNativeLifecycle(stream io.Reader, ready chan<- nativeStartup, stopped *
 		ready <- nativeStartup{err: err}
 		return err
 	}
-	if final.Type != "swa_runtime_stopped" || final.RuntimeID == "" || !strings.EqualFold(final.DataRoot, data) {
+	if final.Type != "swa_runtime_stopped" || final.RuntimeID == "" || !sameServicePath(final.DataRoot, data) {
 		return errors.New("私有原生后台的关闭确认无效")
 	}
 	if err := decoder.Decode(&struct{}{}); err != io.EOF {
@@ -445,6 +448,13 @@ func readNativeLifecycle(stream io.Reader, ready chan<- nativeStartup, stopped *
 	}
 	*stopped = &final
 	return nil
+}
+
+func serviceProgramName(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
 }
 
 func waitHTTPHealth(ctx context.Context, endpoint string) error {

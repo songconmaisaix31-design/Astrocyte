@@ -21,11 +21,11 @@ func TestOrcaCLIRealInstalledController(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	versionOutput, err := exec.Command(filepath.Join(root, "swa.exe"), "--version").Output()
+	versionOutput, err := exec.Command(filepath.Join(root, serviceProgramName("swa")), "--version").Output()
 	if err != nil || strings.TrimSpace(string(versionOutput)) != strings.TrimSpace(string(expected)) {
 		t.Fatalf("实际安装版本不符: %v", err)
 	}
-	output, err := exec.Command(filepath.Join(root, "swa.exe"), "controller", "show", "--controller", controller, "--json").Output()
+	output, err := exec.Command(filepath.Join(root, serviceProgramName("swa")), "controller", "show", "--controller", controller, "--json").Output()
 	if err != nil {
 		t.Fatal(err)
 	}
