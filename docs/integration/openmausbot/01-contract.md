@@ -19,6 +19,20 @@ CLI 使用明确回环 `SWA_ENDPOINT`、`SWA_PROJECT_ID` 和当前 `SWA_PROJECT_
 | worker.send、task.complete | send | 原 Dispatch 的追加输入或根任务完成 |
 | controller.close、worker.stop/release | stop | 指定原生所属；人类自有安全停止沿现规则 |
 
+## 能力发现与首次启动
+
+`capabilities`的项目目录只取[App](../../../internal/workspace/app/orca_execution.go)已授权项目的`p.Root`，经内部`Capabilities(ctx, projectID, projectRoot, requirements)`、bridge/client及私有RPC传给[discovery](../../../runtime/swa-orca/src/agent-discovery.ts)。HTTP正文不能提供`project_root`。Go在调用前后核canonical root及当前项目权限、settings revision与适用Agent Grant；Node在异步发现前后核实际目录身份和Agent settings快照，变化拒绝结果。发现只把root传给静态配置检查，不为全部Agent生成启动选择，也不缓存可复用的准入。
+
+| 观察 | 本轮来源与含义 | 首次启动请求的约束 |
+| --- | --- | --- |
+| registered、enabled、installed、configured | 实际注册、设置、CLI版本与配置来源；configured只返回有证据的model/provider及非秘密账号来源类型 | 四项均须available，模型必须由服务真实返回；配置来源存在不证明密钥有效、网络或模型访问成功 |
+| control.start/send/stop | 真实adapter的方法声明 | start声明须available；声明不证明操作已经执行 |
+| launchable、control.read/resume/tools | 未建立真实会话或核实该项时保持unknown | GUI与N驱动不得把unknown改成available，或把未握手当作已失败；首次请求所需launchable/read/tools若明确unavailable仍拒绝 |
+
+[GUI消费者](../../../web/src/pages/swarm/swaObservation.ts)仅派生“可提交请求”，不改原observation：四项静态事实、start声明与真实model齐备，并匹配当前项目CLI、权限版本及start许可后，才可向原`worker.start`提交。loading/stale/error、原请求pending/unknown及缺字段继续阻止提交，按钮与onSubmit共用判定；界面提示“服务将在启动时检查账号、工具限制和权限”。任务创建者约束仍由后端核验，不能从可提交推导跨创建者start已获准。验收驱动须遵守相同阶段语义，其平台来源消费者另按准确源码验收。
+
+实际启动继续从原controller/worktree解析目录并稳定选型，核当前Grant、账号来源、ToolsOff、输入与fence；Codex只有真实ready校验后才产生`policy_ready`，每turn继续重新核验。该事件的`remote_control_status:'disabled'`只说明远程控制状态，工具关闭还须绑定原`selection.native_launch.tools`及固定native contract的实际验证。静态发现不能替代这些门，也不自动建立Worker验证能力。本轮后端局部FS/SQLite早拒、类型/架构检查及GUI规则、真实错误/权限浏览器路径已验；合法API-key配置、首次真实启动、模型、N及改后安装仍未验，旧`11717767`安装证据不移用于这些新消费者。
+
 ## 身份与来源
 
 | 对象/真实字段 | 来源与绑定 | 客户端约束 |

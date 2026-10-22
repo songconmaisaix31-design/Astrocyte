@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SwaEnvelope } from '../../api/swa';
-import { readSwaFleet, recoverSwaRequest, type PendingSwaRequest } from './swaObservation';
+import type { components } from '../../api/schema';
+import { readSwaFleet, readSwaAgents, recoverSwaRequest, canRequestSwaStart, swaStartRequestBlock, type PendingSwaRequest } from './swaObservation';
 
 // 以下为解析器的明确参数输入，不表示存在原生执行、模型返回或安装验收结果。
 const projectID = 'parser-project-input', controller = 'parser-controller-input', taskID = 'parser-task-input';
@@ -57,5 +58,68 @@ describe('SWA 原生 DTO 解析边界，实际模型链未验', () => {
     const input: SwaEnvelope = { ok: true, result: { requestId: requestID, state: 'completed', method: 'swa.controllerOpen', receipt: { project_id: projectID, controller }, children: [] } };
     expect(recoverSwaRequest(input, projectID, pending)?.controller).toBe(controller);
     expect(() => recoverSwaRequest({ ...input, result: { requestId: requestID, state: 'completed', method: 'swa.taskCreate', receipt: { project_id: projectID, controller }, children: [] } }, projectID, pending)).toThrow('动作');
+  });
+});
+
+type FormAgent = ReturnType<typeof readSwaAgents>[number];
+type Observation = components['schemas']['observation'];
+const formSettings: components['schemas']['LocalProjectSettingsV1'] = { revision: 3, allow_directory: true, allowed_subdirs: [], expand_references: false, allowed_actions: ['start'], allowed_tools: [], external_model_cli: 'form-agent-input', allow_agent_control: true, history_roots: {} };
+const observationInput = (status: Observation['status']): Observation => ({ status, reason: 'explicit-form-parameter', source: 'parser-parameter' });
+function formAgentInput(): FormAgent {
+  return {
+    id: 'form-agent-input', model: 'form-model-input', settingsRevision: formSettings.revision,
+    registered: observationInput('available'), enabled: observationInput('available'), installed: observationInput('available'), configured: observationInput('available'), start: observationInput('available'),
+    launchable: observationInput('unknown'), read: observationInput('unknown'), tools: observationInput('unknown'),
+  };
+}
+const startInput = (agent: FormAgent | undefined = formAgentInput()) => ({ agent, settings: formSettings, disabled: false, pending: false, unresolved: false, name: 'explicit-worker-name-input', inputFile: '/explicit/server-input-path' });
+
+describe('SWA 启动表单的明确参数规则，不表示原生发现或启动通过', () => {
+  it('静态条件允许提交时，未握手观察仍是 unknown', () => {
+    const agent = formAgentInput();
+    expect(canRequestSwaStart(startInput(agent))).toBe(true);
+    expect(swaStartRequestBlock(agent, formSettings)).toBeNull();
+    expect([agent.launchable.status, agent.read.status, agent.tools.status]).toEqual(['unknown', 'unknown', 'unknown']);
+  });
+
+  it('任何静态条件未核实、模型缺失或明确不可用的未握手能力都禁止提交', () => {
+    for (const key of ['registered', 'enabled', 'installed', 'configured', 'start'] as const) {
+      for (const status of ['unknown', 'unavailable'] as const) {
+        const agent = { ...formAgentInput(), [key]: observationInput(status) };
+        expect(canRequestSwaStart(startInput(agent))).toBe(false);
+      }
+    }
+    for (const key of ['launchable', 'read', 'tools'] as const) expect(canRequestSwaStart(startInput({ ...formAgentInput(), [key]: observationInput('unavailable') }))).toBe(false);
+    for (const model of ['', '   ']) expect(canRequestSwaStart(startInput({ ...formAgentInput(), model }))).toBe(false);
+  });
+
+  it('当前项目、权限版本、刷新禁用和原请求未结使用同一个提交门', () => {
+    const input = startInput();
+    for (const settings of [
+      { ...formSettings, external_model_cli: 'other-project-agent-input' },
+      { ...formSettings, allow_agent_control: false },
+      { ...formSettings, allowed_actions: [] },
+      { ...formSettings, revision: formSettings.revision + 1 },
+    ]) expect(canRequestSwaStart({ ...input, settings })).toBe(false);
+    // 父组件把项目/状态/能力的loading或stale统一传入disabled，按钮和onSubmit共用本门。
+    for (const key of ['disabled', 'pending', 'unresolved'] as const) expect(canRequestSwaStart({ ...input, [key]: true })).toBe(false);
+    expect(canRequestSwaStart({ ...input, agent: undefined })).toBe(false);
+    expect(canRequestSwaStart({ ...input, name: ' ' })).toBe(false);
+    expect(canRequestSwaStart({ ...input, inputFile: ' ' })).toBe(false);
+  });
+
+  it('解析明确 DTO 参数时保留观察，重复身份和不明格式拒绝', () => {
+    const agent = formAgentInput();
+    const parameter = {
+      id: agent.id, execution_mode: 'structured', registered: agent.registered, enabled: agent.enabled, installed: agent.installed,
+      configured: { ...agent.configured, model: agent.model }, launchable: agent.launchable,
+      control: { start: agent.start, read: agent.read, tools: agent.tools }, requirements: { settings_revision: formSettings.revision },
+    };
+    const parse = (agents: unknown[]) => readSwaAgents({ ok: true, result: { schema: 'swa.capabilities.v1', agents } });
+    expect(parse([parameter])[0]).toEqual(agent);
+    expect(() => parse([parameter, parameter])).toThrow('重复');
+    for (const status of ['ready', ['available'], null]) expect(() => parse([{ ...parameter, registered: { ...agent.registered, status } }])).toThrow('观察状态');
+    expect(() => parse([{ ...parameter, requirements: { settings_revision: '3' } }])).toThrow('权限版本');
+    expect(() => parse([{ ...parameter, control: { start: agent.start, read: agent.read } }])).toThrow('原生对象');
   });
 });

@@ -1,6 +1,8 @@
 import { readFile, realpath, stat } from 'node:fs/promises'
+import { realpathSync, statSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { delimiter, dirname, extname, isAbsolute, join } from 'node:path'
+import { delimiter, dirname, extname, isAbsolute, join, normalize, resolve } from 'node:path'
+import { isDeepStrictEqual } from 'node:util'
 import { parse as parseTOML } from 'smol-toml'
 import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
@@ -181,9 +183,30 @@ export async function registeredAgent(runtime: OrcaRuntimeService, agent: string
   })
 }
 
-export async function discoverAgents(runtime: OrcaRuntimeService, requirements: CapabilityRequirements) {
-  const { agents, snapshot } = await inspectAgents(runtime, requirements)
-  const result = agentCapabilitiesSchema.parse({ schema: 'swa.capabilities.v1', ...await installedRegistrySource(), discovery: { host: 'local', platform: process.platform, observed_at: new Date().toISOString(), settings_source: snapshot.source }, agents })
+export function readDiscoveryProjectRoot(root: string) {
+  try {
+    if (!isAbsolute(root)) throw new Error()
+    const path = realpathSync.native(root)
+    const spelling = (value: string) => process.platform === 'win32' ? normalize(value).toLowerCase() : normalize(value)
+    if (spelling(path) !== spelling(resolve(root))) throw new Error()
+    const info = statSync(path, { bigint: true })
+    if (!info.isDirectory()) throw new Error()
+    return { path, identity: `${info.dev}:${info.ino}:${info.birthtimeNs}` }
+  } catch { throw new OrchestrationError('context_stale', 'The authorized project directory is unavailable or redirected') }
+}
+
+export function assertDiscoverySnapshot(root: ReturnType<typeof readDiscoveryProjectRoot>, before: AgentSettingsSnapshot, after: AgentSettingsSnapshot) {
+  if (!isDeepStrictEqual(root, readDiscoveryProjectRoot(root.path)) || !isDeepStrictEqual(before, after)) throw new OrchestrationError('context_stale', 'The project directory or native Agent settings changed during discovery')
+}
+
+export async function discoverAgents(runtime: OrcaRuntimeService, requirements: CapabilityRequirements, projectRoot: string) {
+  const root = readDiscoveryProjectRoot(projectRoot)
+  // 能力查询只检查静态配置；不传 projectId，避免为全部 Agent 建立启动选择。
+  const { agents, snapshot } = await inspectAgents(runtime, requirements, undefined, undefined, undefined, root.path)
+  const source = await installedRegistrySource()
+  const current = await readAgentSettings()
+  assertDiscoverySnapshot(root, snapshot, current)
+  const result = agentCapabilitiesSchema.parse({ schema: 'swa.capabilities.v1', ...source, discovery: { host: 'local', platform: process.platform, observed_at: new Date().toISOString(), settings_source: snapshot.source }, agents })
   return result
 }
 

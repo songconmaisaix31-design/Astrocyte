@@ -6,11 +6,13 @@
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生局部检查；原生 N=3 与 Windows 安装验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
-新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过。后继双平台候选源码为`11717767f82a8a4070351ff74674aa0d268f79b2`；Linux结果见下段，Windows完整run39778043411/job119821899284于12:31:18Z在service-smoke失败，具体子因尚未知，已暂停下一full并仅读原artifact取证。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
+新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过。后继双平台候选源码为`11717767f82a8a4070351ff74674aa0d268f79b2`；Linux结果见下段，Windows完整run39778043411/job119821899284于12:31:18Z在service-smoke失败，原artifact已定位私有Pi目录security guard，具体owner/ACE子因待局部实测，下一full暂停。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
 
 最近已验 Linux x64 glibc 组合安装来源为 `11717767f82a8a4070351ff74674aa0d268f79b2`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-11717767-codex-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY/watcher/kernel probe、官方目录资产、28312路径闭包及网页清单2入口/4引用通过。同安装进程检查为11项装内原件PASS及3项同SHA源码诊断PASS，均无跳过，4份candidate/install原件SHA一致；实际覆盖subreaper、pidfd、收养与精确回收、双ECHILD及IPC拒绝。组合服务退出0：health200、首页与4个资产的字节/hash/MIME一致、标准同源301、stdin正常关闭code0，内部双空树与全部pidfd退出、外部5个实际进程身份退出及55.8ms双空观察通过。06独立限定接受构建、安装、native组件、普通进程托管及静态HTTP；证据见[本轮任务](tasks/swa-task-cards-20261022.md)。原689安装及其301脚本首败/局部修正原件保留，不混用验收。Agent账号、ToolsOff模型、controller、GUI业务和真实N=3仍NOT_RUN。
 
-静态源审发现项目能力链和消费者有两处实际阻断：capabilities未将已授权项目root传到Codex配置发现，无法给出配置模型；GUI和旧N驱动又要求尚未握手而固定unknown的launchable/read/tools为available。02/04/06分别拟项目化发现、GUI提交条件与分阶段验收计划，由01独立审查；真实start的controller、worktree、当前Grant、账号、ToolsOff与fence准入保持。117安装不修改，未观测能力不改记available。
+项目能力与GUI阶段修复已获01/06准确源码限定接受：Go仅将已授权p.Root经内部链传到静态发现，前后复核当前目录、settings与Grant；GUI用真实静态配置/当前项目版本判断能否提交，未握手的launchable/read/tools仍为unknown，实际start原准入门保持。02的7文件通过Node2真实FS、Go app29子项、完整strict及45包架构检查，adapter在该Go命令仅编译；GUI三文件通过9规则、ESLint/Web类型及2项真实错误/权限刷新浏览器检查。测试输入多传workdir及未激活工具链两次局部失败原件保留，分别修用例/激活后复验0，未改生产拒绝门。旧N驱动的分阶段与Linux/Codex适配仍在实施；117安装不修改，真实配置key、首次启动、改后安装/模型仍未验。
+
+后继只读诊断`2420301d212b15b6e7b441676e559cf2047c54c7`的run39780632906/job119830667048实际成功，06独立核原annotations：117的7前序exit0、实际installed ACL两bool均true，服务helper1/serve6、没有ready观察；原启动错误为`private_pi_security_changed`，调用`security→createPrivateDirectory→initializePrivatePiRoot`，helper最终因acted=false断言失败。CIM helper0/all_exited=true及unknown观察2不代表服务通过，原117完整FAIL保持。03/05下一步仅固定原函数的Windows私有目录权限MRE，具体owner/ACE子因仍待实测，不重跑服务或full。
 
 旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取及官方API-key私有HOME接线源码已限定接受，真实账号启动未验；缺少真实安全配置的key时不能宣称可启动。
 

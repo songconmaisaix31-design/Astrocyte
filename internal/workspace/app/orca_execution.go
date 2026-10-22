@@ -248,7 +248,7 @@ type OrcaEnvelope struct {
 }
 
 type OrcaExecutionRuntime interface {
-	Capabilities(context.Context, string, OrcaCapabilityRequirements) (OrcaEnvelope, error)
+	Capabilities(context.Context, string, string, OrcaCapabilityRequirements) (OrcaEnvelope, error)
 	ResolveSelection(context.Context, string, OrcaCommand) (OrcaAgentSelection, error)
 	ResolveScope(context.Context, string, OrcaCommand) (OrcaScope, error)
 	Execute(context.Context, OrcaInvocation) (OrcaEnvelope, error)
@@ -473,6 +473,10 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 		}
 	}
 	if command.Action == "capabilities" {
+		root, err := s.files.CanonicalRoot(p.Root)
+		if err != nil || root != p.Root {
+			return reply, projectError(apierrors.ContextStale, "registered project root changed before native discovery")
+		}
 		requirements := OrcaCapabilityRequirements{SettingsRevision: p.Settings.Revision, AllowDirectory: p.Settings.AllowDirectory, AllowedSubdirs: p.Settings.AllowedSubdirs, AllowedActions: p.Settings.AllowedActions, AllowedTools: p.Settings.AllowedTools, ExternalModelCLI: p.Settings.ExternalModelCLI, AllowAgentControl: p.Settings.AllowAgentControl}
 		if caller.Kind == "agent" {
 			grant, err := s.projects.LoadGrant(ctx, projectID, caller.ID)
@@ -481,24 +485,25 @@ func (s *OrcaExecutionService) ExecuteOrca(ctx context.Context, caller domain.Ca
 			}
 			requirements.GrantActions = grant.Actions
 		}
-		reply, err := s.runtime.Capabilities(ctx, projectID, requirements)
+		reply, err := s.runtime.Capabilities(ctx, projectID, root, requirements)
 		if err != nil {
 			return reply, err
 		}
 		current, err := s.authorize(ctx, caller, projectID, permission, nil, "")
 		if err != nil {
-			return reply, err
+			return OrcaEnvelope{}, err
 		}
-		if current.Settings.Revision != p.Settings.Revision {
-			return reply, projectError(apierrors.ContextStale, "project settings changed during native discovery")
+		currentRoot, rootErr := s.files.CanonicalRoot(current.Root)
+		if current.Settings.Revision != p.Settings.Revision || current.Root != root || rootErr != nil || currentRoot != root {
+			return OrcaEnvelope{}, projectError(apierrors.ContextStale, "project root or settings changed during native discovery")
 		}
 		if caller.Kind == "agent" {
 			grant, err := s.projects.LoadGrant(ctx, projectID, caller.ID)
 			if err != nil {
-				return reply, err
+				return OrcaEnvelope{}, err
 			}
 			if !slices.Equal(requirements.GrantActions, grant.Actions) {
-				return reply, projectError(apierrors.ContextStale, "project grant changed during native discovery")
+				return OrcaEnvelope{}, projectError(apierrors.ContextStale, "project grant changed during native discovery")
 			}
 		}
 		if !reply.OK || reply.RuntimeID == "" || reply.AuthorityDomain == "" || reply.Error != nil {

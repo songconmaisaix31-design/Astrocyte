@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { realpath } from 'node:fs/promises'
-import { join } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 import { isDeepStrictEqual, stripVTControlCharacters } from 'node:util'
 import { z } from 'zod'
 import { buildRegistry, defineMethod, isStreamingMethod, type RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
@@ -176,7 +176,7 @@ export const SWA_METHODS = [
     databases: runtime.getOrchestrationDb().db.pragma('database_list'),
     agent_discovery: 'swa.capabilities', execution_validation: 'requires_actual_selected_native_agent_session'
   }) }),
-  defineMethod({ name: 'swa.capabilities', permission: 'workspace', params: z.object({ project_id: z.string().min(1), requirements: capabilityRequirementsSchema }), handler: ({ requirements }, { runtime }) => discoverAgents(runtime, requirements) }),
+  defineMethod({ name: 'swa.capabilities', permission: 'workspace', params: z.strictObject({ project_id: z.string().min(1), project_root: z.string().min(1).refine(isAbsolute), requirements: capabilityRequirementsSchema }), handler: ({ requirements, project_root }, { runtime }) => discoverAgents(runtime, requirements, project_root) }),
   defineMethod({ name: 'swa.resolveSelection', permission: 'workspace', params: z.object({ project_id: z.string().min(1), command: commandSchema }), handler: ({ project_id, command }, { runtime }) => resolveSelection(runtime, project_id, command) }),
   defineMethod({ name: 'swa.workerSend', permission: 'workspace', params: z.strictObject({ controller: z.string().min(1), parent_request: z.uuid() }), handler: deliverNativeWorkerInput }),
   defineMethod({ name: 'swa.inputStatus', permission: 'workspace', params: z.strictObject({ project_id: z.uuid(), request_id: z.uuid() }), handler: ({ project_id, request_id }, { runtime }) => readNativeInputStatus(runtime, project_id, request_id) }),

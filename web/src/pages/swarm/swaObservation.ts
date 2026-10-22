@@ -1,4 +1,5 @@
 import type { SwaEnvelope } from '../../api/swa';
+import type { components } from '../../api/schema';
 
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('执行服务未返回可核对的原生对象');
@@ -44,13 +45,50 @@ export function observationJSON(value: unknown): string {
   return JSON.stringify(value, null, 2) ?? '服务未提供';
 }
 
+type SwaObservation = components['schemas']['observation'];
+type ProjectSettings = components['schemas']['LocalProjectSettingsV1'];
+
+function readObservation(value: unknown): SwaObservation {
+  const observation = object(value);
+  if (typeof observation.status !== 'string' || !['available', 'unavailable', 'unknown'].includes(observation.status)) throw new Error('服务返回了未知的能力观察状态');
+  return { status: observation.status as SwaObservation['status'], reason: text(observation.reason, 'observation.reason'), source: text(observation.source, 'observation.source') };
+}
+
 export function readSwaAgents(reply: SwaEnvelope) {
   const result = object(reply.result);
   if (result.schema !== 'swa.capabilities.v1' || !Array.isArray(result.agents)) throw new Error('服务未返回已知 Agent 能力合同');
-  return result.agents.map(value => {
-    const agent = object(value), configured = object(agent.configured), launchable = object(agent.launchable);
-    return { id: text(agent.id, 'agent.id'), model: typeof configured.model === 'string' ? configured.model : '', launchable: launchable.status === 'available' };
+  const agents = result.agents.map(value => {
+    const agent = object(value), configured = object(agent.configured), control = object(agent.control), requirements = object(agent.requirements);
+    if (agent.execution_mode !== 'structured' || !Number.isSafeInteger(requirements.settings_revision) || Number(requirements.settings_revision) < 0) throw new Error('服务未提供当前结构化 Agent 的权限版本');
+    return {
+      id: text(agent.id, 'agent.id'), model: typeof configured.model === 'string' ? configured.model : '', settingsRevision: Number(requirements.settings_revision),
+      registered: readObservation(agent.registered), enabled: readObservation(agent.enabled), installed: readObservation(agent.installed), configured: readObservation(configured),
+      launchable: readObservation(agent.launchable), start: readObservation(control.start), read: readObservation(control.read), tools: readObservation(control.tools),
+    };
   });
+  if (new Set(agents.map(agent => agent.id)).size !== agents.length) throw new Error('能力清单包含重复 Agent，保持未确认');
+  return agents;
+}
+
+type SwaAgent = ReturnType<typeof readSwaAgents>[number];
+
+/** 只判定是否可向原启动门提交请求，不改变任何原生能力观察。 */
+export function swaStartRequestBlock(agent: SwaAgent, settings: ProjectSettings): string | null {
+  if (agent.id !== settings.external_model_cli) return '当前项目未选择此 Agent';
+  if (agent.settingsRevision !== settings.revision) return '能力清单的权限版本已过期，请刷新项目';
+  if (!settings.allow_agent_control || !settings.allowed_actions.includes('start')) return '当前项目未允许启动';
+  for (const [label, observation] of [['注册', agent.registered], ['启用', agent.enabled], ['安装', agent.installed], ['配置', agent.configured], ['启动支持', agent.start]] as const) {
+    if (observation.status !== 'available') return `${label}尚未核实可用：${observation.reason}`;
+  }
+  if (!agent.model.trim()) return '服务未提供已配置模型';
+  for (const [label, observation] of [['启动', agent.launchable], ['读取', agent.read], ['工具限制', agent.tools]] as const) {
+    if (observation.status === 'unavailable') return `${label}不可用：${observation.reason}`;
+  }
+  return null;
+}
+
+export function canRequestSwaStart(input: { agent: SwaAgent | undefined; settings: ProjectSettings; disabled: boolean; pending: boolean; unresolved: boolean; name: string; inputFile: string }): boolean {
+  return !input.disabled && !input.pending && !input.unresolved && !!input.name.trim() && !!input.inputFile.trim() && !!input.agent && swaStartRequestBlock(input.agent, input.settings) === null;
 }
 
 export function readSwaTranscript(reply: SwaEnvelope) {

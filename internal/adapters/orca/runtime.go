@@ -178,6 +178,7 @@ type bridgeRequest struct {
 	Operation    string                          `json:"operation"`
 	AgentID      string                          `json:"agent_id,omitempty"`
 	ProjectID    string                          `json:"project_id,omitempty"`
+	ProjectRoot  string                          `json:"project_root,omitempty"`
 	Command      *app.OrcaCommand                `json:"command,omitempty"`
 	Invocation   *app.OrcaInvocation             `json:"invocation,omitempty"`
 	Requirements *app.OrcaCapabilityRequirements `json:"requirements,omitempty"`
@@ -287,8 +288,8 @@ func (r *Runtime) ResolveScope(ctx context.Context, projectID string, command ap
 	return *response.Scope, nil
 }
 
-func (r *Runtime) Capabilities(ctx context.Context, projectID string, requirements app.OrcaCapabilityRequirements) (app.OrcaEnvelope, error) {
-	response, err := r.call(ctx, bridgeRequest{Operation: "capabilities", ProjectID: projectID, Requirements: &requirements}, false)
+func (r *Runtime) Capabilities(ctx context.Context, projectID, projectRoot string, requirements app.OrcaCapabilityRequirements) (app.OrcaEnvelope, error) {
+	response, err := r.call(ctx, bridgeRequest{Operation: "capabilities", ProjectID: projectID, ProjectRoot: projectRoot, Requirements: &requirements}, false)
 	if err != nil {
 		return app.OrcaEnvelope{}, err
 	}

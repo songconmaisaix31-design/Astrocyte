@@ -5,7 +5,7 @@ import { swaApi, SwaCommandError, SwaRuntimeUnavailableError, type SwaCommand, t
 import { useReadApi, formatError } from '../../hooks/useReadApi';
 import { QueryState } from '../../components/QueryState';
 import { SectionCard } from '../../components/SectionCard';
-import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, type PendingSwaRequest } from './swaObservation';
+import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, swaStartRequestBlock, canRequestSwaStart, type PendingSwaRequest } from './swaObservation';
 import styles from './SwaWorkspace.module.css';
 
 type Project = components['schemas']['LocalProjectV1'];
@@ -33,7 +33,7 @@ function ProjectRuntime({ project, disabled }: { project: Project; disabled: boo
   const [attached, setAttached] = useState<{ controller: string; taskID: string } | null>(null);
   const [workdir, setWorkdir] = useState(project.root);
   const open = useSwaCommand(project.id, 'controller.open');
-  const available = !disabled && !!status.data && !status.loading && !status.stale && !!capabilities.data && !capabilities.stale;
+  const available = !disabled && !!status.data && !status.loading && !status.stale && !status.error && !!capabilities.data && !capabilities.loading && !capabilities.stale && !capabilities.error;
   const canStart = available && project.settings.allow_agent_control && project.settings.allowed_actions?.includes('start');
   return <div className={styles.workspace}>
     <p className={styles.identity}>项目 · {project.name} · {project.id} · 权限版本 {project.settings.revision}</p>
@@ -49,7 +49,7 @@ function ProjectRuntime({ project, disabled }: { project: Project; disabled: boo
       <button className="ac-button compact" disabled={disabled || !status.data || status.loading || status.stale || !controller.trim() || !taskID.trim()} type="submit">连接已有任务</button>
     </form>
     <p className={styles.note}>可连接 CLI 的真实任务，也可使用上方已批准文件建立任务。所有操作使用同一执行服务与原生身份。</p>
-    {attached && !disabled && capabilities.data && <TaskWorkspace key={`${attached.controller}:${attached.taskID}`} project={project} capabilities={capabilities.data} {...attached} />}
+    {attached && !disabled && capabilities.data && <TaskWorkspace key={`${attached.controller}:${attached.taskID}`} project={project} capabilities={capabilities.data} startDisabled={!available} {...attached} />}
   </div>;
 }
 
@@ -59,7 +59,7 @@ function TaskCreateForm({ projectID, controller, disabled, onCreated }: { projec
   return <><form className={styles.form} onSubmit={event => { event.preventDefault(); void create.run({ action: 'task.create', controller, spec_file: specFile.trim() }, reply => { if (!reply.task_id) throw new Error('回执缺少真实根 Task ID，请查询原请求'); onCreated(reply.task_id); }); }}><label>已批准的服务端任务规格文件<input required value={specFile} onChange={event => setSpecFile(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={disabled || !specFile.trim() || create.pending || !!create.unresolved}>在当前 Controller 建立任务</button></form><OperationState command={create} controller={controller} onRecovered={reply => { if (reply.task_id) onCreated(reply.task_id); }} /></>;
 }
 
-function TaskWorkspace({ project, controller, taskID, capabilities }: { project: Project; controller: string; taskID: string; capabilities: SwaEnvelope }) {
+function TaskWorkspace({ project, controller, taskID, capabilities, startDisabled }: { project: Project; controller: string; taskID: string; capabilities: SwaEnvelope; startDisabled: boolean }) {
   const fleet = useReadApi(async signal => readSwaFleet(await swaApi.command(project.id, { action: 'worker.list', controller, task_id: taskID }, signal), project.id, controller, taskID), { key: `${project.id}:${controller}:${taskID}` });
   const [dispatchID, setDispatchID] = useState('');
   const selected = fleet.data?.workers.find(worker => worker.dispatchID === dispatchID);
@@ -69,7 +69,7 @@ function TaskWorkspace({ project, controller, taskID, capabilities }: { project:
     <div><button className="ac-button secondary compact" type="button" disabled={fleet.loading} onClick={fleet.retry}>刷新任务快照</button></div>
     <QueryState state={fleet}>{data => <>
       <p className={styles.identity}>Run · {data.runID} · 根任务 {taskID}</p>
-      {!fleet.stale && <WorkerStartForm key={`${project.id}:${controller}:${taskID}`} project={project} controller={controller} taskID={taskID} capabilities={capabilities} disabled={fleet.loading} onStarted={fleet.retry} />}
+      {!fleet.stale && <WorkerStartForm key={`${project.id}:${controller}:${taskID}`} project={project} controller={controller} taskID={taskID} capabilities={capabilities} disabled={startDisabled || fleet.loading} onStarted={fleet.retry} />}
       <p className={styles.note}>本页 {data.workers.length} / 服务返回总数 {data.total} 个 Worker。{data.hasMore ? '清单不完整：还有未加载的 Worker，请使用 CLI 核查完整范围。' : '服务返回的本次清单已完整。'} 未提供协作依赖，不生成连接线。</p>
       <div className={styles.columns}>
         <ul className={styles.workers} aria-label="实际 Worker">{data.workers.map(worker => <li key={worker.dispatchID}><button className={styles.worker} aria-pressed={worker.dispatchID === selected?.dispatchID} type="button" disabled={fleet.stale || fleet.loading} onClick={() => setDispatchID(worker.dispatchID)}><strong>{worker.dispatchID}</strong><small>Task · {worker.taskID}</small><span>业务 · {worker.dispatchStatus}</span><span>Worker · {worker.workerState}</span><span>资源 · {worker.terminalState ?? '未观察，保持未知'}</span></button></li>)}</ul>
@@ -109,10 +109,15 @@ function WorkerStartForm({ project, controller, taskID, capabilities, disabled, 
   const [agentID, setAgentID] = useState(''), [name, setName] = useState(''), [inputFile, setInputFile] = useState('');
   const agent = agents.find(item => item.id === agentID);
   const command = useSwaCommand(project.id, `worker.start:${controller}:${taskID}`);
-  return <details><summary>向同一任务添加 Worker</summary><p className={styles.note}>数量由服务的任务规格与资源准入核查。每次启动建立独立 Dispatch，页面不预造身份；已安装或可启动不等于模型执行已验证。当前人工身份只能沿属于自己的任务创建执行，不能继承 CLI Agent 的授权。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!agent) return; void command.run({ action: 'worker.start', controller, task_id: taskID, name: name.trim(), agent: agent.id, model: agent.model, input_file: inputFile.trim() }, reply => { if (!reply.dispatch_id) throw new Error('回执缺少真实 Dispatch，请查询原请求'); onStarted(); }); }}>
-    <label>项目已批准且实际发现的 Agent<select required value={agentID} onChange={event => setAgentID(event.target.value)}><option value="">选择 Agent</option>{agents.map(item => <option key={item.id} value={item.id} disabled={!item.launchable || !item.model}>{item.id} · {item.model || '模型未提供'}{item.launchable ? '' : ' · 尚不可启动'}</option>)}</select></label>
-    <label>此 Worker 名称<input required value={name} onChange={event => setName(event.target.value)} /></label><label>已批准的服务端输入文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={disabled || command.pending || !!command.unresolved || !agent?.launchable || !agent.model || !name.trim() || !inputFile.trim() || !project.settings.allow_agent_control || !project.settings.allowed_actions?.includes('start')}>启动此 Worker</button>
-  </form>{capabilityError && <p role="alert">{capabilityError}</p>}{!agents.length && <p role="status">当前能力清单未返回项目已批准的 Agent，启动不可用。</p>}<OperationState command={command} controller={controller} onRecovered={onStarted} /></details>;
+  const canRequestStart = canRequestSwaStart({ agent, settings: project.settings, disabled, pending: command.pending, unresolved: !!command.unresolved, name, inputFile });
+  const observationLabel = (status: string) => status === 'unknown' ? '尚未验证' : status === 'available' ? '已观察可用' : '不可用';
+  return <details><summary>向同一任务添加 Worker</summary><p className={styles.note}>服务将在启动时检查账号、工具限制和权限。数量由任务额度和实际资源决定。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!canRequestStart || !agent) return; void command.run({ action: 'worker.start', controller, task_id: taskID, name: name.trim(), agent: agent.id, model: agent.model, input_file: inputFile.trim() }, reply => { if (!reply.dispatch_id) throw new Error('回执缺少真实 Dispatch，请查询原请求'); onStarted(); }); }}>
+    <label>当前项目的 Agent<select required value={agentID} onChange={event => setAgentID(event.target.value)}><option value="">选择 Agent</option>{agents.map(item => {
+      const blocked = swaStartRequestBlock(item, project.settings);
+      return <option key={item.id} value={item.id} disabled={!!blocked}>{item.id} · {item.model || '模型未提供'} · {blocked ?? `启动${observationLabel(item.launchable.status)}`}</option>;
+    })}</select></label>
+    <label>此 Worker 名称<input required value={name} onChange={event => setName(event.target.value)} /></label><label>已批准的服务端输入文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={!canRequestStart}>提交启动请求</button>
+  </form>{agent && <p className={styles.note}>启动：{observationLabel(agent.launchable.status)}；读取：{observationLabel(agent.read.status)}；工具限制：{observationLabel(agent.tools.status)}。{swaStartRequestBlock(agent, project.settings)}</p>}<p className={styles.note}>CLI 创建的任务可按独立许可追加输入；新增 Worker 仍由服务核查任务权限。</p>{capabilityError && <p role="alert">{capabilityError}</p>}{!agents.length && <p role="status">当前能力清单未返回项目选择的 Agent，启动不可用。</p>}<OperationState command={command} controller={controller} onRecovered={onStarted} /></details>;
 }
 
 function Transcript({ reply }: { reply: SwaEnvelope }) {

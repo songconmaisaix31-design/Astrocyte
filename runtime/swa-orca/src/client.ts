@@ -1,4 +1,5 @@
 import { stdin, stdout } from 'node:process'
+import { isAbsolute } from 'node:path'
 import { z } from 'zod'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { RuntimeClientError, RuntimeRpcFailureError } from '../../../third_party/orca-v1.4.230/src/cli/runtime/types'
@@ -7,7 +8,7 @@ import { commandSchema, invocationSchema, capabilityRequirementsSchema, agentSel
 const requestSchema = z.discriminatedUnion('operation', [
   z.strictObject({ operation: z.literal('registered_agent'), agent_id: z.string().min(1) }),
   z.object({ operation: z.literal('scope'), project_id: z.string().min(1), command: commandSchema }),
-  z.object({ operation: z.literal('capabilities'), project_id: z.string().min(1), requirements: capabilityRequirementsSchema }),
+  z.strictObject({ operation: z.literal('capabilities'), project_id: z.string().min(1), project_root: z.string().min(1).refine(isAbsolute), requirements: capabilityRequirementsSchema }),
   z.object({ operation: z.literal('selection'), project_id: z.string().min(1), command: commandSchema }),
   z.object({ operation: z.literal('execute'), invocation: invocationSchema })
 ])
@@ -47,7 +48,7 @@ async function main() {
   }
   if (request.operation === 'capabilities') {
     const status = await client.call('swa.status')
-    const response = await client.call('swa.capabilities', { project_id: request.project_id, requirements: request.requirements })
+    const response = await client.call('swa.capabilities', { project_id: request.project_id, project_root: request.project_root, requirements: request.requirements })
     stdout.write(JSON.stringify({ envelope: { ok: true, runtime_id: response._meta.runtimeId, authority_domain: z.string().min(1).parse(nativeObject(status.result).authority_domain), result: response.result } }) + '\n')
     return
   }

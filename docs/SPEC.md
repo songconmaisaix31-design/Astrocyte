@@ -854,9 +854,11 @@ CLI输出和所属生命周期依准确b3f0e229已审方案§7.5及C01—C09实�
 
 准确`740ccdf9a9dfa33901274fd8dccd37c4beacf1fd`的[方案§4.5.2—§4.5.5及§7.8](https://github.com/songconmaisaix31-design/swarm-anything/blob/740ccdf9a9dfa33901274fd8dccd37c4beacf1fd/docs/standards/swa-cli-headless-20261020.md)已由独立c3fca056局部接受。本节定稿其中的只读发现、设置源、capabilities DTO、稳定AgentSelection及现有批准的技术契约；程序实施仍须准确CR及实际运行。输入与模式路由见§21.1.2，控制端恢复见§21.1.3；用户工具范围仍按QUESTIONS中的实际决定执行。
 
-`swa capabilities --json`沿既有项目token及POST `/api/v1/local-projects/{id}/orca/commands`的`{action:"capabilities"}`进入App observe准入。App的现有执行端口增加`Capabilities(ctx, projectID, requirements)`，由orca adapter调用私有只读`swa.capabilities`。requirements来自当前App项目设置及适用批准，HTTP正文不能提供身份或工具授权。发现只访问产品实际注册、必要本机配置及命令解析，无controller helper、模型请求或原Orca运行前提。
+`swa capabilities --json`沿既有项目token及POST `/api/v1/local-projects/{id}/orca/commands`的`{action:"capabilities"}`进入App observe准入。现有执行端口为`Capabilities(ctx, projectID, projectRoot, requirements)`，projectRoot仅取已授权项目的p.Root，经内部bridge/client及私有只读`swa.capabilities`传递。requirements来自当前App项目设置及适用批准，HTTP正文不能提供project_root、身份或工具授权。Go在调用前后核canonical root、当前项目root/settings revision及适用Grant；Node在异步发现前后核目录身份和实际Agent settings快照，变化拒绝结果。发现只给静态配置提供项目隔离上下文，不为全部Agent生成未消费的selection；无controller helper、模型请求或原Orca运行前提。
 
 注册事实来自产品内抽取的definition与真实adapter构造的StructuredAgentRegistry，保留原生重复ID及能力方法校验。已注册、启用、已安装、已配置、可启动及start/send/read/stop/resume/tools分别给出实际来源和available/unavailable/unknown；静态名单、文件存在、声明能力及本次真实调用各有自己的来源，不能互相替代。发现不自动运行模型或建立Worker来刷新。
+
+首次请求的静态门要求registered/enabled/installed/configured及control.start声明真实available，并使用服务返回的真实model；configured只证明已观察配置来源，不证明密钥有效、网络或模型访问成功。尚无握手的launchable/read/tools可保持unknown而不当作PASS，任一明确unavailable仍阻止相应请求。GUI与验收驱动不得要求这些未握手项全部available而永久阻止首次发起，也不得将unknown补成可用。GUI仅在当前项目CLI、settings revision/start许可和新鲜快照相符时派生可提交状态，按钮与onSubmit共门，原pending/unknown请求不重发。实际controller/worktree选型及当前Grant、账号、ToolsOff、输入、fence准入原样保留；真实Worker的ready/thread/turn、delta、停止及完整成果分别提供后验，静态发现不可复用为启动许可。Codex policy_ready中的remote_control_status='disabled'不单独证明全部工具关闭，仍须原native_launch.tools与固定native contract的真实验证。本轮局部静态/早拒及GUI错误权限路径通过不升级为合法配置、首次模型启动、N或改后安装通过；阶段细则见[共享执行合同](integration/openmausbot/01-contract.md)。
 
 serve可显式接受`--agent-profile <既有原Orca profile绝对路径>`。省略时读取原生标准命令/defaults及本机Agent实际配置；指定时固定该只读源，复用classifyProfileStateStorage、openProfileStateDatabaseReadOnly/readProfileStateDomains取得同一snapshot中的settings/revision，legacy并存核原acceptance，JSON-only使用成熟JSON流筛选。明确源缺失、损坏或不匹配立即失败，不迁移、创建Store、写marker或更换来源。产品私有profile继续独立，秘密和原对话不进入清单、receipt或安装包。
 
