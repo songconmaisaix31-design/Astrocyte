@@ -215,6 +215,7 @@ jobs:
             .verification/swa-ci/windows/result.json
             .verification/swa-ci/windows/logs/*.log
             .verification/swa-ci/windows/logs/*.exit.txt
+            .verification/swa-ci/windows/logs/installed-acl.json
             .verification/swa-ci/windows/smoke/result.json
             .verification/swa-ci/windows/smoke/readiness-eof/result.json
             .verification/swa-ci/windows/smoke/readiness-eof/stdout.json

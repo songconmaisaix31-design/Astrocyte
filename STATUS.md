@@ -6,19 +6,35 @@
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生局部检查；原生 N=3 与 Windows 安装验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
+新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过；下一完整候选尚未启动，新同SHA Linux组合安装尚未构建。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
+
 最近已验 Linux x64 glibc 组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY输入回显与退出、watcher create、28307路径闭包及网页清单2个入口/4个引用通过。同安装Linux每Worker托管检查14项通过且无跳过，其中11项直接使用安装原件，3项使用同SHA源码诊断；实际覆盖内核subreaper、pidfd、收养与精确回收、两次ECHILD和IPC拒绝路径。独立审查已限定接受安装及普通进程托管范围。同安装组合服务局部复验退出0：health200，首页及4个JS/CSS资产逐字节相等，`/index.html`按标准FileServer返回同源301，正常stdin关闭及两次完整所属进程退出观察通过。首轮脚本把标准301误判为失败的原件保留；修正只涉及ignored检查脚本。AgentNativeLaunch、账号、模型和真实N=3仍为NOT_RUN。
 
-旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取已实现；官方API-key私有HOME启动计划继续审查，缺少真实安全配置的key时不能宣称可启动。
+旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取及官方API-key私有HOME接线源码已限定接受，真实账号启动未验；缺少真实安全配置的key时不能宣称可启动。
 
 本轮GitHub [39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 的准确来源 `faea9d4a` 有Ubuntu与Windows两项foundation任务通过；完整check任务仍失败。Windows原生构建在 [39758793164](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758793164) 的build阶段失败；[39760430188](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39760430188) 只读取原失败artifact的诊断成功，完整构建任务跳过。诊断取得node-gyp原始VS探测的 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` 与找不到VS报错；尚不能据此认定机器没有VS，下一步只运行真实工具链的局部复现。可复用安装和启动说明及失败先报告规则已保存到云环境草稿，尚未发布快照。
 
 VS局部探测来源`369680ec`已普通push，实际 [39763935502](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39763935502) 的工具准备成功、probe退出1、artifact上传成功，完整候选与旧完整检查均跳过。当前公开摘要不足以定位这一轮实际异常；静态核查发现probe传入的RUNNER_TEMP工作目录违反原下载器的candidate目录限制，且漏查下载退出码。修正仅涉及局部探测调用，保留下载器保护规则，后继先复现非法参数拒绝再运行合法目录下探测，不重启完整构建。
 
-后继局部run39764771846实际验证原非法目录在HTTP前拒绝，合法下载/哈希通过，发现VS18而非VS17。run39765889558的真实三阶段对照进一步确认：原2022选择失败并报告版本不符；只改为2026后finder成功；官方Developer Shell下2026/v145、MSBuild、SDK和编译器身份核查成功。VSSetup原命令输出1451733字节，默认execFile在1048576字节处报MAXBUFFER，C#命令78312字节通过。该轮整体仍报失败，末尾`cl /Bv`无输入退出2已记录，runner退出分类待局部核查；不将局部观测成功写成job通过，产品builder仍未修改2022选择，也未重开完整Windows构建。
+后继局部run39764771846实际验证原非法目录在HTTP前拒绝，合法下载/哈希通过，发现VS18而非VS17。run39765889558的真实三阶段对照进一步确认：原2022选择失败并报告版本不符；只改为2026后finder成功；官方Developer Shell下2026/v145、MSBuild、SDK和编译器身份核查成功。VSSetup原命令输出1451733字节，默认execFile在1048576字节处报MAXBUFFER，C#命令78312字节通过。该轮整体仍报失败，末尾`cl /Bv`无输入退出2已记录；当时runner退出分类待局部核查，产品builder尚未修改2022选择，也未重开完整Windows构建，不把该轮局部观测成功写成job通过。
 
-最新Windows局部 [39767392238](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39767392238)（`1d27fd3c6c00711409645ea3d2154415fceb89eb`）已实际成功，完整构建跳过。真实PowerShell局部MRE复现原runner调用返回1、显式分类后0，未知退出及throw仍失败；原cl/Bv=2如实保留。该轮VS18.10、VSSetup1446335字节、C#77972字节，与上一轮不同主机数据分别保存；2022失败、2026及官方Developer Shell成功的结论一致。05继续显式2022/2026正式构建入口及严格复用来源检查，局部验证和准确提交完成后才由root启动完整候选。
+VS局部 [39767392238](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39767392238)（`1d27fd3c6c00711409645ea3d2154415fceb89eb`）已实际成功，完整构建跳过。真实PowerShell局部MRE复现原runner调用返回1、显式分类后0，未知退出及throw仍失败；原cl/Bv=2如实保留。该轮VS18.10、VSSetup1446335字节、C#77972字节，与上一轮不同主机数据分别保存；2022失败、2026及官方Developer Shell成功的结论一致。正式MSVC入口为`82e1b09503486c14a9dececb5e3673827894c120`，显式2022/2026、默认2022，核实际DevShell/gyp选择及原生复用年份来源；参数、冲突拒绝、Linux误用拒绝、Node和PowerShell语法检查及独立源码审查通过。root报告局部结果后启动完整CLI候选 [39769388709](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39769388709)，实际在build阶段退出1，evidence上传成功、candidate上传跳过；后继诊断与PATH原因见下段，不把旧gyp错误当本轮根因。
 
-显式Codex/Claude API-key来源目录配置为`4c79625d`，定向Go与Windows交编通过，无账号内容读取。Codex合同/Schema为`3b32fae6`，94形状边界与264示例/生成一致性通过；完整官方模型目录/许可及随包检查为`ac668ca8`，局部资产检查通过。运行时NativeLaunch接线仍在实现，新源码尚无同安装验收。当前环境对OpenAI和Anthropic官方API的无认证HEAD均CONNECT403；两精确域名已追加到云草稿，保存成功但尚未应用/发布。缺真实key、项目Grant和网络准入时原生模型及N=3保持NOT_RUN。
+显式Codex/Claude API-key来源目录配置为`4c79625d`，定向Go与Windows交编通过，无账号内容读取。Codex合同/Schema为`3b32fae6`，94形状边界与264示例/生成一致性通过；完整官方模型目录/许可及随包检查为`ac668ca8`，局部资产检查通过。运行时NativeLaunch源码已提交，新源码尚无同安装验收。当前环境对OpenAI和Anthropic官方API的无认证HEAD均CONNECT403；两精确域名已追加到云草稿，保存成功但尚未应用/发布。缺真实key、项目Grant和网络准入时原生模型及N=3保持NOT_RUN。
+
+只读诊断来源`e51b8547`的run39770676529取得上述82原错误`spawnSync git ENOENT`。后继`bfb28a829eb44a377e90e7654343575e3a9f3b0d`局部run39772717647/job119803972890实际成功/full跳过；原栈capture:45→builder:148为VERSION前最终源码守卫。真实Windows原env只有`Path`且Git0，执行原PATH赋值后产生两个键和undefined项、Git ENOENT；官方DevShell前后均复现，单键保原值的两phase控制组Git0/同HEAD。正式两文件修复及生产规则拒绝/语法/独立CR通过后，root先向用户报告三项证据，再提交push`c7ab4a7479182f29f990cd649accac193514d169`启动完整Windows CLI候选，后继实际installed-acl失败和组件修复见下段。该候选不含当时尚未提交的Codex接线，不将PATH错误归于MSVC。
+
+Codex主接线strict首轮6项诊断经局部修正后，R2退出0；定向Go合同17边界、Node3规则和45包架构检查通过。Claude结果reader最终`df5d50be`获独立限定接受，15项真实文件负向通过；R2只覆盖其旧稿。统一R3唯一Windows union闭包收窄诊断经局部不可变引用修正，R4实际退出0且覆盖最终reader；配置/通知/steer/成果完整性后继返修最终已获源码接受与R6 strict0。Windows reader明确未支持。连接器改用成熟dispatcher真实等待方法，4项实际timer/文件检查0；源码修复不冒称旧缺陷已由native触发。定向Go合同及human独立追加输入SQLite回归、cmd/server编译及Windows amd64/CGO0交编0。成果门在产品reserve/checkpoint实际接受原R后核最新请求/binding/journal/native final，并在全部异步verify之后同步重核；Go→Node尚未准入的在途请求不虚构为已有父回执。真实账号导入、完整接线与同安装会话均未验。
+
+Codex空HOME metadata06实际退出0，并获06独立限定接受：49有效配置、2 layer-only、51 origin、31 feature、精确API-only约束、双配置/源稳定及原完整目录gpt-5.5通过；实际remote disabled/空environment/官方emittedAtMs安全整数成立。stdout70971bytes/stderr0/完整EOF，真实Linux树ACK、root退出/缺席、双ECHILD且forced=false。原03因强制API产生非null requirements误拒；04原因未定位；05布尔诊断明确顶层字段拒绝，官方真实ServerNotificationEnvelope始终含emittedAtMs。06修正后两身份字符串实际非空，不能把04/05归因为空字符串。证据`.verification/cloud-setup/codex-policy-review/metadata-native-result.md`及各独立summary；使用开发源码和689实际addon，无account/MCP/login/thread/turn/模型，不算新安装或产品ToolsOff功能验收。
+
+验收驱动双runtime修复为`eea9b161`，01准确diff限定接受，实际安装Node语法/help0、workers2拒2。服务UUID仍核CLI与Worker.runtimeEpoch，process UUID以原start R/binding/fence/head及真实Session记录绑定，事件读前后重核lease/head/inode，released保持原ownerFence/死亡及完整Job证据。新数据库动态/leased-released/N/模型仍未验。Pi Linux两文件移植和Claude完整NativeLaunch计划已备，Pi最小批次先改解释器来源、路径大小写与私有Linux环境，保留现Linux执行拒绝；不以计划或名称发现计适配通过。
+
+Pi1.0.1与OpenCode2.0.31官方隔离安装已完成SSRI/固定来源核查，实际Pi version及OpenCode version/help退出0。首次npm因证书链失败，采用固定Node官方system-CA选项的独立局部核查和后继安装通过，未关闭TLS。OpenCode版本检查脚本曾误期待裸版本，原CLI实际输出`opencode v2.0.31`且退出0；原失败保留、未重复version。Pi help会先初始化会话，本次纯准备不执行。这些结果只证明工具准备与相应早退入口，不代表Agent会话或模型适配验收。
+
+最新输入门的局部r6因helper未采用生产jsonc ESM规则在加载失败，修正真实入口后r7为7PASS，库存窗修齐后的r8为8PASS。统一strict R5随后报6处child可空及1处unknown正文类型；01已对新准确`c5d2db1a`的显式非空/成熟SendBodyStructure解析和剥from投影限定接受，r9为8PASS0skip，R6整树strict实际0/30源无漂移。已接受pending无child/binding及新start库存都阻止旧完整成果，最终同步复核直至serialize无await；不称原生并发竞态实测。
+
+Windows完整run39773729265/job119807351175在installed-acl失败，原artifact经只读核7前序exit均0，完整安装仍FAIL且原owner/protection值没记录。`b4357653`局部run39775587011/job119813562496成功/full跳过：原mkdir owner=Administrators，icacls后继承保护true但owner不变且多一条显式Admin FullControl，Node copy不变。原失败不补写这两个值。`5f450e59f0256fc15aea07cae2b0369276a05bb1`局部run39776733004/job119817468620实际成功：同一生产fresh ACL函数set/copy后均OwnerUser/protectedtrue、仅User/SYSTEM两条显式完整继承Allow，无AdminACE，原8条ACL门两次通过且LICENSE字节相同；06已独立限定接受。仅组件修复通过，尚无新完整候选结论；后继安装诊断先保存这两个实际布尔再分别判定，完整严格门不放宽。
 
 以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
 

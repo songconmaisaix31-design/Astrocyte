@@ -53,7 +53,7 @@ D阶段扩展原 node-pty Unix addon，公开 `providerLinuxIsolationVersion:1` 
 
 两个平台的既有 runtime builder 统一核源文件与固定摘要，独占复制目录到 `runtime/codex-policy/models.json`，许可全文进入 `third-party-licenses/codex@0.163.0/`。现有装内 checker 强制核 metadata 中的新 pin 与三份原件；旧安装使用其原 checker，保持原物。运行时固定 SHA、SourceVersion 和原生 config 门由原业务负责人实现。
 
-局部验证已核官方 tree 的三个 blob、SHA、复制后的完整字节、源路径不可用时的独立资产检查，并实际拒绝重复复制、逐一缺失文件和无 pin 的旧真实 inventory。日志为 `.verification/cloud-setup/codex-catalog-assets-check.log`，依赖清单和三脚本语法检查退出0。此证据仅覆盖资产复制与闭包；尚未构建含该后继资产的新候选，认证、模型与工具关闭仍未由本项证明。
+局部验证已核官方 tree 的三个 blob、SHA、复制后的完整字节、源路径不可用时的独立资产检查，并实际拒绝重复复制、逐一缺失文件和无 pin 的旧真实 inventory。日志为 `.verification/cloud-setup/codex-catalog-assets-check.log`，依赖清单和三脚本语法检查退出0。后继 Windows `c7ab4a74` 的标准构建、解包和装内 checker 已退出0，完整安装验收在 ACL 阶段失败，范围见下文。认证、模型与工具关闭未由资产闭包证明。
 
 ## 开发依赖与检查
 
@@ -74,7 +74,7 @@ go test -count=1 -mod=readonly -v ./cmd/swa
 
 首批提交 `faea9d4a` 的 [GitHub Actions run 39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 已有公开页面记录：`swa-foundation` 的 Ubuntu 与 Windows 两个 job 实际成功；原 `check` 两个平台退出1，整体 run 为 Failure。这仅覆盖该提交的基础检查，不能证明后续 Linux 安装代码、Windows native 候选或模型通过。页面证据保存在本机 `.verification/cloud-setup/github-run.html`。
 
-独立工作流 `.github/workflows/swa-windows-native.yml` 用于在 Windows 2025 上执行真实 CLI 候选、完整 native 装载、.NET ZIP/SHA-256、普通仓库外解包、原安装器、安装后完整 checker/版本/精确 ACL，以及无 Grant 的服务 readiness、health 和正常关闭。进程环境只保留所需系统工具，发现目录与数据在 RUNNER_TEMP 独占新建，不注入账户或模型凭据。产物上传仅包括明确白名单日志及成功候选 ZIP/摘要，排除 data/home/环境。工作流与03生命周期测试在 `139a777a4341b22df0de6e5db1c9b259586cf8df` 提交；[首轮实际 run 39757398493](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39757398493) 的六步工具准备成功，driver约1秒后退出1。公开日志要求登录，API当前拒绝访问，具体原因尚未取得，不能推断已进入原生编译。Windows native/安装/Job 尚无通过结论。
+独立工作流 `.github/workflows/swa-windows-native.yml` 用于在 Windows 2025 上执行真实 CLI 候选、完整 native 装载、.NET ZIP/SHA-256、普通仓库外解包、原安装器、安装后完整 checker/版本/精确 ACL，以及无 Grant 的服务 readiness、health 和正常关闭。进程环境只保留所需系统工具，发现目录与数据在 RUNNER_TEMP 独占新建，不注入账户或模型凭据。产物上传仅包括明确白名单日志及成功候选 ZIP/摘要，排除 data/home/环境。工作流与03生命周期测试在 `139a777a4341b22df0de6e5db1c9b259586cf8df` 提交；[首轮实际 run 39757398493](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39757398493) 的六步工具准备成功，driver约1秒后退出1。公开日志要求登录，API当前拒绝访问，该轮具体原因尚未取得，不能推断已进入原生编译。该轮没有 Windows native/安装/Job 通过结论。
 
 诊断提交 `0209d004dd170cb049394f2a0ae67d154cb03f5a` 的 [run 39758336431](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758336431) 明确在 `preflight-toolchain` 失败：PowerShell `Get-Command` 返回的两个实际 Node 路径被作为单个命令执行。修正按 PATH 顺序取首个实际 Application，Node、Go、Git 共三处，固定版本断言保持启用。原两次失败保留，后续结果以新准确提交的实际 run 为准。
 
@@ -90,7 +90,15 @@ MSVC选择修复来源 `82e1b09503486c14a9dececb5e3673827894c120` 的完整 [run
 
 来源 `bfb28a829eb44a377e90e7654343575e3a9f3b0d` 的 [局部 run 39772717647](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39772717647) 已实际成功：固定Node24.21与失败82源码的唯一PATH赋值，在官方Developer Shell之前、之后都复现同一问题。真实继承环境只有 `Path`，Git正常；对象展开后的普通字典执行原大写PATH赋值会同时留下 `PATH` 与 `Path`，新值含undefined，bare Git随即ENOENT。保留真实旧值并仅用一个PATH键的局部对照，两阶段都Git退出0且HEAD与当前probe一致。公开数据仅有键名、计数、状态和版本匹配，没有PATH值或原stderr。证据在 `.verification/cloud-setup/windows-path-job-119803972890.html`。Node24.21官方child_process文档的Windows环境键规则与此实际结果一致。
 
-正式修正仅规范Windows builder的PATH：原键必须唯一且为string，保存原值、删除旧键，再以单一PATH加入随包Node目录。原nativeSettings仍有四个受核赋值，PATH赋值源码改变会使旧原生复用输入比较不等，按原路径重新编译；没有放宽既有来源、校验和或生命周期检查。局部生产环境规则和语法检查通过，尚未执行包含此修正的新完整Windows候选。
+正式修正仅规范Windows builder的PATH：原键必须唯一且为string，保存原值、删除旧键，再以单一PATH加入随包Node目录。原nativeSettings仍有四个受核赋值，PATH赋值源码改变会使旧原生复用输入比较不等，按原路径重新编译；没有放宽既有来源、校验和或生命周期检查。局部生产环境规则和语法检查通过，后继完整候选的实际范围如下。
+
+准确源码 `c7ab4a7479182f29f990cd649accac193514d169` 的 [run 39773729265](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39773729265) 在 `installed-acl` 失败。保留 artifact 实际记录 frozen install、Go download/verify、标准 build、解包 checker、installer 和 installed checker 七项退出0；主流程已完成 ZIP/SHA-256、普通解包和准确版本检查。失败来自所有者与继承保护的原复合断言，原 artifact 没有记录这两个实际值，均保持 UNKNOWN；完整安装验收仍为 FAIL，未执行服务检查，成功候选上传跳过。
+
+来源 `b4357653` 的 [局部 run 39775587011](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39775587011) 使用固定 Node24.21、失败源码的成熟 PowerShell AST 和普通公开 LICENSE 目录，直接执行原创建、icacls 和复制操作。实际创建后所有者为 Administrators；icacls 关闭继承后，所有者仍未成为当前用户，并保留额外显式 Administrators ACE；原 Node 复制后结果不变。此复现明确原操作的权限缺口，不倒填原 c7 未记录的两项值。
+
+安装器现使用新的 .NET DirectorySecurity，明确当前用户为所有者、保护继承，并仅授予当前用户和 SYSTEM 两条显式 Allow FullControl，均为 OI/CI 与 PropagationNone。来源 `5f450e59f0256fc15aea07cae2b0369276a05bb1` 的 [局部 run 39776733004](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39776733004) 已实际成功：直接从生产源码 AST 提取同一函数，在新普通目录设置后与原复制后，均通过失败源码中的完整八条精确 ACL 检查，规则恰好两条、所有者与继承保护准确、LICENSE 字节相同。原 baseline 失败现象同时保留。该结果只接受权限组件修复；含修正的完整候选、安装和服务仍待独立执行。证据为 `.verification/cloud-setup/windows-acl-control-run-39776733004.html` 与 `.verification/cloud-setup/windows-acl-control-job-119817468620.html`。
+
+后继 driver 在读取 ACL 前即记录 `installed-acl` 阶段，在断言前保存 `logs/installed-acl.json` 的实际 owner 匹配与继承保护两个布尔值，并分别拒绝失败条件。该文件明确列入 artifact 白名单，不输出 SID 或 SDDL；原精确 ACE 检查保持启用。
 
 诊断或 VS probe 标记优先，明确跳过完整候选和常规全量检查；普通 push/PR 保留原检查。下一次完整构建须先报告失败的最小复现、根因证据与局部验证结果，再由主控明确放行。
 
@@ -98,7 +106,7 @@ MSVC选择修复来源 `82e1b09503486c14a9dececb5e3673827894c120` 的完整 [run
 
 Windows builder 的 `--msvs-version` 只接受2022或2026，缺省保留2022。随包Node实际执行未修改的 node-gyp.parseArgv，配置优先级造成有效选项与明确选择不符时立即失败。Linux显式收到此Windows参数会在构建前拒绝。CI driver 明确选择2026，先使用真实 vswhere 与同安装官方 Developer Shell，核VS18、真实MSBuild/SDK和Hostx64/x64编译器路径；driver也可明确选择2022，此时所有门一致使用VS17。`expected_gyp_toolset` 是原node-gyp源码的year映射，实际原生构建输出和真实产物仍须单独核验。没有修改全局 PATH、默认缓冲区或工具依赖。
 
-原native复用记录现需核明确选择year与原成功node-gyp日志实际year一致，跨year按原路径重新编译，来源不明确直接拒绝。旧2022记录仅在成功日志、原Git源码AST中的literal2022和实际VS2022日志同时成立时识别，不凭缺字段推断。原Node、headers、Python、锁依赖、源码、补丁、原二进制及完整成功构建来源检查保持启用。局部参数检查、真实gyp配置优先级/冲突拒绝、Linux提前拒绝与实际PowerShell语法检查通过；新Windows native编译、安装和正向复用仍NOT_RUN。
+原native复用记录现需核明确选择year与原成功node-gyp日志实际year一致，跨year按原路径重新编译，来源不明确直接拒绝。旧2022记录仅在成功日志、原Git源码AST中的literal2022和实际VS2022日志同时成立时识别，不凭缺字段推断。原Node、headers、Python、锁依赖、源码、补丁、原二进制及完整成功构建来源检查保持启用。局部参数检查、真实gyp配置优先级/冲突拒绝、Linux提前拒绝与实际PowerShell语法检查通过；Windows `c7ab4a74` 的标准构建和闭包检查退出0，安装整体失败。正向复用及修正后的完整安装、服务仍 NOT_RUN。
 
 ```powershell
 $env:SWA_PNPM_CLI = '已安装 pnpm 11.27.0 的绝对 JavaScript 入口'

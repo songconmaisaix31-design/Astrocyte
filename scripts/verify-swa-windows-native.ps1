@@ -114,10 +114,14 @@ try {
     Invoke-Logged 'installed-check' (Join-Path $install 'node/node.exe') @((Join-Path $install 'scripts/check-swa-runtime.mjs'), '--candidate', $install)
     $actual = (& (Join-Path $install 'swa.exe') --version).Trim()
     if ($LASTEXITCODE -ne 0 -or $actual -cne $revision -or (Get-Content -LiteralPath (Join-Path $install 'VERSION') -Raw).Trim() -cne $revision) { throw 'The installed source version differs' }
-    $acl = Get-Acl -LiteralPath $install
     $env:SWA_CI_PHASE = 'installed-acl'
+    $acl = Get-Acl -LiteralPath $install
     $sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    if (-not $acl.AreAccessRulesProtected -or $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid) { throw 'The actual installation root is not private to its owner' }
+    $ownerMatches = $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $sid
+    $rulesProtected = $acl.AreAccessRulesProtected
+    [ordered]@{ owner_matches_current_user = $ownerMatches; access_rules_protected = $rulesProtected } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logs 'installed-acl.json')
+    if (-not $rulesProtected) { throw 'The actual installation root still inherits access rules' }
+    if (-not $ownerMatches) { throw 'The actual installation root owner differs from the current user' }
     $seenTrustees = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     $expectedInheritance = [Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit
     foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {

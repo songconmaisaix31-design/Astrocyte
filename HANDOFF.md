@@ -2,6 +2,8 @@
 
 本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；人类独立追加输入后端为 `1accc19e`，GUI设置与提示为 `1518645b`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。沿01—06原负责人继续，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。
 
+最新已提交运行时为`489be745`，最终R6严格类型检查0，30源SHA前后全一致，01/04/06限定源码接受；含Codex API-key独立HOME接线/原始来源与完整成果、Claude Linux reader、Pi前置两文件，未证明真实账号或模型。Windows fresh owner+DACL及同生产函数组件control为`5f450e59`，仅diagnostics实际run39776733004全0/06限定接受：set/copy后原8门/恰2User-SYSTEM/OwnerUser/protected及bytes一致，非完整候选验收。root三文档和05最小安装诊断终审提交后需全树clean冻结，再双平台完整候选；06 freeze期间只ignored准备Linux/Codex N驱动，不写tracked源，解除后继续正式实现。旧689安装不动，API key/项目human Grant及云provider策略发布仍缺，不自动签发。
+
 Linux最近已验组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`，安装根 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`，证据在 `.verification/swa-linux/evidence/6890522e43d7b81e99b09ca94acc27b9d3a5c7dd-combined-01/`。标准build、archive/SHA、普通外解包、strict install及真实PTY/watcher/28307闭包/网页清单均0；同安装D检查14PASS、0skip，日志 `.verification/cloud-setup/linux-provider-tree-installed-6890522e-01.log`。其中11项使用装内原件，3项同SHA诊断，独立审查仅接受普通进程托管与安装。clean689源码冻结已在这批实际检查完成后解除；原安装保持不变。03同安装组合服务局部复验0，真实health、首页及4资产字节、标准同源301和正常关闭/完整所属退出均通过，详证`/workspace/swa-cli-smoke-6890522e-combined-1792664829113/smoke-evidence`；首次301脚本误判失败保留于原data1792664746641。没有混用旧CLI04服务PASS。项目controller、AgentNativeLaunch、账号、模型和N=3仍NOT_RUN，无自动human会话/Grant/token。
 
 Windows真实CI第三轮 `39758793164` build失败；只读诊断 `39760430188` 成功读取原artifact，完整构建被跳过。原node-gyp12.3.0报VS探测 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`，尚未证明VS缺失。05按已审计划只做Node24.21/原finder/官方Developer Shell局部复现，06独立审查，主控串行提交推送；每次失败必须先向用户交代最小复现、根因证据、局部验证结果，随后才可启动下一轮完整构建。不得用完整build取代局部诊断。
@@ -10,9 +12,21 @@ Windows真实CI第三轮 `39758793164` build失败；只读诊断 `39760430188` 
 
 上一轮局部run39765889558（来源`2c023886`）取得原2022失败、仅2026成功、2026官方DevShell成功三组实际finder结果，并定位VSSetup输出1451733字节超过默认1048576字节；C#命令78312字节不溢出。该轮job整体失败、无phase错误，末尾cl/Bv无输入exit2被记录；当时尚未核收尾退出传播或修正builder选择。当时remote为2c023886，原689组合安装不补丁。
 
-后继来源`1d27fd3c6c00711409645ea3d2154415fceb89eb`已普通push，run39767392238局部probe实际成功/full跳过。真实PS7.5.5 shell MRE已复现runner式generic1与分类后0，未知exit/throw仍失败；该工具最初默认XDG cache/data只读的134/70失败原件保留，进程专属XDG目录后0。本轮VS18.10/stream1446335/C#77972，旧轮18.11/1451733/78312不混用。05正式MSVC选择方案已允许在06计划接受后实现：显式2022或2026、默认保2022，CI实际官方DevShell/原gyp选项一致，Linux不静默忽略Win选项，复用必须有相同year真实来源。完整build仍待root下令。
+后继来源`1d27fd3c6c00711409645ea3d2154415fceb89eb`已普通push，run39767392238局部probe实际成功/full跳过。真实PS7.5.5 shell MRE已复现runner式generic1与分类后0，未知exit/throw仍失败；该工具最初默认XDG cache/data只读的134/70失败原件保留，进程专属XDG目录后0。本轮VS18.10/stream1446335/C#77972，旧轮18.11/1451733/78312不混用。正式MSVC6文件已局部验证、06接受并提交push为`82e1b09503486c14a9dececb5e3673827894c120`：显式2022或2026、默认保2022，CI实际官方DevShell/原gyp选项一致，Linux拒绝Win选项，复用核相同year真实来源。root报告局部结果后启动完整CLI run39769388709，实际build1/evidence上传成功/candidate上传跳过；当时先只读原artifact，随后PATH局部与新候选见下文，不重复full取证。
 
-后继源码独立提交：03显式两API来源目录`4c79625d`，01 Codex共享合同`3b32fae6`，05完整官方目录资产`ac668ca8`。02负责主接线，Codex专题独占native-codex-policy/private-codex-account，04实现Claude完整结果reader；先独立计划/CR，再由root串行提交。账号模块局部打包两次入口解析失败已修检查入口，后继16项真实无key文件拒绝及两模块返修源码CR已限定接受，整体strict与实际登录仍待验。官方API当前CONNECT403；云草稿已保存新增api.openai.com/api.anthropic.com但requires_publish，发布/应用前不宣称网络已通，也不发送模型输入。
+后继源码独立提交：03显式两API来源目录`4c79625d`，01 Codex共享合同`3b32fae6`，05完整官方目录资产`ac668ca8`。02负责主接线，Codex专题独占native-codex-policy/private-codex-account，04实现Claude完整结果reader；先独立计划/CR，再由root串行提交。账号模块两文件已冻结，16项真实无key拒绝及源码CR限定接受；02 strict R1的6诊断修正后R2为0，Go17边界/Node3规则/45包架构0。Claude reader最终df5d50be获06限定接受/15负向通过，Windows明确unsupported；R4已覆盖最终稿通过，主接线后继CR改动与Pi窄批须最终strict/全链CR后原子提交。双runtime的驱动修复与metadata06实测见下文，不用首trace自行确立owner，不登录或建thread/turn。官方API当前CONNECT403；云草稿已保存新增api.openai.com/api.anthropic.com但requires_publish，发布/应用前不宣称网络已通，也不发送模型输入。
+
+03隔离安装Pi1.0.1/OpenCode2.0.31并核官方SSRI与固定来源，实际Pi version、OpenCode version/help为0。npm证书链首败原件保留，固定Node官方system-CA局部及安装02已通过；OpenCode helper曾把实际成功的带前缀版本误判，原证据不改、不重复version。Pi help有会话初始化前置，仍NOT_RUN。这一批不计Agent会话/模型或Linux适配通过。
+
+后继PATH局部`bfb28a829eb44a377e90e7654343575e3a9f3b0d`/run39772717647实际成功/full跳过，原82栈capture45→builder148是VERSION前源码守卫。原env只有Path，原赋值制造PATH+Path/undefined→Git ENOENT，官方DevShell前后相同；单键两控制组Git0/同HEAD。正式PATH两文件局部与06接受后，root报告三项证据并提交push`c7ab4a7479182f29f990cd649accac193514d169`启动完整Windows CLI候选，05独占观察实际结果，任何新失败先局部取证；不含尚未提交Codex源码。
+
+02统一strict R3唯一union收窄诊断修正后R4实际0，覆盖df5 reader；4项timer/文件0，Go合同+human SQLite回归/cmdserver编译0。后继requirements/remote envelope/steer/latestR及库存成果门返修均已01/06限定接受并通过最终R6，见首段准确489源码；产品reserve/checkpoint是线性化边界，Go在途或通用receipt:null不冒称该scope已准入，无新账本。
+
+专题metadata06实际0已获06独立接受，详`.verification/cloud-setup/codex-policy-review/metadata-native-result.md`：49+2/51origins/31features、API-only要求、原catalog/gpt5.5、配置来源稳定、remote disabled/envnullish/emittedAtMs通过，stdout70971/stderr0/完整EOF及实际Linux全树ACK/双ECHILD/无force。03非null要求误拒、04子因未知、05顶层漏emittedAtMs的旧失败保留；不是字符串为空，两身份实际非空。无account/MCP/auth/thread/turn/model或新安装功能证明。窗口已释放给03 Pi最小两文件解释器/路径/Linux环境移植，保留Linux拒绝与private_home语义；04完整Claude计划仅待裁决。
+
+06驱动双UUID两文件修复经01准确CR已提交`eea9b161`，安装Node语法/help和workers2负向0/2；实际service epoch与ownerUUID分别锚原start/current binding/fence/head，事件前后核lease/head/inode，released用原ownerFence/完整Job。Linux/Codex消费者仍待02最终shape，新真实动态与N模型未验。root后继应先准确源冻结/CR，再新Linux immutable安装物；当前689安装保持不变。
+
+02局部r6 helper漏生产jsonc ESM加载失败已修，r7/r8/r9各7/8/8PASS且0skip。strict R5的6 nullablechild+1 unknownbody返修，01精确接受c5d2db1a的真实正文/from投影与非空检查后，R6实际0/30源全匹配并获06整批限定接受，原子提交489be745。Pi两file8f33be02/db8d82e8及Claude reader df5不再漂移。Windows c7完整run39773729265实际installed-acl失败；b435局部run39775587011确认原操作创建Admin owner且icacls遗留显式Admin ACE，继承保护已true，copy不改。原artifact7前序0、两个原ACL值仍UNKNOWN/FAIL；fresh生产函数组件control必须实际set/copy后0，任何下一full先报告，不假candidate。
 
 旧CLI04来源e148的服务正常关闭证据继续保持其原范围。Codex0.163结果读取已提交，原ChatGPT OAuth不可克隆到多个私有HOME作为并发保全证明；02与专题负责人按官方API-key stdin登录、各Worker私有HOME和ToolsOff计划推进最小NativeLaunch接口，无真实安全配置key时保留未配置/NOT_RUN。06的真实N驱动已实现并提交，但不把help/负向或准备公开输入算模型通过。上游7个structured与45个TUI模板的“大部分”范围问题尚待用户选择，继续已明确的适配工作。
 
