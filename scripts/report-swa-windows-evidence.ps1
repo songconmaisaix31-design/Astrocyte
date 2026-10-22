@@ -67,6 +67,107 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
     }
     $facts = ($observation | ConvertTo-Json -Depth 7 -Compress).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
     Write-Host ('::warning title=Retained Windows service failure facts::' + $facts)
+    if ($source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c') {
+        function Get-RetainedNumber($Value) {
+            if (($Value -is [int] -or $Value -is [long] -or $Value -is [double] -or $Value -is [decimal]) -and [double]::IsFinite([double]$Value) -and $Value -ge 0 -and $Value -le 9007199254740991) { return $Value }
+            return 'UNKNOWN'
+        }
+        function Get-RetainedBoolean($Value) {
+            if ($Value -is [bool]) { return $Value }
+            return 'UNKNOWN'
+        }
+        function Get-RetainedNullableText($Object, [string]$Field) {
+            if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
+            if ($null -eq $Object.$Field) { return $null }
+            if ($Object.$Field -is [string]) { return (Format-ServiceError $Object.$Field) }
+            return 'UNKNOWN'
+        }
+        $cimExit = $actual.actual_cim_process_exit
+        $cimReport = $actual.actual_cim_report
+        $termination = 'UNKNOWN'
+        if ($null -ne $cimExit -and $cimExit.PSObject.Properties.Name -contains 'actual_helper_termination') {
+            $termination = if ($null -eq $cimExit.actual_helper_termination) { $null } elseif ($cimExit.actual_helper_termination -is [pscustomobject]) { [ordered]@{ signal_sent = Get-RetainedBoolean $cimExit.actual_helper_termination.signal_sent } } else { 'UNKNOWN' }
+        }
+        $queryFailure = 'UNKNOWN'
+        if ($null -ne $cimReport -and $cimReport.PSObject.Properties.Name -contains 'query_failure') {
+            if ($null -eq $cimReport.query_failure) { $queryFailure = $null } elseif ($cimReport.query_failure -is [pscustomobject]) {
+                $failure = $cimReport.query_failure
+                $queryFailure = [ordered]@{
+                    query_index = Get-RetainedNumber $failure.query_index
+                    query_succeeded = Get-RetainedBoolean $failure.query_succeeded
+                    monotonic_ms = Get-RetainedNumber $failure.monotonic_ms
+                    exception_type = if ($failure.exception_type -is [string] -and $failure.exception_type -cmatch '^[A-Za-z_][A-Za-z0-9_.+]{0,159}$') { $failure.exception_type } else { 'UNKNOWN' }
+                    message = Get-RetainedNullableText $failure 'message'
+                }
+            }
+        }
+        $cimRows = 'UNKNOWN'
+        if ($cimReport.observations -is [array]) {
+            $cimRows = @($cimReport.observations | Select-Object -First 2 | ForEach-Object {
+                $row = $_
+                $projected = [ordered]@{
+                    query_succeeded = Get-RetainedBoolean $row.query_succeeded
+                    complete_result_count = Get-RetainedNumber $row.complete_result_count
+                    invalid_pid_record_count = Get-RetainedNumber $row.invalid_pid_record_count
+                    required_identity_fields_complete = Get-RetainedBoolean $row.required_identity_fields_complete
+                    known_identities_exited = Get-RetainedBoolean $row.known_identities_exited
+                    unknown_pids_absent = Get-RetainedBoolean $row.unknown_pids_absent
+                    monotonic_ms = Get-RetainedNumber $row.monotonic_ms
+                    actual_match_count = if ($row.actual_matches -is [array]) { $row.actual_matches.Count } else { 'UNKNOWN' }
+                }
+                if ($row.known_identities_exited -is [bool] -and $row.known_identities_exited -eq $false) {
+                    $projected.actual_matches = 'UNKNOWN'
+                    $projected.actual_matches_truncated = 'UNKNOWN'
+                    $projected.observed_processes_same_pid = 'UNKNOWN'
+                    $projected.observed_processes_same_pid_count = 'UNKNOWN'
+                    $projected.observed_processes_same_pid_truncated = 'UNKNOWN'
+                    if ($row.actual_matches -is [array]) {
+                        $matches = @($row.actual_matches | Select-Object -First 8)
+                        $projected.actual_matches = @($matches | ForEach-Object { [ordered]@{ pid = Get-RetainedNumber $_.pid; creation_time_ms = if ($_.PSObject.Properties.Name -contains 'creation_time_ms' -and $null -eq $_.creation_time_ms) { $null } else { Get-RetainedNumber $_.creation_time_ms } } })
+                        $projected.actual_matches_truncated = $row.actual_matches.Count -gt 8
+                        if ($actual.observed_processes -is [array]) {
+                            $matchPids = @($matches | ForEach-Object { Get-RetainedNumber $_.pid } | Where-Object { $_ -ne 'UNKNOWN' })
+                            $known = @($actual.observed_processes | Where-Object { $_.pid -in $matchPids })
+                            $projected.observed_processes_same_pid = @($known | Select-Object -First 8 | ForEach-Object { [ordered]@{ pid = Get-RetainedNumber $_.pid; creationTimeMs = Get-RetainedNumber $_.creationTimeMs } })
+                            $projected.observed_processes_same_pid_count = $known.Count
+                            $projected.observed_processes_same_pid_truncated = $known.Count -gt 8
+                        }
+                    }
+                }
+                $projected
+            })
+        }
+        $nativeRows = 'UNKNOWN'
+        if ($actual.exit_observations -is [array]) {
+            $nativeRows = @($actual.exit_observations | Select-Object -First 2 | ForEach-Object { [ordered]@{ observed_at_ms = Get-RetainedNumber $_.observed_at_ms; remaining_count = if ($_.remaining -is [array]) { $_.remaining.Count } else { 'UNKNOWN' } } })
+        }
+        $details = [ordered]@{
+            diagnostic_only = $true; prior_run = $priorRun; source_revision = $source; complete_service_acceptance = 'FAIL'
+            actual_cim_process_exit = [ordered]@{
+                exit = if ($null -ne $cimExit -and $cimExit.PSObject.Properties.Name -contains 'exit' -and $null -eq $cimExit.exit) { $null } else { Get-RetainedNumber $cimExit.exit }
+                signal = Get-RetainedNullableText $cimExit 'signal'
+                query_timed_out = Get-RetainedBoolean $cimExit.query_timed_out
+                query_deadline_ms = Get-RetainedNumber $cimExit.query_deadline_ms
+                completion_unknown = Get-RetainedBoolean $cimExit.completion_unknown
+                actual_helper_termination = $termination
+            }
+            actual_cim_error = Get-RetainedNullableText $actual 'actual_cim_error'
+            actual_cim_report = [ordered]@{
+                schema_version = Get-RetainedNumber $cimReport.schema_version
+                query_failure = $queryFailure
+                observation_count = if ($cimReport.observations -is [array]) { $cimReport.observations.Count } else { 'UNKNOWN' }
+                observations_truncated = if ($cimReport.observations -is [array]) { $cimReport.observations.Count -gt 2 } else { 'UNKNOWN' }
+                observations = $cimRows
+            }
+            exit_observation_count = if ($actual.exit_observations -is [array]) { $actual.exit_observations.Count } else { 'UNKNOWN' }
+            exit_observations_truncated = if ($actual.exit_observations -is [array]) { $actual.exit_observations.Count -gt 2 } else { 'UNKNOWN' }
+            exit_observations = $nativeRows
+        }
+        $detailText = $details | ConvertTo-Json -Depth 12 -Compress
+        if ($detailText.Length -gt 8000) { throw 'The retained CIM field projection exceeds its output limit' }
+        $escapedDetails = $detailText.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+        Write-Host ('::warning title=Retained Windows CIM exit predicates::' + $escapedDetails)
+    }
     $errorLines = [Collections.Generic.List[string]]::new()
     foreach ($relative in @('logs/service-smoke.log', 'smoke/readiness-eof/stderr.log')) {
         $log = Join-Path $EvidenceRoot $relative

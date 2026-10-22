@@ -1,5 +1,9 @@
 # SWA 当前状态
 
+Pi具体拟授权包4244当前失效：原owned observer于20:09:37UTC记录`interrupted system call`并退出1，原serve随后正常0，Root20:35:18读取会话才确认；外部final双空缺失，最终shutdownUNKNOWN。内部两条owned0/全部pidfd退出原记录保留，不能替代完整外部结算。已明确通知用户旧包不能执行/不能用于替换服务；原review及元数据保留，PKG/INVALIDATED.md说明状态。human/Grant/token/driver与模型生成仍未执行，SOURCE私有保留。03只读定位实际EINTR调用面和后继最小真实MRE计划，不改产品或自动重启；下文原baseline存活/截止时间均是失效前记录。
+
+Windows c268只读取证run39849110411/job120070215194成功，其他native3job跳过，S0run39849110462整体Skipped无额外build。原4aef数据确认：前7阶段0/安装ACL两true、ready存在、serve0、helper6、unknown0、native退出观察2、CIM6/all_exitedfalse、无unsettled。06限定接受，完整service仍FAIL，具体CIM失败判据待同artifact下一窄投影，不能沿用117 owner因或声称发生泄漏。当前不新full/服务/model重跑。
+
 Windows最新运行`39846687508`的native job`120061709303`对准确`4aef552c63dd1ab5cd787fd2514d92a7815b943c`实际FAIL：正式driver20:12:41→20:18:18UTC退出1，公开定位仅`service-smoke`复合服务/Job关闭门；evidence上传成功，candidate ZIP跳过，旧诊断/VS跳过。该S相对Linuxaefe只三facts，不能把Linux通过或旧875成功扩为本轮Windows通过。原始startup/ready/退出子因UNKNOWN；已向用户报告最小复现范围、证据与现有局部结果，暂停新full。仅针对本次原artifact的精确3文件只读取证计划已独立接受，具体字段待原件；无产品/服务/模型重跑。以下“Windows尚未运行”属于本轮触发前的记录，以本段实际失败为准。
 
 本页统一维护当前版本、已验范围和实际限制。资源参数只在 [RESOURCES](docs/RESOURCES.md) 维护，授权和待答项只在 [QUESTIONS](docs/QUESTIONS.md) 维护，接管操作见 [HANDOFF](HANDOFF.md)。

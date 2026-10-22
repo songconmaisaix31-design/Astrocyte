@@ -1,5 +1,9 @@
 # SWA 主线接续
 
+当前Pi拟包4244已失效，不能execute或复用用户可能迟到的旧包同意：Root20:35:18UTC读原exec63472实际close1，observer stderr原20:09:37.155仅`interrupted system call`，owner safe分类observer_exited_during_hold，serve随后正常0/null、observer1/null。原service stderr两条internal all_observed_pidfds_exited=true/owned_count0保留，但外部observer仅首4身份/completefalse，没有final双空，owner-result shutdown仍UNKNOWN。根因调用点/原资源外部结算待03只读定位，不当成55m期限到期、不重启替换原服务；已向用户明示旧包失效，human/Grant/token/driver/model均未执行，生成0。原PKG新增INVALIDATED.md，原review JSON/SHA及所有原件保持。SOURCE仍独立私有保留，不读key正文。
+
+Windows第一轮只读取证实际成功：c268的run39849110411/job120070215194全部6steps0，旧diag/VS/full均skip；S0 run39849110462整体Skipped/无矩阵分配。原4aef真实7前序exit0、installedACL两bool true、service helper6、ready存在/serve0、unknown进程观察0/native退出观察2、CIM exit6/all_exitedfalse、modeUNKNOWN/unsettled不存在，过滤原错误无白名单行。06已限定接受原件，原完整FAIL不升级；排除首初始化失败说法，具体CIM子因仍UNKNOWN。仅reporter追加同原artifact两CIM判据投影计划已接受，等待精确末稿CR后只诊断读取，不新full/服务。
+
 Windows最新尝试为准确`4aef552c63dd1ab5cd787fd2514d92a7815b943c`（仅三facts后继，产品代码与Linuxaefe相同），tag `ci/swa-windows-4aef552c-pi-01`普通新push0实际触发run39846687508/native120061709303。前6setup成功，正式driver20:12:41→20:18:18UTC为1，公开错误`phase=service-smoke; The actual service/Job shutdown check failed or remains unknown`，evidence上传0/candidate上传skip，旧diag/VS均skip；最终原件`.verification/cloud-setup/windows-full-4aef552c-run-39846687508-final.html`，停止轮询。用户已获最小失败阶段、公开证据与Linux局部通过不代Win的说明，根因/ready/Job/退出子因仍UNKNOWN；不得沿用117 owner根因，不再full试错。05精确3文件只读取证计划已06接受：新独立固定原artifact读取job、原reporter扩固定4aef/run映射、check.yml仅两if排除新诊断marker以防额外4项完整检查；不改产品/native/服务或旧job语义，待准确源码CR后仅诊断提交。私有Pi包人工委托仍待答、生成调用0。
 
 本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；人类独立追加输入后端为 `1accc19e`，GUI设置与提示为 `1518645b`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。沿01—06原负责人继续，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。

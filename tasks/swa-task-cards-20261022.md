@@ -41,6 +41,10 @@
 
 ## 当前云机验证
 
+当前Pi包4244实际失效，原exec63472最终FAILED/observer_exited_during_hold：原observer stderr20:09:37UTC为interrupted system call/exit1，service随后normal0；Root20:35:18读会话确认。内部owned0/allpidfds两原件不补外部final双空，shutdownUNKNOWN保留。用户已获最小失败证据与旧包不可execute说明；尚无human/Grant/token/driver/model生成，旧review原件不改，INVALIDATED.md新增说明。03仅只读定位EINTR真实调用面和必要MRE计划，不重启替换原服务或伪闭合资源。先前独立SOURCE仍私有保留。
+
+Windows第一只读诊断c268/run39849110411/job120070215194全部成功，其他3nativejob及S0run39849110462跳过；06已核原件。原4aef前7exit0/ACL2true、ready存在/serve0、helper6、unknown0、native退出观察2、CIM6/all_exitedfalse、无unsettled，原FAIL不升级，明确不同于117初始化失败。仅同artifact追加两CIM强门字段的reporter计划已接受，待末稿CR后只读取，不完整build/服务/model重跑；具体CIM子因仍UNKNOWN。
+
 Windows最新准确尝试`4aef552c63dd1ab5cd787fd2514d92a7815b943c`只比Linuxaefe多三facts，原新tag `ci/swa-windows-4aef552c-pi-01`普通push0后actual run39846687508/native120061709303。正式driver20:12:41→20:18:18UTC退出1，公开错误仅service-smoke/actual service or Job shutdown checkfailed-orunknown；evidence上传0，candidate skip，旧diag/VS skip，原最终HTML已保留。用户已先获最小阶段/原证据/已有Linux局部结果说明；root cause/ready/Job具体值UNKNOWN，不猜117 owner、不再full。精确3文件原artifact只读取证计划已06接受，第三文件仅check.yml两if排除新marker避免默认4项完整检查；待末稿源码CR后只诊断运行，不产品/native/service/model重跑。后段“Windows未运行”是此前触发前状态，不覆盖本次FAIL。
 
 当前Linux同S候选已推进至`aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`：标准完整build、分段archive/extract及strict install均0，实际新根`/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`，tar SHA54cf2f30306a2bad73b2889ba04f5e23db4469d51815876ad54e70e6b3422684。05已接受交付；06已接受installed observer prepare0/3484源码/127输入/48c1ae01…、D12=12PASS0skip/17.406s、组合服务health/2入口4资产/4身份/约54.85ms双空与EOF0。闭包28314、protocol563dc4d5…/metafile1cd325e2…实际装内核对，旧875及所有原件保留。当前Windows新源码仍未验，旧875完整成功范围不扩推。
