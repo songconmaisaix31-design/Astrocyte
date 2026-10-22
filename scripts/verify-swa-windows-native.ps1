@@ -27,8 +27,8 @@ $logs = Join-Path $evidence 'logs'
 if (Test-Path -LiteralPath $evidence) { throw 'This evidence directory already exists' }
 New-Item -ItemType Directory -Path $logs | Out-Null
 Set-Content -LiteralPath (Join-Path $evidence 'SOURCE') -Value $revision
-$node = (Get-Command node -CommandType Application).Source
-$go = (Get-Command go -CommandType Application).Source
+$node = (Get-Command node -CommandType Application | Select-Object -First 1).Source
+$go = (Get-Command go -CommandType Application | Select-Object -First 1).Source
 $powershell = Join-Path $env:ProgramFiles 'PowerShell/7/pwsh.exe'
 $env:SWA_PNPM_CLI = (Get-Item -LiteralPath $PnpmCli).FullName
 $env:SWA_BUILD_PYTHON = (Get-Item -LiteralPath $Python).FullName
@@ -122,7 +122,7 @@ try {
         $value = [Environment]::GetEnvironmentVariable($key)
         if ($value) { $start.Environment[$key] = $value }
     }
-    $git = (Get-Command git -CommandType Application).Source
+    $git = (Get-Command git -CommandType Application | Select-Object -First 1).Source
     $start.Environment['PATH'] = ((Join-Path $install 'node'), (Join-Path $env:SystemRoot 'System32'), (Split-Path -Parent $powershell), (Split-Path -Parent $git)) -join ';'
     $start.Environment['USERPROFILE'] = $privateHome
     $start.Environment['HOME'] = $privateHome
