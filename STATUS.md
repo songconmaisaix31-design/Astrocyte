@@ -1,6 +1,8 @@
 # SWA 当前状态
 
-最新Windows窄诊断c114/run39850886633/job120076397118成功，其他native与S0均skip；06已核。原4aef唯一失败判据为同一known身份未退出：两CIM各唯一PID7288/creation1792700119902，与原known同值，query/字段完整/unknownabsent均true、count137/invalid0；两native观测也各剩1。CIM无timeout/queryfailure/parseerror，排除查询异常及PID复用解释；原service FAIL不变，尚无该身份role/ppid，不能判断产品或辅助来源。下一只读原ready成员的角色投影源码已接受，未新full/服务。Linuxobserver EINTR最小计划已接受但尚无局部执行结果，4244旧包仍失效，model0。
+最新Windows只读诊断d8e8/run39852044562/job120080501797成功，其他native及S0均skip，06已核。原4aef根1280/create1792700293571；唯一剩项7288/create1792700119902早173669ms、observed ppid8780、ready双键匹配0，其角色/Jobmembership未知。原两native/CIM均剩1的FAIL保留；同一剩项身份未复用不排除原raw-PPID父链归属错误，具体链尚UNKNOWN。下一只读同一latest快照子集的数字父链，不新full/服务。
+
+Linux EINTR局部验证实际0，06已核：真实pipe Poll0有63次、普通child pidfd Poll0有26次EINTR，PidfdOpen未复现；自身信号sender正常join、byte/EOF及child Wait0/pidfdPOLLIN通过。新observer b3fba893…/binary403fe2e4…的保守整轮重试已审，但未接producer/新serve，原错误具体syscall及旧external关闭仍UNKNOWN。原件`.verification/cloud-setup/pi-owned-eintr-local-r1-07p77Y/`；旧4244包保持失效，human/Grant/token/driver/model均0。
 
 Pi具体拟授权包4244当前失效：原owned observer于20:09:37UTC记录`interrupted system call`并退出1，原serve随后正常0，Root20:35:18读取会话才确认；外部final双空缺失，最终shutdownUNKNOWN。内部两条owned0/全部pidfd退出原记录保留，不能替代完整外部结算。已明确通知用户旧包不能执行/不能用于替换服务；原review及元数据保留，PKG/INVALIDATED.md说明状态。human/Grant/token/driver与模型生成仍未执行，SOURCE私有保留。03只读定位实际EINTR调用面和后继最小真实MRE计划，不改产品或自动重启；下文原baseline存活/截止时间均是失效前记录。
 

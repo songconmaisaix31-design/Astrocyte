@@ -82,6 +82,48 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
             if ($Object.$Field -is [string]) { return (Format-ServiceError $Object.$Field) }
             return 'UNKNOWN'
         }
+        function Get-RetainedSnapshotChain($Snapshot, $RootPid, $RootCreation, $TargetPid, $TargetCreation) {
+            $projection = [ordered]@{
+                snapshot_source = 'latest-actual-observation.json/current_owned_processes'
+                snapshot_scope = 'single-raw-ppid-closure-subset'
+                snapshot_observed_at_ms = Get-RetainedNumber $Snapshot.observed_at_ms
+                snapshot_retained_row_count = if ($Snapshot.current_owned_processes -is [array]) { $Snapshot.current_owned_processes.Count } else { 'UNKNOWN' }
+                root_metadata_matches_actual_spawn = 'UNKNOWN'
+                status = 'UNKNOWN'; stop = 'SNAPSHOT_UNAVAILABLE'; chain_order = 'ancestor-to-target'; chain = @(); chain_truncated = 'UNKNOWN'
+            }
+            $snapshotPid = Get-RetainedNumber $Snapshot.pid
+            $snapshotCreation = Get-RetainedNumber $Snapshot.creation_time_ms
+            if ($Snapshot.current_owned_processes -isnot [array] -or $projection.snapshot_observed_at_ms -eq 'UNKNOWN' -or $projection.snapshot_observed_at_ms -lt 1 -or [math]::Floor($projection.snapshot_observed_at_ms) -ne $projection.snapshot_observed_at_ms -or $RootPid -eq 'UNKNOWN' -or $RootCreation -eq 'UNKNOWN' -or $snapshotPid -eq 'UNKNOWN' -or $snapshotCreation -eq 'UNKNOWN') { return $projection }
+            $projection.root_metadata_matches_actual_spawn = $snapshotPid -ceq $RootPid -and $snapshotCreation -ceq $RootCreation
+            if (-not $projection.root_metadata_matches_actual_spawn) { $projection.stop = 'SNAPSHOT_ROOT_MISMATCH'; return $projection }
+            if ($TargetPid -eq 'UNKNOWN' -or $null -eq $TargetCreation -or $TargetCreation -eq 'UNKNOWN' -or $TargetPid -lt 1 -or $TargetPid -gt [uint32]::MaxValue -or [math]::Floor($TargetPid) -ne $TargetPid -or $TargetCreation -lt 1 -or [math]::Floor($TargetCreation) -ne $TargetCreation) { $projection.stop = 'INVALID_TARGET_IDENTITY'; return $projection }
+            $projection.chain_truncated = $false
+            $seen = [Collections.Generic.HashSet[long]]::new()
+            $currentPid = $TargetPid
+            for ($hop = 0; $hop -lt 8; $hop++) {
+                if (-not $seen.Add([long]$currentPid)) { $projection.stop = 'CYCLE'; break }
+                $rows = @($Snapshot.current_owned_processes | Where-Object { (Get-RetainedNumber $_.pid) -ceq $currentPid })
+                if ($rows.Count -eq 0) { $projection.stop = 'MISSING_SNAPSHOT_NODE'; break }
+                if ($rows.Count -ne 1) { $projection.stop = 'DUPLICATE_SNAPSHOT_PID'; break }
+                $rowPid = Get-RetainedNumber $rows[0].pid
+                $parentPid = Get-RetainedNumber $rows[0].ppid
+                $created = Get-RetainedNumber $rows[0].creationTimeMs
+                if ($rowPid -eq 'UNKNOWN' -or $parentPid -eq 'UNKNOWN' -or $created -eq 'UNKNOWN' -or $rowPid -lt 1 -or $rowPid -gt [uint32]::MaxValue -or [math]::Floor($rowPid) -ne $rowPid -or $parentPid -gt [uint32]::MaxValue -or [math]::Floor($parentPid) -ne $parentPid -or $created -lt 1 -or [math]::Floor($created) -ne $created) { $projection.stop = 'INVALID_SNAPSHOT_IDENTITY'; break }
+                $projection.chain += [ordered]@{ pid = $rowPid; ppid = $parentPid; creationTimeMs = $created }
+                if ($hop -eq 0 -and $created -cne $TargetCreation) { $projection.stop = 'TARGET_INCARNATION_MISMATCH'; break }
+                if ($rowPid -ceq $RootPid) {
+                    if ($created -ceq $RootCreation) { $projection.status = 'OBSERVED'; $projection.stop = 'ACTUAL_SPAWN_ROOT_REACHED' } else { $projection.stop = 'ROOT_INCARNATION_MISMATCH' }
+                    break
+                }
+                if ($parentPid -eq 0) { $projection.stop = 'PARENT_ZERO_BEFORE_ROOT'; break }
+                $currentPid = $parentPid
+                if ($hop -eq 7) { $projection.chain_truncated = $true; $projection.stop = 'NODE_LIMIT' }
+            }
+            $chain = @($projection.chain)
+            [array]::Reverse($chain)
+            $projection.chain = $chain
+            return $projection
+        }
         $cimExit = $actual.actual_cim_process_exit
         $cimReport = $actual.actual_cim_report
         $rootPid = Get-RetainedNumber $actual.pid
@@ -143,6 +185,7 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
                             $matchPid = Get-RetainedNumber $_.pid
                             $matchCreation = if ($_.PSObject.Properties.Name -contains 'creation_time_ms' -and $null -eq $_.creation_time_ms) { $null } else { Get-RetainedNumber $_.creation_time_ms }
                             $identity = [ordered]@{ pid = $matchPid; creation_time_ms = $matchCreation; ready_identity_match_count = 'UNKNOWN'; ready_observed_role = 'UNKNOWN'; ready_observed_parent_pid = 'UNKNOWN'; ready_observed_named_job_membership = 'UNKNOWN' }
+                            $identity.single_snapshot_raw_ppid_chain = Get-RetainedSnapshotChain $latest $rootPid $rootCreation $matchPid $matchCreation
                             if ($matchPid -ne 'UNKNOWN' -and $matchPid -gt 0 -and $matchPid -le [uint32]::MaxValue -and [math]::Floor($matchPid) -eq $matchPid -and $null -ne $matchCreation -and $matchCreation -ne 'UNKNOWN' -and $matchCreation -gt 0 -and [math]::Floor($matchCreation) -eq $matchCreation -and $readyObservation.members -is [array]) {
                                 $readyMatches = @($readyObservation.members | Where-Object { (Get-RetainedNumber $_.pid) -ceq $matchPid -and (Get-RetainedNumber $_.creation_time_ms) -ceq $matchCreation })
                                 $identity.ready_identity_match_count = $readyMatches.Count
