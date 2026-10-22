@@ -29,6 +29,7 @@ import type {
   AgentModelCatalogStore
 } from '../native-chat/agent-model-catalog/agent-model-catalog-store'
 import type { NativeChatVisualsLaunch } from '../native-chat/native-chat-visuals-delivery'
+import type { SwaCodexToolsPolicy, SwaInitializationProcess } from '../provider-process/provider-process-launch'
 
 export type CodexSessionCatalogAccess = AgentModelCatalogSessionAccess
 
@@ -50,6 +51,9 @@ export type CodexStructuredLaunch = {
   envToDelete?: readonly string[]
   /** This chat's scratch folder and visuals skill; absent when the chat has no visuals. */
   visuals?: NativeChatVisualsLaunch
+  swaJobIPC?: true
+  swaEventDirectory?: string
+  swaCodexPolicy?: SwaCodexToolsPolicy
 }
 
 /** Turn and item boundaries, timed by when the host received them, never by when a buffered or
@@ -128,6 +132,7 @@ export type CodexStructuredSessionAdapterDeps = {
 export type CodexSession = {
   account?: AgentSessionAccountKind
   connection: CodexAppServerConnection
+  swaCodexPolicy?: SwaCodexToolsPolicy
   ended: boolean
   /** First observed child exit survives rejected settlement admission. */
   exitObservedAt?: number
@@ -210,6 +215,7 @@ export type CodexAcquisitionAttempt = {
   exitProven: boolean
   finished: Promise<void>
   finish: () => void
+  initialization?: SwaInitializationProcess
 }
 
 export function createCodexAcquisitionAttempt(): CodexAcquisitionAttempt {
@@ -274,6 +280,10 @@ export class CodexAcquisitionRegistry {
   }
 
   async closeFailedAttempt(sessionId: string, attempt: CodexAcquisitionAttempt): Promise<boolean> {
+    if (attempt.initialization) {
+      if (!(await attempt.initialization.close())) return false
+      attempt.initialization = undefined
+    }
     const stopped = (await attempt.window.connection?.close()) ?? true
     if (stopped) {
       attempt.exitProven = true
@@ -301,7 +311,7 @@ export async function cancelCodexAcquisitionAttempt(
     cancel: () => {
       attempt.cancelled = true
     },
-    connection: () => attempt.window.connection,
+    connection: () => attempt.window.connection ?? attempt.initialization ?? null,
     exitProven: () => attempt.exitProven,
     finished: attempt.finished
   })

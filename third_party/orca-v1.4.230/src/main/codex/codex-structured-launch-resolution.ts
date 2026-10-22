@@ -93,12 +93,25 @@ export function codexStructuredLaunchPart(
       resolveEnvironment: basis.environment
     })
     const environment = await basis.environment()
-    const args = codexStructuredLaunchArgs(await deps.resolveLaunchArgs())
+    const configuredArgs = await deps.resolveLaunchArgs()
+    const args = codexStructuredLaunchArgs(configuredArgs)
     const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
     // A Codex record's chain holds only Codex handles; the launch admission refuses anything else.
     const resumeThreadId = head?.handle.nativeId ?? null
     // The same saved options every turn sends, so the thread and its turns name one model.
     const model = record.options?.model
+    if (basis.disabledCodexTools) {
+      if (configuredArgs.length || resumeThreadId || model !== 'gpt-5.5' || Object.keys(record.options ?? {}).some(key => key !== 'model')) throw new Error('native_codex_restricted_launch_override')
+      const policy = await basis.disabledCodexTools()
+      const launcher = await basis.providerJobLauncher?.()
+      if (!launcher) throw new Error('native_codex_custody_launcher_missing')
+      return {
+        launch: { command: launcher.node, args: [launcher.entry, JSON.stringify({ command, args: [...policy.appServerArgs] })], codexHome: accountHome.path, resumeThreadId: null, model: policy.model, swaJobIPC: true, swaEventDirectory: launcher.eventDirectory, swaCodexPolicy: policy },
+        env: environment,
+        inheritedEnvToDelete: [],
+        cliRuntimeCommand: command
+      }
+    }
     const visuals = await basis.visuals()
     // Before the rollout scan, so a missing floating folder is still the refusal that wins.
     await basis.launchDirectory()

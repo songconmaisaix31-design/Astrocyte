@@ -56,12 +56,25 @@ async function optionalSource(file: string) {
   }
 }
 
-async function nativePiSources(executable: string, version: string, env: NodeJS.ProcessEnv) {
+function linuxPiInterpreter() {
+  const configured = process.env.SWA_NODE_EXECUTABLE
+  const install = process.env.SWA_INSTALL_ROOT
+  if (!configured || !install || !isAbsolute(configured) || !isAbsolute(install)) throw new Error('native_pi_interpreter_unverifiable')
+  const root = realpathSync.native(install)
+  const expected = join(root, 'node', 'node')
+  if (root !== resolve(install) || realpathSync.native(expected) !== expected || resolve(configured) !== expected || realpathSync.native(configured) !== expected || realpathSync.native(process.execPath) !== expected) throw new Error('native_pi_interpreter_unverifiable')
+  const installed = statSync(expected, { bigint: true }), running = statSync('/proc/self/exe', { bigint: true })
+  if (!installed.isFile() || !running.isFile() || installed.dev !== running.dev || installed.ino !== running.ino) throw new Error('native_pi_interpreter_unverifiable')
+  return expected
+}
+
+export async function inspectNativePiSources(executable: string, version: string, env: NodeJS.ProcessEnv) {
   if (version !== '1.0.1') throw new Error('native_cli_contract_unavailable')
   const launch = await nativeConfigurationSource(executable)
   let entry = launch
   let interpreter: Awaited<ReturnType<typeof nativeConfigurationSource>> | null = null
-  if (process.platform === 'win32' && extname(launch.path).toLowerCase() === '.cmd') {
+  if (process.platform === 'linux') interpreter = await nativeConfigurationSource(linuxPiInterpreter())
+  else if (process.platform === 'win32' && extname(launch.path).toLowerCase() === '.cmd') {
     const command = resolveWindowsCmdShim(launch.path, env)
     if (!command || command.prefixArgs.length !== 1 || command.env?.NODE_PATH !== env.NODE_PATH) throw new Error('native_cli_source_unverifiable')
     entry = await nativeConfigurationSource(command.prefixArgs[0]!)
@@ -71,7 +84,9 @@ async function nativePiSources(executable: string, version: string, env: NodeJS.
   if (!manifestPath) throw new Error('native_cli_source_unverifiable')
   const manifest = await readJSON(manifestPath)
   const parsed = cliPackageSchema.safeParse(manifest.value)
-  if (!parsed.success || (await realpath(resolve(dirname(manifest.source.path), parsed.data.bin.pi))).toLowerCase() !== entry.path.toLowerCase()) throw new Error('native_cli_source_unverifiable')
+  if (!parsed.success) throw new Error('native_cli_source_unverifiable')
+  const declaredEntry = await realpath(resolve(dirname(manifest.source.path), parsed.data.bin.pi))
+  if (process.platform === 'win32' ? declaredEntry.toLowerCase() !== entry.path.toLowerCase() : declaredEntry !== entry.path) throw new Error('native_cli_source_unverifiable')
   const aiPath = findPackageJSON('@earendil-works/pi-ai', pathToFileURL(entry.path))
   if (!aiPath) throw new Error('native_cli_source_unverifiable')
   const ai = await readJSON(aiPath)
@@ -80,6 +95,16 @@ async function nativePiSources(executable: string, version: string, env: NodeJS.
   const catalog = await nativeConfigurationSource(join(dirname(ai.source.path), 'dist/providers/all.js'))
   const apiSources = await Promise.all(['compat.js', 'api/openai-completions.lazy.js', 'api/openai-completions.js'].map(file => nativeConfigurationSource(join(dirname(ai.source.path), 'dist', file))))
   return { launch, entry, interpreter, manifest: manifest.source, aiManifest: ai.source, files, catalog, apiSources }
+}
+
+export function assertNativePiSourcesCurrent(sources: Awaited<ReturnType<typeof inspectNativePiSources>>) {
+  if (process.platform === 'linux' && sources.interpreter?.path !== linuxPiInterpreter()) throw new Error('native_pi_interpreter_unverifiable')
+  for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources]) {
+    if (!source) continue
+    const path = realpathSync.native(source.path), info = statSync(path, { bigint: true })
+    const version = `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+    if (!info.isFile() || path !== source.path || version !== source.version) throw new Error('native_configuration_changed_before_effect')
+  }
 }
 
 function knownFields(value: Record<string, unknown>, allowed: ReadonlySet<string>) {
@@ -134,7 +159,8 @@ export async function inspectNativePiPolicy(input: { executable: string; version
   const privateHome = join(dataRoot, 'pi', input.projectId)
   const beneath = (base: string, target: string) => { const part = relative(base, target); return !part || part !== '..' && !part.startsWith('..\\') && !part.startsWith('../') && !isAbsolute(part) }
   if (beneath(sourceHome, privateHome) || beneath(privateHome, sourceHome)) throw new Error('native_account_directory_overlap')
-  const sources = await nativePiSources(input.executable, input.version, input.env)
+  const sources = await inspectNativePiSources(input.executable, input.version, input.env)
+  assertNativePiSourcesCurrent(sources)
   const [configModule, composer, values, authModule, catalog, apiRegistry] = await Promise.all([...sources.files.map(file => import(pathToFileURL(file.path).href)), import(pathToFileURL(sources.catalog.path).href), import(pathToFileURL(sources.apiSources[0]!.path).href)])
   if (typeof configModule.ModelConfig?.load !== 'function' || typeof composer.composeModelProvider !== 'function' || typeof values.isCommandConfigValue !== 'function' || typeof values.getConfigValueEnvVarNames !== 'function' || typeof values.resolveConfigValue !== 'function' || typeof authModule.ReadOnlyAuthStorage !== 'function' || typeof catalog.builtinProviders !== 'function' || typeof apiRegistry.getApiProvider !== 'function') throw new Error('native_cli_contract_unavailable')
   const authPath = join(sourceHome, 'auth.json'), modelsPath = join(sourceHome, 'models.json')
@@ -207,7 +233,8 @@ export function sameNativeLaunchPolicy(left: NativeLaunchPolicy, right: NativeLa
 
 export function assertNativePiSnapshotCurrent(snapshot: NativePiPolicySnapshot) {
   const sources = snapshot.sources, account = snapshot.policy.account
-  for (const source of [account.auth_source, account.models_source, sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources]) {
+  assertNativePiSourcesCurrent(sources)
+  for (const source of [account.auth_source, account.models_source]) {
     if (!source) continue
     const path = realpathSync.native(source.path), info = statSync(path, { bigint: true })
     const version = `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`

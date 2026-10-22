@@ -125,6 +125,7 @@ type OrcaNativeLaunchAccount struct {
 	Provider            string                         `json:"provider"`
 	SourceHome          string                         `json:"source_home"`
 	AuthSource          OrcaNativeConfigurationSource  `json:"auth_source"`
+	CatalogSource       OrcaNativeConfigurationSource  `json:"catalog_source"`
 	ModelsSource        *OrcaNativeConfigurationSource `json:"models_source"`
 	PrivateHome         string                         `json:"private_home"`
 	ModelTarget         OrcaNativeModelTarget          `json:"model_target"`
@@ -142,6 +143,8 @@ func nativeAccountFields(kind string) ([]string, error) {
 		return append(common, "models_source", "private_home"), nil
 	case "opencode-native-api-key":
 		return append(common, "config_source", "database_source", "credential_id", "credential_updated_at", "private_root"), nil
+	case "codex-native-api-key":
+		return append(common, "catalog_source", "private_root"), nil
 	default:
 		return nil, fmt.Errorf("unsupported native account kind %q", kind)
 	}
@@ -641,6 +644,15 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 	policy := selection.NativeLaunch
 	account := policy.Account
 	target := account.ModelTarget
+	if account.Kind == "codex-native-api-key" {
+		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "codex-cli-0.163.0" || selection.AgentID != "codex" || selection.Version != "0.163.0" || selection.ExecutionMode != "structured" || account.Provider != "openai" || selection.Provider != "openai" || selection.Model != "gpt-5.5" || target.ModelID != "gpt-5.5" || target.API != "openai-responses" || target.BaseURL != "https://api.openai.com/v1" || account.PrivateHome != "" || account.ModelsSource != nil || account.CredentialID != "" {
+			return projectError(apierrors.EvidenceMissing, "the selected native Codex API account and disabled-tool policy are unverified")
+		}
+		if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateRoot) || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "codex" || account.AuthSource.Path != filepath.Join(account.SourceHome, "auth.json") || account.AuthSource.Version == "" || !filepath.IsAbs(account.CatalogSource.Path) || filepath.Base(account.CatalogSource.Path) != "models.json" || filepath.Base(filepath.Dir(account.CatalogSource.Path)) != "codex-policy" || filepath.Base(filepath.Dir(filepath.Dir(account.CatalogSource.Path))) != "runtime" || account.CatalogSource.Version == "" {
+			return projectError(apierrors.EvidenceMissing, "the selected native Codex sources and project root are incomplete")
+		}
+		return nil
+	}
 	if account.Kind == "opencode-native-api-key" {
 		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "opencode-cli-2.0.31" || selection.AgentID != "opencode" || selection.Version != "2.0.31" || selection.ExecutionMode != "structured" || account.Provider != "deepseek" || selection.Provider != "deepseek" || selection.Model != "deepseek/deepseek-v4-pro" || target.ModelID != "deepseek-v4-pro" || target.API != "opencode-native-deepseek" || target.BaseURL != "https://api.deepseek.com" || account.CredentialID == "" || account.CredentialUpdatedAt < 0 || account.PrivateHome != "" || account.ModelsSource != nil {
 			return projectError(apierrors.EvidenceMissing, "the selected native OpenCode account and disabled-tool policy are unverified")

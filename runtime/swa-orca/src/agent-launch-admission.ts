@@ -8,7 +8,8 @@ import { installStructuredAgentLaunchAdmission } from '../../../third_party/orca
 import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { agentSelectionSchema, invocationSchema, nativeObject, structuredInputBindingSchema as inputBindingSchema } from './contracts'
-import { selectAgent } from './agent-discovery'
+import { codexProtectedRoots, selectAgent } from './agent-discovery'
+import { readAgentSettings } from './agent-settings'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiAccount, privatePiEnvironment, verifyPrivatePiAccount } from './private-pi-account'
 import { assertDeliveryGrantCurrent, createDeliveryAdmission } from './delivery-admission'
@@ -17,6 +18,9 @@ import { installWorkerInputApproval } from './worker-input'
 import { assertNativeOpenCodeCurrent, inspectNativeOpenCodePolicy } from './native-opencode-policy'
 import { materializePrivateOpenCodeAccount, privateOpenCodeEnvironment, readPrivateOpenCodeBinding } from './private-opencode-account'
 import { createOpenCodeSessionPolicy } from './opencode-session-policy'
+import { assertNativeCodexCurrent, inspectNativeCodexPolicy } from './native-codex-policy'
+import { materializePrivateCodexAccount, privateCodexEnvironment, verifyPrivateCodexAccount, verifyUninitializedPrivateCodexAccount } from './private-codex-account'
+import { createCodexSessionPolicy } from './codex-session-policy'
 
 const mutationRowSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), state: z.enum(['pending', 'completed']), receipt: z.string().nullable() })
 
@@ -59,9 +63,11 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const account = original.native_launch.account
       if (account.kind === 'pi-native-api-key') {
         if (!('variable' in record.accountHome) || record.accountHome.variable !== 'PI_CODING_AGENT_DIR' || record.accountHome.path !== account.private_home) throw new Error('The native Pi account changed before launch')
+      } else if (account.kind === 'codex-native-api-key') {
+        if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CODEX_HOME' || record.accountHome.path !== join(account.private_root, sessionId)) throw new Error('The native Codex account changed before launch')
       } else if (!('kind' in record.accountHome) || record.accountHome.kind !== 'opencode' || record.accountHome.locator.kind !== 'private' || record.accountHome.locator.root !== join(account.private_root, sessionId)) throw new Error('The native OpenCode account changed before launch')
     }
-    const current = await selectAgent(runtime, invocation.project.id, original.agent_id, original.model)
+    const current = await selectAgent(runtime, invocation.project.id, original.agent_id, original.model, invocation.project.root)
     if (!isDeepStrictEqual(original, current)) throw new Error('The selected native Agent configuration changed before launch')
     return { original, invocation, parentRow, childRow }
   }
@@ -80,22 +86,34 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
       return { ...selected, snapshot, kind: 'opencode' as const }
     }
+    if (agent === 'codex' && account.kind === 'codex-native-api-key' && original.version === '0.163.0') {
+      const settings = await readAgentSettings()
+      const snapshot = await inspectNativeCodexPolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, privateRoot: account.private_root, catalogPath: account.catalog_source.path, env: process.env, protectedRoots: codexProtectedRoots(settings, selected.invocation.project.root) })
+      if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
+      return { ...selected, snapshot, kind: 'codex' as const }
+    }
     throw new Error('The selected native Agent has no reviewed disabled-tool policy')
   }
   type Selected = Awaited<ReturnType<typeof policySnapshot>>
-  function assertCurrent(selected: Selected) { if (selected.kind === 'pi') assertNativePiSnapshotCurrent(selected.snapshot); else assertNativeOpenCodeCurrent(selected.snapshot) }
+  function assertCurrent(selected: Selected) { if (selected.kind === 'pi') assertNativePiSnapshotCurrent(selected.snapshot); else if (selected.kind === 'opencode') assertNativeOpenCodeCurrent(selected.snapshot); else assertNativeCodexCurrent(selected.snapshot) }
   async function binding(selected: Extract<Selected, { kind: 'opencode' }>, sessionId: string) {
     return readPrivateOpenCodeBinding(selected.snapshot, join(selected.snapshot.policy.account.private_root, sessionId), await realpath(join(process.env.SWA_INSTALL_ROOT!, 'runtime/opencode-policy')))
   }
-  async function verifyAccount(selected: Selected, sessionId: string) { if (selected.kind === 'pi') await verifyPrivatePiAccount(selected.snapshot); else await binding(selected, sessionId); assertCurrent(selected) }
-  async function approved(sessionId: string, agent: string) {
+  async function verifyAccount(selected: Selected, sessionId: string, initializing = false) {
+    if (selected.kind === 'pi') await verifyPrivatePiAccount(selected.snapshot)
+    else if (selected.kind === 'opencode') await binding(selected, sessionId)
+    else if (initializing) verifyUninitializedPrivateCodexAccount(selected.snapshot, sessionId)
+    else await verifyPrivateCodexAccount(selected.snapshot, sessionId)
+    assertCurrent(selected)
+  }
+  async function approved(sessionId: string, agent: string, initializing = false) {
     const first = await policySnapshot(sessionId, agent)
     const db = runtime.getOrchestrationDb(), identity = structuredWorkerIdentities.getBySessionId(sessionId), record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
     const run = db.getRun(first.invocation.scope.run_id)
     if (!identity?.dispatchId || !record || !run || run.coordinator_handle !== first.invocation.scope.controller) throw new Error('The native launch Run or session is unavailable')
     await admitCurrentApproval(first.invocation)
     const fresh = await policySnapshot(sessionId, agent)
-    await verifyAccount(fresh, sessionId)
+    await verifyAccount(fresh, sessionId, initializing)
     return () => {
       const current = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId), worker = db.getWorkerDispatch(identity.dispatchId!)
       if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(sessionId), identity) || !current || current.lease.runtimeFence !== record.lease.runtimeFence || !isDeepStrictEqual(current.accountHome, record.accountHome) || !isDeepStrictEqual(current.options, record.options) || db.getRun(run.id)?.consumer_generation !== run.consumer_generation || !worker || !['starting', 'ready'].includes(worker.state) || worker.runtime_epoch !== runtime.getRuntimeId()) throw new Error('The native launch identity changed during current approval')
@@ -106,7 +124,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const selected = await policySnapshot(sessionId, agent)
     await admitCurrentApproval(selected.invocation)
     const fresh = await policySnapshot(sessionId, agent)
-    await verifyAccount(fresh, sessionId)
+    await verifyAccount(fresh, sessionId, fresh.kind === 'codex')
     const node = z.string().min(1).parse(process.env.SWA_NODE_EXECUTABLE), install = z.string().min(1).parse(process.env.SWA_INSTALL_ROOT)
     if (!isAbsolute(node) || !isAbsolute(install) || await realpath(node) !== join(await realpath(install), 'node', process.platform === 'win32' ? 'node.exe' : 'node')) throw new Error('The installed native Job Node source is unavailable')
     const entry = await realpath(join(install, 'runtime', 'native-cli-entry.cjs')), eventDirectory = await createNativeWorkerDirectory(sessionId)
@@ -172,6 +190,12 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         assertCurrent(selected); assertDeliveryGrantCurrent(invocation)
         return { kind: 'opencode', locator: { kind: 'private', root } }
       }
+      if (selected.kind === 'codex') {
+        const existing = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
+        const path = existing ? join(selected.snapshot.policy.account.private_root, sessionId) : await materializePrivateCodexAccount(selected.snapshot, sessionId)
+        assertCurrent(selected); assertDeliveryGrantCurrent(invocation)
+        return { variable: 'CODEX_HOME', path }
+      }
       await materializePrivatePiAccount(selected.snapshot)
       assertCurrent(selected)
       assertDeliveryGrantCurrent(invocation)
@@ -181,9 +205,9 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { invocation } = await policySnapshot(sessionId, agent)
       await admitCurrentApproval(invocation)
       const selected = await policySnapshot(sessionId, agent)
-      await verifyAccount(selected, sessionId)
+      await verifyAccount(selected, sessionId, selected.kind === 'codex')
       assertDeliveryGrantCurrent(invocation)
-      return selected.kind === 'pi' ? privatePiEnvironment(selected.snapshot.policy.account.private_home, inherited) : privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited)
+      return selected.kind === 'pi' ? privatePiEnvironment(selected.snapshot.policy.account.private_home, inherited) : selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : privateCodexEnvironment(selected.snapshot, sessionId)
     },
     disabledPiTools: async (sessionId, agent) => {
       const { invocation } = await policySnapshot(sessionId, agent)
@@ -205,12 +229,23 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!record) throw new Error('The native OpenCode session record is unavailable')
       return createOpenCodeSessionPolicy({ snapshot: selected.snapshot, ...privateAccount, executable: selected.original.executable, launcher, sessionId, fence: record.lease.runtimeFence, approve: () => approved(sessionId, agent) })
     },
+    disabledCodexTools: async (sessionId, agent) => {
+      const final = await approved(sessionId, agent, true)
+      const selected = await policySnapshot(sessionId, agent)
+      if (selected.kind !== 'codex') throw new Error('The Codex tools policy cannot admit another Agent')
+      const launcher = await jobLauncher(sessionId, agent)
+      final()
+      const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
+      if (!record) throw new Error('The native Codex session record is unavailable')
+      return createCodexSessionPolicy({ snapshot: selected.snapshot, launcher, sessionId, fence: record.lease.runtimeFence, runtimeEpoch: runtime.getRuntimeId(), record: () => runtime.openedAgentSessionRecordStore()?.getRecord(sessionId) ?? undefined, approveInitialization: () => approved(sessionId, agent, true) })
+    },
     providerJobLauncher: jobLauncher,
     reserveInput: async input => {
       const { invocation, parentRow, childRow } = await policySnapshot(input.sessionId, input.agent)
       await admitCurrentApproval(invocation)
       const selected = await policySnapshot(input.sessionId, input.agent)
-      await verifyAccount(selected, input.sessionId)
+      const record = runtime.openedAgentSessionRecordStore()?.getRecord(input.sessionId)
+      await verifyAccount(selected, input.sessionId, selected.kind === 'codex' && !!record && !record.lease.ownerProcess && record.providerHandleChain.length === 0)
       assertDeliveryGrantCurrent(invocation)
       const identity = structuredWorkerIdentities.getBySessionId(input.sessionId)
       const db = runtime.getOrchestrationDb()

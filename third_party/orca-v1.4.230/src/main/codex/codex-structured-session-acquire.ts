@@ -123,6 +123,16 @@ export async function acquireCodexStructuredSession(input: {
         throw new AgentSessionPreSpawnError(error)
       })
     acquisitions.assertCurrent(sessionId, attempt)
+    if (launch.swaCodexPolicy) {
+      await launch.swaCodexPolicy.initialize(resource => {
+        if (attempt.initialization) throw new Error('native_codex_initialization_rebound')
+        attempt.initialization = resource
+        if (attempt.cancelled) void resource.close().catch(() => false)
+      }, launch.cwd)
+      acquisitions.assertCurrent(sessionId, attempt)
+      if (attempt.initialization && !attempt.initialization.exited) throw new Error('native_codex_initialization_exit_unknown')
+      attempt.initialization = undefined
+    }
     account = launch.codexHome ? deps.resolveAccountKind?.(launch.codexHome) : undefined
     const connection = await open(
       {
@@ -130,7 +140,8 @@ export async function acquireCodexStructuredSession(input: {
         args: launch.args,
         cwd: launch.cwd,
         ...(launch.env ? { env: launch.env } : {}),
-        ...(launch.envToDelete ? { envToDelete: launch.envToDelete } : {})
+        ...(launch.envToDelete ? { envToDelete: launch.envToDelete } : {}),
+        ...(launch.swaJobIPC ? { swaJobIPC: launch.swaJobIPC, swaEventDirectory: launch.swaEventDirectory, swaCodexPolicy: launch.swaCodexPolicy } : {})
       },
       {
         onNotification: codexAcquisitionNotificationHandler({
@@ -229,6 +240,7 @@ export async function acquireCodexStructuredSession(input: {
     const session: CodexSession = {
       account,
       connection,
+      ...(launch.swaCodexPolicy ? { swaCodexPolicy: launch.swaCodexPolicy } : {}),
       ...codexSessionLifecycle(acquireInput.fence, acquired.acquisitionGeneration as string),
       threadId: opened.threadId,
       historyMode: opened.historyMode,

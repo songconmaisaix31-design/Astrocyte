@@ -9,6 +9,9 @@ import { createPosixPrivateFile, requirePosixPrivatePath } from './private-posix
 const fullControl = 0x1f01ff
 const systemSid = 'S-1-5-18'
 const samePath = (left: string, right: string) => process.platform === 'win32' ? left.toLowerCase() === right.toLowerCase() : left === right
+const environmentDirectories = process.platform === 'linux'
+  ? ['appdata', 'localappdata', 'temp', 'xdg-config', 'xdg-data', 'xdg-cache', 'xdg-state', 'xdg-runtime', 'xdg-config-dirs', 'xdg-data-dirs']
+  : ['appdata', 'localappdata', 'temp']
 
 async function actualDirectory(path: string) {
   if (!isAbsolute(path) || !samePath(await realpath(path), resolve(path))) throw new Error('private_pi_directory_redirected')
@@ -47,6 +50,12 @@ async function createPrivateDirectory(path: string) {
     }
   }
   security(path, true)
+}
+
+export async function preparePrivatePiEnvironment(home: string) {
+  await actualDirectory(home)
+  security(home, true)
+  for (const name of environmentDirectories) await createPrivateDirectory(join(home, name))
 }
 
 export async function initializePrivatePiRoot() {
@@ -101,7 +110,7 @@ export async function verifyPrivatePiAccount(snapshot: NativePiPolicySnapshot) {
   const home = snapshot.policy.account.private_home
   await actualDirectory(home)
   security(home, true)
-  for (const name of ['appdata', 'localappdata', 'temp']) {
+  for (const name of environmentDirectories) {
     await actualDirectory(join(home, name))
     security(join(home, name), true)
   }
@@ -129,18 +138,29 @@ export async function materializePrivatePiAccount(snapshot: NativePiPolicySnapsh
     if (process.platform === 'linux') createPosixPrivateFile(join(home, name), bytes)
     else createFileWithDacl(toNamespacedPath(join(home, name)), acl, bytes)
   }
-  for (const name of ['appdata', 'localappdata', 'temp']) await createPrivateDirectory(join(home, name))
+  await preparePrivatePiEnvironment(home)
   await verifyPrivatePiAccount(snapshot)
 }
 
 export function privatePiEnvironment(home: string, inherited: Readonly<Record<string, string>>) {
   const allowed = new Set(['SYSTEMROOT', 'WINDIR', 'SYSTEMDRIVE', 'COMSPEC', 'PATHEXT', 'PATH', 'NUMBER_OF_PROCESSORS', 'PROCESSOR_ARCHITECTURE', 'PROCESSOR_IDENTIFIER', 'OS', 'LANG', 'LC_ALL', 'LC_CTYPE', 'TERM', 'COLORTERM', 'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY'])
   const env: Record<string, string> = {}
-  for (const [key, value] of Object.entries(inherited)) {
-    const normalized = key.toUpperCase()
-    if (allowed.has(normalized)) {
-      if (env[normalized] !== undefined && env[normalized] !== value) throw new Error('native_environment_case_collision')
-      env[normalized] = value
+  if (process.platform === 'linux') {
+    requirePosixPrivatePath(home, true)
+    for (const name of environmentDirectories) requirePosixPrivatePath(join(home, name), true)
+    for (const [key, value] of Object.entries(inherited)) if (allowed.has(key) || ['http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'].includes(key)) env[key] = value
+    Object.assign(env, {
+      TMPDIR: join(home, 'temp'), XDG_CONFIG_HOME: join(home, 'xdg-config'), XDG_DATA_HOME: join(home, 'xdg-data'),
+      XDG_CACHE_HOME: join(home, 'xdg-cache'), XDG_STATE_HOME: join(home, 'xdg-state'), XDG_RUNTIME_DIR: join(home, 'xdg-runtime'),
+      XDG_CONFIG_DIRS: join(home, 'xdg-config-dirs'), XDG_DATA_DIRS: join(home, 'xdg-data-dirs')
+    })
+  } else {
+    for (const [key, value] of Object.entries(inherited)) {
+      const normalized = key.toUpperCase()
+      if (allowed.has(normalized)) {
+        if (env[normalized] !== undefined && env[normalized] !== value) throw new Error('native_environment_case_collision')
+        env[normalized] = value
+      }
     }
   }
   Object.assign(env, { HOME: home, USERPROFILE: home, APPDATA: join(home, 'appdata'), LOCALAPPDATA: join(home, 'localappdata'), TEMP: join(home, 'temp'), TMP: join(home, 'temp'), PI_CODING_AGENT_DIR: home, PI_OFFLINE: '1', PI_SKIP_VERSION_CHECK: '1' })

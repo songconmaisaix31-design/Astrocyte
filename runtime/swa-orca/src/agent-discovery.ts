@@ -9,8 +9,6 @@ import { resolveStructuredAgentCommand } from '../../../third_party/orca-v1.4.23
 import { readAgentCliVersion } from '../../../third_party/orca-v1.4.230/src/main/agent-cli-version-probe'
 import { ACP_LAUNCH_SPECS } from '../../../third_party/orca-v1.4.230/src/main/acp/acp-launch-specs'
 import { isTuiAgent } from '../../../third_party/orca-v1.4.230/src/shared/tui-agent-config'
-import { normalizeCodexRuntimeSelection } from '../../../third_party/orca-v1.4.230/src/main/codex-accounts/runtime-selection'
-import { normalizeClaudeRuntimeSelection } from '../../../third_party/orca-v1.4.230/src/main/claude-accounts/runtime-selection'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { readAgentSettings, type AgentSettingsSnapshot } from './agent-settings'
 import { parsePiModelOptionId } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-options'
@@ -18,6 +16,7 @@ import { agentCapabilitiesSchema, agentSelectionSchema, registeredAgentSchema, t
 import { inspectNativePiPolicy } from './native-pi-policy'
 import { inspectNativeOpenCodePolicy, readOpenCodeCredential } from './native-opencode-policy'
 import { parse as parseJSONC, type ParseError } from 'jsonc-parser'
+import { inspectNativeCodexAccountSource, inspectNativeCodexPolicy } from './native-codex-policy'
 
 type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
 const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
@@ -46,36 +45,23 @@ async function optionalConfiguration(file: string, format: 'json' | 'toml' | 'js
 }
 
 // 认证内容只用于判断来源类型；返回值只包含非秘密配置事实。
-async function configuration(agent: string, snapshot: AgentSettingsSnapshot, requestedModel?: string) {
+export function codexProtectedRoots(snapshot: AgentSettingsSnapshot, projectRoot: string) {
+  return [projectRoot, process.env.SWA_AGENT_PROFILE, snapshot.settings.agentDefaultEnv?.codex?.CODEX_HOME, snapshot.settings.agentDefaultEnv?.claude?.CLAUDE_CONFIG_DIR,
+    ...snapshot.settings.codexManagedAccounts?.map(account => account.managedHomePath) ?? [],
+    ...snapshot.settings.claudeManagedAccounts?.map(account => dirname(account.managedAuthPath)) ?? []].filter((path): path is string => !!path && isAbsolute(path))
+}
+
+async function configuration(agent: string, snapshot: AgentSettingsSnapshot, requestedModel?: string, projectRoot?: string) {
   const home = snapshot.home
   if (agent === 'codex') {
-    const accountID = normalizeCodexRuntimeSelection(snapshot.settings).host
-    const account = accountID ? snapshot.settings.codexManagedAccounts?.find(item => item.id === accountID) : undefined
-    if (accountID && (!account || account.managedHomeRuntime === 'wsl')) throw new Error('The explicit native Codex account selection has no local read-only source')
-    const accountHome = account?.managedHomePath ?? snapshot.settings.agentDefaultEnv?.codex?.CODEX_HOME ?? (process.env.SWA_DISCOVERY_CODEX_HOME || join(home, '.codex'))
-    if (!isAbsolute(accountHome)) throw new Error('The selected Codex account home must be absolute')
-    const config = await optionalConfiguration(join(accountHome, 'config.toml'), 'toml')
-    const auth = await optionalConfiguration(join(accountHome, 'auth.json'))
-    const tokens = auth?.value.tokens
-    const oauth = typeof tokens === 'object' && tokens !== null && text(object.parse(tokens).access_token)
-    const key = text(auth?.value.OPENAI_API_KEY)
-    const provider = text(config?.value.model_provider) ?? (oauth || key ? 'openai' : undefined)
-    const accountSource = provider === 'openai' ? oauth ? 'codex-oauth-file' : key ? 'codex-api-key-file' : undefined : undefined
-    return { model: requestedModel ?? text(config?.value.model), provider, account: accountSource, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
+    const sourceHome = process.env.SWA_CODEX_API_KEY_HOME
+    if (requestedModel !== undefined && requestedModel !== 'gpt-5.5') throw new Error('native_codex_model_unreviewed')
+    if (!sourceHome || !projectRoot) return { model: undefined, provider: undefined, account: undefined, sourceHome, version: 'explicit-api-key-source-unverified' }
+    const account = await inspectNativeCodexAccountSource({ sourceHome, protectedRoots: codexProtectedRoots(snapshot, projectRoot), env: process.env })
+    return { model: 'gpt-5.5', provider: 'openai', account: 'codex-native-api-key', sourceHome: account.sourceHome, version: account.authSource.version }
   }
   if (agent === 'claude') {
-    const accountID = normalizeClaudeRuntimeSelection(snapshot.settings).host
-    const account = accountID ? snapshot.settings.claudeManagedAccounts?.find(item => item.id === accountID) : undefined
-    if (accountID && (!account || account.managedAuthRuntime === 'wsl')) throw new Error('The explicit native Claude account selection has no local read-only source')
-    const configHome = snapshot.settings.agentDefaultEnv?.claude?.CLAUDE_CONFIG_DIR ?? (process.env.SWA_DISCOVERY_CLAUDE_HOME || join(home, '.claude'))
-    if (!isAbsolute(configHome)) throw new Error('The selected Claude configuration home must be absolute')
-    const config = await optionalConfiguration(join(configHome, 'settings.json'))
-    const credentials = await optionalConfiguration(account?.managedAuthPath ?? join(configHome, '.credentials.json'))
-    const env = config?.value.env ? object.parse(config.value.env) : {}
-    const oauth = credentials?.value.claudeAiOauth
-    const token = typeof oauth === 'object' && oauth !== null && text(object.parse(oauth).accessToken)
-    const key = text(env.ANTHROPIC_AUTH_TOKEN) ?? text(env.ANTHROPIC_API_KEY)
-    return { model: requestedModel ?? text(config?.value.model) ?? text(env.ANTHROPIC_MODEL), provider: token || key ? 'anthropic' : undefined, account: token ? 'claude-oauth-file' : key ? 'claude-settings-key' : undefined, version: `${config?.version ?? 'absent'};${credentials?.version ?? 'absent'}` }
+    return { model: undefined, provider: undefined, account: undefined, sourceHome: process.env.SWA_CLAUDE_API_KEY_HOME, version: 'explicit-api-key-policy-unreviewed' }
   }
   if (agent === 'pi') {
     const accountHome = snapshot.settings.agentDefaultEnv?.pi?.PI_CODING_AGENT_DIR ?? (process.env.SWA_DISCOVERY_PI_HOME || join(home, '.pi', 'agent'))
@@ -120,7 +106,7 @@ function discoveryEnvironment(): Record<string, string> {
   return env
 }
 
-async function inspectAgents(runtime: OrcaRuntimeService, requirements?: CapabilityRequirements, onlyAgent?: string, requestedModel?: string, projectId?: string) {
+async function inspectAgents(runtime: OrcaRuntimeService, requirements?: CapabilityRequirements, onlyAgent?: string, requestedModel?: string, projectId?: string, projectRoot?: string) {
   const snapshot = await readAgentSettings()
   await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
   const host = getStructuredAgentSessionHost()
@@ -153,7 +139,7 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
         installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe')
       } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution')
     }
-    const config = await configuration(id, snapshot, requestedModel)
+    const config = await configuration(id, snapshot, requestedModel, projectRoot)
     const proven = !!(config.model && config.provider && config.account)
     const configured = { ...(proven ? available('Native configuration and the explicit selection supply model, provider and an account source', 'native-configuration') : unknown('The observed native defaults do not supply every model, provider and account field', 'native-configuration')), model: config.model, provider: config.provider, account_source: config.account }
     const declared = available('The real adapter implements this structured operation; no live handshake is claimed', `adapter-declaration:${adapterName}`)
@@ -161,11 +147,12 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
     agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session'), control, ...(requirements ? { requirements } : {}) })
     let selection: AgentSelection | undefined
     if (projectId && enabled.status === 'available' && executable && version && proven) {
-      if ((id !== 'pi' && id !== 'opencode') || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
+      if (id !== 'pi' && id !== 'opencode' && id !== 'codex' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
       if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
       const native = id === 'pi'
         ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, ...parsePiModelOptionId(config.model), env: discoveryEnvironment() })
-        : await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
+        : id === 'opencode' ? await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
+          : await inspectNativeCodexPolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'codex', projectId), catalogPath: join(await realpath(process.env.SWA_INSTALL_ROOT!), 'runtime/codex-policy/models.json'), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
       selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider: native.policy.account.provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })
     }
     details.set(id, { selection, configuration: config })
@@ -200,8 +187,8 @@ export async function discoverAgents(runtime: OrcaRuntimeService, requirements: 
   return result
 }
 
-export async function selectAgent(runtime: OrcaRuntimeService, projectId: string, agent: string, model: string) {
-  const { details } = await inspectAgents(runtime, undefined, agent, model, projectId)
+export async function selectAgent(runtime: OrcaRuntimeService, projectId: string, agent: string, model: string, projectRoot?: string) {
+  const { details } = await inspectAgents(runtime, undefined, agent, model, projectId, projectRoot)
   const item = details.get(agent)
   if (!item?.selection) throw new OrchestrationError('agent_unconfigured', 'The selected native Agent lacks proven installation or configuration')
   return agentSelectionSchema.parse({ ...item.selection, model })

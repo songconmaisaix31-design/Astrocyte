@@ -16,6 +16,15 @@ const nativeProgramSchema = z.discriminatedUnion('kind', [
 type NativeCLIIdentity = z.infer<typeof identitySchema> & z.infer<typeof nativeProgramSchema>
 type Observation = z.infer<typeof observationSchema> & { platform?: never; nativeCLI?: NativeCLIIdentity }
 type Identity = z.infer<typeof identitySchema>
+type IdentityObservation = { elapsedMs: number; identities: { expected: Identity; observed: unknown }[] }
+export type SwaWindowsProviderFinalObservation = {
+  platform: 'win32'
+  root: Identity
+  nativeCLI?: NativeCLIIdentity
+  observations: { elapsedMs: number; observation: Observation }[]
+  independentIdentityObservations: IdentityObservation[]
+  forced: boolean
+}
 type JobAPI = {
   providerJobIsolationVersion: 1
   createProviderJob(): object
@@ -45,6 +54,7 @@ class SwaWindowsProviderProcessTree implements ProviderProcessTree {
   private nativeCLIReady?: Promise<void>
   private resolveNativeCLI?: () => void
   private rejectNativeCLI?: (error: Error) => void
+  private finalObservation?: SwaWindowsProviderFinalObservation
 
   constructor() {
     if (process.platform !== 'win32' || !isWindowsProcessStartTimeAvailable()) throw new Error('SWA requires the compiled Windows process identity capability')
@@ -167,6 +177,10 @@ class SwaWindowsProviderProcessTree implements ProviderProcessTree {
 
   readObservation(): Observation { return this.observe() }
 
+  readFinalObservation(): SwaWindowsProviderFinalObservation | null {
+    return this.closed && this.verdict === 'exited' && this.finalObservation ? structuredClone(this.finalObservation) : null
+  }
+
   releaseProcessless(): void {
     if (!this.child || !this.exitState?.().processless || this.child.pid !== undefined || this.root || this.identities.size) throw new Error('SWA processless cleanup requires actual evidence that no process was created')
     if (this.closed) return
@@ -196,7 +210,7 @@ class SwaWindowsProviderProcessTree implements ProviderProcessTree {
     }
     const deadline = performance.now() + 2_000
     let consecutive = 0
-    const independent: { elapsedMs: number; identities: { expected: Identity; observed: unknown }[] }[] = []
+    const independent: IdentityObservation[] = []
     while (performance.now() < deadline) {
       const current = this.observe()
       const state = this.exitState()
@@ -210,9 +224,11 @@ class SwaWindowsProviderProcessTree implements ProviderProcessTree {
       if (consecutive) independent.push({ elapsedMs: performance.now(), identities: [...this.identities.values()].map(old => ({ expected: old, observed: rows.find(row => row.pid === old.pid) ?? null })) })
       else independent.length = 0
       if (consecutive >= 2) {
+        if (!this.root) throw new Error('SWA completed Job has no original root identity')
         this.native.closeProviderJob(this.job)
         this.closed = true
         this.verdict = 'exited'
+        this.finalObservation = structuredClone({ platform: 'win32', root: this.root, ...(this.nativeCLI ? { nativeCLI: this.nativeCLI } : {}), observations: this.observations.slice(-2), independentIdentityObservations: independent.slice(-2), forced: this.forced })
         process.stderr.write(JSON.stringify({ type: 'swa_provider_job_tree_exited', root: this.root, processless: state.processless, observations: this.observations.slice(-2), independentIdentityObservations: independent.slice(-2), forced: this.forced }) + '\n')
         return this.verdict
       }
@@ -234,6 +250,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   capture() { return this.implementation.capture() }
   refresh() { return this.implementation.refresh() }
   readObservation() { return this.implementation.readObservation() }
+  readFinalObservation() { return this.implementation.readFinalObservation() }
   releaseProcessless() { this.implementation.releaseProcessless() }
   reap() { return this.implementation.reap() }
 }

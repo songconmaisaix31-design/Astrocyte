@@ -17,6 +17,21 @@ export type SwaOpenCodeToolsPolicy = {
   verifySession(sessionId: string): Promise<void>
   trace(event: string, detail: unknown): void
 }
+export type CodexPolicyConnection = {
+  request(method: string, params?: Record<string, unknown>): Promise<unknown>
+}
+export type SwaCodexToolsPolicy = {
+  nativeContract: 'codex-cli-0.163.0'
+  model: 'gpt-5.5'
+  appServerArgs: readonly string[]
+  initialize(track: (resource: SwaInitializationProcess) => void, cwd: string): Promise<void>
+  attach(tree: SwaProviderProcessTree): void
+  ready(connection: CodexPolicyConnection): Promise<void>
+  verifyCurrent(connection: CodexPolicyConnection): Promise<void>
+  assertCurrent(): void
+  record(parsed: Record<string, unknown>, line: string, responseMethod?: string): 'steer-not-submitted' | 'remote-control-disabled' | void
+  closed(): void
+}
 
 export type ProviderProcessLaunch = {
   command: string
@@ -31,6 +46,7 @@ export type ProviderProcessLaunch = {
   swaJobIPC?: true
   swaEventDirectory?: string
   swaOpenCodePolicy?: SwaOpenCodeToolsPolicy
+  swaCodexPolicy?: SwaCodexToolsPolicy
 }
 
 export type SwaProviderJobLauncher = { node: string; entry: string; eventDirectory: string }

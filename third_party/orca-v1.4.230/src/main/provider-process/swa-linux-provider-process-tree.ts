@@ -67,6 +67,13 @@ export type SwaLinuxProviderObservation = {
   nativeState?: SwaLinuxNativeState
   fullTreeProof?: z.infer<typeof swaLinuxChildMessageSchema.options[3]>
 }
+export type SwaLinuxProviderFinalObservation = {
+  platform: 'linux'
+  observation: SwaLinuxProviderObservation
+  acknowledgement_delivered: true
+  root_exit_observed: true
+  root_absent: true
+}
 
 export class SwaLinuxProviderProcessTree implements ProviderProcessTree {
   private readonly owner = readSwaLinuxProcessIncarnation(process.pid)
@@ -86,6 +93,7 @@ export class SwaLinuxProviderProcessTree implements ProviderProcessTree {
   private verdict: DescendantTreeVerdict = 'unverifiable'
   private failure?: Error
   private ackDelivered = false
+  private finalObservation?: SwaLinuxProviderFinalObservation
 
   constructor() { loadSwaLinuxIsolationAPI() }
   get treeVerdict(): DescendantTreeVerdict { return this.failure ? 'unverifiable' : this.verdict }
@@ -189,6 +197,9 @@ export class SwaLinuxProviderProcessTree implements ProviderProcessTree {
     if (this.root && !this.exitState?.().observed) requireSwaLinuxIncarnation(this.root)
     return { platform: 'linux', owner: this.owner, root: this.root, custody_id: this.custodyId, custodyAdmitted: this.admitted, nativeState: this.nativeState, nativeCLI: this.nativeState?.state === 'created' ? { ...this.nativeState.identity, ...this.nativeState.launch } : undefined, fullTreeProof: this.proof }
   }
+  readFinalObservation(): SwaLinuxProviderFinalObservation | null {
+    return !this.failure && this.closed && this.ackDelivered && this.verdict === 'exited' && this.finalObservation ? structuredClone(this.finalObservation) : null
+  }
   async capture() { if (this.failure) throw this.failure; if (!this.closed) this.readObservation() }
   refresh() { return this.capture() }
   releaseProcessless() {
@@ -210,6 +221,7 @@ export class SwaLinuxProviderProcessTree implements ProviderProcessTree {
           if (this.failure || !this.ackDelivered) throw new Error('SWA Linux acknowledgement became unknown before release')
           this.verdict = 'exited'
           this.closed = true
+          this.finalObservation = { platform: 'linux', observation: structuredClone(this.readObservation()), acknowledgement_delivered: true, root_exit_observed: true, root_absent: true }
           this.child.removeListener('message', this.receive)
           return this.verdict
         }

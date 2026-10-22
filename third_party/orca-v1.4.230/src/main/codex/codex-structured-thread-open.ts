@@ -11,6 +11,8 @@ import {
 } from './codex-app-server-connection'
 import type { CodexStructuredPermissionPolicy } from './codex-structured-permission-policy'
 import { readCodexThreadId } from './codex-structured-thread-facts'
+import { z } from 'zod'
+import type { SwaCodexToolsPolicy } from '../provider-process/provider-process-launch'
 
 export type CodexOpenedThread = {
   threadId: string
@@ -58,11 +60,15 @@ export async function openCodexThread(
     model?: string
     /** Config overrides for this thread, on start and resume alike. */
     threadConfig?: Record<string, unknown>
+    swaCodexPolicy?: SwaCodexToolsPolicy
   },
   timeoutMs: number | undefined
 ): Promise<CodexOpenedThread> {
   const resumeThreadId = launch.resumeThreadId
-  const threadSettings = {
+  if (launch.swaCodexPolicy && (resumeThreadId || launch.resumePath || launch.threadConfig || launch.model !== 'gpt-5.5')) throw new Error('native_codex_restricted_thread_override')
+  const threadSettings = launch.swaCodexPolicy ? {
+    modelProvider: 'openai', allowProviderModelFallback: false, environments: [], selectedCapabilityRoots: [], dynamicTools: [], approvalPolicy: 'never', sandbox: 'read-only', experimentalRawEvents: true, ephemeral: false
+  } : {
     cwd: launch.cwd,
     ...launch.permissionPolicy,
     ...(launch.threadConfig ? { config: launch.threadConfig } : {})
@@ -106,6 +112,9 @@ export async function openCodexThread(
     throw new Error(`codex app-server resumed ${threadId} instead of ${resumeThreadId}`)
   }
   const result = opened as Record<string, unknown>
+  if (launch.swaCodexPolicy) {
+    z.looseObject({ model: z.literal('gpt-5.5'), modelProvider: z.literal('openai'), approvalPolicy: z.literal('never'), sandbox: z.looseObject({ type: z.literal('readOnly') }), thread: z.looseObject({ id: z.uuid(), cliVersion: z.literal('0.163.0'), modelProvider: z.literal('openai'), path: z.string().min(1), historyMode: z.enum(['legacy', 'paginated']), ephemeral: z.literal(false), source: z.literal('vscode'), threadSource: z.literal('user').nullish() }) }).parse(result)
+  }
   const thread =
     typeof result.thread === 'object' && result.thread !== null
       ? (result.thread as Record<string, unknown>)

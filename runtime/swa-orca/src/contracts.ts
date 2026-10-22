@@ -46,7 +46,17 @@ export const nativeOpenCodeLaunchPolicySchema = z.strictObject({
   }),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('opencode-cli-2.0.31') })
 })
-export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema])
+export const nativeCodexLaunchPolicySchema = z.strictObject({
+  schema: z.literal('swa.native-launch.v1'),
+  account: z.strictObject({
+    kind: z.literal('codex-native-api-key'), provider: z.literal('openai'), source_home: z.string().min(1),
+    auth_source: nativeConfigurationSourceSchema, catalog_source: nativeConfigurationSourceSchema,
+    private_root: z.string().min(1),
+    model_target: z.strictObject({ model_id: z.literal('gpt-5.5'), api: z.literal('openai-responses'), base_url: z.literal('https://api.openai.com/v1') })
+  }),
+  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('codex-cli-0.163.0') })
+})
+export const nativeLaunchPolicySchema = z.union([nativePiLaunchPolicySchema, nativeOpenCodeLaunchPolicySchema, nativeCodexLaunchPolicySchema])
 export type NativeLaunchPolicy = z.infer<typeof nativeLaunchPolicySchema>
 export const agentSelectionSchema = z.strictObject({
   agent_id: z.string().min(1), adapter: z.string().min(1), execution_mode: z.literal('structured'),

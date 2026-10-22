@@ -16,21 +16,42 @@ export function createProviderRecordReader(input: {
   onRecord: (record: unknown, line: string) => void
   onRejected: (rejected: NdjsonRejectedRecord) => void
   onFatal: (error: Error) => void
+  maxLineBytes?: number
+  requireTerminated?: boolean
+  onEnd?: () => void
 }): ProviderRecordReader {
   let paused = false
-  const framer = createIncrementalNdjsonFramer(input.onRecord, input.onRejected, {
+  let strictFailed = false
+  const fatal = (error: Error) => { strictFailed = true; input.onFatal(error) }
+  const framer = createIncrementalNdjsonFramer(input.onRecord, rejected => { if (input.requireTerminated) strictFailed = true; input.onRejected(rejected) }, {
     // The provider owns this local stdio stream, so valid agent payloads keep full fidelity.
-    maxLineBytes: Number.POSITIVE_INFINITY,
+    maxLineBytes: input.maxLineBytes ?? Number.POSITIVE_INFINITY,
     shouldPause: () => paused
   })
 
-  input.stdout.setEncoding('utf8').on('data', (chunk: string) => {
-    try {
-      framer.feed(chunk)
-    } catch (error) {
-      input.onFatal(error instanceof Error ? error : new Error(String(error)))
-    }
-  })
+  const feed = (chunk: string) => {
+    try { framer.feed(chunk) }
+    catch (error) { fatal(error instanceof Error ? error : new Error(String(error))) }
+  }
+  if (input.requireTerminated) {
+    let ended = false
+    const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true })
+    input.stdout.on('data', (chunk: unknown) => {
+      try {
+        if (!(chunk instanceof Uint8Array)) throw new Error('Provider stdout bytes are unavailable')
+        feed(decoder.decode(chunk, { stream: true }))
+      } catch { fatal(new Error('Provider stdout is not valid UTF-8')) }
+    })
+    input.stdout.on('end', () => {
+      ended = true
+      try { feed(decoder.decode()) } catch { fatal(new Error('Provider stdout ended within UTF-8 bytes')); return }
+      if (strictFailed) return
+      if (paused || framer.takeTail().length) { fatal(new Error('Provider stdout ended without a complete record boundary')); return }
+      input.onEnd?.()
+    })
+    input.stdout.on('error', () => { if (!ended) fatal(new Error('Provider stdout failed before its complete end')) })
+    input.stdout.on('close', () => { if (!ended) fatal(new Error('Provider stdout closed before its complete end')) })
+  } else input.stdout.setEncoding('utf8').on('data', feed)
 
   return {
     pause: () => {

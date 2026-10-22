@@ -9,6 +9,7 @@ import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/
 import { deriveRemoteRuntimeTerminalCreateHandle } from '../../../third_party/orca-v1.4.230/src/main/runtime/remote-runtime-terminal-create-identity'
 import { getRepoMainWorktreeId } from '../../../third_party/orca-v1.4.230/src/shared/worktree/id'
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
+import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
 import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { quotePowerShellNativeArgument } from '../../../third_party/orca-v1.4.230/src/shared/powershell-native-argument'
 import { resolveWindowsShellLaunchArgs } from '../../../third_party/orca-v1.4.230/src/main/providers/windows-shell-args'
@@ -22,6 +23,7 @@ import { admitWorkerResources } from './resource-admission'
 import { completeTaskResult, observeWorkerSource, readNativeInputStatus } from './task-result'
 import { createPrivatePiHome } from './private-pi-account'
 import { createPrivateOpenCodeRoot } from './private-opencode-account'
+import { createPrivateCodexRoot } from './private-codex-account'
 import { deliverNativeWorkerInput } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { authority, controllerOwnerSchema, controllerScope, exactController, observeControllerExited, recorded } from './controller-scope'
@@ -196,6 +198,7 @@ export const SWA_METHODS = [
     return effect(async () => {
       await createPrivatePiHome(invocation.project.id)
       await createPrivateOpenCodeRoot(invocation.project.id)
+      await createPrivateCodexRoot(invocation.project.id)
       const repo = await runtime.addRepo(workdir, 'folder')
       const workspace = getRepoMainWorktreeId(repo)
       return createController(context, invocation.project.id, workspace, receipt => checkpoint(context, receipt))
@@ -353,9 +356,15 @@ async function recoverController(invocation: Invocation, context: RpcContext) {
 }
 
 async function resolveSelection(runtime: OrcaRuntimeService, project: string, command: Invocation['command']): Promise<AgentSelection> {
+  if (!command.controller) return fail('invalid_argument', 'An exact controller is required for the native account source boundary')
+  const { owner } = controllerScope(runtime, project, command.controller)
+  await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
+  const resolvePath = getStructuredAgentSessionHost()?.deps.resolveWorkspacePath
+  if (!resolvePath) return fail('evidence_missing', 'The exact native project directory is unavailable')
+  const projectRoot = await realpath(await resolvePath(owner.worktree_id))
   if (command.action === 'worker.start') {
     if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
-    return selectAgent(runtime, project, command.agent, command.model)
+    return selectAgent(runtime, project, command.agent, command.model, projectRoot)
   }
   if (command.action !== 'worker.send' || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
   const { scope } = controllerScope(runtime, project, command.controller)
@@ -371,7 +380,7 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   const dispatch = db.getDispatchContextById(command.dispatch_id)
   const record = dispatch?.assignee_orca_session_id && runtime.openedAgentSessionRecordStore()?.getRecord(dispatch.assignee_orca_session_id)
   if (!record || record.provider !== original.agent_id || record.options?.model !== original.model) return fail('worker_identity_changed', 'The actual Worker session does not match its original Agent selection')
-  const current = await selectAgent(runtime, project, original.agent_id, original.model)
+  const current = await selectAgent(runtime, project, original.agent_id, original.model, projectRoot)
   if (!isDeepStrictEqual(original, current)) return fail('request_mismatch', 'The original Worker Agent source changed; preserve the original selection')
   return original
 }

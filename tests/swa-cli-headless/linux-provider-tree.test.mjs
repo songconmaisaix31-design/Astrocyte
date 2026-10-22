@@ -89,6 +89,7 @@ async function worker(onMessage) {
   const nativePid = Number((await output.wait('ROOT ')).slice(5))
   assert.equal(tree.readObservation().platform, 'linux')
   assert.equal(tree.readObservation().nativeCLI.pid, nativePid)
+  assert.equal(tree.readFinalObservation(), null)
   return { tree, managed, output, messages, nativePid, rootIdentity: tree.readObservation().root }
 }
 async function waitMessage(actual, type) {
@@ -112,6 +113,7 @@ async function cleanupRejectedFixture(actual) {
   await timeout(actual.managed.exitPromise, 'Explicit test bootstrap cleanup did not exit')
   assert.equal(actual.tree.treeVerdict, 'unverifiable')
   assert.equal(await actual.tree.reap(), 'unverifiable')
+  assert.equal(actual.tree.readFinalObservation(), null)
 }
 async function closed(worker) {
   const result = await timeout(worker.managed.close(worker.tree), 'Actual full-tree cleanup was not confirmed', 20_000)
@@ -124,6 +126,14 @@ async function closed(worker) {
   assert.equal(proof.native_cli.state, 'created')
   assert.equal(proof.native_cli.identity.pid, worker.nativePid)
   assert.ok(proof.observations[1].monotonic_ms > proof.observations[0].monotonic_ms)
+  const final = worker.tree.readFinalObservation()
+  assert.equal(final.platform, 'linux')
+  assert.deepEqual(final.observation.fullTreeProof, proof)
+  assert.equal(final.acknowledgement_delivered, true)
+  assert.equal(final.root_exit_observed, true)
+  assert.equal(final.root_absent, true)
+  final.observation.fullTreeProof.observations[0].state = 'changed-by-consumer'
+  assert.equal(worker.tree.readFinalObservation().observation.fullTreeProof.observations[0].state, 'no-children')
   return proof
 }
 
@@ -172,6 +182,7 @@ test('an actual bootstrap spawn failure is processless and produces no tree proo
   const result = await managed.close(tree)
   assert.deepEqual(result, { root: 'exited', tree: null })
   assert.equal(tree.treeVerdict, 'unverifiable')
+  assert.equal(tree.readFinalObservation(), null)
 })
 
 test('actual EACCES native spawn settles not-created while the existing bootstrap still owes its full tree proof', async () => {
@@ -222,6 +233,7 @@ test('actual owner IPC loss performs owned cleanup and cannot publish a full-tre
   assert.equal(identity.isSwaLinuxProcessAbsent(actual.nativePid), true)
   assert.equal(actual.messages.some(message => message.type === 'swa_linux_fulltreeclosed'), false)
   assert.equal(await actual.tree.reap(), 'unverifiable')
+  assert.equal(actual.tree.readFinalObservation(), null)
 })
 
 test('actual pre-admission IPC rejects changed boot, ticks, UID and owner without launching the native fixture', async () => {
@@ -252,6 +264,7 @@ test('a real early ACK is rejected and retains unknown until separate explicit t
   assert.equal(await actual.tree.reap(), 'unverifiable')
   assert.equal(actual.tree.treeVerdict, 'unverifiable')
   assert.equal(actual.messages.some(message => message.type === 'swa_linux_fulltreeclosed'), false)
+  assert.equal(actual.tree.readFinalObservation(), null)
   // 测试单独清理自己的已无 native child 的拒绝 bootstrap，不把此操作记为产品释放。
   await cleanupRejectedFixture(actual)
 })
@@ -262,6 +275,7 @@ test('real IPC disconnect between native full-tree proof and parent ACK keeps th
   assert.equal(result.tree, 'unverifiable')
   assert.equal(actual.tree.treeVerdict, 'unverifiable')
   assert.ok(actual.messages.some(message => message.type === 'swa_linux_fulltreeclosed'))
+  assert.equal(actual.tree.readFinalObservation(), null)
   assert.equal(identity.isSwaLinuxProcessAbsent(actual.nativePid), true)
   assert.equal(await actual.tree.reap(), 'unverifiable')
 })
@@ -274,5 +288,6 @@ test('a real duplicate admission after proof cannot be recovered by a later othe
   await waitMessage(actual, 'swa_linux_custody_failed')
   assert.ok(actual.messages.some(message => message.type === 'swa_linux_fulltreeclosed'))
   assert.equal(actual.tree.treeVerdict, 'unverifiable')
+  assert.equal(actual.tree.readFinalObservation(), null)
   await cleanupRejectedFixture(actual)
 })

@@ -29,6 +29,7 @@ export function createCodexAppServerRecordDispatcher(input: {
 }): {
   addPending: (id: number, waiter: CodexPendingRequest) => void
   deletePending: (id: number) => void
+  pendingMethod: (id: number) => string | undefined
   timeOutPending: (id: number) => void
   failPending: (error: Error) => void
   dispatch: (message: Record<string, unknown>) => void
@@ -191,6 +192,7 @@ export function createCodexAppServerRecordDispatcher(input: {
   return {
     addPending: (id, waiter) => pending.set(id, waiter),
     deletePending: (id) => pending.delete(id),
+    pendingMethod: (id) => pending.get(id)?.method,
     timeOutPending,
     failPending,
     dispatch,

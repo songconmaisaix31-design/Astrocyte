@@ -3,7 +3,8 @@ import type { CodexAppServerConnection } from './codex-app-server-connection-typ
 const HANDSHAKE_TIMEOUT_MS = 15_000
 
 export async function initializeCodexAppServerConnection(
-  connection: CodexAppServerConnection
+  connection: CodexAppServerConnection,
+  restricted = false
 ): Promise<void> {
   await connection.request(
     'initialize',
@@ -13,6 +14,7 @@ export async function initializeCodexAppServerConnection(
         experimentalApi: true,
         requestAttestation: false,
         mcpServerOpenaiFormElicitation: false,
+        ...(restricted ? { explicitGatewayOauth: true } : {}),
         extensions: {}
       }
     },

@@ -7,6 +7,7 @@ import type {
 import type { NativeChatBlock } from '../../shared/native-chat-types'
 import type { AgentSessionDispatchOutcome } from '../native-chat/agent-session-wire/structured-agent-session-adapter'
 import { ProviderWriteAdmissionError } from '../provider-process/provider-stdio-write-queue'
+import type { SwaCodexToolsPolicy } from '../provider-process/provider-process-launch'
 import {
   isCodexAppServerRequestError,
   type CodexAppServerConnection
@@ -45,6 +46,7 @@ export function isCodexTurnOptionKey(key: string): boolean {
 
 /** The session state one turn needs. */
 export type CodexTurnHost = {
+  swaCodexPolicy?: SwaCodexToolsPolicy
   account?: AgentSessionAccountKind
   connection: Pick<CodexAppServerConnection, 'request'>
   threadId: string
@@ -124,6 +126,12 @@ export async function startCodexTurn(
     beforeEffect?: () => void
   }
 ): Promise<{ turnId: string | null; via: AgentJournalTurnJoin } | false> {
+  if (host.swaCodexPolicy) {
+    if (host.options.get('model') !== 'gpt-5.5' || [...host.options.keys()].some(key => key !== 'model') || input.body.blocks.length === 0 || input.body.blocks.some(block => block.type !== 'text' || !('text' in block) || typeof block.text !== 'string' || !block.text.trim() || /^\s*\//.test(block.text))) throw new ProviderWriteAdmissionError(new Error('native_codex_restricted_input_override'))
+    await host.swaCodexPolicy.verifyCurrent(host.connection)
+    const finalAdmission = input.beforeEffect
+    input = { ...input, beforeEffect: () => { host.swaCodexPolicy!.assertCurrent(); finalAdmission?.() } }
+  }
   // Armed before the write: the echo and `turn/started` can both land while the
   // response is in flight, and the start must snapshot this send in its frontier.
   if (!host.dispatchEchoes.arm(input.clientMessageId, input.requestedAt)) {
@@ -150,7 +158,7 @@ export async function startCodexTurn(
       clientUserMessageId: input.clientMessageId,
       input: turnInputFor(input.body),
       // Codex omits a tier the model does not list.
-      ...Object.fromEntries(host.options)
+      ...(host.swaCodexPolicy ? { model: 'gpt-5.5', environments: [] } : Object.fromEntries(host.options))
     },
     { timeoutMs: input.timeoutMs, onReply: input.onReply, beforeWrite: input.beforeEffect }
   )
