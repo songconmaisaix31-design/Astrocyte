@@ -8,9 +8,11 @@ Windows真实CI第三轮 `39758793164` build失败；只读诊断 `39760430188` 
 
 局部probe来源`369680ec`已push；实际run39763935502仅probe失败（工具准备与artifact上传成功），完整候选与旧完整检查跳过。该轮公开错误只有exit1，未证实到达finder。静态已发现下载器只允许repo/build/candidate6alnum而probe误传RUNNER_TEMP，且缺下载exit核查；05/06按原helper不变修正调用，下一次仍仅局部probe，先实际负测原参数拒绝，再观察合法目录的原finder/Developer Shell。不得将静态发现写成已取到该轮原始异常。
 
-最新局部run39765889558（来源`2c023886`）已取得原2022失败、仅2026成功、2026官方DevShell成功三组实际finder结果，并定位VSSetup输出1451733字节超过默认1048576字节；C#命令78312字节不溢出。job整体仍失败、无phase错误，末尾cl/Bv无输入exit2被记录；05/06先核收尾退出传播，不得称job已绿。产品builder仍硬选2022，修复计划与局部验证通过并向用户报告后才由root允许下一完整Windows构建。当前remote为2c023886，原689组合安装不补丁。
+上一轮局部run39765889558（来源`2c023886`）取得原2022失败、仅2026成功、2026官方DevShell成功三组实际finder结果，并定位VSSetup输出1451733字节超过默认1048576字节；C#命令78312字节不溢出。该轮job整体失败、无phase错误，末尾cl/Bv无输入exit2被记录；当时尚未核收尾退出传播或修正builder选择。当时remote为2c023886，原689组合安装不补丁。
 
-后继源码独立提交：03显式两API来源目录`4c79625d`，01 Codex共享合同`3b32fae6`，05完整官方目录资产`ac668ca8`。02负责主接线，Codex专题独占native-codex-policy/private-codex-account，04另拟Claude完整结果reader；先独立计划/CR，再由root串行提交。账号模块局部打包两次入口解析失败已修检查入口，12真实无key文件负测通过，完整strict与实际登录仍待验。官方API当前CONNECT403；云草稿已保存新增api.openai.com/api.anthropic.com但requires_publish，发布/应用前不宣称网络已通，也不发送模型输入。
+后继来源`1d27fd3c6c00711409645ea3d2154415fceb89eb`已普通push，run39767392238局部probe实际成功/full跳过。真实PS7.5.5 shell MRE已复现runner式generic1与分类后0，未知exit/throw仍失败；该工具最初默认XDG cache/data只读的134/70失败原件保留，进程专属XDG目录后0。本轮VS18.10/stream1446335/C#77972，旧轮18.11/1451733/78312不混用。05正式MSVC选择方案已允许在06计划接受后实现：显式2022或2026、默认保2022，CI实际官方DevShell/原gyp选项一致，Linux不静默忽略Win选项，复用必须有相同year真实来源。完整build仍待root下令。
+
+后继源码独立提交：03显式两API来源目录`4c79625d`，01 Codex共享合同`3b32fae6`，05完整官方目录资产`ac668ca8`。02负责主接线，Codex专题独占native-codex-policy/private-codex-account，04实现Claude完整结果reader；先独立计划/CR，再由root串行提交。账号模块局部打包两次入口解析失败已修检查入口，后继16项真实无key文件拒绝及两模块返修源码CR已限定接受，整体strict与实际登录仍待验。官方API当前CONNECT403；云草稿已保存新增api.openai.com/api.anthropic.com但requires_publish，发布/应用前不宣称网络已通，也不发送模型输入。
 
 旧CLI04来源e148的服务正常关闭证据继续保持其原范围。Codex0.163结果读取已提交，原ChatGPT OAuth不可克隆到多个私有HOME作为并发保全证明；02与专题负责人按官方API-key stdin登录、各Worker私有HOME和ToolsOff计划推进最小NativeLaunch接口，无真实安全配置key时保留未配置/NOT_RUN。06的真实N驱动已实现并提交，但不把help/负向或准备公开输入算模型通过。上游7个structured与45个TUI模板的“大部分”范围问题尚待用户选择，继续已明确的适配工作。
 

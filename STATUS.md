@@ -16,6 +16,8 @@ VS局部探测来源`369680ec`已普通push，实际 [39763935502](https://githu
 
 后继局部run39764771846实际验证原非法目录在HTTP前拒绝，合法下载/哈希通过，发现VS18而非VS17。run39765889558的真实三阶段对照进一步确认：原2022选择失败并报告版本不符；只改为2026后finder成功；官方Developer Shell下2026/v145、MSBuild、SDK和编译器身份核查成功。VSSetup原命令输出1451733字节，默认execFile在1048576字节处报MAXBUFFER，C#命令78312字节通过。该轮整体仍报失败，末尾`cl /Bv`无输入退出2已记录，runner退出分类待局部核查；不将局部观测成功写成job通过，产品builder仍未修改2022选择，也未重开完整Windows构建。
 
+最新Windows局部 [39767392238](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39767392238)（`1d27fd3c6c00711409645ea3d2154415fceb89eb`）已实际成功，完整构建跳过。真实PowerShell局部MRE复现原runner调用返回1、显式分类后0，未知退出及throw仍失败；原cl/Bv=2如实保留。该轮VS18.10、VSSetup1446335字节、C#77972字节，与上一轮不同主机数据分别保存；2022失败、2026及官方Developer Shell成功的结论一致。05继续显式2022/2026正式构建入口及严格复用来源检查，局部验证和准确提交完成后才由root启动完整候选。
+
 显式Codex/Claude API-key来源目录配置为`4c79625d`，定向Go与Windows交编通过，无账号内容读取。Codex合同/Schema为`3b32fae6`，94形状边界与264示例/生成一致性通过；完整官方模型目录/许可及随包检查为`ac668ca8`，局部资产检查通过。运行时NativeLaunch接线仍在实现，新源码尚无同安装验收。当前环境对OpenAI和Anthropic官方API的无认证HEAD均CONNECT403；两精确域名已追加到云草稿，保存成功但尚未应用/发布。缺真实key、项目Grant和网络准入时原生模型及N=3保持NOT_RUN。
 
 以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
