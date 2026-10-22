@@ -10,11 +10,17 @@
 
 阶跃星辰官方模型目录已实际校验：无认证HEAD为401，单次带认证GET为200，返回33个模型，含`step-3.5-flash`；生成调用为0。06已独立核验结果权限与摘要，仅接受目录读取成功，不代表余额、模型生成或Pi接入。先前权限核验的私有临时来源已删除，当前凭据仅留会话内存，工作区无密钥文件，密钥未进入Git、命令参数、输出或云草稿。本次GET使用私有TTY且没有创建密钥文件。云草稿已增`api.stepfun.com`并保存，仍需环境设置中的保存与发布。Codex/OpenAI、Claude/Anthropic对应来源仍缺，不能共用该凭据。
 
-授权辅助工具两源已由`10563b86`原样提交至`tests/swa-cli-headless/authorize-installed/`，获06准确源码限定接受；新路径构建/help为0，真实8752公开输入prepare/verify均按缺项退出3，移开唯一companion的负向退出2。尚缺Codex来源与实际服务授权基线，具体委托包未就绪，没有HTTP、human、Grant、驱动或模型执行。按用户选择先验证阶跃星辰，首个Pi目标采用自定义provider `stepfun`、`step-3.5-flash`、`openai-completions`和`https://api.stepfun.com/v1`；该模型已在真实目录中出现，生成及兼容性仍未验。现有Codex helper不自动改成Pi；OpenCode Linux/StepFun目前仅有只读范围计划。
+授权辅助工具原两源提升为`10563b86`；后继封闭StepFun Pi profile三源已独立限定接受并提交`039924d275ce8d829b0dca3e3ddb48dcc0e7dbf2`。默认Codex语义保留，Pi只接受固定caller/模型、独立来源与真实serve六键启动记录，driver固定八源与双launch参数。Go离线3组/22子项、build/help均0，4个真实非法包均在HTTP前返回2；consumer原字节不变。尚无完整同S Pi执行包、HTTP/human/Grant/driver或模型调用。首目标为custom `stepfun`、`step-3.5-flash`、`openai-completions`和`https://api.stepfun.com/v1`；OpenCode仅完成只读源核查，未实现新分支。
 
-Pi每Worker HOME的新账户形状已在七文件工作区变更中实现并获独立限定接受：403项JSON/Zod形状检查、33项Go子项与264个示例/生成一致性通过。完整执行B的原生流、写入锁、实际请求ID、发布与成果端口已冻结，由原02/03负责人实施；准确方案为`pi-native-raw-source-contract.md`（d8031c43…）与`pi-linux-internal-ports-supplement.md`（76fac972…）。三个Linux执行拒绝门仍保留，尚未提交不完整执行批次或运行半树strict；B全批源码、真实无模型RPC及最终适用检查尚未接受。
+Pi每Worker HOME合同及完整B四十文件已提交并推送`ca3d35176de19e42365adb74918a7a6895a11244`，原合同403项JSON/Zod、Go33子项及264examples/生成一致性结果保留。实施依据为后继主稿c6b9e7e6…与ports稿9cff985a…，原d803/76fac保留历史。真实提交排序、锁选项、版本探测隔离、停止清理权限和失败状态锁存均已独立源码审查；类型返修最终获01接受，完整strict与架构检查通过。Linux新kind的两个主动入口走完整policy准入，旧Windows中性投影的Linux拒绝及OpenCode保护继续保留；新安装、真实受管输入及模型尚未验。
 
-B开发的局部文件检查前三轮依次在依赖解析、jsonc-parser的UMD加载及空原型对象比较失败；先报告最小复现、根因和局部结果，再修正生产共用打包规则及严格解析返回值。原严格JSON/重复键和安全断言保留。第四轮实际8PASS/0fail/0skip，覆盖真实目录/来源叶文件、有界FD、proper-lockfile 4.1.2、锁替换/消失、设置语义及官方源码与纯模型metadata，原件`pi-source-boundaries-r4/`；前3轮保留。另有共享写队列8项、真实字节流reader 6项及Go当前准入5组/47子项局部通过，均不代表完整B、Pi RPC、账号、模型或同S安装通过。无模型runner与私密来源创建工具只有源码审查及有限静态检查，均未执行；生成调用仍为0。
+B局部文件检查r1/r2准备失败、r3为5PASS/3FAIL，窄修打包规则和严格JSON返回对象后，r4实际8PASS/0skip；原件均保留。共享队列8项、真实UTF8/EOF reader 6项、真实SQLite发布3项及Go当前准入5组/47子项亦局部通过。8实际入口初次只编译通过；必要返修后的预检曾40项一致/1项不符，根因是清单遗漏已审锁选项变更，未进入编译，已先报告并保留原件。这些局部结果不代表完整B、账号、模型或新安装通过。
+
+完整 `pnpm typecheck:swa` 原R1退出2/148诊断，窄修失败函数类型、真实cleanup类型、written前置与初始化后，R2退出2/仅余host-only `from` 类型。源码及最小类型复现确认正文应在本地分离该元数据，原完整binding和末核保持；返修后R3退出0，29960项完整源码及41项审查清单首末均一致。必要语言MRE原r1失败、r2通过，以及真实消息类型MRE的单条2345→0均保留，不代表产品执行。`pnpm check:architecture`实际0/46包；原件为`pi-runtime-strict-r{1,2,3}.log`及`pi-runtime-architecture-r1.log`。新完整构建尚未运行。
+
+官方Pi首次真实无账号RPC已获06独立限定接受：唯一窗口2.850s，get_state/get_available_models均成功，stdout1059 bytes完整保留、stderr0、双EOF/root0/完整D退出/forced=false，私有HOME34项权限通过，available模型0，native只创建空auth、未生成conversation JSONL。后继仅离线消费原两回复，通过B完整严格DTO及同FD EOF/首末来源核验，未重跑CLI。原件`pi-no-model-rpc-window-cHWnUg/evidence/`与`pi-no-model-dto-offline-IKFW93/summary.json`，完整限定见`pi-no-model-rpc-actual-handoff-r1.md`。875只供Node/PTY ABI，不当新安装；Host/Grant/受管peer/真实输入/停止/成果/ToolsOff运行/模型/N/Windows仍未验。私密来源创建工具未执行，生成调用仍为0。
+
+Pi并发验收驱动七源已实现，正在独立源码审查返修。首轮语法/help/Python AST与5项真实文件边界检查通过；开发观察器编译因验收脚本绕过TypeScript扩展名解析而失败，修正脚本后仅续编译并通过，123项真实输入首末一致，新观察器未执行。原脚本与失败保留；新安装的同S观察器正向仍未验。审查要求补齐活动停止、导出原文与Worker来源绑定、delta重组及真实journal投影关联，当前不据局部通过开放N3。
 
 Linux专属原生启动器的私有创建默认值已提交`8fb6397971f2c259e491668c32f666ef86eddd34`并获06独立限定接受：真实准入之后、spawn之前设置并读回077；所有该启动器的Linux原生子进程继承，daemon及Windows不改变。唯一development-source组件检查实际1PASS/0fail/0skip，普通Node/fs子进程默认创建目录0700、文件0600，父测试进程仍为022，真实EOF及完整D收尾、forced=false通过，前后两源摘要一致。原件`.verification/cloud-setup/pi-private-creation-local-r1.log`及`pi-private-creation-sources-r1.sha256`；875安装仅提供同ABI Node/PTY输入，未修改旧安装，未重复旧D14或完整构建。该检查不代表Pi JSONL、Agent或模型通过；设置/readback异常仍保持UNKNOWN。
 
