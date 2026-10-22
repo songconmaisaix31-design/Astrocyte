@@ -65,48 +65,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24.16.0
       - uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
-          run-id: 39773729265
-          name: swa-windows-native-evidence-c7ab4a7479182f29f990cd649accac193514d169
+          run-id: 39778043411
+          name: swa-windows-native-evidence-11717767f82a8a4070351ff74674aa0d268f79b2
           path: ${{ runner.temp }}/swa-prior-windows-evidence
-      - name: Read the retained installation evidence and reproduce only its ACL operations
+      - name: Read only the retained service failure evidence
         shell: pwsh
         run: |
-          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision 'c7ab4a7479182f29f990cd649accac193514d169'
-          git fetch --no-tags --depth=1 origin c7ab4a7479182f29f990cd649accac193514d169
-          if ($LASTEXITCODE -ne 0) { throw 'The exact failed installer source is unavailable' }
-          $env:SWA_ACL_PROBE_PHASE = 'driver-invocation'
-          try {
-            & ./scripts/probe-swa-windows-install-acl.ps1
-          } catch {
-            $phases = @('driver-invocation', 'preflight', 'installer-source', 'node-pin', 'node-download', 'node-verification', 'ordinary-source', 'original-create', 'original-acl', 'original-copy', 'copy-verification', 'proposed-source', 'proposed-private-root', 'proposed-copy', 'proposed-verification')
-            $phase = if ($env:SWA_ACL_PROBE_PHASE -cin $phases) { $env:SWA_ACL_PROBE_PHASE } else { 'unknown' }
-            $detail = $_.Exception.Message
-            if ($detail -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') { $detail = '[sensitive exception text omitted]' }
-            $detail = [regex]::Replace($detail, '(?i)https?://\S+', '[URL omitted]')
-            $detail = [regex]::Replace($detail, '(?i)[a-z]:[\\/]Users[\\/][^\\/\s"'']+', '[CI user home]')
-            $detail = [regex]::Replace($detail, '[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '')
-            $message = 'phase=' + $phase + '; ' + $detail
-            if ($message.Length -gt 2000) { $message = $message.Substring(0, 2000) + ' [original evidence retained]' }
-            $escaped = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-            Write-Host ('::error title=Windows installation ACL local probe::' + $escaped)
-            throw
-          }
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: swa-windows-install-acl-probe-${{ github.sha }}
-          path: |
-            .verification/swa-ci/install-acl-probe/*.json
-            .verification/swa-ci/install-acl-probe/*.log
-          include-hidden-files: true
-          if-no-files-found: warn
-          retention-days: 7
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-prior-windows-evidence') -ExpectedRevision '11717767f82a8a4070351ff74674aa0d268f79b2'
   visual-studio-discovery-probe:
     if: ${{ (github.event_name == 'workflow_dispatch' && inputs.probe_visual_studio) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-vs-probe]')) }}
     runs-on: windows-2025

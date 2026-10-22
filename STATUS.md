@@ -6,9 +6,11 @@
 
 用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生局部检查；原生 N=3 与 Windows 安装验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
-新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过；下一完整候选尚未启动，新同SHA Linux组合安装尚未构建。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
+新增运行时源码已原子提交`489be745`：Codex独立API-key HOME/受控启动/真实流来源/完整成果核查、Claude Linux结果读取器、Pi Linux解释器及私有环境前置。最终R6 strict实际0，30源前后SHA全匹配，01/04/06按各域准确源码限定接受；真实文件/规则/SQLite负向及无账号metadata分别通过，不是账号或模型功能验收。Windows安装fresh owner+仅User/SYSTEM私有DACL为`5f450e59`，同一生产函数的独立目录组件对照已实际通过。后继双平台候选源码为`11717767f82a8a4070351ff74674aa0d268f79b2`；Linux结果见下段，Windows完整run39778043411/job119821899284于12:31:18Z在service-smoke失败，具体子因尚未知，已暂停下一full并仅读原artifact取证。Linux Pi执行仍拒绝、Claude launch未接通，不能计多数Agent已适配。
 
-最近已验 Linux x64 glibc 组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY输入回显与退出、watcher create、28307路径闭包及网页清单2个入口/4个引用通过。同安装Linux每Worker托管检查14项通过且无跳过，其中11项直接使用安装原件，3项使用同SHA源码诊断；实际覆盖内核subreaper、pidfd、收养与精确回收、两次ECHILD和IPC拒绝路径。独立审查已限定接受安装及普通进程托管范围。同安装组合服务局部复验退出0：health200，首页及4个JS/CSS资产逐字节相等，`/index.html`按标准FileServer返回同源301，正常stdin关闭及两次完整所属进程退出观察通过。首轮脚本把标准301误判为失败的原件保留；修正只涉及ignored检查脚本。AgentNativeLaunch、账号、模型和真实N=3仍为NOT_RUN。
+最近已验 Linux x64 glibc 组合安装来源为 `11717767f82a8a4070351ff74674aa0d268f79b2`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-11717767-codex-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY/watcher/kernel probe、官方目录资产、28312路径闭包及网页清单2入口/4引用通过。同安装进程检查为11项装内原件PASS及3项同SHA源码诊断PASS，均无跳过，4份candidate/install原件SHA一致；实际覆盖subreaper、pidfd、收养与精确回收、双ECHILD及IPC拒绝。组合服务退出0：health200、首页与4个资产的字节/hash/MIME一致、标准同源301、stdin正常关闭code0，内部双空树与全部pidfd退出、外部5个实际进程身份退出及55.8ms双空观察通过。06独立限定接受构建、安装、native组件、普通进程托管及静态HTTP；证据见[本轮任务](tasks/swa-task-cards-20261022.md)。原689安装及其301脚本首败/局部修正原件保留，不混用验收。Agent账号、ToolsOff模型、controller、GUI业务和真实N=3仍NOT_RUN。
+
+静态源审发现项目能力链和消费者有两处实际阻断：capabilities未将已授权项目root传到Codex配置发现，无法给出配置模型；GUI和旧N驱动又要求尚未握手而固定unknown的launchable/read/tools为available。02/04/06分别拟项目化发现、GUI提交条件与分阶段验收计划，由01独立审查；真实start的controller、worktree、当前Grant、账号、ToolsOff与fence准入保持。117安装不修改，未观测能力不改记available。
 
 旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取及官方API-key私有HOME接线源码已限定接受，真实账号启动未验；缺少真实安全配置的key时不能宣称可启动。
 
