@@ -2,7 +2,11 @@
 
 本次云会话继续[六卡任务](tasks/swa-task-cards-20261022.md)，分支 `integration/swa-task-cards`，现有 checkout 为 `/workspace/swarm-anything`。已整合准确 PR #5 `6778a66f`，按卡独占文件开发并经独立限定审查后提交；人类独立追加输入后端为 `1accc19e`，GUI设置与提示为 `1518645b`。用户最新要求 Windows x64/Linux、多 Agent 适配、模型测试预算无上限，以及同项目当前权限下人类独立授权的跨创建者追加输入。沿01—06原负责人继续，不重复创建实现负责人或另建 worktree；当前只连接 Linux，历史 Windows PID/账号/Grant 均不视为当前可用。
 
-Linux已验安装来源为 `e14800c1b207a8c063531fedf014aa0cd2374558`，安装根 `/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`，候选与安装证据在 `.verification/swa-linux/evidence/e14800c1b207a8c063531fedf014aa0cd2374558-cli-04/`。标准build、archive/SHA、普通外解包、严格安装及实际PTY/watcher/28253闭包均0。同安装03服务证据为 `/workspace/swa-cli-smoke-e14800c1-1792661325429/smoke-evidence`：service/process_tree PASS，health ok，正常stdin关闭0；status/controller无当前Grant为NOT_RUN，没有自动取human会话。该不可变安装不补丁；新源码提交后另建候选。下一步02/05按06已接受的D计划实现每Worker Linux subreaper与窄node-pty API，01同步合同，06在01独立审查后实现真实N驱动。Codex0.163的官方工具政策由专题只读审查者核查，空私有CODEX_HOME的无模型metadata与原账号绑定分别处理；尚无产品模型调用。
+Linux最近已验组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`，安装根 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`，证据在 `.verification/swa-linux/evidence/6890522e43d7b81e99b09ca94acc27b9d3a5c7dd-combined-01/`。标准build、archive/SHA、普通外解包、strict install及真实PTY/watcher/28307闭包/网页清单均0；同安装D检查14PASS、0skip，日志 `.verification/cloud-setup/linux-provider-tree-installed-6890522e-01.log`。其中11项使用装内原件，3项同SHA诊断，独立审查仅接受普通进程托管与安装。clean689源码冻结已在这批实际检查完成后解除；原安装保持不变。03同安装组合服务局部复验0，真实health、首页及4资产字节、标准同源301和正常关闭/完整所属退出均通过，详证`/workspace/swa-cli-smoke-6890522e-combined-1792664829113/smoke-evidence`；首次301脚本误判失败保留于原data1792664746641。没有混用旧CLI04服务PASS。项目controller、AgentNativeLaunch、账号、模型和N=3仍NOT_RUN，无自动human会话/Grant/token。
+
+Windows真实CI第三轮 `39758793164` build失败；只读诊断 `39760430188` 成功读取原artifact，完整构建被跳过。原node-gyp12.3.0报VS探测 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`，尚未证明VS缺失。05按已审计划只做Node24.21/原finder/官方Developer Shell局部复现，06独立审查，主控串行提交推送；每次失败必须先向用户交代最小复现、根因证据、局部验证结果，随后才可启动下一轮完整构建。不得用完整build取代局部诊断。
+
+旧CLI04来源e148的服务正常关闭证据继续保持其原范围。Codex0.163结果读取已提交，原ChatGPT OAuth不可克隆到多个私有HOME作为并发保全证明；02与专题负责人按官方API-key stdin登录、各Worker私有HOME和ToolsOff计划推进最小NativeLaunch接口，无真实安全配置key时保留未配置/NOT_RUN。06的真实N驱动已实现并提交，但不把help/负向或准备公开输入算模型通过。上游7个structured与45个TUI模板的“大部分”范围问题尚待用户选择，继续已明确的适配工作。
 
 工具与缓存位于 `.verification/cloud-setup`，新 shell 可读取该目录 `activate.sh`；固定 Node24.16.0/pnpm11.27.0/Go1.27.2。实际 filtered frozen 与模块校验、应用构建和开发启动已通过；全量 Go 失败与独立适用检查见任务和 `docs/validation/swa-product`。未知请求只查原 request，不换键重放；工具关闭和公开固定输入边界仍保留。
 

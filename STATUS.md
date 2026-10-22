@@ -4,11 +4,13 @@
 
 本次云开发支线为 `integration/swa-task-cards`，在 main `64451493` 与 PR #5 `6778a66f` 的本地集成基线 `6195f4cf` 上执行用户上传的六卡。总席位/预约保护、CLI、GUI及构建改动已分批提交；人类按当前项目权限独立追加输入的后端为 `1accc19e`，GUI权限设置与提示为 `1518645b`。实际检查和提交清单见[本轮任务](tasks/swa-task-cards-20261022.md)。标准应用构建、开发服务/代理、适用合同/strict/CLI/架构/依赖检查通过；标准完整检查仍在 Go 测试阶段失败，保留原件和分类，不称完整 CI 通过。
 
-用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。当前仅 Linux 云机可访问，原生 N=3 与 Windows 安装验收未完成。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
+用户随后要求 Windows x64 与 Linux、大部分 Agent 适配，本轮真实模型测试预算不设上限，并允许人类按当前项目权限独立授权追加输入；后继实现继续进行。交互式环境为 Linux，Windows-2025 CI 可运行原生局部检查；原生 N=3 与 Windows 安装验收未完成。每次失败先报告最小复现、根因证据和局部验证结果，再启动下一次完整构建。预算不扩大工具或私有资料范围，跨创建者 Worker 启动权限不随追加输入规则放开。此前 Windows 本机状态记录保持其原来源和验证范围。
 
-最近已验 Linux x64 glibc CLI 安装来源为 `e14800c1b207a8c063531fedf014aa0cd2374558`，实际安装在 `/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`。标准构建、普通归档与校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY输入回显与退出、watcher create及28253路径闭包通过。安装root和可执行文件0700、VERSION0600，owner为当前用户。相同安装的真实service/daemon就绪、HTTP health、所属进程树检查及stdin正常关闭退出0；项目status/controller正向因没有当前合法Grant为NOT_RUN。原生Agent和N=3模型仍未运行，组合候选尚未构建。本机服务级Linux subreaper已验；每Worker独立回收D的接口和实际内核测试计划已独立接受，正在实现，不能据此声称Worker完整退出通过。
+最近已验 Linux x64 glibc 组合安装来源为 `6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`，实际安装在 `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`。标准构建、普通归档与SHA校验、仓库外解包、严格私有安装均退出0；固定Node24.21.0、实际PTY输入回显与退出、watcher create、28307路径闭包及网页清单2个入口/4个引用通过。同安装Linux每Worker托管检查14项通过且无跳过，其中11项直接使用安装原件，3项使用同SHA源码诊断；实际覆盖内核subreaper、pidfd、收养与精确回收、两次ECHILD和IPC拒绝路径。独立审查已限定接受安装及普通进程托管范围。同安装组合服务局部复验退出0：health200，首页及4个JS/CSS资产逐字节相等，`/index.html`按标准FileServer返回同源301，正常stdin关闭及两次完整所属进程退出观察通过。首轮脚本把标准301误判为失败的原件保留；修正只涉及ignored检查脚本。AgentNativeLaunch、账号、模型和真实N=3仍为NOT_RUN。
 
-本轮GitHub [39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 的准确来源 `faea9d4a` 有Ubuntu与Windows两项foundation任务通过；完整check任务仍失败。该结果仅覆盖其实际基础检查，不证明Windows安装或模型验收。可复用安装和启动说明已保存到云环境草稿，尚未发布快照。
+旧CLI04来源 `e14800c1b207a8c063531fedf014aa0cd2374558` 的同安装真实service/daemon、HTTP health、所属进程树及stdin正常关闭均通过，保留其独立证据；它不代表新组合包服务验收。当前没有合法项目Grant，不自动取得human会话、发行token或克隆原Codex OAuth账号。Codex0.163的结果读取已实现；官方API-key私有HOME启动计划继续审查，缺少真实安全配置的key时不能宣称可启动。
+
+本轮GitHub [39747808189](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39747808189) 的准确来源 `faea9d4a` 有Ubuntu与Windows两项foundation任务通过；完整check任务仍失败。Windows原生构建在 [39758793164](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39758793164) 的build阶段失败；[39760430188](https://github.com/songconmaisaix31-design/swarm-anything/actions/runs/39760430188) 只读取原失败artifact的诊断成功，完整构建任务跳过。诊断取得node-gyp原始VS探测的 `ERR_CHILD_PROCESS_STDIO_MAXBUFFER` 与找不到VS报错；尚不能据此认定机器没有VS，下一步只运行真实工具链的局部复现。可复用安装和启动说明及失败先报告规则已保存到云环境草稿，尚未发布快照。
 
 以下为原Windows环境的历史接续记录，仅反映各条记录当时的来源与结果；其中“当前”及PID、终端、Grant均不表示本次Linux云机会话中的可用资源。
 

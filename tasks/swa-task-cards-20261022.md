@@ -4,7 +4,9 @@
 
 用户在首轮开发提交后明确：目标同时覆盖 Windows 和 Linux，Windows 架构为 x64，适配大部分 Agent；真实模型测试预算不设上限。允许人类按照当前项目权限独立授权后向 CLI Agent 创建的任务追加输入。这项新增允许仅对应跨创建者的 `worker.send`，不自动开放跨创建者 `worker.start`；人类自己创建任务的原有启动权限不变。
 
-当前会话只连接 Linux 云机。Windows x64 是目标架构，未提供可访问的 Windows 主机，不能把交叉编译或历史 Windows 报告记为实际验证。后继实现先推进 Linux 完整运行链和现有 Agent 适配器的双平台复用，逐项列明发现、配置、启动、关闭工具、输入、停止、成果的实际覆盖。上游 45 个 TUI 模板与 7 个 structured 原生引擎分别列出，不能把名称发现计为执行适配通过，也不自行将“大部分”冻结为某个人为数量。
+当前交互式环境为 Linux 云机，另有 Windows-2025 GitHub CI 用于真实原生检查；Windows目标架构为x64，没有提供可交互的Windows主机。不能把交叉编译或历史 Windows 报告记为实际验证。后继实现先推进 Linux 完整运行链和现有 Agent 适配器的双平台复用，逐项列明发现、配置、启动、关闭工具、输入、停止、成果的实际覆盖。上游 45 个 TUI 模板与 7 个 structured 原生引擎分别列出，不能把名称发现计为执行适配通过，也不自行将“大部分”冻结为某个人为数量。
+
+用户新增执行要求：每次失败先交代最小复现、根因证据和局部验证结果，再启动下一次完整构建。局部探测与完整构建分别记录，根因未知时继续局部诊断；跳过完整构建不能记为通过。
 
 预算授权不扩大原生工具、私有材料或账号范围；继续使用获准公开固定输入及 ToolsOff。实际只读检查显示本机 Codex 0.163.0 已报告登录，但未据此声称其产品原生执行链可用，未打印或复制凭据。新增人类准入由02实现、01维护合同、06独立审核，CLI Linux所属生命周期由03、双平台安装和依赖由05负责，04只消费真实后端权限和结果。
 
@@ -71,5 +73,8 @@
 - Linux候选01在部署闭包因pnpm启动器符号链接退出1；正式普通启动器配置`559c621b`修复。候选02构建0、安装在平台空`.git`误判时退出1；`f71eec93`修复。候选03构建0、安装因fs.cp对新建空目标的语义退出1；`e14800c1`修复逐顶层entry复制。各失败日志及partial均保留，没有改旧候选或放宽拒覆盖、保护目录及无链接规则。
 - 准确`e14800c1b207a8c063531fedf014aa0cd2374558`的CLI04标准build、普通归档SHA核查、仓库外解包和严格安装全部退出0。安装根`/workspace/swa-linux-installs/swa-linux-cli-e14800c1-04`；实际Node24.21.0、PTY输入回显/exit0、watcher create及28253路径闭包通过，root0700/文件0600或可执行0700/当前UID。证据在`.verification/swa-linux/evidence/e14800c1b207a8c063531fedf014aa0cd2374558-cli-04/`。
 - 相同安装的实际服务证据为`/workspace/swa-cli-smoke-e14800c1-1792661325429/smoke-evidence/result.json`：runtime `746084d0-a595-4690-98d7-d711925c9d2d`，service与process_tree PASS，HTTP health=ok，正常stdin关闭code0。status/controller因缺少当前合法项目Grant为NOT_RUN，不自动取得human会话或签发Grant。
-- 每Worker Linux独立完整回收D的接口与真实内核/IPC测试计划已获独立接受，后继由02实现header/bootstrap/tree，05实现固定node-pty patch/构建/API probe。该计划和服务级subreaper不能代替D实际通过。Codex原生ToolsOff/结果消费者、大部分Agent适配、最终N=3及组合候选仍在继续。
-- GitHub实际run `39747808189`的准确`faea9d4a`基础matrix在Ubuntu和Windows均通过；完整check仍失败，不能算Windows native安装或N=3通过。普通push已覆盖`139a777a4341b22df0de6e5db1c9b259586cf8df`；其Windows原生候选workflow实际run `39757398493`已启动，结果尚未取得。此workflow使用真实ZIP、SHA、普通解包、严格安装、health及named Job所属关闭，不取账号或调用模型。
+- 每Worker Linux独立完整回收D由`2df6f223`实现，固定node-pty patch/构建/API probe为`9baa2ed5`。真实旧ABI floor失败最小复现、admission观察错误、ACK失败与scope失效的审查发现及修复结果已先报告用户；局部14项全部通过，严格检查通过后才启动后继组合完整构建。详细原件见`.verification/cloud-setup/linux-provider-tree-failure-notes.md`，不把静态发现描述成已动态观测的旧错误释放。
+- 准确`6890522e43d7b81e99b09ca94acc27b9d3a5c7dd`的combined01标准构建、归档SHA、仓库外普通解包及严格安装均0，安装根`/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`。原checker检查28307路径闭包、网页清单2入口/4引用及真实PTY/watcher/kernel probe；同安装D检查14PASS0skip，11项使用装内Tree/managed/entry/nodepty原件，3项同SHA诊断，actual bundledNode/VERSION/CLI版本/cleanHEAD守卫均通过。06独立核验4原件candidate/install SHA一致并限定接受安装和普通进程托管；组合serve/网页HTTP、GUI、AgentNativeLaunch/账号/模型/N=3不包含在内。原件在`.verification/swa-linux/evidence/6890522e43d7b81e99b09ca94acc27b9d3a5c7dd-combined-01/`及`.verification/cloud-setup/linux-provider-tree-installed-6890522e-01.log`。
+- 同组合安装的03服务首次检查退出1：health与首页200，但ignored脚本将标准`/index.html`→`./`的301误作失败。用户已先收到最小复现、Go固定源码根因和局部首页字节一致结果，再修正检查脚本；未改产品、未重建。局部复验退出0，runtime `ced236d2-b0c3-49a8-ab78-93295c28f7aa`，endpoint18793的health200、首页562bytes/4个JS-CSS资产逐字节及MIME一致、301严格同源；stdin正常关闭code0，内部双owned0/全部pidfd退出，外部4身份退出及两次完整空扫描相隔53.4ms。证据`/workspace/swa-cli-smoke-6890522e-combined-1792664829113/smoke-evidence`，原失败data1792664746641保留；没有human会话、Grant或模型调用，不代表GUI业务或Worker验收。
+- Codex0.163完整session结果读取为`0d0cbaf3`；官方私有空HOME无模型metadata04通过，不代表账号绑定或模型ToolsOff执行。原ChatGPT认证不能据当前process-local锁证明多个私有HOME克隆的刷新安全；后继采用官方stdin API-key登录、独立HOME、固定官方模型目标及有效配置检查计划，缺少真实安全配置key时准确保留未配置。真实N验收驱动为`6890522e`，公开固定项目和输入准备、help及非法参数检查通过，真实Grant/原生Worker/模型场景仍NOT_RUN。
+- GitHub实际run `39747808189`的准确`faea9d4a`基础matrix在Ubuntu和Windows均通过；完整check仍失败。Windows原生run `39757398493`因preflight失败；`39758336431`的准确`0209d004`诊断取得PATH多Application Source被拼为单命令，`3f4a4ea2`修复三个选择为First1并保留版本要求。后继实际run `39758793164`进入build后失败。只读诊断run `39760430188`（来源`8d02edd5`）成功读取该失败artifact，完整native任务跳过，原node-gyp报VS探测的`ERR_CHILD_PROCESS_STDIO_MAXBUFFER`及无法找到VS，尚不能证明机器未安装VS；05下一步仅局部对比原finder与官方Developer Shell，不运行完整产品构建。此链路没有取得账号或调用模型。
