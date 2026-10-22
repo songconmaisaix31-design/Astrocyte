@@ -2312,3 +2312,21 @@ Reviewer独立`inspect-idempotency92.mjs`实际0，原件`idempotency92-binding-
 同一准确测试域另有native-idempotency的storage计数、controller-recovery计数、runtime-restart的计数和原Run读取、cli-failure的计数和原Run读取误用coordinator_runs。CLI消费者随后访问beforeRun.coordinator_handle，restart恢复随后访问run.id，真实缺行将抛错停止；这些入口不能执行既定验收，应由原Worker集中修正真实runs查询并保留记录存在、身份/代际、唯一root及全部原失败断言。controller-inspection.ts已另有SELECT * FROM runs及唯一inspect-only bootstrap/legacy/generation0校验，其旧协调表零计数仍适用，无须因此修改。准确范围已送原Worker`msg_6472dfb88468`及主控`msg_f9bb5d6efe20`。
 
 已完整读取并独立核新增ControllerClose消费者SHA256 `F7B9C7F430B02B694BDB3330592787381E7434A6A314529D29184012AA0062F7`，限定接受原92真实open响应、completed原R及当前同controller完整owner/出生/pane核实后的单新close R，原DPAPI/来源/stop授权保持，未知响应不重发。前置intent须保留当前UTC、原Task/Dispatch和阶段，原Worker在原客户端补齐后可连续执行，最终准确SHA和实际关闭结果另核；原89服务及只读Job/95ef保持。当前没有登记该关闭或完整幂等通过；纯测试修订不要求重编未变893程序和native。
+
+## 准确f35消费者修订与94a原92关闭
+
+**接受准确`f35beaaedf4598ddce413c59da6792341e9eb0aa`的四项真实Run消费者及来源检查修订。** 七份完整差异已读：四mjs现读取runs且legacy=0，分别核实际controller/pane/consumer_generation及唯一root，记录存在立即检查；旧coordinator_runs作为独立状态继续计数，原并发、幂等、context变化、恢复和故障断言保留。来源检查仅将未进入实际安装metafile的native-idempotency加入既有明确测试排除域；controller-inspection及全部程序/Go/构建/原生输入与准确893保持。
+
+Reviewer独立`review-f35-source.mjs`实际0，原件`f35-source-actual-independent.log`与`f35-source-independent.json`：准确干净f35、七条差异路径、实际相关源码、全部必要产品输入相同、成熟YAML原六项策略及实际metafile排除均核。首次Reviewer脚本在Windows绝对路径ESM加载阶段停止，没有执行来源函数；改用标准file URL后上述检查实际0，没有编译或原生调用。准确两份Markdown的Git/marked检查0，六个本地链接及旧§15锚点保持；主控64451493准确四份事实源差异已全部读取，89个本地链接无缺失。
+
+**接受94a按既有stop权限完成原92 controller及已观察helper出生身份退出的限定范围。** 最终消费者SHA256为`D646D5AC562ACE274EF8D6E9D84840C2CA7B1FA639D1CC2F8F41CF906FFA6FB3`，已核实际摘要和Parser0，close-intent含真实UTC、原Task/Dispatch和阶段。94实际1在原stdout的Protected DACL前置停止，尚无close-intent或关闭请求；原文件owner为CurrentUser、仅同用户继承权限，未设置Protected。原92字节和DACL保持，94a以CreateNew保存同字节私有副本并设保护DACL，摘要两者均为`5805128B044A46687EB1DBAF571EF5B1D7A61D348C069CA6D45C9E555FEB85DE`，原件和94失败保留。
+
+94a单次新R为`29d672ec-e3cf-4e71-a53a-5d35356c1c41`，实际关闭0、原request.show为completed；当前owner与原open的完整binding、两出生身份、pane及项目相符。Reviewer独立`review-close94a.ps1`及mjs实际0，原件`close94a-independent.log`：私有副本/原继承ACL、字节和摘要、原open及真实库内close回执完整核，两个实际PID缺席样本及Reviewer当前出生身份缺席通过。关闭前后来源、原项目/Grant及其他业务状态保持，仅新增一个close receipt；没有签Grant、重发未知R或调用模型。该结论不代替完整Service Job或后续Worker资源退出证明。
+
+## 95同安装非模型幂等实际范围
+
+**接受95在同893-install88/89服务上的既定非模型幂等检查。** 准确f35消费者使用原91绑定，实际驱动0，全部24条原CLI输出、实际退出/时间/request_id已独立核；并发open和完成重放同一controller，并发task与完成重放同一Run/root，close并发及完成重放完成，另一controller也经实际关闭。五项workdir、spec、真实context/版本及其他controller payload变化拒绝request_mismatch，foreign controller查询原任务拒绝scope_denied；原请求和两级真实子回执保持。
+
+Reviewer独立`review-idempotency95.ps1`及mjs实际0，原件`idempotency95-complete-independent.log`：真实SQLite七个原请求全部completed，实际Run按controller/pane/generation唯一、root恰一、固定context与真实版本变化拒绝相符；真实workspace执行关联准确指向当前项目、Grant caller、settings2及同Run/root。95阶段前后仅新增Run、root及该执行关联各一、receipt七，其余三库计数和来源保持；这些阶段原件与后继Flow96的当前业务状态分别审核。两controller各有两次实际进程出生身份退出样本，58份导出不含真实DeepSeek key或本次token，原生库mtime保持。Reviewer前两次只读核脚本分别补核真实执行关联和结构化字段顺序，未重跑95产品调用；最终以标准结构化等值完成上述核查。
+
+本轮接受限于原三个无模型幂等案例。实际逐效果边界响应丢失、runtime重启pending查询、Worker start/send并发与断连重放、不同R的close/create/start交错四项仍未验，不以24条命令或编译结果扩大接受。原92失败、94前置失败及全部原件保留，Flow96沿同安装进行真实双Worker验收，模型、重叠、指定停止和完整成果仍待实际证据。原95ef/5187及89服务/只读Job工具保持，未调用Aliyun；2b64fcfb两个hook已分别获主控`msg_12e573547662`、`msg_f4c1f132120d`全文读取回复，唤起均已确认，本Task继续。
