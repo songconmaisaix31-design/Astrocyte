@@ -36,7 +36,7 @@ node tests/swa-product-acceptance/prepare-public-case.mjs --root /workspace/swa-
 
 本卡对该实际安装物运行preflight退出3，版本和互不包含目录观察通过；当前项目Grant、Agent NativeLaunch/ToolsOff、真实多Worker和CLI/GUI里程碑仍为 `NOT_RUN`，没有模型调用。没有自动取得human会话、签发Grant或申请token。service级完整退出证据不等同每Worker完整资源证明。
 
-现有真实验收入口为 `tests/swa-cli-headless/installed-flow.mjs`、`public-case.mjs` 和 `scripts/verify-swa-cli-headless.ps1`。它们当前具有 Windows 专用路径和两 Worker 条件，完整多 Worker 驱动须在公共契约及实际候选完成后由本卡接续，不能把现有脚本直接记为 N=3 通过。
+现有历史入口为 `tests/swa-cli-headless/installed-flow.mjs`、`public-case.mjs` 和 `scripts/verify-swa-cli-headless.ps1`，保留其 Windows 路径与两 Worker 结果。下述 N 驱动独立消费准确原件，不把历史脚本结果改记为 N=3。
 
 ## N Worker 安装验收驱动
 
@@ -48,12 +48,26 @@ node tests/swa-product-acceptance/prepare-public-case.mjs --root /workspace/swa-
 & $installedNode tests/swa-product-acceptance/run-installed.mjs --candidate $installRoot --data-root $dataRoot --project $publicProject --project-id $projectId --endpoint $endpoint --agent $agent --model $model --output $newEvidence --service-log $serviceLog --workers 3
 ```
 
-当前实现只消费已有Windows Pi/OpenCode原生事件和完整成果形状；Linux及Codex的完整原生来源/进程union消费者接入前，驱动在任何worker.start之前明确 `NOT_RUN`。当前无合法Grant时也不发送模型。该边界将随02实际来源合同和独立审查更新，不能靠移除门或填Windows创建时间运行Linux。
+驱动支持 Windows Pi/OpenCode 与 Linux x64 glibc 的 Codex0.163.0/gpt-5.5 来源。Linux另需显式本地源码仓库，必须包含安装物VERSION的完整commit；不会用当前HEAD替代或自动联网补源码。Linux例子：
+
+```sh
+"$installedNode" tests/swa-product-acceptance/run-installed.mjs --candidate "$installRoot" --data-root "$dataRoot" --project "$publicProject" --project-id "$projectId" --endpoint "$endpoint" --agent codex --model gpt-5.5 --output "$newEvidence" --source-repository "$sourceRepository" --workers 3
+```
+
+`prepare-source-observer.mjs` 用成熟Git archive/ZIP读取器导出固定公开源子树，核commit注释、普通条目及每个原Git blob；不创建worktree或执行项目脚本。观察器只调用同VERSION的成熟stored-record decoder和指定PID只读观察函数，依赖只从该安装物解析。源码、metafile、依赖与bundle的SourceVersion和摘要进入本次私有证据；原件变化或装内journal-open缺失时不启动Worker。Python3只用于成熟ZIP解析，不读取账号。观察器不替换产品模块，不把整条Session record、账号目录或配置原文导出。
+
+前置只接受服务真实返回的注册、启用、安装和配置四项available，以及start/send/stop的声明支持和准确model。没有项目化配置时在start前保持NOT_RUN；不能为运行117旧安装而填入缺失模型。未握手的launchable/read/tools诚实保留unknown，任一明确unavailable仍拒绝；声明或可提交不代表已经执行。实际启动仍经原产品的当前项目/Grant/account/ToolsOff/fence门，每turn再核。ToolsOff绑定真实原selection.native_launch.tools与固定native contract，不能只凭policy_ready的remote_control_status=disabled推断全部工具关闭。
 
 准备器和驱动共用固定公开定义；模型输入前逐字核对四份真实Git原文、完整任务规格（含空references）、各职责正文和后续正文。每条命令在启动前以0600独占保存原参数和request并同步磁盘；未知stop/release只查询该Dispatch已有的原request，不换键重新停止。已完成请求的回放同时核原回执、input operation和真实原生执行次数；继续输出的证据须晚于实际原生停止标记。报告记录安装物实际EDITION；缺少装内正式checker时保持NOT_RUN，不使用开发树脚本替换。
 
-服务UUID与进程owner incarnation分别验证：CLI回执及实际Worker的`runtimeEpoch`必须属于开始时的服务；`source.process.runtime_id`则绑定本Session真实journal数据库记录中的`lease.ownerProcess.runtime`。首次保存进程身份前还核原start request的实际input binding及provider head原fence；每次事件读取前后重新核同一普通journal文件的必要record/head/lease。停止后只在原ownerFence的真实deathEvidence、已保存进程身份及原完整Job退出证明一致时读取已释放来源。驱动当前只消费Windows Pi/OpenCode已有neutral handles；Linux/Codex消费者仍须另审准确来源形状。
+服务UUID与进程owner incarnation分别验证：CLI回执及实际Worker的`runtimeEpoch`必须属于开始时的服务；`source.process.runtime_id`则绑定本Session真实journal数据库记录中的`lease.ownerProcess.runtime`。首次保存身份先核原start R的实际input binding、当前项目revision及provider head原fence；每次事件读取前后重核同一journal文件的必要record/head/lease。Codex typed handle由同VERSION成熟decoder转换，不手写存储格式；bootstrap和原生CLI分别核真实Linux boot/ticks/uid，不填Windows时间。
+
+Linux Codex只消费原provider-events.ndjson中的raw_line/frame、实际thread/turn/item与delta，不拆最终文本充当流事件。停止取同源custody_closed、ACK、wrapper退出/缺席及两次ECHILD，并独立观察原进程身份退出；内部stop_id不是公开stop R，用真实Dispatch/session/custody及原日志位置关联，不要求两个UUID相等。释放后继续核原ownerFence/deathEvidence与这份原完整证明；未知stop只查原键。完整rollout文本逐字对实际有界FD原件，原R/operation、真实journal user item/turn与native final分别核对，仍受12MiB及完整分页门限制。
 
 实际成果齐备后，驱动输出原结果路径，等待真实Reviewer/Agent阅读后输入一行JSON，字段为 `reviewed_result` 和 `checked_result`；只把真实审阅记录写入完成正文，不自动生成通过，也不取得human身份。未知请求只查询原request；缺少实际分块观察、未命中的效果丢失分支、过期/跨项目权限与GUI行为分别保留未验。
 
-本轮实际 `node --check`、固定安装Node的 `--help` 退出0；workers=2/3.5、相对候选路径、未知参数各退出2。共享公开定义修改后，重新从固定真实来源准备独立案例退出0，并核既有案例与新案例的完整正文、任务和清单逐字一致，证据为 `.verification/swa-product-acceptance/review-driver-checks.json`。尚无本轮当前项目ID/Grant与可用Linux原生来源，完整N驱动正向未运行；修改前落盘、未知stop保键及原生回放次数的动态路径仍等待真实授权执行，不用替身验证。参数验证和语法通过不代表N=3通过。退出0仅表示当次已执行断言及成果交接完成，最终里程碑由独立审查决定。
+原Windows驱动的语法/help/非法参数及公开准备器等值检查保持各自已验范围，见 `.verification/swa-product-acceptance/review-driver-checks.json`。新Linux/Codex观察原型已对真实117版本的3480个原Git blob核对，并验证实际父PID/已退出子PID及两个非Session公开文件拒绝；没有构造Session、原生帧、模型或凭据样本。
+
+正式观察器准备也已对同117版本的3480原blob和119编译输入核对。正式bundle与原型的SHA比较曾退出1；独立逐字节审查确认190处差异仅为输出深度产生的95条来源注释和95个CommonJS工厂键，原失败记录保留。随后仅对现成正式bundle `d77b6a2d3240c7e30b3c941c97459e054dd3fe79cca7b2c5bfc33eee9fc78543` 运行原五项有界观察，实际5/5通过：活父PID、已回收子PID缺席、公开package非Session拒绝、AGENTS非JSON拒绝及PID0拒绝。证据为 `.verification/swa-product-acceptance/linux-codex-observer-final-r1/component-checks-formal.json`；未重新导出或编译，typed Session与模型继续未验。
+
+当前117 Linux组合安装的构建、安装、D11装内+3同SHA诊断和同服务静态HTTP/正常退出已独立接受；该安装没有后继项目化capabilities修复，不能据此宣称其Codex静态配置或N可用。新驱动原生动态、完整typed Session、delta/stop/send/replay、真实账号与模型仍NOT_RUN，相关控制分支仅源码审查，不用参数或组件成功升级为N=3。退出0仅表示当次已执行断言及成果交接完成，最终里程碑由独立审查决定。

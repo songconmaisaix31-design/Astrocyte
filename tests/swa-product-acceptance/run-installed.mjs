@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { lstat, mkdir, open, readFile, realpath, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -8,16 +8,18 @@ import { createInterface } from 'node:readline'
 import { DatabaseSync } from 'node:sqlite'
 import { Readable } from 'node:stream'
 import { setTimeout as delay } from 'node:timers/promises'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { publicCase, publicFiles, publicRevision, publicSource } from './public-case-definition.mjs'
+import { codexEnds, codexStarts, isCodexDelta, originalLinuxTreeProof, validateCodexEventView, validateLinuxFinalCustody } from './codex-event-view.mjs'
 
 const help = `真实安装物多Worker验收；不会签发Grant、启动服务或直接调用原生Agent。
 使用同安装Node运行本文件，显式传入：
 --candidate ABS --data-root ABS --project ABS --project-id ID --endpoint LOOPBACK
---agent ID --model ID --output ABS_NEW_DIRECTORY --service-log ABS [--workers 3]
+--agent ID --model ID --output ABS_NEW_DIRECTORY [--workers 3]
+Windows Pi/OpenCode另需--service-log ABS；Linux Codex另需--source-repository ABS。
 SWA_PROJECT_TOKEN仅通过受保护环境提供。来源、ToolsOff、当前Grant或完整资源证据缺失时不发送worker.start。
-当前产品只有Windows Pi/OpenCode的原生事件/成果消费者；Linux及Codex来源接入完成前为NOT_RUN。
+支持Windows Pi/OpenCode与Linux Codex0.163.0的真实来源；缺项目化静态配置仍在启动前NOT_RUN。
 业务成果必须由真实Reviewer/Agent控制端审阅；驱动不会自动生成通过记录。
 退出：0=已执行断言与成果交接完成，1=失败，2=参数无效，3=未运行/前置不足；最终接受另由Reviewer决定。
 `
@@ -38,11 +40,13 @@ const within = (parent, child) => {
 }
 let values, workers
 try {
-  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'workers'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
+  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
   values.workers ??= '3'
   if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error()
   workers = Number(values.workers)
-  for (const key of ['candidate', 'data-root', 'project', 'output', 'service-log']) if (!values[key] || !isAbsolute(values[key])) throw new Error()
+  for (const key of ['candidate', 'data-root', 'project', 'output']) if (!values[key] || !isAbsolute(values[key])) throw new Error()
+  if (process.platform === 'win32' && (!values['service-log'] || !isAbsolute(values['service-log']))) throw new Error()
+  if (process.platform === 'linux' && values.agent === 'codex' && (!values['source-repository'] || !isAbsolute(values['source-repository']))) throw new Error()
   for (const key of ['project-id', 'endpoint', 'agent', 'model']) if (!values[key]?.trim()) throw new Error()
   const endpoint = new URL(values.endpoint)
   if (endpoint.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(endpoint.hostname) || !endpoint.port || endpoint.username || endpoint.password || endpoint.pathname !== '/' || endpoint.search || endpoint.hash) throw new Error()
@@ -56,11 +60,12 @@ process.umask(0o077)
 const token = process.env.SWA_PROJECT_TOKEN
 const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.model, model_execution: 'NOT_RUN', acceptance: 'REQUIRES_INDEPENDENT_REVIEW', checks: [], commands: [], unknown_requests: [], provider_events: [], started_workers: [] }
 let output, candidate, dataRoot, project, inputDirectory, swa, runtimeId, controller, rootTask, runId, database, requireRuntime, processAPI, daemonOwner
-let source, inputs, spec, jsonlParser, foldJournal, completed = false
+let source, inputs, spec, jsonlParser, foldJournal, observer, capabilityRevision, completed = false
 const sources = new Map(), witnesses = new Map(), stopped = new Set()
 const sessionOwners = new Map()
 const stopRequests = new Map(), releaseRequests = new Map()
 const approvedFiles = new Map()
+const codexViews = new Map()
 const check = (name, detail) => report.checks.push({ name, status: 'PASS', detail })
 const native = reply => object(object(reply.result).native)
 async function ordinary(path, directory) {
@@ -81,6 +86,27 @@ const safeText = text => {
 const save = async (name, value) => {
   const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n'
   await writeFile(join(output, name), safeText(text), { flag: 'wx', mode: 0o600 })
+}
+async function verifyObserverSources() {
+  assert.ok(observer, 'same_revision_observer_not_prepared')
+  for (const expected of [...observer.manifest.inputs, observer.manifest.journal_module, observer.manifest.observer]) {
+    const path = await ordinary(expected.path, false)
+    assert.ok(within(observer.root, path) || within(join(candidate, 'runtime'), path), 'observer_input_outside_approved_sources')
+    const before = await stat(path, { bigint: true })
+    const version = value => `${value.dev}:${value.ino}:${value.birthtimeNs}:${value.mtimeNs}:${value.size}`
+    assert.equal(version(before), expected.version, 'observer_source_version_changed')
+    assert.ok(before.size <= 8n * 1024n * 1024n)
+    assert.equal(createHash('sha256').update(await readFile(path)).digest('hex'), expected.sha256, 'observer_source_bytes_changed')
+    assert.equal(version(await stat(path, { bigint: true })), expected.version, 'observer_source_changed_during_read')
+  }
+}
+async function observeSource(mode, input) {
+  await verifyObserverSources()
+  const node = join(candidate, 'node/node')
+  const args = mode === 'incarnation' ? [observer.manifest.observer.path, mode, String(input)] : [observer.manifest.observer.path, mode]
+  const text = execFileSync(node, args, { input: mode === 'decode-record' ? input : undefined, encoding: 'utf8', timeout: 10_000, maxBuffer: 1024 * 1024, cwd: observer.home, env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: observer.home, TMPDIR: observer.home }, stdio: ['pipe', 'pipe', 'pipe'] })
+  await verifyObserverSources()
+  return object(JSON.parse(text))
 }
 function requestId(args) {
   const index = args.indexOf('--request-id')
@@ -163,6 +189,18 @@ async function originalStartBinding(worker, workerSource) {
   assert.equal(binding.execution_mode, 'structured')
   assert.equal(binding.runtime_fence, workerSource.fence)
   assert.equal(input.operation_id, binding.operation_id)
+  assert.equal(object(object(request.receipt).invocation).caller.settings_revision, capabilityRevision, 'project_settings_changed_after_static_discovery')
+  if (values.agent === 'codex') {
+    const selection = object(object(request.receipt).selection)
+    assert.deepEqual(selection, workerSource.selection, 'original_native_selection_changed')
+    assert.equal(selection.agent_id, 'codex')
+    assert.equal(selection.version, '0.163.0')
+    assert.equal(selection.model, values.model)
+    assert.equal(selection.provider, 'openai')
+    assert.equal(selection.native_launch.account.kind, 'codex-native-api-key')
+    assert.equal(selection.native_launch.tools.mode, 'disabled')
+    assert.equal(selection.native_launch.tools.native_contract, 'codex-cli-0.163.0')
+  }
   return binding
 }
 async function sessionRecord(workerSource) {
@@ -172,6 +210,27 @@ async function sessionRecord(workerSource) {
   const journalSource = { path, identity: `${before.dev}:${before.ino}:${before.birthtimeNs}` }
   const journal = new DatabaseSync(path, { readOnly: true })
   try {
+    if (values.agent === 'codex') {
+      const actual = journal.prepare(`SELECT session_id,
+        CASE WHEN length(CAST(record_json AS BLOB)) BETWEEN 1 AND 1048576 THEN record_json ELSE NULL END AS record_json
+        FROM agent_session_records WHERE session_id=?`).get(workerSource.native_session_id)
+      assert.ok(actual && typeof actual.record_json === 'string', 'actual_session_record_missing_or_exceeds_bound')
+      assert.equal(actual.session_id, workerSource.native_session_id)
+      const decoded = await observeSource('decode-record', actual.record_json)
+      assert.equal(decoded.schema_version, 2)
+      assert.equal(decoded.session_id, actual.session_id)
+      assert.equal(decoded.provider, values.agent)
+      assert.equal(decoded.model, values.model)
+      assert.equal(decoded.head.handle.agent, 'codex')
+      assert.equal(decoded.head.handle.transport, 'codex-app-server')
+      assert.equal(decoded.lease.runtimeKind, 'native')
+      assert.equal(decoded.lease.sessionId, actual.session_id)
+      assert.equal(decoded.lease.handoffStage, null)
+      assert.equal(decoded.lease.unreconciled, false)
+      const after = await stat(path, { bigint: true })
+      assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, journalSource.identity, 'session_journal_replaced')
+      return { journal_source: journalSource, session_id: decoded.session_id, provider: decoded.provider, model: decoded.model, head: decoded.head, lease: decoded.lease }
+    }
     const row = journal.prepare(`SELECT session_id,
       json_extract(record_json, '$.schemaVersion') AS schema_version,
       json_extract(record_json, '$.sessionId') AS record_session_id,
@@ -201,7 +260,7 @@ async function sessionRecord(workerSource) {
     return { journal_source: journalSource, session_id: row.session_id, provider: row.provider, model: row.model, head, lease: { claimStatus: lease.claimStatus, runtimeFence: lease.runtimeFence, provenHandleLinkId: lease.provenHandleLinkId, ownerProcess: lease.ownerProcess, deathEvidence: lease.deathEvidence } }
   } finally { journal.close() }
 }
-function verifySessionOwner(record, workerSource, owner, worker) {
+async function verifySessionOwner(record, workerSource, owner, worker) {
   assert.deepEqual(record.journal_source, owner.journal_source, 'original_session_journal_changed')
   assert.deepEqual(record.head, owner.head, 'original_provider_head_changed')
   assert.equal(record.head.mintedAtFence, owner.binding.runtime_fence)
@@ -215,20 +274,35 @@ function verifySessionOwner(record, workerSource, owner, worker) {
     assert.ok(record.lease.runtimeFence > owner.binding.runtime_fence)
     assert.equal(record.lease.deathEvidence?.kind, 'exit-observed')
     assert.equal(record.lease.deathEvidence?.ownerFence, owner.binding.runtime_fence)
-    assert.ok(stopped.has(worker.dispatch_id) && worker.stop?.proof, 'released_owner_has_no_original_complete_job_proof')
-    assert.equal(worker.stop.proof.root.pid, owner.process.pid)
-    assert.equal(worker.stop.proof.root.creationTimeMs, owner.process.processStartTimeMs)
+    if (values.agent === 'codex') {
+      assert.ok(worker.stop?.reply && stopRequests.get(worker.dispatch_id)?.request_id === worker.stop.request_id, 'released_owner_has_no_original_stop_response')
+      assert.equal(native(worker.stop.reply).state, 'stopped')
+      const final = validateLinuxFinalCustody(workerSource.custody, codexViews.get(workerSource.native_session_id))
+      assert.deepEqual(final.observation.root, owner.incarnation)
+    } else {
+      assert.ok(stopped.has(worker.dispatch_id) && worker.stop?.proof, 'released_owner_has_no_original_complete_job_proof')
+      assert.equal(worker.stop.proof.root.pid, owner.process.pid)
+      assert.equal(worker.stop.proof.root.creationTimeMs, owner.process.processStartTimeMs)
+    }
   }
   assert.equal(workerSource.process.runtime_id, owner.process.runtime)
   assert.equal(workerSource.process.pid, owner.process.pid)
-  assert.equal(workerSource.process.creation_time_ms, owner.process.processStartTimeMs)
+  if (values.agent === 'codex') {
+    const { runtime_id, ...expected } = workerSource.process
+    assert.deepEqual(expected, owner.incarnation)
+    const observed = await observeSource('incarnation', owner.process.pid)
+    if (record.lease.claimStatus === 'live') assert.deepEqual(observed, { absent: false, incarnation: expected })
+    else assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(expected), 'original_bootstrap_identity_still_alive')
+  } else assert.equal(workerSource.process.creation_time_ms, owner.process.processStartTimeMs)
 }
 async function events(workerSource) {
   assert.equal(workerSource.availability, 'observed')
   assert.equal(workerSource.provider, values.agent)
   const worker = report.started_workers.find(item => item.source?.native_session_id === workerSource.native_session_id)
   assert.ok(worker, 'source_has_no_original_dispatch')
-  await queryWorker(worker.dispatch_id)
+  const latest = object((await queryWorker(worker.dispatch_id)).source)
+  assert.deepEqual(identity(latest), identity(workerSource), 'source_changed_its_original_binding')
+  workerSource = latest
   let owner = sessionOwners.get(workerSource.native_session_id)
   const binding = owner?.binding ?? await originalStartBinding(worker, workerSource)
   const beforeRecord = await sessionRecord(workerSource)
@@ -238,16 +312,26 @@ async function events(workerSource) {
     assert.match(process.runtime, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'actual_process_runtime_incarnation_missing')
     assert.deepEqual(beforeRecord.head, workerSource.provider_link, 'provider_source_head_differs_from_actual_record')
     owner = { binding, process, head: beforeRecord.head, journal_source: beforeRecord.journal_source }
+    if (values.agent === 'codex') {
+      const observed = await observeSource('incarnation', process.pid)
+      assert.equal(observed.absent, false)
+      owner.incarnation = observed.incarnation
+    }
   }
-  verifySessionOwner(beforeRecord, workerSource, owner, worker)
-  assert.ok(Number.isSafeInteger(workerSource.process.pid) && workerSource.process.creation_time_ms > 0)
+  await verifySessionOwner(beforeRecord, workerSource, owner, worker)
+  assert.ok(Number.isSafeInteger(workerSource.process.pid) && (values.agent === 'codex' || workerSource.process.creation_time_ms > 0))
   const path = await ordinary(workerSource.provider_events, false)
   assert.ok(within(dataRoot, path), 'provider_source_outside_private_root')
   const handle = await open(path, 'r')
   let rows
   try {
     const before = await handle.stat({ bigint: true })
-    assert.ok(before.size > 0n && before.size <= 64n * 1024n * 1024n, 'provider_source_bound')
+    assert.ok(before.size > 0n && before.size <= BigInt(values.agent === 'codex' ? 12 : 64) * 1024n * 1024n, 'provider_source_bound')
+    if (values.agent === 'codex') {
+      let aggregate = before.size
+      for (const [otherPath, value] of witnesses) if (otherPath !== path) aggregate += BigInt(value.bytes.length)
+      assert.ok(aggregate <= 12n * 1024n * 1024n, 'aggregate_provider_bytes_exceed_bound')
+    }
     const bytes = Buffer.concat(await Array.fromAsync(handle.createReadStream({ start: 0, end: Number(before.size) - 1, autoClose: false })))
     const signature = `${before.dev}:${before.ino}:${before.birthtimeNs}`
     const old = witnesses.get(path)
@@ -261,13 +345,29 @@ async function events(workerSource) {
     assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, signature)
     assert.ok(after.size >= before.size)
     const afterRecord = await sessionRecord(workerSource)
-    verifySessionOwner(afterRecord, workerSource, owner, worker)
+    await verifySessionOwner(afterRecord, workerSource, owner, worker)
     if (beforeRecord.lease.claimStatus === afterRecord.lease.claimStatus) assert.deepEqual(afterRecord, beforeRecord, 'session_owner_changed_during_event_read')
     else assert.ok(beforeRecord.lease.claimStatus === 'live' && afterRecord.lease.claimStatus === 'released', 'unreviewed_session_owner_transition')
     witnesses.set(path, { signature, bytes })
   } finally { await handle.close() }
   if (values.agent === 'opencode') rows = rows.filter(row => row.session_id === workerSource.native_session_id && row.runtime_fence === workerSource.fence)
-  for (const row of rows) {
+  if (values.agent === 'codex') {
+    assert.equal(workerSource.runtime_epoch, runtimeId)
+    const view = validateCodexEventView(rows, { session: workerSource.native_session_id, fence: owner.binding.runtime_fence, runtimeEpoch: runtimeId, process: workerSource.process, executable: workerSource.selection.executable, nodeExecutable: join(candidate, 'node/node'), nativeId: owner.head.handle.nativeId, model: values.model })
+    const previous = codexViews.get(workerSource.native_session_id)
+    if (previous) {
+      assert.deepEqual(view.custody, previous.custody)
+      assert.deepEqual(view.nativeCLI, previous.nativeCLI)
+    } else {
+      assert.deepEqual((await observeSource('incarnation', view.nativeCLI.pid)), { absent: false, incarnation: { platform: 'linux', pid: view.nativeCLI.pid, boot_id: view.nativeCLI.boot_id, start_ticks: view.nativeCLI.start_ticks, owner_uid: view.nativeCLI.owner_uid } })
+      assert.deepEqual(view.custody.owner, daemonOwner)
+    }
+    if (rows.at(-1).event === 'custody_closed') assert.deepEqual(workerSource.custody, rows.at(-1).detail)
+    codexViews.set(workerSource.native_session_id, view)
+    let aggregate = Buffer.byteLength(JSON.stringify(rows))
+    for (const [session, value] of sources) if (session !== workerSource.native_session_id) aggregate += Buffer.byteLength(JSON.stringify(value.rows))
+    assert.ok(aggregate <= 12 * 1024 * 1024, 'aggregate_actual_provider_sources_exceed_bound')
+  } else for (const row of rows) {
     assert.equal(row.process.pid, workerSource.process.pid)
     assert.equal(row.process.creationTimeMs, workerSource.process.creation_time_ms)
     assert.ok(Number.isFinite(row.monotonic_ms) && typeof row.observed_at === 'string')
@@ -279,11 +379,11 @@ async function events(workerSource) {
   sources.set(workerSource.native_session_id, { source: workerSource, rows })
   return rows
 }
-const isDelta = row => row.protocol === 'acp'
+const isDelta = row => row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
   ? row.event === 'session/update' && row.detail?.kind === 'known' && ['agent_message_chunk', 'agent_thought_chunk'].includes(row.detail.notification?.update?.sessionUpdate) && row.detail.notification.update.content?.type === 'text' && !!row.detail.notification.update.content.text
   : row.record?.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && !!row.record.assistantMessageEvent.delta
-const starts = rows => rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
-const ends = rows => rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
+const starts = rows => values.agent === 'codex' ? codexStarts(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
+const ends = rows => values.agent === 'codex' ? codexEnds(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
 async function settledReplay(args, original) {
   const status = await cli(['request', 'show', '--controller', controller, '--request-id', requestId(args)])
   assert.equal(status.result.state, 'completed', 'unknown_request_must_not_replay')
@@ -352,14 +452,28 @@ async function proveWindowsTree(workerSource, checkpoint) {
 async function stopWorker(worker, active = false) {
   assert.ok(!stopRequests.has(worker.dispatch_id) && !releaseRequests.has(worker.dispatch_id), 'preserve_original_stop_or_release_request')
   const args = ['worker', 'stop', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
+  const priorEvents = values.agent === 'codex' ? await events(worker.source) : null
   stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
-  const log = await stat(await ordinary(values['service-log'], false), { bigint: true })
-  const checkpoint = active || !worker.source_checkpoint ? { identity: `${log.dev}:${log.ino}:${log.birthtimeNs}`, size: log.size.toString() } : worker.source_checkpoint
+  let checkpoint
+  if (values.agent === 'codex') checkpoint = { sequence: priorEvents.at(-1).sequence, request_id: requestId(args) }
+  else {
+    const log = await stat(await ordinary(values['service-log'], false), { bigint: true })
+    checkpoint = active || !worker.source_checkpoint ? { identity: `${log.dev}:${log.ino}:${log.birthtimeNs}`, size: log.size.toString() } : worker.source_checkpoint
+  }
   const reply = await cli(args)
   assert.equal(native(reply).state, 'stopped')
-  const proof = await proveWindowsTree(worker.source, checkpoint)
+  worker.stop = { request_id: requestId(args), args, reply, proof: null, active_stop_requested: active }
+  let proof
+  if (values.agent === 'codex') {
+    const rows = await events(worker.source), view = codexViews.get(worker.source.native_session_id)
+    proof = originalLinuxTreeProof(rows, view, checkpoint)
+    for (const expected of [view.custody.root, view.custody.nativeState.identity]) {
+      const observed = await observeSource('incarnation', expected.pid)
+      assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(expected), 'original_stopped_process_identity_still_alive')
+    }
+  } else proof = await proveWindowsTree(worker.source, checkpoint)
   stopped.add(worker.dispatch_id)
-  worker.stop = { request_id: requestId(args), args, reply, proof, active_stop_requested: active }
+  worker.stop.proof = proof
   return worker.stop
 }
 async function readTranscript(dispatch) {
@@ -384,6 +498,83 @@ async function readTranscript(dispatch) {
     assert.ok(pages.length < 1000, 'transcript_page_bound')
   }
   return { pages, messages: [...messages.values()] }
+}
+
+async function readCompleteNativeFile(value) {
+  assert.ok(within(dataRoot, await ordinary(value.path, false)), 'native_rollout_outside_private_root')
+  const handle = await open(value.path, 'r')
+  let bytes
+  try {
+    const before = await handle.stat({ bigint: true })
+    const version = info => `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+    assert.equal(version(before), value.source_version)
+    assert.ok(before.size > 0n && before.size <= 12n * 1024n * 1024n)
+    const buffer = Buffer.alloc(Number(before.size) + 1)
+    let size = 0
+    while (size < buffer.length) {
+      const read = await handle.read(buffer, size, buffer.length - size, size)
+      if (!read.bytesRead) break
+      size += read.bytesRead
+    }
+    assert.equal(size, Number(before.size))
+    assert.equal(version(await handle.stat({ bigint: true })), value.source_version)
+    assert.equal(version(await stat(value.path, { bigint: true })), value.source_version)
+    bytes = buffer.subarray(0, size)
+  } finally { await handle.close() }
+  assert.equal(bytes.at(-1), 10)
+  assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(bytes), value.content, 'complete_native_export_differs_from_actual_file')
+  return bytes
+}
+
+async function codexNativeUserTexts(value) {
+  assert.equal(value.format, 'codex-rollout-jsonl')
+  const bytes = await readCompleteNativeFile(value)
+  const texts = []
+  let count = 0
+  for await (const item of Readable.from([bytes]).pipe(jsonlParser.asStream())) {
+    assert.ok(++count <= 100_000)
+    const row = object(item.value), payload = object(row.payload)
+    if (row.type === 'response_item' && payload.type === 'message' && payload.role === 'user') texts.push(payload.content.map(part => part.text).join(''))
+    if (row.type === 'event_msg' && payload.type === 'user_message') texts.push(payload.message)
+    if (row.type === 'event_msg' && payload.type === 'item_completed' && payload.item?.type === 'UserMessage') texts.push(payload.item.content.map(part => part.text).join(''))
+  }
+  assert.equal(count, value.record_count)
+  return texts
+}
+
+async function verifyCodexJournalInputs(worker, original, bindings) {
+  const folded = foldJournal({ sessionId: worker.journal.session_id, epoch: worker.journal.epoch })
+  for (const row of worker.journal.rows) assert.equal(folded.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
+  const actual = folded.finish()
+  assert.equal(actual.damage, null)
+  assert.equal(actual.newer, null)
+  for (const submission of actual.state.submissions.values()) assert.ok(!['pending', 'unknown'].includes(submission.dispatchState), 'accepted_input_remains_unsettled')
+  const submitted = []
+  for (const binding of bindings) {
+    const status = object((await cli(['request', 'show', '--controller', controller, '--request-id', binding.parent_request])).result.current_input)
+    assert.equal(status.state, 'accepted')
+    assert.deepEqual(status.binding, binding)
+    const submission = actual.state.submissions.get(binding.operation_id), receipt = actual.state.receipts.get(binding.operation_id)
+    assert.deepEqual(submission, status.submission, 'actual_original_submission_changed')
+    assert.equal(submission?.fence, original.source.fence)
+    assert.equal(receipt?.providerItemId, submission.providerItemId)
+    const item = actual.state.items.get(actual.state.aliases.get(submission.providerItemId) ?? submission.providerItemId)
+    assert.equal(item?.body.kind, 'message')
+    assert.equal(item.body.role, 'user')
+    assert.equal(item.turnScope?.kind, 'turn')
+    const turn = actual.state.items.get(item.turnScope.turnItemId)
+    assert.equal(turn?.body.kind, 'turn')
+    assert.equal(actual.state.itemFences.get(turn.itemId), binding.runtime_fence)
+    submitted.push({ sequence: submission.submittedSequence, turn: turn.body })
+  }
+  submitted.sort((left, right) => left.sequence - right.sequence)
+  if (worker.native_session.availability === 'complete') {
+    const latest = submitted.at(-1).turn
+    assert.equal(latest.turnId, worker.native_session.final.turn_id)
+    assert.equal(latest.state, 'completed')
+    assert.equal(latest.outcome, 'success')
+    assert.ok(ends(await events(original.source)).some(row => row.detail.frame.params.turn.id === latest.turnId && row.detail.frame.params.turn.status === 'completed'))
+  }
 }
 
 async function run() {
@@ -446,18 +637,41 @@ async function run() {
   approvedFiles.set(specFile, specText)
   check('public.originals', { revision: source.revision, max_workers: workers })
   if (!token) throw new NotRun('current_project_grant_token_not_supplied_no_human_bootstrap')
-  if (!['pi', 'opencode'].includes(values.agent)) throw new NotRun('selected_agent_native_delta_and_complete_result_reader_not_implemented')
-  if (process.platform !== 'win32') throw new NotRun('linux_native_result_and_process_source_contract_awaits_runtime_implementation')
-  assert.ok(within(dataRoot, await ordinary(values['service-log'], false)), 'select_only_this_services_private_log')
+  if (!(process.platform === 'win32' && ['pi', 'opencode'].includes(values.agent) || process.platform === 'linux' && values.agent === 'codex' && values.model === 'gpt-5.5')) throw new NotRun('selected_platform_and_agent_source_contract_not_implemented')
   requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
-  processAPI = requireRuntime('@vscode/windows-process-tree')
+  if (values.agent === 'codex') {
+    const processNode = await stat('/proc/self/exe', { bigint: true }), installedNode = await stat(node, { bigint: true })
+    assert.equal(`${processNode.dev}:${processNode.ino}`, `${installedNode.dev}:${installedNode.ino}`, 'actual_running_node_inode_differs_from_installation')
+    const toolEnvironment = { PATH: process.env.PATH ?? '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: output, TMPDIR: output }
+    const prepared = execFileSync(node, [fileURLToPath(new URL('./prepare-source-observer.mjs', import.meta.url)), '--candidate', candidate, '--source-repository', await ordinary(values['source-repository'], true), '--output', join(output, 'source-observer')], { timeout: 90_000, maxBuffer: 4096, encoding: 'utf8', stdio: 'pipe', env: toolEnvironment })
+    const root = join(output, 'source-observer'), manifestFile = await ordinary(join(root, 'manifest.json'), false)
+    assert.ok((await stat(manifestFile)).size <= 4 * 1024 * 1024)
+    observer = { root, home: join(root, 'observer-home'), manifest: JSON.parse(await readFile(manifestFile, 'utf8')) }
+    assert.equal(observer.manifest.installed_revision, revision)
+    await mkdir(observer.home, { mode: 0o700 })
+    await verifyObserverSources()
+    check('same_revision_read_only_observer', JSON.parse(prepared))
+  } else {
+    assert.ok(within(dataRoot, await ordinary(values['service-log'], false)), 'select_only_this_services_private_log')
+    processAPI = requireRuntime('@vscode/windows-process-tree')
+  }
   const daemon = JSON.parse(await readFile(await ordinary(join(dataRoot, 'daemon', 'daemon-v49.pid'), false), 'utf8'))
   assert.equal(daemon.swa_service_job.source_revision, revision)
   assert.ok(samePath(daemon.swa_service_job.data_root, dataRoot) && samePath(daemon.swa_service_job.install_root, candidate))
-  const security = requireRuntime('@orca/windows-security')
-  daemonOwner = security.readServiceJobMember(daemon.swa_service_job.name, daemon.pid)
-  assert.equal(daemonOwner.creationTimeMs, daemon.swa_service_job.daemon_created_at_ms)
-  assert.equal(daemonOwner.ownerSid, security.currentUserSid())
+  if (values.agent === 'codex') {
+    assert.equal(daemon.swa_service_job.platform, 'linux')
+    const current = await observeSource('incarnation', daemon.pid)
+    assert.equal(current.absent, false)
+    daemonOwner = current.incarnation
+    assert.equal(daemonOwner.boot_id, daemon.swa_service_job.boot_id)
+    assert.equal(daemonOwner.start_ticks, daemon.swa_service_job.daemon_start_ticks)
+    assert.equal(daemonOwner.owner_uid, daemon.swa_service_job.owner_uid)
+  } else {
+    const security = requireRuntime('@orca/windows-security')
+    daemonOwner = security.readServiceJobMember(daemon.swa_service_job.name, daemon.pid)
+    assert.equal(daemonOwner.creationTimeMs, daemon.swa_service_job.daemon_created_at_ms)
+    assert.equal(daemonOwner.ownerSid, security.currentUserSid())
+  }
   jsonlParser = (await import(pathToFileURL(requireRuntime.resolve('stream-json/jsonl/parser.js')).href)).default
   foldJournal = requireRuntime('./journal-open.cjs').startJournalRowFold
   const checker = join(candidate, 'scripts', 'check-swa-runtime.mjs')
@@ -472,8 +686,23 @@ async function run() {
   const capabilities = (await cli(['capabilities'])).result
   assert.equal(capabilities.source_revision, revision)
   const agent = capabilities.agents.find(row => row.id === values.agent)
-  assert.ok(agent && agent.configured.model === values.model)
-  for (const observation of [agent.registered, agent.enabled, agent.installed, agent.configured, agent.launchable, ...['start', 'send', 'read', 'stop', 'tools'].map(key => agent.control[key])]) assert.equal(observation.status, 'available', 'native_launch_tools_off_or_control_unavailable')
+  if (!agent || agent.configured.model !== values.model) throw new NotRun('selected_project_agent_or_model_not_observed')
+  for (const observation of [agent.registered, agent.enabled, agent.installed, agent.configured, ...['start', 'send', 'stop'].map(key => agent.control[key])]) {
+    assert.ok(['available', 'unknown', 'unavailable'].includes(observation.status), 'invalid_observation_status')
+    if (observation.status !== 'available') throw new NotRun('static_source_or_declared_control_not_observed_available')
+  }
+  for (const observation of [agent.launchable, ...['read', 'tools'].map(key => agent.control[key])]) {
+    assert.ok(['available', 'unknown', 'unavailable'].includes(observation.status), 'invalid_observation_status')
+    if (observation.status === 'unavailable') throw new NotRun('live_capability_explicitly_unavailable')
+  }
+  capabilityRevision = agent.requirements.settings_revision
+  assert.ok(Number.isSafeInteger(capabilityRevision) && capabilityRevision > 0, 'actual_project_settings_revision_missing')
+  if (values.agent === 'codex') {
+    assert.equal(agent.installed.version, '0.163.0')
+    assert.equal(agent.configured.provider, 'openai')
+    assert.equal(agent.configured.account_source, 'codex-native-api-key')
+    await ordinary(agent.installed.executable, false)
+  }
   Object.assign(report, { runtime_id: runtimeId, capabilities })
   const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])
   controller = opened.controller
@@ -485,8 +714,8 @@ async function run() {
   Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
   await settledReplay(createArgs, created)
   const startArgs = []
-  const beforeStarts = await stat(values['service-log'], { bigint: true })
-  const sourceCheckpoint = { identity: `${beforeStarts.dev}:${beforeStarts.ino}:${beforeStarts.birthtimeNs}`, size: beforeStarts.size.toString() }
+  const beforeStarts = values.agent === 'codex' ? null : await stat(values['service-log'], { bigint: true })
+  const sourceCheckpoint = beforeStarts ? { identity: `${beforeStarts.dev}:${beforeStarts.ino}:${beforeStarts.birthtimeNs}`, size: beforeStarts.size.toString() } : null
   for (const [index, input] of inputs.entries()) {
     assert.ok(within(inputDirectory, await ordinary(input.input_file, false)))
     let body = await readFile(input.input_file, 'utf8')
@@ -598,7 +827,7 @@ async function run() {
     const body = await readFile(original.actual_input_file, 'utf8')
     assert.equal(originalRequest.receipt.invocation.input.text, body)
     const textOf = message => typeof message.content === 'string' ? message.content : message.content.filter(part => part.type === 'text').map(part => part.text).join('\n')
-    const userTexts = worker.native_session.format === 'opencode-sqlite-v2'
+    const userTexts = worker.native_session.format === 'codex-rollout-jsonl' ? await codexNativeUserTexts(worker.native_session) : worker.native_session.format === 'opencode-sqlite-v2'
       ? worker.native_session.messages.filter(message => message.type === 'user').map(message => message.data.text)
       : worker.native_session.entries.filter(entry => entry.type === 'message' && entry.message.role === 'user').map(entry => textOf(entry.message))
     const originalText = binding.body.blocks.filter(block => block.type === 'text').map(block => block.text).join('\n')
@@ -606,6 +835,14 @@ async function run() {
     if (original.dispatch_id === follow.dispatch_id) {
       assert.ok(userTexts.includes(followup), 'actual_followup_user_body_missing_from_native_source')
       assert.notEqual(binding.operation_id, input.operation_id, 'followup_must_have_its_own_operation')
+    }
+    if (values.agent === 'codex') {
+      assert.equal(worker.native_session.native_id, original.source.provider_link.handle.nativeId)
+      const actualRows = await events(original.source)
+      assert.equal(worker.provider_events.format, 'codex-provider-events-ndjson')
+      await readCompleteNativeFile(worker.provider_events)
+      assert.equal(worker.provider_events.record_count, actualRows.length)
+      await verifyCodexJournalInputs(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding])
     }
     const journal = new DatabaseSync(original.source.journal_database, { readOnly: true })
     try {
@@ -628,7 +865,7 @@ async function run() {
   assert.ok([...prior.state.items.values()].some(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId && item.body.state === 'running'))
   const endedTurn = stoppedOutput.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId)
   const stoppedEvents = await events(target.source)
-  const actualAbort = stoppedEvents.find(row => Date.parse(row.observed_at) >= mark.row.stopEvent.at && (row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record?.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted'))
+  const actualAbort = stoppedEvents.find(row => Date.parse(row.observed_at) >= mark.row.stopEvent.at && (row.protocol === 'codex-app-server' ? row.event === 'notification' && row.detail.method === 'turn/completed' && row.detail.frame.params.turn.status === 'interrupted' : row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record?.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted'))
   assert.ok(endedTurn && (endedTurn.body.state === 'interrupted' || endedTurn.body.outcome === 'cancellation' && actualAbort), 'active_native_turn_cancellation_not_proven')
   await save('actual-result.json', exported)
   for (const worker of survivors) await stopWorker(worker)

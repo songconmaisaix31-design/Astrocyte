@@ -1,0 +1,112 @@
+// 验收观察入口准备；只核公开源，不修改产品或读取 Session。
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises'
+import { builtinModules, createRequire } from 'node:module'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
+
+const values = parseArgs({ options: Object.fromEntries(['candidate', 'source-repository', 'output'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
+for (const key of ['candidate', 'source-repository', 'output']) assert.ok(values[key] && isAbsolute(values[key]), 'observer_absolute_paths_required')
+process.umask(0o077)
+const prototype = dirname(fileURLToPath(import.meta.url))
+const snapshotPaths = [
+  'third_party/orca-v1.4.230/src/shared',
+  'third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity.ts',
+  'third_party/orca-v1.4.230/src/main/agent-hooks/managed-hook-owner-identity.ts',
+  'third_party/orca-v1.4.230/src/main/pty-process-table-parser.ts',
+  'third_party/orca-v1.4.230/package.json',
+  'third_party/orca-v1.4.230/tsconfig.json',
+  'third_party/orca-v1.4.230/config/tsconfig.node.json',
+]
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const inside = (root, path) => {
+  const suffix = relative(root, path)
+  return !suffix || suffix !== '..' && !suffix.startsWith('../') && !isAbsolute(suffix)
+}
+async function ordinary(path, directory = false) {
+  const canonical = await realpath(path)
+  assert.equal(canonical, resolve(path), 'observer_redirected_path')
+  for (let current = canonical; ; current = dirname(current)) {
+    const value = await lstat(current)
+    assert.ok(!value.isSymbolicLink(), 'observer_link_path')
+    assert.ok(current === canonical ? directory ? value.isDirectory() : value.isFile() : value.isDirectory(), 'observer_ordinary_path_required')
+    if (dirname(current) === current) return canonical
+  }
+}
+async function version(path) {
+  await ordinary(path)
+  const before = await stat(path, { bigint: true })
+  const bytes = await readFile(path)
+  const after = await stat(path, { bigint: true })
+  const serialize = value => `${value.dev}:${value.ino}:${value.birthtimeNs}:${value.mtimeNs}:${value.size}`
+  assert.equal(serialize(after), serialize(before), 'observer_source_changed_during_read')
+  return { path, version: serialize(before), sha256: sha(bytes) }
+}
+const candidate = await ordinary(values.candidate, true)
+const repository = await ordinary(values['source-repository'], true)
+await ordinary(dirname(values.output), true)
+const output = resolve(values.output)
+assert.ok(!inside(candidate, output) && !inside(output, candidate), 'observer_output_overlaps_installation')
+assert.equal(await realpath(process.execPath), await ordinary(join(candidate, 'node/node')), 'observer_requires_actual_installed_node')
+const installedRevision = (await readFile(await ordinary(join(candidate, 'VERSION')), 'utf8')).trim()
+assert.match(installedRevision, /^[0-9a-f]{40}$/)
+const commandOptions = { cwd: repository, env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_PAGER: 'cat' }, timeout: 30_000, maxBuffer: 64 * 1024 * 1024 }
+const sourceRevision = execFileSync('git', ['rev-parse', '--verify', `${installedRevision}^{commit}`], commandOptions).toString('ascii').trim()
+assert.equal(sourceRevision, installedRevision, 'observer_installed_commit_missing')
+assert.equal(execFileSync(join(candidate, 'swa'), ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
+const requireInstalled = createRequire(join(candidate, 'runtime/package.json'))
+const journalModule = await version(await ordinary(requireInstalled.resolve('./journal-open.cjs')))
+await mkdir(output, { mode: 0o700 })
+const archive = execFileSync('git', ['archive', '--format=zip', installedRevision, '--', ...snapshotPaths], commandOptions)
+const archivePath = join(output, 'source.zip')
+await writeFile(archivePath, archive, { flag: 'wx', mode: 0o600 })
+const extraction = execFileSync('python3', ['-I', join(prototype, 'extract-observer-source.py'), archivePath, repository, installedRevision, join(output, 'source')], { timeout: 60_000, maxBuffer: 4 * 1024 * 1024, encoding: 'utf8' })
+const archiveProof = JSON.parse(extraction)
+assert.equal(archiveProof.revision, installedRevision)
+const entryPath = join(output, 'entry.ts')
+await writeFile(entryPath, await readFile(join(prototype, 'source-observer-entry.ts')), { flag: 'wx', mode: 0o600 })
+// 编译器单独记录为既有工具；产品源码与依赖只取本安装版本快照和安装原件。
+const requireCompiler = createRequire(new URL('../../runtime/swa-orca/package.json', import.meta.url))
+const esbuildPath = await ordinary(requireCompiler.resolve('esbuild'))
+const esbuild = requireCompiler('esbuild')
+assert.equal(esbuild.version, '0.28.2', 'observer_compiler_version_unreviewed')
+const builtins = new Set(builtinModules.flatMap(name => [name, `node:${name}`]))
+const seenInputs = new Map()
+const bundlePath = join(output, 'observer.cjs')
+const build = await esbuild.build({
+  absWorkingDir: output, entryPoints: [entryPath], outfile: bundlePath, platform: 'node',
+  target: 'node24', format: 'cjs', bundle: true, metafile: true, write: false,
+  tsconfigRaw: { compilerOptions: { target: 'ES2022', module: 'CommonJS', esModuleInterop: true } },
+  logLevel: 'silent',
+  plugins: [{ name: 'installed-source-only', setup(plugin) {
+    plugin.onResolve({ filter: /^[^./]/ }, async args => {
+      if (builtins.has(args.path)) return { path: args.path, external: true }
+      const resolved = await ordinary(requireInstalled.resolve(args.path))
+      assert.ok(inside(join(candidate, 'runtime/node_modules'), resolved), 'observer_dependency_outside_installation')
+      return { path: resolved }
+    })
+    plugin.onLoad({ filter: /.*/ }, async args => {
+      const path = await ordinary(args.path)
+      assert.ok(path === entryPath || inside(join(output, 'source'), path) || inside(join(candidate, 'runtime/node_modules'), path), 'observer_compiler_input_outside_snapshot')
+      seenInputs.set(path, await version(path))
+      return undefined
+    })
+  } }],
+})
+assert.equal(build.outputFiles.length, 1, 'observer_unexpected_compiler_outputs')
+for (const path of Object.keys(build.metafile.inputs)) assert.ok(seenInputs.has(resolve(output, path)), 'observer_untracked_metafile_input')
+for (const [path, expected] of seenInputs) assert.deepEqual(await version(path), expected, 'observer_source_changed_during_build')
+assert.deepEqual(await version(journalModule.path), journalModule, 'observer_journal_module_changed')
+await writeFile(bundlePath, build.outputFiles[0].contents, { flag: 'wx', mode: 0o600 })
+const manifest = {
+  scope: 'read-only-source-observer-preparation', product_or_model_execution: 'NOT_RUN',
+  installed_revision: installedRevision, archive_sha256: sha(archive), archive_proof: archiveProof,
+  compiler: { version: esbuild.version, module: await version(esbuildPath) },
+  journal_module: journalModule, inputs: [...seenInputs.values()], metafile: build.metafile,
+  observer: await version(bundlePath),
+}
+await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+process.stdout.write(JSON.stringify({ status: 'PREPARED_ONLY', installed_revision: installedRevision, source_entries: archiveProof.files, bundled_inputs: seenInputs.size, observer_sha256: manifest.observer.sha256, model_execution: 'NOT_RUN' }) + '\n')
