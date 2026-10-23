@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`，已建立[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 已修复模式、命令来源、严格准入报文和原生选项读回后的批准时序；最新 pi05 在 `45ce26f0` 实际启动为 ready/structured，但读取状态时拒绝了真实 orca 输入回执。该投影修复已通过同原件前后对照和局部检查，完整输入绑定、模型输出和资源释放仍待新请求。Windows 权限修复已通过原生 SDK 六项及真实 Controller.open/close；D3服务退出0但17项未知观测使完整关闭未证。后继D4短控制中止、记录1项创建时间不可用，原因继续核查，不回填D3历史。N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。最新开发单 Worker pi06 使用 `1aa20e3f`，已通过启动、输入观察、完整输入绑定并取得真实模型输出；停止时返回 stop_unknown，完整释放未证。关闭路径修复已通过13项局部规则、类型检查及独立审查，下一步用全新pi07验证真实停止。Windows 权限修复已通过 SDK 六项及真实 Controller.open/close；D3仍有17项未知进程观测，后继D4短控制中止并记录1项创建时间不可用，原因继续核查。完整构建尚未重试，N6 未运行。
 
 ## 当前实现与验证
 
@@ -87,6 +87,12 @@ pi05 补充收尾经原认证接口向唯一 helper451847 发送一次正常 EOF
 
 Windows D4 run `39934353177` / job `120350113249` 最终FAIL，原件为 `.verification/cloud-setup/windows-controller-open-actual-7af48f8d-04/`。SDK六子项继续全部通过；短控制返回 request_aborted，transport未观察、B producer未启动，不声称Controller.open回归。新投影记录唯一 creation_time_unavailable：PID1368/PPID8500、创建时间UNKNOWN；父8500的记录只是历史身份，不补同一快照的归属链。serve退出0、fixture退出6、closure latch=true；两次原生剩余0和CIM已知身份退出不能消除未知项。两条安全摘要完整，结果已独立核对；D3原17项具体原因仍UNKNOWN。该轮无模型或Worker，旧六个原生job及S0均跳过。继续先核短控制中止和创建时间读取路径，完整构建未重试。
 
+pi06 使用 `1aa20e3fe7fbb38a86d3fb2631c0047bf6d82ca7` 和全新请求，原件为 `/workspace/swa-worker-pi-06-ab5FNq/evidence/`。启动请求 `675ae356-696f-400d-964d-56a0b09a317d`、Dispatch `ctx_48680ba9dc1f` 的启动/观察/输入查询均退出0；完整输入绑定证明已生成，实际模型 delta=true，停止前原活动检查点为sequence77。停止请求 `a0e6a3cf-8ede-4a24-abe1-964e6b2c8f80` 退出6、operation_unknown，原生 stop_unknown，错误为 stop-provider-child eviction失败；原停止父/native回执均completed不代表停止成功。只读数据库为2 Task、1 Dispatch/Worker及1 owned/not_requested资源，Worker stop_unknown/stop_outcome_unknown、lease仍live。Grant撤销和dispatcher关闭确认，serve退出6、observer退出1、完整树及Controller关闭UNKNOWN；最终native文件、停止、释放和完整D证明未通过。原请求不重放。
+
+pi06 补充收尾通过原认证接口向准确 helper468494 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon468427/helper468494 的原 pidfd 连续两次退出，间隔50.165839ms，helper缺席，daemon仅余PID1 zombie。执行退出0、stderr为空，实际结果已独立接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-06-cleanup-01/result.json`，SHA `a7b711fe338680fd91fefeb98e1a22428d46922d52269b3b44b57d445b371ea5`。没有重试Worker停止或修改数据库、lease、资源状态；仅补证这两个准确进程，原业务失败与完整树UNKNOWN保留。
+
+[未写请求关闭任务](tasks/swa-pi-unwritten-close-20261023.md)的四处产品改动、既有测试及任务记录已独立接受。真实流最小复现证明旧队列在异步准入结束前完成关闭屏障，并吞掉随后真实EEXIST；现场栈也显示未进入同步写入准入的请求触发要求已有write intent的结算，但原trace未记录具体未写command，不推断完整历史队列。queue/peer现在等待在途准入，只将准确正常关闭中的未写请求作为取消；Pi session/turns在关闭开始时停止后台探测，保留尾部事件、EOF及退出屏障。真实准入、已经写入和清理失败保持原失败语义。首次局部9通过/1失败暴露错误优先级，修复后最终13通过/0失败，严格类型检查退出0；原件在 `.verification/worker-stop-write-close-20261023/`。新pi07驱动已接受，使用新来源、新数据和新请求验证真实停止、释放与完整树；局部结果不代替该实际验收。
+
 ## 保留的安装基线
 
 - Linux 组合安装来源 `aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`，根为 `/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`。构建、归档、严格安装、装内 D12 与组合服务正常 EOF 检查通过。旧 held 服务已经正常关闭，serve/observer 均退出 0，最终两次完整所属进程观察为空。
@@ -105,6 +111,6 @@ Windows D4 run `39934353177` / job `120350113249` 最终FAIL，原件为 `.verif
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-下一步验证修复后的真实 Worker 输入观察、模型输出和资源回收，并定位 Windows 完整关闭的未知进程观测。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+下一步验证修复后的真实 Worker 停止和资源回收，并定位 Windows 短控制中止及完整关闭的未知进程观测。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

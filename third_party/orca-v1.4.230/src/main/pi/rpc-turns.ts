@@ -44,6 +44,7 @@ export class PiRpcTurns {
   private settling = false
   private compacting = false
   private stopped = false
+  private closing = false
   private ended = false
   private failure?: string
   private lastStopReason?: string
@@ -212,6 +213,11 @@ export class PiRpcTurns {
     this.stopped = true
   }
 
+  beginClose(): void {
+    this.closing = true
+    this.idleCheck.dispose()
+  }
+
   beginCommand(command: StructuredAgentSessionCommandRun): void {
     if (this.active) {
       throw new Error('Pi is still working')
@@ -299,6 +305,7 @@ export class PiRpcTurns {
   }
 
   private refreshUsage(): void {
+    if (this.closing) return
     void this.deps
       .request('get_session_stats')
       .then((value) => {

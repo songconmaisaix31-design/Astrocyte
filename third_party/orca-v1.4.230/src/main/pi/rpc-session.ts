@@ -152,7 +152,7 @@ export class PiRpcSession {
     )(launch, {
       ...(toolsOff ? { allowedCommands: new Set([...disabledToolsCommandSchemas.keys(), 'prompt']) } : {}),
       ...(onSpawnedProcess ? { onSpawnedProcess } : {}),
-      ...(this.policy ? { swaPiPolicy: this.policy, beforeExitPublication: () => this.drainNativeProjection() } : {}),
+      ...(this.policy ? { swaPiPolicy: this.policy, onWritesClosing: () => this.turns.beginClose(), beforeExitPublication: () => this.drainNativeProjection() } : {}),
       ...(input.onOutput ? { onOutput: input.onOutput } : {}),
       onRecord: (frame, context) => {
         if (toolsOff && (frame.type === 'extension_ui_request' || frame.type.startsWith('tool_execution_'))) {

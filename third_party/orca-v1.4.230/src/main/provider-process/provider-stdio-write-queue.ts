@@ -21,6 +21,7 @@ type Write = {
   onSettled?: (fact: ProviderWriteSettlement) => void
   writeAttempted: boolean
   cleanupCompleted: boolean
+  admissionPending: boolean
   inWriteCritical: boolean
   terminal: boolean
   completed: boolean
@@ -72,7 +73,7 @@ export class ProviderStdioWriteQueue {
         line, bytes, resolve, reject,
         ...(beforeWrite ? { beforeWrite } : {}),
         ...(onSettled ? { onSettled } : {}),
-        writeAttempted: false, cleanupCompleted: true, inWriteCritical: false,
+        writeAttempted: false, cleanupCompleted: true, admissionPending: false, inWriteCritical: false,
         terminal: false, completed: false, drained: false, returned: false
       }
       const abort = (): void => {
@@ -102,7 +103,7 @@ export class ProviderStdioWriteQueue {
     const active = this.active
     if (active && !active.writeAttempted) {
       active.pendingError ??= this.closingError
-      if (!active.inWriteCritical) this.settle(active, 'rejected', active.pendingError)
+      if (!active.inWriteCritical && !active.admissionPending) this.settle(active, 'rejected', active.pendingError)
     }
   }
 
@@ -125,7 +126,7 @@ export class ProviderStdioWriteQueue {
     this.closingError ??= error
     const active = this.active
     if (active) {
-      active.pendingError ??= error
+      if (!active.pendingError || active.pendingError === this.closingError) active.pendingError = error
       // 同步 stream callback 可重入 close；当前 finally 的真实清理必须先结算。
       if (!active.inWriteCritical) this.settle(active, 'rejected', active.pendingError)
     }
@@ -143,11 +144,18 @@ export class ProviderStdioWriteQueue {
     }
     this.active = write
     if (write.beforeWrite) {
-      void Promise.resolve().then(write.beforeWrite).then(finalAdmission => {
+      write.admissionPending = true
+      void Promise.resolve().then(() => {
+        if (write.terminal || this.closingError || this.terminalError) return
+        return write.beforeWrite!()
+      }).then(finalAdmission => {
+        write.admissionPending = false
         if (write.terminal || this.active !== write) return
         if (finalAdmission) write.finalAdmission = finalAdmission
-        if (!this.terminalError && !this.closingError) this.writeActive(write)
+        if (this.closingError) this.settle(write, 'rejected', this.closingError)
+        else if (!this.terminalError) this.writeActive(write)
       }, error => {
+        write.admissionPending = false
         if (!write.terminal && this.active === write) this.fail(new ProviderWriteAdmissionError(error))
       })
       return

@@ -31,6 +31,8 @@ export class JsonlRpcStreamClosedError extends Error {
     this.name = 'JsonlRpcStreamClosedError'
   }
 }
+// 仅正常关闭时无 entry，或该 entry 的实际结算证明未进入同步准入、未写入。
+class JsonlRpcUnwrittenCloseError extends JsonlRpcStreamClosedError {}
 export class JsonlRpcResponseError extends Error {
   constructor(
     readonly command: string,
@@ -47,6 +49,7 @@ export type JsonlRpcPeerHandlers = {
   onClose?: (error: Error) => void
   onDiagnostic?: (message: string) => void
   onEnd?: () => void
+  onWritesClosing?: () => void
   swaPiPolicy?: SwaPiSessionPolicy
 }
 type PendingRequest = {
@@ -69,6 +72,7 @@ export class JsonlRpcPeer {
   private inputEndError?: Error
   private readingPaused = false
   private writesClosing = false
+  private writeCloseError?: Error
   private inputEnded = false
   private resolveInputEnd!: () => void
   private rejectInputEnd!: (error: Error) => void
@@ -168,6 +172,9 @@ export class JsonlRpcPeer {
   beginClose(error = new JsonlRpcStreamClosedError()): void {
     if (this.writesClosing) return
     this.writesClosing = true
+    this.writeCloseError = error
+    try { this.handlers.onWritesClosing?.() }
+    catch { this.failStrict('persistence'); return }
     this.writer.beginClose(error)
   }
 
@@ -244,7 +251,8 @@ export class JsonlRpcPeer {
       this.pending.set(id, { command, resolve, reject, timer, ...(options.onReply ? { onReply: options.onReply } : {}) })
       void this.send({ ...params, type: command, id }, controller.signal, options.beforeWrite).catch(
         (error: unknown) => {
-          if (this.handlers.swaPiPolicy) this.rejectStrictWrite(error)
+          if (this.handlers.swaPiPolicy && error instanceof JsonlRpcUnwrittenCloseError && this.writesClosing && !this.terminalError) this.rejectPending(id, error)
+          else if (this.handlers.swaPiPolicy) this.rejectStrictWrite(error)
           else this.rejectPending(id, error instanceof Error ? error : new Error(String(error)))
         }
       )
@@ -254,16 +262,18 @@ export class JsonlRpcPeer {
   /** The dialect may track acknowledgements independently of transport correlation. */
   send(record: JsonlRpcRecord, signal?: AbortSignal, beforeWrite?: ProviderWriteAdmission): Promise<void> {
     if (this.closed || this.writesClosing) {
-      return Promise.reject(this.terminalError ?? new JsonlRpcStreamClosedError())
+      return Promise.reject(this.terminalError ?? (this.handlers.swaPiPolicy && this.writesClosing ? new JsonlRpcUnwrittenCloseError() : new JsonlRpcStreamClosedError()))
     }
     try {
       const policy = this.handlers.swaPiPolicy
       const line = encodeNdjson(record, policy ? Math.min(this.limits.maxLineBytes, 8 * 1024 * 1024) : this.limits.maxLineBytes)
       if (!policy) return this.writer.write(line, signal, beforeWrite)
       const context: PiWriteContext = { frame: record, line, ...(record.type === 'prompt' && typeof record.id === 'string' ? { clientMessageId: record.id } : {}) }
+      let finalAdmissionEntered = false, cancelledBeforeAdmission = false
       const admission: ProviderWriteAdmission = async () => {
         const finalAdmission = await beforeWrite?.()
         return () => {
+          finalAdmissionEntered = true
           const cleanups: (() => void)[] = []
           const release = () => {
             let failed = false
@@ -288,7 +298,14 @@ export class JsonlRpcPeer {
           return release
         }
       }
-      return this.writer.write(line, signal, admission, fact => policy.writeSettled(context, fact.outcome, fact)).catch(error => {
+      return this.writer.write(line, signal, admission, fact => {
+        if (this.writesClosing && !this.terminalError && !finalAdmissionEntered && fact.outcome === 'rejected' && !fact.writeAttempted && fact.cleanupCompleted) {
+          cancelledBeforeAdmission = true
+          return
+        }
+        policy.writeSettled(context, fact.outcome, fact)
+      }).catch(error => {
+        if (cancelledBeforeAdmission && this.writesClosing && !this.terminalError && error === this.writeCloseError) throw new JsonlRpcUnwrittenCloseError()
         this.rejectStrictWrite(error)
         throw this.terminalError ?? new Error('SWA Pi RPC write is unverifiable')
       })
