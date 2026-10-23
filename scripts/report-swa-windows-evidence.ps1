@@ -8,11 +8,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not [IO.Path]::IsPathFullyQualified($EvidenceRoot)) { throw 'An absolute downloaded evidence directory is required' }
-if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
+if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a1746ae13e8bd36eb461af1067061f5b71aac')) {
+    $isD11 = $ExpectedRevision -ceq 'eb7a1746ae13e8bd36eb461af1067061f5b71aac'
+    $retainedRun = if ($isD11) { '39963000754' } else { '39952528075' }
+    $retainedArtifact = if ($isD11) { '12506006977' } else { '12500479586' }
     $d10Phase = 'input-file'
     $d10Input = [ordered]@{ actual_length_bytes = 'UNKNOWN'; file_is_ordinary = 'UNKNOWN'; file_is_reparse = 'UNKNOWN'; original_limit_bytes = 2097152; source_matches = 'UNKNOWN' }
     try {
     if ($ControllerOpenSection -cnotin @('Short', 'Closure')) { throw 'The fixed D10 section is required' }
+    if ($isD11 -and $ControllerOpenSection -cne 'Closure') { throw 'Only the fixed D11 closure section is permitted' }
     $file = Get-Item -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Force
     $d10Phase = 'file-validation'
     $d10Input.file_is_ordinary = $file -is [IO.FileInfo]
@@ -38,6 +42,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         if ($null -eq $value) { if ($Nullable) { return $null }; return 'UNKNOWN' }
         if ($Type -ceq 'Boolean') { if ($value -is [bool]) { return $value }; return 'UNKNOWN' }
         if ($Type -ceq 'Tag') { if ($value -is [string] -and $value -cmatch '^[A-Za-z][A-Za-z0-9_.-]{0,63}$') { return $value }; return 'UNKNOWN' }
+        if ($Type -ceq 'Sha256') { if ($value -is [string] -and $value -cmatch '^[0-9a-f]{64}$') { return $value }; return 'UNKNOWN' }
         if ($Type -ceq 'Enum') { if ($value -is [string] -and $Allowed -ccontains $value) { return $value }; return 'UNKNOWN' }
         if ($value -isnot [int] -and $value -isnot [long] -and $value -isnot [double] -and $value -isnot [decimal]) { return 'UNKNOWN' }
         if (-not [double]::IsFinite([double]$value) -or [math]::Abs([double]$value) -gt 9007199254740991) { return 'UNKNOWN' }
@@ -89,9 +94,10 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         }
         $text = $Observation | ConvertTo-Json -Depth 12 -Compress
         if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 3500) { throw 'The typed retained D10 observation exceeds its fixed bound' }
-        Write-Host ('::warning title=' + $Title + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
+        $publicTitle = if ($isD11) { $Title.Replace('Retained D10', 'Retained D11') } else { $Title }
+        Write-Host ('::warning title=' + $publicTitle + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
     }
-    $identity = [ordered]@{ diagnostic_only = $true; original_run = '39952528075'; artifact_id = '12500479586'; original_revision = $ExpectedRevision
+    $identity = [ordered]@{ diagnostic_only = $true; original_run = $retainedRun; artifact_id = $retainedArtifact; original_revision = $ExpectedRevision
         section = $ControllerOpenSection; original_status = 'FAIL'; complete_service_acceptance = 'FAIL'; model_calls = 0; worker_calls = 0 }
     $short = $saved.short_transport_diagnostic
     if ($ControllerOpenSection -ceq 'Short') {
@@ -175,7 +181,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         if ($saved.service.native_remaining.Count -gt 2) { throw 'The saved D10 native exit observation count differs' }
         $remaining = @($saved.service.native_remaining | ForEach-Object { Get-D10Value ([pscustomobject]@{ count = $_ }) count Count })
     }
-    Write-D10Observation 'Retained D10 closure counts' ([ordered]@{ identity = $identity; original_fixture_exit = Get-D10Value $saved fixture_exit Integer
+    $closureObservation = [ordered]@{ identity = $identity; original_fixture_exit = Get-D10Value $saved fixture_exit Integer
         ownership_closure_incomplete = Get-D10Value $unknown ownership_closure_incomplete Boolean
         serve_root = [ordered]@{ pid = Get-D10Value $unknown.serve_root pid PID; creation_time_ms = Get-D10Value $unknown.serve_root creation_time_ms Count }
         root_process_events = [ordered]@{ exit = Get-D10ProcessEvent $unknown.root_process_events exit; close = Get-D10ProcessEvent $unknown.root_process_events close }
@@ -190,7 +196,24 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         saved_projection_utf8_bytes = if ($null -ne $unknown) { [Text.Encoding]::UTF8.GetByteCount(($unknown | ConvertTo-Json -Depth 16 -Compress)) } else { 'UNKNOWN' }; original_annotation_bound = 3500
         service = [ordered]@{ exit = Get-D10Value $saved.service exit Integer $true; signal = Get-D10Value $saved.service signal Tag $true
             unknown_process_observation_count = Get-D10Value $saved.service unknown_process_observation_count Count; native_remaining = $remaining
-            cim_exit = Get-D10Value $saved.service cim_exit Integer $true; cim_all_exited = Get-D10Value $saved.service cim_all_exited Boolean } })
+            cim_exit = Get-D10Value $saved.service cim_exit Integer $true; cim_all_exited = Get-D10Value $saved.service cim_all_exited Boolean } }
+    if ($isD11) {
+        $pure = [ordered]@{ status = 'UNKNOWN'; recorded_count = 'UNKNOWN'; original_7ff_sha256 = 'UNKNOWN'; observation_sha256 = 'UNKNOWN'
+            original_matches_expected = 'UNKNOWN'; observation_matches_expected = 'UNKNOWN' }
+        if ($saved.observer_sources -is [array]) {
+            $pureRows = @($saved.observer_sources | Where-Object { $_.name -is [string] -and $_.name -ceq 'process-incarnation-closure.mjs' })
+            $pure.recorded_count = $pureRows.Count
+            if ($pureRows.Count -eq 1) {
+                $pure.original_7ff_sha256 = Get-D10Value $pureRows[0] original_7ff_sha256 Sha256
+                $pure.observation_sha256 = Get-D10Value $pureRows[0] observation_sha256 Sha256
+                if ($pure.original_7ff_sha256 -cne 'UNKNOWN') { $pure.original_matches_expected = $pure.original_7ff_sha256 -ceq '4cb66241983d2baa6cba577c92c861487a9c33558f972d8489cd4e0fcff6c55d' }
+                if ($pure.observation_sha256 -cne 'UNKNOWN') { $pure.observation_matches_expected = $pure.observation_sha256 -ceq '08fd5acbda36a635723cbeaab3bea346443573ad692e697f2d90652841bd54d3' }
+                if ($pure.original_7ff_sha256 -cne 'UNKNOWN' -and $pure.observation_sha256 -cne 'UNKNOWN') { $pure.status = 'OBSERVED' }
+            }
+        }
+        $closureObservation.pure_overlay = $pure
+    }
+    Write-D10Observation 'Retained D10 closure counts' $closureObservation
     Write-D10Observation 'Retained D10 native query counts' ([ordered]@{ original_revision = $ExpectedRevision
         total_type_count = Get-D10Value $unknown native_query_type_count Count; source_truncated = Get-D10Value $unknown native_query_counts_truncated Boolean; counts = $queryCounts })
     $d10Phase = 'closure-projection'
@@ -225,16 +248,17 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         if ($exceptionKind -cnotmatch '^[A-Za-z][A-Za-z0-9]{0,63}$') { $exceptionKind = 'UNKNOWN' }
         $phase = if ($d10Phase -cin @('input-file', 'file-validation', 'parse-result', 'source-binding', 'short-projection', 'closure-projection', 'publish-short', 'publish-raw', 'publish-ready', 'publish-counts', 'publish-queries', 'publish-group')) { $d10Phase } else { 'UNKNOWN' }
         $section = if ($ControllerOpenSection -cin @('Short', 'Closure')) { $ControllerOpenSection } else { 'UNKNOWN' }
-        $failure = [ordered]@{ diagnostic_only = $true; original_run = '39952528075'; artifact_id = '12500479586'; original_revision = $ExpectedRevision
+        $failure = [ordered]@{ diagnostic_only = $true; original_run = $retainedRun; artifact_id = $retainedArtifact; original_revision = $ExpectedRevision
             section = $section; phase = $phase; kind = $exceptionKind; input = $d10Input; original_status = 'FAIL'; complete_service_acceptance = 'FAIL' }
         $text = $failure | ConvertTo-Json -Depth 5 -Compress
         if ([Text.Encoding]::UTF8.GetByteCount($text) -le 3500) {
-            Write-Host ('::error title=Retained D10 reader failure::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
+            $failureTitle = if ($isD11) { 'Retained D11 reader failure' } else { 'Retained D10 reader failure' }
+            Write-Host ('::error title=' + $failureTitle + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
         }
         throw
     }
 }
-if ($PSBoundParameters.ContainsKey('ControllerOpenSection')) { throw 'The section parameter belongs only to the fixed D10 artifact' }
+if ($PSBoundParameters.ContainsKey('ControllerOpenSection')) { throw 'The section parameter belongs only to a fixed controller evidence artifact' }
 $source = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'SOURCE') -Raw).Trim()
 if ($source -cne $ExpectedRevision) { throw 'The prior artifact source revision differs' }
 $result = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Raw | ConvertFrom-Json

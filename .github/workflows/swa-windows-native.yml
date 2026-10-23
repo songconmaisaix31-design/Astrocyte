@@ -65,36 +65,32 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Verify the exact retained D10 artifact metadata
+      - name: Verify the exact retained D11 artifact metadata
         uses: actions/github-script@v7
         with:
           script: |
             const assert = require('node:assert/strict');
-            const { data: artifact } = await github.rest.actions.getArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: 12500479586 });
-            assert.equal(artifact.id, 12500479586);
-            assert.equal(artifact.name, 'swa-windows-controller-open-control-1b8828d6add9eaab6ed59f445c2ee2c11c4f6511');
-            assert.equal(artifact.workflow_run.id, 39952528075);
-            assert.equal(artifact.workflow_run.head_sha, '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511');
-            assert.equal(artifact.size_in_bytes, 310595);
-            assert.equal(artifact.digest, 'sha256:54bfac848d72ec504390cd26982729b4685c69bb738272db103e33fcda3b5d74');
+            const { data: artifact } = await github.rest.actions.getArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: 12506006977 });
+            assert.equal(artifact.id, 12506006977);
+            assert.equal(artifact.name, 'swa-windows-controller-open-control-eb7a1746ae13e8bd36eb461af1067061f5b71aac');
+            assert.equal(artifact.workflow_run.id, 39963000754);
+            assert.equal(artifact.workflow_run.head_sha, 'eb7a1746ae13e8bd36eb461af1067061f5b71aac');
+            assert.equal(artifact.size_in_bytes, 311303);
+            assert.equal(artifact.digest, 'sha256:9d381b568049c6303793f6dafa44790116422333498a64b812195860f3add8d7');
             assert.equal(artifact.expired, false);
-            core.notice('Fixed D10 artifact metadata verified; no product execution requested');
+            core.notice('Fixed D11 artifact metadata verified; no product execution requested');
       - uses: actions/download-artifact@v4
-        id: download_d10
+        id: download_d11
         with:
           github-token: ${{ github.token }}
-          run-id: 39952528075
-          name: swa-windows-controller-open-control-1b8828d6add9eaab6ed59f445c2ee2c11c4f6511
-          path: ${{ runner.temp }}/swa-retained-controller-open-d10
-      - name: Read only the saved D10 short transport observations
+          run-id: 39963000754
+          name: swa-windows-controller-open-control-eb7a1746ae13e8bd36eb461af1067061f5b71aac
+          path: ${{ runner.temp }}/swa-retained-controller-open-d11
+      - name: Read only the saved D11 closure observations
+        if: ${{ !cancelled() && steps.download_d11.outcome == 'success' }}
         shell: pwsh
         run: |
-          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-controller-open-d10') -ExpectedRevision '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511' -ControllerOpenSection Short
-      - name: Read only the saved D10 closure observations
-        if: ${{ !cancelled() && steps.download_d10.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-controller-open-d10') -ExpectedRevision '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511' -ControllerOpenSection Closure
+          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-controller-open-d11') -ExpectedRevision 'eb7a1746ae13e8bd36eb461af1067061f5b71aac' -ControllerOpenSection Closure
   windows-controller-open-control:
     if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-controller-open-control]') }}
     runs-on: windows-2025
