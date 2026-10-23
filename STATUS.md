@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序与能力界面修复已独立接受源码和局部结果，新安装与模型验收仍待执行。Windows D15 实际 Nt 自检、父子进程正常退出通过；D16 完整服务关闭失败，其74条未知已由固定原件只读诊断定位为两个复用 PID 与旧 anchor 身份不匹配，不能据此升级整树结论。N4完整业务验收和N6均未通过。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序与能力界面修复已独立接受源码和局部结果，新安装与模型验收仍待执行。Windows D17 的 SDK、Nt、传输与 Controller 检查通过，但完整关闭仍有一条未知记录；诊断分支后继 `2f2629c7` 已通过源码和真实 Linux 元数据局部检查，新的 Windows 场景未运行。主线 `6f40a399` 默认 CI 有三项失败，具体原因尚未取得，下一完整构建仍待定位。N4完整业务验收和N6均未通过。
 
 ## 当前实现与验证
 
@@ -224,5 +224,11 @@ Windows单源分类修复 `3780f2b53d509231ebce34431aa36590385dacef` 的pure SHA
 固定D17原件读取来源 `e7d68a594d6c8dbfb7cfff070177c63eb4e23005`，run `39999269543` / job `120570806731` 成功，三条完整typed注释与safe投影已独立接受。唯一未知为 `parent_incarnation_unverified`：PID2172/PPID6616/birth1792777825729，additional anchor6616/birth1792777825727；sample985、query1792777825770–5773，Nt v2/status0/complete=true。两者角色UNKNOWN，完整计数1/单组无截断，pure ffbc/patch95c/DLLc71实际来源匹配。原件 `.verification/cloud-setup/windows-controller-open-evidence-actual-e7d68a59-06/safe-projections.json` SHA `157e8a013a2be400670fb5a719382f46009f8265d077faf1d7239363664f5697`。父身份历史不构成同次callback；上传result没有完整快照或producer命令生命周期，不能判定当批父根缺席/不同incarnation、当前子归属，亦不能证明2172在sample985之前已被确认owned。后继只评估以前已正向确认的同incarnation独立追踪方案；不补历史父行、不删除未解释子链或改写旧latch，未开始新构建/服务/模型。
 
 GUI只读工具最终SHA `fccbad33c3666f6cab60e9f6d095051c2f321383023ba1a5c58e436003bb5f19` 已独审接受，语法检查退出0。新投影有界读取同一完整Run的Worker与execution，经真实界面点击触发原worker.show并核对HTTP和DOM；选择/送达/恢复只与同一原导出比较，show缺少完整原生结果时认证和成果证据保持unknown。原完整流读取、human身份、同runtime/安装/静态资源及零写门不变。浏览器、HTTP、模型均未执行；Root须在新的完整N4、Grant已撤销且原owner仍存活窗口执行。
+
+诊断分支 `ci/windows-controller-open-7ff3a7d7-01` 的后继 `2f2629c7ccc3292949773091cd5b897cb161c913` 已独审、提交及推送，仅改两个观察源。pure SHA `144d16fe707b432e9cfc05aa800d0719430ea112fc23c8706a46f9664436475f`、serve SHA `d82299d2215da36c12662d0ae5a641943e73ee0e884877db2b7b25470626f357`：查询前冻结正向确认身份；当前唯一且创建时间相同的成员独立追踪；缺席或未匹配旧父仍扫描原始子链，已产生的未知、自环检查和永久 latch 保留。初版仅处理匹配成员的遗漏已由源审发现并返修。真实 Linux 父641301正常退出后，子641308仍以相同创建身份存活并重挂PID1；旧规则得到0个成员，新规则找回1个。r2复用原两份完整实际元数据，空prior与旧两参相同，语法/TS解析/import、10项保护源及差分检查退出0。原件 `.verification/cloud-setup/windows-known-owned-source-r2/`，summary SHA `1b12aa9ca92b4358d389cde843a6f81662cf5c747bfaa4266811ce5df82b65b9`。这只验证Linux保存元数据上的规则，未匹配父的Windows动态场景未运行，也不能补证D17此前ownership；尚未推广到主线生产安装。
+
+该诊断分支普通推送额外触发默认 `SWA checks` run `40005606521`，Root提交取消后四个job均最终cancelled，两个平台的完整build和CLI build步骤均skipped；原生run `40005606529` 为skipped。原记录 `.verification/cloud-setup/windows-known-owned-2f2629c7-push-ci.md` 保留，不作为完整验证。后续通过已审tag和准确选择器开启必要CI，不能把普通branch push当成只保存代码的动作。
+
+只读查询另确认主线 `6f40a399af301c05ecb79a5316a812641e05e3f9` 的默认 `SWA checks` run `40001114124` 最终failure：Windows foundation job `120577125594` 的CLI权限测试失败，Windows/Linux check jobs `120577125738`、`120577126306` 均在 `pnpm check` 失败；Linux foundation成功。唯一标准日志下载被Forbidden拒绝，同次annotations只有exit1和Node迁移warning，不能据warning推断原因。报告 `.verification/cloud-setup/main-ci-6f40a399/audit.md` 保存准确命令、元数据和范围。具体失败测试、根因和局部复现仍未取得；正在准备读取固定原日志的最小诊断方案，没有重跑原测试或完整构建。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
