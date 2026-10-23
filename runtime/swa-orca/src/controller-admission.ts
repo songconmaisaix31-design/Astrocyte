@@ -169,7 +169,7 @@ function admitOrdinaryMutation(request: RpcRequest, params: Record<string, unkno
   if (command.action === 'worker.start') {
     const parentId = command.parent_task_id ?? rootId
     if (parentId !== rootId && !isTaskDescendant(context.runtime.getOrchestrationDb(), runId, rootId, parentId)) deny('The handoff parent is outside the original Run')
-    if (!invocation.input || !invocation.selection || !isDeepStrictEqual(params, { from: owner.controller, run: runId, parent: parentId, worktree: 'current', name: command.name, taskTitle: command.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) })) deny('The native Worker start differs from the approved fixed input')
+    if (!invocation.input || !invocation.selection || !isDeepStrictEqual(params, { from: owner.controller, run: runId, parent: parentId, worktree: 'current', taskTitle: command.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) })) deny('The native Worker start differs from the approved fixed input')
   } else if (command.action === 'task.complete') {
     if (!isDeepStrictEqual(params, { id: rootId, run: runId, callerTerminalHandle: owner.controller, status: 'completed', result: invocation.input?.text })) deny('The native completion differs from the original fixed task')
   } else {
