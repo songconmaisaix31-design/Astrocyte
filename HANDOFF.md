@@ -22,7 +22,7 @@
 
 相同 S7ff 的 Windows run `39912010769` / job `120276917189` 在 service-smoke 失败。只读取证 run `39916407634` 已成功，确认原 controller-open CLI 退出6，未进入 task.create；原 artifact 未保留该 CLI 内容，内部错误仍 UNKNOWN。release_audit 的 Windows 负责人准备无需完整构建的最小复现。此前长报文修复 `36fb24a9` 的真实 writer、r3 Go/RPC/SQLite 与永久 TTY/pipe 验证，以及 Windows 文件名修复 `06495931`、真实任务输入接线 `ab689087` 的局部证据继续保留。完成当前失败的根因和局部验证后，再固定新来源构建并继续 N4/N6、同 Run GUI 和逐平台核验。旧请求不重放，已结束服务不复用；每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
 
-命令来源修复已完成两处直接消费者，真实无模型复现证明同一 host environment 的裸 Pi 失败、原批准绝对命令返回官方1.0.1成功；首轮工具默认配置断言失败保留。原4项模式规则和 strict 均退出0，源码与局部结果已获独立审查接受，任务为 `swa-worker-launch-probe-20261023.md`。pi03 runner 的 pi02 复用差分已审查，准确 SHA 为 `bf34c051cdd050e9acfcc42920638e1b59263abc2b6e0cce208354adaefc6f39`；产品提交固定后才运行新请求。Windows 独立观察提交 `f589b2b7e49c8ab3a8ac22e663c96a8c2f38dbb0` 已触发最小复现 run `39924868969` / job `120318666615`，其他六个原生 job 及 S0 均 Skipped，由 Windows 负责人继续只读观察；不将局部1d组件与7ff源码组合写成正式同来源安装。
+最新产品源码 `5170d9bcb36ae29527dc7c943350641d48c5a9ce` 已固定。pi03 新 Worker 请求在 Go 严格解码阶段失败；正式 Decoder 离线复现确认原生 `spec.handoff` 超出 `OrcaTaskSpec`，具体证据见 STATUS。CM 只修改现 `delivery-admission.ts`，明确投影原8字段并保留 submission 的交接恢复拒绝语义；原件投影、正式 SQLite 六组50项和 strict 均通过，准确源码与局部结果已独立接受。release_audit 按已审 pi04 runner 继续新请求，未重试完整构建。pi03 原 FAIL/pending/native缺席/0D-W-resource/整树UNKNOWN 保留，两个准确资源已正常 EOF 与双 pidfd 补证退出并获独立接受。Windows 第二轮 `75e69fcf` / run `39926780628` / job `120325012614` 的 TTY/pipe 短消息均成功，自然退出0；Controller.open 触发 `native_codex_private_security_changed`，data 根 owner 不匹配并含额外管理员权限。Windows 负责人继续定位创建过程，并只将已实际验证的动态导入修复移入 main checker；原完整服务关闭仍 UNKNOWN，不合并全部诊断文件。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 

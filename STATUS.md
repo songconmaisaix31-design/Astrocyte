@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 的模式设置和效果前检查已修复；最新 pi-02 因原生支持探测执行裸 `pi` 时 ENOENT，降级到 terminal 后被检查拒绝，实际 Dispatch/Worker 均为零，尚未取得模型输出。Windows 原生 CI 的失败已确定在 controller-open，内部错误通过局部复现继续定位。N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 已修复模式设置与命令来源；pi-03 在效果前准入的 Go 严格 JSON 解码阶段失败，实际 Dispatch/Worker 均为零，尚未取得模型输出。该报文投影修复已通过局部验证并固定为 `5170d9bcb36ae29527dc7c943350641d48c5a9ce`，继续全新 pi-04 请求。Windows 最小复现的短输入已通过，Controller.open 实际触发私有目录权限检查，目录创建过程继续定位。N6 未运行。
 
 ## 当前实现与验证
 
@@ -57,9 +57,17 @@ pi-02 使用该提交重编开发 host/helper，原件为 `/workspace/swa-worker
 
 相同 S7ff 的 Windows run `39912010769` / full job `120276917189` 已最终 FAILURE：前六项 setup 成功，driver 在 `service-smoke` 报 `The actual service/Job shutdown check failed or remains unknown`。原 evidence artifact `12483830115` 已上传；本机通过正常 `gh` 下载及读取日志时，对象存储返回403。后继只读取证 run `39916407634` 成功：原 producer 停在 `controller-open`，cli10 退出6、双流 EOF，没有超时，未进入 task.create；内部错误因原 artifact 未收集该 CLI 内容仍为 UNKNOWN。Grant 撤销及 HTTP dispatcher 关闭确认，原 serve/helper 退出6、未决 mutation 和两项未知进程观察保留。原生退出观察两次剩余为0，CIM的已知身份退出观察通过，仍不能替代完整服务关闭证明。正在准备无需完整构建的 Windows 最小复现；该只读取证的其他 native job 和 S0 均 Skipped。
 
-[命令来源修复](tasks/swa-worker-launch-probe-20261023.md)已贯通 Worker 模式选择和 session intent 的两次支持探测。无模型复现的首轮在探测前因工具误要求所有 Agent 默认环境为空而停止；收窄为核 Pi 配置后，实际 login-shell 捕获证明 host PATH 不含 Pi，裸命令 ENOENT/不支持，同一环境使用原批准绝对命令则真实返回官方版本1.0.1/支持，退出0。修后原4项模式规则通过，runtime strict 退出0；原件为 `.verification/worker-launch-probe-20261023/`。源码与局部结果已获独立审查接受，实际修后单 Worker 尚未运行。
+[命令来源修复](tasks/swa-worker-launch-probe-20261023.md)已贯通 Worker 模式选择和 session intent 的两次支持探测。无模型复现的首轮在探测前因工具误要求所有 Agent 默认环境为空而停止；收窄为核 Pi 配置后，实际 login-shell 捕获证明 host PATH 不含 Pi，裸命令 ENOENT/不支持，同一环境使用原批准绝对命令则真实返回官方版本1.0.1/支持，退出0。修后原4项模式规则通过，runtime strict 退出0；原件为 `.verification/worker-launch-probe-20261023/`。源码与局部结果已获独立审查接受，后继 pi-03 实测结果如下。
 
-Windows 最小复现已由独立源码审查接受并通过局部装配、语法和触发条件检查。观察提交 `f589b2b7e49c8ab3a8ac22e663c96a8c2f38dbb0` 的唯一 tag 触发 run `39924868969` / job `120318666615`，当前准备环境；只组合保留1d原生组件和固定7ff生产源码，先做三次短消息，再做一次 controller-open，不创建任务或 Worker。其他六个原生 job 和相同提交的 S0 run `39924868978` 均 Skipped。该任务不代表完整候选或 Windows 动态验证已通过。
+pi-03 使用已推送的 `063adec6e802e733f47f407df80069b14fdedaf3` 和全新请求，原件为 `/workspace/swa-worker-pi-03-YYQ8lz/evidence/`。Controller/根任务创建通过，Worker 请求 `ebc8f902-e405-49f6-95fe-537c3e746db1` 的 CLI 退出6，错误为 `invalid original delivery invocation`；原请求 pending/helper-input，native 子行缺席，实际1 ready根任务、0 Dispatch/Worker/resource、5回执。离线用正式 Go Decoder 读取原 invocation 及真实 TypeScript schema 解析后的 JSON，两者都以 `json: unknown field "handoff"` 拒绝；正文284,632字节，未超2MiB。原生 producer 将交接/角色元数据加入 `invocation.spec`，Go 的严格 `OrcaTaskSpec` 不包含这些字段，错误发生在实际权限检查之前。该 handler 和 Go 类型自 I4c 未变，不能归因于混合开发副本过旧。修复将明确传递效果前准入所需的8个原字段，保留 `submission` 供现有交接恢复拒绝规则使用，完整原生任务记录与输入绑定继续保留。
+
+该次 Grant 撤销、dispatcher 关闭确认，原服务退出6、observer退出1、完整树 UNKNOWN 保留。补充正常 EOF 结束唯一 helper407835，session 空后 shutdownIfIdle 返回 ACCEPTED；原 daemon407752/helper407835 的两个 pidfd 连续两次退出，间隔50.131274ms，helper 已缺席，daemon 仅余 PID1 zombie。收尾退出0且独立审查接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-03-cleanup-01/result.json`；只证明两个准确资源，原业务 FAIL/pending 和完整树 UNKNOWN 未改。
+
+[准入投影修复](tasks/swa-delivery-admission-projection-20261023.md)仅在现有发送文件选择8个原字段，完整保留 Scope.Context 和 Submission，原 native spec、账本及输入绑定不变。同一284632字节原报文仍被正式严格 Decoder 拒绝，282957字节投影解码成功且8值与原对象相等。既有真实 SQLite 六组、50个子测试通过，包括 submission 与 handoff 冲突拒绝；TypeScript strict 退出0。准确源码与局部结果已独立接受，提交为 `5170d9bcb36ae29527dc7c943350641d48c5a9ce`；后继实际单 Worker 尚待结果。
+
+Windows 最小复现只组合保留1d原生组件和固定7ff生产源码，不创建任务或 Worker。观察提交 `f589b2b7e49c8ab3a8ac22e663c96a8c2f38dbb0` 的 run `39924868969` / job `120318666615` 在短消息检查失败，未进入 controller-open：诊断 checker 将原 `import('node-pty')` 改写为裸 Windows 绝对路径，ESM loader 拒绝 `d:` 协议。服务正常退出0、无未知进程观察、两次原生观察为空、CIM确认退出；模型和 Worker 为零。局部修复仅对 dynamic-import 使用标准文件 URL，实际两个 bundle 比较确认3处动态导入改变、8处静态 require 不变，真实模块 URL 加载和语法检查通过；两次局部检查数量假设错误的原件保留。
+
+后继观察提交 `75e69fcf84ba6853aeb2f24b69ed01800658c618` 的 run `39926780628` / job `120325012614` 已完成同一最小诊断，TTY/pipe 各三次短消息成功并自然退出0，验证了动态导入修复。Controller.open 实际返回 `operation_unknown/native_codex_private_security_changed`，原请求 `99a68634-7047-4435-8592-5881bbf403cd` 停在 pending/workspace-registration，尚无子任务。公开 ACL 观察显示新 data 根 owner 与当前用户不符、包含额外 Administrators ACE；新 Pi/OpenCode 项目目录满足 User/System 严格权限，Codex 目录缺席。继续追踪 data 创建过程。Grant 撤销及 dispatcher 关闭确认；服务退出6、8项未知进程观察、完整关闭 UNKNOWN，原生两次剩余为0和 CIM 已知身份退出通过不覆盖该限制。原件为 `.verification/cloud-setup/windows-controller-open-actual-75e69fcf-02/`，实际结果已独立接受；公开 annotation 尾部被 API 截断，未补造缺失字段。两轮其他六个原生 job 及各自 S0 均 Skipped。原7ff历史目录权限和内部原因仍 UNKNOWN，当前开发复现不能替代完整候选。
 
 ## 保留的安装基线
 
