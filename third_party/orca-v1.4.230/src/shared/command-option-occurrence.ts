@@ -14,7 +14,8 @@ export function findOptionOccurrence(
   tokens: readonly string[],
   aliases: readonly string[],
   stopAtTerminator: boolean,
-  valueOptions: readonly string[] = []
+  valueOptions: readonly string[] = [],
+  consumeRequiredTargetValues = false
 ): { index: number; consumed: number; value?: string } | null {
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index]
@@ -30,7 +31,8 @@ export function findOptionOccurrence(
     }
     const nextToken = tokens[index + 1]
     const consumesNext =
-      aliases.includes(token) && nextToken !== undefined && !nextToken.startsWith('-')
+      aliases.includes(token) && nextToken !== undefined &&
+      (!nextToken.startsWith('-') || consumeRequiredTargetValues && valueOptions.includes(token))
     const alias = aliases.find((name) => matchesOption(token, [name]))
     const value = consumesNext
       ? nextToken

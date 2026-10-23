@@ -1,4 +1,5 @@
 import type { AgentType } from './agent-status-types'
+import { removeAgentArgOption } from './agent-session-option-agent-args'
 import { findCatalogModel, getAgentSessionOptionCatalog } from './agent-session-option-catalog'
 import { OPENCODE_LAUNCH_OPTION_CATALOG } from './agent-session-option-catalog-opencode'
 import type {
@@ -12,6 +13,16 @@ export type ResolvedSessionOptionLaunch = {
   appliedValues: Record<string, SessionOptionValue>
 }
 
+// Pi 的完整 provider/model 选择只用于启动，不增加会话选项目录或中途切换。
+const PI_LAUNCH_OPTION_CATALOG: AgentSessionOptionCatalog = {
+  supportsWorkerLaunchPreferences: true,
+  models: [],
+  modelApply: {
+    launchArgs: (value) => ['--model', String(value)],
+    removeAgentArgs: (tokens) => removeAgentArgOption('pi', tokens, ['--model', '--provider'])
+  }
+}
+
 function isOverriddenByAgentArgs(apply: CatalogOptionApply, tokens: readonly string[]): boolean {
   const kept = apply.removeAgentArgs?.(tokens)
   return kept !== undefined && kept.length < tokens.length
@@ -20,6 +31,7 @@ function isOverriddenByAgentArgs(apply: CatalogOptionApply, tokens: readonly str
 export function getAgentSessionOptionLaunchCatalog(
   agent: AgentType
 ): AgentSessionOptionCatalog | null {
+  if (agent === 'pi') return PI_LAUNCH_OPTION_CATALOG
   return agent === 'opencode' ? OPENCODE_LAUNCH_OPTION_CATALOG : getAgentSessionOptionCatalog(agent)
 }
 

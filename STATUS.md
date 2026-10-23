@@ -43,9 +43,13 @@ helper 初步改为标准 readline 的 `terminal: process.stdin.isTTY`。真实 
 
 S7ff Linux 组合构建、归档、解包及独立严格安装均退出0，安装根为 `/workspace/swa-linux-installs/swa-linux-combined-7ff3a7d7-n46-03`。同一干净提交执行装内 `linux-provider-tree.test.mjs`，12通过、0失败、0跳过，原件在 `.verification/swa-linux/evidence/7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f-combined-n46-03/`。
 
-该安装的 N4 原请求 `18752a1a-e72f-4f43-97c3-bfdff1d07cf7` 已完成 Controller 创建；任务请求 `6fb4e04d-e4a7-53c1-a7d4-0639b1db5b7e` 及两个子操作均 completed。Worker 请求 `c853b7e2-b789-5652-a375-2d13783c083d` 停在 pending/helper-input，实际返回 `Creation and setup options apply only to new-child or new-top-level worktrees`。只读 SQLite 有唯一 ready 根任务 `task_bdedb368b00d` / Run `run_ba4946db2c34`，Dispatch、Worker 与资源表均为零，驱动无 Worker 输出；这些记录不能证明原生端完全没有副作用。源码将 Worker 名称同时作为 `worktree:'current'` 的原生 `name` 参数，触发上游创建选项校验，修复及局部验证正在进行。Grant 撤销已确认；Root 正常 EOF 后服务退出6、观察器退出1，完整所属进程关闭 UNKNOWN，正在核查准确残留资源。旧请求不重放。原件在 `/workspace/swa-pi-n4-packet-7ff3a7d7-20261023-01/evidence`、对应 owned 目录与 `.verification/controller-taskcreate-diagnosis-20261023/n4-7ff3a7d7-failure-01/`。
+该安装的 N4 原请求 `18752a1a-e72f-4f43-97c3-bfdff1d07cf7` 已完成 Controller 创建；任务请求 `6fb4e04d-e4a7-53c1-a7d4-0639b1db5b7e` 及两个子操作均 completed。Worker 请求 `c853b7e2-b789-5652-a375-2d13783c083d` 停在 pending/helper-input，实际返回 `Creation and setup options apply only to new-child or new-top-level worktrees`。只读 SQLite 有唯一 ready 根任务 `task_bdedb368b00d` / Run `run_ba4946db2c34`，Dispatch、Worker 与资源表均为零，驱动无 Worker 输出；这些记录不能证明原生端完全没有副作用。源码将 Worker 名称同时作为 `worktree:'current'` 的原生 `name` 参数，触发上游创建选项校验。修复 `3f110ee430387c66ff9e3b253d893e066bed0e86` 已推送，发送端和精确准入端各移除该参数，保留任务标题、输入与实际模型；strict TypeScript 退出0且源码独立审查接受，真实单 Worker 验证待运行。Grant 撤销已确认；Root 正常 EOF 后服务退出6、观察器退出1，原完整所属进程关闭 UNKNOWN。旧请求不重放。原件在 `/workspace/swa-pi-n4-packet-7ff3a7d7-20261023-01/evidence`、对应 owned 目录与 `.verification/controller-taskcreate-diagnosis-20261023/n4-7ff3a7d7-failure-01/`。
 
-相同 S7ff 的 Windows run `39912010769` / full job `120276917189` 已最终 FAILURE：前六项 setup 成功，driver 在 `service-smoke` 报 `The actual service/Job shutdown check failed or remains unknown`。原 evidence artifact `12483830115` 已上传；本机通过正常 `gh` 下载及读取日志时，对象存储返回403，尚未取得具体子因。正在准备仅读取该原产物的诊断，不重跑完整构建；同提交 S0 run `39912010725` 与其他五个 native job 均 Skipped。
+补充只读核查确认原 daemon351430 与 helper351866 仍保持本次内核身份。正常收尾工具准备时先因根目录不能解析 esbuild 退出1，随后因缺少正式源码解析条件与 process-host 插件退出1；两次均未连接 daemon。恢复正式构建的依赖入口与解析配置后，第三次局部编译退出0、56个生产输入逐字等于 S7ff，语法检查及独立审查通过。实际收尾经原认证 daemon 接口向唯一原会话发送一次 Ctrl-D，helper 自然退出、session 清空，shutdownIfIdle 返回 ACCEPTED；两个原 pidfd 连续两次报告已退出，间隔50.128084ms，观察器退出0，helper 的 /proc 记录缺席。daemon 仅剩 PID1 未回收的 zombie，未发送 OS 信号。执行退出0，原件为 `.verification/controller-taskcreate-diagnosis-20261023/n4-7ff3a7d7-cleanup-02/result.json`。该补充只证明两个准确资源已结束，原业务 FAIL、Worker pending 和原完整树 UNKNOWN 均保留。
+
+沿同一启动路径另发现 Pi 的显式模型选择缺少启动能力目录，原 `checkAgentLaunchModelPreferences` 会拒绝当前固定模型。[Pi 模型启动任务](tasks/swa-pi-worker-model-launch-20261023.md)已完成官方 1.0.1 参数与原消费者的无网络复现及修复，5项规则和11项原参数处理测试通过，runtime strict 退出0，源码与结果独立审查接受。两次原测试配置装配失败均未进入测试，原件保留。默认检查已接入 Pi 规则；真实单 Worker、N4/N6 和后继完整构建尚未执行。
+
+相同 S7ff 的 Windows run `39912010769` / full job `120276917189` 已最终 FAILURE：前六项 setup 成功，driver 在 `service-smoke` 报 `The actual service/Job shutdown check failed or remains unknown`。原 evidence artifact `12483830115` 已上传；本机通过正常 `gh` 下载及读取日志时，对象存储返回403。后继只读取证 run `39916407634` 成功：原 producer 停在 `controller-open`，cli10 退出6、双流 EOF，没有超时，未进入 task.create；内部错误因原 artifact 未收集该 CLI 内容仍为 UNKNOWN。Grant 撤销及 HTTP dispatcher 关闭确认，原 serve/helper 退出6、未决 mutation 和两项未知进程观察保留。原生退出观察两次剩余为0，CIM的已知身份退出观察通过，仍不能替代完整服务关闭证明。正在准备无需完整构建的 Windows 最小复现；该只读取证的其他 native job 和 S0 均 Skipped。
 
 ## 保留的安装基线
 
@@ -56,6 +60,7 @@ S7ff Linux 组合构建、归档、解包及独立严格安装均退出0，安�
 - 本轮另核对并清理 `559c621b-02`、`f71eec93-03`、`aefe6c4b-pi-01`、`50d099dd-n46-01` 的四份 packages 解包副本，实际可用空间增加 3,957,583,872 字节。完整成员内容与硬链接核验、当前用户进程引用核查、删除后原归档校验通过；dist 候选、独立安装及所有数据和证据保留。系统 Docker/containerd 进程资源不可读的范围单独保留，未宣称核查所有系统进程。原件为 `.verification/cloud-setup/release-cleanup-n46-20261023-02/operation-01/`。
 - 后续清理八份已有完整保留归档的旧 dist 候选，准确固定清单见 `.verification/cloud-setup/dist-cleanup-n46-20261023-03/PLAN.md`；实际操作退出0、八份全部移除，可用空间从1,191,329,792增至4,540,567,552字节。共享文件的树外硬链接未计入回收量，也未修改内容或权限；八份原 tar 的官方 SHA 校验前后均通过。当前 S4c、所有独立安装、账号、源码、数据、证据及两独立仓 bundle 均保留。实际原件为同目录 `operation-01/`，未来需要旧候选时从对应保留归档恢复。
 - 随后只移除 S4c 的 packages 解包副本，完整归档、dist 候选和独立安装均保留，操作退出0。可用空间从3,513,548,800增至4,494,946,304字节；完整归档比较、当前用户进程无引用及归档 SHA 前后检查通过。原件为 `.verification/cloud-setup/package-cleanup-s4c-20261023-04/operation-01/`；下一次构建前重新检查实际空间。
+- S7ff 验收失败后，按新的准确范围先移除 S7ff packages 副本和 S4c dist 副本，再独立移除 S7ff dist 副本，两次操作均退出0。完整归档比较、链接与当前用户进程引用核查、保留归档前后校验通过；全部独立安装、数据、源码、账号和证据保留。原件为 `.verification/cloud-setup/package-cleanup-s7ff-20261023-05/operation-01/` 与 `operation-02/`。两窗口净增加空间分别为1,398,685,696和413,003,776字节；后一窗口末实际可用3,272,003,584字节，期间其他写入另计。未清 Go 缓存，下一阶段重新读取实际空间。
 
 ## 当前边界与下一步
 
@@ -63,6 +68,6 @@ S7ff Linux 组合构建、归档、解包及独立严格安装均退出0，安�
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-下一步完成 S7ff Worker 参数错误的最小修复与真实局部验证、核查其服务关闭范围，并从 Windows 原 artifact 定位 service-smoke 子因。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+下一步完成真实单 Worker 的启动、输出和回收验证，并通过 Windows 最小复现定位 controller-open 的内部错误。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

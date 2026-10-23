@@ -16,9 +16,11 @@
 
 共享工作树已有用户授权，禁止覆盖其他负责人的未提交改动。按准确路径分批提交，普通 push；不要 `git add .`、重写历史或修改原安装。前端/后端生成类型由 Root 串行维护。
 
-默认检查、清理及 Linux S50/S4c/S7ff 安装和 D12 已通过。当前完整来源 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f` 的 N4 已完成真实 Controller 与根任务创建，但 Worker 启动因 `worktree:'current'` 同时携带仅用于新工作树的 `name` 被上游拒绝。原请求保留 pending/UNKNOWN，尚无 Worker 输出；Grant 已撤销，正常 EOF 后服务退出6、观察器退出1，所属资源关闭仍 UNKNOWN。collaboration_model 负责最小参数修复和真实局部验证；release_audit 只读核查原资源后再提交准确收尾方案。原件和 ID 见 STATUS。
+默认检查、清理及 Linux S50/S4c/S7ff 安装和 D12 已通过。当前完整来源 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f` 的 N4 已完成真实 Controller 与根任务创建，但 Worker 启动因 `worktree:'current'` 同时携带仅用于新工作树的 `name` 被上游拒绝。原请求保留 pending/UNKNOWN，尚无 Worker 输出；Grant 已撤销，正常 EOF 后服务退出6、观察器退出1，原完整树关闭 UNKNOWN 保留。补充正常收尾已通过原认证接口结束两个准确的 daemon/helper 资源，双 pidfd 退出、helper 缺席、执行退出0，未发送 OS 信号。该补充不替代原完整树观察。原件和 ID 见 STATUS。
 
-相同 S7ff 的 Windows run `39912010769` / job `120276917189` 在 service-smoke 失败，具体子因尚未从原 artifact 取回；release_audit 的 Windows 负责人准备仅读取原 artifact 的诊断，不重跑完整构建。此前长报文修复 `36fb24a9` 的真实 writer、r3 Go/RPC/SQLite 与永久 TTY/pipe 验证，以及 Windows 文件名修复 `06495931`、真实任务输入接线 `ab689087` 的局部证据继续保留。完成当前失败的根因和局部验证后，再固定新来源构建并继续 N4/N6、同 Run GUI 和逐平台核验。旧请求不重放，已结束服务不复用；每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
+参数修复 `3f110ee430387c66ff9e3b253d893e066bed0e86` 已推送，strict 和两处源码独立审查通过。collaboration_model 已完成直接下游的 Pi 显式模型启动能力目录修复，5项规则、11项原参数处理测试和 runtime strict 通过，独立审查接受；release_audit 用 r3 的独立开发副本准备真实单 Worker 局部检查，同步重编 host/helper 两入口，保留原字节及所有失败记录。正式 I4c/I7ff 不修改；该混合开发检查不代表同提交完整安装或 N4/N6。准确 runner 源审接受后再执行模型。三份可恢复构建副本已清理，保留归档、安装和原件，后续每阶段重读实际空间。
+
+相同 S7ff 的 Windows run `39912010769` / job `120276917189` 在 service-smoke 失败。只读取证 run `39916407634` 已成功，确认原 controller-open CLI 退出6，未进入 task.create；原 artifact 未保留该 CLI 内容，内部错误仍 UNKNOWN。release_audit 的 Windows 负责人准备无需完整构建的最小复现。此前长报文修复 `36fb24a9` 的真实 writer、r3 Go/RPC/SQLite 与永久 TTY/pipe 验证，以及 Windows 文件名修复 `06495931`、真实任务输入接线 `ab689087` 的局部证据继续保留。完成当前失败的根因和局部验证后，再固定新来源构建并继续 N4/N6、同 Run GUI 和逐平台核验。旧请求不重放，已结束服务不复用；每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
