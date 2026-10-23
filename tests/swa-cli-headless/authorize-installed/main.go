@@ -800,6 +800,16 @@ func field[T any](body []byte, name string) (T, error) {
 	}
 	return value, nil
 }
+func readSpaceReceipt(body []byte, title string) (domain.ProjectSpace, error) {
+	var result struct {
+		SchemaVersion int                 `json:"schema_version"`
+		Space         domain.ProjectSpace `json:"space"`
+	}
+	if json.Unmarshal(body, &result) != nil || result.SchemaVersion != 1 || result.Space.ID == "" || strings.TrimSpace(result.Space.ID) != result.Space.ID || result.Space.Version != 1 || result.Space.Title != title || result.Space.MaterialRefs == nil || len(result.Space.MaterialRefs) != 0 || result.Space.CreatedAt.IsZero() {
+		return domain.ProjectSpace{}, fail("actual_space_receipt_missing")
+	}
+	return result.Space, nil
+}
 func (c *humanClient) receipt(stage string, fields map[string]any) error {
 	fields["stage"] = stage
 	fields["local_intent_id"] = c.p.Requests[stage]
@@ -1083,10 +1093,8 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 	if err != nil {
 		return report, err
 	}
-	space, err := field[struct {
-		ID string `json:"id"`
-	}](spaceBody, "space")
-	if err != nil || uuid.Validate(space.ID) != nil {
+	space, err := readSpaceReceipt(spaceBody, scope.space)
+	if err != nil {
 		human.unknown = true
 		return report, fail("actual_space_receipt_missing")
 	}

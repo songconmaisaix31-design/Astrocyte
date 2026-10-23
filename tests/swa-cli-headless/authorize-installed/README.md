@@ -37,3 +37,7 @@ Codex固定原六个执行依赖；Pi在原六源基础上增加pi-event-view.mj
 driver的外部审阅快照和私有证据保存在EvidenceRoot。公开项目下另有固定公开正文副本及私有result/checked-result导出；只有批准的四原文正文可进入模型，私有结果不作为后继输入或上传。来源默认设置与每Worker三项设置分开。原生metadata中的cost=0仅为客户端默认值，不表示远端账单为零。
 
 退出码：0表示相应工具步骤结束，真实业务仍需独立审阅；2表示参数或本地前置拒绝；3表示缺少必要前置；执行期间真实失败保留原UNKNOWN和安全错误分类。当前实际HTTP、人工授权、原生启动、模型及N验收结果以各自独立报告为准。
+
+空间回执的 `id` 是不透明字符串，不能套用项目 ID 的 UUID 校验。拆分前的空间服务与当前 Workspace 服务都由 `crypto/rand.Text` 产生空间 ID；工具核对 schema、非空且无首尾空白的 ID、版本 1、原提交标题、非 null 的空资料引用和有效创建时间。项目 ID 仍须是 UUID，且继续核对实际目录、原空间和默认关闭的权限。
+
+2026-10-23 首个 S50 N4 包在空间 POST 201 后被工具的旧 UUID 校验误拒为 `actual_space_receipt_missing`；原请求、原 UNKNOWN 和正常关闭的服务证据保留，修复不重放该请求，也不改产品安装。`TestActualSpaceReceiptAndProjectRegistration` 使用新的临时 SQLite 与真实 SWA HTTP listener、human 会话和 CSRF，只创建一次新空间、只读核对原 HTTP/SQLite 回执并登记实际公开测试目录；不执行 Grant、原生运行时或模型。错误字段和 UUID 兼容仅作为真实回执的纯解析变体验证。该局部测试不代替重新固定来源与服务身份的新验收包或真实 N4/N6。
