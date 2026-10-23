@@ -78,7 +78,7 @@ const codexViews = new Map()
 const piViews = new Map()
 let piLaunch, piSourceHome, piSourceRoot, piExecutable
 let piProtocol
-let submittedRun, runningRun, runArguments, runProcess
+let submittedRun, runningRun, runArguments, runProcess, leadCompletion
 const roleDefinitions = [
   { name: '公开来源分析', responsibilities: '核对固定stats四原文的模块、Mean API、来源事实、复杂度与实现选择条件。' },
   { name: 'Median设计审阅', responsibilities: '审阅Median设计条件、奇偶长度、输入顺序保持与现有API兼容。' },
@@ -353,8 +353,164 @@ function runView(reply, complete = false) {
   return view
 }
 
+// 只读原阶段是否已产生可查询的回执，避免把尚未checkpoint的pending当作失败或反复复制完整正文。
+async function waitRunStage(request, method, deadline, caller, accepted = false) {
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    while (Date.now() < deadline) {
+      const rows = db.prepare(`SELECT caller_fingerprint,method,state,json_valid(receipt) AS valid,
+        CASE WHEN json_valid(receipt) THEN json_extract(receipt,'$.state') END AS native_state,
+        CASE WHEN json_valid(receipt) THEN json_extract(receipt,'$.accepted.taskId') END AS task_id,
+        CASE WHEN json_valid(receipt) THEN json_extract(receipt,'$.accepted.dispatchId') END AS dispatch_id
+        FROM mutation_receipts WHERE request_id=?`).all(request)
+      assert.ok(rows.length <= 1, 'run_stage_request_ambiguous')
+      if (rows.length) {
+        const row = rows[0]
+        assert.equal(row.method, method, 'run_stage_method_changed')
+        if (caller) assert.equal(row.caller_fingerprint, caller, 'run_stage_caller_changed')
+        assert.ok(['pending', 'completed'].includes(row.state), 'run_stage_state_unknown')
+        if (row.state === 'completed') {
+          assert.equal(row.valid, 1, 'completed_run_stage_has_no_receipt')
+          if (accepted) assert.equal(row.native_state, 'ready', 'lead_native_start_not_ready')
+          return row
+        }
+        if (accepted && row.valid && row.task_id && row.dispatch_id) return row
+      }
+      await Promise.race([delay(50), runningRun.then(outcome => { throw outcome.error ?? new Error('run_ended_before_stage_observation') })])
+    }
+    throw new Error('run_submission_observation_deadline')
+  } finally { db.close() }
+}
+
+function runSubmission(original, inputFile) {
+  assert.equal(original.requestId, requestId(runArguments))
+  assert.equal(original.method, 'swa.controllerOpen')
+  assert.equal(original.state, 'completed')
+  const receipt = object(original.receipt), submission = object(receipt.submission)
+  assert.equal(receipt.project_id, values['project-id'])
+  assert.ok(typeof receipt.controller === 'string' && receipt.controller.length > 0)
+  assert.equal(submission.schema, 'swa.run-submission.v1')
+  assert.equal(submission.command.action, 'run.submit')
+  assert.equal(submission.command.request_id, requestId(runArguments))
+  assert.equal(submission.command.project_id, values['project-id'])
+  assert.equal(submission.command.workdir, project)
+  assert.equal(submission.command.name, inputs[0].name)
+  assert.equal(submission.command.agent, values.agent)
+  assert.equal(submission.command.model, values.model)
+  assert.equal(submission.command.role_id, actualRoles[0].id)
+  assert.equal(submission.command.revision, actualRoles[0].revision)
+  assert.equal(submission.command.conversation_id, conversation.id)
+  assert.equal(submission.command.spec_file, join(inputDirectory, 'task.json'))
+  assert.equal(resolve(project, submission.spec_input.path), join(inputDirectory, 'task.json'))
+  assert.equal(submission.spec_input.text, approvedFiles.get(join(inputDirectory, 'task.json')))
+  assert.equal(submission.command.input_file, inputFile)
+  assert.equal(resolve(project, submission.lead_input.path), inputFile)
+  assert.equal(submission.lead_input.text, approvedFiles.get(inputFile))
+  for (const key of ['task_request_id', 'worker_request_id']) assert.match(submission[key], /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+  assert.equal(new Set([original.requestId, submission.task_request_id, submission.worker_request_id]).size, 3)
+  return submission
+}
+
+function runLeadIdentity(worker, submission, task, ready = false) {
+  assert.equal(worker.requestId, submission.worker_request_id)
+  assert.equal(worker.method, 'swa.controllerDeliver')
+  assert.ok(ready ? worker.state === 'completed' : ['pending', 'completed'].includes(worker.state))
+  assert.equal(task.requestId, submission.task_request_id)
+  assert.equal(task.method, 'swa.taskCreate')
+  assert.equal(task.state, 'completed')
+  const receipt = object(worker.receipt), invocation = object(receipt.invocation), scope = object(invocation.scope)
+  for (const value of [receipt, task.receipt, scope]) {
+    assert.equal(value.project_id, values['project-id'])
+    assert.equal(value.controller, controller)
+    assert.equal(value.run_id, runId)
+    assert.equal(value.root_task_id, rootTask)
+  }
+  assert.equal(receipt.action, 'worker.start')
+  assert.equal(receipt.child_request, `${worker.requestId}/native`)
+  assert.deepEqual(invocation.command, { action: 'worker.start', project_id: values['project-id'], controller, task_id: rootTask,
+    name: submission.command.name, agent: submission.command.agent, model: submission.command.model, input_file: submission.command.input_file,
+    role_id: submission.command.role_id, revision: submission.command.revision, request_id: submission.worker_request_id })
+  for (const [key, value] of Object.entries(submission.caller)) assert.deepEqual(invocation.caller[key], value, 'lead_submission_caller_changed')
+  assert.deepEqual(invocation.submission, submission)
+  assert.deepEqual(invocation.input, submission.lead_input)
+  assert.deepEqual(invocation.selection, submission.selection)
+  assert.deepEqual(receipt.selection, submission.selection)
+  assert.equal(scope.authority_domain, task.receipt.invocation.scope.authority_domain)
+  // Go在每次准入时新建context并补当前Grant期限；核原提交保存的内容，不比较阶段时间戳。
+  const currentContext = { ...object(scope.context) }, submittedContext = { ...object(submission.context) }
+  for (const context of [currentContext, submittedContext]) { delete context.id; delete context.created_at }
+  assert.deepEqual(currentContext, submittedContext)
+  assert.ok(Array.isArray(worker.children) && worker.children.length === 1)
+  const child = object(worker.children[0])
+  assert.equal(child.requestId, receipt.child_request)
+  assert.equal(child.method, 'orchestration.workerStart')
+  assert.ok(['pending', 'completed'].includes(child.state))
+  let accepted
+  if (child.state === 'pending') {
+    assert.equal(ready, false)
+    assert.equal(worker.state, 'pending')
+    accepted = object(child.receipt.accepted)
+  } else {
+    assert.equal(child.receipt.state, 'ready', 'lead_native_start_not_ready')
+    assert.equal(child.receipt.runId, runId)
+    accepted = child.receipt
+  }
+  for (const key of ['taskId', 'dispatchId']) assert.ok(typeof accepted[key] === 'string' && accepted[key].length > 0)
+  assert.notEqual(accepted.taskId, rootTask)
+  if (ready) {
+    assert.equal(child.state, 'completed')
+    assert.equal(receipt.native.state, 'ready')
+    assert.equal(receipt.native.taskId, accepted.taskId)
+    assert.equal(receipt.native.dispatchId, accepted.dispatchId)
+    assert.deepEqual(receipt.swa_input_binding, child.receipt.swa_input_binding)
+  }
+  return { task_id: accepted.taskId, dispatch_id: accepted.dispatchId }
+}
+
+function acceptedLeadInventory(identity, submission, caller) {
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    db.exec('BEGIN')
+    const requests = db.prepare(`SELECT caller_fingerprint,request_id,method,state,receipt FROM mutation_receipts WHERE request_id IN (?,?)`).all(submission.worker_request_id, `${submission.worker_request_id}/native`)
+    assert.equal(requests.length, 2)
+    for (const row of requests) {
+      assert.equal(row.caller_fingerprint, caller)
+      assert.ok(['pending', 'completed'].includes(row.state))
+      const receipt = object(JSON.parse(row.receipt))
+      if (row.request_id === submission.worker_request_id) {
+        assert.equal(row.method, 'swa.controllerDeliver')
+        assert.equal(receipt.child_request, `${row.request_id}/native`)
+        for (const [key, value] of Object.entries({ project_id: values['project-id'], controller, run_id: runId, root_task_id: rootTask })) assert.equal(receipt[key], value)
+        assert.deepEqual(receipt.invocation.submission, submission)
+      } else {
+        assert.equal(row.method, 'orchestration.workerStart')
+        const accepted = row.state === 'pending' ? object(receipt.accepted) : receipt
+        if (row.state === 'completed') assert.equal(receipt.state, 'ready')
+        assert.equal(accepted.taskId, identity.task_id)
+        assert.equal(accepted.dispatchId, identity.dispatch_id)
+      }
+    }
+    const rows = db.prepare(`SELECT t.id AS task_id,t.run_id,t.parent_id,t.status AS task_status,root.run_id AS root_run_id,
+      d.id AS dispatch_id,d.run_id AS dispatch_run_id,d.status AS dispatch_status,w.state AS worker_state,w.runtime_epoch
+      FROM tasks t JOIN tasks root ON root.id=t.parent_id JOIN runs r ON r.id=t.run_id
+      JOIN dispatch_contexts d ON d.task_id=t.id JOIN worker_dispatches w ON w.dispatch_id=d.id WHERE t.id=?`).all(identity.task_id)
+    assert.equal(rows.length, 1, 'accepted_lead_inventory_ambiguous')
+    const row = rows[0]
+    assert.equal(row.dispatch_id, identity.dispatch_id)
+    assert.equal(row.run_id, runId); assert.equal(row.dispatch_run_id, runId); assert.equal(row.root_run_id, runId)
+    assert.equal(row.parent_id, rootTask)
+    assert.ok(['pending', 'ready', 'dispatched'].includes(row.task_status), 'accepted_lead_task_not_active')
+    assert.ok(['pending', 'dispatched'].includes(row.dispatch_status), 'accepted_lead_dispatch_not_active')
+    assert.ok(['starting', 'ready'].includes(row.worker_state), 'accepted_lead_worker_not_starting_or_ready')
+    assert.equal(row.runtime_epoch, runtimeId, 'accepted_lead_runtime_changed')
+    db.exec('COMMIT')
+    return { ...row, observed_at: new Date().toISOString(), requests: requests.map(({ receipt, ...value }) => value) }
+  } finally { db.close() }
+}
+
 async function submitRun(inputFile) {
   const ready = Promise.withResolvers()
+  const deadline = Date.now() + 180_000
   runArguments = ['run', '--workdir', project, '--spec-file', join(inputDirectory, 'task.json'), '--input-file', inputFile, '--agent', values.agent, '--model', values.model,
     '--name', inputs[0].name, '--role', actualRoles[0].id, '--role-revision', String(actualRoles[0].revision), '--conversation', conversation.id, '--request-id', randomUUID()]
   runningRun = cli(runArguments, [0, 7], event => {
@@ -369,29 +525,37 @@ async function submitRun(inputFile) {
       ready.resolve(event)
     }
   }).then(reply => ({ reply }), error => ({ error }))
-  const submitted = await Promise.race([ready.promise, runningRun.then(outcome => { throw outcome.error ?? new Error('run_ended_before_submission_observation') }), delay(180_000, undefined, { ref: false }).then(() => { throw new Error('run_submission_observation_deadline') })])
-  controller = submitted.controller; rootTask = submitted.task_id; runId = submitted.run_id
-  Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
+  const outerStage = await waitRunStage(requestId(runArguments), 'swa.controllerOpen', deadline)
   const original = object((await cli(['request', 'show', '--project', values['project-id'], '--request-id', requestId(runArguments)])).result)
-  assert.equal(original.state, 'completed')
-  const receipt = object(original.receipt), submission = object(receipt.submission)
-  assert.equal(receipt.controller, controller)
-  assert.equal(submission.schema, 'swa.run-submission.v1')
-  assert.equal(submission.command.request_id, requestId(runArguments))
-  assert.equal(submission.command.role_id, actualRoles[0].id)
-  assert.equal(submission.command.revision, actualRoles[0].revision)
-  assert.equal(submission.command.conversation_id, conversation.id)
-  assert.equal(submission.spec_input.text, approvedFiles.get(join(inputDirectory, 'task.json')))
-  assert.equal(submission.lead_input.text, approvedFiles.get(inputFile))
+  const submission = runSubmission(original, inputFile)
+  controller = original.receipt.controller
+  report.controller = controller
+  await waitRunStage(submission.task_request_id, 'swa.taskCreate', deadline, outerStage.caller_fingerprint)
   const task = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.task_request_id])).result)
+  assert.equal(task.state, 'completed')
+  assert.equal(task.receipt.controller, controller)
+  for (const key of ['run_id', 'root_task_id']) assert.ok(typeof task.receipt[key] === 'string' && task.receipt[key].length > 0)
+  runId = task.receipt.run_id; rootTask = task.receipt.root_task_id
+  Object.assign(report, { run_id: runId, root_task_id: rootTask })
+  await waitRunStage(`${submission.worker_request_id}/native`, 'orchestration.workerStart', deadline, outerStage.caller_fingerprint, true)
   const worker = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.worker_request_id])).result)
-  assert.equal(task.state, 'completed'); assert.equal(worker.state, 'completed')
-  assert.equal(task.receipt.run_id, runId); assert.equal(task.receipt.root_task_id, rootTask)
-  assert.equal(worker.receipt.run_id, runId); assert.equal(worker.receipt.root_task_id, rootTask)
-  assert.equal(worker.receipt.native.dispatchId, submitted.dispatch_id)
-  assert.equal(worker.receipt.invocation.command.role_id, actualRoles[0].id)
-  report.run_submission = { submitted, outer: original, task, worker }
-  return { dispatch_id: submitted.dispatch_id, task_id: worker.receipt.native.taskId, request_id: submission.worker_request_id, name: inputs[0].name,
+  const identity = runLeadIdentity(worker, submission, task)
+  report.run_early_submission = { outer: original, task, worker, inventory: acceptedLeadInventory(identity, submission, outerStage.caller_fingerprint) }
+  // 完成观察与其余真实启动共同allSettled；这里不将accepted声明为ready。
+  leadCompletion = (async () => {
+    const submitted = await Promise.race([ready.promise, runningRun.then(outcome => { throw outcome.error ?? new Error('run_ended_before_submission_observation') }), delay(Math.max(1, deadline - Date.now()), undefined, { ref: false }).then(() => { throw new Error('run_submission_observation_deadline') })])
+    assert.equal(submitted.controller, controller); assert.equal(submitted.task_id, rootTask); assert.equal(submitted.run_id, runId)
+    assert.equal(submitted.dispatch_id, identity.dispatch_id)
+    const finalOuter = object((await cli(['request', 'show', '--project', values['project-id'], '--request-id', requestId(runArguments)])).result)
+    assert.equal(finalOuter.receipt.controller, controller)
+    assert.deepEqual(runSubmission(finalOuter, inputFile), submission)
+    const finalTask = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.task_request_id])).result)
+    const finalWorker = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.worker_request_id])).result)
+    assert.deepEqual(runLeadIdentity(finalWorker, submission, finalTask, true), identity)
+    report.run_submission = { submitted, outer: finalOuter, task: finalTask, worker: finalWorker }
+    return finalWorker
+  })().then(worker => ({ worker }), error => ({ error }))
+  return { ...identity, request_id: submission.worker_request_id, name: inputs[0].name,
     start_receipt: worker, source_checkpoint: null, actual_input_file: inputFile }
 }
 
@@ -1565,7 +1729,11 @@ async function run() {
         name: inputs[index].name, agent: values.agent, model: values.model, input_file: startFiles[index], request_id: randomUUID() })
     }
   }
-  const startsSettled = await Promise.allSettled(runFlow ? startCommands.map(command => publicCommand(command)) : startArgs.map(args => cli(args)))
+  const allStarts = await Promise.allSettled(runFlow
+    ? [leadCompletion.then(outcome => { if (outcome.error) throw outcome.error; return outcome.worker }), ...startCommands.map(command => publicCommand(command))]
+    : startArgs.map(args => cli(args)))
+  if (runFlow && allStarts[0].status === 'fulfilled') report.started_workers[0].start_receipt = allStarts[0].value
+  const startsSettled = runFlow ? allStarts.slice(1) : allStarts
   for (let index = 0; index < startsSettled.length; index++) {
     const item = startsSettled[index]
     if (item.status === 'fulfilled') {
@@ -1577,7 +1745,7 @@ async function run() {
         start: reply, ...(runFlow ? { start_command: startCommands[index] } : {}), source_checkpoint: sourceCheckpoint, actual_input_file: startFiles[slot] })
     }
   }
-  assert.ok(startsSettled.every(item => item.status === 'fulfilled'), 'some_worker_starts_refused_or_unknown_preserve_all_requests')
+  assert.ok(allStarts.every(item => item.status === 'fulfilled'), 'some_worker_starts_refused_or_unknown_preserve_all_requests')
   assert.equal(new Set(report.started_workers.map(worker => worker.dispatch_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.task_id)).size, workers)
   for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)

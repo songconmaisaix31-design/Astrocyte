@@ -21,9 +21,11 @@
 
 pi09已通过实际单Worker输出、活动停止、完整退出、资源与租约释放及Controller关闭。后继正式来源 `74aa5aa84bb64cccade786973a8d0c7b402b67fc` 的Linux完整构建、严格安装、装内D12（12通过）和组合服务正常退出均已独立接受，正式安装位于 `/workspace/swa-linux-installs/swa-linux-combined-74aa5aa8-n46-04`。
 
-S74aa新N4原件位于 `/workspace/swa-pi-n4-packet-74aa5aa8-20261023-01/` 及对应owned目录。前三Worker ready/input_accepted，第四个consult孙任务已创建但父请求因helper串行处理在120秒外层超时；默认wait另外把正常执行pending误判unknown并过早退出6。随后Grant撤销引起的403是尾部后果。原执行FAIL、正常EOF后serve6/observer1及完整树UNKNOWN均保留。两个余留daemon531361/helper532517已通过原认证接口正常EOF及shutdownIfIdle结束，双pidfd两次退出间隔50.130200ms，补充结果已独立接受；不改数据库资源/租约或原全树UNKNOWN。工具首次模块加载失败及同安装NODE_PATH局部修正均保留。collaboration_model按[已审查计划](tasks/swa-controller-concurrent-run-20261023.md)修改helper并发和原executor/Run观察的五个直接文件，保留未知、身份、去重和完成门；release_audit负责必要真实无模型RPC/TTY局部验证和可恢复副本空间计划。不得重放旧请求或改写原租约。局部和独立源码接受前不启动新完整构建或模型轮。
+S74aa新N4原件位于 `/workspace/swa-pi-n4-packet-74aa5aa8-20261023-01/` 及对应owned目录。前三Worker ready/input_accepted，第四个consult孙任务已创建但父请求因helper串行处理在120秒外层超时；默认wait另外把正常执行pending误判unknown并过早退出6。随后Grant撤销引起的403是尾部后果。原执行FAIL、正常EOF后serve6/observer1及完整树UNKNOWN均保留。两个余留daemon531361/helper532517已通过原认证接口正常EOF及shutdownIfIdle结束，双pidfd两次退出间隔50.130200ms，补充结果已独立接受；不改数据库资源/租约或原全树UNKNOWN。工具首次模块加载失败及同安装NODE_PATH局部修正均保留。不得重放旧请求或改写原租约。
 
-Windows D9已失败：短TTY25秒无已核回复、raw/ready未保留，关闭unknown1。GitHub连接现已恢复。D10 `1b8828d6` / run `39952528075` SDK7项和诊断DLL通过，真实TTY三次ready及自然EOF0通过；pipe被checker全局excludedEdges空断言拒绝，关闭unknown649、latch=true、CIM6/all_exited=false，B未启动。后继仅只读取得同一artifact12500479586的原raw/query细节，并窄修checker契约及公开错误首行；原七个native作业和S0关闭门不变，不重复SDK/A/B。历史UNKNOWN保留。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿，准确原件和当前限制查STATUS。
+产品修复已固定 `26f5db17`，11项真实规则、strict、架构和独立源码审查通过；提前启动driver `de51498d` 及真实旧原件局部结果也已接受。唯一无模型RPC实际的公共路径和完整关闭通过，但原task.create在writer的501ms等待期间结束，长输入与在途EOF未执行，结果FAIL/覆盖未命中保留。下一fresh N4以实际慢workerStart验证并发长输入，不因此多加模型轮或假延迟；在途EOF仍未验。新driver须按稳定来源生成新packet，旧授权包不可复用。S74aa两份可恢复候选/解包副本已清理，tar/独立安装/数据均保留；下一批开发副本及六份官方Node输入只读检查继续，Root未授权删除或完整构建。
+
+Windows D10 `1b8828d6` / run `39952528075` 的SDK7项、真实TTY三次ready和自然EOF0通过，pipe被全局excludedEdges空断言拒绝，关闭unknown649、latch=true、CIM6，B未启动。只读取证在查明固定result超过1MiB后，将读取上限窄调到2MiB；`3ffa2774` / run `39959519000` 成功。649项全部父身份未验证，native查询本身全部complete/error0；仅保存8个身份样本，均为已结束pipe helper起点下创建更早的进程。原pure先传播未验证父身份再比较时间，与样本吻合，不能据此重建全历史或清除UNKNOWN。12条非raw投影独立接受，raw原文保留但JSON转义解析失败。Windows负责人继续最小collector/checker计划审查，不重跑SDK/A/B/模型。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿，准确原件和当前限制查STATUS。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
