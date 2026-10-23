@@ -37,6 +37,8 @@ S0177新N4四Worker均成功结算，原轨迹存在约2.61秒共同输出；dri
 
 Windows D10原FAIL/unknown649与D11的FAIL/unknown5保留；D14编译和D15实际self/rootchild/自然退出已独审接受。D16来源ff2d46c1/run39992592663/job120547846573已最终FAIL：SDK7、Nt self/rootchild、TTY/pipe及原Controller打开/关闭通过，serve退出0，但完整关闭存在74条未知观察，最终fixture退出6。固定原件只读取证84b74014/run39994852940/job120555605138成功且获独审：全部是current_root_identity_unverified，两组66与8条，当前PID1732/3568创建时间均晚于旧TTY/pipe anchor，Nt v2快照完整且创建时间可读。源码确认已结束的checker身份仍永久作为additionalRoots重新核对；当前新进程归属UNKNOWN，历史父记录不补成同次快照。原件见`.verification/cloud-setup/windows-controller-open-evidence-actual-84b74014-05/`。Windows owner准备最小分类修复和局部复现，不能删除旧身份/未知子链或直接退休整树，Root仍唯一commit/tag/CI。开发组合不等于主线同源Windows交付，必要生产推广与正式安装关闭仍待完成。能力投影与Worker界面74857e4d已独审接受，Node12/Web13及适用类型/lint通过，尚未整合构建或新模型验证。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
 
+最新Windows D17：限定单源修复3780f2b5已独审，准确run39997485398/job120564695186仍FAIL，实际结果已独立接受。SDK/Nt/TTY/pipe/Controller均通过、serve0，但1条未知及fixture6保留；原因与身份尚未读取，不能用D16 74条回填。唯一官方下载Forbidden，原Windows owner准备固定artifact12520617964的只读取证；不重做构建或服务。Root仍唯一提交/tag。主线推广需真实生产patch/锁/vendor/BSD许可和直接消费者闭包；当前Nt只覆盖flags4，其他flags6和单PID路径未改变。Controller三处只消费身份字段，拟评估改用现成identityFresh；尚未实施。Linux下一轮n46-08计划已同步2c0/725b/7485与新GUI，先等准确四根清理许可及实际空间，再从最终S新编authorizer、构建安装，不能复用旧fb11工具/旧请求。
+
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
 工具链先 `source .verification/cloud-setup/activate.sh`。临时结果放项目忽略目录，浏览器使用短 TMPDIR。资源限制已由用户解除，按 [RESOURCES](docs/RESOURCES.md)执行，不等待旧单窗口规则。密钥仅供实际原生消费者读取，不打印、散列或提交。StepFun、公开四文件项目、ToolsOff、Windows/Linux 与不限预算的当前决定见 [QUESTIONS](docs/QUESTIONS.md)。

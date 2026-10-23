@@ -219,6 +219,8 @@ Windows D16 原关闭路径来源 `ff2d46c12a7e80c00d49d3d15f2b9c2b3d08c6e7`，r
 
 固定D16原件的只读CI来源 `84b7401484ed5600a52a12dbd0d59957d13d73e7`，run `39994852940` / job `120555605138` 于17:25:25Z成功，四条完整typed投影与原件读取结果已独立接受。全部74条均为 `current_root_identity_unverified`，两组分别66与8条，无截断；当前PID1732创建时间1792775635936与旧anchor1792775614807不同，PID3568当前1792775636725与旧anchor1792775630342不同。每次Nt v2快照完整、status0、创建时间可读。旧anchor角色分别为TTY root及pipe helper，当前角色UNKNOWN；历史父身份不补成同次callback。源码确认checker结束后仍把这些历史身份加入additionalRoots，并在之后每次快照重新比较；这是身份不匹配的直接触发机制，不能据此证明当前归属或完整树退出。原件在 `.verification/cloud-setup/windows-controller-open-evidence-actual-84b74014-05/`；本轮只读取固定artifact，未编译、启动服务或调用模型。下一修复先验证最小分类规则，保留原未知子链、已知身份最终核验和既有失败。
 
+Windows单源分类修复 `3780f2b53d509231ebce34431aa36590385dacef` 的pure SHA `ffbcdd4f2d04f9995cbfaacec7a2c791281ab36a6110d78d882c9caf62e90ac6` 已独审接受。只有唯一且有效的当前root身份明确晚于旧anchor时，才排除该当前行；旧anchor未验证队列、所有raw子链未知、历史身份与最终退出门保留。两组原标量的实际时间比较、语法/TS解析/import及保护源检查通过；没有完整callback，唯一性和完整collector回放未运行。D17 run `39997485398` / job `120564695186` 于17:50:59Z最终失败，实际结果已独立接受：SDK7、Nt self/rootchild、TTY/pipe及Controller打开/关闭通过，serve退出0，但仍有1条未知观察，fixture退出6，完整关闭保持FAIL。两次native为空与CIM已退出不覆盖未知；此1条的原因与身份尚待同次原件，不从旧74条推断。原件 `.verification/cloud-setup/windows-controller-open-actual-3780f2b5-17/`；唯一官方下载Forbidden，后继只准备固定artifact12520617964的只读取证，不重建服务，模型/Worker为0。
+
 GUI只读工具最终SHA `fccbad33c3666f6cab60e9f6d095051c2f321383023ba1a5c58e436003bb5f19` 已独审接受，语法检查退出0。新投影有界读取同一完整Run的Worker与execution，经真实界面点击触发原worker.show并核对HTTP和DOM；选择/送达/恢复只与同一原导出比较，show缺少完整原生结果时认证和成果证据保持unknown。原完整流读取、human身份、同runtime/安装/静态资源及零写门不变。浏览器、HTTP、模型均未执行；Root须在新的完整N4、Grant已撤销且原owner仍存活窗口执行。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
