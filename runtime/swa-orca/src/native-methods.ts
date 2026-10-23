@@ -11,7 +11,7 @@ import { deriveRemoteRuntimeTerminalCreateHandle } from '../../../third_party/or
 import { getRepoMainWorktreeId } from '../../../third_party/orca-v1.4.230/src/shared/worktree/id'
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
-import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
+import { readWindowsProcessIdentityTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { quotePowerShellNativeArgument } from '../../../third_party/orca-v1.4.230/src/shared/powershell-native-argument'
 import { resolveWindowsShellLaunchArgs } from '../../../third_party/orca-v1.4.230/src/main/providers/windows-shell-args'
 import { quotePosixShellString } from '../../../third_party/orca-v1.4.230/src/main/agent-hooks/posix-hook-command'
@@ -187,7 +187,7 @@ async function createController(context: RpcContext, project: string, workspace:
     helperProcess = readSwaLinuxProcess(observed.pid)
     requireSwaLinuxAncestor(helperProcess, rootProcess)
   } else {
-    const rows = await readWindowsProcessTableFresh()
+    const rows = await readWindowsProcessIdentityTableFresh()
     const root = rows.find(row => row.pid === pty.rootProcessId), helper = rows.find(row => row.pid === observed.pid)
     if (!root?.creationTimeMs || !helper?.creationTimeMs) throw new Error('native_controller_creation_time_missing')
     const ancestors = new Set<number>()

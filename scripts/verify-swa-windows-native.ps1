@@ -39,6 +39,56 @@ $env:ASTROCYTE_GO = $go
 $env:GOTOOLCHAIN = 'local'
 $env:SWA_CI_PHASE = 'preflight-toolchain'
 $result = [ordered]@{ source_revision = $revision; platform = 'win32-x64'; edition = $Edition; status = 'NOT_RUN'; model_calls = 0; agent_acceptance = 'NOT_RUN' }
+$serviceObservation = $null
+
+function Assert-NoReparse([string]$Path) {
+    $current = [IO.Path]::GetFullPath($Path)
+    while ($current) {
+        if (Test-Path -LiteralPath $current) {
+            $item = Get-Item -LiteralPath $current -Force
+            if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Evidence input contains a reparse point' }
+        }
+        $parent = [IO.Path]::GetDirectoryName($current)
+        if ($parent -eq $current) { break }
+        $current = $parent
+    }
+}
+
+function Save-ServiceEvidenceSummary {
+    $exitFile = Join-Path $evidence 'service-observer-exit.json'
+    $summaryFile = Join-Path $evidence 'service-evidence-summary.json'
+    $serviceDirectory = Join-Path $evidence 'smoke/readiness-eof'
+    Assert-NoReparse $exitFile
+    $serviceObservation | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $exitFile
+    foreach ($path in @($exitFile, $summaryFile, $serviceDirectory, (Join-Path $install 'node/node.exe'), (Join-Path $install 'VERSION'))) { Assert-NoReparse $path }
+    foreach ($name in @('windows-service-evidence-summary.mjs', 'serve-lifecycle.mjs', 'controller-taskcreate-check.mjs', 'controller-input-check.mjs', 'process-incarnation-closure.mjs')) { Assert-NoReparse (Join-Path $checkout ('tests/swa-cli-headless/' + $name)) }
+    foreach ($name in @('service-query-evidence.json', 'service-process-lifecycle.json', 'result.json')) { Assert-NoReparse (Join-Path $serviceDirectory $name) }
+    $summaryStart = [Diagnostics.ProcessStartInfo]::new()
+    $summaryStart.FileName = Join-Path $install 'node/node.exe'
+    $summaryStart.WorkingDirectory = $install
+    $summaryStart.UseShellExecute = $false
+    $summaryStart.RedirectStandardOutput = $true
+    $summaryStart.RedirectStandardError = $true
+    foreach ($argument in @((Join-Path $checkout 'tests/swa-cli-headless/windows-service-evidence-summary.mjs'), '--source-root', $checkout, '--install-root', $install, '--evidence', $serviceDirectory, '--source-revision', $revision, '--observer-exit-file', $exitFile, '--output', $summaryFile)) { $summaryStart.ArgumentList.Add($argument) }
+    $summaryProcess = [Diagnostics.Process]::new()
+    $summaryProcess.StartInfo = $summaryStart
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    if (-not $summaryProcess.Start()) { throw 'The evidence summary process did not start' }
+    $summaryOutput = $summaryProcess.StandardOutput.ReadToEndAsync()
+    $summaryErrors = $summaryProcess.StandardError.ReadToEndAsync()
+    if (-not $summaryProcess.WaitForExit([Math]::Max(0, 30000 - [int]$watch.ElapsedMilliseconds))) { throw 'The evidence summary exceeded its deadline' }
+    $remaining = [Math]::Max(0, 30000 - [int]$watch.ElapsedMilliseconds)
+    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($summaryOutput, $summaryErrors), $remaining)) { throw 'The evidence summary streams remain incomplete' }
+    Set-Content -LiteralPath (Join-Path $logs 'service-evidence-summary.exit.txt') -Value $summaryProcess.ExitCode
+    $text = $summaryOutput.GetAwaiter().GetResult()
+    if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 8192 -or $summaryErrors.GetAwaiter().GetResult().Length -ne 0) { throw 'The evidence summary output is invalid' }
+    $safe = $text | ConvertFrom-Json
+    if ($safe.schema_version -ne 1 -or $safe.source_revision -cne $revision -or $safe.status -cnotin @('PASS', 'FAIL') -or -not $safe.first_failure -or -not $safe.service_evidence) { throw 'The evidence summary envelope is invalid' }
+    $messages = @($safe.first_failure, $safe.service_evidence) | ForEach-Object { ConvertTo-Json -InputObject $_ -Compress -Depth 30 }
+    foreach ($message in $messages) { if ([Text.Encoding]::UTF8.GetByteCount($message) -gt 3500) { throw 'The evidence summary exceeds its annotation bound' } }
+    foreach ($message in $messages) { Write-Output ('::warning::' + $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')) }
+    if ($summaryProcess.ExitCode -ne 0 -or $safe.status -cne 'PASS') { throw 'The actual service evidence did not pass' }
+}
 
 function Invoke-Logged([string]$Name, [string]$Program, [string[]]$Arguments) {
     $env:SWA_CI_PHASE = $Name
@@ -160,16 +210,63 @@ try {
     $start.Environment['LOCALAPPDATA'] = $local
     $start.Environment['TEMP'] = $temporary
     $start.Environment['TMP'] = $temporary
+    $env:SWA_CI_PHASE = 'process-incarnation'
+    $ordinaryData = Join-Path $private 'ordinary-processes'
+    New-Item -ItemType Directory -Path $ordinaryData | Out-Null
+    $ordinaryStart = [Diagnostics.ProcessStartInfo]::new()
+    $ordinaryStart.FileName = $start.FileName
+    $ordinaryStart.WorkingDirectory = $install
+    $ordinaryStart.UseShellExecute = $false
+    $ordinaryStart.RedirectStandardOutput = $true
+    $ordinaryStart.RedirectStandardError = $true
+    $ordinaryStart.Environment.Clear()
+    foreach ($entry in $start.Environment.GetEnumerator()) { $ordinaryStart.Environment[$entry.Key] = $entry.Value }
+    foreach ($argument in @((Join-Path $checkout 'tests/swa-cli-headless/windows-process-incarnation-control.mjs'), '--source-root', $checkout, '--runtime-root', (Join-Path $install 'runtime'), '--data-root', $ordinaryData, '--output-dir', (Join-Path $evidence 'process-incarnation'), '--source-revision', $revision)) { $ordinaryStart.ArgumentList.Add($argument) }
+    $ordinaryProcess = [Diagnostics.Process]::new()
+    $ordinaryProcess.StartInfo = $ordinaryStart
+    $ordinaryWatch = [Diagnostics.Stopwatch]::StartNew()
+    if (-not $ordinaryProcess.Start()) { throw 'The ordinary process fixture did not start' }
+    $ordinaryOutput = $ordinaryProcess.StandardOutput.ReadToEndAsync()
+    $ordinaryErrors = $ordinaryProcess.StandardError.ReadToEndAsync()
+    if (-not $ordinaryProcess.WaitForExit([Math]::Max(0, 90000 - [int]$ordinaryWatch.ElapsedMilliseconds))) { throw 'The ordinary process fixture remains unknown after its deadline' }
+    $ordinaryRemaining = [Math]::Max(0, 90000 - [int]$ordinaryWatch.ElapsedMilliseconds)
+    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($ordinaryOutput, $ordinaryErrors), $ordinaryRemaining)) { throw 'The ordinary process fixture streams remain unknown after its deadline' }
+    Set-Content -LiteralPath (Join-Path $logs 'process-incarnation.log') -Value ($ordinaryOutput.GetAwaiter().GetResult() + $ordinaryErrors.GetAwaiter().GetResult())
+    Set-Content -LiteralPath (Join-Path $logs 'process-incarnation.exit.txt') -Value $ordinaryProcess.ExitCode
+    if ($ordinaryProcess.ExitCode -ne 0) { throw 'The ordinary process fixture failed or remains unknown' }
+    $env:SWA_CI_PHASE = 'service-smoke'
     foreach ($argument in @('--max-old-space-size=1024', (Join-Path $checkout 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', $install, '--source-revision', $revision, '--edition', $Edition, '--evidence', (Join-Path $evidence 'smoke'), '--data-parent', $dataParent, '--protected-roots', ($checkout + ';' + $env:ProgramFiles), '--port', '18793', '--mode', 'readiness-eof')) { $start.ArgumentList.Add($argument) }
-    if ($ControllerInputCheck) { $start.ArgumentList.Add('--controller-input-check') }
+    if ($ControllerInputCheck) { $start.ArgumentList.Add('--controller-input-check'); $start.ArgumentList.Add('--retain-query-evidence') }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
+    if ($ControllerInputCheck) { $serviceObservation = [ordered]@{ schema_version = 1; source_revision = $revision; phase = 'service-observer'; started = $false; exit = $null; timed_out = $false; stdout_bytes = $null; stderr_bytes = $null; stdout_eof = $false; stderr_eof = $false; outer_error = $null } }
+    $serviceWait = if ($ControllerInputCheck) { 660000 } else { 240000 }
+    $serviceWatch = [Diagnostics.Stopwatch]::StartNew()
+    $output = $null
+    $errors = $null
     if (-not $process.Start()) { throw 'The actual installed service check did not start' }
+    if ($serviceObservation) { $serviceObservation.started = $true }
     $output = $process.StandardOutput.ReadToEndAsync()
     $errors = $process.StandardError.ReadToEndAsync()
-    $serviceWait = if ($ControllerInputCheck) { 660000 } else { 240000 }
-    if (-not $process.WaitForExit($serviceWait)) { throw 'The service check is unknown after its deadline; no whole-tree exit is claimed' }
-    Set-Content -LiteralPath (Join-Path $logs 'service-smoke.log') -Value (($output.GetAwaiter().GetResult()) + ($errors.GetAwaiter().GetResult()))
+    if (-not $process.WaitForExit([Math]::Max(0, $serviceWait - [int]$serviceWatch.ElapsedMilliseconds))) {
+        if ($serviceObservation) { $serviceObservation.timed_out = $true }
+        throw 'The service check is unknown after its deadline; no whole-tree exit is claimed'
+    }
+    if ($serviceObservation) { $serviceObservation.exit = $process.ExitCode }
+    $serviceRemaining = [Math]::Max(0, $serviceWait - [int]$serviceWatch.ElapsedMilliseconds)
+    if (-not [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]@($output, $errors), $serviceRemaining) -or $serviceWatch.ElapsedMilliseconds -gt $serviceWait) {
+        if ($serviceObservation) { $serviceObservation.timed_out = $true }
+        throw 'The service streams remain unknown after the original deadline'
+    }
+    $actualOutput = $output.GetAwaiter().GetResult()
+    $actualErrors = $errors.GetAwaiter().GetResult()
+    if ($serviceObservation) {
+        $serviceObservation.stdout_eof = $output.IsCompletedSuccessfully
+        $serviceObservation.stderr_eof = $errors.IsCompletedSuccessfully
+        $serviceObservation.stdout_bytes = [Text.Encoding]::UTF8.GetByteCount($actualOutput)
+        $serviceObservation.stderr_bytes = [Text.Encoding]::UTF8.GetByteCount($actualErrors)
+    }
+    Set-Content -LiteralPath (Join-Path $logs 'service-smoke.log') -Value ($actualOutput + $actualErrors)
     Set-Content -LiteralPath (Join-Path $logs 'service-smoke.exit.txt') -Value $process.ExitCode
     if ($process.ExitCode -ne 0) { throw 'The actual service/Job shutdown check failed or remains unknown' }
     $env:SWA_CI_PHASE = 'final-source'
@@ -183,10 +280,33 @@ try {
     $result.service = 'PASS'
     $result.whole_service_job_shutdown = 'PASS'
 } catch {
+    if ($serviceObservation -and $env:SWA_CI_PHASE -ceq 'service-smoke') { $serviceObservation.outer_error = 'UNKNOWN' }
     $result.status = 'FAIL'
     $result.failed_stage = $env:SWA_CI_PHASE
     $result.failure = $_.Exception.Message
     throw
 } finally {
+    $summaryFailed = $false
+    if ($serviceObservation) {
+        try {
+            if ($serviceObservation.started) {
+                if ($process.HasExited) { $serviceObservation.exit = $process.ExitCode }
+                $serviceObservation.stdout_eof = $null -ne $output -and $output.IsCompletedSuccessfully
+                $serviceObservation.stderr_eof = $null -ne $errors -and $errors.IsCompletedSuccessfully
+                if ($serviceObservation.stdout_eof) { $serviceObservation.stdout_bytes = [Text.Encoding]::UTF8.GetByteCount($output.GetAwaiter().GetResult()) }
+                if ($serviceObservation.stderr_eof) { $serviceObservation.stderr_bytes = [Text.Encoding]::UTF8.GetByteCount($errors.GetAwaiter().GetResult()) }
+            }
+            Save-ServiceEvidenceSummary
+            $result.service_evidence = 'PASS'
+        }
+        catch {
+            $summaryFailed = $true
+            $result.service_evidence = 'FAIL'
+            Write-Output '::warning::{"schema_version":1,"status":"FAIL","error_kind":"SAFE_EVIDENCE_FAILED"}'
+        }
+    }
+    $primaryPassed = $result.status -ceq 'PASS'
+    if ($summaryFailed -and $primaryPassed) { $result.status = 'FAIL'; $result.failed_stage = 'service-evidence'; $result.failure = 'The safe service evidence failed' }
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'result.json')
+    if ($summaryFailed -and $primaryPassed) { throw 'The safe service evidence failed; original files are retained' }
 }

@@ -4,6 +4,8 @@ SWA 产品代码沿仓库根 LICENSE。Orca 来源为 `stablyai/orca v1.4.230`�
 
 原始 `Copyright (c) 2026 Lovecast` 保留在来源 LICENSE 中。已安装元数据确认 Pi1.0.1、jose6.2.3、node-pty1.1.0及windows-process-tree0.8.0均为MIT；原始MIT许可全文和各包notices继续按实际包内容随候选保留。各运行依赖的必要消费者沿实际源码和构建metafile核查，依赖声明或包名不能代替完整闭包验证。
 
+Windows x64 的 flags4 身份快照使用 `psutil 7.2.2` 的完整 Windows NT 声明头，官方来源 Commit 为 `9eea97dd6f1d16ea33f5144c8925f1ce7a0688e1`。[原始 ntextapi.h](https://raw.githubusercontent.com/giampaolo/psutil/9eea97dd6f1d16ea33f5144c8925f1ce7a0688e1/psutil/arch/windows/ntextapi.h) 为19483字节，SHA256 `f706626568c9a152e98a4631182745ec47ecf4de6261f332703ce7d56fb5968e`；[同 Commit 的 LICENSE](https://raw.githubusercontent.com/giampaolo/psutil/9eea97dd6f1d16ea33f5144c8925f1ce7a0688e1/LICENSE) 为1548字节，SHA256 `b89c063b3786e28e0c0a38f1931db61fed35e69dd2a2966fbecffee0f46c8d10`。两个原件通过现有 `@vscode/windows-process-tree@0.8.0` patch 分别进入包内 `src/psutil-ntextapi.h` 与 `psutil-LICENSE`。BSD 3-Clause 的版权、三项条款及免责声明完整保留；正式 Windows 构建核对部署包原件，并将完整许可复制到候选 `third-party-licenses/psutil@7.2.2/LICENSE`，候选、解压与安装检查均核对该许可 SHA。NT 私有声明仅用于已选 Windows x64 实现，未声明 ARM64/x86 已验或私有 ABI 永久稳定。
+
 产品复用 Orca 原生 runtime、持久 SQLite、Run/Task/Dispatch、请求 receipt、会话 transcript/journal、PTY/daemon 和已有进程控制。产品自己的组装入口、原生CLI账号/启动政策与授权适配位于 `runtime/swa-orca`，Go CLI/App/HTTP 与关联存储沿现有目录。安装候选的 VERSION 和 `swa --version` 指向实际构建源码 Commit；版本标识不代替功能验收。
 
 随包 Node 为上游固定的官方 `24.21.0`，Windows x64 与 Linux x64 glibc 各使用上游原有平台输入。发行归档、headers及真实可执行文件均核上游固定 SHA256，完整 Node LICENSE 位于安装包 `node/LICENSE`。Windows native 使用该版本 headers/node.lib；Linux从同一冻结补丁源码使用固定 headers 与上游 N-API 8 配置编译 POSIX PTY，没有使用本机 Orca 的 Node、native 二进制或可写状态。

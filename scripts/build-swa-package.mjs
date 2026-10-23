@@ -58,7 +58,19 @@ if (parentRelative === '..' || parentRelative.startsWith('..\\') || isAbsolute(p
 await mkdir(output)
 const runtime = join(output, 'runtime')
 run(process.execPath, [pnpm, '--config.node-linker=hoisted', '--filter', '@swa/orca-runtime', '--prod', 'deploy', '--ignore-scripts', '--verify-store-integrity', runtime, '--store-dir', store])
+const deployedRequire = createRequire(join(runtime, 'package.json'))
+const processTreeDirectory = dirname(deployedRequire.resolve('@vscode/windows-process-tree/package.json'))
+for (const [file, size, sha256] of [
+  ['src/psutil-ntextapi.h', 19483, 'f706626568c9a152e98a4631182745ec47ecf4de6261f332703ce7d56fb5968e'],
+  ['psutil-LICENSE', 1548, 'b89c063b3786e28e0c0a38f1931db61fed35e69dd2a2966fbecffee0f46c8d10'],
+]) {
+  const body = await readFile(join(processTreeDirectory, file))
+  if (body.length !== size || createHash('sha256').update(body).digest('hex') !== sha256) throw new Error('Deployed psutil source differs: ' + file)
+}
 await buildSWARuntime(runtime)
+const psutilLicenseDirectory = join(output, 'third-party-licenses', 'psutil@7.2.2')
+await mkdir(psutilLicenseDirectory)
+await copyFile(join(processTreeDirectory, 'psutil-LICENSE'), join(psutilLicenseDirectory, 'LICENSE'))
 if (values.edition === 'combined') {
   run(process.execPath, [pnpm, '--dir', 'web', 'build', '--manifest'])
   await checkWebAssets(join(root, 'web', 'dist'))

@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { getLocalPtyProvider } from '../../../third_party/orca-v1.4.230/src/main/ipc/pty/provider/registry'
-import { readWindowsProcessTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
+import { readWindowsProcessIdentityTableFresh } from '../../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'
 import { contextSchema, nativeObject, scopeSchema, type Scope } from './contracts'
 import { isSwaLinuxProcessAbsent, readSwaLinuxProcess, requireSwaLinuxProcess, swaLinuxProcessIdentitySchema } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
 
@@ -78,7 +78,7 @@ export async function observeControllerExited(runtime: OrcaRuntimeService, owner
         }
       }
     } else {
-      const rows = await readWindowsProcessTableFresh()
+      const rows = await readWindowsProcessIdentityTableFresh()
       const processes = rows.filter(row => [owner.process, owner.helper].some(old => old.pid === row.pid))
       if (processes.some(row => ![owner.process, owner.helper].some(old => !('platform' in old) && old.pid === row.pid && old.creationTimeMs === row.creationTimeMs && old.name === row.name))) return fail('operation_unknown', 'The prior controller process identity was replaced')
       processCount = processes.length
@@ -104,7 +104,7 @@ export async function exactController(runtime: OrcaRuntimeService, owner: Contro
     }
     return
   }
-  const rows = await readWindowsProcessTableFresh()
+  const rows = await readWindowsProcessIdentityTableFresh()
   for (const identity of [owner.process, owner.helper]) {
     if ('platform' in identity) return fail('worker_identity_changed', 'The controller belongs to another operating system')
     const row = rows.find(item => item.pid === identity.pid)

@@ -83,12 +83,46 @@ if (!values.native) {
   assert.equal(processes.supportedProcessDataFlags & 4, 4)
   const creationTimeMs = processes.getProcessCreationTime(process.pid)
   assert.ok(Number.isFinite(creationTimeMs) && creationTimeMs > 0)
+  const processTreeDirectory = dirname(requireRuntime.resolve('@vscode/windows-process-tree/package.json'))
+  const processTreeBinary = await realpath(join(processTreeDirectory, 'build', 'Release', 'windows_process_tree.node'))
+  assertContained(processTreeBinary)
+  const loadedProcessTreeBinaries = Object.keys(requireRuntime.cache).filter(file => file.endsWith('.node') && /[\\/]windows_process_tree\.node$/i.test(file))
+  assert.equal(loadedProcessTreeBinaries.length, 1)
+  assert.equal((await realpath(loadedProcessTreeBinaries[0])).toLowerCase(), processTreeBinary.toLowerCase())
+  const processTreeSha256 = createHash('sha256').update(await readFile(processTreeBinary)).digest('hex')
+  let queryTimer
+  const identityRows = await new Promise((resolveRows, reject) => {
+    queryTimer = setTimeout(() => reject(new Error('Native identity snapshot timed out')), 5000)
+    processes.getAllProcesses(rows => {
+      clearTimeout(queryTimer)
+      if (!Array.isArray(rows)) { reject(new Error('Native identity snapshot unavailable')); return }
+      resolveRows(rows)
+    }, 4)
+  }).finally(() => clearTimeout(queryTimer))
+  assert.ok(identityRows.length > 0)
+  for (const row of identityRows) {
+    assert.ok(row && typeof row === 'object')
+    assert.ok(Number.isInteger(row.pid) && row.pid > 0 && row.pid <= 0xffffffff)
+    assert.ok(Number.isInteger(row.ppid) && row.ppid >= 0 && row.ppid <= 0xffffffff)
+    assert.equal(typeof row.name, 'string')
+    assert.equal(row.creationTimeDiagnosticVersion, 2)
+    assert.equal(row.creationTimeProvider, 'NtQuerySystemInformation')
+    assert.equal(row.creationTimeSnapshotComplete, true)
+    assert.ok(Number.isInteger(row.creationTimeNtStatus) && row.creationTimeNtStatus >= 0 && row.creationTimeNtStatus <= 0x7fffffff)
+    if (row.creationTimeMs !== undefined) assert.ok(Number.isSafeInteger(row.creationTimeMs) && row.creationTimeMs > 0)
+  }
+  const selfRows = identityRows.filter(row => row.pid === process.pid)
+  assert.equal(selfRows.length, 1)
+  assert.equal(selfRows[0].creationTimeMs, creationTimeMs)
+  const psutilLicense = await readFile(join(candidate, 'third-party-licenses', 'psutil@7.2.2', 'LICENSE'))
+  assert.equal(psutilLicense.length, 1548)
+  assert.equal(createHash('sha256').update(psutilLicense).digest('hex'), 'b89c063b3786e28e0c0a38f1931db61fed35e69dd2a2966fbecffee0f46c8d10')
   const security = requireRuntime('@orca/windows-security')
   const currentSid = security.currentUserSid()
   assert.match(currentSid, /^S-1-/)
   requireRuntime('@orca/windows-registry').getRegistryKey(0x80000001, 'Software')
   requireRuntime('@parcel/watcher')
   assertContained(await realpath(dirname(requireRuntime.resolve('node-pty/package.json'))))
-  console.log(JSON.stringify({ native_node: process.version, native_pid: process.pid, native_creation_time_ms: creationTimeMs, provider_job_api: loaded.module.providerJobIsolationVersion, actual_empty_job: observed, job_descendant_test: 'NOT_RUN' }))
+  console.log(JSON.stringify({ native_node: process.version, native_pid: process.pid, native_creation_time_ms: creationTimeMs, provider_job_api: loaded.module.providerJobIsolationVersion, actual_empty_job: observed, job_descendant_test: 'NOT_RUN', identity_snapshot: { rows: identityRows.length, provider: selfRows[0].creationTimeProvider, version: selfRows[0].creationTimeDiagnosticVersion, complete: true, nt_status: selfRows[0].creationTimeNtStatus, self_identity_matches: true, loaded_addon_sha256: processTreeSha256, psutil_license_verified: true } }))
   }
 }

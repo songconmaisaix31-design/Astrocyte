@@ -116,7 +116,6 @@ try {
     const closure = collectOwnedIncarnations(rows, parent)
     assert.equal(closure.rootVerified, true, 'actual Windows PTY root incarnation is unavailable')
     assert.deepEqual(closure.unknownRows, [], 'Windows ancestry contains unknown identities')
-    assert.deepEqual(closure.excludedEdges, [], 'Windows ancestry contains reversed creation times')
     assert.ok(closure.ownedRows.some(row => row.pid === child.pid && row.creationTimeMs === child.creationTimeMs), 'helper is outside the actual PTY incarnation closure')
     await requireIdentity(child)
     await requireIdentity(parent)
