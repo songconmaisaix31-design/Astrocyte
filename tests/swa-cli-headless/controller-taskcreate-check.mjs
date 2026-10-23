@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { isAbsolute, join, relative } from 'node:path'
+import { isAbsolute, join, relative, toNamespacedPath } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { publicCase, publicFiles, publicRevision, publicSource } from '../swa-product-acceptance/public-case-definition.mjs'
 
@@ -14,13 +14,14 @@ const safeKind = error => typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,
 const samePath = (actual, expected) => assert.equal(actual.toLowerCase(), expected.toLowerCase())
 
 // 只在本次已就绪的真实服务中创建公开任务，不启动 Worker 或模型。
-export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity }) {
+export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity, stopAfter }) {
   assert.equal(process.platform, 'win32')
   assert.equal(process.arch, 'x64')
   assert.equal(process.versions.node, '24.21.0')
   for (const path of [candidate, dataRoot, publicParent, outputDir]) assert.ok(isAbsolute(path))
   assert.match(sourceRevision, /^[0-9a-f]{40}$/)
   assert.equal(typeof onProcessIdentity, 'function')
+  assert.ok(stopAfter === undefined || stopAfter === 'controller-open')
   assert.equal(new URL(endpoint).origin, endpoint)
   assert.equal(new URL(endpoint).hostname, '127.0.0.1')
   samePath(await realpath(process.execPath), join(candidate, 'node/node.exe'))
@@ -34,6 +35,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
   const requireRuntime = createRequire(join(candidate, 'runtime/package.json'))
   const { fetch, getSetCookies, Agent } = requireRuntime('undici')
   const native = requireRuntime('@vscode/windows-process-tree')
+  const security = stopAfter === 'controller-open' ? requireRuntime('@orca/windows-security') : null
   const dispatcher = new Agent({ connections: 1 })
   const report = { schema_version: 1, source_revision: sourceRevision, status: 'FAIL', phase: 'public-clone',
     public_source: publicSource, public_revision: publicRevision, model_calls: 0, worker_start_calls: 0,
@@ -55,7 +57,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     onProcessIdentity({ pid, creationTimeMs })
     return { pid, creationTimeMs }
   }
-  async function command(executable, args, name, env, cwd, cap = 150_000) {
+  async function command(executable, args, name, env, cwd, cap = 150_000, inspectNonzero = false) {
     const child = spawn(executable, args, { env, cwd, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     const actuallySpawned = Number.isSafeInteger(child.pid) && child.pid > 0
     const stdout = [], stderr = []
@@ -88,7 +90,9 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
       await writeFile(join(privateOutput, name + '.stderr'), Buffer.concat(stderr), { flag: 'wx' })
       await persist(name + '.exit.json', result)
     }
-    assert.deepEqual(exit, { exit: 0, signal: null, spawn_error: null })
+    if (inspectNonzero) {
+      assert.equal(exit?.signal, null); assert.equal(exit?.spawn_error, null); assert.ok(Number.isInteger(exit?.exit))
+    } else assert.deepEqual(exit, { exit: 0, signal: null, spawn_error: null })
     assert.ok(outEOF && errEOF && !streamFailure)
     return Buffer.concat(stdout)
   }
@@ -96,14 +100,82 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     return command('git', ['-c', 'credential.helper=', '-c', 'core.autocrlf=false', '-c', 'core.eol=lf', ...args], 'git-' + String(++sequence).padStart(2, '0'),
       { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' }, cwd, 60_000)
   }
-  async function cli(args) {
+  function safeMessage(value) {
+    if (typeof value !== 'string') return 'UNKNOWN'
+    let text = value
+    for (const [path, role] of [[candidate, 'development-root'], [dataRoot, 'data-root'], [publicParent, 'public-root'], [outputDir, 'evidence-root'], [process.env.USERPROFILE, 'private-home']]) {
+      if (path) text = text.split(path).join(`[${role}]`)
+    }
+    if (/(?:authorization|\bbearer\b|api[-_]?key|client[-_]?secret|password|cookie|credential|https?:\/\/)/i.test(text)) return '[sensitive error text omitted]'
+    return text.replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 500)
+  }
+  function nativeError(value) {
+    const error = value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+    const atom = item => typeof item === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,95}$/.test(item) ? item : 'UNKNOWN'
+    return { code: atom(error.code), message: safeMessage(error.message), retryable: typeof error.retryable === 'boolean' ? error.retryable : 'UNKNOWN', required_action: atom(error.required_action) }
+  }
+  async function cli(args, inspectNonzero = false) {
     const name = 'cli-' + String(++sequence).padStart(2, '0')
     await persist(name + '.intent.json', { args, effect: 'UNKNOWN_WITHOUT_ORIGINAL_RECEIPT' })
     const bytes = await command(join(candidate, 'swa.exe'), [...args, '--json'], name,
-      { ...process.env, SWA_ENDPOINT: endpoint, SWA_PROJECT_ID: project.id, SWA_PROJECT_TOKEN: token }, publicProject)
+      { ...process.env, SWA_ENDPOINT: endpoint, SWA_PROJECT_ID: project.id, SWA_PROJECT_TOKEN: token }, publicProject, 150_000, inspectNonzero)
     const response = object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)))
+    if (inspectNonzero && (response.ok !== true || report.commands.at(-1).exit.exit !== 0)) {
+      report.native_error ??= nativeError(response.error)
+      const error = new Error('Actual native CLI rejected or did not confirm the original operation')
+      error.code = 'ERR_SWA_NATIVE_CLI_RESULT'
+      throw error
+    }
     assert.equal(response.ok, true)
     return response
+  }
+  async function readOriginalOpen() {
+    if (!report.open_request_id || !project) return
+    try {
+      const observed = await cli(['request', 'show', '--project', project.id, '--request-id', report.open_request_id], true)
+      const result = object(observed.result)
+      assert.equal(result.requestId, report.open_request_id); assert.equal(result.method, 'swa.controllerOpen')
+      const receipt = result.receipt && typeof result.receipt === 'object' ? result.receipt : {}
+      const stages = ['workspace-registration', 'pty-spawn', 'helper-ready']
+      report.original_open_observation = { request_id: result.requestId, method: result.method,
+        state: ['pending', 'completed', 'failed'].includes(result.state) ? result.state : 'UNKNOWN',
+        stage: stages.includes(receipt.stage) ? receipt.stage : 'UNKNOWN',
+        project_matches: receipt.project_id === project.id, controller_recorded: typeof receipt.controller === 'string',
+        owner_process_recorded: !!receipt.process, helper_process_recorded: !!receipt.helper,
+        child_count: Array.isArray(result.children) ? result.children.length : 'UNKNOWN' }
+    } catch (error) { report.original_open_observation ??= { status: 'UNKNOWN', error_kind: safeKind(error) } }
+  }
+  async function observeDirectories(phase) {
+    if (!security) return
+    report.directory_observations ??= []
+    for (const [role, path] of [['data', dataRoot], ...project ? [['pi-project', join(dataRoot, 'pi-workers', project.id)], ['opencode-project', join(dataRoot, 'opencode', project.id)], ['codex-project', join(dataRoot, 'codex', project.id)]] : []]) {
+      try {
+        const info = await lstat(path)
+        assert.ok(info.isDirectory() && !info.isSymbolicLink())
+        const user = security.currentUserSid(), acl = security.getDaclAces(toNamespacedPath(path))
+        assert.ok(acl && Array.isArray(acl.aces))
+        report.directory_observations.push({ phase, role, status: 'OBSERVED', owner_matches_current_user: acl.ownerSid === user,
+          protected: acl.protected, ace_count: acl.aces.length,
+          aces: acl.aces.slice(0, 8).map(ace => ({ trustee_kind: ace.sid === user ? 'current-user' : ace.sid === 'S-1-5-18' ? 'system' : ace.sid === 'S-1-5-32-544' ? 'administrators' : 'other', type: ace.type, flags: ace.flags, mask: ace.mask })),
+          truncated: acl.aces.length > 8 })
+      } catch (error) { report.directory_observations.push({ phase, role, status: error?.code === 'ENOENT' ? 'ABSENT' : 'UNKNOWN', error_kind: safeKind(error) }) }
+    }
+  }
+  async function closeOriginal(owner) {
+    const closeR = randomUUID()
+    report.close_request_id = closeR
+    const closed = await cli(['controller', 'close', '--controller', controller, '--request-id', closeR], stopAfter !== undefined)
+    assert.equal(closed.result.controller, controller)
+    assert.equal(closed.result.close.ptyKilled, true)
+    const closeRequest = await cli(['request', 'show', '--controller', controller, '--request-id', closeR])
+    assert.equal(closeRequest.result.requestId, closeR); assert.equal(closeRequest.result.state, 'completed'); assert.equal(closeRequest.result.method, 'swa.controllerClose')
+    const closeReceipt = object(closeRequest.result.receipt)
+    assert.equal(closeReceipt.project_id, project.id); assert.equal(closeReceipt.controller, controller)
+    for (const field of ['binding', 'process', 'helper']) assert.deepEqual(closeReceipt[field], owner[field])
+    assert.deepEqual(closeReceipt.close, closed.result.close); assert.equal(closeReceipt.close.ptyKilled, true)
+    report.close_receipt = { request_id: closeR, state: 'completed', method: 'swa.controllerClose', original_close_verified: true }
+    report.cleanup.controller_closed = true
+    report.controller_close_basis = 'original_ptyKilled_and_production_exit_observations_not_natural_EOF'
   }
   async function human(method, path, body, status) {
     const requestID = body ? randomUUID() : undefined
@@ -143,6 +215,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     return value
   }
   try {
+    await observeDirectories('before-public-project')
     await git(['clone', '--no-checkout', '--no-local', publicSource, publicProject])
     await git(['checkout', '--detach', publicRevision], publicProject)
     assert.equal((await git(['rev-parse', 'HEAD'], publicProject)).toString().trim(), publicRevision)
@@ -180,6 +253,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     token = credential.token
     report.project_id = project.id
     report.phase = 'controller-open'
+    await observeDirectories('before-controller-open')
     const status = await cli(['status'])
     const databases = status.result.databases.filter(value => value.name === 'main')
     assert.equal(databases.length, 1)
@@ -188,7 +262,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     assert.ok(databaseRelative && !databaseRelative.startsWith('..') && !isAbsolute(databaseRelative))
     const openR = randomUUID()
     report.open_request_id = openR
-    const opened = await cli(['controller', 'open', '--project', project.id, '--workdir', publicProject, '--request-id', openR])
+    const opened = await cli(['controller', 'open', '--project', project.id, '--workdir', publicProject, '--request-id', openR], stopAfter !== undefined)
     controller = opened.controller; assert.ok(controller)
     const owner = object(opened.result)
     assert.equal(owner.controller, controller)
@@ -202,6 +276,12 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     assert.equal(openReceipt.project_id, project.id); assert.equal(openReceipt.controller, controller)
     for (const field of ['binding', 'process', 'helper', 'caller_authority']) assert.deepEqual(openReceipt[field], owner[field])
     report.open_receipt = { request_id: openR, state: 'completed', method: 'swa.controllerOpen', original_owner_verified: true }
+    if (stopAfter === 'controller-open') {
+      report.coverage = 'development_controller_open_only'
+      report.task_create = 'NOT_RUN'; report.transport_long_input = 'NOT_RUN'
+      await readOriginalOpen()
+      await closeOriginal(owner)
+    } else {
     report.phase = 'task-create'
     const createR = randomUUID()
     report.create_request_id = createR
@@ -254,25 +334,15 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     assert.equal(observed.result.observation.result.current.run.id, created.run_id)
     const task = await cli(['task', 'show', '--controller', controller, '--task', created.task_id])
     assert.equal(task.result.native.tasks.filter(row => row.id === created.task_id).length, 1)
-    const closeR = randomUUID()
-    report.close_request_id = closeR
-    const closed = await cli(['controller', 'close', '--controller', controller, '--request-id', closeR])
-    assert.equal(closed.result.controller, controller)
-    assert.equal(closed.result.close.ptyKilled, true)
-    const closeRequest = await cli(['request', 'show', '--controller', controller, '--request-id', closeR])
-    assert.equal(closeRequest.result.requestId, closeR); assert.equal(closeRequest.result.state, 'completed'); assert.equal(closeRequest.result.method, 'swa.controllerClose')
-    const closeReceipt = object(closeRequest.result.receipt)
-    assert.equal(closeReceipt.project_id, project.id); assert.equal(closeReceipt.controller, controller)
-    for (const field of ['binding', 'process', 'helper']) assert.deepEqual(closeReceipt[field], owner[field])
-    assert.deepEqual(closeReceipt.close, closed.result.close); assert.equal(closeReceipt.close.ptyKilled, true)
-    report.close_receipt = { request_id: closeR, state: 'completed', method: 'swa.controllerClose', original_close_verified: true }
-    report.cleanup.controller_closed = true
+    await closeOriginal(owner)
     report.task_create_completed = true; report.sqlite_original_request_unchanged = true
-    report.controller_close_basis = 'original_ptyKilled_and_production_exit_observations_not_natural_EOF'
+    }
   } catch (error) {
     primary = error
     report.error = { phase: report.phase, kind: safeKind(error) }
+    if (stopAfter === 'controller-open') await readOriginalOpen()
   } finally {
+    await observeDirectories('after-controller-open')
     if (grantCreated && !humanUnknown) {
       try {
         const revoked = await human('POST', `/api/v1/local-projects/${project.id}/grants/revoke`, { agent_id: caller }, 200)

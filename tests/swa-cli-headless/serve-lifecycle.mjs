@@ -9,7 +9,9 @@ import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
-const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false } }, allowPositionals: false })
+const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false }, 'controller-open-only': { type: 'boolean', default: false } }, allowPositionals: false })
+assert.ok(!(values['controller-input-check'] && values['controller-open-only']), 'Controller diagnostic modes are mutually exclusive')
+const controllerCheck = values['controller-input-check'] || values['controller-open-only']
 const edition = values.edition ?? 'cli'
 assert.ok(['cli', 'combined'].includes(edition), 'Unknown candidate edition')
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
@@ -36,7 +38,7 @@ const records = []
 const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-close']
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
-if (values['controller-input-check']) assert.equal(values.mode, 'readiness-eof', 'Controller input checking requires the explicit readiness-eof mode')
+if (controllerCheck) assert.equal(values.mode, 'readiness-eof', 'Controller checking requires the explicit readiness-eof mode')
 
 async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity) {
   const observation = { status: 'FAIL', ownership_incomplete: false, producer: null, transport: null, transport_process: null, transport_actual_spawned: false }
@@ -47,13 +49,14 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
   await mkdir(outputParent)
   try {
     const { runControllerTaskCreateCheck } = await import('./controller-taskcreate-check.mjs')
-    const producer = await runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
+    const produce = () => runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
       publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
-      sourceRevision: source, deadline, onProcessIdentity: observeIdentity })
-    observation.producer = producer.result
+      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) })
+    let producer
+    if (!values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     const transportOutput = join(outputParent, 'transport')
     control = spawn(process.execPath, [join(sourceRoot, 'tests/swa-cli-headless/controller-input-check.mjs'), '--install-root', candidate,
-      '--invocation-file', producer.invocationFile, '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+      ...(values['controller-open-only'] ? ['--short-only'] : ['--invocation-file', producer.invocationFile]), '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     observation.transport_actual_spawned = Number.isSafeInteger(control.pid) && control.pid > 0
     const closed = new Promise(resolve => {
       control.once('error', error => { controlClosed = true; controlExit = { exit: null, signal: null, spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }; resolve(controlExit) })
@@ -93,6 +96,10 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     }
     assert.equal(summary.rpc_mutations, 'NOT_RUN'); assert.equal(summary.model_execution, 'NOT_RUN'); assert.equal(summary.kernel_job_empty, 'NOT_CLAIMED')
     Object.assign(safeTransport, { rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN', kernel_job_empty: 'NOT_CLAIMED' })
+    if (values['controller-open-only']) {
+      assert.equal(summary.coverage, 'explicit_short_identify_only'); assert.equal(summary.long_input, 'NOT_RUN')
+      Object.assign(safeTransport, { coverage: summary.coverage, long_input: summary.long_input })
+    }
     observation.transport = safeTransport
     // 这些身份由原 checker 在进程仍可读时取得，不在退出后用裸 PID 补取创建时间。
     for (const identity of [transportReport.tty?.root, transportReport.tty?.helper, transportReport.pipe?.helper]) {
@@ -105,8 +112,12 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     for (const kind of ['tty', 'pipe']) {
       const row = safeTransport[kind]
       assert.equal(row.status, 'PASS'); assert.equal(row.natural_eof, true); assert.equal(row.forced_cleanup, false)
-      assert.equal(row.reply_count, 3); assert.ok(row.long_bytes > 4095); assert.equal(row.exit_code, 0)
+      assert.equal(row.reply_count, 3)
+      if (values['controller-open-only']) assert.equal(row.long_bytes, null)
+      else assert.ok(row.long_bytes > 4095)
+      assert.equal(row.exit_code, 0)
     }
+    if (values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     observation.status = 'PASS'
   } catch (error) {
     failure = error
@@ -316,7 +327,7 @@ for (const mode of selectedModes) {
     events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
   }
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
-  const deadline = Date.now() + (values['controller-input-check'] ? 600_000 : 150_000)
+  const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
     const rows = await processes()
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
@@ -350,7 +361,7 @@ for (const mode of selectedModes) {
         }
         await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
         if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
-        if (values['controller-input-check']) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, identity => {
+        if (controllerCheck) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, identity => {
           assert.ok(Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
           const key = identity.pid + ':' + identity.creationTimeMs
           observed.set(key, identity)
@@ -358,12 +369,12 @@ for (const mode of selectedModes) {
         })
       } catch (error) {
         readinessFailure = error
-        if (values['controller-input-check'] && error.observation) controllerInput = error.observation
-        if (values['controller-input-check'] && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
+        if (controllerCheck && error.observation) controllerInput = error.observation
+        if (controllerCheck && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
       } finally {
         readinessComplete = true
       } })()
-      if (!values['controller-input-check']) await readinessWork
+      if (!controllerCheck) await readinessWork
     }
     if (!acted && mode === 'readiness-eof' && readinessComplete) {
       child.stdin.end(); acted = true
@@ -425,7 +436,7 @@ for (const mode of selectedModes) {
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(values['controller-input-check'] ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
@@ -467,5 +478,5 @@ for (const mode of selectedModes) {
   records.push(record)
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
 }
-await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: values['controller-input-check'] ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
+await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: controllerCheck ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6

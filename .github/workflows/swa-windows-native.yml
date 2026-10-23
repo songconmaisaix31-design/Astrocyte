@@ -54,6 +54,57 @@ concurrency:
   group: swa-windows-native-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  windows-controller-open-control:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-controller-open-control]') }}
+    runs-on: windows-2025
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.27.2
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39858402174
+          name: swa-windows-cli-1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da
+          path: ${{ runner.temp }}/swa-controller-open-input-1d3006fe
+      - name: Record the exact retained input metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs/promises');
+            const path = require('node:path');
+            const response = await github.rest.actions.getArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: 12461580039 });
+            await fs.writeFile(path.join(process.env.RUNNER_TEMP, 'swa-controller-open-input-1d3006fe', 'artifact-metadata.json'), JSON.stringify(response.data), { flag: 'wx' });
+      - name: Prepare only the pinned package manager
+        shell: pwsh
+        run: |
+          npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm') --no-audit --no-fund --ignore-scripts pnpm@11.27.0
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned pnpm installation failed' }
+      - name: Run the fixed-source short identify and Controller open development control
+        shell: pwsh
+        run: |
+          node ./scripts/probe-swa-windows-controller-open.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-input-1d3006fe') --work-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7') --evidence-root (Join-Path $env:GITHUB_WORKSPACE '.verification/swa-ci/windows-controller-open') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs')
+          if ($LASTEXITCODE -ne 0) { throw 'The Windows Controller open development control failed; bounded evidence retained' }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-windows-controller-open-control-${{ github.sha }}
+          path: .verification/swa-ci/windows-controller-open/result.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   retained-windows-build-evidence:
     if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-build-evidence]') }}
     runs-on: windows-2025

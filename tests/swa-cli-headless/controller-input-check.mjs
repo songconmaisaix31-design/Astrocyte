@@ -11,22 +11,28 @@ import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
 // 外层先完成真实 task.create 并导出 receipt.invocation；本入口只消费该原件。
 const { values } = parseArgs({ options: {
-  'install-root': { type: 'string' }, 'invocation-file': { type: 'string' }, 'output-dir': { type: 'string' }
+  'install-root': { type: 'string' }, 'invocation-file': { type: 'string' }, 'output-dir': { type: 'string' },
+  'short-only': { type: 'boolean', default: false }
 }, strict: true, allowPositionals: false })
-for (const key of ['install-root', 'invocation-file', 'output-dir']) assert.ok(values[key] && isAbsolute(values[key]), `--${key} must be absolute`)
+for (const key of ['install-root', 'output-dir']) assert.ok(values[key] && isAbsolute(values[key]), `--${key} must be absolute`)
+if (values['short-only']) assert.equal(values['invocation-file'], undefined, 'short-only and invocation-file are mutually exclusive')
+else assert.ok(values['invocation-file'] && isAbsolute(values['invocation-file']), '--invocation-file must be absolute')
 assert.ok(process.platform === 'linux' || process.platform === 'win32', 'native Linux or Windows required')
 const root = fileURLToPath(new URL('../../', import.meta.url)), runtime = join(root, 'runtime/swa-orca')
-const install = await realpath(values['install-root']), invocationFile = await realpath(values['invocation-file'])
+const install = await realpath(values['install-root']), invocationFile = values['short-only'] ? null : await realpath(values['invocation-file'])
 const output = join(await realpath(dirname(values['output-dir'])), relative(dirname(values['output-dir']), values['output-dir']))
 const maxBytes = 1024 * 1024
 const contains = (parent, path) => { const part = relative(parent, path); return part !== '..' && !part.startsWith('../') && !part.startsWith('..\\') && !isAbsolute(part) }
 assert.ok(!contains(install, output) && !contains(output, install), 'output and installation must be separate')
-assert.ok(!contains(output, invocationFile), 'the invocation must exist outside the new output directory')
-assert.ok((await stat(invocationFile)).size <= maxBytes, 'actual invocation exceeds 1 MiB')
-assert.ok((await lstat(invocationFile)).isFile(), 'invocation must be an ordinary file')
-const actualInvocation = JSON.parse(await readFile(invocationFile, 'utf8'))
-assert.equal(actualInvocation.command?.action, 'task.create', 'a completed task.create invocation is required')
-assert.ok(actualInvocation.spec && actualInvocation.context, 'actual task spec and context are required')
+let actualInvocation
+if (invocationFile) {
+  assert.ok(!contains(output, invocationFile), 'the invocation must exist outside the new output directory')
+  assert.ok((await stat(invocationFile)).size <= maxBytes, 'actual invocation exceeds 1 MiB')
+  assert.ok((await lstat(invocationFile)).isFile(), 'invocation must be an ordinary file')
+  actualInvocation = JSON.parse(await readFile(invocationFile, 'utf8'))
+  assert.equal(actualInvocation.command?.action, 'task.create', 'a completed task.create invocation is required')
+  assert.ok(actualInvocation.spec && actualInvocation.context, 'actual task spec and context are required')
+}
 const executable = await realpath(join(install, process.platform === 'win32' ? 'swa.exe' : 'swa'))
 const node = await realpath(join(install, 'node', process.platform === 'win32' ? 'node.exe' : 'node'))
 const helper = await realpath(join(install, 'runtime/controller-helper.cjs'))
@@ -36,7 +42,7 @@ await mkdir(output, { mode: 0o700 })
 const save = (name, value) => writeFile(join(output, name), value, { flag: 'wx', mode: 0o600 })
 const digest = async path => ({ path: await realpath(path), sha256: createHash('sha256').update(await readFile(path)).digest('hex') })
 const report = { schema: 'swa.controller-input-check.v1', status: 'FAIL', platform: process.platform,
-  coverage: 'installed_helper_transport_with_actual_task_create_invocation', rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN',
+  coverage: values['short-only'] ? 'explicit_short_identify_only' : 'installed_helper_transport_with_actual_task_create_invocation', long_input: values['short-only'] ? 'NOT_RUN' : 'REQUESTED', rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN',
   process_proof: 'observed_process_identities_and_absence', kernel_job_empty: 'NOT_CLAIMED', tty: null, pipe: null }
 let failure = null
 let stopBuild = () => {}, readAddonPaths = async () => [], cleanupUnknown = false
@@ -170,7 +176,7 @@ try {
   async function checkTty() {
     const result = report.tty = { status: 'FAIL', natural_eof: false, forced_cleanup: false, exit: null, root: null, helper: null, observations: [] }
     const sessionId = randomUUID(), input = packets(), handle = production.deriveRemoteRuntimeTerminalCreateHandle('swa-controller-local', randomUUID(), `${input[0].request_id}/controller-pty`)
-    assert.ok(input[1].bytes > 4095, 'actual task packet must exercise the long-line boundary')
+    if (!values['short-only']) assert.ok(input[1].bytes > 4095, 'actual task packet must exercise the long-line boundary')
     const options = production.controllerTerminalOptions(node, helper, handle), observation = observe(), readiness = []
     const deadline = Date.now() + 25_000
     const host = new production.TerminalHost({ spawnSubprocess: production.createPtySubprocess, reportReadinessEvent: (event, details) => readiness.push({ event, details }) })
@@ -227,7 +233,7 @@ try {
   async function checkPipe() {
     const result = report.pipe = { status: 'FAIL', natural_eof: false, forced_cleanup: false, exit: null, helper: null, observations: [] }
     const input = packets(), handle = `pipe-controller-${randomUUID()}`, observation = observe(), deadline = Date.now() + 25_000
-    assert.ok(input[1].bytes > 4095)
+    if (!values['short-only']) assert.ok(input[1].bytes > 4095)
     const child = spawn(node, [helper], { cwd: join(output, 'cwd'), env: { ...env, ORCA_TERMINAL_HANDLE: handle }, stdio: ['pipe', 'pipe', 'pipe'] })
     child.stdout.on('data', value => observation.data(value))
     child.stderr.on('data', value => observation.data(value, true))
@@ -284,9 +290,9 @@ try {
     report.input_guard_error = { name: error.name, message: error.message }
   }
   // 公开汇总不含 invocation、路径、环境或原进程命令行；完整原件只存本地私有目录。
-  report.summary = { schema: report.schema, status: report.status, platform: report.platform,
-    tty: report.tty && { status: report.tty.status, natural_eof: report.tty.natural_eof, forced_cleanup: report.tty.forced_cleanup, reply_count: report.tty.observations.length, long_bytes: report.tty.observations[1]?.bytes ?? null, exit_code: report.tty.exit?.code ?? null },
-    pipe: report.pipe && { status: report.pipe.status, natural_eof: report.pipe.natural_eof, forced_cleanup: report.pipe.forced_cleanup, reply_count: report.pipe.observations.length, long_bytes: report.pipe.observations[1]?.bytes ?? null, exit_code: report.pipe.exit?.code ?? null },
+  report.summary = { schema: report.schema, status: report.status, platform: report.platform, coverage: report.coverage, long_input: report.long_input,
+    tty: report.tty && { status: report.tty.status, natural_eof: report.tty.natural_eof, forced_cleanup: report.tty.forced_cleanup, reply_count: report.tty.observations.length, long_bytes: values['short-only'] ? null : report.tty.observations[1]?.bytes ?? null, exit_code: report.tty.exit?.code ?? null },
+    pipe: report.pipe && { status: report.pipe.status, natural_eof: report.pipe.natural_eof, forced_cleanup: report.pipe.forced_cleanup, reply_count: report.pipe.observations.length, long_bytes: values['short-only'] ? null : report.pipe.observations[1]?.bytes ?? null, exit_code: report.pipe.exit?.code ?? null },
     rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN', kernel_job_empty: 'NOT_CLAIMED' }
   await save('report.json', JSON.stringify(report, null, 2) + '\n')
   process.stdout.write(JSON.stringify(report.summary) + '\n')
