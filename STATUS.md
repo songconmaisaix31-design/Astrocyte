@@ -231,4 +231,10 @@ GUI只读工具最终SHA `fccbad33c3666f6cab60e9f6d095051c2f321383023ba1a5c58e43
 
 主线 `6f40a399af301c05ecb79a5316a812641e05e3f9` 的默认 `SWA checks` run `40001114124` 最终failure：Windows foundation job `120577125594`、Windows/Linux check jobs `120577125738`、`120577126306` 失败；Linux foundation成功。首次本机日志请求被Forbidden拒绝后，固定只读reader `833b84f5a2375ff44548dc4ed4dbb46b42b88bfe` 经独立源码/局部审查，以唯一tag运行 `40009576534` / job `120606177485` 成功，其他原生任务及默认检查全部skipped。六项安全投影完整、无截断：Windows目录测试在 `data_directory_windows_test.go:122`、导出测试在 `run_flow_test.go:58` 失败；Windows服务测试在 `runtime_test.go:37` 报管道不支持deadline；两平台HTTP资产测试在 `server_test.go:179` 报缺少 `web/dist/index.html`。源码确认后两项分别是测试使用Windows不支持的管道deadline、CI在构建Web前执行依赖其产物的检查；前两项的实际路径差异仍待定位，不推断为已证实的重解析点或短路径问题。原件在 `.verification/cloud-setup/main-ci-6f40a399/reader-actual-833b84f5/`，projections SHA `c01162cdb7348e8ab579def8f56b0e61dfbc66d8f35aed19f08e5d9a2c40b9b1`。本次只取原日志，未重跑原测试或完整构建；下一完整构建前仍需完成最小复现和局部修复。
 
+主线后继 `f7ad503e13f54555bc08d769b0c8419a2a0ddb90` 的四路径源码及局部结果已独审接受：检查入口先生成真实 Web 资产；服务测试改为有界异步读取，关闭自身管道并等待服务和读取结束后恢复 stdout。实际 Web 组件构建、两项精确 Linux 测试和 Windows x64 交编通过，未运行完整检查。独立 Windows 路径诊断 run `40012108018` / job `120614817794` 成功，默认检查与其余原生任务全部 skipped。实际五项观察证实：私有目录创建、权限与同对象检查成功，返回值等于规范目标，但与输入路径字符串不同；导出父目录与 EvalSymlinks/CanonicalRoot/GetLongPathName 指向同一对象，原路径和解析后路径的全部祖先均非 reparse，原导出检查仍拒绝。原件在 `.verification/cloud-setup/main-ci-6f40a399/path-actual-f7ad503e/`。这定位了路径写法比较错误，尚不代表两项原测试修复通过；后继先修正局部判断并在 Windows 精确验证。
+
+Windows 实际父进程退出场景的三路径后继 `b234cf81d07bc1ce5af9e470db3cf34515b6855a` 已完成独立源码与局部审查，准确来源见 `.verification/cloud-setup/windows-known-owned-fixture-source-r3/summary.json`。唯一 tag 启动 run `40012110754` / job `120614824669`，仅运行原生 ABI 与三个普通进程用例，保存完整 A/B/C 快照；其他八项原生任务与默认检查均 skipped。实际结果仍待审查，不覆盖 D17 的失败及此前归属未捕获状态。
+
+`question.answer` 最终方案 `dacf0594235054725dd6215b8ecd107d56bbe2b99bf854ea9a2f0b66a872e4b3` 已独审接受，业务、公共契约和 GUI 实施窗口已开启；`run_flow.go` 与其测试等待上述 CI 路径修复释放。OpenCode Linux/StepFun 方案 `bb3c8573b8afcd80ad4b59f8c29b8c4d66f2ca9d38a44695ebc26d66ddf2b859` 已独审接受，仍仅为计划，尚未实施或调用模型。
+
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

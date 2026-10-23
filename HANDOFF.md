@@ -43,7 +43,9 @@ Windows后继诊断两源 `2f2629c7ccc3292949773091cd5b897cb161c913` 已独审�
 
 推送诊断分支附带默认CI40005606521已取消，所有完整build步骤skipped，native40005606529 skipped。主线6f40默认CI40001114124三项failure已通过固定日志reader833b84f5/run40009576534读取：Windows目录/导出前置失败的深层路径原因仍待定位；Windows os.Pipe读取deadline不支持、两平台缺Web构建产物已有原错误和源码依据。main_ci_failure_audit接续准备四项最小修复/实际定位计划，ci_evidence_review独审；未重跑原测试或完整构建。诊断workflow已释放给Windows fixture，后继定位窗口仍由Root串行；进度文档使用[skip ci]，必要产品检查另行执行。
 
-交付审计确认问题回答仍缺公开动作：现CLI退出9、GUI只展示问题。remaining_delivery_audit准备question.answer端到端方案，run_question_review独审；复用原问题线程及orchestration.reply，不用worker.send重复发送，公共契约/生成物及run_flow文件由Root协调。opencode_stepfun_compatibility另准备Linux与官方StepFun的最小适配，复用已有固定官方来源；优先解决真实credential初始化、Linux归属和原请求关联，不把尚未逐行审Bun/FFI等第三方实现当作新增用户审批门。两项目前仅方案，产品源码/模型未执行。现SWA发现7结构化注册，45仅上游TUI模板，不能作为实际适配数量。
+当前主线后继为 `f7ad503e13f54555bc08d769b0c8419a2a0ddb90`，两项已知 CI 缺陷修复和局部验证获独审接受。Windows 最小路径诊断 `40012108018` 成功，真实观察已定位同对象长短路径写法比较错误；main_ci_failure_audit 接续最小修复和定向 Windows 验证，暂占 run_flow.go/test。默认检查和其余原生任务 skipped，尚未运行下一完整构建。诊断树 `b234cf81d07bc1ce5af9e470db3cf34515b6855a` 的实际父退出用例 run `40012110754` 只启原生 ABI 与普通进程窗口，其结果待原06独审；不据此提前覆盖D17。准确记录入口见STATUS。
+
+交付审计确认问题回答仍缺公开动作：现CLI退出9、GUI只展示问题。remaining_delivery_audit 的 question.answer 最终方案 dacf0594 已获 run_question_review 和 Root 接受，已授其业务、公共契约、生成物、GUI及SPEC §21.5实现窗口；run_flow.go/test 等CI负责人明确释放后再写。复用原问题线程及orchestration.reply，不用worker.send重复发送；原问题历史、当前独立人类授权、准确拒绝回执恢复与未知不重发均包含。opencode_stepfun_compatibility 的 Linux/官方StepFun 方案 bb3c8573 已独审接受，尚未授实施窗口，安排在当前Pi N4/N6基线之后；复用固定官方来源，解决真实credential初始化、Linux归属和原请求关联，不把第三方启动实现逐行证明作为新增审批门。两项均未调用新模型。现SWA发现7结构化注册，45仅上游TUI模板，不能作为实际适配数量。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
