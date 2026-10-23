@@ -170,10 +170,10 @@ jobs:
         run: |
           npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm') --no-audit --no-fund --ignore-scripts pnpm@11.27.0
           if ($LASTEXITCODE -ne 0) { throw 'Pinned pnpm installation failed' }
-      - name: Run the native ABI and actual ordinary process controls
+      - name: Observe the Controller service with complete query evidence
         shell: pwsh
         run: |
-          node ./scripts/probe-swa-windows-controller-open.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-input-1d3006fe') --work-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7') --evidence-root (Join-Path $env:GITHUB_WORKSPACE '.verification/swa-ci/windows-controller-open') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs') --native-abi-only
+          node ./scripts/probe-swa-windows-controller-open.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-input-1d3006fe') --work-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7') --evidence-root (Join-Path $env:GITHUB_WORKSPACE '.verification/swa-ci/windows-controller-open') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs') --service-observation-only
           if ($LASTEXITCODE -ne 0) { throw 'The Windows Controller open development control failed; bounded evidence retained' }
       - uses: actions/upload-artifact@v4
         if: always()
@@ -185,6 +185,8 @@ jobs:
             .verification/swa-ci/windows-controller-open/continuity-snapshot-b.json
             .verification/swa-ci/windows-controller-open/continuity-snapshot-c.json
             .verification/swa-ci/windows-controller-open/continuity-exit-wait.json
+            .verification/swa-ci/windows-controller-open/service-query-evidence.json
+            .verification/swa-ci/windows-controller-open/service-process-lifecycle.json
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

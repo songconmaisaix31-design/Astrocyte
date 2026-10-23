@@ -14,9 +14,11 @@ async function main() {
 const sourceRevision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'
 const priorRevision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'
 const { values } = parseArgs({ options: { ...Object.fromEntries(['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli'].map(name => [name, { type: 'string' }])),
-  'native-compile-only': { type: 'boolean', default: false }, 'native-abi-only': { type: 'boolean', default: false } }, strict: true, allowPositionals: false })
+  'native-compile-only': { type: 'boolean', default: false }, 'native-abi-only': { type: 'boolean', default: false }, 'service-observation-only': { type: 'boolean', default: false } }, strict: true, allowPositionals: false })
 const nativeCompileOnly = values['native-compile-only'], nativeAbiOnly = values['native-abi-only'], nativeOnly = nativeCompileOnly || nativeAbiOnly
+const serviceObservationOnly = values['service-observation-only']
 assert.ok(!(nativeCompileOnly && nativeAbiOnly), 'Native compile-only and ABI-only modes are mutually exclusive')
+assert.ok(!(serviceObservationOnly && nativeOnly), 'Service observation and native-only modes are mutually exclusive')
 assert.equal(process.platform, 'win32'); assert.equal(process.arch, 'x64')
 for (const name of ['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli']) assert.ok(values[name] && isAbsolute(values[name]))
 const checkout = await realpath(fileURLToPath(new URL('../', import.meta.url)))
@@ -42,7 +44,7 @@ const digest = async path => ({ path: await realpath(path), sha256: hash(await r
 const result = { schema: 'swa.windows-controller-open-development.v1', status: 'FAIL', phase: 'preflight',
   source_revision: sourceRevision, input_revision: priorRevision, observation_revision: process.env.GITHUB_SHA ?? 'UNKNOWN',
   runtime_source_revision: nativeOnly ? priorRevision : sourceRevision, native_input_revision: priorRevision, go_source_revision: nativeOnly ? 'NOT_RUN' : 'UNKNOWN',
-  scope: nativeCompileOnly ? 'development_native_compile_only_not_candidate' : nativeAbiOnly ? 'development_native_abi_only_not_candidate' : 'development_composition_not_candidate',
+  scope: nativeCompileOnly ? 'development_native_compile_only_not_candidate' : nativeAbiOnly ? 'development_native_abi_only_not_candidate' : serviceObservationOnly ? 'development_service_observation_not_candidate' : 'development_composition_not_candidate',
   ...(nativeOnly ? { native_compile_only: nativeCompileOnly, native_abi_only: nativeAbiOnly, application_entries: 'COPIED_NOT_EXECUTED', go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
     native_self: 'NOT_RUN', root_child_control: 'NOT_RUN', controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
   model_calls: 0, worker_calls: 0, task_create: 'NOT_RUN', commands: [], private_raw_uploaded: false }
@@ -183,6 +185,136 @@ async function ordinaryTree(root, base = root) {
   if (entry.isDirectory()) for (const name of await readdir(root)) await ordinaryTree(join(root, name), base)
   else if (/\.(?:node|dll)$/i.test(root)) originalNative.push({ path: relative(base, root).replaceAll('\\', '/'), sha256: (await digest(root)).sha256,
     dev: entry.dev, ino: entry.ino, nlink: entry.nlink })
+}
+async function retainServiceEvidence(directory) {
+  const keys = (value, names) => { assert.ok(value && typeof value === 'object' && !Array.isArray(value)); assert.deepEqual(Object.keys(value).sort(), [...names].sort()) }
+  const uint = value => Number.isSafeInteger(value) && value >= 0 && value <= 0xffffffff
+  const birth = value => Number.isSafeInteger(value) && value > 0
+  const finite = value => typeof value === 'number' && Number.isFinite(value) && value >= 0
+  const list = (value, maximum, check) => { assert.ok(Array.isArray(value) && value.length <= maximum); for (const row of value) check(row) }
+  const bool = value => assert.equal(typeof value, 'boolean')
+  const atom = value => assert.ok(value === null || typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value))
+  const identity = value => { keys(value, ['pid', 'creationTimeMs']); assert.ok(uint(value.pid) && value.pid > 0 && birth(value.creationTimeMs)) }
+  const instant = value => { keys(value, ['observed_at_ms', 'monotonic_ms']); assert.ok(birth(value.observed_at_ms) && finite(value.monotonic_ms)) }
+  const sourceRoles = { serve_native_identity: ['serve'], callback_owned: ['callback'], named_job_member: ['serve', 'runtime', 'server', 'daemon'],
+    transport_native_identity: ['transport'], transport_receipt_identity: ['tty_root', 'tty_helper', 'pipe_helper'],
+    producer_command_native_identity: ['producer_command'], controller_receipt_native_identity: ['controller_process', 'controller_helper'] }
+  const sourceInfo = value => {
+    keys(value, ['kind', 'role', 'command_sequence', 'command_name', 'query_sequence', 'scope_index', 'scope_anchor'])
+    assert.ok(typeof value.kind === 'string' && Object.hasOwn(sourceRoles, value.kind) && sourceRoles[value.kind].includes(value.role))
+    if (value.kind === 'producer_command_native_identity') {
+      assert.ok(birth(value.command_sequence)); assert.ok(typeof value.command_name === 'string' && /^(?:git|cli)-[0-9]{2,8}$/.test(value.command_name))
+      assert.equal(Number(value.command_name.split('-')[1]), value.command_sequence)
+    } else { assert.equal(value.command_sequence, null); assert.equal(value.command_name, null) }
+    if (value.kind === 'callback_owned') { assert.ok(birth(value.query_sequence) && uint(value.scope_index) && value.scope_index <= 2048); identity(value.scope_anchor) }
+    else { assert.equal(value.query_sequence, null); assert.equal(value.scope_index, null); assert.equal(value.scope_anchor, null) }
+  }
+  const origin = value => { keys(value, ['identity', 'confirmed_at', 'event_sequence', 'source']); identity(value.identity); instant(value.confirmed_at); assert.ok(birth(value.event_sequence)); sourceInfo(value.source) }
+  const nativeRow = value => {
+    keys(value, ['pid', 'ppid', 'name', 'creationTimeDiagnosticVersion', 'creationTimeProvider', 'creationTimeNtStatus', 'creationTimeSnapshotComplete', ...(Object.hasOwn(value, 'creationTimeMs') ? ['creationTimeMs'] : [])])
+    assert.ok(uint(value.pid) && value.pid > 0 && uint(value.ppid)); assert.ok(typeof value.name === 'string' && value.name.length <= 260 && /^[\p{L}\p{N}_. ()-]*$/u.test(value.name))
+    if (Object.hasOwn(value, 'creationTimeMs')) assert.ok(birth(value.creationTimeMs))
+    assert.equal(value.creationTimeDiagnosticVersion, 2); assert.equal(value.creationTimeProvider, 'NtQuerySystemInformation'); assert.ok(uint(value.creationTimeNtStatus)); bool(value.creationTimeSnapshotComplete)
+  }
+  const processEvent = value => {
+    if (value === null) return
+    keys(value, ['exit', 'signal', 'observed_at_ms', 'monotonic_ms']); assert.ok(value.exit === null || Number.isSafeInteger(value.exit)); atom(value.signal)
+    assert.ok(birth(value.observed_at_ms) && finite(value.monotonic_ms))
+  }
+  const queryInstant = value => { keys(value, ['observed_at_ms', 'monotonic_ms', 'root_exit_event', 'root_close_event']); assert.ok(birth(value.observed_at_ms) && finite(value.monotonic_ms)); processEvent(value.root_exit_event); processEvent(value.root_close_event) }
+  const unknownReasons = ['invalid_native_process_row', 'current_root_identity_unverified', 'root_in_descendant_branch', 'parent_incarnation_unverified', 'process_identity_not_unique', 'creation_time_unavailable', 'parent_incarnation_changed']
+  const closure = value => {
+    keys(value, ['rootVerified', 'ownedRows', 'excludedEdges', 'unknownRows']); bool(value.rootVerified); list(value.ownedRows, 16384, nativeRow)
+    list(value.excludedEdges, 32768, row => { keys(row, ['reason', 'actual', ...(Object.hasOwn(row, 'anchor') ? ['anchor'] : ['parent'])]); assert.ok(['different-root-incarnation', 'predates-root', 'predates-parent'].includes(row.reason)); nativeRow(row.actual); identity(row.anchor ?? row.parent) })
+    list(value.unknownRows, 32768, row => {
+      keys(row, ['reason', 'actual', ...(Object.hasOwn(row, 'source_anchor') ? ['source_anchor'] : [])]); assert.ok(unknownReasons.includes(row.reason)); nativeRow(row.actual)
+      if (row.source_anchor) { keys(row.source_anchor, ['kind', 'pid', 'creation_time_ms']); assert.ok(['serve', 'additional'].includes(row.source_anchor.kind)); assert.ok(uint(row.source_anchor.pid) && row.source_anchor.pid > 0 && birth(row.source_anchor.creation_time_ms)) }
+    })
+  }
+  const sample = value => {
+    if (value === null) return
+    keys(value, ['sequence', 'query_window', 'root', 'priors', 'before', 'rows', 'scopes', 'ownership_closure_incomplete']); assert.ok(birth(value.sequence)); identity(value.root)
+    keys(value.query_window, ['start', 'end']); queryInstant(value.query_window.start); queryInstant(value.query_window.end)
+    assert.ok(value.query_window.start.monotonic_ms <= value.query_window.end.monotonic_ms)
+    list(value.priors, 2048, identity); keys(value.before, ['prior_sources', 'additional_roots']); list(value.before.prior_sources, 2048, origin); list(value.before.additional_roots, 2048, identity)
+    assert.deepEqual(value.before.prior_sources.map(row => row.identity), value.priors)
+    for (const row of value.before.prior_sources) assert.ok(row.confirmed_at.monotonic_ms <= value.query_window.start.monotonic_ms)
+    list(value.rows, 16384, nativeRow); bool(value.ownership_closure_incomplete)
+    list(value.scopes, 2049, row => {
+      keys(row, ['anchor', 'source', 'existed_before_query', 'confirmed_during_query', 'result']); identity(row.anchor); origin(row.source); assert.deepEqual(row.anchor, row.source.identity)
+      bool(row.existed_before_query); bool(row.confirmed_during_query); closure(row.result)
+      assert.equal(row.confirmed_during_query, row.source.confirmed_at.monotonic_ms >= value.query_window.start.monotonic_ms && row.source.confirmed_at.monotonic_ms <= value.query_window.end.monotonic_ms)
+    })
+    assert.ok(value.scopes.length > 0); assert.deepEqual(value.scopes[0].anchor, value.root)
+    value.scopes.forEach((row, index) => assert.equal(row.existed_before_query, (index === 0 ? value.priors : value.before.additional_roots).some(prior => prior.pid === row.anchor.pid && prior.creationTimeMs === row.anchor.creationTimeMs)))
+    if (value.scopes.some(row => row.result.unknownRows.length > 0)) assert.equal(value.ownership_closure_incomplete, true)
+  }
+  const sourceHashes = { observer: result.observer_sources.find(row => row.name === 'serve-lifecycle.mjs').observation_sha256,
+    producer: result.observer_sources.find(row => row.name === 'controller-taskcreate-check.mjs').observation_sha256,
+    closure: result.observer_sources.find(row => row.name === 'process-incarnation-closure.mjs').observation_sha256, native: result.diagnostic_process_tree.binary_sha256 }
+  const documents = {}, files = []
+  for (const [name, maximum] of [['service-query-evidence.json', 8 * 1024 * 1024], ['service-process-lifecycle.json', 2 * 1024 * 1024]]) {
+    const path = join(directory, name)
+    try {
+      let before
+      try { before = await lstat(path) } catch (error) { if (error.code !== 'ENOENT') throw error; files.push({ file_name: name, status: 'NOT_CAPTURED' }); continue }
+      assert.ok(before.isFile() && !before.isSymbolicLink() && before.nlink === 1 && before.size <= maximum)
+      assert.equal((await realpath(path)).toLowerCase(), resolve(path).toLowerCase())
+      const bytes = await readFile(path), after = await lstat(path)
+      for (const key of ['dev', 'ino', 'size', 'mtimeMs', 'ctimeMs', 'nlink']) assert.equal(after[key], before[key])
+      assert.equal(bytes.length, before.size)
+      const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), query = name === 'service-query-evidence.json'
+      keys(value, ['schema_version', 'source_revision', 'sources', 'status', 'evidence_incomplete', 'error_kind', ...(query ? ['query_count', 'ownership_closure_incomplete', 'first_sample', 'first_unknown_sample', 'last_sample'] : ['events'])])
+      assert.equal(value.schema_version, 1); assert.equal(value.source_revision, result.observation_revision); assert.deepEqual(value.sources, sourceHashes)
+      assert.ok(['OBSERVING', 'COMPLETE', 'INCOMPLETE'].includes(value.status)); bool(value.evidence_incomplete)
+      assert.ok(value.error_kind === null || ['EVIDENCE_WRITE_OR_LIMIT', 'LIFECYCLE_INCOMPLETE', 'SOURCE_INCOMPLETE', 'PRIOR_SOURCE_INCOMPLETE', 'SCOPE_SOURCE_INCOMPLETE', 'NATIVE_BATCH_INCOMPLETE', 'QUERY_EVIDENCE_INCOMPLETE', 'OWNED_SCOPE_MISSING', 'QUERY_FAILED', 'OBSERVER_ABORTED'].includes(value.error_kind))
+      if (query) {
+        assert.ok(uint(value.query_count)); bool(value.ownership_closure_incomplete)
+        for (const item of [value.first_sample, value.first_unknown_sample, value.last_sample]) { sample(item); if (item) assert.ok(item.sequence <= value.query_count) }
+        if (value.first_unknown_sample) assert.ok(value.first_unknown_sample.scopes.some(row => row.result.unknownRows.length > 0))
+      } else list(value.events, 4096, row => {
+        keys(row, ['sequence', 'at', 'kind', 'source', 'pid', 'identity', 'exit', 'signal', 'spawn_error', 'stdio_policy']); assert.ok(birth(row.sequence)); instant(row.at); sourceInfo(row.source)
+        assert.ok(['spawn', 'spawn-error', 'identity-confirm', 'receipt-observed', 'exit', 'close', 'stdout-end', 'stderr-end', 'stdin-end-request', 'stdin-finish', 'cleanup-request'].includes(row.kind))
+        assert.ok(row.pid === null || uint(row.pid) && row.pid > 0); if (row.identity !== null) { identity(row.identity); assert.equal(row.pid, row.identity.pid) }
+        assert.ok(row.exit === null || Number.isSafeInteger(row.exit)); atom(row.signal); atom(row.spawn_error)
+        assert.equal(row.stdio_policy, row.kind === 'spawn' ? row.source.kind === 'serve_native_identity' ? 'pipe_pipe_pipe' : 'ignore_pipe_pipe' : null)
+      })
+      const sha256 = hash(bytes)
+      await writeFile(join(evidence, name), bytes, { flag: 'wx' }); assert.equal((await digest(join(evidence, name))).sha256, sha256)
+      documents[name] = value; files.push({ file_name: name, status: 'SAVED', sha256, byte_count: bytes.length })
+    } catch (error) { files.push({ file_name: name, status: 'FAILED', error_kind: kind(error) }) }
+  }
+  const query = documents['service-query-evidence.json'], lifecycle = documents['service-process-lifecycle.json']
+  let complete = !!query && !!lifecycle && [query, lifecycle].every(value => value.status === 'COMPLETE' && !value.evidence_incomplete)
+  let binding = 'NOT_CHECKED'
+  if (query && lifecycle) {
+    try {
+      lifecycle.events.forEach((row, index) => { assert.equal(row.sequence, index + 1); if (index) assert.ok(row.at.monotonic_ms >= lifecycle.events[index - 1].at.monotonic_ms) })
+      for (const sample of [query.first_sample, query.first_unknown_sample, query.last_sample].filter(Boolean)) {
+        for (const origin of [...sample.before.prior_sources, ...sample.scopes.map(row => row.source)]) {
+          const event = lifecycle.events[origin.event_sequence - 1]
+          assert.ok(event && ['identity-confirm', 'receipt-observed'].includes(event.kind)); assert.deepEqual(event.identity, origin.identity); assert.deepEqual(event.at, origin.confirmed_at); assert.deepEqual(event.source, origin.source)
+        }
+      }
+      assert.ok(query.first_sample && query.last_sample && query.query_count > 0)
+      assert.equal(query.last_sample.sequence, query.query_count)
+      binding = 'VERIFIED'
+    } catch { binding = 'FAILED'; complete = false }
+  }
+  const describe = sample => sample === undefined ? 'NOT_CAPTURED' : sample === null ? null : { sequence: sample.sequence, query_window: sample.query_window,
+    actual_row_count: sample.rows.length, prior_count: sample.priors.length, additional_before_count: sample.before.additional_roots.length,
+    used_scope_count: sample.scopes.length, added_during_query_count: sample.scopes.slice(1).filter(row => !row.existed_before_query).length,
+    root_verified: sample.scopes[0].result.rootVerified, unknown_count: sample.scopes.reduce((count, row) => count + row.result.unknownRows.length, 0) }
+  const first = query?.first_unknown_sample, unknown = first?.scopes.flatMap((scope, index) => scope.result.unknownRows.map(row => ({ ...row, source_anchor: row.source_anchor ?? { kind: index === 0 ? 'serve' : 'additional', pid: scope.anchor.pid, creation_time_ms: scope.anchor.creationTimeMs } })))[0]
+  result.service_evidence = { complete, binding, sources: sourceHashes, files, query_count: query?.query_count ?? 'NOT_RECORDED',
+    ownership_closure_incomplete: query?.ownership_closure_incomplete ?? 'NOT_RECORDED', evidence_incomplete: query?.evidence_incomplete ?? 'NOT_RECORDED', error_kind: query ? query.error_kind : 'NOT_CAPTURED',
+    first_sample: describe(query?.first_sample), first_unknown_sample: describe(first), last_sample: describe(query?.last_sample),
+    lifecycle_event_count: lifecycle?.events.length ?? 'NOT_RECORDED', lifecycle_incomplete: lifecycle?.evidence_incomplete ?? 'NOT_RECORDED',
+    source_kind_counts: lifecycle ? Object.keys(sourceRoles).map(kind => ({ kind, count: lifecycle.events.filter(row => row.source.kind === kind).length })) : 'NOT_RECORDED',
+    first_unknown: !query ? 'NOT_CAPTURED' : unknown ? { reason: unknown.reason, actual: { pid: unknown.actual.pid, ppid: unknown.actual.ppid, creation_time_ms: unknown.actual.creationTimeMs ?? 'NOT_RECORDED' }, source_anchor: unknown.source_anchor,
+      prior_exact_match: first.priors.some(row => row.pid === unknown.actual.pid && row.creationTimeMs === unknown.actual.creationTimeMs),
+      pid_match_count: first.rows.filter(row => row.pid === unknown.actual.pid).length, parent_match_count: first.rows.filter(row => row.pid === unknown.actual.ppid).length,
+      anchor_match_count: first.rows.filter(row => row.pid === unknown.source_anchor.pid).length } : null }
 }
 try {
   const goRevision = (await git(['rev-parse', 'HEAD'])).toString().trim()
@@ -476,6 +608,8 @@ try {
     assert.ok(contains(source, path), 'Observer build dependency escaped the frozen source installation')
     return { name, path: relative(source, path).replaceAll('\\', '/') }
   }))
+  let snapshotReport
+  if (!serviceObservationOnly) {
   result.phase = 'native-process-snapshot-control'
   const snapshotData = join(work, 'native-process-control-data'), snapshotOutput = join(privateOutput, 'native-process-control')
   await mkdir(snapshotData)
@@ -626,7 +760,7 @@ try {
   assert.ok(snapshotReportInfo.isFile() && !snapshotReportInfo.isSymbolicLink() && snapshotReportInfo.nlink === 1 && snapshotReportInfo.size <= 1024 * 1024)
   assert.equal((await realpath(snapshotReportPath)).toLowerCase(), resolve(snapshotReportPath).toLowerCase())
   const snapshotReportBytes = await readFile(snapshotReportPath)
-  const snapshotReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(snapshotReportBytes))
+  snapshotReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(snapshotReportBytes))
   assert.equal(snapshotReport.schema_version, 1); assert.equal(snapshotReport.source_revision, goRevision)
   const continuityReport = snapshotReport.cases?.find(row => row.name === 'prior-owned-continuity')
   for (const frame of result.continuity_frames.filter(row => row.status === 'SAVED')) {
@@ -718,6 +852,13 @@ try {
     native_exit_remaining: snapshotReport.cases[1].native_exit_observations.map(row => row.remaining_count),
     cim_exit: snapshotReport.cases[1].cim_process_exit.exit, cim_all_exited: snapshotReport.cases[1].cim_report.all_exited }
   result.native_snapshot.root_child_control = snapshotReport.status
+  } else {
+    assert.equal((await digest(join(source, 'tests/swa-cli-headless/windows-process-incarnation-control.mjs'))).sha256, '842060a11640491694dbb663057b71dd94bc58e24905acb006fdc61319a74ac4')
+    assert.equal((await digest(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))).sha256, '144d16fe707b432e9cfc05aa800d0719430ea112fc23c8706a46f9664436475f')
+    result.native_snapshot.root_child_control = 'PRIOR_PASS_NOT_RERUN'
+    result.prior_ordinary_control = { status: 'PRIOR_PASS_NOT_RERUN', head: 'ff33f6b9bcdd4b37eb330b61db49bd14d5476fb9', run: 40021139196, job: 120645694135,
+      fixture_sha256: '842060a11640491694dbb663057b71dd94bc58e24905acb006fdc61319a74ac4', closure_sha256: '144d16fe707b432e9cfc05aa800d0719430ea112fc23c8706a46f9664436475f' }
+  }
   for (const observer of result.observer_sources) {
     assert.equal((await digest(join(source, 'tests/swa-cli-headless', observer.name))).sha256, observer.observation_sha256)
     assert.equal((await digest(join(checkout, 'tests/swa-cli-headless', observer.name))).sha256, observer.observation_sha256)
@@ -735,8 +876,13 @@ try {
   await mkdir(dataParent)
   result.phase = 'short-identify-then-controller-open'
   const smoke = join(privateOutput, 'smoke')
-  const observed = await command(actualNode, [join(source, 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', development, '--evidence', smoke,
-    '--data-parent', dataParent, '--protected-roots', env.ProgramFiles ?? env.PROGRAMFILES, '--port', '18793', '--mode', 'readiness-eof', '--source-revision', goRevision, '--controller-open-only'], checkout, 660_000, {}, true)
+  let observed
+  try {
+    observed = await command(actualNode, [join(source, 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', development, '--evidence', smoke,
+      '--data-parent', dataParent, '--protected-roots', env.ProgramFiles ?? env.PROGRAMFILES, '--port', '18793', '--mode', 'readiness-eof', '--source-revision', goRevision, '--controller-open-only', ...(serviceObservationOnly ? ['--retain-query-evidence'] : [])], checkout, 660_000, {}, true)
+  } finally {
+    if (serviceObservationOnly) await retainServiceEvidence(join(smoke, 'readiness-eof'))
+  }
   result.fixture_exit = observed.exit
   result.native_inputs_after = await Promise.all(originalNative.map(async item => {
     const path = join(original, item.path), info = await lstat(path)
@@ -937,6 +1083,13 @@ try {
   result.errors = logs
   result.error_line_total = errorLineCount
   result.error_lines_truncated = errorLineCount > 20
+  if (serviceObservationOnly) {
+    assert.equal(record.query_evidence?.evidence_incomplete, false)
+    assert.equal(result.service_evidence?.complete, true)
+    assert.equal(result.service_evidence.query_count, record.query_evidence.query_count)
+    assert.equal(result.service_evidence.lifecycle_event_count, record.query_evidence.event_count)
+    assert.equal(result.service_evidence.ownership_closure_incomplete, record.ownership_closure_incomplete)
+  }
   assert.equal(observed.exit, 0); assert.equal(control?.status, 'PASS')
   result.phase = 'complete'; result.status = 'PASS'
 } catch (error) {
@@ -946,6 +1099,21 @@ try {
 } finally {
   await stopBuild()
   await save('result.json', result)
+  if (serviceObservationOnly && result.service_evidence) {
+    const retained = result.service_evidence
+    const annotations = [
+      ['Windows service query evidence', { observation_revision: result.observation_revision, scope: result.scope, status: result.status,
+        complete: retained.complete, binding: retained.binding, sources: retained.sources, files: retained.files,
+        ordinary_control: result.prior_ordinary_control, evidence_incomplete: retained.evidence_incomplete, error_kind: retained.error_kind,
+        ownership_closure_incomplete: retained.ownership_closure_incomplete, first_unknown: retained.first_unknown, kernel_tree_exit_proven: false }],
+      ['Windows service query and lifecycle samples', { observation_revision: result.observation_revision, query_count: retained.query_count,
+        first_sample: retained.first_sample, first_unknown_sample: retained.first_unknown_sample, last_sample: retained.last_sample,
+        lifecycle_event_count: retained.lifecycle_event_count, lifecycle_incomplete: retained.lifecycle_incomplete, source_kind_counts: retained.source_kind_counts,
+        task_create: 'NOT_RUN', model_calls: 0, worker_calls: 0 }]
+    ].map(([title, value]) => ({ title, text: JSON.stringify(value) }))
+    for (const row of annotations) assert.ok(Buffer.byteLength(row.text) <= 3500, 'Service evidence annotation exceeds its bound; full files retained')
+    for (const row of annotations) process.stdout.write('::warning title=' + row.title + '::' + row.text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
+  }
   const rootChild = result.root_child_fixture
   const rootChildCases = Array.isArray(rootChild?.cases) ? rootChild.cases : []
   const liveRootChild = rootChildCases.find(row => row.name === 'live-root-child'), exitedRootChild = rootChildCases.find(row => row.name === 'normal-eof')

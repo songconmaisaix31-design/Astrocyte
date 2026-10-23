@@ -14,13 +14,14 @@ const safeKind = error => typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,
 const samePath = (actual, expected) => assert.equal(actual.toLowerCase(), expected.toLowerCase())
 
 // 只在本次已就绪的真实服务中创建公开任务，不启动 Worker 或模型。
-export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity, stopAfter }) {
+export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity, onProcessEvent, stopAfter }) {
   assert.equal(process.platform, 'win32')
   assert.equal(process.arch, 'x64')
   assert.equal(process.versions.node, '24.21.0')
   for (const path of [candidate, dataRoot, publicParent, outputDir]) assert.ok(isAbsolute(path))
   assert.match(sourceRevision, /^[0-9a-f]{40}$/)
   assert.equal(typeof onProcessIdentity, 'function')
+  assert.ok(onProcessEvent === undefined || typeof onProcessEvent === 'function')
   assert.ok(stopAfter === undefined || stopAfter === 'controller-open')
   assert.equal(new URL(endpoint).origin, endpoint)
   assert.equal(new URL(endpoint).hostname, '127.0.0.1')
@@ -49,12 +50,12 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     try { return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(reason)), remaining(cap)) })]) }
     finally { clearTimeout(timer) }
   }
-  function recordIdentity(pid, expected) {
+  function recordIdentity(pid, expected, sourceInfo) {
     assert.ok(Number.isSafeInteger(pid) && pid > 0)
     const creationTimeMs = native.getProcessCreationTime(pid)
     assert.ok(Number.isSafeInteger(creationTimeMs) && creationTimeMs > 0, 'Actual child creation time is unavailable')
     if (expected !== undefined) assert.equal(creationTimeMs, expected)
-    onProcessIdentity({ pid, creationTimeMs })
+    onProcessIdentity({ pid, creationTimeMs }, sourceInfo)
     return { pid, creationTimeMs }
   }
   async function command(executable, args, name, env, cwd, cap = 150_000, inspectNonzero = false) {
@@ -62,23 +63,27 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     const actuallySpawned = Number.isSafeInteger(child.pid) && child.pid > 0
     const stdout = [], stderr = []
     let outBytes = 0, errBytes = 0, outEOF = false, errEOF = false, streamFailure = false, identity
+    const commandSource = { kind: 'producer_command_native_identity', role: 'producer_command', command_sequence: Number(name.split('-')[1]), command_name: name }
+    const event = (kind, details = {}) => onProcessEvent?.({ kind, source: commandSource, pid: child.pid ?? null, identity: identity ?? null, ...details })
+    event('spawn')
     const closed = new Promise(resolve => {
-      child.once('error', error => resolve({ exit: null, signal: null, spawn_error: safeKind(error) }))
-      child.once('close', (exit, signal) => resolve({ exit, signal, spawn_error: null }))
+      child.once('error', error => { event('spawn-error', { spawn_error: safeKind(error) }); resolve({ exit: null, signal: null, spawn_error: safeKind(error) }) })
+      child.once('close', (exit, signal) => { event('close', { exit, signal }); resolve({ exit, signal, spawn_error: null }) })
     })
+    child.once('exit', (exit, signal) => event('exit', { exit, signal }))
     child.stdout.on('data', chunk => { outBytes += chunk.length; if (outBytes <= 16 * 1024 * 1024) stdout.push(chunk); else streamFailure = true })
     child.stderr.on('data', chunk => { errBytes += chunk.length; if (errBytes <= 256 * 1024) stderr.push(chunk); else streamFailure = true })
-    child.stdout.on('end', () => { outEOF = true })
-    child.stderr.on('end', () => { errEOF = true })
+    child.stdout.on('end', () => { outEOF = true; event('stdout-end') })
+    child.stderr.on('end', () => { errEOF = true; event('stderr-end') })
     for (const stream of [child.stdout, child.stderr]) stream.on('error', () => { streamFailure = true })
     let exit, timedOut = false, cleanupAttempted = false
     try {
-      if (child.pid) identity = recordIdentity(child.pid)
+      if (child.pid) identity = recordIdentity(child.pid, undefined, commandSource)
       exit = await bounded(closed, cap, 'Actual CLI or Git completion remains unknown')
     } catch (error) {
       timedOut = true
       // 只关闭本次仍保持原创建时间的 child；这不是自然退出证明。
-      if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) cleanupAttempted = child.kill()
+      if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) { event('cleanup-request'); cleanupAttempted = child.kill() }
       try { exit = await Promise.race([closed, new Promise(resolve => setTimeout(() => resolve(null), 5000))]) } catch { /* 原结果仍为 UNKNOWN。 */ }
       throw error
     } finally {
@@ -266,7 +271,9 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     controller = opened.controller; assert.ok(controller)
     const owner = object(opened.result)
     assert.equal(owner.controller, controller)
-    for (const identity of [owner.process, owner.helper]) recordIdentity(identity.pid, identity.creationTimeMs)
+    for (const identity of [owner.process, owner.helper]) recordIdentity(identity.pid, identity.creationTimeMs, {
+      kind: 'controller_receipt_native_identity', role: identity === owner.process ? 'controller_process' : 'controller_helper'
+    })
     report.controller = controller
     report.controller_process = { pid: owner.process.pid, creationTimeMs: owner.process.creationTimeMs }
     report.helper_process = { pid: owner.helper.pid, creationTimeMs: owner.helper.creationTimeMs }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
+import { renameSync, writeFileSync } from 'node:fs'
 import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { dirname, extname, isAbsolute, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -9,7 +10,7 @@ import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
-const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false }, 'controller-open-only': { type: 'boolean', default: false } }, allowPositionals: false })
+const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false }, 'controller-open-only': { type: 'boolean', default: false }, 'retain-query-evidence': { type: 'boolean', default: false } }, allowPositionals: false })
 assert.ok(!(values['controller-input-check'] && values['controller-open-only']), 'Controller diagnostic modes are mutually exclusive')
 const controllerCheck = values['controller-input-check'] || values['controller-open-only']
 const edition = values.edition ?? 'cli'
@@ -39,8 +40,130 @@ const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
 if (controllerCheck) assert.equal(values.mode, 'readiness-eof', 'Controller checking requires the explicit readiness-eof mode')
+if (values['retain-query-evidence']) assert.ok(values['controller-open-only'] && values.mode === 'readiness-eof')
 
-async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity) {
+// 仅记录这次观察器实际取得的输入和事件；不改变原所有权集合或退出门。
+async function retainQueryEvidence(directory) {
+  const digest = bytes => createHash('sha256').update(bytes).digest('hex')
+  const nativeRoot = dirname(requireRuntime.resolve('@vscode/windows-process-tree/package.json'))
+  const sources = Object.fromEntries(await Promise.all([
+    ['observer', import.meta.filename], ['producer', join(dirname(import.meta.filename), 'controller-taskcreate-check.mjs')],
+    ['closure', join(dirname(import.meta.filename), 'process-incarnation-closure.mjs')], ['native', join(nativeRoot, 'build/Release/windows_process_tree.node')]
+  ].map(async ([name, path]) => [name, digest(await readFile(path))])))
+  const query = { schema_version: 1, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null,
+    query_count: 0, ownership_closure_incomplete: false, first_sample: null, first_unknown_sample: null, last_sample: null }
+  const lifecycle = { schema_version: 1, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null, events: [] }
+  const origins = new Map()
+  const kinds = ['serve_native_identity', 'callback_owned', 'named_job_member', 'transport_native_identity', 'transport_receipt_identity', 'producer_command_native_identity', 'controller_receipt_native_identity']
+  const roles = ['serve', 'runtime', 'server', 'daemon', 'callback', 'transport', 'tty_root', 'tty_helper', 'pipe_helper', 'producer_command', 'controller_process', 'controller_helper']
+  const eventKinds = ['spawn', 'spawn-error', 'identity-confirm', 'receipt-observed', 'exit', 'close', 'stdout-end', 'stderr-end', 'stdin-end-request', 'stdin-finish', 'cleanup-request']
+  const instant = () => ({ observed_at_ms: Date.now(), monotonic_ms: performance.now() })
+  const uint = value => Number.isSafeInteger(value) && value >= 0 && value <= 0xffffffff
+  const identity = value => { assert.ok(value && uint(value.pid) && value.pid > 0 && Number.isSafeInteger(value.creationTimeMs) && value.creationTimeMs > 0); return { pid: value.pid, creationTimeMs: value.creationTimeMs } }
+  const fail = kind => { query.evidence_incomplete = lifecycle.evidence_incomplete = true; query.error_kind ??= kind; lifecycle.error_kind ??= kind }
+  const save = (fileName, value, maximum) => {
+    try {
+      const bytes = Buffer.from(JSON.stringify(value, null, 2) + '\n'); assert.ok(bytes.length <= maximum)
+      const temporary = join(directory, fileName + '.pending')
+      writeFileSync(temporary, bytes)
+      renameSync(temporary, join(directory, fileName))
+    }
+    catch { fail('EVIDENCE_WRITE_OR_LIMIT') }
+  }
+  const sourceInfo = value => {
+    assert.ok(value && kinds.includes(value.kind) && roles.includes(value.role))
+    const info = { kind: value.kind, role: value.role, command_sequence: value.command_sequence ?? null, command_name: value.command_name ?? null,
+      query_sequence: value.query_sequence ?? null, scope_index: value.scope_index ?? null, scope_anchor: value.scope_anchor ? identity(value.scope_anchor) : null }
+    assert.ok(info.command_sequence === null || Number.isSafeInteger(info.command_sequence) && info.command_sequence > 0)
+    assert.ok(info.command_name === null || typeof info.command_name === 'string' && /^(?:git|cli)-[0-9]{2,8}$/.test(info.command_name))
+    assert.ok(info.query_sequence === null || Number.isSafeInteger(info.query_sequence) && info.query_sequence > 0)
+    assert.ok(info.scope_index === null || Number.isSafeInteger(info.scope_index) && info.scope_index >= 0 && info.scope_index <= 2048)
+    return info
+  }
+  const event = value => {
+    try {
+      assert.ok(eventKinds.includes(value.kind)); assert.ok(lifecycle.events.length < 4096)
+      const row = { sequence: lifecycle.events.length + 1, at: instant(), kind: value.kind, source: sourceInfo(value.source),
+        pid: value.pid ?? null, identity: value.identity ? identity(value.identity) : null,
+        exit: value.exit ?? null, signal: value.signal ?? null, spawn_error: value.spawn_error ?? null,
+        stdio_policy: value.kind === 'spawn' ? value.source.kind === 'serve_native_identity' ? 'pipe_pipe_pipe' : 'ignore_pipe_pipe' : null }
+      assert.ok(row.pid === null || uint(row.pid) && row.pid > 0)
+      assert.ok(row.exit === null || Number.isSafeInteger(row.exit))
+      for (const atom of [row.signal, row.spawn_error]) assert.ok(atom === null || typeof atom === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(atom))
+      if (row.identity) assert.equal(row.pid, row.identity.pid)
+      assert.ok(Buffer.byteLength(JSON.stringify({ ...lifecycle, events: [...lifecycle.events, row] }, null, 2)) < 2 * 1024 * 1024 - 1024)
+      lifecycle.events.push(row)
+      save('service-process-lifecycle.json', lifecycle, 2 * 1024 * 1024)
+      return row
+    } catch { fail('LIFECYCLE_INCOMPLETE'); return null }
+  }
+  const confirmed = (value, metadata) => {
+    try {
+      const actual = identity(value), info = sourceInfo(metadata), key = actual.pid + ':' + actual.creationTimeMs
+      const row = event({ kind: info.kind.includes('receipt') ? 'receipt-observed' : 'identity-confirm', source: info, pid: actual.pid, identity: actual })
+      if (!row) return
+      if (!origins.has(key)) {
+        assert.ok(origins.size < 2048)
+        origins.set(key, { identity: actual, confirmed_at: row.at, event_sequence: row.sequence, source: info })
+      }
+    } catch { fail('SOURCE_INCOMPLETE') }
+  }
+  const before = (prior, additional) => {
+    try {
+      assert.ok(prior.length <= 2048 && additional.length <= 2048)
+      const prior_sources = prior.map(value => { const actual = identity(value), item = origins.get(actual.pid + ':' + actual.creationTimeMs); assert.ok(item); return structuredClone(item) })
+      return { prior_sources, additional_roots: additional.map(identity) }
+    } catch { fail('PRIOR_SOURCE_INCOMPLETE'); return null }
+  }
+  const scope = (anchor, result, prior, window) => {
+    try {
+      const actual = identity(anchor), origin = origins.get(actual.pid + ':' + actual.creationTimeMs)
+      assert.ok(origin)
+      return { anchor: actual, source: structuredClone(origin), existed_before_query: prior.some(value => value.pid === anchor.pid && value.creationTimeMs === anchor.creationTimeMs),
+        confirmed_during_query: origin.confirmed_at.monotonic_ms >= window.start.monotonic_ms && origin.confirmed_at.monotonic_ms <= window.end.monotonic_ms,
+        result: { rootVerified: result.rootVerified, ownedRows: [...result.ownedRows], excludedEdges: [...result.excludedEdges], unknownRows: [...result.unknownRows] } }
+    } catch { fail('SCOPE_SOURCE_INCOMPLETE'); return null }
+  }
+  const sample = value => {
+    query.query_count = value.sequence
+    query.ownership_closure_incomplete = value.ownership_closure_incomplete
+    try {
+      assert.ok(value.before && value.rows.length > 0 && value.rows.length <= 16384 && value.scopes.length <= 2049 && value.scopes.every(Boolean))
+      for (const row of value.rows) {
+        assert.deepEqual(Object.keys(row).sort(), ['pid', 'ppid', 'name', 'creationTimeDiagnosticVersion', 'creationTimeProvider', 'creationTimeNtStatus', 'creationTimeSnapshotComplete', ...(Object.hasOwn(row, 'creationTimeMs') ? ['creationTimeMs'] : [])].sort())
+        assert.ok(uint(row.pid) && row.pid > 0 && uint(row.ppid))
+        assert.ok(typeof row.name === 'string' && row.name.length <= 260 && /^[\p{L}\p{N}_. ()-]*$/u.test(row.name))
+        assert.equal(row.creationTimeDiagnosticVersion, 2); assert.equal(row.creationTimeProvider, 'NtQuerySystemInformation')
+        assert.ok(uint(row.creationTimeNtStatus)); assert.equal(typeof row.creationTimeSnapshotComplete, 'boolean')
+        if (Object.hasOwn(row, 'creationTimeMs')) identity(row)
+        if (!row.creationTimeSnapshotComplete || row.creationTimeNtStatus > 0x7fffffff || row.creationTimeNtStatus !== value.rows[0].creationTimeNtStatus) fail('NATIVE_BATCH_INCOMPLETE')
+      }
+      const actual = structuredClone(value), next = { ...query, first_sample: query.first_sample ?? actual,
+        first_unknown_sample: query.first_unknown_sample ?? (value.scopes.some(item => item.result.unknownRows.length > 0) ? actual : null), last_sample: actual }
+      assert.ok(Buffer.byteLength(JSON.stringify(next, null, 2)) < 8 * 1024 * 1024 - 1024)
+      const first = query.first_sample === null, firstUnknown = query.first_unknown_sample === null && next.first_unknown_sample !== null
+      Object.assign(query, next)
+      if (first || firstUnknown || query.evidence_incomplete) save('service-query-evidence.json', query, 8 * 1024 * 1024)
+    } catch { fail('QUERY_EVIDENCE_INCOMPLETE'); save('service-query-evidence.json', query, 8 * 1024 * 1024) }
+  }
+  const owned = (rows, scopes, sequence) => {
+    for (const row of rows) if (!origins.has(row.pid + ':' + row.creationTimeMs)) {
+      const index = scopes.findIndex(item => item?.result.ownedRows.includes(row))
+      if (index < 0) { fail('OWNED_SCOPE_MISSING'); continue }
+      confirmed(row, { kind: 'callback_owned', role: 'callback', query_sequence: sequence, scope_index: index, scope_anchor: scopes[index].anchor })
+    }
+  }
+  const finish = incomplete => {
+    query.ownership_closure_incomplete = incomplete
+    query.status = lifecycle.status = query.evidence_incomplete ? 'INCOMPLETE' : 'COMPLETE'
+    save('service-query-evidence.json', query, 8 * 1024 * 1024); save('service-process-lifecycle.json', lifecycle, 2 * 1024 * 1024)
+    return { evidence_incomplete: query.evidence_incomplete, error_kind: query.error_kind, query_count: query.query_count, event_count: lifecycle.events.length }
+  }
+  save('service-query-evidence.json', query, 8 * 1024 * 1024); save('service-process-lifecycle.json', lifecycle, 2 * 1024 * 1024)
+  return { event, confirmed, before, scope, sample, owned, finish, aborted: () => fail('OBSERVER_ABORTED'), unavailable: () => { fail('QUERY_FAILED'); save('service-query-evidence.json', query, 8 * 1024 * 1024) } }
+}
+
+async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity, processEvent) {
   const observation = { status: 'FAIL', ownership_incomplete: false, producer: null, transport: null, transport_process: null, transport_actual_spawned: false }
   let control, controlClosed = false, controlExit, failure
   const output = [], errors = []
@@ -51,27 +174,30 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     const { runControllerTaskCreateCheck } = await import('./controller-taskcreate-check.mjs')
     const produce = () => runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
       publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
-      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) })
+      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, onProcessEvent: processEvent, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) })
     let producer
     if (!values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     const transportOutput = join(outputParent, 'transport')
     control = spawn(process.execPath, [join(sourceRoot, 'tests/swa-cli-headless/controller-input-check.mjs'), '--install-root', candidate,
       ...(values['controller-open-only'] ? ['--short-only'] : ['--invocation-file', producer.invocationFile]), '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     observation.transport_actual_spawned = Number.isSafeInteger(control.pid) && control.pid > 0
+    const transportEvent = (kind, details = {}) => processEvent?.({ kind, source: { kind: 'transport_native_identity', role: 'transport' }, pid: control.pid ?? null, identity: observation.transport_process, ...details })
+    transportEvent('spawn')
     const closed = new Promise(resolve => {
-      control.once('error', error => { controlClosed = true; controlExit = { exit: null, signal: null, spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }; resolve(controlExit) })
-      control.once('close', (exit, signal) => { controlClosed = true; controlExit = { exit, signal, spawn_error: null }; resolve(controlExit) })
+      control.once('error', error => { transportEvent('spawn-error', { spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }); controlClosed = true; controlExit = { exit: null, signal: null, spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }; resolve(controlExit) })
+      control.once('close', (exit, signal) => { transportEvent('close', { exit, signal }); controlClosed = true; controlExit = { exit, signal, spawn_error: null }; resolve(controlExit) })
     })
+    control.once('exit', (exit, signal) => transportEvent('exit', { exit, signal }))
     control.stdout.on('data', chunk => { outputBytes += chunk.length; if (outputBytes <= 64 * 1024) output.push(chunk); else streamFailure = true })
     control.stderr.on('data', chunk => { errorBytes += chunk.length; if (errorBytes <= 256 * 1024) errors.push(chunk); else streamFailure = true })
-    control.stdout.on('end', () => { outputEOF = true })
-    control.stderr.on('end', () => { errorEOF = true })
+    control.stdout.on('end', () => { outputEOF = true; transportEvent('stdout-end') })
+    control.stderr.on('end', () => { errorEOF = true; transportEvent('stderr-end') })
     for (const stream of [control.stdout, control.stderr]) stream.on('error', () => { streamFailure = true })
     assert.ok(Number.isSafeInteger(control.pid) && control.pid > 0)
     const created = native.getProcessCreationTime(control.pid)
     assert.ok(Number.isSafeInteger(created) && created > 0, 'Actual transport process identity is unavailable')
     observation.transport_process = { pid: control.pid, creationTimeMs: created }
-    observeIdentity(observation.transport_process)
+    observeIdentity(observation.transport_process, { kind: 'transport_native_identity', role: 'transport' })
     const transportDeadline = Math.min(deadline, Date.now() + 120_000)
     while (!controlClosed && Date.now() < transportDeadline) await setTimeout(25)
     assert.equal(controlClosed, true, 'Installed helper transport completion remains unknown')
@@ -104,7 +230,8 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     // 这些身份由原 checker 在进程仍可读时取得，不在退出后用裸 PID 补取创建时间。
     for (const identity of [transportReport.tty?.root, transportReport.tty?.helper, transportReport.pipe?.helper]) {
       assert.ok(identity && Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
-      observeIdentity({ pid: identity.pid, creationTimeMs: identity.creationTimeMs })
+      observeIdentity({ pid: identity.pid, creationTimeMs: identity.creationTimeMs }, { kind: 'transport_receipt_identity',
+        role: identity === transportReport.tty?.root ? 'tty_root' : identity === transportReport.tty?.helper ? 'tty_helper' : 'pipe_helper' })
     }
     assert.deepEqual(controlExit, { exit: 0, signal: null, spawn_error: null })
     assert.ok(outputEOF && errorEOF && !streamFailure)
@@ -128,7 +255,10 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     if (control && !controlClosed) {
       const identity = observation.transport_process
       let cleanupAttempted = false
-      if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) cleanupAttempted = control.kill()
+      if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) {
+        processEvent?.({ kind: 'cleanup-request', source: { kind: 'transport_native_identity', role: 'transport' }, pid: identity.pid, identity })
+        cleanupAttempted = control.kill()
+      }
       const cleanupDeadline = Date.now() + 5000
       while (!controlClosed && Date.now() < cleanupDeadline) await setTimeout(25)
       observation.transport_cleanup = { attempted: cleanupAttempted, exit: controlClosed ? controlExit : 'UNKNOWN', normal_exit_proven: false }
@@ -305,18 +435,27 @@ async function observeReadyService(ready, child, data, created, deadline) {
 for (const mode of selectedModes) {
   const directory = join(evidence, mode)
   await mkdir(directory)
+  const capture = values['retain-query-evidence'] ? await retainQueryEvidence(directory) : null
   const child = spawn(join(candidate, 'swa.exe'), ['serve', '--data-dir', join(dataParent, mode), '--port', values.port, '--protected-roots', values['protected-roots'], '--json', ...(edition === 'combined' ? ['--web-dir', join(candidate, 'web')] : [])], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env } })
+  capture?.event({ kind: 'spawn', source: { kind: 'serve_native_identity', role: 'serve' }, pid: child.pid ?? null })
   const stdout = [], stderr = [], observed = new Map(), events = [], unknown = [], additionalRoots = new Map()
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
+  capture?.confirmed({ pid: child.pid, creationTimeMs: rootCreationTimeMs }, { kind: 'serve_native_identity', role: 'serve' })
+  const serveEvent = (kind, details = {}) => capture?.event({ kind, source: { kind: 'serve_native_identity', role: 'serve' }, pid: child.pid ?? null,
+    identity: Number.isSafeInteger(rootCreationTimeMs) && rootCreationTimeMs > 0 ? { pid: child.pid, creationTimeMs: rootCreationTimeMs } : null, ...details })
   let settled = null, exitEvent = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
   let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0, sampleSequence = 0
+  try {
   const exited = new Promise(resolve => {
-    child.once('error', error => { spawnError = error })
-    child.once('exit', (exit, signal) => { exitEvent = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() } })
-    child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; resolve(settled) })
+    child.once('error', error => { serveEvent('spawn-error', { spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }); spawnError = error })
+    child.once('exit', (exit, signal) => { exitEvent = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; serveEvent('exit', { exit, signal }) })
+    child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; serveEvent('close', { exit, signal }); resolve(settled) })
   })
+  child.stdout.on('end', () => serveEvent('stdout-end'))
+  child.stderr.on('end', () => serveEvent('stderr-end'))
+  child.stdin.on('finish', () => serveEvent('stdin-finish'))
   child.stdout.on('data', chunk => { stdout.push(chunk); assert.ok(Buffer.concat(stdout).length < 16 * 1024 * 1024) })
   child.stdout.on('error', error => { streamError = error.message })
   child.stderr.on('data', chunk => { stderr.push(chunk); assert.ok(Buffer.concat(stderr).length < 16 * 1024 * 1024) })
@@ -332,14 +471,18 @@ for (const mode of selectedModes) {
   while (!closed && Date.now() < deadline) {
     // 在原生查询发出前冻结已证明 owned 的身份，不接纳查询在途或后继结果。
     const knownOwnedBeforeQuery = Object.freeze([...observed.values()].map(({ pid, creationTimeMs }) => Object.freeze({ pid, creationTimeMs })))
+    const beforeQueryEvidence = capture?.before(knownOwnedBeforeQuery, [...additionalRoots.values()])
     const queryStart = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
-    const rows = await processes()
+    let rows
+    try { rows = await processes() } catch (error) { capture?.unavailable(); throw error }
     const queryEnd = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs }, knownOwnedBeforeQuery)
+    const scopes = capture ? [capture.scope({ pid: child.pid, creationTimeMs: rootCreationTimeMs }, { rootVerified, ownedRows, excludedEdges, unknownRows }, knownOwnedBeforeQuery, { start: queryStart, end: queryEnd })] : []
     const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: entry.source_anchor ?? { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
     for (const anchor of additionalRoots.values()) {
       const extra = collectOwnedIncarnations(rows, anchor, knownOwnedBeforeQuery)
+      if (capture) scopes.push(capture.scope(anchor, extra, beforeQueryEvidence?.additional_roots ?? [], { start: queryStart, end: queryEnd }))
       for (const row of extra.ownedRows) if (!ownedRows.some(value => value.pid === row.pid && value.creationTimeMs === row.creationTimeMs)) ownedRows.push(row)
       excludedEdges.push(...extra.excludedEdges)
       unknownRows.push(...extra.unknownRows)
@@ -349,6 +492,9 @@ for (const mode of selectedModes) {
     // cannot prove that unobserved descendants have also exited.
     closureIncomplete ||= unknownRows.length > 0
     for (const row of ownedRows) observed.set(row.pid + ':' + row.creationTimeMs, row)
+    capture?.owned(ownedRows, scopes, sampleSequenceNumber)
+    capture?.sample({ sequence: sampleSequenceNumber, query_window: { start: queryStart, end: queryEnd }, root: { pid: child.pid, creationTimeMs: rootCreationTimeMs },
+      priors: knownOwnedBeforeQuery, before: beforeQueryEvidence, rows, scopes, ownership_closure_incomplete: closureIncomplete })
     if (unknownRows.length) {
       for (const entry of annotatedUnknown) unknown.push({ observed_at_ms: sampleObservedAt, sample_sequence: sampleSequenceNumber, query_window: { start: queryStart, end: queryEnd }, ...entry })
       await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
@@ -366,15 +512,17 @@ for (const mode of selectedModes) {
         for (const member of observation.members) {
           observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
             ppid: member.parent_pid, name: member.name, role: member.role, actual_named_job_membership: true })
+          capture?.confirmed({ pid: member.pid, creationTimeMs: member.creation_time_ms }, { kind: 'named_job_member', role: member.role })
         }
         await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
         if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
-        if (controllerCheck) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, identity => {
+        if (controllerCheck) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, (identity, sourceInfo) => {
           assert.ok(Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
           const key = identity.pid + ':' + identity.creationTimeMs
           observed.set(key, identity)
           additionalRoots.set(key, identity)
-        })
+          capture?.confirmed(identity, sourceInfo)
+        }, capture?.event)
       } catch (error) {
         readinessFailure = error
         if (controllerCheck && error.observation) controllerInput = error.observation
@@ -385,6 +533,7 @@ for (const mode of selectedModes) {
       if (!controllerCheck) await readinessWork
     }
     if (!acted && mode === 'readiness-eof' && readinessComplete) {
+      serveEvent('stdin-end-request')
       child.stdin.end(); acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
     }
@@ -399,6 +548,7 @@ for (const mode of selectedModes) {
     if (!closed) await setTimeout(20)
   }
   if (readinessWork) await readinessWork
+  capture?.finish(closureIncomplete)
   await writeFile(join(directory, 'stdout.json'), Buffer.concat(stdout), { flag: 'wx' })
   await writeFile(join(directory, 'stderr.log'), Buffer.concat(stderr), { flag: 'wx' })
   if (!closed) {
@@ -445,6 +595,7 @@ for (const mode of selectedModes) {
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
   const record = { mode, edition, pid: child.pid, ...settled, service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled }, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  if (capture) record.query_evidence = capture.finish(closureIncomplete)
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
@@ -485,6 +636,7 @@ for (const mode of selectedModes) {
   record.status = startupHit ? 'OBSERVED' : 'INCONCLUSIVE'
   records.push(record)
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
+  } catch (error) { capture?.aborted(); throw error } finally { capture?.finish(closureIncomplete) }
 }
 await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: controllerCheck ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6
