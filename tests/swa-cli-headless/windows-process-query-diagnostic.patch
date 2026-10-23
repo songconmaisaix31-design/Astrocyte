@@ -4,10 +4,25 @@ index 9af0180..fd3a26f 100644
 +++ b/src/process.cc
 @@ -5,0 +6 @@
 +#include <winsock2.h>
-@@ -11,0 +13,112 @@
+@@ -11,0 +13,127 @@
 +#include <cstddef>
 +#include <stdexcept>
++#include <winternl.h>
++#include <iphlpapi.h>
++// 仅隔离 C 头的三个 typedef 名称，SDK 声明和完整布局保持原样。
++#pragma push_macro("_SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION")
++#pragma push_macro("_SYSTEM_PERFORMANCE_INFORMATION")
++#pragma push_macro("_SYSTEM_INTERRUPT_INFORMATION")
++#undef _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION
++#undef _SYSTEM_PERFORMANCE_INFORMATION
++#undef _SYSTEM_INTERRUPT_INFORMATION
++#define _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION SwaPsutilSystemProcessorPerformanceInformation
++#define _SYSTEM_PERFORMANCE_INFORMATION SwaPsutilSystemPerformanceInformation
++#define _SYSTEM_INTERRUPT_INFORMATION SwaPsutilSystemInterruptInformation
 +#include "psutil-ntextapi.h"
++#pragma pop_macro("_SYSTEM_INTERRUPT_INFORMATION")
++#pragma pop_macro("_SYSTEM_PERFORMANCE_INFORMATION")
++#pragma pop_macro("_SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION")
 +
 +namespace {
 +
@@ -117,25 +132,25 @@ index 9af0180..fd3a26f 100644
 +}
 +
 +}  // namespace
-@@ -14,0 +128,2 @@ uint32_t GetRawProcessList(std::vector<ProcessInfo>& process_info,
+@@ -14,0 +143,2 @@ uint32_t GetRawProcessList(std::vector<ProcessInfo>& process_info,
 +  // 只替换诊断消费者准确 flags4 的身份来源，其余调用保持原实现。
 +  if (process_data_flags == CREATIONTIME) return GetNtProcessList(process_info);
-@@ -52,0 +168,3 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -52,0 +183,3 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  process_info.creationTimeQueryStage = 1;
 +  process_info.creationTimeWin32Error = 0;
 +  process_info.creationTimeCloseError = 0;
-@@ -54,0 +173 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -54,0 +188 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +    process_info.creationTimeWin32Error = GetLastError();
-@@ -58,0 +178 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -58,0 +193 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  process_info.creationTimeQueryStage = 2;
-@@ -64,0 +185 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -64,0 +200 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +    process_info.creationTimeQueryStage = 3;
-@@ -67,0 +189 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -67,0 +204 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +      process_info.creationTimeQueryStage = 4;
-@@ -68,0 +191,2 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -68,0 +206,2 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  } else {
 +    process_info.creationTimeWin32Error = GetLastError();
-@@ -71 +195 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
+@@ -71 +210 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 -  CloseHandle(hProcess);
 +  if (!CloseHandle(hProcess)) process_info.creationTimeCloseError = GetLastError();
 diff --git a/src/process.h b/src/process.h
