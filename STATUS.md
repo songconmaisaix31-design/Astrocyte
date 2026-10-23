@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。Windows D13 单组件编译实际取得三项 C2371 类型重复定义错误，正在局部修复；Nt 自检、真实进程 fixture 和服务未执行，D11 的5项关闭未知保留。N4完整业务验收和N6均未通过。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。Windows D13 的三项 C2371 类型冲突已局部修正，D14 实际单组件编译通过；Nt 自检、真实进程 fixture 和服务未执行，D11 的5项关闭未知保留。N4完整业务验收和N6均未通过。
 
 ## 当前实现与验证
 
@@ -193,7 +193,9 @@ Windows D12来源 `fab0ecf6a2cf89a43f82cb66d7b0c5ba86b38fe1`，run `39976158483`
 
 实际N4的packet为 `/workspace/swa-pi-n4-packet-0177b951-20261023-01`，Run `run_485bb773cd22`，driver原报告SHA `e9ab65464430fe4ec88231888587d22621d50beaa2b911c8e49534a12bac9027`。四Worker均succeeded/settled，四个原生自动release均completed，资源及租约释放，五Task completed、pending0。首次catch开始于15:59:57.693Z，另外三个events只读请求仍在途；当时四次资源释放均尚未发生。旧catch丢弃具体error，不能确定首断言。原四trace有2609.163818ms共同delta区间，八个实际观察范围的PiEventView纯读取通过，但不替代正式overlap、slot2停止、业务审阅或GUI。driver退出1；原owner退出1、serve6、observer1，完整树UNKNOWN保留。
 
-进一步原件核验确认确定拒绝条件：四个trace的custody.owner均为runtime609743/start_ticks11608809，driver却与daemon609757/start_ticks11608885比较。原独立ready/live-proof确认这两个真实进程不同；生产SwaLinuxProviderProcessTree取当前runtime的process.pid为owner，bootstrap独立核对其parent。原谓词最小复现抛ERR_ASSERTION，改用独立ready/proof中的runtime身份对照通过，原件SHA `bbe09f6476e21f5737e41b9f50773fb4121435f746d01f4ed50e49bedb61eccb`。该比较不在此前纯PiEventView内部；历史错误对象缺失仍不允许宣称它必定最先抛出。Worker3的原strict observer两观察范围、当前stored record decoder和原private文件metadata版本对照也通过。后继修正Linux共用消费者的托管者来源，保留独立daemon、serve和实际incarnation检查。
+进一步原件核验确认确定拒绝条件：四个trace的custody.owner均为runtime609743/start_ticks11608809，driver却与daemon609757/start_ticks11608885比较。原独立ready/live-proof确认这两个真实进程不同；生产SwaLinuxProviderProcessTree取当前runtime的process.pid为owner，bootstrap独立核对其parent。原谓词最小复现抛ERR_ASSERTION，改用独立ready/proof中的runtime身份对照通过，原件SHA `bbe09f6476e21f5737e41b9f50773fb4121435f746d01f4ed50e49bedb61eccb`。该比较不在此前纯PiEventView内部；历史错误对象缺失仍不允许宣称它必定最先抛出。Worker3的原strict observer两观察范围、当前stored record decoder和原private文件metadata版本对照也通过。
+
+托管者修复 `2c0fa0f0a8d87926b3f0160ac4abf71892329899` 已提交并推送，八个来源文件独立审查接受。Linux Pi/Codex 从原 readiness 文件及其原 SHA、独立完整进程身份、serve/runtime/daemon 祖先关系和实际执行文件取得 runtime 托管者，原 daemon 门保留。Go authorizer、现有边界5项、架构、原真实 ready 双读取器、普通 Node 真实三层进程链及反向链/错误 executable 拒绝、严格 TypeScript 均通过。两次局部验证装配错误已保留并修正：resolver 缺少 `.ts`，以及临时类型检查遗漏 Node 类型与原 Bundler 配置；未放宽 strict。原件在 `.verification/n4-overlap-0177b951-20261023/`。本批没有执行真实 SWA/model；后继时序优化保持固定 Worker 槽位、收齐已发送操作和最新活动停止检查，不据局部通过提升 N4 状态。
 
 安全失败位置记录已提交为 `35d45a5cfb8fafde46097ee95695bd15860e0e9f`。首次四项局部2通过/2失败，真实Node内置源码和assert.fail复现证明AssertionError创建时已格式化stack；改用精确固定的成熟error-stack-parser后，Node24.16和装内24.21各4通过，authorizer及依赖检查通过，九源独立审查接受。新报告仅保存有限类型/码/标签和本driver文件行列，原始正文不输出；新helper已纳入两处原来源清单，授权和退出逻辑不变。尚未用于新模型验收。
 
@@ -201,6 +203,12 @@ Windows D12来源 `fab0ecf6a2cf89a43f82cb66d7b0c5ba86b38fe1`，run `39976158483`
 
 GUI私有报告读取工具改用成熟流式JSON过滤，保留完整扫描与哈希、512MiB扫描/32MiB投影/12MiB完整子树上限。首次Filter整对象选项造成重复关闭数组，真实原报告最小复现后修正为逐token过滤；7项局部检查及源码独审通过。源码SHA `01895afccb601830006da06d7480f4f224d22913ed86b301341e45ce1ac00ea0`，原件 `.verification/cloud-setup/n46-gui-report-reader-0177-01/`。实际浏览器GUI仍未运行。
 
-Windows D13来源 `180cc160bc1e0e880bd285e1cbc2a6a0ac423adf`，run `39984563188` / job `120520264671` 于16:13:26Z失败。唯一单组件编译command31退出1，无timeout；同次7748字节编译日志的安全投影实际保留三项C2371：完整psutil头的162/240/250行分别重复定义 `_SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION`、`_SYSTEM_PERFORMANCE_INFORMATION`、`_SYSTEM_INTERRUPT_INFORMATION`。该轮DLL未构建，SDK、Nt self、rootchild、A/B、服务和模型均未运行；其余7项原生及S0跳过。原件 `.verification/cloud-setup/windows-controller-open-actual-180cc160-13/` 已独立接受。后继只处理C头在C++编译单元中的名称冲突，完整vendor布局和既有行为保持；局部检查前不重试完整构建。
+Windows D13来源 `180cc160bc1e0e880bd285e1cbc2a6a0ac423adf`，run `39984563188` / job `120520264671` 于16:13:26Z失败。唯一单组件编译command31退出1，无timeout；同次7748字节编译日志的安全投影实际保留三项C2371：完整psutil头的162/240/250行分别重复定义 `_SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION`、`_SYSTEM_PERFORMANCE_INFORMATION`、`_SYSTEM_INTERRUPT_INFORMATION`。该轮DLL未构建，SDK、Nt self、rootchild、A/B、服务和模型均未运行；其余7项原生及S0跳过。原件 `.verification/cloud-setup/windows-controller-open-actual-180cc160-13/` 已独立接受。
+
+Windows D14仅在C++编译单元包含完整vendor头时隔离三项typedef别名，完整vendor/许可证/结构布局/查询算法未改。真实原三源的patch应用、差分与保护检查及独立源码审查通过；来源 `65dcc569829416e08e46dfb1b6a4db58fe4150a0` 的run `39987175762` / job `120529268596` 于16:33:31Z实际单组件编译成功，DLL SHA `631604830e2608ab895b5da683ca3f4433f8b0a6409a37b37b50f74545e25221`。结果及完整安全annotation独立核验接受；旧7项原生及S0均跳过。该轮编译后停止，Go、SDK、Nt self、rootchild、Controller、服务和模型均未运行，不将编译成功扩大为ABI或完整退出通过。后继准备最小真实self/rootchild验证；原artifact未包含DLL，不能宣称已取回该binary供复用。
+
+Windows 后继 ABI 入口 `a11a2126383b7f603aa3af1ecb206624ba75c06d` 的两个来源文件与局部验证已独立接受；原 fixture 成功状态实际为 `CONTROL_COMPLETE`，消费者同步修正并保留全部正常退出条件。首次局部语法检查发现投影函数变量重名，限制作用域后复验通过；原 self/default/compile-only 逻辑、10项 workflow 条件、PowerShell 解析及8个保护文件检查通过。唯一标签 `ci/swa-windows-a11a2126-controller-open-control-15` 已推送，实际结果待取得；范围为必要单组件编译、自身进程及真实父子进程检查，服务和模型不在本轮范围。
+
+后继空间计划已逐文件核对四个可恢复副本，`space-0177-20261023-11/check-01/result.json` 为 `CHECKED_WITHOUT_REMOVAL`，实际未删除。自动审批在创建删除进程前拒绝，理由为用户尚未明确授权这四个准确目录；四根仍在、实际释放0，已向用户请求准确范围确认，未重试或换入口。原安装、归档、备份、任务数据、凭据和失败证据保留；非依赖工作继续。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
