@@ -48,6 +48,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'The fixed runtime pin is unavailable' }
     $pin = $pinJSON | ConvertFrom-Json
     if ($pin.version -cne '24.21.0' -or (Get-FileHash -LiteralPath $Node -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.asset.executableSha256) { throw 'The retained Node differs from the original pin' }
+    $Python = (Get-Command $Python -CommandType Application -ErrorAction Stop).Source
     $pythonJSON = & $Node --input-type=module -e 'import{pathToFileURL}from"node:url";const m=await import(pathToFileURL(process.argv[1]));console.log(JSON.stringify(await m.buildPython(process.argv[2])))' (Join-Path $SourceRoot 'scripts/swa-package-config.mjs') $Python
     if ($LASTEXITCODE -ne 0) { throw 'The original Python preflight failed' }
     $pythonInfo = $pythonJSON | ConvertFrom-Json
