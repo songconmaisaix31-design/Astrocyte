@@ -59,6 +59,16 @@ function publicText(value) {
   return text.replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 500)
 }
 const kind = error => typeof error?.code === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(error.code) ? error.code : error instanceof Error ? error.name : 'UNKNOWN'
+function utf8Fragment(text, limit, fromEnd = false) {
+  let result = '', bytes = 0
+  for (const character of fromEnd ? [...text].reverse() : text) {
+    const size = Buffer.byteLength(character)
+    if (bytes + size > limit) break
+    result = fromEnd ? character + result : result + character
+    bytes += size
+  }
+  return result
+}
 async function command(executable, args, cwd, cap = 120_000, extra = {}, allowNonzero = false) {
   const name = 'command-' + String(++sequence).padStart(2, '0'), out = [], err = []
   let outBytes = 0, errBytes = 0, outEOF = false, errEOF = false, streamFailure = false, identity = null, exit, timeout = false
@@ -381,6 +391,8 @@ try {
       boundary: ['start', 'complete', 'observed'].includes(event.boundary) ? event.boundary : 'UNKNOWN',
       packet_index: event.packet_index === null ? null : integer(event.packet_index),
       packet_bytes: event.packet_bytes === null ? null : integer(event.packet_bytes),
+      observed_at_ms: Number.isSafeInteger(event.observed_at_ms) ? event.observed_at_ms : 'UNKNOWN',
+      monotonic_ms: Number.isFinite(event.monotonic_ms) ? event.monotonic_ms : 'UNKNOWN',
       elapsed_ms: Number.isFinite(event.elapsed_ms) ? event.elapsed_ms : 'UNKNOWN',
       deadline_remaining_ms: Number.isFinite(event.deadline_remaining_ms) ? event.deadline_remaining_ms : 'UNKNOWN' }
     const identity = value => value && Number.isSafeInteger(value.pid) && value.pid > 0 && Number.isSafeInteger(value.creationTimeMs) && value.creationTimeMs > 0
@@ -403,7 +415,36 @@ try {
             ...(row.exit.cause.kind === 'unknown' ? { reason: ['stop_unverified', 'host_status_unavailable', 'cause_unreported'].includes(row.exit.cause.reason) ? row.exit.cause.reason : 'UNKNOWN' } : {}) } : row.exit.cause === null ? null : 'NOT_RECORDED' } : 'UNKNOWN',
         failure_phase: row.failure_phase ? traceEvent(row.failure_phase) : null,
         sessions_after_dispose_count: Array.isArray(row.sessions_after_dispose) ? row.sessions_after_dispose.length : 'NOT_APPLICABLE',
-        raw_output_bytes: row.raw_output_bytes === undefined ? 'NOT_RECORDED' : integer(row.raw_output_bytes) } : 'UNKNOWN'
+        raw_output_bytes: row.raw_output_bytes === undefined ? 'NOT_RECORDED' : integer(row.raw_output_bytes),
+        framing: row.framing && typeof row.framing === 'object' ? { valid_reply_records: integer(row.framing.valid_reply_records), schema_rejected_records: integer(row.framing.schema_rejected_records) } : 'NOT_RECORDED',
+        framer_rejections: Array.isArray(row.rejected_output) ? ['invalid-json', 'line-too-long', 'UNKNOWN'].map(kind => ({ kind,
+          count: row.rejected_output.filter(actual => kind === 'UNKNOWN' ? !['invalid-json', 'line-too-long'].includes(actual) : actual === kind).length })) : 'NOT_RECORDED' } : 'UNKNOWN'
+    }
+    const readyKinds = new Set(['startup-command-delivery', 'startup-command-stage-failed', 'shell-ready-timeout', 'shell-ready-wrapper-replaced'])
+    const readyRows = Array.isArray(transport.tty?.readiness) ? transport.tty.readiness.map(row => ({
+      event: readyKinds.has(row?.event) ? row.event : 'UNKNOWN', observed_at_ms: integer(row?.observed_at_ms),
+      monotonic_ms: Number.isFinite(row?.monotonic_ms) ? row.monotonic_ms : 'UNKNOWN',
+      ...(row?.event === 'startup-command-delivery' ? { written: boolean(row.details?.written), has_command: boolean(row.details?.hasCommand),
+        command_length: integer(row.details?.commandLength), via_shell_args: boolean(row.details?.viaShellArgs), queued_by_shell_ready_barrier: boolean(row.details?.queuedByShellReadyBarrier) } : {}),
+      ...(row?.event === 'shell-ready-timeout' ? { timeout_ms: integer(row.details?.timeoutMs) } : {}),
+      ...(row?.event === 'startup-command-stage-failed' ? { reason: tag(row.details?.reason) } : {}) })) : null
+    result.short_transport_diagnostic.ready_events = readyRows ? (readyRows.length > 32 ? readyRows.slice(0, 16).concat(readyRows.slice(-16)) : readyRows) : 'NOT_RECORDED'
+    result.short_transport_diagnostic.ready_event_total = readyRows ? readyRows.length : 'NOT_RECORDED'
+    result.short_transport_diagnostic.ready_events_truncated = !!readyRows && readyRows.length > 32
+    result.short_transport_diagnostic.raw = { status: 'NOT_CAPTURED' }
+    if (transport.coverage === 'explicit_short_identify_only' && transport.long_input === 'NOT_RUN' && transport.rpc_mutations === 'NOT_RUN' && transport.model_execution === 'NOT_RUN') {
+      try {
+        const rawPath = join(dirname(transportPath), 'tty-raw-transcript.txt'), rawInfo = await lstat(rawPath), actualPath = await realpath(rawPath)
+        assert.ok(rawInfo.isFile() && !rawInfo.isSymbolicLink() && rawInfo.nlink === 1 && rawInfo.size <= 1024 * 1024)
+        assert.equal(actualPath.toLowerCase(), resolve(rawPath).toLowerCase())
+        const rawBytes = await readFile(rawPath)
+        assert.equal(rawBytes.length, transport.tty.raw_output_bytes)
+        let text = rawBytes.toString('utf8')
+        for (const [path, role] of [[dirname(transportPath), 'short-control'], [checkout, 'observation-source'], [work, 'development-work'], [artifact, 'retained-package'], [evidence, 'evidence']]) text = text.split(path).join(`[${role}]`)
+        const total = Buffer.byteLength(text), head = utf8Fragment(text, total <= 512 ? 512 : 256), tail = total <= 512 ? '' : utf8Fragment(text, 256, true)
+        result.short_transport_diagnostic.raw = { status: 'OBSERVED', source: 'explicit_short_identify_only', original_bytes: rawBytes.length,
+          projected_bytes: total, fragment_limit_bytes: 512, head, tail, fragment_bytes: Buffer.byteLength(head) + Buffer.byteLength(tail), truncated: total > 512 }
+      } catch (error) { result.short_transport_diagnostic.raw = { status: error?.code === 'ENOENT' ? 'NOT_CAPTURED' : 'UNKNOWN', kind: kind(error) } }
     }
     for (const [role, value] of [['tty_root', transport.tty?.root ?? transport.tty?.spawn_incarnation], ['tty_helper', transport.tty?.helper],
       ['pipe_helper', transport.pipe?.helper], ['short_checker', control?.transport_process]]) {
@@ -420,6 +461,15 @@ try {
   const number = value => Number.isSafeInteger(value) && value >= 0 ? value : 'UNKNOWN'
   const identifier = value => value === null ? null : typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value) ? value : 'UNKNOWN'
   const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+  const processEvent = event => event === null ? null : event && typeof event === 'object' ? { exit: event.exit === null ? null : Number.isSafeInteger(event.exit) ? event.exit : 'UNKNOWN',
+    signal: identifier(event.signal), observed_at_ms: number(event.observed_at_ms), monotonic_ms: Number.isFinite(event.monotonic_ms) ? event.monotonic_ms : 'UNKNOWN' } : 'UNKNOWN'
+  const eventObserved = event => event === null ? false : event && typeof event === 'object' && Number.isSafeInteger(event.observed_at_ms) && Number.isFinite(event.monotonic_ms) ? true : 'UNKNOWN'
+  const queryWindow = window => window && typeof window === 'object' ? {
+    start_at_ms: number(window.start?.observed_at_ms), end_at_ms: number(window.end?.observed_at_ms),
+    start_monotonic_ms: Number.isFinite(window.start?.monotonic_ms) ? window.start.monotonic_ms : 'UNKNOWN',
+    end_monotonic_ms: Number.isFinite(window.end?.monotonic_ms) ? window.end.monotonic_ms : 'UNKNOWN',
+    root_exit_observed_before_query: eventObserved(window.start?.root_exit_event), root_exit_observed_after_query: eventObserved(window.end?.root_exit_event),
+    root_close_observed_before_query: eventObserved(window.start?.root_close_event), root_close_observed_after_query: eventObserved(window.end?.root_close_event) } : 'UNKNOWN'
   const counts = new Map(), groups = new Map(), queryCounts = new Map()
   assert.ok(Array.isArray(record.unknown_process_observations) && Array.isArray(record.observed_processes))
   for (const entry of record.unknown_process_observations) {
@@ -442,6 +492,7 @@ try {
       group.count++
       group.last_observed_at_ms = observedAt
       group.last_sample_sequence = number(entry?.sample_sequence)
+      group.last_query_window = queryWindow(entry?.query_window)
       continue
     }
     const parents = new Map()
@@ -460,6 +511,7 @@ try {
       actual_role_history: roles(identity), source_anchor_role_history: roles(anchor),
       count: 1, first_observed_at_ms: observedAt, last_observed_at_ms: observedAt,
       first_sample_sequence: number(entry?.sample_sequence), last_sample_sequence: number(entry?.sample_sequence),
+      first_query_window: queryWindow(entry?.query_window), last_query_window: queryWindow(entry?.query_window),
       matches_recorded_identity_history: typeof identity.pid === 'number' && identity.pid > 0 && typeof identity.creation_time_ms === 'number' && identity.creation_time_ms > 0
         ? record.observed_processes.some(row => row?.pid === identity.pid && row.creationTimeMs === identity.creation_time_ms) : 'UNKNOWN',
       recorded_parent_identities_history: [...parents.values()].slice(0, 2), recorded_parent_identity_count: typeof identity.ppid === 'number' ? parents.size : 'UNKNOWN',
@@ -471,6 +523,8 @@ try {
   const unknownProjection = { go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
     ownership_closure_incomplete: boolean(record.ownership_closure_incomplete),
     serve_root: { pid: number(record.pid), creation_time_ms: rootCreation },
+    root_process_events: record.service_process_observations?.pid === record.pid && record.service_process_observations?.creation_time_ms === rootCreation
+      ? { exit: processEvent(record.service_process_observations.exit_event), close: processEvent(record.service_process_observations.close_event) } : 'UNKNOWN',
     latch_inputs: { root_creation_time_readable: typeof rootCreation === 'number' && rootCreation > 0,
       controller_input_ownership_incomplete: boolean(control?.ownership_incomplete), producer_ownership_incomplete: boolean(producer?.ownership_incomplete),
       readiness_check_error: readinessError === null ? null : readinessError && typeof readinessError === 'object'
@@ -537,8 +591,25 @@ try {
     while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.samples.length > 2) {
       diagnosticProjection.samples.splice(1, 1); diagnosticProjection.samples_truncated = true
     }
+    while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && Array.isArray(diagnosticProjection.short_transport?.ready_events) && diagnosticProjection.short_transport.ready_events.length > 1) {
+      const rows = diagnosticProjection.short_transport.ready_events
+      const index = rows.findIndex(row => row.event !== 'startup-command-delivery')
+      rows.splice(index < 0 ? rows.length - 1 : index, 1)
+      diagnosticProjection.short_transport.ready_events_truncated = true
+    }
     while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.short_transport?.trace?.length) {
       diagnosticProjection.short_transport.trace.shift(); diagnosticProjection.short_transport.trace_truncated = true
+    }
+    for (const sample of diagnosticProjection.samples) if (JSON.stringify(sample.first_query_window) === JSON.stringify(sample.last_query_window) && sample.first_query_window !== 'UNKNOWN') sample.last_query_window = 'SAME_AS_FIRST'
+    const annotationRaw = diagnosticProjection.short_transport?.raw
+    for (const limit of [256, 128, 64]) {
+      if (Buffer.byteLength(JSON.stringify(diagnosticProjection)) <= 3500 || annotationRaw?.status !== 'OBSERVED') break
+      if (annotationRaw.fragment_bytes <= limit) continue
+      const text = annotationRaw.head + annotationRaw.tail
+      annotationRaw.head = utf8Fragment(text, limit / 2)
+      annotationRaw.tail = utf8Fragment(text, limit / 2, true)
+      annotationRaw.fragment_bytes = Buffer.byteLength(annotationRaw.head) + Buffer.byteLength(annotationRaw.tail)
+      annotationRaw.truncated = true
     }
     if (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.samples.length === 2) {
       diagnosticProjection.samples.shift(); diagnosticProjection.samples_truncated = true

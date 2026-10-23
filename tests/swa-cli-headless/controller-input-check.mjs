@@ -51,7 +51,7 @@ const traceLane = (lane, deadline, input) => {
   const started = performance.now()
   return (stage, boundary, packetIndex = null) => {
     const event = { lane, stage, boundary, packet_index: packetIndex, packet_bytes: packetIndex === null ? null : input[packetIndex - 1].bytes,
-      elapsed_ms: performance.now() - started, deadline_remaining_ms: deadline - Date.now() }
+      observed_at_ms: Date.now(), monotonic_ms: performance.now(), elapsed_ms: performance.now() - started, deadline_remaining_ms: deadline - Date.now() }
     report.trace_total++; report.trace.push(event); report.last_event = event
     if (report.trace.length > 64) { report.trace.splice(32, 1); report.trace_truncated = true }
     return event
@@ -151,12 +151,14 @@ try {
   })
   const observe = () => {
     const replies = new Map(), rejected = []
-    let stdout = '', stderr = '', rawStdout = '', rawStderr = '', error = null
+    let stdout = '', stderr = '', rawStdout = '', rawStderr = '', error = null, validReplyRecords = 0, schemaRejectedRecords = 0
     const framer = production.createIncrementalNdjsonFramer(value => {
       const parsed = production.helperReply.safeParse(value)
-      if (parsed.success) replies.set(parsed.data.request_id, parsed.data)
+      if (parsed.success) { validReplyRecords++; replies.set(parsed.data.request_id, parsed.data) }
+      else schemaRejectedRecords++
     }, value => { rejected.push(value.kind); if (value.kind === 'line-too-long') error = new Error('helper reply exceeded output limit') }, { maxLineBytes: maxBytes })
     return { replies, rejected, get error() { return error }, get stdout() { return stdout }, get stderr() { return stderr }, get rawStdout() { return rawStdout },
+      get framing() { return { valid_reply_records: validReplyRecords, schema_rejected_records: schemaRejectedRecords } },
       fail: value => { error ??= value },
       data(value, isError = false) {
         const raw = value.toString('utf8')
@@ -194,7 +196,7 @@ try {
     const options = production.controllerTerminalOptions(node, helper, handle), observation = observe(), readiness = []
     const deadline = Date.now() + 25_000
     const trace = traceLane('tty', deadline, input)
-    const host = new production.TerminalHost({ spawnSubprocess: production.createPtySubprocess, reportReadinessEvent: (event, details) => readiness.push({ event, details }) })
+    const host = new production.TerminalHost({ spawnSubprocess: production.createPtySubprocess, reportReadinessEvent: (event, details) => readiness.push({ event, details, observed_at_ms: Date.now(), monotonic_ms: performance.now() }) })
     // 复用正式发送器的分块、延迟和 CR；这里只观察本地 host 写入，不声称远程结算。
     const writer = new production.RuntimeTerminalWriter((id, text) => { host.write(id, text); return true })
     try {
@@ -254,6 +256,7 @@ try {
         result.sessions_after_dispose = host.listSessions()
         result.readiness = readiness
         result.rejected_output = observation.rejected
+        result.framing = observation.framing
         result.raw_output_bytes = Buffer.byteLength(observation.rawStdout)
         await save('tty-transcript.txt', observation.stdout)
         await save('tty-raw-transcript.txt', observation.rawStdout)
@@ -311,6 +314,7 @@ try {
       } catch (error) { result.failure_phase ??= cleanupEvent; throw error }
       finally {
         result.rejected_output = observation.rejected
+        result.framing = observation.framing
         await save('pipe-stdout.jsonl', observation.stdout)
         await save('pipe-stderr.log', observation.stderr)
       }

@@ -309,12 +309,13 @@ for (const mode of selectedModes) {
   const stdout = [], stderr = [], observed = new Map(), events = [], unknown = [], additionalRoots = new Map()
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
-  let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
+  let settled = null, exitEvent = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
   let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0, sampleSequence = 0
   const exited = new Promise(resolve => {
     child.once('error', error => { spawnError = error })
-    child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now() }; resolve(settled) })
+    child.once('exit', (exit, signal) => { exitEvent = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() } })
+    child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; resolve(settled) })
   })
   child.stdout.on('data', chunk => { stdout.push(chunk); assert.ok(Buffer.concat(stdout).length < 16 * 1024 * 1024) })
   child.stdout.on('error', error => { streamError = error.message })
@@ -329,7 +330,9 @@ for (const mode of selectedModes) {
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
   const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
+    const queryStart = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const rows = await processes()
+    const queryEnd = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
     const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
@@ -345,7 +348,7 @@ for (const mode of selectedModes) {
     closureIncomplete ||= unknownRows.length > 0
     for (const row of ownedRows) observed.set(row.pid + ':' + row.creationTimeMs, row)
     if (unknownRows.length) {
-      for (const entry of annotatedUnknown) unknown.push({ observed_at_ms: sampleObservedAt, sample_sequence: sampleSequenceNumber, ...entry })
+      for (const entry of annotatedUnknown) unknown.push({ observed_at_ms: sampleObservedAt, sample_sequence: sampleSequenceNumber, query_window: { start: queryStart, end: queryEnd }, ...entry })
       await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
     }
     await writeFile(join(directory, 'latest-actual-observation.json'), JSON.stringify({ mode, pid: child.pid, creation_time_ms: rootCreationTimeMs, events, current_owned_processes: ownedRows, excluded_parent_edges: excludedEdges, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), observed_at_ms: Date.now() }, null, 2) + '\n')
@@ -439,7 +442,7 @@ for (const mode of selectedModes) {
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, edition, pid: child.pid, ...settled, service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled }, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
