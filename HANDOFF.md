@@ -12,7 +12,7 @@ N4 driver 六源已完成独审并提交推送为 `aba8cbd007d30342a665eddac8ede
 
 Windows服务诊断`101e4681` / run40027206964已独审FAIL：保存首末query与116个生命周期事件，但observer异常中止，外层ENOENT遮住未上传首错，最终服务关闭UNKNOWN。唯一artifact下载Forbidden后停止。后继只读两源提交`5cf3b79ba0f5a430e0feaa8e7c5c1e7bb87640c2`的run40030096402/job120675938898实际PASS并获原06独审：两原SHA完整恢复，137/145行全部16个scope回放一致。唯一非零命令的650字节stderr未上传，cli-10仅spawn/identity记录均不能解释原throw。证据在`windows-service-query-5cf3b79b-actual/`，没有新服务、构建或模型。原owner正准备B首错保存计划，保持原算法、来源及失败收尾，不直接公开任意日志或自触新CI。
 
-OpenCode独立ignored工具的类型、编译与已有目录拒绝检查通过；唯一实际初始化FAIL于只读DB关闭后的`database_wal_changed`。官方create已一次返回200且回执内存匹配，原生完整正常退出已证明；legacy auth未写，来源未就绪。原工具finally未保存具体WAL变化且可能覆盖查询错误，mismatch不能作为密钥不匹配证据。保留`/workspace/swa-opencode-stepfun-source-392cb0c9-01`与`/workspace/swa-opencode-stepfun-initialization-392cb0c9-01/result.json`，仅由原owner准备分阶段只读检查，禁止再次create/import或新建来源绕过。产品公共源仍待问答批次完成。
+OpenCode原初始化FAIL于只读DB关闭后的`database_wal_changed`，原FAIL保留。唯一恢复只读检查已通过并获原reviewer接受，报告SHA368b1e6b、before58ef075e：当前唯一凭据匹配，六阶段DB/WAL稳定，SHM仅查询后时间变化；历史WAL具体转变及原SQL结果仍未知。工具69479e39、固定S392/I392 bundle f09500be、严格typecheck04/build03/syntax03均通过；typecheck03仅根目录无tsc、未编译的失败保留。完整事实见STATUS。原来源和证据不动，source_ready仍false，无legacy投影、第二次create/import或模型调用。原owner接续已审的finalize-existing-source后继，绑定此次实际安全报告，Root唯一实际执行。问答批次已提交ad6cc7e4并释放共享产品写域；同owner完成来源工具后按bb3c8573准确35路径实施OpenCode产品，公共kind与SWA_OPENCODE_API_KEY_HOME已定稿，禁止额外依赖/构建器变更。
 
 当前负责人及互斥写域：
 
