@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -28,6 +29,130 @@ type resourceSample struct {
 
 func configureServiceChild(command *exec.Cmd) {
 	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+}
+
+// 只对实际新建的分量指定 owner/DACL；已有目录仅检查，不更改其安全属性。
+func ensurePrivateDataRoot(path string) error {
+	if err := requirePlainDataPath(path); err != nil {
+		return err
+	}
+	user, err := windows.GetCurrentProcessToken().GetTokenUser()
+	if err != nil {
+		return err
+	}
+	if user == nil || user.User.Sid == nil || !user.User.Sid.IsValid() {
+		return errors.New("当前产品数据目录用户身份不可用")
+	}
+	sid := user.User.Sid.String()
+	acl := "O:" + sid + "D:P(A;OICI;FA;;;" + sid + ")"
+	if sid != "S-1-5-18" {
+		acl += "(A;OICI;FA;;;SY)"
+	}
+	descriptor, err := windows.SecurityDescriptorFromString(acl)
+	if err != nil {
+		return err
+	}
+	attributes := windows.SecurityAttributes{Length: uint32(unsafe.Sizeof(windows.SecurityAttributes{})), SecurityDescriptor: descriptor}
+	var missing []string
+	for current := filepath.Clean(path); ; current = filepath.Dir(current) {
+		name, err := windows.UTF16PtrFromString(current)
+		if err != nil {
+			return err
+		}
+		flags, err := windows.GetFileAttributes(name)
+		if err == nil {
+			if flags&windows.FILE_ATTRIBUTE_DIRECTORY == 0 || flags&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+				return errors.New("产品数据目录的祖先不是普通目录")
+			}
+			break
+		}
+		if !errors.Is(err, windows.ERROR_FILE_NOT_FOUND) && !errors.Is(err, windows.ERROR_PATH_NOT_FOUND) {
+			return err
+		}
+		if filepath.Dir(current) == current {
+			return err
+		}
+		missing = append(missing, current)
+	}
+	for index := len(missing) - 1; index >= 0; index-- {
+		current := missing[index]
+		if err := requirePlainDataPath(current); err != nil {
+			return err
+		}
+		name, err := windows.UTF16PtrFromString(current)
+		if err != nil {
+			return err
+		}
+		err = windows.CreateDirectory(name, &attributes)
+		runtime.KeepAlive(descriptor)
+		runtime.KeepAlive(user)
+		if err != nil && !errors.Is(err, windows.ERROR_ALREADY_EXISTS) {
+			return err
+		}
+		if err := requirePrivateDataRootSecurity(current, user.User.Sid); err != nil {
+			return err
+		}
+	}
+	if err := requirePlainDataPath(path); err != nil {
+		return err
+	}
+	return requirePrivateDataRootSecurity(path, user.User.Sid)
+}
+
+func requirePrivateDataRootSecurity(path string, user *windows.SID) (result error) {
+	name, err := windows.UTF16PtrFromString(path)
+	if err != nil {
+		return err
+	}
+	handle, err := windows.CreateFile(name, windows.READ_CONTROL|windows.FILE_READ_ATTRIBUTES,
+		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE, nil, windows.OPEN_EXISTING,
+		windows.FILE_FLAG_BACKUP_SEMANTICS|windows.FILE_FLAG_OPEN_REPARSE_POINT, 0)
+	if err != nil {
+		return err
+	}
+	defer func() { result = errors.Join(result, windows.CloseHandle(handle)) }()
+	var information windows.ByHandleFileInformation
+	if err := windows.GetFileInformationByHandle(handle, &information); err != nil {
+		return err
+	}
+	if information.FileAttributes&windows.FILE_ATTRIBUTE_DIRECTORY == 0 || information.FileAttributes&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+		return errors.New("产品数据根不是普通非 reparse 目录")
+	}
+	descriptor, err := windows.GetSecurityInfo(handle, windows.SE_FILE_OBJECT, windows.OWNER_SECURITY_INFORMATION|windows.DACL_SECURITY_INFORMATION)
+	if err != nil || descriptor == nil {
+		return errors.Join(errors.New("产品数据根安全描述符不可用"), err)
+	}
+	owner, _, err := descriptor.Owner()
+	if err != nil || owner == nil || !owner.Equals(user) {
+		return errors.Join(errors.New("产品数据根 owner 与当前用户不同"), err)
+	}
+	control, _, err := descriptor.Control()
+	if err != nil || control&windows.SE_DACL_PROTECTED == 0 {
+		return errors.Join(errors.New("产品数据根 DACL 未受保护"), err)
+	}
+	trustees := map[string]bool{user.String(): true, "S-1-5-18": true}
+	acl, _, err := descriptor.DACL()
+	if err != nil || acl == nil || int(acl.AceCount) != len(trustees) {
+		return errors.Join(errors.New("产品数据根 DACL 不是唯一当前用户与 SYSTEM"), err)
+	}
+	for index := uint32(0); index < uint32(acl.AceCount); index++ {
+		var ace *windows.ACCESS_ALLOWED_ACE
+		if err := windows.GetAce(acl, index, &ace); err != nil {
+			return err
+		}
+		if ace.Header.AceType != windows.ACCESS_ALLOWED_ACE_TYPE || ace.Header.AceFlags != windows.OBJECT_INHERIT_ACE|windows.CONTAINER_INHERIT_ACE || ace.Mask != 0x1f01ff {
+			return errors.New("产品数据根 DACL 权限形状不同")
+		}
+		sid := (*windows.SID)(unsafe.Pointer(&ace.SidStart)).String()
+		if !trustees[sid] {
+			return errors.New("产品数据根 DACL 含额外或重复主体")
+		}
+		delete(trustees, sid)
+	}
+	if len(trustees) != 0 {
+		return errors.New("产品数据根 DACL 缺少必要主体")
+	}
+	return nil
 }
 
 func requirePlainDataPath(path string) error {

@@ -26,6 +26,8 @@ import (
 
 func configureServiceChild(_ *exec.Cmd) {}
 
+func ensurePrivateDataRoot(path string) error { return os.MkdirAll(path, 0o700) }
+
 func requirePlainDataPath(path string) error {
 	for current := filepath.Clean(path); ; current = filepath.Dir(current) {
 		info, err := os.Lstat(current)
