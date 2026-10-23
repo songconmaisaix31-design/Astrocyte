@@ -330,18 +330,20 @@ for (const mode of selectedModes) {
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
   const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
+    // 在原生查询发出前冻结已证明 owned 的身份，不接纳查询在途或后继结果。
+    const knownOwnedBeforeQuery = Object.freeze([...observed.values()].map(({ pid, creationTimeMs }) => Object.freeze({ pid, creationTimeMs })))
     const queryStart = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const rows = await processes()
     const queryEnd = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
-    const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
-    const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
+    const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs }, knownOwnedBeforeQuery)
+    const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: entry.source_anchor ?? { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
     for (const anchor of additionalRoots.values()) {
-      const extra = collectOwnedIncarnations(rows, anchor)
+      const extra = collectOwnedIncarnations(rows, anchor, knownOwnedBeforeQuery)
       for (const row of extra.ownedRows) if (!ownedRows.some(value => value.pid === row.pid && value.creationTimeMs === row.creationTimeMs)) ownedRows.push(row)
       excludedEdges.push(...extra.excludedEdges)
       unknownRows.push(...extra.unknownRows)
-      annotatedUnknown.push(...extra.unknownRows.map(entry => ({ ...entry, source_anchor: { kind: 'additional', pid: anchor.pid, creation_time_ms: anchor.creationTimeMs } })))
+      annotatedUnknown.push(...extra.unknownRows.map(entry => ({ ...entry, source_anchor: entry.source_anchor ?? { kind: 'additional', pid: anchor.pid, creation_time_ms: anchor.creationTimeMs } })))
     }
     // Once provenance is incomplete, disappearance of its first unknown PID
     // cannot prove that unobserved descendants have also exited.

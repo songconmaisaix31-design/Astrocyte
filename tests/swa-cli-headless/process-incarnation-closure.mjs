@@ -9,7 +9,7 @@ export function incarnationOrder(parentCreationTimeMs, childCreationTimeMs) {
 
 // Each call consumes one actual native callback batch. Historical rows must
 // never fill a missing parent in this batch or become a different incarnation.
-export function collectOwnedIncarnations(actualRows, root) {
+function collectStrict(actualRows, root, independentlyOwned = new Set()) {
   if (!Array.isArray(actualRows)) throw new TypeError('Actual process snapshot unavailable')
   const byPID = new Map(), byParent = new Map()
   const ownedRows = [], excludedEdges = [], unknownRows = []
@@ -75,7 +75,7 @@ export function collectOwnedIncarnations(actualRows, root) {
       // Unknown parentage propagates through every raw-reachable child.
       // A readable child timestamp cannot repair that missing provenance.
       if (!parent.verified) {
-        unknown('parent_incarnation_unverified', row)
+        if (!independentlyOwned.has(row)) unknown('parent_incarnation_unverified', row)
         enqueue(row, false)
         continue
       }
@@ -109,4 +109,43 @@ export function collectOwnedIncarnations(actualRows, root) {
     }
   }
   return { rootVerified, ownedRows, excludedEdges, unknownRows }
+}
+
+export function collectOwnedIncarnations(actualRows, root, knownOwnedBeforeQuery = []) {
+  if (!Array.isArray(actualRows)) throw new TypeError('Actual process snapshot unavailable')
+  if (!Array.isArray(knownOwnedBeforeQuery)) throw new TypeError('Prior owned process identities unavailable')
+  if (knownOwnedBeforeQuery.length === 0) return collectStrict(actualRows, root)
+  const currentByPID = new Map(), priors = new Map()
+  for (const row of actualRows) {
+    if (!row || typeof row !== 'object' || !unsignedPID(row.pid) || !unsignedPID(row.ppid)) continue
+    const rows = currentByPID.get(row.pid) ?? []
+    rows.push(row)
+    currentByPID.set(row.pid, rows)
+  }
+  for (const prior of knownOwnedBeforeQuery) {
+    if (prior && positivePID(prior.pid) && creation(prior.creationTimeMs)) priors.set(prior.pid + ':' + prior.creationTimeMs, prior)
+  }
+  const positive = new Set(), matched = [], unmatched = []
+  // 先只按原 strict 证明本帧的准确独立根；所有未知均保留。
+  for (const prior of priors.values()) {
+    const current = currentByPID.get(prior.pid)
+    if (current?.length === 1 && current[0].creationTimeMs === prior.creationTimeMs) {
+      const result = collectStrict(actualRows, prior)
+      matched.push({ anchor: prior, result })
+      for (const row of result.ownedRows) positive.add(row)
+    } else unmatched.push(prior)
+  }
+  const primary = collectStrict(actualRows, root, positive)
+  const scopes = [{ result: primary }, ...matched]
+  for (const prior of unmatched) scopes.push({ anchor: prior, result: collectStrict(actualRows, prior, positive) })
+  const ownedRows = [], ownedSeen = new Set(), excludedEdges = [], unknownRows = []
+  for (const { anchor, result } of scopes) {
+    for (const row of result.ownedRows) if (!ownedSeen.has(row)) { ownedSeen.add(row); ownedRows.push(row) }
+    excludedEdges.push(...result.excludedEdges)
+    // 不按后继 positive 清除已有未知；保留每个实际扫描锚的证据。
+    for (const entry of result.unknownRows) unknownRows.push(anchor ? { ...entry, source_anchor: {
+      kind: 'additional', pid: anchor.pid, creation_time_ms: anchor.creationTimeMs
+    } } : entry)
+  }
+  return { rootVerified: primary.rootVerified, ownedRows, excludedEdges, unknownRows }
 }
