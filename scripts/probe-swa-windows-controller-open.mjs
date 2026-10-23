@@ -94,7 +94,7 @@ async function command(executable, args, cwd, cap = 120_000, extra = {}, allowNo
   await writeFile(join(privateOutput, name + '.stdout'), Buffer.concat(out), { flag: 'wx' })
   await writeFile(join(privateOutput, name + '.stderr'), Buffer.concat(err), { flag: 'wx' })
   if (!exit || timeout || exit.exit !== 0 && !allowNonzero) {
-    const lines = Buffer.concat([...out, ...err]).toString('utf8').split(/\r?\n/).filter(line => /(?:\berror\b|\bfatal\b|ERR_[A-Z_]+|Cannot find|No projects matched|not recognized|SyntaxError|ReferenceError|TypeError)/i.test(line))
+    const lines = Buffer.concat([...out, ...err]).toString('utf8').split(/\r?\n/).filter(line => /(?:\berror\b|\bfatal\b|ERR_[A-Z_]+|Cannot find|No projects matched|not recognized|SyntaxError|ReferenceError|TypeError)/i.test(line) || /^native-diagnostic phase=(?:validate|headers-download|headers-extract|node-library-download|official-msvc-toolchain|single-diagnostic-process-tree-build); kind=[A-Za-z][A-Za-z0-9]{0,63}$/.test(line))
     result.command_failure = { name, exit: exit ?? 'UNKNOWN', timed_out: timeout, error_line_total: lines.length,
       error_lines_truncated: lines.length > 20, errors: lines.slice(-20).map(publicText) }
   }
@@ -291,7 +291,7 @@ try {
   await mkdir(nativeWork)
   const componentResult = join(privateOutput, 'diagnostic-native-preparation.json')
   await command(powershell, ['-NoProfile', '-NonInteractive', '-File', join(checkout, 'scripts/build-swa-windows-process-diagnostic.ps1'),
-    '-SourceRoot', source, '-Runtime', developmentRuntime, '-Node', actualNode, '-Work', nativeWork, '-OutputFile', componentResult], checkout, 1_300_000)
+    '-SourceRoot', source, '-Runtime', developmentRuntime, '-Node', actualNode, '-Work', nativeWork, '-OutputFile', componentResult], checkout, 1_300_000, { RUNNER_TEMP: dirname(work) })
   const nativePreparation = JSON.parse(await readFile(componentResult, 'utf8'))
   assert.equal(nativePreparation.status, 'PASS'); assert.equal(nativePreparation.native_component, '@vscode/windows-process-tree')
   assert.equal(nativePreparation.native_component_index, 1); assert.equal(nativePreparation.other_native_components_built, false)
