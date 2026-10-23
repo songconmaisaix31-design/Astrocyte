@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)][string]$PnpmCli,
     [Parameter(Mandatory)][string]$Python,
     [ValidateSet('2022', '2026')][string]$MsvsVersion = '2026',
-    [ValidateSet('cli', 'combined')][string]$Edition = 'cli'
+    [ValidateSet('cli', 'combined')][string]$Edition = 'cli',
+    [switch]$ControllerInputCheck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -160,12 +161,14 @@ try {
     $start.Environment['TEMP'] = $temporary
     $start.Environment['TMP'] = $temporary
     foreach ($argument in @('--max-old-space-size=1024', (Join-Path $checkout 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', $install, '--source-revision', $revision, '--edition', $Edition, '--evidence', (Join-Path $evidence 'smoke'), '--data-parent', $dataParent, '--protected-roots', ($checkout + ';' + $env:ProgramFiles), '--port', '18793', '--mode', 'readiness-eof')) { $start.ArgumentList.Add($argument) }
+    if ($ControllerInputCheck) { $start.ArgumentList.Add('--controller-input-check') }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
     if (-not $process.Start()) { throw 'The actual installed service check did not start' }
     $output = $process.StandardOutput.ReadToEndAsync()
     $errors = $process.StandardError.ReadToEndAsync()
-    if (-not $process.WaitForExit(240000)) { throw 'The service check is unknown after its deadline; no whole-tree exit is claimed' }
+    $serviceWait = if ($ControllerInputCheck) { 660000 } else { 240000 }
+    if (-not $process.WaitForExit($serviceWait)) { throw 'The service check is unknown after its deadline; no whole-tree exit is claimed' }
     Set-Content -LiteralPath (Join-Path $logs 'service-smoke.log') -Value (($output.GetAwaiter().GetResult()) + ($errors.GetAwaiter().GetResult()))
     Set-Content -LiteralPath (Join-Path $logs 'service-smoke.exit.txt') -Value $process.ExitCode
     if ($process.ExitCode -ne 0) { throw 'The actual service/Job shutdown check failed or remains unknown' }

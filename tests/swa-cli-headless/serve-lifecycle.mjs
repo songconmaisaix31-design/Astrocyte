@@ -9,7 +9,7 @@ import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
-const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), allowPositionals: false })
+const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false } }, allowPositionals: false })
 const edition = values.edition ?? 'cli'
 assert.ok(['cli', 'combined'].includes(edition), 'Unknown candidate edition')
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
@@ -36,6 +36,106 @@ const records = []
 const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-close']
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
+if (values['controller-input-check']) assert.equal(values.mode, 'readiness-eof', 'Controller input checking requires the explicit readiness-eof mode')
+
+async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity) {
+  const observation = { status: 'FAIL', ownership_incomplete: false, producer: null, transport: null, transport_process: null, transport_actual_spawned: false }
+  let control, controlClosed = false, controlExit, failure
+  const output = [], errors = []
+  let outputBytes = 0, errorBytes = 0, outputEOF = false, errorEOF = false, streamFailure = false
+  const outputParent = join(directory, 'controller-input')
+  await mkdir(outputParent)
+  try {
+    const { runControllerTaskCreateCheck } = await import('./controller-taskcreate-check.mjs')
+    const producer = await runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
+      publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
+      sourceRevision: source, deadline, onProcessIdentity: observeIdentity })
+    observation.producer = producer.result
+    const transportOutput = join(outputParent, 'transport')
+    control = spawn(process.execPath, [join(sourceRoot, 'tests/swa-cli-headless/controller-input-check.mjs'), '--install-root', candidate,
+      '--invocation-file', producer.invocationFile, '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    observation.transport_actual_spawned = Number.isSafeInteger(control.pid) && control.pid > 0
+    const closed = new Promise(resolve => {
+      control.once('error', error => { controlClosed = true; controlExit = { exit: null, signal: null, spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }; resolve(controlExit) })
+      control.once('close', (exit, signal) => { controlClosed = true; controlExit = { exit, signal, spawn_error: null }; resolve(controlExit) })
+    })
+    control.stdout.on('data', chunk => { outputBytes += chunk.length; if (outputBytes <= 64 * 1024) output.push(chunk); else streamFailure = true })
+    control.stderr.on('data', chunk => { errorBytes += chunk.length; if (errorBytes <= 256 * 1024) errors.push(chunk); else streamFailure = true })
+    control.stdout.on('end', () => { outputEOF = true })
+    control.stderr.on('end', () => { errorEOF = true })
+    for (const stream of [control.stdout, control.stderr]) stream.on('error', () => { streamFailure = true })
+    assert.ok(Number.isSafeInteger(control.pid) && control.pid > 0)
+    const created = native.getProcessCreationTime(control.pid)
+    assert.ok(Number.isSafeInteger(created) && created > 0, 'Actual transport process identity is unavailable')
+    observation.transport_process = { pid: control.pid, creationTimeMs: created }
+    observeIdentity(observation.transport_process)
+    const transportDeadline = Math.min(deadline, Date.now() + 120_000)
+    while (!controlClosed && Date.now() < transportDeadline) await setTimeout(25)
+    assert.equal(controlClosed, true, 'Installed helper transport completion remains unknown')
+    await closed
+    observation.transport_exit = controlExit
+    const reportPath = join(transportOutput, 'report.json')
+    assert.ok((await lstat(reportPath)).isFile() && (await lstat(reportPath)).size <= 2 * 1024 * 1024)
+    const transportReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(reportPath)))
+    const summary = transportReport.summary
+    assert.equal(summary?.schema, 'swa.controller-input-check.v1')
+    assert.ok(['PASS', 'FAIL'].includes(summary.status)); assert.equal(summary.platform, 'win32')
+    const safeTransport = { schema: summary.schema, status: summary.status, platform: summary.platform }
+    for (const kind of ['tty', 'pipe']) {
+      const row = summary[kind]
+      assert.ok(row && ['PASS', 'FAIL'].includes(row.status))
+      assert.equal(typeof row.natural_eof, 'boolean'); assert.equal(typeof row.forced_cleanup, 'boolean')
+      assert.ok(Number.isSafeInteger(row.reply_count) && row.reply_count >= 0 && row.reply_count <= 3)
+      assert.ok(row.long_bytes === null || Number.isSafeInteger(row.long_bytes) && row.long_bytes > 0 && row.long_bytes <= 1024 * 1024)
+      assert.ok(row.exit_code === null || Number.isInteger(row.exit_code))
+      safeTransport[kind] = { status: row.status, natural_eof: row.natural_eof, forced_cleanup: row.forced_cleanup,
+        reply_count: row.reply_count, long_bytes: row.long_bytes, exit_code: row.exit_code }
+    }
+    assert.equal(summary.rpc_mutations, 'NOT_RUN'); assert.equal(summary.model_execution, 'NOT_RUN'); assert.equal(summary.kernel_job_empty, 'NOT_CLAIMED')
+    Object.assign(safeTransport, { rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN', kernel_job_empty: 'NOT_CLAIMED' })
+    observation.transport = safeTransport
+    // 这些身份由原 checker 在进程仍可读时取得，不在退出后用裸 PID 补取创建时间。
+    for (const identity of [transportReport.tty?.root, transportReport.tty?.helper, transportReport.pipe?.helper]) {
+      assert.ok(identity && Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
+      observeIdentity({ pid: identity.pid, creationTimeMs: identity.creationTimeMs })
+    }
+    assert.deepEqual(controlExit, { exit: 0, signal: null, spawn_error: null })
+    assert.ok(outputEOF && errorEOF && !streamFailure)
+    assert.equal(safeTransport.status, 'PASS')
+    for (const kind of ['tty', 'pipe']) {
+      const row = safeTransport[kind]
+      assert.equal(row.status, 'PASS'); assert.equal(row.natural_eof, true); assert.equal(row.forced_cleanup, false)
+      assert.equal(row.reply_count, 3); assert.ok(row.long_bytes > 4095); assert.equal(row.exit_code, 0)
+    }
+    observation.status = 'PASS'
+  } catch (error) {
+    failure = error
+    if (error.observation) observation.producer = error.observation
+    observation.ownership_incomplete ||= observation.producer?.ownership_incomplete === true || observation.transport_actual_spawned && !observation.transport_process
+    observation.error = { name: error instanceof Error ? error.name : 'UnknownError', code: typeof error.code === 'string' ? error.code : null }
+  } finally {
+    if (control && !controlClosed) {
+      const identity = observation.transport_process
+      let cleanupAttempted = false
+      if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) cleanupAttempted = control.kill()
+      const cleanupDeadline = Date.now() + 5000
+      while (!controlClosed && Date.now() < cleanupDeadline) await setTimeout(25)
+      observation.transport_cleanup = { attempted: cleanupAttempted, exit: controlClosed ? controlExit : 'UNKNOWN', normal_exit_proven: false }
+      if (!controlClosed) { control.stdout.destroy(); control.stderr.destroy(); control.unref() }
+    }
+    observation.transport_exit ??= controlExit ?? 'NOT_STARTED'
+    observation.transport_streams = { stdout_bytes: outputBytes, stderr_bytes: errorBytes, stdout_eof: outputEOF, stderr_eof: errorEOF, failure: streamFailure }
+    await writeFile(join(outputParent, 'transport.stdout'), Buffer.concat(output), { flag: 'wx' })
+    await writeFile(join(outputParent, 'transport.stderr'), Buffer.concat(errors), { flag: 'wx' })
+  }
+  if (failure) {
+    const error = new Error('The actual controller input check failed; bounded observations retained')
+    error.code = 'ERR_SWA_CONTROLLER_INPUT'
+    error.observation = observation
+    throw error
+  }
+  return observation
+}
 async function webAssetInventory(installation) {
   const root = await realpath(join(installation, 'web'))
   const manifestFile = join(root, '.vite', 'manifest.json')
@@ -195,10 +295,11 @@ for (const mode of selectedModes) {
   const directory = join(evidence, mode)
   await mkdir(directory)
   const child = spawn(join(candidate, 'swa.exe'), ['serve', '--data-dir', join(dataParent, mode), '--port', values.port, '--protected-roots', values['protected-roots'], '--json', ...(edition === 'combined' ? ['--web-dir', join(candidate, 'web')] : [])], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env } })
-  const stdout = [], stderr = [], observed = new Map(), events = [], unknown = []
+  const stdout = [], stderr = [], observed = new Map(), events = [], unknown = [], additionalRoots = new Map()
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
   let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
+  let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0
   const exited = new Promise(resolve => {
     child.once('error', error => { spawnError = error })
@@ -215,10 +316,16 @@ for (const mode of selectedModes) {
     events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
   }
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
-  const deadline = Date.now() + 150_000
+  const deadline = Date.now() + (values['controller-input-check'] ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
     const rows = await processes()
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
+    for (const anchor of additionalRoots.values()) {
+      const extra = collectOwnedIncarnations(rows, anchor)
+      for (const row of extra.ownedRows) if (!ownedRows.some(value => value.pid === row.pid && value.creationTimeMs === row.creationTimeMs)) ownedRows.push(row)
+      excludedEdges.push(...extra.excludedEdges)
+      unknownRows.push(...extra.unknownRows)
+    }
     // Once provenance is incomplete, disappearance of its first unknown PID
     // cannot prove that unobserved descendants have also exited.
     closureIncomplete ||= unknownRows.length > 0
@@ -233,8 +340,9 @@ for (const mode of selectedModes) {
       readiness = JSON.parse(currentStdout)
       events.push({ type: 'actual-stdout-envelope', ok: readiness.ok, observed_at_ms: Date.now() })
     }
-    if (!acted && mode === 'readiness-eof' && readiness?.ok) {
-      try {
+    if (!readinessStarted && mode === 'readiness-eof' && readiness?.ok) {
+      readinessStarted = true
+      readinessWork = (async () => { try {
         const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs, deadline)
         for (const member of observation.members) {
           observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
@@ -242,11 +350,23 @@ for (const mode of selectedModes) {
         }
         await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
         if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
+        if (values['controller-input-check']) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, identity => {
+          assert.ok(Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
+          const key = identity.pid + ':' + identity.creationTimeMs
+          observed.set(key, identity)
+          additionalRoots.set(key, identity)
+        })
       } catch (error) {
         readinessFailure = error
-      }
-      child.stdin.end()
-      acted = true
+        if (values['controller-input-check'] && error.observation) controllerInput = error.observation
+        if (values['controller-input-check'] && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
+      } finally {
+        readinessComplete = true
+      } })()
+      if (!values['controller-input-check']) await readinessWork
+    }
+    if (!acted && mode === 'readiness-eof' && readinessComplete) {
+      child.stdin.end(); acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
     }
     if (!acted && rootVerified && mode.startsWith('startup-') && ownedRows.some(row => row.ppid === child.pid && row.name.toLowerCase() === 'node.exe')) {
@@ -259,6 +379,7 @@ for (const mode of selectedModes) {
     }
     if (!closed) await setTimeout(20)
   }
+  if (readinessWork) await readinessWork
   await writeFile(join(directory, 'stdout.json'), Buffer.concat(stdout), { flag: 'wx' })
   await writeFile(join(directory, 'stderr.log'), Buffer.concat(stderr), { flag: 'wx' })
   if (!closed) {
@@ -304,7 +425,7 @@ for (const mode of selectedModes) {
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(values['controller-input-check'] ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
@@ -346,5 +467,5 @@ for (const mode of selectedModes) {
   records.push(record)
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
 }
-await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: false, project_status_check: 'NOT_RUN', controller_check: 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
+await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: values['controller-input-check'] ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6
