@@ -272,7 +272,7 @@ jobs:
           try {
             $python = (& python -c 'import sys; print(sys.executable)').Trim()
             if ($LASTEXITCODE -ne 0) { throw 'Actual Python is unavailable' }
-            & ./scripts/verify-swa-windows-native.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs') -Python $python
+            & ./scripts/verify-swa-windows-native.ps1 -PnpmCli (Join-Path $env:RUNNER_TEMP 'swa-pnpm/node_modules/pnpm/bin/pnpm.cjs') -Python $python -Edition combined
           } catch {
             $message = ('phase=' + $env:SWA_CI_PHASE + '; ' + $_.Exception.Message)
             if ($message.Length -gt 2000) { $message = $message.Substring(0, 2000) + ' [truncated; retain original logs]' }
@@ -296,6 +296,7 @@ jobs:
             .verification/swa-ci/windows/smoke/readiness-eof/stderr.log
             .verification/swa-ci/windows/smoke/readiness-eof/cim-exit-observations.json
             .verification/swa-ci/windows/smoke/readiness-eof/ready-service-observation.json
+            .verification/swa-ci/windows/smoke/readiness-eof/web-http-observation.json
             .verification/swa-ci/windows/smoke/readiness-eof/latest-actual-observation.json
             .verification/swa-ci/windows/smoke/readiness-eof/actual-observation.json
             .verification/swa-ci/windows/smoke/readiness-eof/unsettled.json
@@ -305,7 +306,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: swa-windows-cli-${{ github.sha }}
+          name: swa-windows-combined-${{ github.sha }}
           path: |
             ${{ runner.temp }}/swa-artifacts/*.zip
             ${{ runner.temp }}/swa-artifacts/*.sha256

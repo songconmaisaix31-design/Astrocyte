@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
-import { mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
-import { dirname, isAbsolute, join } from 'node:path'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
+import { dirname, extname, isAbsolute, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { setTimeout } from 'node:timers/promises'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
-const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision'].map(name => [name, { type: 'string' }])), allowPositionals: false })
+const { values } = parseArgs({ options: Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), allowPositionals: false })
+const edition = values.edition ?? 'cli'
+assert.ok(['cli', 'combined'].includes(edition), 'Unknown candidate edition')
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
 assert.ok(values['protected-roots'] && /^\d+$/.test(values.port))
 const candidate = await realpath(values.candidate), evidence = values.evidence, dataParent = values['data-parent']
@@ -15,6 +19,7 @@ assert.equal((await realpath(process.execPath)).toLowerCase(), join(candidate, '
 await mkdir(evidence)
 const source = (await readFile(join(candidate, 'VERSION'), 'utf8')).trim()
 assert.match(source, /^[0-9a-f]{40}$/)
+if (edition === 'combined') assert.equal((await readFile(join(candidate, 'EDITION'), 'utf8')).trim(), edition)
 if (values['source-revision'] !== undefined) {
   assert.match(values['source-revision'], /^[0-9a-f]{40}$/)
   assert.equal(source, values['source-revision'])
@@ -31,7 +36,92 @@ const records = []
 const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-close']
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
-async function observeReadyService(ready, child, data, created) {
+async function webAssetInventory(installation) {
+  const root = await realpath(join(installation, 'web'))
+  const manifestFile = join(root, '.vite', 'manifest.json')
+  assert.ok((await lstat(manifestFile)).size <= 1024 * 1024, 'Web manifest exceeds its read bound')
+  const { checkWebAssets } = await import(pathToFileURL(join(installation, 'scripts', 'swa-package-config.mjs')).href)
+  const closure = await checkWebAssets(root)
+  const manifest = JSON.parse(await readFile(manifestFile, 'utf8'))
+  const references = new Set(['index.html'])
+  for (const entry of Object.values(manifest)) {
+    references.add(entry.file)
+    for (const field of ['css', 'assets']) for (const path of entry[field] ?? []) references.add(path)
+  }
+  assert.ok(references.size <= 128, 'Web asset count exceeds its read bound')
+  const mimeTypes = { '.html': ['text/html'], '.js': ['text/javascript', 'application/javascript'], '.mjs': ['text/javascript', 'application/javascript'], '.css': ['text/css'], '.svg': ['image/svg+xml'], '.json': ['application/json'], '.png': ['image/png'], '.jpg': ['image/jpeg'], '.jpeg': ['image/jpeg'], '.gif': ['image/gif'], '.webp': ['image/webp'], '.ico': ['image/x-icon', 'image/vnd.microsoft.icon'], '.woff': ['font/woff'], '.woff2': ['font/woff2'] }
+  const files = []
+  let total = 0
+  for (const path of references) {
+    assert.ok(path.split('/').every(part => part && part !== '.' && part !== '..'), 'Web HTTP reference has an ambiguous path segment')
+    const info = await lstat(join(root, path))
+    assert.ok(info.isFile() && info.size <= 16 * 1024 * 1024, 'Web asset exceeds its read bound')
+    total += info.size
+    assert.ok(total <= 64 * 1024 * 1024, 'Total Web assets exceed their read bound')
+    const types = mimeTypes[extname(path).toLowerCase()]
+    assert.ok(types, 'Web asset MIME type is not covered by this check')
+    const bytes = await readFile(join(root, path))
+    assert.equal(bytes.length, info.size)
+    files.push({ path, bytes, types, sha256: createHash('sha256').update(bytes).digest('hex') })
+  }
+  return { root, closure, files }
+}
+
+async function observeWebAssets(endpoint, deadline, output) {
+  const observation = { source_revision: source, edition, endpoint, status: 'NOT_RUN', requests: [] }
+  async function request(path, maximum) {
+    const remaining = deadline - Date.now()
+    assert.ok(remaining > 0, 'Web HTTP check reached the original service deadline')
+    const response = await fetch(new URL(path, endpoint + '/'), { redirect: 'manual', signal: AbortSignal.timeout(Math.min(5000, remaining)) })
+    const chunks = [], reader = response.body?.getReader()
+    let size = 0, complete = false
+    try {
+      if (reader) for (;;) {
+        const part = await reader.read()
+        if (part.done) break
+        size += part.value.byteLength
+        assert.ok(size <= maximum, 'Web HTTP response exceeds its actual installed file bound')
+        chunks.push(Buffer.from(part.value))
+      }
+      complete = true
+    } finally {
+      if (reader) {
+        if (!complete) await reader.cancel()
+        reader.releaseLock()
+      }
+    }
+    return { response, bytes: Buffer.concat(chunks) }
+  }
+  try {
+    const inventory = await webAssetInventory(candidate)
+    observation.manifest = inventory.closure
+    const redirect = await request('/index.html', 64 * 1024)
+    observation.requests.push({ path: '/index.html', status: redirect.response.status, location: redirect.response.headers.get('location') })
+    assert.equal(redirect.response.status, 301)
+    assert.equal(redirect.response.headers.get('location'), './')
+    assert.equal(new URL(redirect.response.headers.get('location'), endpoint + '/index.html').href, endpoint + '/')
+    for (const file of inventory.files) {
+      const path = file.path === 'index.html' ? '/' : '/' + file.path.split('/').map(encodeURIComponent).join('/')
+      const actual = await request(path, file.bytes.length)
+      const contentType = actual.response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? null
+      const sha256 = createHash('sha256').update(actual.bytes).digest('hex')
+      observation.requests.push({ path, status: actual.response.status, content_type: contentType, byte_length: actual.bytes.length, sha256, installed_sha256: file.sha256 })
+      assert.equal(actual.response.status, 200)
+      assert.ok(file.types.includes(contentType), 'Web HTTP MIME differs from the actual asset type')
+      assert.equal(sha256, file.sha256)
+      assert.ok(actual.bytes.equals(file.bytes), 'Web HTTP content differs from the installed asset')
+    }
+    observation.status = 'PASS'
+  } catch (error) {
+    observation.status = 'FAIL'
+    observation.error = { name: error instanceof Error ? error.name : 'UnknownError', code: typeof error?.code === 'string' ? error.code : null }
+    throw error
+  } finally {
+    await writeFile(output, JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
+  }
+}
+
+async function observeReadyService(ready, child, data, created, deadline) {
   const actualData = await realpath(data), endpoint = `http://127.0.0.1:${Number(values.port)}`
   const samePath = (actual, expected) => {
     assert.equal(typeof actual, 'string')
@@ -43,7 +133,9 @@ async function observeReadyService(ready, child, data, created) {
   samePath(ready.readiness?.node, join(candidate, 'node', 'node.exe'))
   assert.match(ready.readiness.runtimeId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
   assert.equal(ready.http, endpoint)
-  const response = await fetch(endpoint + '/api/v1/health', { redirect: 'error', signal: AbortSignal.timeout(5000) })
+  const remaining = deadline - Date.now()
+  assert.ok(remaining > 0, 'Health check reached the original service deadline')
+  const response = await fetch(endpoint + '/api/v1/health', { redirect: 'error', signal: AbortSignal.timeout(Math.min(5000, remaining)) })
   assert.equal(response.status, 200)
   const health = await response.json()
   assert.deepEqual(health, { schema_version: 1, status: 'ok', service: 'astrocyte' })
@@ -102,11 +194,11 @@ async function observeReadyService(ready, child, data, created) {
 for (const mode of selectedModes) {
   const directory = join(evidence, mode)
   await mkdir(directory)
-  const child = spawn(join(candidate, 'swa.exe'), ['serve', '--data-dir', join(dataParent, mode), '--port', values.port, '--protected-roots', values['protected-roots'], '--json'], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env } })
+  const child = spawn(join(candidate, 'swa.exe'), ['serve', '--data-dir', join(dataParent, mode), '--port', values.port, '--protected-roots', values['protected-roots'], '--json', ...(edition === 'combined' ? ['--web-dir', join(candidate, 'web')] : [])], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env } })
   const stdout = [], stderr = [], observed = new Map(), events = [], unknown = []
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
-  let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null
+  let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0
   const exited = new Promise(resolve => {
     child.once('error', error => { spawnError = error })
@@ -142,12 +234,17 @@ for (const mode of selectedModes) {
       events.push({ type: 'actual-stdout-envelope', ok: readiness.ok, observed_at_ms: Date.now() })
     }
     if (!acted && mode === 'readiness-eof' && readiness?.ok) {
-      const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs)
-      for (const member of observation.members) {
-        observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
-          ppid: member.parent_pid, name: member.name, role: member.role, actual_named_job_membership: true })
+      try {
+        const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs, deadline)
+        for (const member of observation.members) {
+          observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
+            ppid: member.parent_pid, name: member.name, role: member.role, actual_named_job_membership: true })
+        }
+        await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
+        if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
+      } catch (error) {
+        readinessFailure = error
       }
-      await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
       child.stdin.end()
       acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
@@ -207,12 +304,20 @@ for (const mode of selectedModes) {
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, edition, pid: child.pid, ...settled, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
     await writeFile(join(directory, 'result.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
     process.exitCode = 6
+    break
+  }
+  if (readinessFailure) {
+    record.status = 'FAIL'
+    records.push(record)
+    await writeFile(join(directory, 'result.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
+    console.error(readinessFailure)
+    process.exitCode = 1
     break
   }
   if (spawnError) throw spawnError
@@ -241,5 +346,5 @@ for (const mode of selectedModes) {
   records.push(record)
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
 }
-await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: false, project_status_check: 'NOT_RUN', controller_check: 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
-if (records.some(row => row.status !== 'OBSERVED')) process.exitCode = 6
+await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: false, project_status_check: 'NOT_RUN', controller_check: 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
+if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6

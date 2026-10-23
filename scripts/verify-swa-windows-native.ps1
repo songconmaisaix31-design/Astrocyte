@@ -3,7 +3,8 @@
 param(
     [Parameter(Mandatory)][string]$PnpmCli,
     [Parameter(Mandatory)][string]$Python,
-    [ValidateSet('2022', '2026')][string]$MsvsVersion = '2026'
+    [ValidateSet('2022', '2026')][string]$MsvsVersion = '2026',
+    [ValidateSet('cli', 'combined')][string]$Edition = 'cli'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,7 +37,7 @@ $env:SWA_BUILD_PYTHON = (Get-Item -LiteralPath $Python).FullName
 $env:ASTROCYTE_GO = $go
 $env:GOTOOLCHAIN = 'local'
 $env:SWA_CI_PHASE = 'preflight-toolchain'
-$result = [ordered]@{ source_revision = $revision; platform = 'win32-x64'; edition = 'cli'; status = 'NOT_RUN'; model_calls = 0; agent_acceptance = 'NOT_RUN' }
+$result = [ordered]@{ source_revision = $revision; platform = 'win32-x64'; edition = $Edition; status = 'NOT_RUN'; model_calls = 0; agent_acceptance = 'NOT_RUN' }
 
 function Invoke-Logged([string]$Name, [string]$Program, [string[]]$Arguments) {
     $env:SWA_CI_PHASE = $Name
@@ -80,9 +81,9 @@ try {
     $gypOptions = & $node -e 'const{createRequire}=require("node:module");const r=createRequire(process.cwd()+"/runtime/swa-orca/package.json");const gyp=r("node-gyp/lib/node-gyp.js")();gyp.parseArgv([process.execPath,r.resolve("node-gyp/bin/node-gyp.js"),"rebuild"]);console.log(JSON.stringify({msvs_version:gyp.opts["msvs-version"]}))'
     if ($LASTEXITCODE -ne 0 -or ($gypOptions | ConvertFrom-Json).msvs_version -cne $MsvsVersion) { throw 'The effective node-gyp compiler selection conflicts with the explicit CI selection' }
     [ordered]@{ selected_msvs_version = $MsvsVersion; actual_vs_path = $actualVS; actual_vs_version = $selected.installationVersion; developer_environment_version = $env:VSCMD_VER; expected_gyp_toolset = $toolset; actual_msbuild = $msbuild; actual_sdk_version = $env:WindowsSDKVersion; actual_cl_path = $compiler; actual_cl_file_version = $compilerVersion.FileVersion; actual_cl_product_version = $compilerVersion.ProductVersion; effective_gyp_msvs_version = ($gypOptions | ConvertFrom-Json).msvs_version; native_compilation = 'NOT_RUN' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $logs 'toolchain-preflight.log')
-    $name = 'swa-windows-cli-' + $revision
+    $name = 'swa-windows-' + $Edition + '-' + $revision
     $candidate = Join-Path $checkout ('dist/' + $name)
-    Invoke-Logged 'build' $node @($PnpmCli, 'build:swa', '--output', $candidate, '--edition', 'cli', '--python', $Python, '--msvs-version', $MsvsVersion)
+    Invoke-Logged 'build' $node @($PnpmCli, 'build:swa', '--output', $candidate, '--edition', $Edition, '--python', $Python, '--msvs-version', $MsvsVersion)
     $artifacts = Join-Path $env:RUNNER_TEMP 'swa-artifacts'
     $packages = Join-Path $env:RUNNER_TEMP 'swa-packages'
     $installs = Join-Path $env:RUNNER_TEMP 'swa-installs'
@@ -158,7 +159,7 @@ try {
     $start.Environment['LOCALAPPDATA'] = $local
     $start.Environment['TEMP'] = $temporary
     $start.Environment['TMP'] = $temporary
-    foreach ($argument in @('--max-old-space-size=1024', (Join-Path $checkout 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', $install, '--source-revision', $revision, '--evidence', (Join-Path $evidence 'smoke'), '--data-parent', $dataParent, '--protected-roots', ($checkout + ';' + $env:ProgramFiles), '--port', '18793', '--mode', 'readiness-eof')) { $start.ArgumentList.Add($argument) }
+    foreach ($argument in @('--max-old-space-size=1024', (Join-Path $checkout 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', $install, '--source-revision', $revision, '--edition', $Edition, '--evidence', (Join-Path $evidence 'smoke'), '--data-parent', $dataParent, '--protected-roots', ($checkout + ';' + $env:ProgramFiles), '--port', '18793', '--mode', 'readiness-eof')) { $start.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
     if (-not $process.Start()) { throw 'The actual installed service check did not start' }
