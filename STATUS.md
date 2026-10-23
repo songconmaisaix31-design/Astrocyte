@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序与能力界面修复已独立接受源码和局部结果，新安装与模型验收仍待执行。Windows D17 的 SDK、Nt、传输与 Controller 检查通过，但完整关闭仍有一条未知记录；诊断分支后继 `2f2629c7` 已通过源码和真实 Linux 元数据局部检查，新的 Windows 场景未运行。主线 `6f40a399` 默认 CI 有三项失败，具体原因尚未取得，下一完整构建仍待定位。N4完整业务验收和N6均未通过。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序与能力界面修复已独立接受源码和局部结果，新安装与模型验收仍待执行。Windows D17 的 SDK、Nt、传输与 Controller 检查通过，但完整关闭仍有一条未知记录；诊断分支后继 `2f2629c7` 已通过源码和真实 Linux 元数据局部检查，新的 Windows 场景未运行。主线 `6f40a399` 默认 CI 的三个失败作业已定位到四项测试；管道deadline和Web构建前置原因已确认，目录/导出路径原因仍待实际定位。获准清理四个旧副本已释放约3.40GB；下一完整构建仍待局部修复。N4完整业务验收和N6均未通过。
 
 ## 当前实现与验证
 
@@ -215,7 +215,7 @@ Windows D16 原关闭路径来源 `ff2d46c12a7e80c00d49d3d15f2b9c2b3d08c6e7`，r
 
 能力补充 `74857e4dd0e37a45505e229cd56a5bd539be8f0e` 的九个来源文件已独审、提交和推送：发现列表按Agent记录安装或配置的安全失败原因，实际选择入口与项目/设置快照仍立即拒绝原错误；仅完整匹配的原生恢复拒绝事实可投影为恢复失败；Worker主界面显示实际选择、可读账号类型、送达/恢复和成功证据，内部标识保留在折叠详情。审查发现的执行模式比较遗漏已修正，原来源缺失或不同模式均拒绝。Node12项、Web13项、ESLint、Web类型及runtime严格类型检查通过。纯类型规则、真实文件与静态React呈现不代替真实恢复、全部Agent发现、当前账号模型或实际浏览器验收。45个模板、7个结构化注册与4个受控政策分别报告，“大部分”的验收分母仍待用户决定；不据4/7宣称目标完成。原件在 `.verification/agent-observation-followup-20261023/`，后继同Run GUI增量仍只读且尚未执行。
 
-后继空间计划已逐文件核对四个可恢复副本，`space-0177-20261023-11/check-01/result.json` 为 `CHECKED_WITHOUT_REMOVAL`，实际未删除。自动审批在创建删除进程前拒绝，理由为用户尚未明确授权这四个准确目录；四根仍在、实际释放0，已向用户请求准确范围确认，未重试或换入口。原安装、归档、备份、任务数据、凭据和失败证据保留；非依赖工作继续。
+用户已明确授权删除四个准确副本。首次实际操作 `space-0177-20261023-11/operation-01` 在引用预检因当前用户的 `/proc` 沙箱拒读退出1，未删除；同脚本在获准系统执行权限下的只读核查确认无引用、无当前用户拒读。保留首次原件后，唯一 `operation-02` 退出0且获独审，准确移除 Saba candidate、S0177 package、Iaba、I4c 四根。实际空间从477642752增至3880890368字节，净增3403247616字节；结果 SHA `3b2b31040dec945029e6d3bd5fcdfcb41363e9648d577ba1dc3279393da1b967`。完整恢复报告、三份归档和保护摘要前后相同，当前 I0177/dist0177、备份、数据、凭据与失败证据保留。UID0两个系统进程的读取限制单列，后继各构建阶段仍须核实际空间。
 
 固定D16原件的只读CI来源 `84b7401484ed5600a52a12dbd0d59957d13d73e7`，run `39994852940` / job `120555605138` 于17:25:25Z成功，四条完整typed投影与原件读取结果已独立接受。全部74条均为 `current_root_identity_unverified`，两组分别66与8条，无截断；当前PID1732创建时间1792775635936与旧anchor1792775614807不同，PID3568当前1792775636725与旧anchor1792775630342不同。每次Nt v2快照完整、status0、创建时间可读。旧anchor角色分别为TTY root及pipe helper，当前角色UNKNOWN；历史父身份不补成同次callback。源码确认checker结束后仍把这些历史身份加入additionalRoots，并在之后每次快照重新比较；这是身份不匹配的直接触发机制，不能据此证明当前归属或完整树退出。原件在 `.verification/cloud-setup/windows-controller-open-evidence-actual-84b74014-05/`；本轮只读取固定artifact，未编译、启动服务或调用模型。下一修复先验证最小分类规则，保留原未知子链、已知身份最终核验和既有失败。
 
@@ -229,6 +229,6 @@ GUI只读工具最终SHA `fccbad33c3666f6cab60e9f6d095051c2f321383023ba1a5c58e43
 
 该诊断分支普通推送额外触发默认 `SWA checks` run `40005606521`，Root提交取消后四个job均最终cancelled，两个平台的完整build和CLI build步骤均skipped；原生run `40005606529` 为skipped。原记录 `.verification/cloud-setup/windows-known-owned-2f2629c7-push-ci.md` 保留，不作为完整验证。后续通过已审tag和准确选择器开启必要CI，不能把普通branch push当成只保存代码的动作。
 
-只读查询另确认主线 `6f40a399af301c05ecb79a5316a812641e05e3f9` 的默认 `SWA checks` run `40001114124` 最终failure：Windows foundation job `120577125594` 的CLI权限测试失败，Windows/Linux check jobs `120577125738`、`120577126306` 均在 `pnpm check` 失败；Linux foundation成功。唯一标准日志下载被Forbidden拒绝，同次annotations只有exit1和Node迁移warning，不能据warning推断原因。报告 `.verification/cloud-setup/main-ci-6f40a399/audit.md` 保存准确命令、元数据和范围。具体失败测试、根因和局部复现仍未取得；正在准备读取固定原日志的最小诊断方案，没有重跑原测试或完整构建。
+主线 `6f40a399af301c05ecb79a5316a812641e05e3f9` 的默认 `SWA checks` run `40001114124` 最终failure：Windows foundation job `120577125594`、Windows/Linux check jobs `120577125738`、`120577126306` 失败；Linux foundation成功。首次本机日志请求被Forbidden拒绝后，固定只读reader `833b84f5a2375ff44548dc4ed4dbb46b42b88bfe` 经独立源码/局部审查，以唯一tag运行 `40009576534` / job `120606177485` 成功，其他原生任务及默认检查全部skipped。六项安全投影完整、无截断：Windows目录测试在 `data_directory_windows_test.go:122`、导出测试在 `run_flow_test.go:58` 失败；Windows服务测试在 `runtime_test.go:37` 报管道不支持deadline；两平台HTTP资产测试在 `server_test.go:179` 报缺少 `web/dist/index.html`。源码确认后两项分别是测试使用Windows不支持的管道deadline、CI在构建Web前执行依赖其产物的检查；前两项的实际路径差异仍待定位，不推断为已证实的重解析点或短路径问题。原件在 `.verification/cloud-setup/main-ci-6f40a399/reader-actual-833b84f5/`，projections SHA `c01162cdb7348e8ab579def8f56b0e61dfbc66d8f35aed19f08e5d9a2c40b9b1`。本次只取原日志，未重跑原测试或完整构建；下一完整构建前仍需完成最小复现和局部修复。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
