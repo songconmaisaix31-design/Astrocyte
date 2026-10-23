@@ -42,6 +42,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	codexAPIKeyHome := os.Getenv("SWA_CODEX_API_KEY_HOME")
 	claudeAPIKeyHome := os.Getenv("SWA_CLAUDE_API_KEY_HOME")
+	opencodeAPIKeyHome := os.Getenv("SWA_OPENCODE_API_KEY_HOME")
 	if parseError != nil || flags.NArg() != 0 || !filepath.IsAbs(*data) || *agentProfile != "" && !filepath.IsAbs(*agentProfile) || *webDirectory != "" && !filepath.IsAbs(*webDirectory) || codexAPIKeyHome != "" && !filepath.IsAbs(codexAPIKeyHome) || claudeAPIKeyHome != "" && !filepath.IsAbs(claudeAPIKeyHome) || *port < 1 || *port > 65535 || *protected == "" {
 		return output.failure("validation_failed", "需要明确的数据目录、端口、受保护目录和绝对路径的可选只读来源", "correct_serve_configuration", 2)
 	}
@@ -118,6 +119,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		CodexAPIKeyHome:       codexAPIKeyHome,
 		DiscoveryClaudeHome:   os.Getenv("CLAUDE_CONFIG_DIR"),
 		ClaudeAPIKeyHome:      claudeAPIKeyHome,
+		OpenCodeAPIKeyHome:    opencodeAPIKeyHome,
 		DiscoveryPiHome:       os.Getenv("PI_CODING_AGENT_DIR"),
 		ProtectedRoots:        roots,
 		OwnerCapability:       hex.EncodeToString(ownerSecret),

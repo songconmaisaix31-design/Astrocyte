@@ -2,6 +2,10 @@
 
 本合同以[准确基线](00-context.md)及现有 `OrcaCommand`、`OrcaEnvelope`、原生记录为输入。后续源码以各卡准确提交为准；表中的接口位置不表示动态验收通过。
 
+OpenCode 增加严格 `opencode-native-stepfun-api-key`，显式来源为 `SWA_OPENCODE_API_KEY_HOME`，固定 CLI2.0.31、`stepfun/step-3.5-flash`、`openai-completions` 和官方 `https://api.stepfun.com/v1/chat/completions`。旧 DeepSeek 目标保持。Windows私有Job和Linux原custody分别提供实际进程归属；真实模型与正式安装验收另记，不把字段支持当执行成功。
+
+全新 Worker 先执行唯一官方导入并确认正常完整退出，再写 legacy 投影，避免启动迁移增加凭据。追加输入复用原 R/binding、实际 ACP numeric ID 与串行队列，HMAC prompt桥接关联真实 InboxDelivered user/messageID；原接受事件在 turn.end 前进入队列，实际发布和原 submission 的轮次关联确认后才结算接受。写前拒绝、已送达和未知分别结算，未知不重发。成果将完整输入库存、原生 assistant/idle、实际 ACP回复和 journal 对应轮次连起来，Task及父邮件的 final.text 来自同一已验最终 assistant；新输入未知不能使用旧成果完成。问题能力仍仅 Pi；OpenCode 的工具关闭与问题不可用贯穿发现、启动和成果。详细合同见 SPEC §21.1.6。
+
 ## 单一服务与授权
 
 公共入口为 `POST /api/v1/local-projects/{id}/orca/commands`，定义于 [OpenAPI](../../../contracts/openapi.yaml)，动作和返回外形定义于 [JSON Schema](../../../contracts/swa-cli.schema.json)。HTTP 适配器调用 Workspace App `ExecuteOrca`；CLI、GUI 不直接读写原生 SQLite。执行权威仍为产品私有 Orca Run/Task/Dispatch，Workspace 仅保存项目/Grant 与原生关联，不增加 Mission/Claim 或第二任务状态。

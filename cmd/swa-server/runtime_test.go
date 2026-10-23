@@ -9,11 +9,38 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlitebase"
 )
+
+func TestSWACompositionRejectsRelativeOpenCodeSourceBeforeRegistry(t *testing.T) {
+	// 只有普通空目录；非法来源须在任何外部 registry 调用前失败。
+	root := t.TempDir()
+	for _, name := range []string{"node", "runtime"} {
+		if err := os.Mkdir(filepath.Join(root, name), 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	node := "node"
+	if runtime.GOOS == "windows" {
+		node += ".exe"
+	}
+	for _, file := range []string{filepath.Join(root, "node", node), filepath.Join(root, "runtime", "client.cjs")} {
+		if err := os.WriteFile(file, []byte("ordinary path fixture; never executed"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for key, value := range map[string]string{"SWA_INSTALL_ROOT": root, "SWA_DATA_DIR": t.TempDir(), "SWA_OPENCODE_API_KEY_HOME": "relative-source", "SWA_CODEX_API_KEY_HOME": "", "SWA_CLAUDE_API_KEY_HOME": "", "SWA_AGENT_PROFILE": "", "SWA_DISCOVERY_HOME": t.TempDir(), "SWA_PROTECTED_ROOTS": t.TempDir()} {
+		t.Setenv(key, value)
+	}
+	if _, err := composeExecution(nil, nil); err == nil || !strings.Contains(err.Error(), "explicit native API-key source home") {
+		t.Fatal("服务 composition 未在准确来源检查拒绝相对路径", err)
+	}
+}
 
 func TestSWAActualCompositionListenerAndShutdown(t *testing.T) {
 	root := t.TempDir()

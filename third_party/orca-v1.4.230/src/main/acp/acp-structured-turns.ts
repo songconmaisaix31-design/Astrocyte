@@ -27,6 +27,7 @@ import { AcpAgentError, AcpAuthRequiredError, AcpConnectionClosedError, AcpInput
 import type { AcpStructuredConnection } from './acp-structured-connection'
 import type { AcpStructuredLane } from './acp-structured-lane'
 import type { ContentBlock } from './generated/acp-protocol.generated'
+import type { ProviderTimelineEvent } from '../native-chat/agent-session-timeline/provider-timeline-event'
 
 export type AcpDispatchSettlement = { clientMessageId: string } & (
   | { providerIdentity: AgentJournalItemIdentity }
@@ -37,7 +38,7 @@ export type AcpDispatchSettlement = { clientMessageId: string } & (
 type Send = { clientMessageId: string; prompt: ContentBlock[]; requestedAt: number; beforeEffect?: () => void }
 
 export type AcpStructuredTurnsDeps = {
-  connection: Pick<AcpStructuredConnection, 'prompt' | 'cancel'>
+  connection: Pick<AcpStructuredConnection, 'prompt' | 'cancel' | 'nativeInputDisposition' | 'onNativeInputObservation'>
   /** Answers the agent's open requests cancelled, as a steer's cancel ends what they belong to. */
   withdrawRequests: () => void
   lane: AcpStructuredLane
@@ -53,12 +54,19 @@ export class AcpStructuredTurns {
   /** Steers waiting for the prompt ahead of them to answer its cancel. */
   private readonly steers: Send[] = []
   private readonly unsettled = new Set<string>()
+  private readonly deferredAcceptance = new Map<string, Extract<ProviderTimelineEvent, { type: 'input.accepted' }>>()
+  private readonly publishingAcceptance = new Set<string>()
+  private readonly stopObservingNativeInput?: () => void
   private readonly idleWaiters = new Set<() => void>()
   private ended = false
   /** When a Stop or a requested close reached this session; it ends with the process. */
   private stopAt: number | null = null
 
-  constructor(private readonly deps: AcpStructuredTurnsDeps) {}
+  constructor(private readonly deps: AcpStructuredTurnsDeps) {
+    this.stopObservingNativeInput = deps.connection.onNativeInputObservation?.(() => {
+      if (this.active) this.accept(this.active.clientMessageId)
+    })
+  }
 
   get running(): boolean {
     return this.active !== null
@@ -145,6 +153,26 @@ export class AcpStructuredTurns {
 
   /** The agent took the send: its turn's first event, or its answer, arrived. */
   accept(clientMessageId: string): void {
+    if (!this.unsettled.has(clientMessageId)) return
+    const native = this.deps.connection.nativeInputDisposition?.(clientMessageId)
+    if (native && native.state !== 'accepted') return
+    if (native) {
+      if (this.publishingAcceptance.has(clientMessageId)) return
+      const deferred = this.deferredAcceptance.get(clientMessageId)
+      if (deferred) {
+        this.deferredAcceptance.delete(clientMessageId)
+        this.publishingAcceptance.add(clientMessageId)
+        const settled = (published: boolean): void => {
+          this.publishingAcceptance.delete(clientMessageId)
+          if (!this.unsettled.delete(clientMessageId)) return
+          this.deps.settle(published
+            ? { clientMessageId, providerIdentity: native.providerIdentity }
+            : { clientMessageId, state: 'unknown', reason: 'Native OpenCode input has no confirmed journal opener' })
+        }
+        void this.deps.lane.publishInputAcceptance(deferred).then(settled, () => settled(false))
+      } else if (this.unsettled.delete(clientMessageId)) this.deps.settle({ clientMessageId, state: 'unknown', reason: 'Native OpenCode input has no original journal acceptance event' })
+      return
+    }
     if (this.unsettled.delete(clientMessageId)) {
       this.deps.settle({
         clientMessageId,
@@ -167,11 +195,14 @@ export class AcpStructuredTurns {
   /** The child is gone: held sends never left Orca, and the running one's fate is unknown. */
   end(reason: string, cause?: Error): void {
     this.ended = true
+    this.stopObservingNativeInput?.()
     for (const send of this.steers.splice(0)) {
       this.reject(send.clientMessageId, agentSessionFailureFact('providerExited'))
     }
     const active = this.active
-    if (active && cause instanceof AcpAuthRequiredError) {
+    if (active && this.deps.connection.nativeInputDisposition?.(active.clientMessageId)) {
+      this.settleNativeEnd(active, reason)
+    } else if (active && cause instanceof AcpAuthRequiredError) {
       // The connection ended to ask for sign-in: the turn fails as the agent's sign-in answer does.
       this.agentFailed(active, cause)
     } else if (active && this.unsettled.delete(active.clientMessageId)) {
@@ -192,7 +223,10 @@ export class AcpStructuredTurns {
     }
     this.active = send
     const opened = lane.translator.openPrompt(send.clientMessageId, send.requestedAt)
-    lane.apply(opened.events)
+    if (this.deps.connection.nativeInputDisposition?.(send.clientMessageId)) {
+      for (const event of opened.events) if (event.type === 'input.accepted') this.deferredAcceptance.set(send.clientMessageId, event)
+      lane.apply(opened.events.filter(event => event.type !== 'input.accepted'))
+    } else lane.apply(opened.events)
     this.run(send, opened.promptId)
   }
 
@@ -203,7 +237,7 @@ export class AcpStructuredTurns {
     const meta = lane.translator.injectsPromptIdentity
       ? { promptId, requestId: promptId }
       : undefined
-    const answered = this.deps.connection.prompt(send.prompt, meta, send.beforeEffect)
+    const answered = this.deps.connection.prompt(send.prompt, meta, send.beforeEffect, send.clientMessageId)
     if (this.steers.length > 0) {
       this.cancelForSteer()
     }
@@ -212,6 +246,7 @@ export class AcpStructuredTurns {
         if (this.active !== send) {
           return
         }
+        if (this.deps.connection.nativeInputDisposition?.(send.clientMessageId)) this.accept(send.clientMessageId)
         lane.apply(lane.translator.promptResult(send.clientMessageId, result, this.deps.now()))
         this.accept(send.clientMessageId)
         this.finish(send)
@@ -229,6 +264,7 @@ export class AcpStructuredTurns {
         }
         if (!(error instanceof AcpAgentError)) {
           // Answered, but not in a way Orca can read: the turn failed and the next send may go.
+          if (this.deps.connection.nativeInputDisposition?.(send.clientMessageId)) this.accept(send.clientMessageId)
           lane.apply(
             lane.translator.promptFailed(
               send.clientMessageId,
@@ -247,6 +283,12 @@ export class AcpStructuredTurns {
 
   private agentFailed(send: Send, error: AcpAgentError): void {
     const { lane } = this.deps
+    if (this.deps.connection.nativeInputDisposition?.(send.clientMessageId)) {
+      this.accept(send.clientMessageId)
+      lane.apply(lane.translator.promptFailed(send.clientMessageId, error, this.deps.now()))
+      this.finish(send)
+      return
+    }
     const refusal = lane.translator.promptRefused(send.clientMessageId, error)
     if (refusal !== null) {
       // The agent answered the prompt with an error before starting it: its own refusal.
@@ -265,6 +307,7 @@ export class AcpStructuredTurns {
   }
 
   private finish(send: Send): void {
+    if (this.deps.connection.nativeInputDisposition?.(send.clientMessageId)) this.settleNativeEnd(send, 'Native OpenCode delivery was not proven')
     if (this.active === send) {
       this.active = null
     }
@@ -276,6 +319,17 @@ export class AcpStructuredTurns {
       this.start(next)
     } else if (!this.active) {
       this.notifyIdle()
+    }
+  }
+
+  private settleNativeEnd(send: Send, reason: string): void {
+    const native = this.deps.connection.nativeInputDisposition?.(send.clientMessageId)
+    if (!native) return
+    if (native.state === 'accepted') this.accept(send.clientMessageId)
+    else if (native.state === 'rejected') this.reject(send.clientMessageId, agentSessionFailureFact('hostFault', { neverReachedAgent: true }))
+    else if (this.unsettled.delete(send.clientMessageId)) {
+      this.deferredAcceptance.delete(send.clientMessageId)
+      this.deps.settle({ clientMessageId: send.clientMessageId, state: 'unknown', reason })
     }
   }
 
@@ -310,6 +364,7 @@ export class AcpStructuredTurns {
     if (!this.unsettled.delete(clientMessageId)) {
       return
     }
+    this.deferredAcceptance.delete(clientMessageId)
     this.deps.settle({
       clientMessageId,
       state: 'rejected',

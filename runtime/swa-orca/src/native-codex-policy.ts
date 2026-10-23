@@ -109,7 +109,7 @@ function canonicalPossible(path: string): string {
 
 function inspectSource(input: AccountInput) {
   if (!input.env.SWA_CODEX_API_KEY_HOME || !isAbsolute(input.sourceHome) || !samePath(input.sourceHome, input.env.SWA_CODEX_API_KEY_HOME)) fail('explicit_api_key_home_required')
-  const roots = [...input.protectedRoots, join(homedir(), '.codex'), join(homedir(), '.claude'), input.env.SWA_DISCOVERY_HOME ? join(input.env.SWA_DISCOVERY_HOME, '.codex') : undefined, input.env.SWA_DISCOVERY_HOME ? join(input.env.SWA_DISCOVERY_HOME, '.claude') : undefined, input.env.CODEX_HOME, input.env.SWA_DISCOVERY_CODEX_HOME, input.env.SWA_CLAUDE_API_KEY_HOME, input.env.CLAUDE_CONFIG_DIR, input.env.SWA_DISCOVERY_CLAUDE_HOME, input.env.SWA_INSTALL_ROOT, input.env.SWA_DATA_DIR].filter((path): path is string => !!path)
+  const roots = [...input.protectedRoots, join(homedir(), '.codex'), join(homedir(), '.claude'), input.env.SWA_DISCOVERY_HOME ? join(input.env.SWA_DISCOVERY_HOME, '.codex') : undefined, input.env.SWA_DISCOVERY_HOME ? join(input.env.SWA_DISCOVERY_HOME, '.claude') : undefined, input.env.CODEX_HOME, input.env.SWA_DISCOVERY_CODEX_HOME, input.env.SWA_CLAUDE_API_KEY_HOME, input.env.SWA_OPENCODE_API_KEY_HOME, input.env.CLAUDE_CONFIG_DIR, input.env.SWA_DISCOVERY_CLAUDE_HOME, input.env.SWA_INSTALL_ROOT, input.env.SWA_DATA_DIR].filter((path): path is string => !!path)
   const protectedRoots = [...new Set(roots)]
   const candidate = canonicalPossible(input.sourceHome)
   for (const path of protectedRoots) {

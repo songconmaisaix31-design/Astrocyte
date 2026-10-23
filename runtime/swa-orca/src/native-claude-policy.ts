@@ -84,7 +84,7 @@ function inspectAccount(input: AccountInput): Account & { key: string } {
   if (!input.env.SWA_CLAUDE_API_KEY_HOME || !isAbsolute(input.sourceHome) || !samePath(resolve(input.sourceHome), resolve(input.env.SWA_CLAUDE_API_KEY_HOME))) fail('explicit_api_key_home_required')
   const roots = [...input.protectedRoots, join(homedir(), '.claude'), join(homedir(), '.codex'),
     input.env.SWA_DISCOVERY_HOME && join(input.env.SWA_DISCOVERY_HOME, '.claude'), input.env.SWA_DISCOVERY_HOME && join(input.env.SWA_DISCOVERY_HOME, '.codex'),
-    input.env.CLAUDE_CONFIG_DIR, input.env.SWA_DISCOVERY_CLAUDE_HOME, input.env.CODEX_HOME, input.env.SWA_DISCOVERY_CODEX_HOME, input.env.SWA_CODEX_API_KEY_HOME,
+    input.env.CLAUDE_CONFIG_DIR, input.env.SWA_DISCOVERY_CLAUDE_HOME, input.env.CODEX_HOME, input.env.SWA_DISCOVERY_CODEX_HOME, input.env.SWA_CODEX_API_KEY_HOME, input.env.SWA_OPENCODE_API_KEY_HOME,
     input.env.SWA_INSTALL_ROOT, input.env.SWA_DATA_DIR,
     process.platform === 'win32' ? 'C:\\Program Files\\ClaudeCode' : '/etc/claude-code'
   ].filter((path): path is string => !!path)

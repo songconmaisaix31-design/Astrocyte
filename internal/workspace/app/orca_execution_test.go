@@ -13,7 +13,39 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
+
+func TestOpenCodeStepFunAccountWireIsStrict(t *testing.T) {
+	// 仅验证公开合同形状，不创建账户、数据库或模型成功回执。
+	value := app.OrcaNativeLaunchAccount{Kind: "opencode-native-stepfun-api-key", Provider: "stepfun", ModelTarget: app.OrcaNativeModelTarget{ModelID: "step-3.5-flash", API: "openai-completions", BaseURL: "https://api.stepfun.com/v1"}}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded app.OrcaNativeLaunchAccount
+	if err := json.Unmarshal(encoded, &decoded); err != nil || decoded.Kind != value.Kind || decoded.ModelTarget != value.ModelTarget {
+		t.Fatal("StepFun 合同往返失败", err)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(encoded, &fields); err != nil {
+		t.Fatal(err)
+	}
+	for _, forbidden := range []string{"catalog_source", "models_source", "private_home", "key"} {
+		if _, exists := fields[forbidden]; exists {
+			t.Fatal("OpenCode 合同包含其他账户字段", forbidden)
+		}
+	}
+	fields["key"] = json.RawMessage(`"ordinary-shape-marker"`)
+	invalid, err := json.Marshal(fields)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if json.Unmarshal(invalid, &decoded) == nil {
+		t.Fatal("OpenCode 账户接受了未声明字段")
+	}
+}
 
 func TestOrcaCLIRealCurrentProjectAuthorization(t *testing.T) {
 	if os.Getenv("SWA_REAL_ENABLED") != "1" {

@@ -67,12 +67,14 @@ export class AcpAgentConnection extends AcpSessionRuntime {
   private readonly diagnoseLifecycle: (message: string) => void
   private readonly tree?: SwaProviderProcessTree
   private readonly swaPolicy?: SwaOpenCodeToolsPolicy
+  private readonly nativeInputObservers = new Set<() => void>()
   private swaSessionId?: string
   private verifiedExit = false
   private readonly verifiedExitListeners = new Set<(exit: ProviderProcessExit) => void>()
   private observedExit?: { error: Error; exit: ProviderProcessExit }
   private finishObservedExit?: () => void
   private publishExit?: () => void
+  private readonly outputEnded: Promise<void>
   readonly spawned: Promise<void>
 
   constructor(
@@ -132,6 +134,10 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     super(managed.child.stdout, managed.child.stdin, {
       ...options,
       peer,
+      strictFrames: !!launch.swaOpenCodePolicy,
+      onRecord: launch.swaOpenCodePolicy ? (frame, line) => launch.swaOpenCodePolicy!.record(frame, line) : options.onRecord,
+      onProtocolFailure: launch.swaOpenCodePolicy ? () => launch.swaOpenCodePolicy!.protocolFailed() : options.onProtocolFailure,
+      onInputEnd: launch.swaOpenCodePolicy ? () => launch.swaOpenCodePolicy!.stdoutEnded() : options.onInputEnd,
       onDiagnostic: diagnose,
       onOtherLine: (line, cut) => signInLine(line, 'stdout', cut),
       onAuthAnswered: (signedIn) => signIn?.answered?.(signedIn),
@@ -158,6 +164,11 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     this.lifecycle = lifecycle
     this.diagnoseLifecycle = diagnose
     const { child } = managed
+    this.outputEnded = new Promise<void>((resolve, reject) => {
+      child.stdout.once('end', resolve)
+      child.stdout.once('close', () => child.stdout.readableEnded ? resolve() : reject(new AcpConnectionClosedError('ACP stdout closed before EOF')))
+    })
+    void this.outputEnded.catch(() => undefined)
     this.spawned = new Promise<void>((resolve) => {
       if (child.pid !== undefined) {
         resolve()
@@ -188,6 +199,8 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       this.observedExit = { error, exit }
       this.publishExit = () => {
         if (this.verifiedExit) return
+        try { this.swaPolicy?.closed() }
+        catch { diagnose('Restricted OpenCode final evidence remains unknown'); return }
         this.verifiedExit = true
         for (const listener of this.verifiedExitListeners) {
           try { listener(exit) } catch { diagnose('ACP exit listener failed') }
@@ -213,7 +226,7 @@ export class AcpAgentConnection extends AcpSessionRuntime {
         }, () => diagnose('ACP Job exit remains unproven; retain the original connection'))
       }
       this.finishObservedExit = finish
-      if (!tree || lifecycle.closing || exit.processless || this.closed || child.stdout.destroyed || child.stdout.readableEnded) finish()
+      if (!tree || !launch.swaOpenCodePolicy && (lifecycle.closing || this.closed) || exit.processless || child.stdout.destroyed || child.stdout.readableEnded) finish()
       else {
         child.stdout.once('end', finish)
         child.stdout.once('close', finish)
@@ -259,7 +272,11 @@ export class AcpAgentConnection extends AcpSessionRuntime {
 
   protected override admitNotification(method: string, params: unknown): boolean {
     if (!this.swaPolicy) return true
-    try { this.swaPolicy.trace(method, method === 'session/update' ? readAcpSessionEvent(params) ?? params : params); return true }
+    try {
+      this.swaPolicy.trace(method, method === 'session/update' ? readAcpSessionEvent(params) ?? params : params)
+      for (const observe of this.nativeInputObservers) observe()
+      return true
+    }
     catch {
       void this.close(new AcpConnectionClosedError('The restricted OpenCode notification could not be retained'))
       return false
@@ -273,16 +290,23 @@ export class AcpAgentConnection extends AcpSessionRuntime {
     this.swaSessionId = sessionId
   }
 
-  override async prompt(prompt: Parameters<AcpSessionRuntime['prompt']>[0], meta?: Parameters<AcpSessionRuntime['prompt']>[1], beforeSend?: () => void): ReturnType<AcpSessionRuntime['prompt']> {
+  nativeInputDisposition(clientMessageId: string) { return this.swaPolicy?.inputDisposition(clientMessageId) }
+
+  onNativeInputObservation(listener: () => void): () => void {
+    this.nativeInputObservers.add(listener)
+    return () => { this.nativeInputObservers.delete(listener) }
+  }
+
+  override async prompt(prompt: Parameters<AcpSessionRuntime['prompt']>[0], meta?: Parameters<AcpSessionRuntime['prompt']>[1], beforeSend?: () => void, clientMessageId?: string): ReturnType<AcpSessionRuntime['prompt']> {
+    let write: import('./acp-response-settlement').AcpRequestWriteOptions | undefined
     if (this.swaPolicy) {
       try {
-        if (!this.swaSessionId || prompt.some(item => item.type !== 'text') || prompt.some(item => item.type === 'text' && /^\s*\//u.test(item.text))) throw new Error('Restricted OpenCode input changed')
+        if (!this.swaSessionId || !clientMessageId || meta !== undefined || prompt.some(item => item.type !== 'text') || prompt.some(item => item.type === 'text' && /^\s*\//u.test(item.text))) throw new Error('Restricted OpenCode input changed')
         await this.verifySwaSession(this.swaSessionId)
-        beforeSend?.()
-        this.swaPolicy.trace('session/prompt', { sessionId: this.swaSessionId, prompt })
+        write = await this.swaPolicy.preparePrompt(clientMessageId, prompt, beforeSend)
       } catch { throw new AcpInputAdmissionError('Restricted OpenCode input was rejected before native delivery') }
     } else beforeSend?.()
-    const response = await super.prompt(prompt, meta)
+    const response = await this.promptWithWrite(prompt, meta, write)
     this.swaPolicy?.trace('session/prompt/response', { sessionId: this.swaSessionId, response })
     return response
   }
@@ -312,13 +336,23 @@ export class AcpAgentConnection extends AcpSessionRuntime {
 
   override close(error?: Error): Promise<boolean> {
     this.lifecycle.closing ||= this.managed.rootVerdict !== 'exited'
-    this.finishObservedExit?.()
+    if (!this.swaPolicy) this.finishObservedExit?.()
     this.drainNotifications(error)
     return this.managed
       .close(this.tree)
-      .then((result) => {
+      .then(async (result) => {
         const proven = result.root === 'exited' && (!this.tree || result.tree === 'exited' || this.managed.processless)
-        if (proven) this.publishExit?.()
+        if (proven) {
+          if (this.swaPolicy) {
+            let timer: ReturnType<typeof setTimeout> | undefined
+            try {
+              await Promise.race([this.outputEnded, new Promise<never>((_resolve, reject) => { timer = setTimeout(() => reject(new AcpConnectionClosedError('Restricted OpenCode stdout EOF remains unknown')), 1_000) })])
+              this.swaPolicy.closed()
+            } catch { this.diagnoseLifecycle('Restricted OpenCode final evidence remains unknown'); return false }
+            finally { clearTimeout(timer) }
+          }
+          this.publishExit?.()
+        }
         return proven
       })
       .finally(() => super.close(error))

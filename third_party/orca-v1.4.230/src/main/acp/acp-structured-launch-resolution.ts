@@ -259,7 +259,7 @@ export function acpStructuredLaunchPart(
       : null
     // The chat's own mode, as the host decided it for this start; a start naming none asks.
     const fullAccess = basis.permissionMode === 'full-access'
-    if (restricted && (spec.agent !== 'opencode' || fullAccess || restricted.nativeContract !== 'opencode-cli-2.0.31')) throw new Error('The restricted OpenCode launch contract changed')
+    if (restricted && (spec.agent !== 'opencode' || fullAccess || restricted.nativeContract !== 'opencode-cli-2.0.31' || launchVersion.version !== '2.0.31')) throw new Error('The restricted OpenCode launch contract changed')
     const launcher = restricted ? await basis.providerJobLauncher?.() : undefined
     if (restricted && !launcher) throw new Error('The restricted OpenCode launch has no owned process Job')
     const nativeArgs = spec.args({ fullAccess, pluginDir: skill?.pluginDir ?? null })

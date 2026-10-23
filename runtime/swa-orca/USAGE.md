@@ -1,5 +1,9 @@
 # SWA 无界面 CLI
 
+OpenCode 的受控接入固定为 CLI2.0.31，支持的官方 StepFun 选择是 `--agent opencode --model stepfun/step-3.5-flash --question-mode disabled`。启动服务前设置独立来源目录的非秘密路径 `SWA_OPENCODE_API_KEY_HOME`；服务不回退原 HOME 或 Orca 账号。Linux来源目录须0700、文件0600，Windows须当前用户私有ACL，且不得与项目、安装、运行数据或其他 Agent 账号互相包含。该目录须已经由受控来源初始化完成，包含同一真实原生 credential 的配置、SQLite及legacy投影；不要把密钥放进命令行或环境变量。
+
+发现中的已安装、已配置、支持控制、认证和真实模型成功是不同状态。OpenCode问答能力仍不可用；遇到输入未知，只查询原请求和同一 Run，不换 ID 重发。实际可用范围以同一正式安装候选的真实验收记录为准；源码支持和来源准备不代表模型验收已经通过。
+
 发行目标包括Windows x64和Linux x64 glibc。Windows入口为`swa.exe`、`server.exe`、`node/node.exe`；Linux入口为`swa`、`server`、`node/node`。两种形态包含固定Node24.21.0、私有Orca运行文件、安装入口与许可。`VERSION`和CLI的`--version`给出同一准确源码提交。当前首版尚未通过同一安装候选的完整真实验收，实际验证范围以随交付的记录为准。
 
 `--help`、子命令的`--help`/`-h`及`--version`输出本地文本，无需项目授权或运行服务。普通业务命令的`--json`在stdout只发布一个JSON结果，诊断在stderr；帮助和版本属于文本元数据，不使用业务结果协议。

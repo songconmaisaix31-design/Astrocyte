@@ -94,7 +94,7 @@ function assertNativePiSourceHome(input: NativePiSourceHomeInput) {
   if (!isAbsolute(input.sourceHome) || !input.protectedRoots.length) throw new Error('native_pi_source_boundary_required')
   const roots = [...input.protectedRoots, join(homedir(), '.codex'), join(homedir(), '.claude'), input.env.SWA_INSTALL_ROOT, input.env.SWA_DATA_DIR,
     input.env.CODEX_HOME, input.env.SWA_DISCOVERY_CODEX_HOME, input.env.CLAUDE_CONFIG_DIR, input.env.SWA_DISCOVERY_CLAUDE_HOME,
-    input.env.SWA_CODEX_API_KEY_HOME, input.env.SWA_CLAUDE_API_KEY_HOME,
+    input.env.SWA_CODEX_API_KEY_HOME, input.env.SWA_CLAUDE_API_KEY_HOME, input.env.SWA_OPENCODE_API_KEY_HOME,
     ...(input.env.SWA_PROTECTED_ROOTS?.split(process.platform === 'win32' ? ';' : ':') ?? []),
     ...(input.env.SWA_DISCOVERY_HOME ? [join(input.env.SWA_DISCOVERY_HOME, '.codex'), join(input.env.SWA_DISCOVERY_HOME, '.claude')] : [])].filter((path): path is string => !!path)
   const candidate = canonicalPossible(input.sourceHome)
@@ -312,7 +312,7 @@ export async function inspectNativePiPolicy(input: NativePiSourceHomeInput & { e
   for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources, ...sources.pinnedFiles]) {
     if (source && !isDeepStrictEqual(source, await nativeConfigurationSource(source.path))) throw new Error('native_cli_source_changed_during_read')
   }
-  const sourceEnvironment = Object.fromEntries(Object.entries(input.env).filter(([key]) => ['SWA_INSTALL_ROOT', 'SWA_DATA_DIR', 'SWA_PROTECTED_ROOTS', 'SWA_DISCOVERY_HOME', 'CODEX_HOME', 'SWA_DISCOVERY_CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'SWA_DISCOVERY_CLAUDE_HOME', 'SWA_CODEX_API_KEY_HOME', 'SWA_CLAUDE_API_KEY_HOME'].includes(key)))
+  const sourceEnvironment = Object.fromEntries(Object.entries(input.env).filter(([key]) => ['SWA_INSTALL_ROOT', 'SWA_DATA_DIR', 'SWA_PROTECTED_ROOTS', 'SWA_DISCOVERY_HOME', 'CODEX_HOME', 'SWA_DISCOVERY_CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'SWA_DISCOVERY_CLAUDE_HOME', 'SWA_CODEX_API_KEY_HOME', 'SWA_CLAUDE_API_KEY_HOME', 'SWA_OPENCODE_API_KEY_HOME'].includes(key)))
   return { policy, sources, settingsSource, sourceInput: { sourceHome, protectedRoots: [...input.protectedRoots], env: sourceEnvironment }, auth: { [input.provider]: { type: credential.data.type, key: credential.data.key } }, models: modelsSource === null ? null : { providers: projection ? { [input.provider]: projection } : {} } }
 }
 

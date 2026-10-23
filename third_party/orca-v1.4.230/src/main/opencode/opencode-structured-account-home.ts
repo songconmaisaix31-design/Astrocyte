@@ -90,7 +90,7 @@ export function privateStructuredOpenCodeEnvironment(root: string, inherited: Re
     HOME: join(root, 'home'), USERPROFILE: join(root, 'home'), XDG_DATA_HOME: join(root, 'data'), XDG_CACHE_HOME: join(root, 'cache'),
     XDG_CONFIG_HOME: join(root, 'config'), XDG_STATE_HOME: join(root, 'state'), OPENCODE_CONFIG_DIR: join(root, 'config/opencode'),
     OPENCODE_DB: join(root, 'data/opencode/opencode.db'), ProgramData: join(root, 'programdata'), APPDATA: join(root, 'appdata'),
-    LOCALAPPDATA: join(root, 'localappdata'), TEMP: join(root, 'temp'), TMP: join(root, 'temp'),
+    LOCALAPPDATA: join(root, 'localappdata'), TEMP: join(root, 'temp'), TMP: join(root, 'temp'), TMPDIR: join(root, 'temp'),
     OPENCODE_CONFIG_PROJECT_DISABLE: '1', OPENCODE_DISABLE_CLAUDE_CODE: '1', OPENCODE_DISABLE_MODELS_FETCH: '1',
     OPENCODE_DISABLE_FILEWATCHER: '1', OPENCODE_DISABLE_FFF: '1', OPENCODE_PRINT_LOGS: '1'
   })

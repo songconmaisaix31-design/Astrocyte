@@ -11,6 +11,7 @@ const catalogOrigin = { 'live-session': '当前原生会话', probe: '原生探�
 const accountSource: Record<string, string> = {
   'pi-native-api-key': 'Pi 独立 API 密钥来源', 'pi-native-api-key-per-session': 'Pi 按会话隔离的 API 密钥来源',
   'codex-native-api-key': 'Codex 独立 API 密钥来源', 'claude-native-api-key': 'Claude 独立 API 密钥来源', 'opencode-native-api-key': 'OpenCode 独立 API 密钥来源',
+  'opencode-native-stepfun-api-key': 'OpenCode 阶跃星辰独立 API 密钥来源',
 };
 
 export function SwaExecutionDetails({ reply, projectID, controller, runID, dispatchID }: { reply: SwaEnvelope; projectID: string; controller: string; runID: string; dispatchID: string }) {

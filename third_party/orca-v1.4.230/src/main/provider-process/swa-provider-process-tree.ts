@@ -177,6 +177,23 @@ class SwaWindowsProviderProcessTree implements ProviderProcessTree {
 
   readObservation(): Observation { return this.observe() }
 
+  requireOwnedExecutable(candidatePid: number, expectedProgram: string): Identity & { platform: 'win32' } {
+    const root = this.root, native = this.nativeCLI, exit = this.exitState?.()
+    if (this.closed || !this.assignmentWitness || !root || !exit || exit.observed || exit.processless || native?.kind !== 'executable') throw new Error('SWA executable requires a live native Job')
+    if (candidatePid === root.pid || native.program.toLowerCase() !== expectedProgram.toLowerCase()) throw new Error('SWA executable differs from its admitted source')
+    const creationTimeMs = readWindowsProcessCreationTime(candidatePid)
+    if (!creationTimeMs) throw new Error('SWA executable creation identity is unavailable')
+    const candidate = { pid: candidatePid, creationTimeMs }
+    const requireMembers = (observation: Observation) => {
+      if (!observation.assigned || observation.rootExited || ![root, native, candidate].every(expected => observation.members.some(member => member.pid === expected.pid && member.creationTimeMs === expected.creationTimeMs))) throw new Error('SWA executable is outside its live owning Job')
+      if (![root, native, candidate].every(expected => readWindowsProcessCreationTime(expected.pid) === expected.creationTimeMs)) throw new Error('SWA executable creation identity changed')
+    }
+    requireMembers(this.observe())
+    // Windows 沿用 Job 成员与 birth 证据；不把它表述为候选进程程序路径查询。
+    requireMembers(this.observe())
+    return { platform: 'win32', ...candidate }
+  }
+
   readFinalObservation(): SwaWindowsProviderFinalObservation | null {
     return this.closed && this.verdict === 'exited' && this.finalObservation ? structuredClone(this.finalObservation) : null
   }
@@ -250,6 +267,7 @@ export class SwaProviderProcessTree implements ProviderProcessTree {
   capture() { return this.implementation.capture() }
   refresh() { return this.implementation.refresh() }
   readObservation() { return this.implementation.readObservation() }
+  requireOwnedExecutable(candidatePid: number, expectedProgram: string) { return this.implementation.requireOwnedExecutable(candidatePid, expectedProgram) }
   readFinalObservation() { return this.implementation.readFinalObservation() }
   releaseProcessless() { this.implementation.releaseProcessless() }
   reap() { return this.implementation.reap() }

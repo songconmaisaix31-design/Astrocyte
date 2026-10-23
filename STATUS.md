@@ -40,6 +40,8 @@ Windows最终16源及局部结果现已获原06限定接受，以 `.verification
 
 OpenCode返修后的准确41源清单 `.verification/cloud-setup/opencode-stepfun-compatibility/product-source-sha256-03.txt` SHA256 `d80caee0c445b764ba49729e0c86101bdf815d4935e6fa582bcc0c0e898d9d5a` 已获原reviewer静态接受。除接受时序和final.text外，后继又修正同epoch日志对象替换和实际turn ID编码误比；现复用实际journal引用及官方identity scheme，不手拼存储身份。Root最终直接严格tsc退出0/诊断为空，41源与Windows两TS消费者首末一致，原件在 `opencode-product-check-r3/`。两项真实空目录/纯规则、264契约实例/生成一致、Web类型与改动界面lint、Go实际依赖图239包均通过，契约保29条既有警告；分别见 `opencode-stepfun-compatibility/policy-check-02.log` 和 `opencode-contract-web-check-r1/`。真实journal六场景工具仅获准备授权，尚未执行；Go测试、正式安装、官方CLI和模型仍NOT_RUN。安装物driver计划dfe8f4e4已接受，先实施13个非产品tracked及2个ignored工具，重叠connection端口须待本41提交后再串行修改。
 
+该41源的真实journal局部现已唯一执行并获独立接受：工具SHA256 `9b205026fa23e2a3f46f83f1aa4b26d13d5f3528616f4f4299c73bf00aa1c6b1`，结果 `.verification/cloud-setup/opencode-stepfun-compatibility/journal-publication-01/result.json` SHA256 `27a6ec48833d88a4d8cd465233320c9b67bb9fd847675bd2deee3751152e9e65`，退出0、六例全部PASS。实际SQLite正常/背压的opener先于end、Stop读取前置、零步骤无发布、真实数据库关闭失败、未绑定后补写及同epoch真实对象替换均符合预期；无清理错误，274个生产输入及41源复核一致。报告在同根 `journal-execution-01/report.md`。这些是本地公开journal/队列验证，没有伪造ACP/native/HMAC或模型；正式Agent验收仍未运行。Windows16源已单独提交推送 `325909f8ee3ccd9abd6c4c74f0818eb51e154b8c`，当前产品41保持精确范围提交。
+
 | 范围 | 已取得的结果 | 剩余验收 |
 | --- | --- | --- |
 | Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S392 Linux 完整安装、D12及实际服务退出通过；pi09开发单Worker完整退出通过 | N4/N6完整验收 |

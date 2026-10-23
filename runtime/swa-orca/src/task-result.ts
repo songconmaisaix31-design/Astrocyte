@@ -18,7 +18,8 @@ import type { AgentSessionRecord } from '../../../third_party/orca-v1.4.230/src/
 import Database from '../../../third_party/orca-v1.4.230/src/main/sqlite/sync-database'
 import { replayJournal } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-open'
 import { renderJournalState, type JournalReducerState } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-reducer'
-import { agentJournalItemKey, parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
+import { agentJournalItemKey, agentJournalSubmissionKey, parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
+import { createLegacyProviderTimelineIdentityScheme } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity'
 import { agentSessionSendBodyFingerprint } from '../../../third_party/orca-v1.4.230/src/shared/structured-agent-session-send-mutation'
 import { SendBodyStructure } from '../../../third_party/orca-v1.4.230/src/shared/rpc-contract/structured-agent-session-message-params'
 import type { OrchestrationDb } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/db/orchestration-db'
@@ -134,10 +135,11 @@ const traceIdentity = { session_id: z.string().min(1), runtime_fence: z.number()
 const traceRowSchema = z.discriminatedUnion('protocol', [
   z.strictObject({ ...traceIdentity, protocol: z.literal('codex-app-server'), projection: z.literal('actual_native_app_server_frames'), event: z.enum(['custody', 'policy_ready', 'thread_opened', 'notification', 'custody_closed']) }),
   z.strictObject({ ...traceIdentity, protocol: z.literal('claude-agent-sdk'), projection: z.literal('actual_sdk_messages'), event: z.enum(['custody', 'policy_ready', 'sdk_message', 'dispatch_binding', 'custody_closed']) }),
-  z.strictObject({ ...traceIdentity, protocol: z.literal('pi-jsonl-rpc'), projection: z.literal('actual_native_rpc_frames'), event: z.enum(['custody', 'policy_ready', 'write_intent', 'write_settled', 'stop_intent', 'native_record', 'projection_published', 'failure', 'custody_closed']) })
+  z.strictObject({ ...traceIdentity, protocol: z.literal('pi-jsonl-rpc'), projection: z.literal('actual_native_rpc_frames'), event: z.enum(['custody', 'policy_ready', 'write_intent', 'write_settled', 'stop_intent', 'native_record', 'projection_published', 'failure', 'custody_closed']) }),
+  z.strictObject({ ...traceIdentity, protocol: z.literal('acp'), projection: z.literal('actual_native_acp_frames_and_input_bindings'), event: z.enum(['custody', 'policy_ready', 'native_policy', 'write_intent', 'write_settled', 'input_delivered', 'native_record', 'projection', 'stdout_end', 'failure', 'custody_closed']) })
 ])
 
-export function inspectStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; requireClosed: boolean; rows: readonly unknown[]; incompleteTailBytes?: number }) {
+export function inspectStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi' | 'opencode'; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; requireClosed: boolean; rows: readonly unknown[]; incompleteTailBytes?: number }) {
   const { record, binding } = input
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
   if (!binding || binding.agent !== input.agent || record.provider !== input.agent || binding.session_id !== record.sessionId || binding.dispatch_id === '' || !head || head.mintedAtFence !== binding.runtime_fence || head.handle.nativeId !== input.nativeId || head.origin !== 'created' || head.forkedFromKey) return fail('The original native owner fence or provider handle is unavailable')
@@ -146,9 +148,9 @@ export function inspectStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'
   const first = rows[0]
   if (!first || first.event !== 'custody') return fail('The original native custody observation is missing')
   for (const [index, row] of rows.entries()) {
-    if (row.protocol !== (input.agent === 'codex' ? 'codex-app-server' : input.agent === 'claude' ? 'claude-agent-sdk' : 'pi-jsonl-rpc') || row.sequence !== index + 1 || row.session_id !== record.sessionId || row.runtime_fence !== binding.runtime_fence || row.runtime_epoch !== input.runtimeId || !Number.isFinite(Date.parse(row.observed_at)) || !isDeepStrictEqual(row.process, first.process) || !isDeepStrictEqual(row.native_cli, first.native_cli) || index && row.monotonic_ms < rows[index - 1]!.monotonic_ms) return fail('The original provider event source changed its protocol, session, owner or sequence')
+    if (row.protocol !== (input.agent === 'codex' ? 'codex-app-server' : input.agent === 'claude' ? 'claude-agent-sdk' : input.agent === 'opencode' ? 'acp' : 'pi-jsonl-rpc') || row.sequence !== index + 1 || row.session_id !== record.sessionId || row.runtime_fence !== binding.runtime_fence || row.runtime_epoch !== input.runtimeId || !Number.isFinite(Date.parse(row.observed_at)) || !isDeepStrictEqual(row.process, first.process) || !isDeepStrictEqual(row.native_cli, first.native_cli) || index && row.monotonic_ms < rows[index - 1]!.monotonic_ms) return fail('The original provider event source changed its protocol, session, owner or sequence')
     if (row.event === 'failure') return fail('The original native provider permanently lost its source proof')
-    if ((row.event === 'notification' || row.event === 'thread_opened')) {
+    if ((row.event === 'notification' || row.event === 'thread_opened' || input.agent === 'opencode' && row.event === 'native_record')) {
       const detail = nativeObject(row.detail)
       if (typeof detail.raw_line !== 'string' || !isDeepStrictEqual(JSON.parse(detail.raw_line), detail.frame)) return fail('The raw native provider frame differs from its projection')
     }
@@ -164,6 +166,7 @@ export function inspectStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'
     if (actualThread.id !== input.nativeId || typeof actualThread.path !== 'string' || !isAbsolute(actualThread.path)) return fail('The actual native Codex thread or rollout changed')
   }
   const closed = rows.at(-1)?.event === 'custody_closed' ? nativeObject(rows.at(-1)!.detail) : null
+  if (input.agent === 'opencode' && closed && (rows.filter(row => row.event === 'stdout_end' && nativeObject(row.detail).complete === true).length !== 1)) return fail('The closed native OpenCode source has no complete stdout EOF')
   if (closed && input.incompleteTailBytes !== undefined && input.incompleteTailBytes !== 0) return fail('The closed native provider source has an incomplete trailing frame')
   if ('platform' in first.process) {
     const observed = nativeObject(first.detail)
@@ -196,7 +199,7 @@ export function inspectStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'
   return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, rows, closed }
 }
 
-async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean; observation?: true; requirePrivatePath(path: string): void }) {
+async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi' | 'opencode'; path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean; observation?: true; requirePrivatePath(path: string): void }) {
   const { record, binding } = input
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
   if (!binding || binding.agent !== input.agent || record.provider !== input.agent || binding.session_id !== record.sessionId || binding.dispatch_id === '' || !head || head.mintedAtFence !== binding.runtime_fence || head.handle.nativeId !== input.nativeId || head.origin !== 'created' || head.forkedFromKey) return fail('The original native owner fence or provider handle is unavailable')
@@ -226,7 +229,7 @@ async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; pa
   const inspected = inspectStructuredTrace({ ...input, rows, incompleteTailBytes: observed?.observation.incomplete_tail_bytes })
   const verify = async () => { input.requirePrivatePath(input.path); if (!isDeepStrictEqual(source, await nativeConfigurationSource(input.path))) return fail('The provider event source changed before export') }
   if (!observed || inspected.closed) await verify()
-  return { process: inspected.process, fence: inspected.fence, custody: inspected.custody, thread: inspected.thread, source, rows: inspected.rows, observation: observed?.observation, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : input.agent === 'claude' ? 'claude-sdk-events-ndjson' : 'pi-native-rpc-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
+  return { process: inspected.process, fence: inspected.fence, custody: inspected.custody, thread: inspected.thread, source, rows: inspected.rows, observation: observed?.observation, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : input.agent === 'claude' ? 'claude-sdk-events-ndjson' : input.agent === 'opencode' ? 'opencode-acp-events-ndjson' : 'pi-native-rpc-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
 }
 
 const inputReceiptRow = z.object({ ledger_sequence: z.number().int().positive(), request_id: z.string(), state: z.enum(['pending', 'completed']), payload_hash: z.string(), receipt: z.string(), child_caller: z.string().nullable(), child_method: z.string().nullable(), child_state: z.string().nullable(), child_payload_hash: z.string().nullable(), child_receipt: z.string().nullable() })
@@ -282,6 +285,53 @@ function structuredInputBindings(inventory: ReturnType<typeof readStructuredInpu
   }
   if (!bindings.length || new Set(bindings.map(binding => binding.operation_id)).size !== bindings.length) return fail('The original native input operations are missing or ambiguous')
   return bindings
+}
+
+function assertOpenCodeInputCompletion(bindings: ReturnType<typeof structuredInputBindings>, state: JournalReducerState, nativeId: string, native: Awaited<ReturnType<typeof readNativeOpenCodeSessionSource>>['value'], events: Awaited<ReturnType<typeof readStructuredTrace>>['rows']) {
+  if ([...state.submissions.values()].some(item => item.dispatchState === 'pending' || item.dispatchState === 'unknown')) return fail('The native OpenCode journal still has pending or unknown input')
+  const accepted: Array<{ sequence: number; binding: typeof bindings[number]; message: string; requestId: number; turnId: string; turnItemId: string }> = []
+  const matchedUsers = new Set<string>(), requestIds = new Set<number>()
+  for (const binding of bindings) {
+    const { from: _sender, ...body } = boundInputBody.parse(binding.body)
+    const submission = state.submissions.get(binding.operation_id)
+    if (!submission || submission.clientMessageId !== binding.operation_id || submission.fence !== binding.runtime_fence || submission.payloadFingerprint !== agentSessionSendBodyFingerprint(binding.session_id, body) || body.blocks.some(block => block.type !== 'text')) return fail('The original OpenCode input changed its exact journal body')
+    const intents = events.filter(row => row.event === 'write_intent' && nativeObject(nativeObject(row.detail).binding).operation_id === binding.operation_id)
+    const settlements = events.filter(row => row.event === 'write_settled' && nativeObject(row.detail).operation_id === binding.operation_id)
+    const delivered = events.filter(row => row.event === 'input_delivered' && nativeObject(nativeObject(row.detail).binding).operation_id === binding.operation_id)
+    const users = native.input_receipts.filter(row => row.receipt.payload.binding.operation_id === binding.operation_id)
+    if (submission.dispatchState === 'rejected') {
+      const intent = intents[0] && nativeObject(intents[0].detail), settled = settlements[0] && nativeObject(settlements[0].detail)
+      if (users.length || delivered.length || intents.length > 1 || settlements.length > 1 || settled && (settled.writeAttempted !== false || settled.cleanupCompleted !== true || settled.outcome !== 'rejected') || intent && (!settled || settled.request_id !== intent.request_id || !isDeepStrictEqual(intent.binding, binding) || intent.native_session_id !== nativeId || intents[0]!.sequence >= settlements[0]!.sequence) || !intent && settled && settled.request_id !== null) return fail('A rejected OpenCode input has ambiguous native effects')
+      continue
+    }
+    const receipt = state.receipts.get(binding.operation_id)
+    if (submission.dispatchState !== 'accepted' || !submission.providerItemId || !receipt || receipt.clientMessageId !== binding.operation_id || receipt.providerItemId !== submission.providerItemId || receipt.cursor.epoch !== state.epoch || !Number.isSafeInteger(submission.submittedSequence) || submission.submittedSequence! <= 0 || intents.length !== 1 || settlements.length !== 1 || delivered.length !== 1 || users.length !== 1) return fail('The accepted OpenCode input has no unique complete source')
+    const key = parseAgentJournalItemKey(submission.providerItemId), intent = nativeObject(intents[0]!.detail), settled = nativeObject(settlements[0]!.detail), delivery = nativeObject(delivered[0]!.detail), user = users[0]!, payload = user.receipt.payload
+    if (!key || key.provider !== 'orca' || key.clientMessageId !== binding.operation_id || !isDeepStrictEqual(payload.binding, binding) || !isDeepStrictEqual(payload.blocks, body.blocks) || payload.native_session_id !== nativeId || !isDeepStrictEqual(intent.binding, binding) || intent.native_session_id !== nativeId || intent.request_id !== payload.request_id || settled.request_id !== payload.request_id || settled.outcome !== 'resolved' || settled.writeAttempted !== true || settled.cleanupCompleted !== true || !isDeepStrictEqual(delivery.binding, binding) || delivery.request_id !== payload.request_id || delivery.native_session_id !== nativeId || delivery.message_id !== user.message_id || delivery.seq !== user.sequence || intents[0]!.sequence >= settlements[0]!.sequence || settlements[0]!.sequence >= delivered[0]!.sequence || requestIds.has(payload.request_id) || matchedUsers.has(user.message_id)) return fail('The original OpenCode input changed its request ID or InboxDelivered user')
+    const userItemId = agentJournalSubmissionKey(binding.operation_id), userItem = state.items.get(userItemId)
+    const scheme = createLegacyProviderTimelineIdentityScheme({ agent: 'opencode', sessionId: binding.session_id })
+    const address = { namespace: nativeId, key: { source: 'provider' as const, value: `prompt:${binding.operation_id}` } }
+    const turnId = scheme.turnId(address), turnItemId = agentJournalItemKey(scheme.turn(address))
+    const opened = [...state.items.values()].filter(item => item.itemId === turnItemId && !item.agentId && item.body.kind === 'turn' && item.body.turnId === turnId && state.itemFences.get(item.itemId) === binding.runtime_fence)
+    if (!userItem || userItem.agentId || userItem.body.kind !== 'message' || userItem.body.role !== 'user' || state.itemFences.get(userItem.itemId) !== binding.runtime_fence || opened.length !== 1 || opened[0]!.body.kind !== 'turn' || opened[0]!.body.userItemId !== userItemId) return fail('The accepted OpenCode input has no exact published journal opener')
+    matchedUsers.add(user.message_id); requestIds.add(payload.request_id)
+    accepted.push({ sequence: submission.submittedSequence!, binding, message: user.message_id, requestId: payload.request_id, turnId, turnItemId })
+  }
+  if (matchedUsers.size !== native.input_receipts.length || events.filter(row => row.event === 'input_delivered').length !== accepted.length) return fail('The native OpenCode user inventory has an unbound input')
+  accepted.sort((a, b) => a.sequence - b.sequence)
+  if (accepted.some((row, index) => index && row.sequence === accepted[index - 1]!.sequence)) return fail('The native OpenCode accepted input order is ambiguous')
+  const latest = accepted.at(-1)
+  if (native.availability !== 'complete') return
+  if (!latest || native.final?.input_message_id !== latest.message) return fail('The OpenCode final output does not complete its latest original input')
+  const replies = events.filter(row => row.event === 'native_record' && nativeObject(nativeObject(row.detail).frame).id === latest.requestId).map(row => nativeObject(nativeObject(row.detail).frame))
+  if (replies.length !== 1 || replies[0]!.error !== undefined || nativeObject(replies[0]!.result).stopReason !== 'end_turn') return fail('The final OpenCode input has no exact actual ACP completion response')
+  const turns = [...state.items.values()].filter(item => item.itemId === latest.turnItemId && !item.agentId && item.body.kind === 'turn' && item.body.turnId === latest.turnId && item.body.userItemId === agentJournalSubmissionKey(latest.binding.operation_id) && item.body.state === 'completed' && item.body.outcome === 'success' && state.itemFences.get(item.itemId) === latest.binding.runtime_fence)
+  if (turns.length !== 1) return fail('The final OpenCode input has no published journal completion')
+  const assistant = native.messages.find(row => row.id === native.final!.assistant_message_id)
+  const text = z.array(z.object({ type: z.enum(['text', 'reasoning']), text: z.string() })).parse(assistant?.data.content).filter(part => part.type === 'text').map(part => part.text).join('')
+  if (native.final?.text !== text) return fail('The final OpenCode delivery changed its verified assistant text')
+  const actual = [...state.items.values()].filter(item => !item.agentId && item.body.kind === 'message' && item.body.role === 'assistant' && item.turnScope?.kind === 'turn' && item.turnScope.turnItemId === turns[0]!.itemId && state.itemFences.get(item.itemId) === latest.binding.runtime_fence && item.body.blocks.filter(block => block.type === 'text').map(block => block.text).join('') === text)
+  if (actual.length !== 1) return fail('The native OpenCode final assistant differs from its published journal')
 }
 
 function assertCodexInputCompletion(bindings: ReturnType<typeof structuredInputBindings>, state: JournalReducerState, nativeId: string, native: { availability: string; final: { turn_id: string; text: string } | null }, events: Awaited<ReturnType<typeof readStructuredTrace>>['rows']) {
@@ -586,7 +636,7 @@ async function observeWorkerSourceSnapshot(runtime: OrcaRuntimeService, scope: S
   await exactPrivatePath(root, workerRoot)
   const ownerProcess = record.lease.ownerProcess
   const original = originalWorkerSelection(runtime, scope, dispatchId, record), selection = original.selection
-  const traceAgent = record.provider === 'codex' || record.provider === 'claude' ? record.provider : record.provider === 'pi' && selection.native_launch.account.kind === 'pi-native-api-key-per-session' ? 'pi' : null
+  const traceAgent = record.provider === 'codex' || record.provider === 'claude' || record.provider === 'opencode' ? record.provider : record.provider === 'pi' && selection.native_launch.account.kind === 'pi-native-api-key-per-session' ? 'pi' : null
   bind({ scope, workspaceId, dispatchId, taskId: task.id, sessionId, provider: record.provider, location: record.location, account: record.accountHome,
     options: record.options, head, selection, runtimeEpoch: nativeWorker.runtime_epoch,
     resource: { id: resource.id, origin: resource.origin_dispatch_id, owner: resource.owner_dispatch_id, terminal: resource.terminal_handle, incarnation: resource.process_incarnation } })
@@ -661,14 +711,28 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       | undefined
     let providerEvents: Awaited<ReturnType<typeof readStructuredTrace>> | undefined
     let codexInputs: ReturnType<typeof structuredInputBindings> | undefined
+    let openCodeInputs: ReturnType<typeof structuredInputBindings> | undefined
     let claudeInputs: Awaited<ReturnType<typeof claudeInputObservations>> | undefined
     let collectClaude: ((state: JournalReducerState) => Promise<Awaited<ReturnType<typeof readNativeClaudeSessionSource>>['value']>) | undefined
     let collectPi: ((state: JournalReducerState) => Promise<Awaited<ReturnType<typeof readNativePiBoundSessionSource>>['value']>) | undefined
     let nativeVerified = false
-    if (account.kind === 'opencode-native-api-key') {
+    if (account.kind === 'opencode-native-api-key' || account.kind === 'opencode-native-stepfun-api-key') {
+      if (original.binding?.dispatch_id !== worker.dispatchId) return fail('The native OpenCode output belongs to another Dispatch')
+      const inventory = readStructuredInputInventory(db, scope, worker.dispatchId)
+      openCodeInputs = structuredInputBindings(inventory, { scope, dispatchId: worker.dispatchId, sessionId, fence: original.binding.runtime_fence, selection })
+      inputInventories.push({ dispatchId: worker.dispatchId, signature: inventory.signature })
+      providerEvents = await readStructuredTrace({ agent: 'opencode', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: Math.min(resultObservationLimits.source_bytes, maximum - used), requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
+      used += Buffer.byteLength(JSON.stringify(providerEvents.value))
       const native = await readNativeOpenCodeSessionSource({ selection, sessionId, nativeId: head.handle.nativeId, cwd, stopped: nativeWorker.state === 'stopped', projectId: scope.project_id })
       nativeSession = native.value
-      nativeChecks.push(native.verify)
+      nativeChecks.push(native.verify, providerEvents.verify)
+      const traceSource = providerEvents.source
+      finalNativeChecks.push(() => {
+        native.verifySync()
+        requireNativeCodexPrivatePath(traceSource.path, false)
+        const info = lstatSync(traceSource.path, { bigint: true })
+        if (`${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}` !== traceSource.version) return fail('The native OpenCode trace changed before the final synchronous export')
+      })
       exportChecks.push(native.validateExport)
       nativeVerified = true
     } else if (account.kind === 'codex-native-api-key') {
@@ -800,6 +864,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       if (nativeSession.header.parentSession !== undefined && (!parent || parent.handle.nativeId !== nativeSession.header.parentSession) || head.origin === 'forked' && nativeSession.header.parentSession === undefined) return fail('The actual native session fork source differs from its provider handle chain')
     }
     if (codexInputs && providerEvents && 'format' in nativeSession && nativeSession.format === 'codex-rollout-jsonl') assertCodexInputCompletion(codexInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
+    if (openCodeInputs && providerEvents && 'format' in nativeSession && nativeSession.format === 'opencode-sqlite-v2') assertOpenCodeInputCompletion(openCodeInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
     if (claudeInputs && providerEvents && 'format' in nativeSession && nativeSession.format === 'claude-session-jsonl') assertClaudeInputCompletion(claudeInputs, journal.state, head.handle.nativeId, nativeSession, providerEvents.rows)
     const current = host.deps.store.getRecord(sessionId)
     if (!current || sourceSignature(current) !== signature) return fail('The native provider identity changed during result collection')

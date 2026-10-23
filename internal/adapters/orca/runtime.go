@@ -31,6 +31,7 @@ type Config struct {
 	CodexAPIKeyHome       string
 	DiscoveryClaudeHome   string
 	ClaudeAPIKeyHome      string
+	OpenCodeAPIKeyHome    string
 	DiscoveryPiHome       string
 	ProtectedRoots        []string
 	OwnerCapability       string
@@ -99,20 +100,25 @@ func New(config Config) (*Runtime, error) {
 			return nil, errors.New("product root overlaps a protected Orca or Agent root")
 		}
 	}
-	codexHome, err := apiKeySourceHome(config.CodexAPIKeyHome, config, config.ClaudeAPIKeyHome)
+	codexHome, err := apiKeySourceHome(config.CodexAPIKeyHome, config, config.ClaudeAPIKeyHome, config.OpenCodeAPIKeyHome)
 	if err != nil {
 		return nil, err
 	}
 	config.CodexAPIKeyHome = codexHome
-	claudeHome, err := apiKeySourceHome(config.ClaudeAPIKeyHome, config, config.CodexAPIKeyHome)
+	claudeHome, err := apiKeySourceHome(config.ClaudeAPIKeyHome, config, config.CodexAPIKeyHome, config.OpenCodeAPIKeyHome)
 	if err != nil {
 		return nil, err
 	}
 	config.ClaudeAPIKeyHome = claudeHome
+	opencodeHome, err := apiKeySourceHome(config.OpenCodeAPIKeyHome, config, config.CodexAPIKeyHome, config.ClaudeAPIKeyHome)
+	if err != nil {
+		return nil, err
+	}
+	config.OpenCodeAPIKeyHome = opencodeHome
 	return &Runtime{config: config}, nil
 }
 
-func apiKeySourceHome(input string, config Config, otherSource string) (string, error) {
+func apiKeySourceHome(input string, config Config, otherSources ...string) (string, error) {
 	if input == "" {
 		return "", nil
 	}
@@ -129,10 +135,11 @@ func apiKeySourceHome(input string, config Config, otherSource string) (string, 
 		return "", invalid
 	}
 	roots := append([]string{
-		config.InstallRoot, config.DataRoot, config.AgentProfile, otherSource,
+		config.InstallRoot, config.DataRoot, config.AgentProfile,
 		config.DiscoveryCodexHome, os.Getenv("CODEX_HOME"), os.Getenv("SWA_DISCOVERY_CODEX_HOME"), filepath.Join(config.DiscoveryHome, ".codex"),
 		config.DiscoveryClaudeHome, os.Getenv("CLAUDE_CONFIG_DIR"), os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"), filepath.Join(config.DiscoveryHome, ".claude"),
 	}, config.ProtectedRoots...)
+	roots = append(roots, otherSources...)
 	for _, root := range roots {
 		if root == "" {
 			continue
@@ -196,7 +203,7 @@ func (r *Runtime) environment() []string {
 	for _, item := range os.Environ() {
 		key, _, _ := strings.Cut(item, "=")
 		upper := strings.ToUpper(key)
-		if strings.HasPrefix(upper, "ORCA_") || strings.HasPrefix(upper, "PI_") || strings.HasPrefix(upper, "CODEX_") || strings.HasPrefix(upper, "CLAUDE_") || strings.HasPrefix(upper, "ANTHROPIC_") || strings.HasPrefix(upper, "SWA_") || strings.HasPrefix(upper, "NODE_") || strings.HasPrefix(upper, "ASTROCYTE_") || upper == "OPENAI_API_KEY" || upper == "HOME" || upper == "USERPROFILE" || upper == "APPDATA" || upper == "LOCALAPPDATA" || upper == "TEMP" || upper == "TMP" {
+		if strings.HasPrefix(upper, "ORCA_") || strings.HasPrefix(upper, "PI_") || strings.HasPrefix(upper, "CODEX_") || strings.HasPrefix(upper, "CLAUDE_") || strings.HasPrefix(upper, "OPENCODE_") || strings.HasPrefix(upper, "ANTHROPIC_") || strings.HasPrefix(upper, "SWA_") || strings.HasPrefix(upper, "NODE_") || strings.HasPrefix(upper, "ASTROCYTE_") || upper == "OPENAI_API_KEY" || upper == "HOME" || upper == "USERPROFILE" || upper == "APPDATA" || upper == "LOCALAPPDATA" || upper == "TEMP" || upper == "TMP" {
 			continue
 		}
 		env = append(env, item)
@@ -218,6 +225,7 @@ func (r *Runtime) environment() []string {
 		"SWA_DISCOVERY_CODEX_HOME="+r.config.DiscoveryCodexHome,
 		"SWA_CODEX_API_KEY_HOME="+r.config.CodexAPIKeyHome,
 		"SWA_CLAUDE_API_KEY_HOME="+r.config.ClaudeAPIKeyHome,
+		"SWA_OPENCODE_API_KEY_HOME="+r.config.OpenCodeAPIKeyHome,
 		"SWA_DISCOVERY_CLAUDE_HOME="+r.config.DiscoveryClaudeHome,
 		"SWA_DISCOVERY_PI_HOME="+r.config.DiscoveryPiHome,
 		"SWA_NODE_EXECUTABLE="+r.config.NodeExecutable,

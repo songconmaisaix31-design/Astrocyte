@@ -124,6 +124,56 @@ func TestRuntimeAPIKeyHomesAreMutuallyIsolated(t *testing.T) {
 	}
 }
 
+func TestRuntimeOpenCodeSourceIsExplicitAndIndependent(t *testing.T) {
+	config := codexSourceConfig(t)
+	t.Setenv("SWA_OPENCODE_API_KEY_HOME", filepath.Join(t.TempDir(), "inherited-unselected"))
+	t.Setenv("OPENCODE_AUTH_CONTENT", "ordinary-environment-filter-marker")
+	for _, selected := range []string{"", t.TempDir()} {
+		config.OpenCodeAPIKeyHome = selected
+		native, err := New(config)
+		if err != nil {
+			t.Fatal(err)
+		}
+		found := 0
+		for _, entry := range native.ChildEnvironment() {
+			key, value, _ := strings.Cut(entry, "=")
+			if strings.EqualFold(key, "SWA_OPENCODE_API_KEY_HOME") {
+				found++
+				if value != selected {
+					t.Fatal("OpenCode 来源没有保持显式选择")
+				}
+			}
+			if strings.HasPrefix(strings.ToUpper(key), "OPENCODE_") {
+				t.Fatal("继承了未审核 OpenCode 覆盖")
+			}
+		}
+		if found != 1 {
+			t.Fatal("OpenCode 来源环境必须唯一")
+		}
+	}
+	parent := t.TempDir()
+	child := filepath.Join(parent, "child")
+	if err := os.Mkdir(child, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, source := range []string{parent, child} {
+		for _, other := range []string{parent, child} {
+			for _, provider := range []string{"codex", "claude"} {
+				input := config
+				input.OpenCodeAPIKeyHome = source
+				if provider == "codex" {
+					input.CodexAPIKeyHome = other
+				} else {
+					input.ClaudeAPIKeyHome = other
+				}
+				if _, err := New(input); err == nil {
+					t.Fatal("OpenCode 与其他显式来源重叠却未拒绝")
+				}
+			}
+		}
+	}
+}
+
 func TestRuntimeClaudeAPIKeyHomeRejectsOrdinaryAndDefaultAccountRoots(t *testing.T) {
 	config := codexSourceConfig(t)
 	for _, source := range []string{os.Getenv("CLAUDE_CONFIG_DIR"), config.DiscoveryClaudeHome, os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"), config.DiscoveryHome, os.Getenv("CODEX_HOME"), config.DiscoveryCodexHome} {

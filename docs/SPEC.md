@@ -1142,6 +1142,16 @@ Linux新Pi分支沿完整已审policy/source/current Grant进入主动准入；`
 
 #### 21.1.6 OpenCode原生执行及完整成果
 
+**StepFun 与 Linux 接入增量。** NativeLaunch.account 新增严格分支 `kind:'opencode-native-stepfun-api-key'`、`provider:'stepfun'`，复用 OpenCode 的 `source_home/config_source/auth_source/database_source/credential_id/credential_updated_at/private_root` 字段；`model_target` 固定 `{model_id:'step-3.5-flash',api:'openai-completions',base_url:'https://api.stepfun.com/v1'}`，tools仍为 `{mode:'disabled',native_contract:'opencode-cli-2.0.31'}`。selection.model 为 `stepfun/step-3.5-flash`，实际请求必须为 `/chat/completions`。旧 DeepSeek 分支保持原严格目标。固定 Linux x64 官方 `@opencode/cli-linux-x64/bin/opencode` 与 Windows x64 官方 CLI 2.0.31 共用原 ACP 接口。
+
+两个 OpenCode 分支只接受显式 `SWA_OPENCODE_API_KEY_HOME`，不回退 HOME 或 Orca 默认账号；来源与项目、安装、运行数据及 Codex/Claude/Pi 保护根双向独立。Linux 当前 UID 的目录0700、文件0600；Windows保留私有DACL。StepFun 仅增加固定 `@opencode/ai/providers/openai-compatible` provider 与 `opencode.config.provider`，有效插件、空工具、credential、模型及 HTTP 目标逐项核对。发现声明、固定版本启动、认证和真实模型成果分别记录；本增量不宣称模型或双平台实测通过。
+
+每 Worker 独占新根，在 legacy auth 和 SQLite 均缺席时只执行一次官方 `auth import --standalone`。实际原 id/key、唯一 active credential、双管道 EOF、正常退出与完整原树关闭均确认后，才独占创建 legacy auth 投影。未知不重发，已有未知库不重新初始化，原来源不写入。Linux live server 核原 custody、native CLI 父链、`/proc` 程序和 boot/start/UID，并前后复核；Windows沿原 Job成员/birth。活体观察不宣称原子快照或 socket/pidfd关联。
+
+原 `swa_input_binding` 在真实 numeric ACP request ID 分配后由每 Worker 独立私有 HMAC key 封装。官方可写 `prompt` 事件核 MAC、session 与完整原文，恢复纯文本，把 actual messageID 和绑定写入原生 metadata；只有 `InboxDelivered` 投影的真实 user 行才可接受。提前 `input.accepted` 延后到该证据，并在相应 turn.end 前按原队列提交；接受结算还须等原 sink 写入完成、该事件实际发布以及真实 turn.userItemId 指向原 submission。零步骤或日志写入未确认均保持未知；写前拒绝和写后未知分别结算。模型 context 先复制再删除桥接字段，HTTP核原文、空工具及固定目标。attachments、resources、audience、slash 和问答工具仍拒绝。
+
+成果核完整原请求库存（含 `question.resume`）、numeric write、MAC/user/id/seq、每条已接受输入的真实 journal opener、最新输入之后同执行段的 assistant/idle、ACP回复和对应 journal turn。`final.text` 只来自同一已验最终 assistant 的 text 内容，沿原长度、秘密检查与末尾版本重核供 Task 交付和父任务邮件使用。新输入 pending/unknown 不能借旧 assistant 完成；严格 UTF-8、raw frame、EOF、fence/runtime及完整 D 沿原 provider 文件记录。OpenCode questions仍不可用，Pi规则保持。以下历史 DeepSeek 设计中的导入顺序和平台限定由本增量替代，原目标和工具约束继续保留。
+
 原Reviewer依据先行D01—D08接受`native-opencode33-plan.md`准确SHA256 `F18C0ED603668BE5A3FA1E49C8C9F2DF476D08C4824E17BBEC6C8BAD4AA63BD9`及O01—O10，主控据此核定本节接口。实际客户端固定@opencode/cli2.0.31及官方tag `22728d67461260d56bb9796b9b8f36e1de47202e`，复用Orca1.4.230原ACP适配器和原生exe；原默认deepseek/deepseek-v4-pro、built-in DeepSeek目标及原生key来源固定，禁止Aliyun。单次真实GET31的200仅证明该次认证读取及模型存在，原生执行和最终安装另行验收。
 
 **私有账号。** §21.1.5新增opencode-native-api-key分支，三个source沿既有canonical path/version定义；原生credential按实际active/time_created/id规则选择，只读核其integration、key类型、非空literal及与legacy auth一致。拒绝OAuth、external、命令或环境key、自定义目标或请求覆盖。启动和每次效果前重读原源、实际所选credential及私有投影，秘密只在内存和私有原生账号文件中使用。

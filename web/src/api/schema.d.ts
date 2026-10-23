@@ -8043,6 +8043,26 @@ export interface components {
                     /** @constant */
                     base_url: "https://api.deepseek.com";
                 };
+            } | {
+                /** @constant */
+                kind: "opencode-native-stepfun-api-key";
+                /** @constant */
+                provider: "stepfun";
+                source_home: string;
+                auth_source: components["schemas"]["nativeConfigurationSource"];
+                config_source: components["schemas"]["nativeConfigurationSource"];
+                database_source: components["schemas"]["nativeConfigurationSource"];
+                credential_id: string;
+                credential_updated_at: number;
+                private_root: string;
+                model_target: {
+                    /** @constant */
+                    model_id: "step-3.5-flash";
+                    /** @constant */
+                    api: "openai-completions";
+                    /** @constant */
+                    base_url: "https://api.stepfun.com/v1";
+                };
             };
             tools: {
                 /** @constant */

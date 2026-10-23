@@ -127,7 +127,6 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     return { original, invocation, parentRow, childRow }
   }
   async function policySnapshot(sessionId: string, agent: string, requireRecord = true) {
-    if (process.platform === 'linux' && agent === 'opencode') throw new Error('The selected native Agent has no reviewed Linux launch and complete-source contract')
     const selected = await originalSelection(sessionId, agent, requireRecord)
     const { original } = selected
     const account = original.native_launch.account
@@ -137,8 +136,9 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
       return { ...selected, snapshot, kind: 'pi' as const }
     }
-    if (agent === 'opencode' && account.kind === 'opencode-native-api-key' && original.version === '2.0.31') {
-      const snapshot = await inspectNativeOpenCodePolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, privateRoot: account.private_root })
+    if (agent === 'opencode' && ['opencode-native-api-key', 'opencode-native-stepfun-api-key'].includes(account.kind) && original.version === '2.0.31' && 'database_source' in account) {
+      const settings = await readAgentSettings()
+      const snapshot = await inspectNativeOpenCodePolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, privateRoot: account.private_root, env: process.env, protectedRoots: codexProtectedRoots(settings, selected.invocation.project.root) })
       if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
       return { ...selected, snapshot, kind: 'opencode' as const }
     }
@@ -158,12 +158,12 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
   }
   type Selected = Awaited<ReturnType<typeof policySnapshot>>
   function assertCurrent(selected: Selected) { if (selected.kind === 'pi') assertNativePiSnapshotCurrent(selected.snapshot); else if (selected.kind === 'opencode') assertNativeOpenCodeCurrent(selected.snapshot); else if (selected.kind === 'claude') assertNativeClaudeCurrent(selected.snapshot); else assertNativeCodexCurrent(selected.snapshot) }
-  async function binding(selected: Extract<Selected, { kind: 'opencode' }>, sessionId: string) {
-    return readPrivateOpenCodeBinding(selected.snapshot, join(selected.snapshot.policy.account.private_root, sessionId), await realpath(join(process.env.SWA_INSTALL_ROOT!, 'runtime/opencode-policy')))
+  async function binding(selected: Extract<Selected, { kind: 'opencode' }>, sessionId: string, initializing = false) {
+    return readPrivateOpenCodeBinding(selected.snapshot, join(selected.snapshot.policy.account.private_root, sessionId), await realpath(join(process.env.SWA_INSTALL_ROOT!, 'runtime/opencode-policy')), initializing)
   }
   async function verifyAccount(selected: Selected, sessionId: string, initializing = false) {
     if (selected.kind === 'pi') await verifyPrivatePiSessionAccount(selected.snapshot, sessionId)
-    else if (selected.kind === 'opencode') await binding(selected, sessionId)
+    else if (selected.kind === 'opencode') await binding(selected, sessionId, initializing)
     else if (selected.kind === 'claude') await verifyPrivateClaudeAccount(selected.snapshot, sessionId)
     else if (initializing) verifyUninitializedPrivateCodexAccount(selected.snapshot, sessionId)
     else await verifyPrivateCodexAccount(selected.snapshot, sessionId)
@@ -224,7 +224,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const selected = await policySnapshot(sessionId, agent)
     await admitCurrentApproval(selected.invocation)
     const fresh = await policySnapshot(sessionId, agent)
-    await verifyAccount(fresh, sessionId, fresh.kind === 'codex')
+    await verifyAccount(fresh, sessionId, fresh.kind === 'codex' || fresh.kind === 'opencode')
     const node = z.string().min(1).parse(process.env.SWA_NODE_EXECUTABLE), install = z.string().min(1).parse(process.env.SWA_INSTALL_ROOT)
     if (!isAbsolute(node) || !isAbsolute(install) || await realpath(node) !== join(await realpath(install), 'node', process.platform === 'win32' ? 'node.exe' : 'node')) throw new Error('The installed native Job Node source is unavailable')
     const entry = await realpath(join(install, 'runtime', 'native-cli-entry.cjs')), eventDirectory = await createNativeWorkerDirectory(sessionId)
@@ -359,7 +359,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const { invocation } = await policySnapshot(sessionId, agent)
       await admitCurrentApproval(invocation)
       const selected = await policySnapshot(sessionId, agent)
-      await verifyAccount(selected, sessionId, selected.kind === 'codex')
+      await verifyAccount(selected, sessionId, selected.kind === 'codex' || selected.kind === 'opencode')
       assertDeliveryGrantCurrent(invocation)
       if (selected.kind === 'pi') {
         const environment = privatePiEnvironment(join(selected.snapshot.policy.account.private_root, sessionId), inherited)
@@ -370,7 +370,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         }
         return environment
       }
-      return selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : selected.kind === 'claude' ? privateClaudeEnvironment(selected.snapshot, sessionId) : privateCodexEnvironment(selected.snapshot, sessionId)
+      return selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId, true)).root, inherited) : selected.kind === 'claude' ? privateClaudeEnvironment(selected.snapshot, sessionId) : privateCodexEnvironment(selected.snapshot, sessionId)
     },
     disabledPiTools: async (sessionId, agent, cwd, environment) => {
       const final = await approved(sessionId, agent)
@@ -390,14 +390,14 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, sessionPolicy, ...(selected.snapshot.policy.tools.mode === 'questions-only' ? { questionExtension: selected.snapshot.policy.tools.extension.path } : {}) }
     },
     disabledOpenCodeTools: async (sessionId, agent) => {
-      const final = await approved(sessionId, agent)
+      const final = await approved(sessionId, agent, true)
       const selected = await policySnapshot(sessionId, agent)
       if (selected.kind !== 'opencode') throw new Error('The OpenCode tools policy cannot admit Pi')
-      const privateAccount = await binding(selected, sessionId), launcher = await jobLauncher(sessionId, agent)
+      const privateAccount = await binding(selected, sessionId, true), launcher = await jobLauncher(sessionId, agent)
       final()
       const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
       if (!record) throw new Error('The native OpenCode session record is unavailable')
-      return createOpenCodeSessionPolicy({ snapshot: selected.snapshot, ...privateAccount, executable: selected.original.executable, launcher, sessionId, fence: record.lease.runtimeFence, approve: () => approved(sessionId, agent) })
+      return createOpenCodeSessionPolicy({ snapshot: selected.snapshot, ...privateAccount, executable: selected.original.executable, launcher, sessionId, fence: record.lease.runtimeFence, runtimeEpoch: runtime.getRuntimeId(), record: () => runtime.openedAgentSessionRecordStore()?.getRecord(sessionId) ?? undefined, approve: () => approved(sessionId, agent), approveInitialization: () => approved(sessionId, agent, true), inputBinding: clientMessageId => inputBinding(sessionId, agent, clientMessageId) })
     },
     disabledCodexTools: async (sessionId, agent) => {
       const final = await approved(sessionId, agent, true)

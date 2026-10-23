@@ -29,7 +29,7 @@ export type AcpStructuredConnection = Pick<
   | 'resumeReading'
   | 'close'
   | 'processTreeUnproven'
->
+> & Partial<Pick<AcpAgentConnection, 'nativeInputDisposition' | 'onNativeInputObservation'>>
 
 export type ConnectAcpAgent<Connection = AcpStructuredConnection> = (
   launch: ProviderProcessLaunch,

@@ -3,7 +3,9 @@
 // backpressure holds every later one until the sink drains, so nothing is reordered or dropped.
 
 import type { StructuredAgentSessionChildWorkProducer } from '../native-chat/agent-session-wire/structured-agent-session-subagent-rows'
-import { parseAgentJournalItemKey } from '../../shared/agent-session-journal-item-key'
+import { agentJournalItemKey, agentJournalSubmissionKey, parseAgentJournalItemKey } from '../../shared/agent-session-journal-item-key'
+import { readAgentJournalTurn } from '../../shared/agent-session-turn-record'
+import type { ProviderTimelinePublishedReport } from '../native-chat/agent-session-wire/structured-agent-session-transition'
 import {
   createProviderTimelineAssembler,
   type ProviderTimelineAssembler
@@ -32,6 +34,13 @@ const BACKPRESSURE_RETRY_MS = 250
 /** Subagent evidence holds its place among the events: it reaches the host only after the journal
  *  wrote what came before it. */
 type SubagentWork = { type: 'subagent.work'; evidence: AgentChildWorkEvidence[] }
+type InputAcceptance = Extract<AcpTimelineEvent, { type: 'input.accepted' }>
+type InputPublication = {
+  report?: ProviderTimelinePublishedReport
+  journal?: ReturnType<ProviderTimelineSink['journalItems']>
+  epoch?: string
+  resolve: (published: boolean) => void
+}
 
 export type AcpStructuredLaneDeps = {
   sink: ProviderTimelineSink
@@ -57,6 +66,7 @@ export class AcpStructuredLane {
   readonly translator: AcpTimelineTranslator
   private readonly assembler: ProviderTimelineAssembler
   private readonly backlog: (AcpTimelineEvent | SubagentWork)[] = []
+  private readonly inputPublications = new Map<InputAcceptance, InputPublication>()
   private readonly turnWatchers = new Set<() => void>()
   private readonly requestIdentity: ReturnType<typeof createLegacyProviderTimelineIdentityScheme>
   private retryTimer: ReturnType<typeof setTimeout> | null = null
@@ -114,6 +124,17 @@ export class AcpStructuredLane {
     this.drain()
   }
 
+  /** 原生送达已验证后，只以该事件实际写入的轮次关联确认接受。 */
+  publishInputAcceptance(event: InputAcceptance): Promise<boolean> {
+    if (this.failed || this.disposed || !event.join?.turn || !this.deps.sink.written || this.inputPublications.has(event)) {
+      return Promise.resolve(false)
+    }
+    return new Promise((resolve) => {
+      this.inputPublications.set(event, { resolve })
+      this.apply([event])
+    })
+  }
+
   /** Resolves once `turnId` is no longer the open turn, or nothing more can be written. */
   whenTurnLeaves(turnId: string): Promise<void> {
     return new Promise((resolve) => {
@@ -161,6 +182,7 @@ export class AcpStructuredLane {
     this.translator.dispose()
     this.clearRetry()
     this.backlog.length = 0
+    this.rejectUnadmittedInputs()
     this.assembler.dispose()
     this.notifyTurnWatchers()
     // Observation has ended even if its journal edge was refused; drain admitted snapshots first.
@@ -181,9 +203,14 @@ export class AcpStructuredLane {
         this.backlog.shift()
         continue
       }
+      const publication = event.type === 'input.accepted' ? this.inputPublications.get(event) : undefined
+      const journal = publication ? this.deps.sink.journalItems() : null
+      const epoch = journal?.epoch
       const { admission, dropped } = this.assembler.apply(
         event,
-        event.type === 'session.ended'
+        publication
+          ? (report) => { publication.report = report }
+          : event.type === 'session.ended'
           ? () => this.publishSessionEnd()
           : isAcpBackgroundTaskChildWorkEvent(event)
             ? () => this.publishChildWork(event)
@@ -207,10 +234,41 @@ export class AcpStructuredLane {
       // A subagent the provider reports after its session ended is no live child of it.
       this.ended ||= event.type === 'session.ended' && dropped === undefined
       if (event.type === 'input.accepted') {
-        this.deps.onInputAccepted(event.clientMessageId)
+        if (publication) {
+          publication.journal = journal
+          publication.epoch = epoch
+          this.inputPublications.delete(event)
+          void this.confirmInputPublication(event, publication)
+        } else this.deps.onInputAccepted(event.clientMessageId)
       }
     }
     this.notifyTurnWatchers()
+  }
+
+  private async confirmInputPublication(event: InputAcceptance, publication: InputPublication): Promise<void> {
+    let confirmed = false
+    try {
+      const barrier = await this.deps.sink.written?.()
+      const report = publication.report, journal = this.deps.sink.journalItems()
+      if (barrier?.ok && report?.published && journal && journal === publication.journal && journal.epoch === publication.epoch && journal.epoch === report.journalEpoch && event.join?.turn) {
+        const address = { namespace: this.deps.providerSessionId, key: { source: 'provider' as const, value: event.join.turn } }
+        const itemId = agentJournalItemKey(this.requestIdentity.turn(address)), turnId = this.requestIdentity.turnId(address)
+        const matches = report.steps.filter((step) => {
+          if (step.kind !== 'item' || !step.written || step.itemId !== itemId) return false
+          const item = journal.item(step.itemId), turn = readAgentJournalTurn(item?.body)
+          return item !== null && !item.agentId && turn !== null && turn.turnId === turnId && turn.userItemId === agentJournalSubmissionKey(event.clientMessageId)
+        })
+        confirmed = matches.length === 1
+      }
+    } catch {
+      // 写入或原 journal 无法确认时，原输入必须保持未知。
+    }
+    publication.resolve(confirmed)
+  }
+
+  private rejectUnadmittedInputs(): void {
+    for (const publication of this.inputPublications.values()) publication.resolve(false)
+    this.inputPublications.clear()
   }
 
   private publishChildWork(event: AcpTimelineEvent): void {
@@ -229,6 +287,7 @@ export class AcpStructuredLane {
     }
     this.failed = true
     this.backlog.length = 0
+    this.rejectUnadmittedInputs()
     this.notifyTurnWatchers()
     this.deps.onFailed(reason)
   }

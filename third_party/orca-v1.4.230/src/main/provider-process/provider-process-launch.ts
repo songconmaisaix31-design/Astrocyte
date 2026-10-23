@@ -15,12 +15,18 @@ export type SwaInitializationProcess = {
 
 export type SwaOpenCodeToolsPolicy = {
   nativeContract: 'opencode-cli-2.0.31'
-  model: 'deepseek/deepseek-v4-pro'
+  model: 'deepseek/deepseek-v4-pro' | 'stepfun/step-3.5-flash'
   initialize(track: (resource: SwaInitializationProcess) => void, cwd: string): Promise<void>
   attach(tree: SwaProviderProcessTree): void
   stderr(line: string, cut: boolean): boolean
   ready(): Promise<void>
   verifySession(sessionId: string): Promise<void>
+  preparePrompt(clientMessageId: string, prompt: unknown, beforeSend?: () => void): Promise<import('../acp/acp-response-settlement').AcpRequestWriteOptions>
+  inputDisposition(clientMessageId: string): { state: 'accepted'; providerIdentity: import('../../shared/agent-session-journal-types').AgentJournalItemIdentity } | { state: 'unknown' | 'rejected' }
+  record(frame: unknown, line: string): void
+  protocolFailed(): void
+  stdoutEnded(): void
+  closed(): void
   trace(event: string, detail: unknown): void
 }
 export type CodexPolicyConnection = {

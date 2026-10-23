@@ -1,9 +1,8 @@
-import { readFile, realpath, stat } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import { lstatSync, mkdirSync, opendirSync, realpathSync, rmdirSync, statSync } from 'node:fs'
 import { createHash, randomBytes } from 'node:crypto'
 import { delimiter, dirname, extname, isAbsolute, join, normalize, resolve, toNamespacedPath } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
-import { parse as parseTOML } from 'smol-toml'
 import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
@@ -19,8 +18,8 @@ import { assertNativePiSourcesCurrent, inspectNativePiPolicy, inspectNativePiSou
 import { runProcess } from '@orca/process-host'
 import { parseCliVersion } from '../../../third_party/orca-v1.4.230/src/shared/app-version'
 import { parseStrictPiJson } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
-import { inspectNativeOpenCodePolicy, readOpenCodeCredential } from './native-opencode-policy'
-import { parse as parseJSONC, type ParseError } from 'jsonc-parser'
+import { inspectNativeOpenCodeAccountSource, inspectNativeOpenCodeExecutable, inspectNativeOpenCodePolicy, openCodeTargets } from './native-opencode-policy'
+import { preparePrivateOpenCodeVersionEnvironment } from './private-opencode-account'
 import { inspectNativeCodexAccountSource, inspectNativeCodexPolicy } from './native-codex-policy'
 import { inspectNativeClaudeAccountSource, inspectNativeClaudePolicy } from './native-claude-policy'
 import { createPrivateDirectory as createWindowsPrivateDirectory } from '@orca/windows-security'
@@ -48,25 +47,6 @@ export async function observeAgentStage<T>(mode: 'discovery' | 'selection', stag
     if (stage === 'configuration' && (error instanceof SyntaxError || error instanceof z.ZodError)) return { failure: observation('unavailable', '所选原生配置格式无法解析', 'native-configuration-invalid', basis) }
     return { failure: unknown('该 Agent 的原生来源观察未完成，保持未知', `native-${stage}-unverified`, basis) }
   }
-}
-
-async function optionalConfiguration(file: string, format: 'json' | 'toml' | 'jsonc' = 'json') {
-  let contents: string
-  let sourceVersion: string
-  try {
-    const before = await stat(file, { bigint: true })
-    sourceVersion = `${before.dev}:${before.ino}:${before.mtimeNs}:${before.size}`
-    contents = await readFile(file, 'utf8')
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return undefined
-    throw error
-  }
-  const info = await stat(file, { bigint: true })
-  if (sourceVersion !== `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}`) throw new Error('The selected native Agent configuration changed during reading')
-  const errors: ParseError[] = []
-  const value: unknown = format === 'toml' ? parseTOML(contents) : format === 'jsonc' ? parseJSONC(contents, errors, { allowTrailingComma: true }) : JSON.parse(contents)
-  if (errors.length) throw new Error('The selected native configuration is not valid JSONC')
-  return { value: object.parse(value), version: `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}` }
 }
 
 function optionalPiConfiguration(file: string) {
@@ -134,6 +114,19 @@ async function readFixedPiVersion(executable: string, env: Record<string, string
   return version === '1.0.1' ? version : undefined
 }
 
+async function readFixedOpenCodeVersion(executable: string, inherited: Record<string, string>) {
+  const before = await inspectNativeOpenCodeExecutable(executable)
+  const data = realpathSync(z.string().min(1).parse(process.env.SWA_DATA_DIR))
+  const root = join(data, `.opencode-version-${randomBytes(16).toString('hex')}`)
+  const env = await preparePrivateOpenCodeVersionEnvironment(root, inherited)
+  let terminated = false
+  const result = await runProcess({ program: before.executable.path, args: ['--version'], cwd: env.HOME, env, timeoutMs: 5_000, maxOutputBytes: 4096, killOnOutputLimit: true, onChildTerminated: () => { terminated = true } })
+  if (!terminated || result.timedOut || result.outputTruncated || result.code !== 0 || result.stderr !== '') return undefined
+  if (!isDeepStrictEqual(before, await inspectNativeOpenCodeExecutable(executable))) throw new Error('native_opencode_version_source_changed')
+  const version = parseCliVersion(result.stdout)
+  return version === '2.0.31' ? version : undefined
+}
+
 // 认证内容只用于判断来源类型；返回值只包含非秘密配置事实。
 export function codexProtectedRoots(snapshot: AgentSettingsSnapshot, projectRoot: string) {
   return [projectRoot, process.env.SWA_AGENT_PROFILE, snapshot.settings.agentDefaultEnv?.codex?.CODEX_HOME, snapshot.settings.agentDefaultEnv?.claude?.CLAUDE_CONFIG_DIR,
@@ -173,22 +166,12 @@ async function configuration(agent: string, snapshot: AgentSettingsSnapshot, req
     return { model: requestedModel ?? (provider && defaultModel ? `${provider}/${defaultModel}` : undefined), provider, account, sourceHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'}` }
   }
   if (agent === 'opencode') {
-    const sourceHome = process.env.SWA_DISCOVERY_OPENCODE_HOME || home
-    if (!isAbsolute(sourceHome)) throw new Error('The selected OpenCode source home must be absolute')
-    const config = await optionalConfiguration(join(sourceHome, '.config/opencode/opencode.jsonc'), 'jsonc')
-    const auth = await optionalConfiguration(join(sourceHome, '.local/share/opencode/auth.json'))
-    const entry = auth?.value.deepseek === undefined ? undefined : object.parse(auth.value.deepseek)
-    const model = requestedModel ?? text(config?.value.model)
-    const file = join(sourceHome, '.local/share/opencode/opencode.db')
-    let databaseVersion = 'absent', databaseKeyMatches = false
-    try {
-      const info = await stat(file, { bigint: true })
-      databaseVersion = `${info.dev}:${info.ino}:${info.mtimeNs}:${info.size}`
-      const credential = readOpenCodeCredential(file)
-      databaseKeyMatches = credential.key === entry?.key
-      databaseVersion += `;${credential.id};${credential.updatedAt}`
-    } catch (error) { if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error }
-    return { model, provider: model === 'deepseek/deepseek-v4-pro' ? 'deepseek' : undefined, account: entry?.type === 'api' && text(entry.key) && databaseKeyMatches ? 'opencode-native-key-database' : undefined, sourceHome, version: `${config?.version ?? 'absent'};${auth?.version ?? 'absent'};${databaseVersion}` }
+    const sourceHome = process.env.SWA_OPENCODE_API_KEY_HOME
+    if (!sourceHome || !projectRoot) return { model: undefined, provider: undefined, account: undefined, sourceHome, version: 'explicit-api-key-source-unverified' }
+    const account = await inspectNativeOpenCodeAccountSource({ sourceHome, protectedRoots: codexProtectedRoots(snapshot, projectRoot), env: process.env })
+    const target = openCodeTargets[account.provider]
+    if (requestedModel !== undefined && requestedModel !== target.model) throw new Error('native_opencode_model_unreviewed')
+    return { model: target.model, provider: account.provider, account: target.kind, sourceHome: account.sourceHome, version: `${account.config.source.version};${account.auth.source.version};${account.database.version};${account.wal?.version ?? 'absent'};${account.credential.id};${account.credential.updatedAt}` }
   }
   return { model: undefined, provider: undefined, account: undefined, version: 'native-configuration-unobserved' }
 }
@@ -233,6 +216,7 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
           executable = await realpath(command)
           if (id === 'opencode' && extname(executable).toLowerCase() === '.cmd') executable = await realpath(join(dirname(executable), 'node_modules/@opencode/cli/bin/opencode.exe'))
           if (id === 'pi') version = await readFixedPiVersion(executable, env)
+          else if (id === 'opencode') version = await readFixedOpenCodeVersion(executable, env)
           else {
             const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
             version = result.version ?? undefined
@@ -262,7 +246,7 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
       if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
       const native = id === 'pi'
         ? await inspectNativePiPolicy({ executable, version, sourceHome: config.sourceHome, projectId, questionMode, ...parsePiModelOptionId(config.model), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
-        : id === 'opencode' ? await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId) })
+        : id === 'opencode' ? await inspectNativeOpenCodePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'opencode', projectId), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
           : id === 'codex' ? await inspectNativeCodexPolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'codex', projectId), catalogPath: join(await realpath(process.env.SWA_INSTALL_ROOT!), 'runtime/codex-policy/models.json'), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
             : await inspectNativeClaudePolicy({ executable, version, sourceHome: config.sourceHome, projectId, privateRoot: join(await realpath(process.env.SWA_DATA_DIR!), 'claude', projectId), env: process.env, protectedRoots: codexProtectedRoots(snapshot, projectRoot!) })
       selection = agentSelectionSchema.parse({ agent_id: id, adapter: adapterName, execution_mode: 'structured', executable, version, model: config.model, provider: native.policy.account.provider, external_target: id, settings_source: snapshot.source, settings_revision: snapshot.revision, configuration_version: `${snapshot.version};${config.version};${JSON.stringify(native.sources)}`, native_launch: native.policy })

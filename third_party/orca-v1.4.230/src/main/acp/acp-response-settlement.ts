@@ -1,16 +1,25 @@
 import type { z } from 'zod'
 import { AcpAgentError, AcpAuthRequiredError, AcpInvalidResponseError } from './acp-errors'
 import type { AcpJsonRpcPeer } from './acp-json-rpc-peer'
+import type { ProviderWriteAdmission, ProviderWriteSettlement } from '../provider-process/provider-stdio-write-queue'
+
+export type AcpRequestWriteOptions = {
+  prepareParams?: (id: number, params: unknown) => unknown
+  beforeWrite?: ProviderWriteAdmission
+  onSettled?: (fact: ProviderWriteSettlement) => void
+}
 
 export function callAcpSession<T>(
   peer: AcpJsonRpcPeer,
   method: string,
   params: unknown,
   schema: z.ZodType<T>,
-  answered: ((signedIn: boolean) => void) | undefined
+  answered: ((signedIn: boolean) => void) | undefined,
+  write?: AcpRequestWriteOptions
 ): Promise<T> {
   return peer.request(method, params, {
     timeoutMs: null,
+    ...write,
     settle: (response) => {
       if ('error' in response) {
         const error = response.error
@@ -37,7 +46,7 @@ export function callAcpSession<T>(
 }
 
 export type AcpResponse = { value: unknown } | { error: Error }
-export type AcpRequestOptions<T = unknown> = {
+export type AcpRequestOptions<T = unknown> = AcpRequestWriteOptions & {
   timeoutMs?: number | null
   settle: (response: AcpResponse) => T
 }

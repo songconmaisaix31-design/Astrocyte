@@ -42,6 +42,10 @@ type Meta = PromptRequest['_meta']
 const withMeta = (meta: Meta): { _meta?: Meta } => (meta ? { _meta: meta } : {})
 
 export type AcpSessionRuntimeOptions = {
+  strictFrames?: boolean
+  onRecord?: (record: unknown, line: string) => void
+  onProtocolFailure?: () => void
+  onInputEnd?: () => void
   clientInfo?: InitializeRequest['clientInfo']
   peer?: AcpPeerOptions
   onPermission?: AcpPermissionHandler
@@ -83,7 +87,8 @@ export class AcpSessionRuntime {
         onNotification: (method, params) => this.handleNotification(method, params),
         onDiagnostic: options.onDiagnostic,
         onClose: options.onClose,
-        onOtherLine: options.onOtherLine
+        onOtherLine: options.onOtherLine,
+        strictFrames: options.strictFrames, onRecord: options.onRecord, onInputEnd: options.onInputEnd, onProtocolFailure: options.onProtocolFailure
       },
       options.peer
     )
@@ -172,11 +177,18 @@ export class AcpSessionRuntime {
   }
 
   async prompt(prompt: PromptRequest['prompt'], meta?: Meta): Promise<PromptResponse> {
+    return this.promptWithWrite(prompt, meta)
+  }
+
+  protected async promptWithWrite(prompt: PromptRequest['prompt'], meta?: Meta, write?: import('./acp-response-settlement').AcpRequestWriteOptions): Promise<PromptResponse> {
     if (this.activePrompt) {
+      write?.onSettled?.({ outcome: 'rejected', writeAttempted: false, cleanupCompleted: true })
       throw new Error('ACP prompt already in progress')
     }
-    const params: PromptRequest = { sessionId: this.sessionId(), prompt, ...withMeta(meta) }
-    const response = this.call('session/prompt', params, PromptResponseSchema)
+    let params: PromptRequest
+    try { params = { sessionId: this.sessionId(), prompt, ...withMeta(meta) } }
+    catch (error) { write?.onSettled?.({ outcome: 'rejected', writeAttempted: false, cleanupCompleted: true }); throw error }
+    const response = this.call('session/prompt', params, PromptResponseSchema, write)
     this.activePrompt = response
     try {
       return await response
@@ -260,8 +272,8 @@ export class AcpSessionRuntime {
     return this.started.sessionId
   }
 
-  private call<T>(method: string, params: unknown, schema: z.ZodType<T>): Promise<T> {
-    return callAcpSession(this.peer, method, params, schema, this.options.onAuthAnswered)
+  private call<T>(method: string, params: unknown, schema: z.ZodType<T>, write?: import('./acp-response-settlement').AcpRequestWriteOptions): Promise<T> {
+    return callAcpSession(this.peer, method, params, schema, this.options.onAuthAnswered, write)
       .catch((error: unknown) => { throw this.normalizeError(error) })
   }
 

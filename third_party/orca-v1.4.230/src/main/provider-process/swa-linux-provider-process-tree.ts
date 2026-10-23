@@ -197,6 +197,31 @@ export class SwaLinuxProviderProcessTree implements ProviderProcessTree {
     if (this.root && !this.exitState?.().observed) requireSwaLinuxIncarnation(this.root)
     return { platform: 'linux', owner: this.owner, root: this.root, custody_id: this.custodyId, custodyAdmitted: this.admitted, nativeState: this.nativeState, nativeCLI: this.nativeState?.state === 'created' ? { ...this.nativeState.identity, ...this.nativeState.launch } : undefined, fullTreeProof: this.proof }
   }
+  requireOwnedExecutable(candidatePid: number, expectedProgram: string): SwaLinuxProcessIncarnation {
+    if (this.failure) throw this.failure
+    const root = this.root, native = this.nativeState, exit = this.exitState?.()
+    if (this.closed || this.stopId || this.proof || !this.admitted || !root || !exit || exit.observed || exit.processless || native?.state !== 'created' || native.launch.kind !== 'executable') throw new Error('SWA Linux executable requires live native custody')
+    if (candidatePid === root.pid || expectedProgram !== realpathSync(expectedProgram) || native.launch.program !== expectedProgram) throw new Error('SWA Linux executable differs from its admitted source')
+    requireSwaLinuxIncarnation(this.owner)
+    requireSwaLinuxIncarnation(root)
+    requireSwaLinuxIncarnation(native.identity)
+    const candidate = readSwaLinuxProcessIncarnation(candidatePid)
+    const rootProcess = readSwaLinuxProcess(root.pid), nativeProcess = readSwaLinuxProcess(native.identity.pid), candidateProcess = readSwaLinuxProcess(candidatePid)
+    if (realpathSync(`/proc/${root.pid}/exe`) !== realpathSync(process.execPath) || realpathSync(`/proc/${native.identity.pid}/exe`) !== expectedProgram || realpathSync(`/proc/${candidatePid}/exe`) !== expectedProgram) throw new Error('SWA Linux executable identity changed')
+    requireSwaLinuxAncestor(nativeProcess, rootProcess)
+    requireSwaLinuxAncestor(candidateProcess, nativeProcess)
+    // 父链读取后再次核对原代际与程序；这些有界观察不构成原子快照。
+    requireSwaLinuxIncarnation(this.owner)
+    requireSwaLinuxIncarnation(root)
+    requireSwaLinuxIncarnation(native.identity)
+    requireSwaLinuxIncarnation(candidate)
+    if (realpathSync(`/proc/${root.pid}/exe`) !== realpathSync(process.execPath) || realpathSync(`/proc/${native.identity.pid}/exe`) !== expectedProgram || realpathSync(`/proc/${candidatePid}/exe`) !== expectedProgram) throw new Error('SWA Linux executable identity changed')
+    requireSwaLinuxIncarnation(this.owner)
+    requireSwaLinuxIncarnation(root)
+    requireSwaLinuxIncarnation(native.identity)
+    requireSwaLinuxIncarnation(candidate)
+    return candidate
+  }
   readFinalObservation(): SwaLinuxProviderFinalObservation | null {
     return !this.failure && this.closed && this.ackDelivered && this.verdict === 'exited' && this.finalObservation ? structuredClone(this.finalObservation) : null
   }

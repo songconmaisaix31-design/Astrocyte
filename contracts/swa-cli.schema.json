@@ -193,7 +193,7 @@
       "type": "object", "additionalProperties": false, "required": ["schema", "account", "tools"],
       "properties": {
         "schema": {"const": "swa.native-launch.v1"},
-        "account": {
+        "account": {"oneOf": [{
           "type": "object", "additionalProperties": false,
           "required": ["kind", "provider", "source_home", "auth_source", "config_source", "database_source", "credential_id", "credential_updated_at", "private_root", "model_target"],
           "properties": {
@@ -202,7 +202,16 @@
             "credential_id": {"type": "string", "minLength": 1}, "credential_updated_at": {"type": "integer", "minimum": 0}, "private_root": {"type": "string", "minLength": 1},
             "model_target": {"type": "object", "additionalProperties": false, "required": ["model_id", "api", "base_url"], "properties": {"model_id": {"const": "deepseek-v4-pro"}, "api": {"const": "opencode-native-deepseek"}, "base_url": {"const": "https://api.deepseek.com"}}}
           }
-        },
+        }, {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "provider", "source_home", "auth_source", "config_source", "database_source", "credential_id", "credential_updated_at", "private_root", "model_target"],
+          "properties": {
+            "kind": {"const": "opencode-native-stepfun-api-key"}, "provider": {"const": "stepfun"}, "source_home": {"type": "string", "minLength": 1},
+            "auth_source": {"$ref": "#/$defs/nativeConfigurationSource"}, "config_source": {"$ref": "#/$defs/nativeConfigurationSource"}, "database_source": {"$ref": "#/$defs/nativeConfigurationSource"},
+            "credential_id": {"type": "string", "minLength": 1}, "credential_updated_at": {"type": "integer", "minimum": 0}, "private_root": {"type": "string", "minLength": 1},
+            "model_target": {"type": "object", "additionalProperties": false, "required": ["model_id", "api", "base_url"], "properties": {"model_id": {"const": "step-3.5-flash"}, "api": {"const": "openai-completions"}, "base_url": {"const": "https://api.stepfun.com/v1"}}}
+          }
+        }]},
         "tools": {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract"], "properties": {"mode": {"const": "disabled"}, "native_contract": {"const": "opencode-cli-2.0.31"}}}
       }
     },

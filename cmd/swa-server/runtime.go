@@ -53,7 +53,8 @@ func composeExecution(db *swastore.DB, projects interface {
 		DiscoveryHome: os.Getenv("SWA_DISCOVERY_HOME"), DiscoveryAppData: os.Getenv("SWA_DISCOVERY_APPDATA"), DiscoveryLocalAppData: os.Getenv("SWA_DISCOVERY_LOCALAPPDATA"),
 		DiscoveryCodexHome: os.Getenv("SWA_DISCOVERY_CODEX_HOME"), CodexAPIKeyHome: os.Getenv("SWA_CODEX_API_KEY_HOME"),
 		ClaudeAPIKeyHome: os.Getenv("SWA_CLAUDE_API_KEY_HOME"), DiscoveryClaudeHome: os.Getenv("SWA_DISCOVERY_CLAUDE_HOME"), DiscoveryPiHome: os.Getenv("SWA_DISCOVERY_PI_HOME"),
-		ProtectedRoots: filepath.SplitList(os.Getenv("SWA_PROTECTED_ROOTS")), OwnerCapability: os.Getenv("SWA_OWNER_CAPABILITY"),
+		OpenCodeAPIKeyHome: os.Getenv("SWA_OPENCODE_API_KEY_HOME"),
+		ProtectedRoots:     filepath.SplitList(os.Getenv("SWA_PROTECTED_ROOTS")), OwnerCapability: os.Getenv("SWA_OWNER_CAPABILITY"),
 	})
 	if err != nil {
 		return nil, err

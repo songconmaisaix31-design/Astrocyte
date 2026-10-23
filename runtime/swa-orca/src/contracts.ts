@@ -94,14 +94,22 @@ export const nativePiPerSessionLaunchPolicySchema = z.strictObject({
   }),
   tools: nativePiToolsSchema
 })
+const nativeOpenCodeAccountSources = {
+  source_home: z.string().min(1), config_source: nativeConfigurationSourceSchema, auth_source: nativeConfigurationSourceSchema, database_source: nativeConfigurationSourceSchema,
+  credential_id: z.string().min(1), credential_updated_at: z.number().int().nonnegative(), private_root: z.string().min(1)
+}
 export const nativeOpenCodeLaunchPolicySchema = z.strictObject({
   schema: z.literal('swa.native-launch.v1'),
-  account: z.strictObject({
-    kind: z.literal('opencode-native-api-key'), provider: z.literal('deepseek'), source_home: z.string().min(1),
-    config_source: nativeConfigurationSourceSchema, auth_source: nativeConfigurationSourceSchema, database_source: nativeConfigurationSourceSchema,
-    credential_id: z.string().min(1), credential_updated_at: z.number().int().nonnegative(), private_root: z.string().min(1),
-    model_target: z.strictObject({ model_id: z.literal('deepseek-v4-pro'), api: z.literal('opencode-native-deepseek'), base_url: z.literal('https://api.deepseek.com') })
-  }),
+  account: z.discriminatedUnion('kind', [
+    z.strictObject({
+      ...nativeOpenCodeAccountSources, kind: z.literal('opencode-native-api-key'), provider: z.literal('deepseek'),
+      model_target: z.strictObject({ model_id: z.literal('deepseek-v4-pro'), api: z.literal('opencode-native-deepseek'), base_url: z.literal('https://api.deepseek.com') })
+    }),
+    z.strictObject({
+      ...nativeOpenCodeAccountSources, kind: z.literal('opencode-native-stepfun-api-key'), provider: z.literal('stepfun'),
+      model_target: z.strictObject({ model_id: z.literal('step-3.5-flash'), api: z.literal('openai-completions'), base_url: z.literal('https://api.stepfun.com/v1') })
+    })
+  ]),
   tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('opencode-cli-2.0.31') })
 })
 export const nativeCodexLaunchPolicySchema = z.strictObject({

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync, backup } from 'node:sqlite'
 import { randomBytes, randomUUID } from 'node:crypto'
-import { readFile, realpath, rename, writeFile } from 'node:fs/promises'
+import { realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
@@ -11,65 +11,54 @@ export async function checkOpenCodeResultSources({ candidate, flow, worker, outp
   const { materializePrivateOpenCodeAccount } = requireRuntime('./private-opencode-account.cjs')
   const { readNativeOpenCodeSessionSource } = requireRuntime('./opencode-session-result.cjs')
   const selection = worker.source.selection, account = selection.native_launch.account, actual = worker.native_session
-  assert.equal(account.kind, 'opencode-native-api-key')
+  assert.ok(['opencode-native-api-key', 'opencode-native-stepfun-api-key'].includes(account.kind))
   assert.equal(actual.format, 'opencode-sqlite-v2')
   const dataRoot = await realpath(dirname(dirname(account.private_root)))
   process.env.SWA_DATA_DIR = dataRoot
   process.env.SWA_INSTALL_ROOT = candidate
-  const source = new DatabaseSync(actual.path, { readOnly: true })
-  const sourceRows = () => source.prepare('SELECT id,session_id,type,data,seq,time_created FROM session_message WHERE session_id=? ORDER BY seq').all(actual.native_id).map(row => ({ ...row }))
-  const originalRows = sourceRows(), observations = []
-  const cases = ['complete', 'missing', 'damaged_json', 'invalid_utf8', 'over_limit', 'wrong_session', 'wrong_model', 'wrong_directory', 'unknown_content_block', 'non_string_text', 'missing_message_timestamp', 'unknown_message_type', 'invalid_sequence', 'empty_final_content', 'credential_missing', 'changed_after_read', 'replaced_after_read']
+  // 显式来源仍由真实验收入口提供，缺失不能记为内容校验。
+  assert.equal(await realpath(process.env.SWA_OPENCODE_API_KEY_HOME), account.source_home)
+  const cwd = await realpath(actual.session.directory), projectId = account.private_root.split(/[\\/]/).at(-1)
+  const snapshot = await inspectNativeOpenCodePolicy({ executable: selection.executable, version: selection.version, sourceHome: account.source_home, projectId, privateRoot: account.private_root, env: process.env, protectedRoots: [cwd, candidate, dataRoot] })
+  assert.deepEqual(snapshot.policy, selection.native_launch)
+  const source = new DatabaseSync(actual.path, { readOnly: true, allowExtension: false })
+  source.exec('PRAGMA query_only=ON')
+  const sourceRows = () => {
+    const bound = source.prepare('SELECT count(*) AS count,sum(length(CAST(data AS BLOB))) AS bytes FROM session_message WHERE session_id=?').get(actual.native_id)
+    assert.ok(bound.count <= 100_000 && (bound.bytes ?? 0) <= 12 * 1024 * 1024)
+    return source.prepare('SELECT id,session_id,type,data,seq,time_created FROM session_message WHERE session_id=? ORDER BY seq').all(actual.native_id).map(row => ({ ...row }))
+  }
+  const observations = []
   try {
-    for (const name of cases) {
-      const sessionId = 'source-fault-' + randomUUID(), snapshot = await inspectNativeOpenCodePolicy({ executable: selection.executable, version: selection.version, sourceHome: account.source_home, projectId: flow.initialB.source.selection.native_launch.account.private_root.split(/[\\/]/).at(-1), privateRoot: account.private_root })
-      assert.deepEqual(snapshot.policy, selection.native_launch)
-      const root = await materializePrivateOpenCodeAccount(snapshot, sessionId, await realpath(join(candidate, 'runtime/opencode-policy')), randomBytes(32).toString('hex'))
-      const path = join(root, 'data/opencode/opencode.db')
-      await backup(source, path)
-      const parameters = { selection, sessionId, nativeId: actual.native_id, cwd: await realpath(actual.session.directory), stopped: false, projectId: account.private_root.split(/[\\/]/).at(-1) }
-      const read = () => readNativeOpenCodeSessionSource(parameters)
-      if (name === 'missing') await rename(path, path + '.missing-copy')
-      else if (name === 'wrong_session') parameters.nativeId = 'ses_missing_' + randomUUID()
-      else if (!['complete', 'changed_after_read', 'replaced_after_read'].includes(name)) {
-        const database = new DatabaseSync(path)
-        try {
-          const last = database.prepare("SELECT id,data FROM session_message WHERE session_id=? AND type='assistant' ORDER BY seq DESC LIMIT 1").get(actual.native_id)
-          assert.ok(last)
-          const message = JSON.parse(last.data)
-          if (name === 'wrong_model') database.prepare('UPDATE session_v2 SET model=? WHERE id=?').run(JSON.stringify({ id: 'deepseek-flash', providerID: 'deepseek' }), actual.native_id)
-          else if (name === 'wrong_directory') database.prepare('UPDATE session_v2 SET directory=? WHERE id=?').run(root, actual.native_id)
-          else if (name === 'credential_missing') database.prepare('DELETE FROM credential').run()
-          else if (name === 'invalid_sequence') database.prepare('UPDATE session_message SET seq=0 WHERE id=?').run(last.id)
-          else if (name === 'unknown_message_type') database.prepare('UPDATE session_message SET type=? WHERE id=?').run('unsupported-message-type', last.id)
-          else if (name === 'damaged_json') database.prepare('UPDATE session_message SET data=? WHERE id=?').run(last.data.slice(0, -1), last.id)
-          else if (name === 'invalid_utf8') database.prepare('UPDATE session_message SET data=CAST(? AS TEXT) WHERE id=?').run(Buffer.from([255]), last.id)
-          else {
-            const text = message.content.find(part => part.type === 'text'); assert.ok(text)
-            if (name === 'unknown_content_block') text.type = 'unsupported-content-block'
-            if (name === 'non_string_text') text.text = 17
-            if (name === 'missing_message_timestamp') delete message.time.created
-            if (name === 'empty_final_content') message.content = []
-            if (name === 'over_limit') text.text = text.text.repeat(Math.ceil((12 * 1024 * 1024 + 1) / Buffer.byteLength(text.text)))
-            database.prepare('UPDATE session_message SET data=? WHERE id=?').run(JSON.stringify(message), last.id)
-          }
-        } finally { database.close() }
-      }
-      if (name === 'complete') {
-        const result = await read()
-        assert.equal(result.value.availability, 'complete')
-        assert.deepEqual(result.value.messages, actual.messages)
-      } else if (['changed_after_read', 'replaced_after_read'].includes(name)) {
-        const result = await read()
-        if (name === 'replaced_after_read') { await rename(path, path + '.previous-copy'); await backup(source, path) }
-        else { const database = new DatabaseSync(path); try { database.prepare('UPDATE session_v2 SET title=title || ? WHERE id=?').run(' source-copy-fault', actual.native_id) } finally { database.close() } }
-        await assert.rejects(result.verify(), /changed_during_collection/)
-      } else await assert.rejects(read())
-      assert.deepEqual(sourceRows(), originalRows)
-      observations.push({ name, outcome: 'passed', root, source: 'SQLite_backup_of_actual_native_session', actual_native_id: actual.native_id, orca_dispatch_created: false })
+    const originalRows = sourceRows(), users = originalRows.filter(row => row.type === 'user')
+    const hasBindingRecords = users.length > 0 && users.every(row => JSON.parse(row.data).metadata?.swa_input !== undefined)
+    const parameters = { selection, sessionId: worker.source.native_session_id, nativeId: actual.native_id, cwd, stopped: false, projectId }
+    assert.equal(typeof parameters.sessionId, 'string')
+    assert.equal(actual.path, join(account.private_root, parameters.sessionId, 'data/opencode/opencode.db'))
+    if (hasBindingRecords) {
+      const result = await readNativeOpenCodeSessionSource(parameters)
+      assert.equal(result.value.availability, 'complete')
+      assert.deepEqual(result.value.messages.map(({ raw_data: _raw, ...row }) => row), actual.messages.map(({ raw_data: _raw, ...row }) => row))
+      await result.verify()
+      result.verifySync()
+      observations.push({ name: 'actual_original_complete', outcome: 'passed', source: 'actual_original_worker_with_verified_input_binding' })
+    } else {
+      await assert.rejects(readNativeOpenCodeSessionSource(parameters))
+      observations.push({ name: 'actual_original_without_new_binding', outcome: 'rejected', scope: 'original_reader_rejection_only', hmac_validation: 'NOT_PROVEN', complete_positive: 'NOT_RUN' })
+    }
+    assert.deepEqual(sourceRows(), originalRows)
+    const sessionId = 'source-boundary-' + randomUUID()
+    const root = await materializePrivateOpenCodeAccount(snapshot, sessionId, await realpath(join(candidate, 'runtime/opencode-policy')), randomBytes(32).toString('hex'))
+    await backup(source, join(root, 'data/opencode/opencode.db'))
+    const expectedMissing = join(root, 'data/opencode/auth.json')
+    await assert.rejects(readNativeOpenCodeSessionSource({ ...parameters, sessionId }), error => error?.code === 'ENOENT' && error.path === expectedMissing)
+    assert.deepEqual(sourceRows(), originalRows)
+    observations.push({ name: 'backup_before_native_import', outcome: 'passed', root, rejection_layer: 'private_account_legacy_projection_absent', missing_path: expectedMissing, hmac_validation: 'NOT_REACHED', content_validation: 'NOT_REACHED', source: 'SQLite_backup_of_actual_native_session', orca_dispatch_created: false })
+    for (const name of ['missing', 'damaged_json', 'invalid_utf8', 'over_limit', 'wrong_session', 'wrong_model', 'wrong_directory', 'unknown_content_block', 'non_string_text', 'missing_message_timestamp', 'unknown_message_type', 'invalid_sequence', 'empty_final_content', 'credential_missing', 'changed_after_read', 'replaced_after_read']) {
+      observations.push({ name, outcome: 'NOT_RUN', reason: 'a_new_private_root_has_no_original_native_input_binding' })
     }
   } finally { source.close() }
-  const result = { candidate, source_revision: flow.source_revision, real_runtime_id: flow.runtime_id, real_run_id: flow.run_id, real_dispatch_id: worker.worker.dispatchId, actual_source: actual.path, original_source_rows_unchanged: true, cases: observations, model_calls: 0, scope: 'actual_native_SQLite_and_owned_backup_faults' }
+  const result = { candidate, source_revision: flow.source_revision, real_runtime_id: flow.runtime_id, real_run_id: flow.run_id, real_dispatch_id: worker.worker.dispatchId, actual_source: actual.path, original_source_rows_unchanged: true, cases: observations, model_calls: 0, scope: 'actual_original_reader_and_exact_pre_import_backup_boundary' }
   await writeFile(output, JSON.stringify(result, null, 2) + '\n', { flag: 'wx' })
-  console.log(JSON.stringify({ output, actual_native_SQLite_cases: observations.length, model_calls: 0 }))
+  console.log(JSON.stringify({ output, passed: observations.filter(row => row.outcome === 'passed').length, not_run: observations.filter(row => row.outcome === 'NOT_RUN').length, model_calls: 0 }))
 }

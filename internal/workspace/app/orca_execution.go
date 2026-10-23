@@ -214,7 +214,7 @@ func nativeAccountFields(kind string) ([]string, error) {
 		return append(common, "models_source", "private_home"), nil
 	case "pi-native-api-key-per-session":
 		return append(common, "models_source", "private_root"), nil
-	case "opencode-native-api-key":
+	case "opencode-native-api-key", "opencode-native-stepfun-api-key":
 		return append(common, "config_source", "database_source", "credential_id", "credential_updated_at", "private_root"), nil
 	case "codex-native-api-key":
 		return append(common, "catalog_source", "private_root"), nil
@@ -931,8 +931,12 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 		}
 		return nil
 	}
-	if account.Kind == "opencode-native-api-key" {
-		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "opencode-cli-2.0.31" || selection.AgentID != "opencode" || selection.Version != "2.0.31" || selection.ExecutionMode != "structured" || account.Provider != "deepseek" || selection.Provider != "deepseek" || selection.Model != "deepseek/deepseek-v4-pro" || target.ModelID != "deepseek-v4-pro" || target.API != "opencode-native-deepseek" || target.BaseURL != "https://api.deepseek.com" || account.CredentialID == "" || account.CredentialUpdatedAt < 0 || account.PrivateHome != "" || account.ModelsSource != nil {
+	if account.Kind == "opencode-native-api-key" || account.Kind == "opencode-native-stepfun-api-key" {
+		provider, model, api, baseURL := "deepseek", "deepseek-v4-pro", "opencode-native-deepseek", "https://api.deepseek.com"
+		if account.Kind == "opencode-native-stepfun-api-key" {
+			provider, model, api, baseURL = "stepfun", "step-3.5-flash", "openai-completions", "https://api.stepfun.com/v1"
+		}
+		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "opencode-cli-2.0.31" || selection.AgentID != "opencode" || selection.Version != "2.0.31" || selection.ExecutionMode != "structured" || account.Provider != provider || selection.Provider != provider || selection.Model != provider+"/"+model || target.ModelID != model || target.API != api || target.BaseURL != baseURL || account.CredentialID == "" || account.CredentialUpdatedAt < 0 || account.PrivateHome != "" || account.ModelsSource != nil {
 			return projectError(apierrors.EvidenceMissing, "the selected native OpenCode account and disabled-tool policy are unverified")
 		}
 		if !filepath.IsAbs(account.SourceHome) || !filepath.IsAbs(account.PrivateRoot) || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "opencode" || account.AuthSource.Path != filepath.Join(account.SourceHome, ".local", "share", "opencode", "auth.json") || account.ConfigSource.Path != filepath.Join(account.SourceHome, ".config", "opencode", "opencode.jsonc") || account.DatabaseSource.Path != filepath.Join(account.SourceHome, ".local", "share", "opencode", "opencode.db") || account.AuthSource.Version == "" || account.ConfigSource.Version == "" || account.DatabaseSource.Version == "" {

@@ -18,6 +18,8 @@ OpenCode原初始化FAIL和历史WAL具体转变/原SQL未知均保留。恢复�
 
 当前负责人及互斥写域：
 
+最新增量：Windows16已提交推送325909f8，最终清单a99e4371。OpenCode产品41的源码、r3 strict0及真实journal六例6/6已获原reviewer限定接受，实际result27a6ec48、tool9b205026、manifestd80caee0；274生产输入及41源全匹配，原件journal-publication-01和journal-execution-01。Root本次精确提交41后释放connection端口供已审driver使用；后继必须重冻并检查driver全部16域。driver已准的非重叠15域正在实施，当前没有CLI/模型执行或新完整构建。
+
 - separation：Attention Mirror 独立仓、显式提取器配置与资料适配器测试，当前已独立审查接受；任务 `swa-product-separation-20261023.md`。
 - capabilities：能力投影、角色/讨论 GUI、SWA 专用 Go server 与 HTTP/SQLite 闭包，已完成局部验证及依赖核对。
 - run_cli：CLI `run/wait/export`、同 Run GUI、独立前端及默认检查、构建和启动。
