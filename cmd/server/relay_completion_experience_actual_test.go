@@ -60,7 +60,7 @@ func TestRelayCompletionExperienceActualAssemblyAndRequestBoundaries(t *testing.
 	defer db.Close()
 	registry := agents.NewRegistry(filepath.Join(root, "native"))
 	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	human := attention.Principal{Kind: "human", ID: "local-human"}
 	space, err := core.CreateProjectSpace(ctx, human, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Public completion assembly permission check"})
 	if err != nil {
@@ -111,7 +111,7 @@ func TestRelayCompletionExperienceActualAssemblyAndRequestBoundaries(t *testing.
 		t.Fatal("实际对象库不可用")
 	}
 	bridge := &experienceHTTPBridge{db: db, events: sqlite.NewEventRepository(db), projects: projects}
-	services := httpapi.Services{Attention: core, LocalProjects: projects, ExperienceGovernance: bridge, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, nil)}
+	services := httpapi.Services{Attention: core, ProjectSpaces: testAttentionSpaces(db).Spaces, LocalProjects: projects, ExperienceGovernance: bridge, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, nil)}
 	if assembleSwarmLedger(&services, db, registry, store) != nil {
 		t.Fatal("实际 Swarm 生产装配失败")
 	}

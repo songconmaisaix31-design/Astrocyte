@@ -13,6 +13,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -27,7 +28,7 @@ func TestHumanAdmissionActualProjectAndTransaction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{ProjectSpaces: projectspacebridge.Attention{Spaces: workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})}})
 	human := attention.Principal{Kind: "human", ID: "local-human"}
 	space, err := core.CreateProjectSpace(ctx, human, attention.ProjectSpaceCommand{CommandMeta: metadata(), Title: "Human-created admission project scope"})
 	if err != nil {

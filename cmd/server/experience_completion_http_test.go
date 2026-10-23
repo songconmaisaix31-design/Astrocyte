@@ -40,7 +40,7 @@ func TestCompletionExperienceHTTPActualProjectBoundariesAndRestart(t *testing.T)
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: "local-human"}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Human-created completion permission check",

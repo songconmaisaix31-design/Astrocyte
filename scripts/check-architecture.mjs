@@ -47,11 +47,21 @@ for (const [name, imports] of graph) {
         issues.push(`${relative} imports outside the shared judgment contract: ${dependency}`);
       }
     }
-    if (/^internal\/adapters\/(httpapi|mcp)(?:\/|$)/.test(relative) &&
-        (dependency === 'database/sql' || dependency.startsWith('modernc.org/') || /^internal\/adapters\/sqlite(?:\/|$)/.test(internal))) {
+    if (/^internal\/adapters\/(httpapi|swahttp|mcp)(?:\/|$)/.test(relative) &&
+        (dependency === 'database/sql' || dependency.startsWith('modernc.org/') || /^internal\/adapters\/(sqlite|sqlitebase|swastore)(?:\/|$)/.test(internal))) {
       issues.push(`${relative} transport imports persistence: ${dependency}`);
     }
   }
+}
+// SWA 主动服务闭包不得重新依赖旧混合产品组装。
+const swa = spawnSync(go, ['list', '-mod=readonly', '-deps', '-f', '{{.ImportPath}}', './cmd/swa', './cmd/swa-server'], { cwd: root, encoding: 'utf8', windowsHide: true });
+if (swa.error) throw swa.error;
+if (swa.status !== 0) throw new Error(swa.stderr);
+const allowed = /^(?:cmd\/swa(?:-server)?|internal\/(?:apierrors|foundation|workspace\/(?:app|domain)|adapters\/(?:orca|projectfiles|sqlitebase|swahttp|swastore))|migrations\/swa)$/;
+for (const dependency of swa.stdout.trim().split(/\r?\n/)) {
+  if (!dependency.startsWith(moduleName + '/')) continue;
+  const relative = dependency.slice(moduleName.length + 1);
+  if (!allowed.test(relative)) issues.push(`SWA service depends on a package outside its product: ${relative}`);
 }
 if (issues.length) throw new Error(`Architecture violations:\n${issues.join('\n')}`);
 console.log(`Go import graph: ${graph.size} packages satisfy Domain/app/context/transport boundaries`);

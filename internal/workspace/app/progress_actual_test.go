@@ -52,7 +52,7 @@ func openActualProgressHTTP(t *testing.T) *actualProgressHTTP {
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: "local-human"}
-	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	space, err := spaces.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "人工进度权限检查",
@@ -281,7 +281,7 @@ func TestProgressCrossProjectGetRejected(t *testing.T) {
 	human := domain.Caller{Kind: "human", ID: "local-human"}
 
 	// 创建第二个项目及独立空间
-	spaceB, err := attention.NewAttentionService(sqlite.NewAttentionRepository(s.db), nil, nil, attention.ServiceOptions{}).
+	spaceB, err := attention.NewAttentionService(sqlite.NewAttentionRepository(s.db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(s.db)}).
 		CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 			CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 			Title:       "跨项目拒绝检查",
@@ -459,7 +459,7 @@ func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	if err := db1.RunMigrations(ctx, migrations.FS); err != nil {
 		t.Fatal(err)
 	}
-	spaces1 := attention.NewAttentionService(sqlite.NewAttentionRepository(db1), nil, nil, attention.ServiceOptions{})
+	spaces1 := attention.NewAttentionService(sqlite.NewAttentionRepository(db1), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db1)})
 	space1, err := spaces1.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "重启持久检查",

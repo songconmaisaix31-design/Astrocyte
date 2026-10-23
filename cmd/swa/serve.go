@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	orcaadapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/orca"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectfiles"
 )
 
 func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
@@ -80,7 +80,7 @@ func serve(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_installation", 4)
 	}
-	install, err := (agents.ProjectFiles{}).CanonicalRoot(filepath.Dir(executable))
+	install, err := projectfiles.CanonicalRoot(filepath.Dir(executable))
 	if err != nil {
 		return output.failure("provider_unavailable", err.Error(), "inspect_installation", 4)
 	}
@@ -507,7 +507,7 @@ func privateDataDirectory(input, install string, protected []string) (string, er
 		parts = append(parts, filepath.Base(ancestor))
 		ancestor = filepath.Dir(ancestor)
 	}
-	actual, err := (agents.ProjectFiles{}).CanonicalRoot(ancestor)
+	actual, err := projectfiles.CanonicalRoot(ancestor)
 	if err != nil {
 		return "", err
 	}
@@ -518,7 +518,7 @@ func privateDataDirectory(input, install string, protected []string) (string, er
 		if err := requirePlainDataPath(root); err != nil {
 			return "", err
 		}
-		root, err := (agents.ProjectFiles{}).CanonicalRoot(root)
+		root, err := projectfiles.CanonicalRoot(root)
 		if err != nil {
 			return "", err
 		}
@@ -534,7 +534,7 @@ func privateDataDirectory(input, install string, protected []string) (string, er
 	if err := os.MkdirAll(actual, 0o700); err != nil {
 		return "", err
 	}
-	return (agents.ProjectFiles{}).CanonicalRoot(actual)
+	return projectfiles.CanonicalRoot(actual)
 }
 
 func pathContains(root, path string) bool {

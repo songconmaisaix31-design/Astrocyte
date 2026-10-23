@@ -77,7 +77,7 @@ func (h *handler) registerOrcaCLI(mux *http.ServeMux) {
 			return
 		}
 		// project 形式只用于 open 和无 selector 的 request 查询，其余操作由当前令牌限定。
-		if command.Action == "controller.open" || command.Action == "request.show" && command.Controller == "" {
+		if command.Action == "controller.open" || command.Action == "run.submit" || command.Action == "request.show" && command.Controller == "" {
 			command.ProjectID = r.PathValue("id")
 		}
 		caller := localCaller(r)

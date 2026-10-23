@@ -128,12 +128,12 @@ func TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	projects := workspace.NewLocalProjectService(db, &projectReferenceBridge{attention: core}, agents.ProjectFiles{}, registry)
 	bridge := &selectedTextBridge{projects: projects, processor: registry}
 	server := httpapi.NewServer(httpapi.Config{
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
-		Services: httpapi.Services{LocalProjects: projects, Attention: core},
+		Services: httpapi.Services{LocalProjects: projects, Attention: core, ProjectSpaces: testAttentionSpaces(db).Spaces},
 	})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -421,11 +421,11 @@ func TestSelectedTextCapacityActualGitDocumentsOversize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	projects := workspace.NewLocalProjectService(db, &projectReferenceBridge{attention: core}, agents.ProjectFiles{}, registry)
 	server := httpapi.NewServer(httpapi.Config{
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
-		Services: httpapi.Services{LocalProjects: projects, Attention: core},
+		Services: httpapi.Services{LocalProjects: projects, Attention: core, ProjectSpaces: testAttentionSpaces(db).Spaces},
 	})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

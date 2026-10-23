@@ -25,6 +25,9 @@ import (
 
 const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] [--web-dir INSTALL/web] --json
 swa status|capabilities --json
+swa run --project P --workdir W --spec-file F --input-file I --agent A --model M --request-id UUID [--name lead] [--role ID --role-revision N] [--conversation ID] [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
+swa wait --controller C --task T --run R [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
+swa export --controller C --task T --run R --output-dir O --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close|recover --controller C [--request-id UUID] --json
 swa task create --controller C --spec-file F --request-id UUID --json
@@ -42,7 +45,9 @@ serve 的数据目录、可选 profile 与网页目录必须是绝对路径；R 
 --web-dir 仅接受 combined 安装中的 web 绝对目录，由同一 HTTP 服务提供网页。
 task spec 的 max_workers 是任务批准创建或预留的 Worker 总席位；已完成或释放的 child Task 仍计数，不自动归还席位。每次 start 使用独立名称、输入与 request ID。
 业务 --json 调用只输出一个 JSON 结果；help/--help/--version 输出本地文本，不连接服务。
-退出码：0=命令成功，2=参数错误，3=权限或批准不足，4=能力不可用，5=资源拒绝，6=效果未知，7=运行或导出失败，130=等待已取消。
+退出码：0=命令成功，2=参数错误，3=权限或批准不足，4=能力不可用，5=资源拒绝，6=效果未知，7=运行或导出失败，8=等待超时，9=需要用户回答，130=等待已取消。
+run 默认等待同一 Run 的全部递归任务；wait 只读重连，--strict 在任一子任务失败时返回7。
+run/wait 的超时和 Ctrl-C 仅结束当前等待；stderr 显示进度和原 Run 重连命令。
 普通查询/控制的 Ctrl-C 只取消当前 CLI 等待，不停止 Worker；serve 的 Ctrl-C/所属 stdin 结束会关闭本次所属服务。
 安装及完整调用说明见安装目录 USAGE.md；使用独立目录，保持 serve 所属 stdin 开启。
 `
@@ -71,6 +76,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	}
 	if args[0] == "serve" {
 		return serve(ctx, args[1:], stdout, stderr)
+	}
+	if args[0] == "run" || args[0] == "wait" || args[0] == "export" {
+		return runWorkflow(ctx, args, stdout, stderr)
 	}
 	action, rest := args[0], args[1:]
 	if action != "status" && action != "capabilities" {

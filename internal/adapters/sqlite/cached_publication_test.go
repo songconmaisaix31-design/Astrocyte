@@ -86,7 +86,7 @@ func returnedResultOSRecovery(t *testing.T, mode string) {
 	reader := importers.NewReader(nil)
 	reader.Arxiv.Client = &http.Client{Transport: paperExportTransport{}}
 	d := &localReturnedResult{t: t, objectRoot: objectRoot, saved: filepath.Join(dir, "preserved-objects")}
-	options := app.ServiceOptions{Distiller: d, AllowedProcessingSourceKeys: []string{"arxiv:2504.16054"}}
+	options := app.ServiceOptions{Distiller: d, AllowedProcessingSourceKeys: []string{"arxiv:2504.16054"}, ProjectSpaces: attentionSpaces(db)}
 	selected := &cachedProjectText{result: d}
 	if mode != "legacy" {
 		options.Distiller = nil

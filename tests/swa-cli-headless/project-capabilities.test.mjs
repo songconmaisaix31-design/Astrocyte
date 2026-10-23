@@ -12,7 +12,7 @@ await mkdir(join(root, '.verification/project-capabilities'), { recursive: true 
 const directory = await mkdtemp(join(root, '.verification/project-capabilities/run-'))
 function compile(name, entry) {
   const output = join(directory, name + '.cjs')
-  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib', 'esm', 'main.js') }, logLevel: 'silent' })
+  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib', 'esm', 'main.js') }, logLevel: 'silent' })
   return createRequire(output)(output)
 }
 const { readDiscoveryProjectRoot, assertDiscoverySnapshot } = compile('discovery', 'runtime/swa-orca/src/agent-discovery.ts')

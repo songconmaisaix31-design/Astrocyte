@@ -22,6 +22,7 @@ import (
 // ServiceOptions configures bounded local workers and attention decay. Clock
 // is injectable for deterministic rules; it must be safe for concurrent use.
 type ServiceOptions struct {
+	ProjectSpaces               ProjectSpaces
 	WorkerConcurrency           int
 	MaxAttempts                 int
 	JobTimeout                  time.Duration

@@ -25,6 +25,8 @@ import { assertNativeClaudeCurrent, inspectNativeClaudePolicy } from './native-c
 import { materializePrivateClaudeAccount, privateClaudeEnvironment, verifyPrivateClaudeAccount } from './private-claude-account'
 import { createClaudeSessionPolicy } from './claude-session-policy'
 import { createPiSessionPolicy } from './pi-session-policy'
+import { isTaskDescendant } from './run-view'
+import { runCleanupApproval, validateHandoffInput } from './run-settlement'
 
 const mutationRowSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), state: z.enum(['pending', 'completed']), receipt: z.string().nullable() })
 
@@ -55,7 +57,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         if (!isDeepStrictEqual(invocation.selection, selection) || invocation.project.id !== parent.project_id || invocation.scope.run_id !== parent.run_id || invocation.scope.root_task_id !== parent.root_task_id || invocation.scope.controller !== parent.controller || invocation.command.request_id + '/native' !== request) throw new Error('The original native Worker invocation changed')
         const dispatch = db.getDispatchContextById(identity.dispatchId)
         const task = dispatch && db.getTask(dispatch.task_id)
-        if (!dispatch || dispatch.run_id !== invocation.scope.run_id || !task || task.parent_id !== invocation.scope.root_task_id) throw new Error('The native Worker Dispatch left its original Run and root task')
+        if (!dispatch || dispatch.run_id !== invocation.scope.run_id || !task || !isTaskDescendant(db, invocation.scope.run_id, invocation.scope.root_task_id, task.id)) throw new Error('The native Worker Dispatch left its original Run and root task')
         matches.push({ selection, invocation, parentRow: row, childRow: child })
       }
     }
@@ -138,6 +140,8 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
   }
   // 停止只沿已经准入的原 stop receipt 收尾，不借用已撤销的新输入 Grant。
   function approvePiStop(selected: Extract<Selected, { kind: 'pi' }>, sessionId: string) {
+    const cleanup = runCleanupApproval(runtime, sessionId)
+    if (cleanup) { cleanup(); return cleanup }
     const db = runtime.getOrchestrationDb(), identity = structuredWorkerIdentities.getBySessionId(sessionId)
     const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
     const scope = selected.invocation.scope
@@ -161,7 +165,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const current = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId), worker = db.getWorkerDispatch(dispatchId)
       const dispatch = db.getDispatchContextById(dispatchId), task = dispatch && db.getTask(dispatch.task_id)
       const currentResource = db.getWorkerTerminalResourceByOwner(dispatchId)
-      if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(sessionId), identity) || !current || current.provider !== 'pi' || current.lease.claimStatus !== 'live' || current.lease.unreconciled || current.lease.runtimeFence !== record.lease.runtimeFence || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || !isDeepStrictEqual(current.accountHome, record.accountHome) || !isDeepStrictEqual(current.options, record.options) || !worker || worker.state !== 'stopping' || worker.runtime_epoch !== runtime.getRuntimeId() || !dispatch || dispatch.run_id !== scope.run_id || dispatch.assignee_orca_session_id !== sessionId || !dispatch.capability_revoked_at || !task || task.parent_id !== scope.root_task_id || db.getRun(run.id)?.consumer_generation !== run.consumer_generation || db.getRun(run.id)?.coordinator_handle !== scope.controller || !currentResource || currentResource.id !== resource.id || currentResource.owner_dispatch_id !== dispatchId || currentResource.terminal_handle !== resource.terminal_handle || currentResource.process_incarnation !== resource.process_incarnation || currentResource.ownership_state !== 'owned' || currentResource.release_state === 'released') throw new Error('The native Pi stop identity changed')
+      if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(sessionId), identity) || !current || current.provider !== 'pi' || current.lease.claimStatus !== 'live' || current.lease.unreconciled || current.lease.runtimeFence !== record.lease.runtimeFence || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || !isDeepStrictEqual(current.accountHome, record.accountHome) || !isDeepStrictEqual(current.options, record.options) || !worker || worker.state !== 'stopping' || worker.runtime_epoch !== runtime.getRuntimeId() || !dispatch || dispatch.run_id !== scope.run_id || dispatch.assignee_orca_session_id !== sessionId || !dispatch.capability_revoked_at || !task || !isTaskDescendant(db, scope.run_id, scope.root_task_id, task.id) || db.getRun(run.id)?.consumer_generation !== run.consumer_generation || db.getRun(run.id)?.coordinator_handle !== scope.controller || !currentResource || currentResource.id !== resource.id || currentResource.owner_dispatch_id !== dispatchId || currentResource.terminal_handle !== resource.terminal_handle || currentResource.process_incarnation !== resource.process_incarnation || currentResource.ownership_state !== 'owned' || currentResource.release_state === 'released') throw new Error('The native Pi stop identity changed')
       for (const original of [parent, child]) {
         const row = db.getMutationReceipt(original.caller_fingerprint, original.request_id)
         if (!row || row.method !== original.method || row.payload_hash !== original.payload_hash || !['pending', 'completed'].includes(row.state)) throw new Error('The original native Pi stop receipt changed')
@@ -214,6 +218,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     if (rows.length !== 1 || !rows[0]!.receipt) throw new Error('The original native input has no unique parent request')
     const receipt = nativeObject(JSON.parse(rows[0]!.receipt))
     const invocation = invocationSchema.parse(receipt.invocation)
+    validateHandoffInput(runtime, invocation)
     const binding = inputBindingSchema.parse(receipt.swa_input_binding)
     const childRows = z.array(mutationRowSchema).parse(db.db.prepare('SELECT * FROM mutation_receipts WHERE request_id=?').all(binding.child_request))
     if (childRows.length !== 1 || !childRows[0]!.receipt || !isDeepStrictEqual(nativeObject(JSON.parse(childRows[0]!.receipt)).swa_input_binding, binding)) throw new Error('The original native child input checkpoint is unavailable')
@@ -232,6 +237,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!owner.ownerAlive() || !isDeepStrictEqual(structuredWorkerIdentities.getBySessionId(input.sessionId), identity) || current?.lease.runtimeFence !== input.fence || current.lease.claimStatus !== 'live' || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || !['starting', 'ready'].includes(db.getWorkerDispatch(binding.dispatch_id)?.state ?? '')) throw new Error('The native input identity changed during current approval')
       if (!isDeepStrictEqual(current.accountHome, record.accountHome) || !isDeepStrictEqual(current.options, record.options) || !isDeepStrictEqual(current.providerHandleChain, record.providerHandleChain)) throw new Error('The native input account, options or provider link changed during current approval')
       assertDeliveryGrantCurrent(invocation)
+      validateHandoffInput(runtime, invocation)
     }
     finalAdmission()
     return finalAdmission

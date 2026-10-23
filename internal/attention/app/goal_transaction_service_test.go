@@ -135,7 +135,7 @@ func TestCurrentGoalGuardSharesAttentionCommitRollbackAndReopen(t *testing.T) {
 			t.Error("close reopened Goal and Attention database")
 		}
 	})
-	reopened := NewAttentionService(sqlite.NewAttentionRepository(reopenedDB), importers.NewReader(nil), objects, ServiceOptions{})
+	reopened := NewAttentionService(sqlite.NewAttentionRepository(reopenedDB), importers.NewReader(nil), objects, ServiceOptions{ProjectSpaces: projectSpaces(reopenedDB)})
 	s2 = workspace.NewS2Service(sqlite.NewWorkspaceRepository(reopenedDB), agents.ProjectFiles{}, nil)
 	historical, err := s2.ReadGoal(ctx, caller, goal.ID, goal.Revision)
 	if err != nil || !sameAdmissionJSON(t, historical, goal) {

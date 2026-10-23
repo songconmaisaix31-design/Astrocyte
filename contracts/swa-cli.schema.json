@@ -13,6 +13,10 @@
         "source_revision": {"type": "string", "minLength": 1},
         "success_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "max_workers": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "initial_workers": {"type": "integer", "minimum": 1, "maximum": 9007199254740991, "description": "Number of initially requested Workers that must be created before automatic Run completion; defaults to one and cannot exceed max_workers. Actual recursive descendants are always included."},
+        "conversation_id": {"type": "string", "minLength": 1},
+        "role_id": {"type": "string", "minLength": 1},
+        "role_revision": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
         "context": {
           "type": ["object", "null"],
           "additionalProperties": false,
@@ -48,9 +52,10 @@
       "additionalProperties": false,
       "required": ["action"],
       "properties": {
-        "action": { "enum": ["status", "capabilities", "controller.open", "controller.show", "controller.close", "controller.recover", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "request.show"] },
+        "action": { "enum": ["status", "capabilities", "run.submit", "run.show", "run.export", "role.list", "role.show", "role.create", "role.update", "role.archive", "conversation.list", "conversation.show", "conversation.create", "conversation.append", "handoff.notify", "controller.open", "controller.show", "controller.close", "controller.recover", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "request.show"] },
         "project_id": { "type": "string", "minLength": 1 },
         "controller": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string", "minLength": 1 },
         "task_id": { "type": "string", "minLength": 1 },
         "dispatch_id": { "type": "string", "minLength": 1 },
         "request_id": { "type": "string", "format": "uuid" },
@@ -64,7 +69,14 @@
         "model": { "type": "string", "minLength": 1 },
         "source": { "const": "transcript" },
         "cursor": { "type": "string", "minLength": 1 },
-        "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+        "limit": { "type": "integer", "minimum": 1, "maximum": 1000 },
+        "parent_task_id": {"type": "string", "minLength": 1},
+        "handoff_mode": {"enum": ["work", "consult"]}, "reply_mode": {"enum": ["resume", "poll"]},
+        "completion_criteria": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "role_id": {"type": "string", "minLength": 1}, "conversation_id": {"type": "string", "minLength": 1},
+        "revision": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        "role": {"$ref": "#/$defs/roleDefinition"}, "conversation": {"$ref": "#/$defs/conversationDefinition"},
+        "text": {"type": "string", "minLength": 1, "maxLength": 32000}
       },
       "description": "Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here."
     },
@@ -75,7 +87,39 @@
         "status": {"enum": ["available", "unavailable", "unknown"]},
         "reason": {"type": "string", "minLength": 1},
         "source": {"type": "string", "minLength": 1},
-        "checked_at": {"type": "string"}
+        "checked_at": {"type": "string"},
+        "basis": {"enum": ["declaration", "configuration", "probe", "session", "result"]}
+      }
+    },
+    "roleDefinition": {
+      "type": "object", "additionalProperties": false, "required": ["name", "responsibilities", "default_agent", "default_model", "skills", "knowledge"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 200}, "responsibilities": {"type": "string", "minLength": 1, "maxLength": 16000},
+        "default_agent": {"type": "string", "minLength": 1}, "default_model": {"type": "string", "minLength": 1},
+        "skills": {"type": ["array", "null"], "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+        "knowledge": {"type": ["array", "null"], "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 2048}}
+      }
+    },
+    "conversationDefinition": {
+      "type": "object", "additionalProperties": false, "required": ["title"],
+      "properties": {"title": {"type": "string", "minLength": 1, "maxLength": 200}, "role_id": {"type": "string", "minLength": 1}}
+    },
+    "modelCatalogObservation": {
+      "type": "object", "additionalProperties": false, "required": ["origin", "availability", "models"],
+      "properties": {
+        "origin": {"enum": ["live-session", "probe", "configured", "unknown"]}, "availability": {"enum": ["verified", "unverified"]},
+        "models": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "label"], "properties": {"id": {"type": "string", "minLength": 1}, "label": {"type": "string", "minLength": 1}, "provider": {"type": "string", "minLength": 1}}}},
+        "observed_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "executionObservation": {
+      "type": "object", "additionalProperties": false, "required": ["selection", "launch", "control", "result", "authenticated", "delivery", "resume", "model_catalog"],
+      "properties": {
+        "selection": {"type": "object", "additionalProperties": false, "required": ["agent", "adapter", "version", "execution_mode", "provider", "model", "account_source"], "properties": {"agent": {"type": "string", "minLength": 1}, "adapter": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}, "execution_mode": {"const": "structured"}, "provider": {"type": "string", "minLength": 1}, "model": {"type": "string", "minLength": 1}, "account_source": {"type": "string", "minLength": 1}}},
+        "launch": {"$ref": "#/$defs/observation"}, "control": {"$ref": "#/$defs/observation"}, "result": {"$ref": "#/$defs/observation"}, "authenticated": {"$ref": "#/$defs/observation"},
+        "delivery": {"type": "object", "additionalProperties": false, "required": ["state", "phase", "source"], "properties": {"state": {"enum": ["sent", "not_sent", "unknown"]}, "phase": {"enum": ["journaled", "queued", "accepted", "rejected", "unknown"]}, "source": {"type": "string", "minLength": 1}, "request_id": {"type": "string", "minLength": 1}, "operation_id": {"type": "string", "minLength": 1}}},
+        "resume": {"type": "object", "additionalProperties": false, "required": ["state", "source"], "properties": {"state": {"enum": ["not_requested", "resumed", "rebuilt", "failed", "unknown"]}, "source": {"type": "string", "minLength": 1}, "session_id": {"type": "string", "minLength": 1}}},
+        "model_catalog": {"$ref": "#/$defs/modelCatalogObservation"}
       }
     },
     "settingsSource": {
@@ -204,12 +248,12 @@
     },
     "installedObservation": {
       "type": "object", "additionalProperties": false, "required": ["status", "reason", "source"],
-      "properties": {"status": {"enum": ["available", "unavailable", "unknown"]}, "reason": {"type": "string", "minLength": 1}, "source": {"type": "string", "minLength": 1}, "checked_at": {"type": "string"}, "executable": {"type": "string"}, "version": {"type": "string"}},
+      "properties": {"status": {"enum": ["available", "unavailable", "unknown"]}, "reason": {"type": "string", "minLength": 1}, "source": {"type": "string", "minLength": 1}, "checked_at": {"type": "string"}, "basis": {"enum": ["declaration", "configuration", "probe", "session", "result"]}, "executable": {"type": "string"}, "version": {"type": "string"}},
       "if": {"properties": {"status": {"const": "available"}}}, "then": {"required": ["executable", "version"]}
     },
     "configuredObservation": {
       "type": "object", "additionalProperties": false, "required": ["status", "reason", "source"],
-      "properties": {"status": {"enum": ["available", "unavailable", "unknown"]}, "reason": {"type": "string", "minLength": 1}, "source": {"type": "string", "minLength": 1}, "checked_at": {"type": "string"}, "model": {"type": "string"}, "provider": {"type": "string"}, "account_source": {"type": "string"}},
+      "properties": {"status": {"enum": ["available", "unavailable", "unknown"]}, "reason": {"type": "string", "minLength": 1}, "source": {"type": "string", "minLength": 1}, "checked_at": {"type": "string"}, "basis": {"enum": ["declaration", "configuration", "probe", "session", "result"]}, "model": {"type": "string"}, "provider": {"type": "string"}, "account_source": {"type": "string"}},
       "if": {"properties": {"status": {"const": "available"}}}, "then": {"required": ["model", "provider", "account_source"]}
     },
     "capabilities": {
@@ -221,7 +265,9 @@
         "agents": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "adapter", "execution_mode", "registered", "enabled", "installed", "configured", "launchable", "control", "requirements"], "properties": {
           "id": {"type": "string", "minLength": 1}, "adapter": {"type": "string", "minLength": 1}, "execution_mode": {"const": "structured"},
           "registered": {"$ref": "#/$defs/observation"}, "enabled": {"$ref": "#/$defs/observation"}, "installed": {"$ref": "#/$defs/installedObservation"}, "configured": {"$ref": "#/$defs/configuredObservation"}, "launchable": {"$ref": "#/$defs/observation"},
-          "control": {"type": "object", "additionalProperties": false, "required": ["start", "send", "read", "stop", "resume", "tools"], "properties": {"start": {"$ref": "#/$defs/observation"}, "send": {"$ref": "#/$defs/observation"}, "read": {"$ref": "#/$defs/observation"}, "stop": {"$ref": "#/$defs/observation"}, "resume": {"$ref": "#/$defs/observation"}, "tools": {"$ref": "#/$defs/observation"}}},
+          "authenticated": {"$ref": "#/$defs/observation"}, "model_catalog": {"$ref": "#/$defs/modelCatalogObservation"},
+          "declared_features": {"type": "object", "additionalProperties": false, "required": ["images", "model_switch", "steering"], "properties": {"images": {"type": "boolean"}, "model_switch": {"type": "boolean"}, "steering": {"enum": ["inject", "queue"]}}},
+          "control": {"type": "object", "additionalProperties": false, "required": ["start", "send", "read", "stop", "resume", "tools"], "properties": {"start": {"$ref": "#/$defs/observation"}, "send": {"$ref": "#/$defs/observation"}, "read": {"$ref": "#/$defs/observation"}, "stop": {"$ref": "#/$defs/observation"}, "resume": {"$ref": "#/$defs/observation"}, "tools": {"$ref": "#/$defs/observation"}, "images": {"$ref": "#/$defs/observation"}, "model_switch": {"$ref": "#/$defs/observation"}}},
           "requirements": {"$ref": "#/$defs/requirements"}
         }}}
       }

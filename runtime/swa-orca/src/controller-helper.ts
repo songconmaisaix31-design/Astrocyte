@@ -1,6 +1,7 @@
 import { createInterface } from 'node:readline'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { helperInput, nativeObject, nativeError, type Invocation } from './contracts'
+import { fixedTaskSpec, workerTaskSpec } from './collaboration-records'
 
 const controller = process.env.ORCA_TERMINAL_HANDLE
 const data = process.env.ORCA_USER_DATA
@@ -25,7 +26,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     const created = nativeObject(await call('orchestration.runCreate', { from: controller, objective: invocation.spec.goal }, `${requestId}/run-create`))
     const nativeRun = nativeObject(created.run)
     const root = nativeObject(await call('orchestration.taskCreate', {
-      spec: JSON.stringify({ spec: invocation.spec, context: invocation.context, project_id: invocation.project.id, settings_revision: invocation.caller.settings_revision }),
+      spec: JSON.stringify(fixedTaskSpec(invocation)),
       taskTitle: invocation.spec.goal, callerTerminalHandle: controller, run: nativeRun.id
     }, `${requestId}/root-task`))
     return { ...created, ...root }
@@ -36,9 +37,9 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     case 'worker.start': {
       if (!invocation.input || !invocation.selection || invocation.selection.agent_id !== c.agent || invocation.selection.model !== c.model) throw new Error('selected_native_worker_input_required')
       return call('orchestration.workerStart', {
-        from: controller, run, parent: invocation.scope.root_task_id, worktree: 'current', name: c.name,
+        from: controller, run, parent: c.parent_task_id ?? invocation.scope.root_task_id, worktree: 'current', name: c.name,
         taskTitle: c.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000,
-        spec: `${invocation.input.text}\n\n固定公开上下文：\n${JSON.stringify(invocation.scope.context)}`
+        spec: workerTaskSpec(invocation)
       }, `${requestId}/native`)
     }
     case 'worker.stop': return call('orchestration.workerStop', { dispatch: c.dispatch_id }, `${requestId}/native`)

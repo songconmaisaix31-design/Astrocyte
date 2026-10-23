@@ -67,7 +67,7 @@ func dynamicDAGActualService(t *testing.T, idleSeconds int, lifetime time.Durati
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: "local-human"}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: httpAttentionSpaces(db)})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "公开Astrocyte任务依赖验证"})
 	if err != nil {
 		t.Fatal(err)

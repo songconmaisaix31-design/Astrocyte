@@ -94,6 +94,8 @@ async function main() {
       getLocalProvider: () => getLocalPtyProvider(), canRecoverPersistentLocalPtys: () => daemonOwnsFreshPersistentPtys(),
       getDesktopWindowStatus: () => 'blocked'
     })
+    const { initializeCollaborationRecords } = await import('./collaboration-records')
+    initializeCollaborationRecords(runtime.getOrchestrationDb())
     const { installAgentLaunchAdmission } = await import('./agent-launch-admission')
     registerCleanup(installAgentLaunchAdmission(runtime, { ownerCapability, ownerAlive: () => !ownerDisconnected }))
     await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
@@ -115,7 +117,9 @@ async function main() {
     const { ORCHESTRATION_MUTATION_REQUEST_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/mutation-request-show')
     const { ORCHESTRATION_MESSAGE_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods')
     const { ORCHESTRATION_CALLER_METHODS } = await import('../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/caller-show')
-    const { SWA_METHODS } = await import('./native-methods')
+    const { SWA_METHODS, collectRunResult, deliverRunHandoff } = await import('./native-methods')
+    const { installRunSettlement } = await import('./run-settlement')
+    registerCleanup(installRunSettlement(runtime, (scope, workspaceId, dispatchId) => collectRunResult(runtime, scope, workspaceId, dispatchId), invocation => deliverRunHandoff(runtime, invocation), () => !ownerDisconnected))
     const { admitControllerRPC } = await import('./controller-admission')
     const allowed = new Set(['status.get', 'orchestration.callerShow', 'orchestration.runCurrent', 'orchestration.runCreate', 'orchestration.runUse', 'orchestration.runShow', 'orchestration.taskCreate', 'orchestration.taskList', 'orchestration.taskUpdate', 'orchestration.workerStart', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead', 'orchestration.workerStop', 'orchestration.workerRelease', 'orchestration.requestShow'])
     const nativeMethods = [...STATUS_METHODS, ...ORCHESTRATION_RUN_METHODS, ...ORCHESTRATION_WORKER_METHODS, ...ORCHESTRATION_MUTATION_REQUEST_METHODS, ...ORCHESTRATION_MESSAGE_METHODS, ...ORCHESTRATION_CALLER_METHODS].filter(method => allowed.has(method.name))

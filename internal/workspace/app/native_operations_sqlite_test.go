@@ -40,7 +40,7 @@ func TestNativeOperationInvalidIdentityDoesNotLaunch(t *testing.T) {
 	if err := db.RunMigrations(ctx, migrations.FS); err != nil {
 		t.Fatal(err)
 	}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: "human", ID: "operation-test-human"}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Human-created operation validation space",
 	})

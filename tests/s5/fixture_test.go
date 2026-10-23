@@ -20,6 +20,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	adapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/judgment"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -62,7 +63,8 @@ func newFixture(t *testing.T, path, objectRoot string) *fixture {
 		db.Close()
 		t.Fatal(err)
 	}
-	a := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{filepath.Join(s5Root(t), ".verification", "s5")}), store, attention.ServiceOptions{})
+	spaces := workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})
+	a := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{filepath.Join(s5Root(t), ".verification", "s5")}), store, attention.ServiceOptions{ProjectSpaces: projectspacebridge.Attention{Spaces: spaces}})
 	refs := adapter.AttentionReferences{Attention: a}
 	projects := workspace.NewLocalProjectService(db, refs, agents.ProjectFiles{}, nil)
 	environment, err := os.Hostname()
@@ -74,7 +76,7 @@ func newFixture(t *testing.T, path, objectRoot string) *fixture {
 		t.Fatal(err)
 	}
 	access := &adapter.ProjectAuthorization{Projects: db, References: refs, Policies: db, Snapshots: snapshots}
-	transport := httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Attention: a, LocalProjects: projects}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	transport := httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Attention: a, ProjectSpaces: spaces, LocalProjects: projects}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)

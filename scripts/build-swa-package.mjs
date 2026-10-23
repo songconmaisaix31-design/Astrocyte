@@ -135,7 +135,7 @@ for (const [index, name] of nativePackages.entries()) {
 }
 delete environment._CL_
 const go = await findGo()
-for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/server']]) {
+for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/swa-server']]) {
   const args = ['build', '-mod=readonly', '-p=4', '-trimpath']
   if (name === 'swa.exe') args.push('-ldflags=-X main.version=' + revision)
   run(go, [...args, '-o', join(output, name), entry])

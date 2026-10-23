@@ -254,7 +254,7 @@ func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
 	registry := agents.NewRegistry(filepath.Join(directory, "native"))
 	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Public project prelaunch failure validation",
 	})
@@ -322,7 +322,7 @@ func TestProvenUnstartedResumePreservesOwnedOriginalSession(t *testing.T) {
 	registry := agents.NewRegistry(registryRoot)
 	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Public project original controller resume validation",
 	})

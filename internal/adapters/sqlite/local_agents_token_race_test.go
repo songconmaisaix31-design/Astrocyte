@@ -19,7 +19,7 @@ func TestConcurrentTokenIssuanceCannotResurrectRevokedGrant(t *testing.T) {
 	db := openAttentionDB(t, filepath.Join(acceptedExperienceDirectory(t), "state.sqlite"))
 	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Actual token revocation race",
 	})

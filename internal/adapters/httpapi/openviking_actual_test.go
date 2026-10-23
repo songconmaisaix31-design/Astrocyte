@@ -20,9 +20,11 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/openviking"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
@@ -48,7 +50,8 @@ func TestOpenVikingActualHTTPUnconfiguredAndRefused(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	attention := app.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, app.ServiceOptions{})
+	spaces := workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})
+	attention := app.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, app.ServiceOptions{ProjectSpaces: projectspacebridge.Attention{Spaces: spaces}})
 	for _, configured := range []bool{false, true} {
 		var gateway app.OpenVikingGateway
 		if configured {
@@ -69,7 +72,7 @@ func TestOpenVikingActualHTTPUnconfiguredAndRefused(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		transport := httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Attention: attention, Materials: attention, OpenViking: service}, AgentToken: rand.Text(), Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+		transport := httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Attention: attention, ProjectSpaces: spaces, Materials: attention, OpenViking: service}, AgentToken: rand.Text(), Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
 		server := httptest.NewServer(transport.Handler())
 		t.Cleanup(server.Close)
 		jar, err := cookiejar.New(nil)

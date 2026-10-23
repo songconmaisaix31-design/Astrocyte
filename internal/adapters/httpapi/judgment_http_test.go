@@ -55,7 +55,7 @@ func judgmentHTTPStart(t *testing.T, repoRoot, runRoot string) *judgmentHTTPRun 
 	if err != nil {
 		t.Fatal(err)
 	}
-	a := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{filepath.Join(repoRoot, ".verification", "s5")}), store, attention.ServiceOptions{})
+	a := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{filepath.Join(repoRoot, ".verification", "s5")}), store, attention.ServiceOptions{ProjectSpaces: httpAttentionSpaces(db)})
 	refs := adapter.AttentionReferences{Attention: a}
 	projects := workspace.NewLocalProjectService(db, refs, agents.ProjectFiles{}, nil)
 	environment, err := os.Hostname()
@@ -73,7 +73,7 @@ func judgmentHTTPStart(t *testing.T, repoRoot, runRoot string) *judgmentHTTPRun 
 		t.Fatal(err)
 	}
 	mux := http.NewServeMux()
-	services := Services{Attention: a, LocalProjects: projects}
+	services := Services{Attention: a, LocalProjects: projects, ProjectSpaces: httpAttentionSpaces(db).Spaces}
 	h := &handler{services: services, logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
 	h.registerAttention(mux)
 	h.registerLocalProjects(mux)
@@ -192,7 +192,7 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 	text := strings.Split(string(readme), "## Node")[0]
 	var job attention.ImportJobResult
 	f.call(t, http.MethodPost, "/api/v1/materials/imports", attention.ImportMaterialCommand{CommandMeta: meta(), Kind: "text", Adapter: "manual", SourceLocator: "https://github.com/NandhaKishorM/laya/blob/432312b36714d8889eba405507b37eda25257d9c/laya-ts/README.md", Title: "Official Laya ONNX export documentation", ExportText: text, ContentDigest: judgment.DigestText(text), SourceSpans: []string{"Export weights section"}}, http.StatusAccepted, &job)
-	a := attention.NewAttentionService(sqlite.NewAttentionRepository(f.db), importers.NewReader([]string{runRoot}), mustJudgmentObjects(t, filepath.Join(runRoot, "objects")), attention.ServiceOptions{})
+	a := attention.NewAttentionService(sqlite.NewAttentionRepository(f.db), importers.NewReader([]string{runRoot}), mustJudgmentObjects(t, filepath.Join(runRoot, "objects")), attention.ServiceOptions{ProjectSpaces: httpAttentionSpaces(f.db)})
 	if _, err := a.ProcessNextJob(ctx); err != nil {
 		t.Fatal(err)
 	}

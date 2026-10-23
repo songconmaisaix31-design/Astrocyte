@@ -1,4 +1,4 @@
-package agents
+package projectfiles
 
 import (
 	"path/filepath"

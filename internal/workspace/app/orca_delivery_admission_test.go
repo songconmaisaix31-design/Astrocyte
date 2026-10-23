@@ -41,7 +41,7 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: "delivery-current-human"}
-	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	space, err := spaces.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "公开准入规则验证"})
 	if err != nil {
 		t.Fatal(err)

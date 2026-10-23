@@ -71,7 +71,7 @@ func TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish(t *testing.T) 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	caller := domain.Caller{Kind: "human", ID: uuid.NewString(), OperationID: uuid.NewString()}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: caller.Kind, ID: caller.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: caller.Kind, ID: caller.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Actual preparation dependency refusal",
 	})

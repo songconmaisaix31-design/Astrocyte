@@ -84,10 +84,10 @@ func openProgressPreflightActual(t *testing.T, ctx context.Context, directory st
 	}
 	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
 	service := workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry)
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	server := httpapi.NewServer(httpapi.Config{
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
-		Services: httpapi.Services{LocalProjects: projects, Progress: service, Attention: core},
+		Services: httpapi.Services{LocalProjects: projects, Progress: service, Attention: core, ProjectSpaces: actualAttentionSpaces(db).Spaces},
 	})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

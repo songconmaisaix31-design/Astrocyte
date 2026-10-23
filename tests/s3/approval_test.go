@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -92,7 +93,7 @@ func TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart(t *testing.T
 	defer b.Close()
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
 	p := swarmdomain.Principal{Kind: human.Kind, ID: human.ID}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(a), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(a), nil, nil, attention.ServiceOptions{ProjectSpaces: projectspacebridge.Attention{Spaces: workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(a), workspace.ProjectSpaceOptions{})}})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Public Swarm authorization verification"})
 	if err != nil {
 		t.Fatal(err)

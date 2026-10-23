@@ -10,6 +10,8 @@ import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.23
 import type { AgentJournalMessageItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-types'
 import { invocationSchema, nativeError, nativeObject, structuredInputBindingSchema, type Invocation } from './contracts'
 import { controllerScope, exactController } from './controller-scope'
+import { isTaskDescendant } from './run-view'
+import { validateHandoffInput } from './run-settlement'
 
 let admitCurrentApproval: ((invocation: z.infer<typeof invocationSchema>) => Promise<unknown>) | null = null
 
@@ -28,6 +30,7 @@ export async function admitNativeWorkerInputRPC(params: unknown, requestId: stri
   const invocation = invocationSchema.parse(nativeObject(JSON.parse(row.receipt)).invocation)
   if (invocation.command.action !== 'worker.send' || invocation.command.controller !== input.controller || invocation.command.request_id !== input.parent_request) throw new OrchestrationError('scope_denied', 'The original parent input scope differs')
   const { owner, scope } = controllerScope(context.runtime, invocation.project.id, input.controller)
+  validateHandoffInput(context.runtime, invocation)
   await exactController(context.runtime, owner)
   const current = context.runtime.getOrchestrationDispatchAuthority(input.controller)
   const caller = context.runtime.verifyOrchestrationCompatibilityCaller(context.orchestrationCompatibilityEvidence, { currentRuntimeLaunchSufficient: !!current?.launchTokenHash })
@@ -49,7 +52,7 @@ async function prepareStructuredInput(invocation: Invocation, controller: string
   const dispatch = db.getDispatchContextById(dispatchId), task = dispatch && db.getTask(dispatch.task_id), worker = db.getWorkerDispatch(dispatchId)
   const host = getStructuredAgentSessionHost(), sessionId = dispatch?.assignee_orca_session_id
   const identity = sessionId && structuredWorkerIdentities.getBySessionId(sessionId), record = sessionId && host?.deps.store.getRecord(sessionId)
-  if (!host || !sessionId || !identity || identity.dispatchId !== dispatchId || !record || record.provider !== selection.agent_id || record.options?.model !== selection.model || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || dispatch?.run_id !== scope.run_id || task?.parent_id !== scope.root_task_id || worker?.state !== 'ready' || worker.runtime_epoch !== runtime.getRuntimeId()) throw new OrchestrationError('worker_identity_changed', 'The original live Worker session is unavailable')
+  if (!host || !sessionId || !identity || identity.dispatchId !== dispatchId || !record || record.provider !== selection.agent_id || record.options?.model !== selection.model || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || dispatch?.run_id !== scope.run_id || !task || !isTaskDescendant(db, scope.run_id, scope.root_task_id, task.id) || worker?.state !== 'ready' || worker.runtime_epoch !== runtime.getRuntimeId()) throw new OrchestrationError('worker_identity_changed', 'The original live Worker session is unavailable')
   if (!admitCurrentApproval) throw new OrchestrationError('approval_unverified', 'Current Worker input approval is unavailable')
   await admitCurrentApproval(invocation)
   const run = db.getRun(scope.run_id)
@@ -63,6 +66,7 @@ export async function deliverNativeWorkerInput(params: { controller: string; par
   const parent = db.getMutationReceipt(db.getOrCreateLocalMutationCallerFingerprint(), params.parent_request)
   if (!parent || parent.state !== 'pending' || parent.method !== 'swa.controllerDeliver' || !parent.receipt) throw new OrchestrationError('operation_unknown', 'The original parent input reservation is unavailable')
   const receipt = nativeObject(JSON.parse(parent.receipt)), invocation = invocationSchema.parse(receipt.invocation)
+  validateHandoffInput(runtime, invocation)
   const command = invocation.command, selection = invocation.selection
   if (command.action !== 'worker.send' || command.controller !== params.controller || command.request_id !== params.parent_request || !command.dispatch_id || !invocation.input || !selection || receipt.child_request !== mutation.requestId) throw new OrchestrationError('scope_denied', 'The native child does not match its original Worker input')
   const recordNativeResult = context.recordMutationReceipt

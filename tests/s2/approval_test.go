@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
@@ -22,6 +23,10 @@ import (
 
 func workspaceMeta(version int) workspace.WorkspaceCommandMeta {
 	return workspace.WorkspaceCommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: version}
+}
+
+func actualAttentionSpaces(db *sqlite.DB) projectspacebridge.Attention {
+	return projectspacebridge.Attention{Spaces: workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})}
 }
 
 func requireCode(t *testing.T, err error, code apierrors.Code) {
@@ -77,7 +82,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Public S2 implementation validation"})
 	if err != nil {
 		t.Fatal(err)

@@ -66,11 +66,23 @@ async function main() {
     switch (command.action) {
       case 'status':
         result = status.result; break
+      case 'role.list':
+      case 'role.show':
+      case 'conversation.list':
+      case 'conversation.show': result = (await client.call('swa.collaborationRead', { invocation })).result; break
+      case 'role.create':
+      case 'role.update':
+      case 'role.archive':
+      case 'conversation.create':
+      case 'conversation.append':
+      case 'handoff.notify': result = (await client.call('swa.collaborationWrite', { invocation }, mutationOptions)).result; break
       case 'controller.open': result = (await client.call('swa.controllerOpen', { invocation }, mutationOptions)).result; break
       case 'controller.recover': result = (await client.call('swa.controllerRecover', { invocation }, mutationOptions)).result; break
       case 'controller.show': result = (await client.call('swa.controllerShow', { project_id: invocation.project.id, controller: command.controller })).result; break
       case 'controller.close': result = (await client.call('swa.controllerClose', { invocation }, mutationOptions)).result; break
       case 'task.create': result = (await client.call('swa.taskCreate', { invocation }, mutationOptions)).result; break
+      case 'run.show':
+      case 'run.export': result = (await client.call('swa.runObserve', { invocation })).result; break
       case 'task.complete':
       case 'worker.start':
       case 'worker.send':

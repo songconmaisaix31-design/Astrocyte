@@ -296,7 +296,7 @@ func TestCompletionRepositorySharesActualCommandReceiptRollbackAndReopen(t *test
 			t.Error("close reopened receipt database")
 		}
 	})
-	core = NewAttentionService(sqlite.NewAttentionRepository(reopened), importers.NewReader(nil), objects, ServiceOptions{})
+	core = NewAttentionService(sqlite.NewAttentionRepository(reopened), importers.NewReader(nil), objects, ServiceOptions{ProjectSpaces: projectSpaces(reopened)})
 	replay, err := core.UpdateRankingProfile(ctx, human, command)
 	if err != nil || !sameAdmissionJSON(t, saved, replay) {
 		t.Fatal("original command receipt or complete profile changed after reopen")

@@ -7742,12 +7742,25 @@ export interface components {
             expected_revision: number;
             hidden: boolean;
         };
+        roleDefinition: {
+            name: string;
+            responsibilities: string;
+            default_agent: string;
+            default_model: string;
+            skills: string[] | null;
+            knowledge: string[] | null;
+        };
+        conversationDefinition: {
+            title: string;
+            role_id?: string;
+        };
         /** @description Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here. */
         command: {
             /** @enum {unknown} */
-            action: "status" | "capabilities" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
+            action: "status" | "capabilities" | "run.submit" | "run.show" | "run.export" | "role.list" | "role.show" | "role.create" | "role.update" | "role.archive" | "conversation.list" | "conversation.show" | "conversation.create" | "conversation.append" | "handoff.notify" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
             project_id?: string;
             controller?: string;
+            run_id?: string;
             task_id?: string;
             dispatch_id?: string;
             /** Format: uuid */
@@ -7764,6 +7777,18 @@ export interface components {
             source?: "transcript";
             cursor?: string;
             limit?: number;
+            parent_task_id?: string;
+            /** @enum {unknown} */
+            handoff_mode?: "work" | "consult";
+            /** @enum {unknown} */
+            reply_mode?: "resume" | "poll";
+            completion_criteria?: string[];
+            role_id?: string;
+            conversation_id?: string;
+            revision?: number;
+            role?: components["schemas"]["roleDefinition"];
+            conversation?: components["schemas"]["conversationDefinition"];
+            text?: string;
         };
         nativeError: {
             code: string;
@@ -7793,6 +7818,11 @@ export interface components {
             source_revision: string;
             success_criteria: string[];
             max_workers: number;
+            /** @description Number of initially requested Workers that must be created before automatic Run completion; defaults to one and cannot exceed max_workers. Actual recursive descendants are always included. */
+            initial_workers?: number;
+            conversation_id?: string;
+            role_id?: string;
+            role_revision?: number;
             context?: {
                 references?: {
                     material_id?: string;
@@ -7853,6 +7883,8 @@ export interface components {
             reason: string;
             source: string;
             checked_at?: string;
+            /** @enum {unknown} */
+            basis?: "declaration" | "configuration" | "probe" | "session" | "result";
         };
         installedObservation: {
             /** @enum {unknown} */
@@ -7860,6 +7892,8 @@ export interface components {
             reason: string;
             source: string;
             checked_at?: string;
+            /** @enum {unknown} */
+            basis?: "declaration" | "configuration" | "probe" | "session" | "result";
             executable?: string;
             version?: string;
         };
@@ -7869,9 +7903,24 @@ export interface components {
             reason: string;
             source: string;
             checked_at?: string;
+            /** @enum {unknown} */
+            basis?: "declaration" | "configuration" | "probe" | "session" | "result";
             model?: string;
             provider?: string;
             account_source?: string;
+        };
+        modelCatalogObservation: {
+            /** @enum {unknown} */
+            origin: "live-session" | "probe" | "configured" | "unknown";
+            /** @enum {unknown} */
+            availability: "verified" | "unverified";
+            models: {
+                id: string;
+                label: string;
+                provider?: string;
+            }[];
+            /** Format: date-time */
+            observed_at?: string;
         };
         requirements: {
             settings_revision: number;
@@ -7909,6 +7958,14 @@ export interface components {
                 installed: components["schemas"]["installedObservation"];
                 configured: components["schemas"]["configuredObservation"];
                 launchable: components["schemas"]["observation"];
+                authenticated?: components["schemas"]["observation"];
+                model_catalog?: components["schemas"]["modelCatalogObservation"];
+                declared_features?: {
+                    images: boolean;
+                    model_switch: boolean;
+                    /** @enum {unknown} */
+                    steering: "inject" | "queue";
+                };
                 control: {
                     start: components["schemas"]["observation"];
                     send: components["schemas"]["observation"];
@@ -7916,6 +7973,8 @@ export interface components {
                     stop: components["schemas"]["observation"];
                     resume: components["schemas"]["observation"];
                     tools: components["schemas"]["observation"];
+                    images?: components["schemas"]["observation"];
+                    model_switch?: components["schemas"]["observation"];
                 };
                 requirements: components["schemas"]["requirements"];
             }[];

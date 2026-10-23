@@ -106,48 +106,24 @@ func (s *Service) SetMaterialDomains(ctx context.Context, p Principal, id string
 }
 
 func (s *Service) ListProjectSpaces(ctx context.Context, p Principal) (apierrors.ListResult, error) {
-	if err := authorize(p, false); err != nil {
-		return apierrors.EmptyList(), err
+	if s.options.ProjectSpaces == nil {
+		return apierrors.EmptyList(), apierrors.NewUnsupported("project_spaces")
 	}
-	var result []ProjectSpace
-	err := s.repo.WithTx(ctx, func(tx AttentionTx) error {
-		var err error
-		result, err = tx.ListProjectSpaces()
-		if err != nil {
-			return err
-		}
-		for i := range result {
-			result[i].MaterialRefs = nonNil(result[i].MaterialRefs)
-		}
-		return nil
-	})
-	return listResult(result), mapError(err, "")
+	return s.options.ProjectSpaces.ListProjectSpaces(ctx, p)
 }
 
 func (s *Service) CreateProjectSpace(ctx context.Context, p Principal, c ProjectSpaceCommand) (ProjectSpaceResult, error) {
-	return command(s, ctx, p, c.CommandMeta, "CreateProjectSpace", c, func(tx AttentionTx) (ProjectSpaceResult, error) {
-		if c.ExpectedVersion != 1 || strings.TrimSpace(c.Title) == "" {
-			return ProjectSpaceResult{}, domain.ErrInvalid
-		}
-		space := ProjectSpace{ID: rand.Text(), Version: 1, Title: strings.TrimSpace(c.Title), MaterialRefs: []SourceRef{}, CreatedAt: s.options.Clock()}
-		if err := tx.SaveProjectSpace(space, 0); err != nil {
-			return ProjectSpaceResult{}, err
-		}
-		if err := s.event(tx, "project_space_created", space.ID, space.Version, c.CommandMeta, map[string]any{"space_id": space.ID}); err != nil {
-			return ProjectSpaceResult{}, err
-		}
-		return ProjectSpaceResult{SchemaVersion: 1, Space: space}, nil
-	})
+	if s.options.ProjectSpaces == nil {
+		return ProjectSpaceResult{}, apierrors.NewUnsupported("project_spaces")
+	}
+	return s.options.ProjectSpaces.CreateProjectSpace(ctx, p, c)
 }
 
 func (s *Service) GetProjectSpace(ctx context.Context, p Principal, id string) (ProjectSpaceResult, error) {
-	if err := authorize(p, false); err != nil {
-		return ProjectSpaceResult{}, err
+	if s.options.ProjectSpaces == nil {
+		return ProjectSpaceResult{}, apierrors.NewUnsupported("project_spaces")
 	}
-	var space ProjectSpace
-	err := s.repo.WithTx(ctx, func(tx AttentionTx) error { var err error; space, err = tx.LoadProjectSpace(id); return err })
-	space.MaterialRefs = nonNil(space.MaterialRefs)
-	return ProjectSpaceResult{SchemaVersion: 1, Space: space}, mapError(err, "")
+	return s.options.ProjectSpaces.GetProjectSpace(ctx, p, id)
 }
 
 func (s *Service) ReferenceMaterial(ctx context.Context, p Principal, id string, c ReferenceMaterialCommand) (ProjectSpaceResult, error) {

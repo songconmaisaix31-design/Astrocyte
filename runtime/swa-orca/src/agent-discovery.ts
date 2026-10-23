@@ -27,11 +27,12 @@ import { createPrivateDirectory as createWindowsPrivateDirectory } from '@orca/w
 import { createPrivateClaudeDirectory, requireNativeClaudePath } from './claude-file-security'
 import { preparePrivatePiEnvironment, privatePiEnvironment } from './private-pi-account'
 import { assertPiStartupSources } from './pi-session-policy'
+import { agentObservation, describeAgentFeatures, modelCatalogObservation, type AgentObservation } from './execution-observation'
 
-type Observation = { status: 'available' | 'unavailable' | 'unknown'; reason: string; source: string; checked_at?: string }
-const observation = (status: Observation['status'], reason: string, source: string): Observation => ({ status, reason, source })
-const unknown = (reason: string, source: string) => observation('unknown', reason, source)
-const available = (reason: string, source: string) => observation('available', reason, source)
+type Observation = AgentObservation
+const observation = agentObservation
+const unknown = (reason: string, source: string, basis: NonNullable<Observation['basis']>) => observation('unknown', reason, source, basis)
+const available = (reason: string, source: string, basis: NonNullable<Observation['basis']>) => observation('available', reason, source, basis)
 const object = z.record(z.string(), z.unknown())
 const text = (value: unknown): string | undefined => typeof value === 'string' && value.trim() ? value : undefined
 
@@ -199,9 +200,9 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
     const id = definition.agent
     if (onlyAgent !== undefined && id !== onlyAgent) continue
     const adapterName = adapter.constructor.name
-    const registered = available('The real native adapter passed StructuredAgentRegistry validation', `StructuredAgentRegistry:${adapterName}`)
-    const enabled = observation(disabled.has(id) ? 'unavailable' : 'available', disabled.has(id) ? 'Disabled in the selected native settings' : 'Enabled in the selected native settings', 'native-settings')
-    let installed: Observation & { executable?: string; version?: string } = unknown('No absolute native command has been resolved', 'native-command-resolution')
+    const registered = available('The real native adapter passed StructuredAgentRegistry validation', `StructuredAgentRegistry:${adapterName}`, 'declaration')
+    const enabled = observation(disabled.has(id) ? 'unavailable' : 'available', disabled.has(id) ? 'Disabled in the selected native settings' : 'Enabled in the selected native settings', 'native-settings', 'configuration')
+    let installed: Observation & { executable?: string; version?: string } = unknown('No absolute native command has been resolved', 'native-command-resolution', 'probe')
     let executable: string | undefined, version: string | undefined
     if (isTuiAgent(id)) {
       const spec = ACP_LAUNCH_SPECS.find(item => item.agent === id)
@@ -222,15 +223,16 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
           const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
           version = result.version ?? undefined
         }
-        installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe')
-      } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution')
+        installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe', 'probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe', 'probe')
+      } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution', 'probe')
     }
     const config = await configuration(id, snapshot, requestedModel, projectRoot)
     const proven = !!(config.model && config.provider && config.account)
-    const configured = { ...(proven ? available('Native configuration and the explicit selection supply model, provider and an account source', 'native-configuration') : unknown('The observed native defaults do not supply every model, provider and account field', 'native-configuration')), model: config.model, provider: config.provider, account_source: config.account }
-    const declared = available('The real adapter implements this structured operation; no live handshake is claimed', `adapter-declaration:${adapterName}`)
-    const control = { start: declared, send: declared, read: unknown('No live session or complete transcript was observed', 'native-session'), stop: declared, resume: unknown('No native recovery handshake was observed', 'native-session'), tools: unknown('The selected Agent tool policy requires its own verified native contract', 'native-policy') }
-    agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session'), control, ...(requirements ? { requirements } : {}) })
+    const configured = { ...(proven ? available('Native configuration and the explicit selection supply model, provider and an account source', 'native-configuration', 'configuration') : unknown('The observed native defaults do not supply every model, provider and account field', 'native-configuration', 'configuration')), model: config.model, provider: config.provider, account_source: config.account }
+    const declared = available('The real adapter implements this structured operation; no live handshake is claimed', `adapter-declaration:${adapterName}`, 'declaration')
+    const features = describeAgentFeatures(definition)
+    const control = { start: declared, send: declared, read: unknown('No live session or complete transcript was observed', 'native-session', 'session'), stop: declared, resume: unknown('No native recovery handshake was observed', 'native-session', 'session'), tools: unknown('The selected Agent tool policy requires its own verified native contract', 'native-policy', 'session'), images: features.images, model_switch: features.model_switch }
+    agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session', 'session'), authenticated: unknown('A configured account source does not prove authentication or model access', 'native-authentication-unobserved', 'session'), declared_features: features.declared_features, model_catalog: modelCatalogObservation(config), control, ...(requirements ? { requirements } : {}) })
     let selection: AgentSelection | undefined
     if (projectId && enabled.status === 'available' && executable && version && proven) {
       if (id !== 'pi' && id !== 'opencode' && id !== 'codex' && id !== 'claude' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')

@@ -11,9 +11,11 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectspacebridge"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
@@ -85,6 +87,10 @@ func evidenceRoot(t *testing.T) string {
 	return root
 }
 
+func projectSpaces(db *sqlite.DB) ProjectSpaces {
+	return projectspacebridge.Attention{Spaces: workspace.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})}
+}
+
 func fixture(t *testing.T) (*Service, *sqlite.DB, *observedObjects) {
 	t.Helper()
 	dir, err := os.MkdirTemp(evidenceRoot(t), "attention-")
@@ -110,7 +116,7 @@ func fixture(t *testing.T) (*Service, *sqlite.DB, *observedObjects) {
 	}
 	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
 	o := &observedObjects{Store: store}
-	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), o, ServiceOptions{Clock: func() time.Time { return now }})
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), o, ServiceOptions{Clock: func() time.Time { return now }, ProjectSpaces: projectSpaces(db)})
 	return s, db, o
 }
 

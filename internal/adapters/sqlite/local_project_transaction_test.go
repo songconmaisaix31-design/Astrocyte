@@ -36,7 +36,7 @@ func TestLocalProjectUsesActualWorkspaceTransaction(t *testing.T) {
 			before := db.Conn().Stats().WaitCount
 			var project domain.LocalProject
 			err := NewWorkspaceRepository(db).WithWorkspaceTx(ctx, func(tx workspace.WorkspaceTx) error {
-				space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(tx.Context(), attention.Principal{Kind: principal.Kind, ID: principal.ID}, attention.ProjectSpaceCommand{
+				space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(tx.Context(), attention.Principal{Kind: principal.Kind, ID: principal.ID}, attention.ProjectSpaceCommand{
 					CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 					Title:       "Actual public project transaction validation",
 				})
@@ -153,7 +153,7 @@ func TestNativeSessionUsesActualWorkspaceTransactionWithoutModel(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	principal := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: principal.Kind, ID: principal.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: principal.Kind, ID: principal.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
 		Title:       "Actual native receipt transaction validation",
 	})

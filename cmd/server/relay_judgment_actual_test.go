@@ -63,11 +63,11 @@ func relayJudgmentActualAssembly(t *testing.T, withSnapshots bool) {
 	if err != nil {
 		t.Fatal("公开仓库实际 README 读取失败")
 	}
-	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{publicRoot}), store, attention.ServiceOptions{})
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{publicRoot}), store, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	references := &projectReferenceBridge{attention: core}
 	registry := agents.NewRegistry(filepath.Join(root, "native"))
 	projects := workspace.NewLocalProjectService(db, references, agents.ProjectFiles{}, registry)
-	services := httpapi.Services{Attention: core, LocalProjects: projects, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, references)}
+	services := httpapi.Services{Attention: core, ProjectSpaces: testAttentionSpaces(db).Spaces, LocalProjects: projects, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, references)}
 	services.ExperienceGovernance = &experienceHTTPBridge{db: db, events: sqlite.NewEventRepository(db), projects: projects, registered: projects}
 	environment, err := os.Hostname()
 	if err != nil {

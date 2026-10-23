@@ -56,7 +56,7 @@ func TestActualCurrentGoalTransactionAndInactiveStates(t *testing.T) {
 		}
 	}()
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	attentionService := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
 	space, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Public current target transaction"})
 	if err != nil {
 		t.Fatal(err)

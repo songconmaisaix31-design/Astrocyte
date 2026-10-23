@@ -8,6 +8,9 @@ import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { approvedWorkerLimit } from './task-budget'
+import { isTaskDescendant, readRunTaskTree } from './run-view'
+import { executionObservation } from './execution-observation'
+import { agentDrivesSession } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-provider-support'
 import { sessionIdFromStructuredWorkerIncarnation } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
 import { agentSessionProviderHandleChainHead, agentSessionProviderHandleKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
@@ -205,7 +208,7 @@ async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; pa
   return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, source, rows, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : input.agent === 'claude' ? 'claude-sdk-events-ndjson' : 'pi-native-rpc-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
 }
 
-const inputReceiptRow = z.object({ request_id: z.string(), state: z.enum(['pending', 'completed']), payload_hash: z.string(), receipt: z.string(), child_caller: z.string().nullable(), child_method: z.string().nullable(), child_state: z.string().nullable(), child_payload_hash: z.string().nullable(), child_receipt: z.string().nullable() })
+const inputReceiptRow = z.object({ ledger_sequence: z.number().int().positive(), request_id: z.string(), state: z.enum(['pending', 'completed']), payload_hash: z.string(), receipt: z.string(), child_caller: z.string().nullable(), child_method: z.string().nullable(), child_state: z.string().nullable(), child_payload_hash: z.string().nullable(), child_receipt: z.string().nullable() })
 const inputReceiptQuery = `FROM mutation_receipts parent LEFT JOIN mutation_receipts child
   ON child.request_id=json_extract(parent.receipt,'$.child_request')
   WHERE parent.caller_fingerprint=? AND parent.method='swa.controllerDeliver' AND json_valid(parent.receipt)=1
@@ -214,18 +217,32 @@ const inputReceiptQuery = `FROM mutation_receipts parent LEFT JOIN mutation_rece
   AND (json_extract(parent.receipt,'$.swa_input_binding.dispatch_id')=?
     OR json_extract(parent.receipt,'$.native.dispatchId')=? OR json_extract(parent.receipt,'$.invocation.command.dispatch_id')=?)`
 
-export function readStructuredInputInventory(db: OrchestrationDb, scope: Scope, dispatchId: string) {
+export function readStructuredInputInventory(db: OrchestrationDb, scope: Scope, dispatchId: string, options?: { allowPending: true }) {
   const parameters = [db.getOrCreateLocalMutationCallerFingerprint(), scope.project_id, scope.run_id, scope.root_task_id, dispatchId, dispatchId, dispatchId]
   const bound = z.object({ count: z.number().int(), bytes: z.number().nullable() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,
     SUM(LENGTH(CAST(parent.receipt AS BLOB))+COALESCE(LENGTH(CAST(child.receipt AS BLOB)),0)) AS bytes ${inputReceiptQuery}`).get(...parameters))
   if (bound.count < 1 || bound.count > 100_000 || (bound.bytes ?? 0) > maximum) return fail('The complete original native input request inventory is missing or exceeds its bound')
-  const rows = z.array(inputReceiptRow).parse(db.db.prepare(`SELECT parent.request_id,parent.state,parent.payload_hash,parent.receipt,
+  const rows = z.array(inputReceiptRow).parse(db.db.prepare(`SELECT parent.rowid AS ledger_sequence,parent.request_id,parent.state,parent.payload_hash,parent.receipt,
     child.caller_fingerprint AS child_caller,child.method AS child_method,child.state AS child_state,
     child.payload_hash AS child_payload_hash,child.receipt AS child_receipt ${inputReceiptQuery}
     ORDER BY parent.request_id,child.caller_fingerprint`).all(...parameters))
   if (rows.length !== bound.count || new Set(rows.map(row => row.request_id)).size !== rows.length) return fail('The original native input request or native child is ambiguous')
-  if (rows.some(row => row.state !== 'completed')) return fail('An original native input request is still pending or unknown')
+  if (!options?.allowPending && rows.some(row => row.state !== 'completed')) return fail('An original native input request is still pending or unknown')
   return { rows, signature: JSON.stringify(rows) }
+}
+
+async function currentInputObservation(runtime: OrcaRuntimeService, scope: Scope, inventory: ReturnType<typeof readStructuredInputInventory>, pendingSource?: { dispatchId: string; selection: AgentSelection }) {
+  const unresolved = inventory.rows.filter(row => row.state !== 'completed')
+  const latest = (unresolved.length ? unresolved : inventory.rows).reduce((left, right) => left.ledger_sequence > right.ledger_sequence ? left : right)
+  const receipt = nativeObject(JSON.parse(latest.receipt))
+  if (latest.state !== 'completed') {
+    if (!pendingSource) return fail('The original native input request remains unresolved')
+    const invocation = nativeObject(receipt.invocation), command = nativeObject(invocation.command), originalScope = nativeObject(invocation.scope)
+    if (receipt.project_id !== scope.project_id || receipt.run_id !== scope.run_id || receipt.root_task_id !== scope.root_task_id || command.request_id !== latest.request_id || !['worker.start', 'worker.send'].includes(String(command.action)) || receipt.child_request !== `${latest.request_id}/native` || originalScope.run_id !== scope.run_id || originalScope.root_task_id !== scope.root_task_id || !isDeepStrictEqual(invocation.selection, pendingSource.selection) || command.action === 'worker.send' && command.dispatch_id !== pendingSource.dispatchId) return fail('The unresolved original input changed its actual scope or selection')
+    return { request_id: latest.request_id, native_request_id: receipt.child_request, dispatch_id: pendingSource.dispatchId, agent: pendingSource.selection.agent_id, state: 'unknown', source: { kind: 'native_input_request_pending' } }
+  }
+  // 原有 structuredInputBindings 已核对 parent/child 的拒绝来源和一致性。
+  return receipt.swa_input_binding === undefined ? receipt.native : readNativeInputStatus(runtime, scope.project_id, latest.request_id)
 }
 
 function structuredInputBindings(inventory: ReturnType<typeof readStructuredInputInventory>, input: { scope: Scope; dispatchId: string; sessionId: string; fence: number; selection: AgentSelection }) {
@@ -347,16 +364,17 @@ export function readRootResultInventory(db: OrchestrationDb, scope: Scope, worke
   if (startsBound.count > 100_000 || (startsBound.bytes ?? 0) > maximum) return fail('The complete root Worker start reservation inventory exceeds its bound')
   if (startsBound.pending) return fail('An accepted root Worker start still has a pending reservation')
   const starts = db.db.prepare(`SELECT request_id,state,payload_hash,receipt ${startWhere} ORDER BY request_id`).all(...parameters)
-  const childBound = z.object({ count: z.number().int(), bytes: z.number().nullable() }).parse(db.db.prepare('SELECT COUNT(*) AS count,SUM(LENGTH(CAST(spec AS BLOB))) AS bytes FROM tasks WHERE run_id=? AND parent_id=?').get(scope.run_id, scope.root_task_id))
+  const childBound = z.object({ count: z.number().int(), bytes: z.number().nullable() }).parse(db.db.prepare('SELECT COUNT(*) AS count,SUM(LENGTH(CAST(spec AS BLOB))) AS bytes FROM tasks WHERE run_id=? AND id<>?').get(scope.run_id, scope.root_task_id))
   const rootBound = z.object({ bytes: z.number() }).parse(db.db.prepare('SELECT LENGTH(CAST(spec AS BLOB)) AS bytes FROM tasks WHERE id=? AND run_id=?').get(scope.root_task_id, scope.run_id))
-  if (childBound.count > 100 || (childBound.bytes ?? 0) + rootBound.bytes > maximum) return fail('The complete root task inventory exceeds the current result observation bound')
+  if (childBound.count > 100_000 || (childBound.bytes ?? 0) + rootBound.bytes > maximum) return fail('The complete root task inventory exceeds the current result observation bound')
   const root = db.getTask(scope.root_task_id), limit = approvedWorkerLimit(root, scope), run = db.getRun(scope.run_id)
   if (!root || !run || root.parent_id !== null || childBound.count > limit) return fail('The complete result root or approved Worker budget changed')
-  const children = z.array(z.object({ id: z.string(), run_id: z.string(), parent_id: z.string(), status: z.string(), spec: z.string() })).parse(db.db.prepare('SELECT id,run_id,parent_id,status,spec FROM tasks WHERE run_id=? AND parent_id=? ORDER BY id').all(scope.run_id, scope.root_task_id))
+  readRunTaskTree(db, scope)
+  const children = z.array(z.object({ id: z.string(), run_id: z.string(), parent_id: z.string(), status: z.string(), spec: z.string() })).parse(db.db.prepare('SELECT id,run_id,parent_id,status,spec FROM tasks WHERE run_id=? AND id<>? ORDER BY id').all(scope.run_id, scope.root_task_id))
   if (children.length !== childBound.count || children.length !== workers.length || new Set(workers.map(worker => worker.dispatchId)).size !== workers.length || new Set(workers.map(worker => worker.taskId)).size !== workers.length || workers.some(worker => worker.runId !== scope.run_id || !children.some(child => child.id === worker.taskId))) return fail('The complete root Worker inventory differs from the result')
-  const listed = db.listWorkerTerminalResources({ runId: scope.run_id, limit: 101 })
-  if (listed.length > 100) return fail('The complete Worker resource inventory exceeds the current observation bound')
-  const resources = listed.filter(resource => resource.parentTaskId === scope.root_task_id).sort((left, right) => left.dispatchId.localeCompare(right.dispatchId))
+  const listed = db.listWorkerTerminalResources({ runId: scope.run_id, limit: 100_001 })
+  if (listed.length > 100_000) return fail('The complete Worker resource inventory exceeds the current observation bound')
+  const resources = listed.sort((left, right) => left.dispatchId.localeCompare(right.dispatchId))
   if (resources.length !== workers.length || resources.some(resource => !workers.some(worker => worker.dispatchId === resource.dispatchId && worker.taskId === resource.taskId) || !resource.resource)) return fail('The exact root Worker resource inventory is incomplete')
   const identities = [...workers].sort((left, right) => left.dispatchId.localeCompare(right.dispatchId)).map(worker => {
     const actual = db.getWorkerDispatch(worker.dispatchId), dispatch = db.getDispatchContextById(worker.dispatchId)
@@ -507,7 +525,7 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   const db = runtime.getOrchestrationDb(), dispatch = db.getDispatchContextById(dispatchId)
   const task = dispatch && db.getTask(dispatch.task_id), resource = db.getWorkerTerminalResourceByOwner(dispatchId)
   const nativeWorker = db.getWorkerDispatch(dispatchId)
-  if (!dispatch || dispatch.run_id !== scope.run_id || task?.parent_id !== scope.root_task_id) return fail('The observed source does not belong to the exact native root task')
+  if (!dispatch || dispatch.run_id !== scope.run_id || !task || !isTaskDescendant(db, scope.run_id, scope.root_task_id, task.id)) return fail('The observed source does not belong to the exact native root task')
   if (!resource || !nativeWorker) return { availability: 'unavailable', reason: 'native_resource_not_observed', worker_state: nativeWorker?.state ?? null }
   const sessionId = sessionIdFromStructuredWorkerIncarnation(resource.process_incarnation)
   const host = getStructuredAgentSessionHost(), record = sessionId && host?.deps.store.getRecord(sessionId)
@@ -524,20 +542,34 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   await exactPrivatePath(root, workerRoot)
   const ownerProcess = record.lease.ownerProcess
   const original = originalWorkerSelection(runtime, scope, dispatchId, record), selection = original.selection
+  const signature = sourceSignature(record), inventory = original.binding ? readStructuredInputInventory(db, scope, dispatchId, { allowPending: true }) : null
+  if (inventory) {
+    const completed = inventory.rows.filter(row => row.state === 'completed')
+    if (completed.length) structuredInputBindings({ ...inventory, rows: completed }, { scope, dispatchId, sessionId, fence: original.binding!.runtime_fence, selection })
+  }
+  const project = async <T extends { native_session_id: string; selection: AgentSelection; fence: number; provider_link: typeof head }>(source: T) => {
+    const currentInput = inventory ? await currentInputObservation(runtime, scope, inventory, { dispatchId, selection }) : undefined
+    const catalog = host.deps.modelCatalog && agentDrivesSession(host.deps.agents, record) ? await host.deps.modelCatalog.read({ agent: record.provider, sessionId, inSessionWorkspace: true, savedOnly: true }) : undefined
+    const current = host.deps.store.getRecord(sessionId)
+    if (!current || sourceSignature(current) !== signature || inventory && readStructuredInputInventory(db, scope, dispatchId, { allowPending: true }).signature !== inventory.signature || !isDeepStrictEqual(db.getWorkerDispatch(dispatchId), nativeWorker) || !isDeepStrictEqual(db.getWorkerTerminalResourceByOwner(dispatchId), resource)) return fail('The observed Worker source changed before capability projection')
+    return { ...source, execution: executionObservation(source, { dispatchId, currentInput, modelCatalog: catalog }) }
+  }
   if (record.provider === 'codex' || record.provider === 'claude' || record.provider === 'pi' && selection.native_launch.account.kind === 'pi-native-api-key-per-session') {
     if (original.binding?.dispatch_id !== dispatchId) return fail('The native source belongs to another Dispatch')
     const trace = await readStructuredTrace({ agent: record.provider, path: join(workerRoot, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum, requireClosed: resource.release_state === 'released', requirePrivatePath: path => record.provider === 'claude' ? requireNativeClaudePath(path, { directory: false, private: true }) : requireNativeCodexPrivatePath(path, false) })
-    return { availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: trace.fence, runtime_epoch: nativeWorker.runtime_epoch, claim_status: record.lease.claimStatus, selection, process: trace.process, custody: trace.custody, provider_link: head, journal_database: journal, provider_events: trace.source.path, provider_events_source: trace.source, worker_state: nativeWorker.state, release_state: resource.release_state }
+    return project({ availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: trace.fence, runtime_epoch: nativeWorker.runtime_epoch, claim_status: record.lease.claimStatus, selection, process: trace.process, custody: trace.custody, provider_link: head, journal_database: journal, provider_events: trace.source.path, provider_events_source: trace.source, worker_state: nativeWorker.state, release_state: resource.release_state })
   }
-  return { availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: record.lease.runtimeFence, claim_status: record.lease.claimStatus,
+  return project({ availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: record.lease.runtimeFence, claim_status: record.lease.claimStatus,
     selection,
     process: ownerProcess ? { pid: ownerProcess.pid, creation_time_ms: ownerProcess.processStartTimeMs, runtime_id: ownerProcess.runtime ?? null } : null,
-    provider_link: head, journal_database: journal, provider_events: join(workerRoot, 'provider-events.ndjson'), worker_state: nativeWorker.state, release_state: resource.release_state }
+    provider_link: head, journal_database: journal, provider_events: join(workerRoot, 'provider-events.ndjson'), worker_state: nativeWorker.state, release_state: resource.release_state })
 }
 
-export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, metadata: unknown) {
+export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, metadata: unknown, dispatchId?: string) {
   const summary = nativeObject(metadata)
   const workers = z.array(z.looseObject({ worker: z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() }), observation: z.unknown() })).parse(summary.workers)
+  const selectedWorkers = dispatchId === undefined ? workers : workers.filter(row => row.worker.dispatchId === dispatchId)
+  if (dispatchId !== undefined && selectedWorkers.length !== 1) return fail('The exact native Worker result is unavailable in the complete Run inventory')
   const db = runtime.getOrchestrationDb()
   const rootInventory = readRootResultInventory(db, scope, workers.map(row => row.worker))
   const children = rootInventory.children
@@ -553,7 +585,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
   const exportChecks: ((text: string) => void)[] = []
   const inputInventories: { dispatchId: string; signature: string }[] = []
   let used = Buffer.byteLength(JSON.stringify(summary))
-  for (const row of workers) {
+  for (const row of selectedWorkers) {
     const worker = row.worker, dispatch = db.getDispatchContextById(worker.dispatchId)
     const nativeWorker = db.getWorkerDispatch(worker.dispatchId), resource = db.getWorkerTerminalResourceByOwner(worker.dispatchId)
     if (worker.runId !== scope.run_id || !dispatch || dispatch.run_id !== scope.run_id || dispatch.task_id !== worker.taskId || !children.some(task => task.id === worker.taskId) || !nativeWorker || !resource) return fail('The exact Worker output does not belong to this native Run/root Task')
@@ -720,7 +752,10 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
     const current = host.deps.store.getRecord(sessionId)
     if (!current || sourceSignature(current) !== signature) return fail('The native provider identity changed during result collection')
     checks.push({ sessionId, signature, epoch: journal.state.epoch, sequence: journal.state.lastSequence, path: nativeSession.path, identity: 'file_identity' in nativeSession ? nativeSession.file_identity ?? null : null, size: 'size' in nativeSession ? nativeSession.size ?? null : null, mtime: 'mtime_ns' in nativeSession ? nativeSession.mtime_ns ?? null : null, nativeVerified })
-    outputs.push({ ...row, source: { native_session_id: sessionId, selection, location: record.location, fence: providerEvents?.fence ?? record.lease.runtimeFence, provider_link: head, owner_process: providerEvents?.process ?? (record.lease.ownerProcess ? { pid: record.lease.ownerProcess.pid, creation_time_ms: record.lease.ownerProcess.processStartTimeMs, runtime_id: record.lease.ownerProcess.runtime ?? null } : null), ...(providerEvents ? { runtime_epoch: nativeWorker.runtime_epoch, custody: providerEvents.custody } : {}) }, native_session: nativeSession, ...(providerEvents ? { provider_events: providerEvents.value } : {}), journal: { session_id: sessionId, epoch: journal.state.epoch, rows: rows.map(item => ({ epoch: item.epoch, seq: item.seq, ts: item.ts, row: JSON.parse(item.rowJson) })), snapshot }, usage: nativeSession.usage })
+    const source = { native_session_id: sessionId, selection, location: record.location, fence: providerEvents?.fence ?? record.lease.runtimeFence, provider_link: head, owner_process: providerEvents?.process ?? (record.lease.ownerProcess ? { pid: record.lease.ownerProcess.pid, creation_time_ms: record.lease.ownerProcess.processStartTimeMs, runtime_id: record.lease.ownerProcess.runtime ?? null } : null), ...(providerEvents ? { runtime_epoch: nativeWorker.runtime_epoch, custody: providerEvents.custody } : {}) }
+    const catalog = host.deps.modelCatalog && agentDrivesSession(host.deps.agents, record) ? await host.deps.modelCatalog.read({ agent: record.provider, sessionId, inSessionWorkspace: true, savedOnly: true }) : undefined
+    const currentInput = original.binding ? await currentInputObservation(runtime, scope, readStructuredInputInventory(db, scope, worker.dispatchId)) : undefined
+    outputs.push({ ...row, source, execution: executionObservation(source, { dispatchId: worker.dispatchId, currentInput, nativeResult: nativeSession, modelCatalog: catalog }), native_session: nativeSession, ...(providerEvents ? { provider_events: providerEvents.value } : {}), journal: { session_id: sessionId, epoch: journal.state.epoch, rows: rows.map(item => ({ epoch: item.epoch, seq: item.seq, ts: item.ts, row: JSON.parse(item.rowJson) })), snapshot }, usage: nativeSession.usage })
   }
   for (const check of checks) {
     if (check.nativeVerified) continue

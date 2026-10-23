@@ -135,7 +135,7 @@ func TestSwarmNativeMessageActualAuthorizationLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	owner := domain.Caller{Kind: "human", ID: uuid.NewString(), OperationID: operationID}
-	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: owner.Kind, ID: owner.ID}, attention.ProjectSpaceCommand{
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}).CreateProjectSpace(ctx, attention.Principal{Kind: owner.Kind, ID: owner.ID}, attention.ProjectSpaceCommand{
 		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Send authorization actual lifecycle",
 	})
 	if err != nil {

@@ -15,11 +15,8 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	orcaadapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/orca"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
-	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
@@ -103,12 +100,8 @@ func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	storage, err := objects.New(filepath.Join(state, "objects"))
-	if err != nil {
-		return err
-	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{state}), storage, attentionapp.ServiceOptions{})
-	projects := workspaceapp.NewLocalProjectService(db, &projectReferenceBridge{attention: attention}, agents.ProjectFiles{}, agents.NewRegistry(filepath.Join(state, "native-sessions")))
+	spaces := workspaceapp.NewProjectSpaceService(sqlite.NewProjectSpaceRepository(db), workspaceapp.ProjectSpaceOptions{})
+	projects := workspaceapp.NewLocalProjectService(db, nil, agents.ProjectFiles{}, agents.NewRegistry(filepath.Join(state, "native-sessions")))
 	execution, err := composeOrcaExecution(db, projects)
 	if err != nil {
 		return err
@@ -120,7 +113,7 @@ func runOrcaProduct(parent context.Context, logger *slog.Logger) error {
 	if err := os.Unsetenv("SWA_OWNER_CAPABILITY"); err != nil {
 		return err
 	}
-	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, WebDir: webDir, SWAOwnerCapability: ownerCapability, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, Attention: attention, Foundation: foundation.NewAttentionService(version)}})
+	server := httpapi.NewServer(httpapi.Config{Port: port, Logger: logger, WebDir: webDir, SWAOwnerCapability: ownerCapability, Services: httpapi.Services{OrcaExecution: execution, LocalProjects: projects, ProjectSpaces: spaces, Foundation: foundation.NewAttentionService(version)}})
 	listener, err := bindHTTPListener(port)
 	if err != nil {
 		return err

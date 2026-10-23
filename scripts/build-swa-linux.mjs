@@ -103,7 +103,7 @@ if (values.edition === 'combined') {
   await copyWebLicenses(join(root, 'web'), output, pnpm)
 }
 const go = await findGo()
-for (const [name, entry] of [['swa', './cmd/swa'], ['server', './cmd/server']]) run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', ...(name === 'swa' ? ['-ldflags=-X main.version=' + revision] : []), '-o', join(output, name), entry])
+for (const [name, entry] of [['swa', './cmd/swa'], ['server', './cmd/swa-server']]) run(go, ['build', '-mod=readonly', '-p=4', '-trimpath', ...(name === 'swa' ? ['-ldflags=-X main.version=' + revision] : []), '-o', join(output, name), entry])
 console.log(JSON.stringify({ stage: 'go-licenses', ...await copyGoLicenses(go, [join(output, 'swa'), join(output, 'server')], output) }))
 for (const [from, to] of [['LICENSE', 'LICENSE'], ['THIRD_PARTY_SWA.md', 'THIRD_PARTY_SWA.md'], ['third_party/orca-v1.4.230/LICENSE', 'ORCA_LICENSE'], ['scripts/install-swa.mjs', 'install-swa.mjs'], ['runtime/swa-orca/USAGE.md', 'USAGE.md']]) await copyFile(join(root, from), join(output, to))
 await mkdir(join(output, 'scripts'))

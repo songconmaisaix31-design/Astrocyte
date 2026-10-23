@@ -4,6 +4,28 @@
 
 `--help`、子命令的`--help`/`-h`及`--version`输出本地文本，无需项目授权或运行服务。普通业务命令的`--json`在stdout只发布一个JSON结果，诊断在stderr；帮助和版本属于文本元数据，不使用业务结果协议。
 
+## 提交、跟踪与导出完整任务
+
+已有当前项目授权后，`run` 使用一份固定任务文件和明确的主 Agent 输入提交工作，默认等待同一 Run 的主任务及全部递归子任务。`--request-id` 是调用者在首次发送前保存的稳定 UUID；断线后保留该 UUID 与返回的 Run、根 Task、controller，使用 `wait` 观察。任务文件继续使用下文的 `goal/source_repo/source_revision/success_criteria/max_workers/context` 规范，Agent 与模型必须处于当前批准范围。
+
+```sh
+swa run --project "$project_id" --workdir "$project_root" --spec-file task.json --input-file brief.md --agent pi --model stepfun/step-3.5-flash --request-id "$request_id" --strict --timeout 30m --export "$output_directory" --json
+swa wait --project "$project_id" --controller "$controller" --task "$root_task_id" --run "$run_id" --strict --timeout 30m --json
+swa export --project "$project_id" --controller "$controller" --task "$root_task_id" --run "$run_id" --output-dir "$output_directory" --json
+```
+
+示例变量均需使用实际值；`--export` 和 `--output-dir` 要求尚不存在的绝对目录及已存在、获准的父目录。目标路径经过符号链接或重解析点时拒绝。`run --export` 在提交之前核对本地目标，最终导出时再次独占创建，已有目录不会覆盖。
+
+复用当前项目角色时，为 `run` 同时提供 `--role "$role_id" --role-revision "$role_revision"`，可用 `--conversation "$conversation_id"` 关联已有讨论。服务核查准确角色版本、归档状态与项目身份，并将关联保存在根任务规格；仍需明确本次 `--agent` 与 `--model`。GUI 中选择角色会填入默认 Agent 与模型，提交时按当前项目批准重新核查。
+
+CLI 与 GUI 读取同一后端 Run 视图。stderr 的进度包含当前状态、阻塞原因、问题及失败数量；stdout 只发布一个最终 JSON。`--strict` 在完整递归任务集合的任一子任务失败时返回 7，实际创建 Task 的咨询同样计入；单向通知不创建 Task。普通成功仍保留子任务失败事实，不能将主 Agent 的结束当作全部任务完成。
+
+Run 的 `completed` 表示执行已结束；成果的 `acceptance: unreviewed` 单独保留，等待成功和导出均不表示人工已经验收。`handoffs` 保留真实交接消息、来源合同和实际读取状态，观察不会确认消息已读；恢复请求进入队列也不能视为父 Agent 已继续处理。
+
+需要用户回答时默认返回 9，可用 `--on-input wait` 持续观察。等待上限默认 `30m`，支持 Go 时长格式如 `90s`、`5m`、`2h`；超时返回 8，Ctrl-C 返回 130，均只结束当前 CLI 等待，原任务继续运行。重连命令会包含准确 Run 身份。暂时读连接中断时只重读同一个 Run；提交结果未知时返回 6 并保留原请求，不能换 UUID 重发工作。权限不足返回 3，能力不可用返回 4，资源拒绝返回 5，任务或导出失败返回 7，参数错误返回 2。
+
+导出包含 `run.json` 的完整后端任务视图、`result.json` 的完整原生成果与会话记录，以及 `results/` 内实际任务结果文本；`results/index.json` 关联原 Task ID 与文本文件。CLI 不跟随回复中的任意链接读取文件，不复制账号配置或私有目录。尚未结算、原生成果不完整或导出写入失败时不会报告交付成功；部分写入的独占目录保留供检查，下一次导出选择另一个新目录。
+
 ## Windows安装
 
 使用PowerShell7.2以上，明确选择实际发行ZIP、尚不存在的解压目录与安装目录，以及本机Orca及账户保护目录。安装目标父目录必须存在。下列变量由使用者设置为实际绝对路径，端口由使用者明确选择；在同一个PowerShell7会话中依次运行以下命令。

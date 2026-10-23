@@ -44,8 +44,9 @@ func secureServer(t *testing.T) (*Server, *transportAttention) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := &transportAttention{Service: attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attentionapp.ServiceOptions{}), db: db}
-	return NewServer(Config{Services: Services{Attention: s}, AgentToken: "test-agent-token", Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}), s
+	spaces := httpAttentionSpaces(db)
+	s := &transportAttention{Service: attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attentionapp.ServiceOptions{ProjectSpaces: spaces}), db: db}
+	return NewServer(Config{Services: Services{Attention: s, ProjectSpaces: spaces.Spaces}, AgentToken: "test-agent-token", Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}), s
 }
 
 func importPublicPaper(t *testing.T, service *transportAttention) attentionapp.MaterialDetail {

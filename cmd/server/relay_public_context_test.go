@@ -72,7 +72,7 @@ func TestRelayPublicContextActualGitSQLite(t *testing.T) {
 		t.Fatal("实际数据库迁移失败")
 	}
 	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
-	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{})
+	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: testAttentionSpaces(db)})
 	space, err := spaces.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Public Relay context verification"})
 	if err != nil {
 		t.Fatal("实际项目空间创建失败")

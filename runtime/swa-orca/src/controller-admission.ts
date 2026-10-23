@@ -7,6 +7,8 @@ import { invocationSchema, nativeObject } from './contracts'
 import { authority, controllerOwnerSchema, controllerScope, exactController, observeControllerExited, type Controller } from './controller-scope'
 import { admitNativeWorkerInputRPC } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
+import { fixedTaskSpec, workerTaskSpec } from './collaboration-records'
+import { isTaskDescendant } from './run-view'
 
 function deny(message: string): never { throw new OrchestrationError('scope_denied', message, { effectsApplied: false }) }
 const historyReads = new Set(['status.get', 'orchestration.requestShow', 'orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
@@ -144,7 +146,7 @@ function admitInitialTask(request: RpcRequest, params: Record<string, unknown>, 
   if (createdRun?.method !== 'orchestration.runCreate' || createdRun.state !== 'completed' || !createdRun.receipt) deny('The original native Run creation is not completed')
   const runId = z.string().min(1).parse(nativeObject(nativeObject(JSON.parse(createdRun.receipt)).run).id)
   assertCurrentConsumer(context, owner, runId)
-  const fixed = { spec: invocation.spec, context: invocation.context, project_id: invocation.project.id, settings_revision: invocation.caller.settings_revision }
+  const fixed = fixedTaskSpec(invocation)
   if (!isDeepStrictEqual(params, { run: runId, callerTerminalHandle: owner.controller, taskTitle: invocation.spec.goal, spec: JSON.stringify(fixed) })) deny('The native root task differs from its fixed public parent')
   const roots = db.listTasksWithDispatch({ runId }).filter(task => task.parent_id === null)
   if (roots.length) {
@@ -156,7 +158,7 @@ function admitInitialTask(request: RpcRequest, params: Record<string, unknown>, 
 
 function assertDispatch(context: RpcContext, dispatchId: unknown, runId: string, rootId: string) {
   const db = context.runtime.getOrchestrationDb(), dispatch = db.getDispatchContextById(z.string().min(1).parse(dispatchId))
-  if (!dispatch || dispatch.run_id !== runId || db.getTask(dispatch.task_id)?.parent_id !== rootId) deny('The actual Worker does not belong to this fixed task')
+  if (!dispatch || dispatch.run_id !== runId || !isTaskDescendant(db, runId, rootId, dispatch.task_id)) deny('The actual Worker does not belong to this fixed task')
 }
 
 function admitOrdinaryMutation(request: RpcRequest, params: Record<string, unknown>, context: RpcContext, owner: Controller, runId: string, rootId: string) {
@@ -165,7 +167,9 @@ function admitOrdinaryMutation(request: RpcRequest, params: Record<string, unkno
   const method = new Map([['worker.start', 'orchestration.workerStart'], ['worker.stop', 'orchestration.workerStop'], ['worker.release', 'orchestration.workerRelease'], ['task.complete', 'orchestration.taskUpdate']]).get(command.action)
   if (request.method !== method || command.controller !== owner.controller || invocation.project.id !== owner.project_id || invocation.scope.run_id !== runId || invocation.scope.root_task_id !== rootId || original.receipt.child_request !== request.orchestrationRequestId) deny('The native mutation differs from its exact original parent and current consumer')
   if (command.action === 'worker.start') {
-    if (!invocation.input || !invocation.selection || !isDeepStrictEqual(params, { from: owner.controller, run: runId, parent: rootId, worktree: 'current', name: command.name, taskTitle: command.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000, spec: `${invocation.input.text}\n\n固定公开上下文：\n${JSON.stringify(invocation.scope.context)}` })) deny('The native Worker start differs from the approved fixed input')
+    const parentId = command.parent_task_id ?? rootId
+    if (parentId !== rootId && !isTaskDescendant(context.runtime.getOrchestrationDb(), runId, rootId, parentId)) deny('The handoff parent is outside the original Run')
+    if (!invocation.input || !invocation.selection || !isDeepStrictEqual(params, { from: owner.controller, run: runId, parent: parentId, worktree: 'current', name: command.name, taskTitle: command.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) })) deny('The native Worker start differs from the approved fixed input')
   } else if (command.action === 'task.complete') {
     if (!isDeepStrictEqual(params, { id: rootId, run: runId, callerTerminalHandle: owner.controller, status: 'completed', result: invocation.input?.text })) deny('The native completion differs from the original fixed task')
   } else {

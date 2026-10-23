@@ -1,6 +1,6 @@
 //go:build !windows
 
-package agents
+package projectfiles
 
 import (
 	"os"

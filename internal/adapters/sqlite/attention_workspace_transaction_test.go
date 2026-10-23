@@ -22,7 +22,7 @@ func TestAttentionUsesActualWorkspaceTransaction(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
 			repository := NewAttentionRepository(db)
-			service := attention.NewAttentionService(repository, nil, nil, attention.ServiceOptions{})
+			service := attention.NewAttentionService(repository, nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)})
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
 			before := db.Conn().Stats().WaitCount

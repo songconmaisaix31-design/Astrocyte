@@ -322,7 +322,7 @@ type SetMaterialDomainsCommand struct {
 	DomainIDs []string `json:"domain_ids"`
 }
 
-// ProjectSpace 是 Attention 中人工选定文件引用的展示；Workspace 独立管理项目和授权。
+// ProjectSpace 是 Workspace 空间的资料侧投影，空间创建与存储由 Workspace 负责。
 type ProjectSpace struct {
 	ID           string      `json:"id"`
 	Version      int         `json:"version"`
@@ -337,6 +337,11 @@ type ProjectSpaceCommand struct {
 type ProjectSpaceResult struct {
 	SchemaVersion int          `json:"schema_version"`
 	Space         ProjectSpace `json:"space"`
+}
+type ProjectSpaces interface {
+	ListProjectSpaces(context.Context, Principal) (apierrors.ListResult, error)
+	CreateProjectSpace(context.Context, Principal, ProjectSpaceCommand) (ProjectSpaceResult, error)
+	GetProjectSpace(context.Context, Principal, string) (ProjectSpaceResult, error)
 }
 type ReferenceMaterialCommand struct {
 	CommandMeta

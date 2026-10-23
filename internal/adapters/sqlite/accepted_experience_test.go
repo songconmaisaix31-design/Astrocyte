@@ -48,7 +48,7 @@ func TestAcceptedExperienceActualTransactionLifecycle(t *testing.T) {
 			db := openAttentionDB(t, filepath.Join(acceptedExperienceDirectory(t), "state.sqlite"))
 			repository := NewAcceptedExperienceRepository(db)
 			attentionRepository := NewAttentionRepository(db)
-			service := attention.NewAttentionService(attentionRepository, nil, nil, attention.ServiceOptions{})
+			service := attention.NewAttentionService(attentionRepository, nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)})
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
 			before := db.Conn().Stats().WaitCount

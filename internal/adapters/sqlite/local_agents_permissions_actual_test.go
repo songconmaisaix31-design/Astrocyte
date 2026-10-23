@@ -62,7 +62,8 @@ func TestLocalProjectActualHTTPPermissionsTokensAndRestartWithoutNative(t *testi
 			Logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 			Services: httpapi.Services{
 				LocalProjects: service,
-				Attention:     attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}),
+				Attention:     attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: attentionSpaces(db)}),
+				ProjectSpaces: workspace.NewProjectSpaceService(NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{}),
 			},
 		})
 		listener, err := net.Listen("tcp", "127.0.0.1:0")
