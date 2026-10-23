@@ -302,7 +302,13 @@ if ($source -ceq '50d099ddf9787a283573a477fb5f29017aef6c89') {
 $priorBuildRun = if ($source -ceq '50d099ddf9787a283573a477fb5f29017aef6c89') { '39900064207' } else { '39769388709' }
 $buildLog = Join-Path $EvidenceRoot 'logs/build.log'
 if (-not (Test-Path -LiteralPath $buildLog -PathType Leaf)) { throw 'The original build log is missing' }
-$selected = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:|scripts[\\/]build-swa-(?:package|native)\.mjs:[0-9]+:[0-9]+)' } | Select-Object -Last 100)
+if ($source -ceq '50d099ddf9787a283573a477fb5f29017aef6c89') {
+    $webTools = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:|scripts[\\/]build-swa-(?:package|native)\.mjs:[0-9]+:[0-9]+|\bELIFECYCLE\b|not recognized as an internal or external command|command not found|Cannot find module|\bMODULE_NOT_FOUND\b|\bENOENT\b|^\s*>\s*(?:@swa/web@\S+\s+build(?:\s|$)|vite\s+build(?:\s|$)))' } | ForEach-Object { '[logs/build.log] ' + $_ })
+    $frozenTools = @(Get-Content -LiteralPath (Join-Path $EvidenceRoot 'logs/frozen-install.log') | Where-Object { $_ -match '(?i)(No projects matched the filters|Local package\.json exists, but node_modules missing)' } | ForEach-Object { '[logs/frozen-install.log] ' + $_ })
+    $selected = @(@($webTools + $frozenTools) | Select-Object -Last 100)
+} else {
+    $selected = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:|scripts[\\/]build-swa-(?:package|native)\.mjs:[0-9]+:[0-9]+)' } | Select-Object -Last 100)
+}
 $safe = [Collections.Generic.List[string]]::new()
 foreach ($line in $selected) {
     if ($line -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|api[-_]?key|client[-_]?secret|password|cookie|credential)') {
