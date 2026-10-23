@@ -8,7 +8,7 @@ export async function loadProduction(directory: string, executable: string) {
     getAppPath: () => directory, getVersion: () => 'controller-startup-local-verification', isPackaged: () => false,
     getCliLauncherPath: () => executable, onWillQuit: () => {}, exit: code => process.exit(code), getAppMetrics: () => []
   })
-  const [controller, support, host, subprocess, shell, identity, handle, windows, contracts, framing] = await Promise.all([
+  const [controller, support, host, subprocess, shell, identity, handle, windows, contracts, framing, windowsProcesses, writer] = await Promise.all([
     import('../../runtime/swa-orca/src/native-methods'),
     import('../../third_party/orca-v1.4.230/src/main/runtime/terminal-shell-override-host-support'),
     import('../../third_party/orca-v1.4.230/src/main/daemon/terminal-host'),
@@ -18,7 +18,9 @@ export async function loadProduction(directory: string, executable: string) {
     import('../../third_party/orca-v1.4.230/src/main/runtime/remote-runtime-terminal-create-identity'),
     import('../../third_party/orca-v1.4.230/src/main/providers/windows-shell-args'),
     import('../../runtime/swa-orca/src/contracts'),
-    import('../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer')
+    import('../../third_party/orca-v1.4.230/src/shared/main-process-ndjson-framer'),
+    import('../../third_party/orca-v1.4.230/src/main/windows/windows-process-table'),
+    import('../../third_party/orca-v1.4.230/src/main/runtime/runtime-terminal-writer')
   ])
-  return { ...controller, ...support, ...host, ...subprocess, ...shell, ...identity, ...handle, ...windows, ...framing, helperInput: contracts.helperInput, helperReply: contracts.helperReply }
+  return { ...controller, ...support, ...host, ...subprocess, ...shell, ...identity, ...handle, ...windows, ...framing, RuntimeTerminalWriter: writer.RuntimeTerminalWriter, readWindowsProcessTableFresh: windowsProcesses.readWindowsProcessTableFresh, helperInput: contracts.helperInput, helperReply: contracts.helperReply }
 }

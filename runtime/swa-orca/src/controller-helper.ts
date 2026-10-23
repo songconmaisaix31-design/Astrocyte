@@ -52,7 +52,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
 }
 
 async function main() {
-  const lines = createInterface({ input: process.stdin, terminal: false, crlfDelay: Infinity })
+  const lines = createInterface({ input: process.stdin, output: process.stdout, terminal: process.stdin.isTTY, crlfDelay: Infinity })
   try {
     for await (const line of lines) {
       const command = helperInput.parse(JSON.parse(line))
