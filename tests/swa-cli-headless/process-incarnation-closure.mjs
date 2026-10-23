@@ -59,6 +59,13 @@ export function collectOwnedIncarnations(actualRows, root) {
       if (row.pid === root.pid) unknown('root_in_descendant_branch', row)
       if (visitedRows.has(row)) continue
       visitedRows.add(row)
+      // 已知原根缺席时，先排除比该根更早的唯一直接子行；不补根或推断退出。
+      if (roots.length === 0 && parent.pid === root.pid && parent.creationTimeMs === root.creationTimeMs &&
+          positivePID(root.pid) && positivePID(row.pid) && byPID.get(row.pid)?.length === 1 &&
+          incarnationOrder(root.creationTimeMs, row.creationTimeMs) === 'predates-parent') {
+        excludedEdges.push({ reason: 'predates-root', actual: row, parent: { pid: parent.pid, creationTimeMs: parent.creationTimeMs } })
+        continue
+      }
       // Unknown parentage propagates through every raw-reachable child.
       // A readable child timestamp cannot repair that missing provenance.
       if (!parent.verified) {

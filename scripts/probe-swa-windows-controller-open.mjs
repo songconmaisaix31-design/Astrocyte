@@ -336,7 +336,7 @@ try {
   result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
-  for (const name of ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs']) {
+  for (const name of ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs', 'process-incarnation-closure.mjs']) {
     const destination = join(source, 'tests/swa-cli-headless', name), observation = join(checkout, 'tests/swa-cli-headless', name)
     const originalSha = (await digest(destination)).sha256, actualSha = (await digest(observation)).sha256
     await copyFile(observation, destination)
