@@ -8,12 +8,17 @@ import { publicCase, publicFiles as files, publicRevision as revision, publicSou
 const repository = await realpath(fileURLToPath(new URL('../../', import.meta.url)))
 let values, workers
 try {
-  values = parseArgs({ options: { root: { type: 'string' }, workers: { type: 'string', default: '3' } }, allowPositionals: false }).values
+  const parsed = parseArgs({ options: { root: { type: 'string' }, workers: { type: 'string', default: '3' }, case: { type: 'string' } }, allowPositionals: false, tokens: true })
+  values = parsed.values
   if (!values.root || !isAbsolute(values.root)) throw new Error('Select an explicit absolute --root that does not exist')
+  if (values.case !== undefined && values.case !== 'native-questions') throw new Error('Unknown public case')
+  if (values.case === 'native-questions' && (values.root !== '/workspace/swa-public-question-case-20261023' || parsed.tokens.some(token => token.kind === 'option' && token.name === 'workers'))) throw new Error('The native question case has one fixed root and fixed stage worker counts')
   if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error('--workers must be within the current complete-inventory observation bound')
   workers = Number(values.workers)
 } catch {
-  process.stderr.write('Invalid arguments: use --root ABSOLUTE_NEW_DIRECTORY and optional --workers INTEGER_3_TO_100; this helper follows the current complete-inventory observation bound, not a product quota limit\n')
+  process.stderr.write(values?.case === undefined
+    ? 'Invalid arguments: use --root ABSOLUTE_NEW_DIRECTORY and optional --workers INTEGER_3_TO_100; this helper follows the current complete-inventory observation bound, not a product quota limit\n'
+    : 'Invalid arguments: use --case native-questions --root /workspace/swa-public-question-case-20261023 without --workers\n')
   process.exit(2)
 }
 
@@ -57,6 +62,35 @@ try {
     if (await readFile(actual, 'utf8') !== text) throw new Error('The checked-out original differs from its fixed Git revision')
     originals.push({ path, source_revision: revision, text })
   }
+  if (values.case === 'native-questions') {
+    const { questionCase } = await import('./question-case-definition.mjs')
+    const verification = join(project, '.verification')
+    await mkdir(verification, { mode: 0o700 })
+    await ordinaryDirectory(verification)
+    const inputDirectory = join(verification, 'swa-question-input')
+    await mkdir(inputDirectory, { mode: 0o700 })
+    const prepared = questionCase(originals), stages = []
+    const write = (path, value) => writeFile(path, value, { flag: 'wx', mode: 0o600 })
+    for (const stage of prepared.stages) {
+      const directory = join(inputDirectory, stage.name)
+      await mkdir(directory, { mode: 0o700 })
+      const inputs = []
+      for (const { name, file, body } of stage.inputs) {
+        const input_file = join(directory, file)
+        await write(input_file, body)
+        inputs.push({ name, input_file })
+      }
+      const spec_file = join(directory, 'task.json'), inputs_file = join(directory, 'inputs.json')
+      await write(spec_file, JSON.stringify(stage.spec, null, 2) + '\n')
+      await write(inputs_file, JSON.stringify(inputs, null, 2) + '\n')
+      stages.push({ name: stage.name, spec_file, inputs_file })
+    }
+    const case_file = join(inputDirectory, 'case.json'), answer_file = join(inputDirectory, prepared.answer.file)
+    await write(case_file, JSON.stringify({ stages }, null, 2) + '\n')
+    await write(answer_file, prepared.answer.body)
+    await write(join(inputDirectory, 'source.json'), JSON.stringify({ project_root: project, source, revision, originals }, null, 2) + '\n')
+    process.stdout.write(JSON.stringify({ project_root: project, source, revision, case: 'native-questions', input_directory: inputDirectory, case_file, answer_file, stages, source_files_verified: files, model_calls: 0, product_execution: 'NOT_RUN', current_authorization: 'REQUIRED' }, null, 2) + '\n')
+  } else {
   const inputDirectory = join(project, '.verification', 'swa-product-input')
   await mkdir(inputDirectory, { recursive: true, mode: 0o700 })
   const write = (name, value) => writeFile(join(inputDirectory, name), value, { flag: 'wx', mode: 0o600 })
@@ -71,6 +105,7 @@ try {
   await write('source.json', JSON.stringify({ project_root: project, source, revision, originals }, null, 2) + '\n')
   await write('inputs.json', JSON.stringify(inputs, null, 2) + '\n')
   process.stdout.write(JSON.stringify({ project_root: project, source, revision, workers, input_directory: inputDirectory, spec_file: join(inputDirectory, 'task.json'), inputs_file: join(inputDirectory, 'inputs.json'), source_files_verified: files, model_calls: 0, product_execution: 'NOT_RUN', current_authorization: 'REQUIRED' }, null, 2) + '\n')
+  }
 } catch {
   process.stderr.write('Public case preparation failed; preserve the explicitly selected case directory and inspect Git access, source identity and actual paths. No project scripts or model calls were executed.\n')
   process.exitCode = 1

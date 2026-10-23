@@ -37,6 +37,7 @@ const requiredGo = "go1.27.2"
 const piProfile = "stepfun-pi-n3"
 const piN4Profile = "stepfun-pi-n4"
 const piN6Profile = "stepfun-pi-n6"
+const piQuestionsProfile = "stepfun-pi-questions"
 
 var stages = []string{"session", "space", "project", "observe-settings", "observe-grant", "observe-token", "execute-settings", "execute-grant", "execute-token", "revoke"}
 var actions = []string{"read_context", "observe", "start", "send", "stop"}
@@ -61,6 +62,13 @@ type executionPackage struct {
 	ReadySHA           string            `json:"ready_sha256,omitempty"`
 	ProofSHA           string            `json:"live_proof_sha256,omitempty"`
 	LaunchSHA          string            `json:"launch_record_sha256,omitempty"`
+	OwnerHandoffFile   string            `json:"owner_handoff_file,omitempty"`
+	OwnerHandoffSHA    string            `json:"owner_handoff_sha256,omitempty"`
+	QuestionGUIFile    string            `json:"question_gui_file,omitempty"`
+	QuestionGUISHA     string            `json:"question_gui_sha256,omitempty"`
+	QuestionScenario   string            `json:"question_scenario,omitempty"`
+	BaselineFile       string            `json:"question_baseline_file,omitempty"`
+	BaselineSHA        string            `json:"question_baseline_sha256,omitempty"`
 	DriverSHA          string            `json:"driver_sha256,omitempty"`
 	DefinitionSHA      string            `json:"public_definition_sha256,omitempty"`
 	DriverSourceSHA    map[string]string `json:"driver_dependency_sha256,omitempty"`
@@ -86,6 +94,23 @@ type profileScope struct {
 }
 
 func fixedProfile(p executionPackage) (profileScope, error) {
+	if p.Profile != piQuestionsProfile && (p.OwnerHandoffFile != "" || p.OwnerHandoffSHA != "" || p.QuestionGUIFile != "" || p.QuestionGUISHA != "" || p.QuestionScenario != "" || p.BaselineFile != "" || p.BaselineSHA != "") {
+		return profileScope{}, fail("question_fields_require_question_profile")
+	}
+	if p.Profile == piQuestionsProfile {
+		switch p.QuestionScenario {
+		case "full":
+			if p.BaselineFile != "" || p.BaselineSHA != "" {
+				return profileScope{}, fail("question_full_forbids_baseline")
+			}
+		case "answer-conflict":
+			if p.BaselineFile == "" || p.BaselineSHA == "" {
+				return profileScope{}, fail("question_conflict_requires_explicit_baseline")
+			}
+		default:
+			return profileScope{}, fail("fixed_question_scenario_required")
+		}
+	}
 	scope := profileScope{
 		agent: "codex", model: "gpt-5.5", caller: caller, project: projectName, space: spaceTitle,
 		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
@@ -98,7 +123,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		if p.PiSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
-	case piProfile, piN4Profile, piN6Profile:
+	case piProfile, piN4Profile, piN6Profile, piQuestionsProfile:
 		if p.CodexSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
@@ -113,6 +138,12 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		scope.version, scope.provider, scope.accountSource = "1.0.1", "stepfun", "pi-api-key-file"
 		scope.sourceName, scope.sourceHome = "pi_source_home", p.PiSourceHome
 		scope.dependencies = append(scope.dependencies, "pi-source-observer-entry.ts")
+		if p.Profile == piQuestionsProfile {
+			scope.workers, scope.projectRoot = 2, "/workspace/swa-public-question-case-20261023/public-project"
+			scope.caller = "swa-stepfun-pi-questions-20261023"
+			scope.project, scope.space = "SWA StepFun Pi questions public stats", "SWA StepFun Pi questions public stats 20261023"
+			scope.dependencies = append(scope.dependencies, "public-case-definition.mjs", "pi-question-event-view.mjs")
+		}
 	default:
 		return profileScope{}, fail("reviewed_profile_required")
 	}
@@ -252,9 +283,15 @@ func childEnvironment(home string) []string {
 	return []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8", "LC_ALL=C.UTF-8", "HOME=" + home, "TMPDIR=" + home, "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0"}
 }
 func driverPath(p executionPackage) string {
+	if p.Profile == piQuestionsProfile {
+		return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/run-question-installed.mjs")
+	}
 	return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/run-installed.mjs")
 }
 func definitionPath(p executionPackage) string {
+	if p.Profile == piQuestionsProfile {
+		return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/question-case-definition.mjs")
+	}
 	return filepath.Join(p.SourceRepository, "tests/swa-product-acceptance/public-case-definition.mjs")
 }
 func consumerPath() (string, error) {
@@ -341,6 +378,9 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 	if err != nil || strings.TrimSpace(string(edition)) != "cli" && strings.TrimSpace(string(edition)) != "combined" {
 		return nil, fail("installation_edition_mismatch")
 	}
+	if p.Profile == piQuestionsProfile && strings.TrimSpace(string(edition)) != "combined" {
+		return nil, fail("question_gui_requires_combined_installation")
+	}
 	consumer, err := consumerPath()
 	if err != nil {
 		return nil, err
@@ -360,10 +400,10 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 			return nil, err
 		}
 	}
-	if err := gitSource(*p, "tests/swa-product-acceptance/public-case-definition.mjs", definitionPath(*p)); err != nil {
+	if err := gitSource(*p, "tests/swa-product-acceptance/"+filepath.Base(definitionPath(*p)), definitionPath(*p)); err != nil {
 		return nil, err
 	}
-	if err := gitSource(*p, "tests/swa-product-acceptance/run-installed.mjs", driverPath(*p)); err != nil {
+	if err := gitSource(*p, "tests/swa-product-acceptance/"+filepath.Base(driverPath(*p)), driverPath(*p)); err != nil {
 		return nil, err
 	}
 	dependencies := scope.dependencies
@@ -434,7 +474,62 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 			}
 		}
 	}
+	if p.Profile == piQuestionsProfile {
+		if p.OwnerHandoffFile == "" {
+			missing = append(missing, "owner_handoff_file")
+		} else {
+			if p.OwnerHandoffFile != filepath.Join(p.EvidenceRoot, "service-handoff.json") {
+				return nil, fail("question_owner_handoff_path_mismatch")
+			}
+			if err := plain(p.OwnerHandoffFile, false, true); err != nil {
+				return nil, err
+			}
+			if err := bindHash(p.OwnerHandoffFile, &p.OwnerHandoffSHA, prepare); err != nil {
+				return nil, err
+			}
+		}
+		if p.QuestionGUIFile == "" {
+			missing = append(missing, "question_gui_file")
+		} else {
+			if p.QuestionGUIFile != filepath.Join(p.SourceRepository, ".verification/cloud-setup/question-gui-installed.mjs") {
+				return nil, fail("fixed_question_gui_path_required")
+			}
+			if p.QuestionGUISHA == "" {
+				missing = append(missing, "question_gui_sha256")
+			} else if err := bindHash(p.QuestionGUIFile, &p.QuestionGUISHA, false); err != nil {
+				// ignored GUI 仅采用 Root 审定的准确 SHA，不自动采纳或冒称安装 Git 源。
+				return nil, err
+			}
+		}
+		if p.QuestionScenario == "answer-conflict" {
+			if err := checkQuestionBaseline(*p); err != nil {
+				return nil, err
+			}
+		}
+	}
 	return missing, nil
+}
+
+func checkQuestionBaseline(p executionPackage) error {
+	if filepath.Base(p.BaselineFile) != "question-baseline.json" || filepath.Base(filepath.Dir(p.BaselineFile)) != "driver-report" {
+		return fail("fixed_question_baseline_path_required")
+	}
+	for _, root := range []string{p.Installation, p.SourceRepository, p.Project, p.DataRoot, p.PiSourceHome, p.EvidenceRoot} {
+		if root != "" && inside(root, p.BaselineFile) {
+			return fail("question_baseline_overlaps_current_scope")
+		}
+	}
+	if err := plain(filepath.Dir(p.BaselineFile), true, true); err != nil {
+		return err
+	}
+	if err := plain(p.BaselineFile, false, true); err != nil {
+		return err
+	}
+	body, err := readBounded(p.BaselineFile, 1<<20)
+	if err != nil {
+		return err
+	}
+	return require(p.BaselineSHA == hashBytes(body), "approved_question_baseline_bytes_changed")
 }
 
 func privateRuntimeRoots(p executionPackage, scope profileScope) ([]string, error) {
@@ -480,7 +575,11 @@ func checkPublic(p executionPackage) (json.RawMessage, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), consumer, definitionPath(p), p.Project, strconv.Itoa(scope.workers))
+	args := []string{consumer, definitionPath(p), p.Project, strconv.Itoa(scope.workers)}
+	if p.Profile == piQuestionsProfile {
+		args = append(args, "native-questions")
+	}
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
 	cmd.Env = childEnvironment(p.EvidenceRoot)
 	stdout, err := runBounded(cmd, 64<<10, 64<<10)
 	if err != nil {
@@ -551,6 +650,51 @@ type piLaunchWire struct {
 	PiSourceHome string `json:"pi_source_home"`
 }
 
+// 本轮只消费原 owner 已保存的非秘密交接，不生成或改写其来源记录。
+type questionOwnerHandoffWire struct {
+	launchBase
+	Status            string   `json:"status"`
+	PiSourceHome      string   `json:"pi_source_home"`
+	EvidenceRoot      string   `json:"evidence_root"`
+	ExpectedRuntimeID string   `json:"expected_runtime_id"`
+	LaunchFile        string   `json:"launch_record_file"`
+	LaunchSHA         string   `json:"launch_record_sha256"`
+	ReadyFile         string   `json:"ready_file"`
+	ReadySHA          string   `json:"ready_sha256"`
+	ProofFile         string   `json:"live_proof_file"`
+	ProofSHA          string   `json:"live_proof_sha256"`
+	ProtectedRoots    []string `json:"protected_roots"`
+	HoldUntil         string   `json:"hold_until"`
+	Authorization     string   `json:"authorization"`
+	Account           string   `json:"account"`
+	ProviderCalls     *int     `json:"provider_calls_by_producer"`
+	ModelCalls        *int     `json:"model_calls_by_producer"`
+}
+
+func readQuestionOwnerHandoff(p executionPackage) (questionOwnerHandoffWire, time.Time, error) {
+	var owner questionOwnerHandoffWire
+	if p.Profile != piQuestionsProfile || p.OwnerHandoffFile != filepath.Join(p.EvidenceRoot, "service-handoff.json") || p.OwnerHandoffSHA == "" {
+		return owner, time.Time{}, fail("fixed_question_owner_handoff_required")
+	}
+	if err := plain(p.EvidenceRoot, true, true); err != nil {
+		return owner, time.Time{}, err
+	}
+	if err := readWire(p.OwnerHandoffFile, &owner, p.OwnerHandoffSHA); err != nil {
+		return owner, time.Time{}, err
+	}
+	if owner.Status != "SERVICE_BASELINE_OBSERVED" || owner.Installation != p.Installation || owner.Revision != p.Revision || owner.DataRoot != p.DataRoot || owner.Endpoint != p.Endpoint || owner.PiSourceHome != p.PiSourceHome || owner.EvidenceRoot != p.EvidenceRoot || owner.ExpectedRuntimeID != p.ExpectedRuntimeID || owner.ServePID <= 0 || !reflect.DeepEqual(owner.ProtectedRoots, p.ProtectedRoots) || owner.Authorization != "REQUIRES_EXACT_USER_DELEGATION" || owner.Account != "NOT_VERIFIED" || owner.ProviderCalls == nil || *owner.ProviderCalls != 0 || owner.ModelCalls == nil || *owner.ModelCalls != 0 {
+		return owner, time.Time{}, fail("question_owner_handoff_scope_mismatch")
+	}
+	if owner.ReadyFile != p.ReadyFile || owner.ReadyFile != filepath.Join(p.EvidenceRoot, "ready.json") || owner.ReadySHA != p.ReadySHA || owner.LaunchFile != p.LaunchFile || owner.LaunchFile != filepath.Join(p.EvidenceRoot, "pi-launch-record.json") || owner.LaunchSHA != p.LaunchSHA || owner.ProofFile != p.ProofFile || owner.ProofFile != filepath.Join(p.EvidenceRoot, "live-proof.json") || owner.ProofSHA != p.ProofSHA {
+		return owner, time.Time{}, fail("question_owner_handoff_wire_mismatch")
+	}
+	deadline, err := time.Parse(time.RFC3339Nano, owner.HoldUntil)
+	if err != nil || !deadline.After(time.Now()) {
+		return owner, time.Time{}, fail("question_owner_hold_expired_or_invalid")
+	}
+	return owner, deadline, nil
+}
+
 func readWire(path string, value any, expectedSHA string) error {
 	if err := plain(path, false, true); err != nil {
 		return err
@@ -564,7 +708,7 @@ func readWire(path string, value any, expectedSHA string) error {
 	}
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	switch value.(type) {
-	case *launchWire, *piLaunchWire:
+	case *launchWire, *piLaunchWire, *questionOwnerHandoffWire:
 		decoder.DisallowUnknownFields()
 	}
 	if err = decoder.Decode(value); err != nil || decoder.Decode(new(any)) != io.EOF {
@@ -610,6 +754,15 @@ func serviceIdentity(p executionPackage) (string, error) {
 	o := daemon.Ownership
 	if !ready.OK || ready.HTTP != p.Endpoint || ready.Data != p.DataRoot || ready.Install != p.Installation || ready.Readiness.Data != p.DataRoot || ready.Readiness.Node != filepath.Join(p.Installation, "node/node") || ready.Readiness.RuntimeID != p.ExpectedRuntimeID || proof.Type != "process_tree_observed" || o.Platform != "linux" || o.Source != p.Revision || o.Install != p.Installation || o.Data != p.DataRoot || o.Boot != proof.Boot || o.ServePID != proof.RootPID || o.DaemonPID != daemon.PID || o.UID != strconv.Itoa(os.Getuid()) || launch.Installation != p.Installation || launch.Revision != p.Revision || launch.DataRoot != p.DataRoot || launch.Endpoint != p.Endpoint || launch.ServePID != o.ServePID || sourceHome != scope.sourceHome {
 		return "", fail("actual_service_wire_mismatch")
+	}
+	if p.Profile == piQuestionsProfile {
+		owner, _, err := readQuestionOwnerHandoff(p)
+		if err != nil {
+			return "", err
+		}
+		if owner.ServePID != launch.ServePID {
+			return "", fail("question_owner_handoff_process_mismatch")
+		}
 	}
 	boot, err := readBounded("/proc/sys/kernel/random/boot_id", 4096)
 	if err != nil || strings.TrimSpace(string(boot)) != proof.Boot {
@@ -932,12 +1085,39 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 			return err
 		}
 	}
-	ctx, cancel := context.WithDeadline(context.Background(), token.ExpiresAt.Add(-30*time.Second))
+	deadline := token.ExpiresAt.Add(-30 * time.Second)
+	if p.Profile == piQuestionsProfile {
+		_, ownerDeadline, err := readQuestionOwnerHandoff(p)
+		if err != nil {
+			return err
+		}
+		if err := bindHash(p.QuestionGUIFile, &p.QuestionGUISHA, false); err != nil {
+			return err
+		}
+		if p.QuestionScenario == "answer-conflict" {
+			if err := checkQuestionBaseline(p); err != nil {
+				return err
+			}
+		}
+		if beforeCleanup := ownerDeadline.Add(-30 * time.Second); beforeCleanup.Before(deadline) {
+			deadline = beforeCleanup
+		}
+		if !deadline.After(time.Now()) {
+			return fail("question_driver_deadline_exhausted")
+		}
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	args := []string{driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", scope.agent, "--model", scope.model, "--workers", strconv.Itoa(scope.workers), "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository}
 	args = append(args, "--service-ready-record", p.ReadyFile, "--service-ready-sha256", p.ReadySHA)
 	if scope.agent == "pi" {
 		args = append(args, "--pi-launch-record", p.LaunchFile, "--pi-launch-sha256", p.LaunchSHA)
+	}
+	if p.Profile == piQuestionsProfile {
+		args = append(args, "--owner-handoff", p.OwnerHandoffFile, "--gui-driver", p.QuestionGUIFile, "--gui-sha256", p.QuestionGUISHA, "--question-scenario", p.QuestionScenario)
+		if p.QuestionScenario == "answer-conflict" {
+			args = append(args, "--question-baseline-file", p.BaselineFile, "--question-baseline-sha256", p.BaselineSHA)
+		}
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
 	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_PROJECT_TOKEN="+token.Token)
@@ -1231,7 +1411,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 
 func run() int {
 	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires prior user delegation for the scope and a current verified technical package")
-	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex) or stepfun-pi-n3/n4/n6; prepare writes a separate .prepared.json")
+	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex), stepfun-pi-n3/n4/n6, or stepfun-pi-questions; prepare writes a separate .prepared.json")
 	flag.Parse()
 	if flag.NArg() != 0 || (*mode != "prepare" && *mode != "verify" && *mode != "execute-authorized") {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INVALID_ARGUMENTS", "http_calls": 0})
@@ -1248,7 +1428,19 @@ func run() int {
 		return 2
 	}
 	if *mode == "prepare" {
-		if err = os.Mkdir(p.EvidenceRoot, 0700); err != nil {
+		if p.Profile == piQuestionsProfile {
+			// 原 owner 已独占创建该根；仅明确同源且仍活动的服务可共享其证据目录。
+			if len(missing) == 0 {
+				_, err = serviceIdentity(p)
+				if err != nil {
+					missing = append(missing, "actual_service_identity_not_live")
+				}
+			}
+			if len(missing) != 0 {
+				_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INCOMPLETE_NO_AUTH", "missing": missing, "http_calls": 0, "model_calls": 0})
+				return 3
+			}
+		} else if err = os.Mkdir(p.EvidenceRoot, 0700); err != nil {
 			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
 			return 2
 		}

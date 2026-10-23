@@ -5,9 +5,10 @@ import { lstat, readFile, realpath } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const [definition, project, requestedWorkers = '3'] = process.argv.slice(2)
-assert.ok(process.argv.length >= 4 && process.argv.length <= 5)
-assert.ok(['3', '4', '6'].includes(requestedWorkers))
+const [definition, project, requestedWorkers = '3', selectedCase] = process.argv.slice(2)
+assert.ok(process.argv.length >= 4 && process.argv.length <= 6)
+assert.ok(selectedCase === undefined || selectedCase === 'native-questions')
+assert.ok(selectedCase === 'native-questions' ? requestedWorkers === '2' : ['3', '4', '6'].includes(requestedWorkers))
 const workers = Number(requestedWorkers)
 assert.ok(isAbsolute(definition) && isAbsolute(project))
 async function ordinary(path, directory = false) {
@@ -21,7 +22,7 @@ async function ordinary(path, directory = false) {
 }
 await ordinary(project, true)
 await ordinary(definition)
-const { publicCase, publicFiles, publicRevision, publicSource } = await import(pathToFileURL(definition).href)
+const { publicCase, questionCase, publicFiles, publicRevision, publicSource } = await import(pathToFileURL(definition).href)
 assert.equal(publicSource, 'https://github.com/songconmaisaix31-design/astrocyte-s3-public-stats.git')
 assert.equal(publicRevision, 'da3bdddb085808863090a05f60cc1c64415039cf')
 assert.deepEqual(publicFiles, ['README.md', 'go.mod', 'stats.go', 'stats_test.go'])
@@ -40,11 +41,32 @@ for (const path of publicFiles) {
   assert.equal(text, git(['show', `${publicRevision}:${path}`]))
   originals.push({ path, source_revision: publicRevision, text })
 }
-const directory = join(project, '.verification/swa-product-input')
-const prepared = publicCase(workers, originals)
-assert.deepEqual(JSON.parse(await read(join(directory, 'task.json'))), prepared.spec)
-assert.deepEqual(JSON.parse(await read(join(directory, 'source.json'))), { project_root: project, source: publicSource, revision: publicRevision, originals })
-assert.deepEqual(JSON.parse(await read(join(directory, 'inputs.json'))), prepared.inputs.map(({ name, file }) => ({ name, input_file: join(directory, file) })))
-for (const input of prepared.inputs) assert.equal(await read(join(directory, input.file)), input.body)
-assert.equal(await read(join(directory, 'followup.txt')), prepared.followup)
+if (selectedCase === 'native-questions') {
+  assert.equal(project, '/workspace/swa-public-question-case-20261023/public-project')
+  const directory = join(project, '.verification/swa-question-input')
+  const prepared = questionCase(originals)
+  assert.deepEqual(prepared.stages.map(({ name, spec }) => ({ name, max_workers: spec.max_workers, initial_workers: spec.initial_workers })), [
+    { name: 'a', max_workers: 1, initial_workers: 1 },
+    { name: 'b', max_workers: 2, initial_workers: 2 },
+    { name: 'c', max_workers: 1, initial_workers: 1 },
+  ])
+  assert.deepEqual(JSON.parse(await read(join(directory, 'case.json'))), { stages: prepared.stages.map(({ name }) => ({ name, spec_file: join(directory, name, 'task.json'), inputs_file: join(directory, name, 'inputs.json') })) })
+  assert.deepEqual(JSON.parse(await read(join(directory, 'source.json'))), { project_root: project, source: publicSource, revision: publicRevision, originals })
+  for (const stage of prepared.stages) {
+    const stageDirectory = join(directory, stage.name)
+    assert.deepEqual(JSON.parse(await read(join(stageDirectory, 'task.json'))), stage.spec)
+    assert.deepEqual(JSON.parse(await read(join(stageDirectory, 'inputs.json'))), stage.inputs.map(({ name, file }) => ({ name, input_file: join(stageDirectory, file) })))
+    for (const input of stage.inputs) assert.equal(await read(join(stageDirectory, input.file)), input.body)
+  }
+  assert.equal(prepared.answer.file, 'answer.txt')
+  assert.equal(await read(join(directory, prepared.answer.file)), prepared.answer.body)
+} else {
+  const directory = join(project, '.verification/swa-product-input')
+  const prepared = publicCase(workers, originals)
+  assert.deepEqual(JSON.parse(await read(join(directory, 'task.json'))), prepared.spec)
+  assert.deepEqual(JSON.parse(await read(join(directory, 'source.json'))), { project_root: project, source: publicSource, revision: publicRevision, originals })
+  assert.deepEqual(JSON.parse(await read(join(directory, 'inputs.json'))), prepared.inputs.map(({ name, file }) => ({ name, input_file: join(directory, file) })))
+  for (const input of prepared.inputs) assert.equal(await read(join(directory, input.file)), input.body)
+  assert.equal(await read(join(directory, 'followup.txt')), prepared.followup)
+}
 process.stdout.write(JSON.stringify({ status: 'VERIFIED_FIXED_PUBLIC_INPUT', source: publicSource, revision: publicRevision, workers, files: hashes, http_calls: 0, model_calls: 0, project_registration: 'NOT_RUN' }) + '\n')

@@ -2,6 +2,8 @@
 
 这是外部验收工具。`prepare`和`verify`只做本地安装、源码、公开输入和服务身份原件核对；二者不会发HTTP、创建来源或取得human会话。`execute-authorized`会执行已委托的人工授权写入和验收驱动，执行范围须有明确用户授权。2026-10-23 用户开始测试N>3已覆盖同公开项目、StepFun、ToolsOff的N4/N6及原测试所需授权、收尾；新包只作技术来源/身份核查，不逐SHA重复索取同意。命令名或包内bool本身不产生授权，其他范围按原规则处理。
 
+`stepfun-pi-questions`沿用户完整Run、StepFun、人类独立追加输入的既有授权，单独验证原生问答。它采用`questions-only`模式，只提供固定`swa_ask`，原生文件与命令工具继续关闭；原N3/N4/N6保持ToolsOff。源码、包和驱动接受不表示真实模型问答通过，实际执行由Root统筹。
+
 在仓库根目录构建，把实际二进制和同版本的纯公开消费者一起放在新的独占工具目录中：
 
 ```sh
@@ -26,11 +28,23 @@ cp tests/swa-cli-headless/authorize-installed/public-case-preflight.mjs "$TOOL_R
 
 Pi新增profile `stepfun-pi-n4`和`stepfun-pi-n6`，workers分别只能4、6；caller分别为`swa-stepfun-pi-n4-20261023`、`swa-stepfun-pi-n6-20261023`，项目/空间标题的N同步变为N4/N6。各自公开项目固定为`/workspace/swa-public-case-20261023-n4/public-project`、`/workspace/swa-public-case-20261023-n6/public-project`。Agent、model、来源字段和ToolsOff仍沿Pi表，不允许用其他N替换profile。N6在N4实际完整结算之后执行，不能同时抢用同一driver输入或owner。
 
-旧Codex/Pi N3包仍只接受既有公开项目`/workspace/swa-public-case-20261022/public-project`。所有profile核同公开revision四原文及固定task/input/followup；N4/N6使用六种区别明确的公开审阅职责中的前四/全部六项，显式initial_workers=N，经默认等待run创建lead后补同Run N−1；槽位4为lead的真实孙任务。两批均主动停非lead槽位2；N4只在lead首轮idle且孙任务仍运行时追加lead，N6用子成果原mail/callback产生lead第二轮，不另加手工模型轮。四个实际项目Role和Conversation、完整递归wait/export与自动release沿原回执/原生来源核对；提示职责不代替持久Role，stored通知不当provider送达。未知profile、错caller/agent/model/N/项目或另一profile的非空来源字段在HTTP之前拒绝。来源必须为显式、独立、当前用户0700普通目录；工具只检查其路径元数据，不读取auth、key、models或settings正文，不创建或修复来源。缺少来源、真实启动记录或服务身份时包保持INCOMPLETE，不能执行。Pi的API为openai-completions，endpoint为https://api.stepfun.com/v1，ToolsOff合同为pi-cli-1.0.1，新账户kind为pi-native-api-key-per-session；这项固定目标不表示账号、推理、原生ToolsOff或N已通过。
+问答profile固定`caller=swa-stepfun-pi-questions-20261023`、`agent=pi`、`model=stepfun/step-3.5-flash`、`workers=2`、Pi版本1.0.1和`pi_source_home`。项目路径为`/workspace/swa-public-question-case-20261023/public-project`，项目名`SWA StepFun Pi questions public stats`，空间名`SWA StepFun Pi questions public stats 20261023`，安装必须为combined。`workers=2`是阶段B最大并行数，三个固定阶段的初始Worker数分别为1、2、1；B的第二个Worker由驱动在lead真实提问后创建。公开准备使用`prepare-public-case.mjs --case native-questions --root /workspace/swa-public-question-case-20261023`，不传`--workers`。消费者核对四原文、`swa-question-input/case.json`、各阶段task/inputs、独立的`answer.txt`和source，保留答案首尾空白与换行，答案不进入启动输入。
+
+旧Codex/Pi N3包仍只接受既有公开项目`/workspace/swa-public-case-20261022/public-project`。各N profile核同公开revision四原文及固定task/input/followup；N4/N6使用六种区别明确的公开审阅职责中的前四/全部六项，显式initial_workers=N，经默认等待run创建lead后补同Run N−1；槽位4为lead的真实孙任务。两批均主动停非lead槽位2；N4只在lead首轮idle且孙任务仍运行时追加lead，N6用子成果原mail/callback产生lead第二轮，不另加手工模型轮。四个实际项目Role和Conversation、完整递归wait/export与自动release沿原回执/原生来源核对；提示职责不代替持久Role，stored通知不当provider送达。未知profile、错caller/agent/model/N/项目或另一profile的非空来源字段在HTTP之前拒绝。来源必须为显式、独立、当前用户0700普通目录；工具只检查其路径元数据，不读取auth、key、models或settings正文，不创建或修复来源。缺少来源、真实启动记录或服务身份时包保持INCOMPLETE，不能执行。Pi的API为openai-completions，endpoint为https://api.stepfun.com/v1，ToolsOff合同为pi-cli-1.0.1，新账户kind为pi-native-api-key-per-session；这项固定目标不表示账号、推理、原生ToolsOff或N已通过。
 
 原serve owner须在真实spawn时保存非秘密启动记录并提供原ready/proof与准确SHA/runtime。Codex记录严格为installation、source_revision、data_root、endpoint、serve_pid、codex_api_key_home六键；Pi记录最后一键为pi_source_home。工具不生成或补造记录。Linux Codex/Pi驱动均接收已核原ready的`--service-ready-record`和`--service-ready-sha256`；驱动绑定实际status/runtimeId、装内Node与原daemon→runtime→serve身份链，使用独立runtime托管者核Worker custody。daemon原身份与认证检查保留。Pi另接收已核记录的`--pi-launch-record`和`--pi-launch-sha256`，从中独立核对SOURCE。真实serve捕获来源的入口是PI_CODING_AGENT_DIR，由原owner负责；工具不启动serve或调整PATH。
 
 Codex/Pi共同固定driver-failure.mjs、codex-event-view.mjs、prepare-source-observer.mjs、source-observer-entry.ts、extract-observer-source.py和pi-event-view.mjs六个执行依赖；Pi再增加pi-source-observer-entry.ts。pi-event-view的私有FD读取器也被Codex用于ready文件，Codex仍使用已有JSON解析，不引入Pi protocol运行依赖。全部依赖逐安装VERSION的Git blob和实际SHA核对。缺少依赖的历史安装不能作为执行候选。源码测试、编译与help只能证明离线范围。
+
+问答profile使用`run-question-installed.mjs`与`question-case-definition.mjs`，另将定义直接引用的`public-case-definition.mjs`及`pi-question-event-view.mjs`加入上述依赖，按安装VERSION固定。包必须提供`owner_handoff_file`、`owner_handoff_sha256`、`question_gui_file`、`question_gui_sha256`；其他profile拒绝这些字段的非空值。GUI文件路径固定为`SourceRepository/.verification/cloud-setup/question-gui-installed.mjs`，SHA由Root审定后明确填写，工具不自动采纳该SHA，也不把ignored脚本当安装Git blob。
+
+问答包还必须明确`question_scenario=full`或`answer-conflict`。full执行A/B/C、完整审阅与回收，最后只测试撤销send后的原问题回答；它禁止`question_baseline_file`和`question_baseline_sha256`。answer-conflict必须显式提供这两个字段，引用主场景实际输出的`driver-report/question-baseline.json`；文件不超过1MiB、0600，父目录0700、路径普通且独立于本次输入/数据/来源/证据根。helper只核路径与准确SHA，不自动填基线SHA、不读原生正文或凭据；driver进一步核固定报告schema、同安装S、eligible及完整A/B/C事实。其他profile拒绝三个场景字段的非空值。
+
+主owner完整正常收尾后，冲突场景使用新owner、data、runtime、project ID和新Run，仅执行A的真实完整成功链、审阅及幂等核验，再以不同答案请求作为唯一终端负例。本次B/C、600秒等待及撤send明确NOT_RUN并引用同S主基线；不能把引用写成本次执行。终端未知保持原R，不再追加问题输入或更换场景，仅查询原请求、有限只读及已明确授权的关闭。
+
+问答包的EvidenceRoot必须等于真实owner交接中的evidence_root，交接文件为该根原有的`service-handoff.json`。工具核其准确SHA、runtime、安装、源码、data、endpoint、来源、serve PID、protected_roots与有效`hold_until`，并逐项对应原`ready.json`、`pi-launch-record.json`、`live-proof.json`路径及SHA，再沿原procfs身份链验证当前进程。问答`prepare`仅复用这个已经核实且权限0700的owner目录；缺少交接或来源时返回INCOMPLETE，不创建或接管其他已有目录。helper只独占新增自身证据文件，driver输出位于该根`driver-report`；全部原件保留，不能复制或改写为另一条身份链。旧profile的prepare仍要求新建证据根。
+
+问答驱动额外接收`--owner-handoff`、`--gui-driver`、`--gui-sha256`、`--question-scenario`；仅冲突场景接收`--question-baseline-file`、`--question-baseline-sha256`，启动前重新核基线原件。沿既有受保护子进程环境取得SWA_PROJECT_TOKEN。helper的驱动截止取token到期与owner截止中较早者，并保留30秒收尾；驱动另遵循45分钟业务截止，原owner的55分钟持有窗口不延长。GUI和业务阶段须按同一活动Run核对；等待超时、未知送达和未实际发生的分支保持原状态，不能补造工具事件或把固定输入核对当模型验收。
 
 委托效果包括本次human会话、实际项目/空间登记、observe及execute两阶段settings CAS/Grant/token、原驱动业务请求和明确清理。cookie/CSRF/token只保存在内存，token只通过子进程环境传递；key不进入本工具。human写结果未知时停写且不重放，不能用CLI请求账本宣称human写已结算。业务未知只查原R。撤销与human未知后的撤销分别由包中明确委托控制；服务由原serve owner正常EOF并取得全树关闭证据。过期055b及其旧owned服务不得复用为新执行包。
 

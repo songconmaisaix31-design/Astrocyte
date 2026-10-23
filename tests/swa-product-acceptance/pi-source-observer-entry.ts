@@ -25,11 +25,12 @@ async function readInput(maximum: number) {
   }
   return Buffer.concat(chunks)
 }
-function protocol() {
+function protocol(questions = false) {
   // 唯一消费者是本进程实际装内的纯入口；不编译另一份 parser，不解析未部署开发依赖。
   const path = join(dirname(process.execPath), '..', 'runtime', 'pi-protocol.cjs')
   const value: typeof import('./source/third_party/orca-v1.4.230/src/main/pi/rpc-protocol') = createRequire(process.execPath)(path)
   need(typeof value.parseStrictPiJson === 'function' && typeof value.strictPiRawSchema?.safeParse === 'function' && typeof value.strictPiOutboundSchema?.safeParse === 'function' && typeof value.strictPiNativeHeaderSchema?.safeParse === 'function' && typeof value.strictPiNativeEntrySchema?.safeParse === 'function')
+  if (questions) need(typeof value.strictPiQuestionRawSchema?.safeParse === 'function' && typeof value.strictPiQuestionNativeEntrySchema?.safeParse === 'function' && typeof value.strictPiQuestionResultSchema?.safeParse === 'function')
   return value
 }
 // 同一成熟 decoder 的纯投影也供驱动最终无 await 段消费，不另写 stored-form 解码。
@@ -88,19 +89,23 @@ export function fingerprintPiBody(sessionId: string, value: unknown) {
   const { from: _sender, ...payload } = value as Record<string, unknown>
   return agentSessionSendBodyFingerprint(sessionId, SendBodyStructure.parse(payload))
 }
-export function validatePiSource(mode: 'validate-pi-trace' | 'validate-pi-native', bytes: Buffer) {
-  need(mode === 'validate-pi-trace' || mode === 'validate-pi-native')
+export function validatePiSource(mode: 'validate-pi-trace' | 'validate-pi-native' | 'validate-pi-question-trace' | 'validate-pi-question-native', bytes: Buffer) {
+  need(['validate-pi-trace', 'validate-pi-native', 'validate-pi-question-trace', 'validate-pi-question-native'].includes(mode))
   need(Buffer.isBuffer(bytes) && bytes.length > 0 && bytes.length <= 12 * 1024 * 1024 && bytes.at(-1) === 10)
-  const api = protocol()
+  const questions = mode === 'validate-pi-question-trace' || mode === 'validate-pi-question-native'
+  const native = mode === 'validate-pi-native' || mode === 'validate-pi-question-native'
+  const api = protocol(questions)
+  const rawSchema = questions ? api.strictPiQuestionRawSchema : api.strictPiRawSchema
+  const entrySchema = questions ? api.strictPiQuestionNativeEntrySchema : api.strictPiNativeEntrySchema
   let count = 0
   let header: ReturnType<typeof api.strictPiNativeHeaderSchema.parse> | undefined
   const framer = createIncrementalNdjsonFramer((record, line) => {
     need(++count <= 100_000)
     const parsed: unknown = api.parseStrictPiJson(line)
     need(isDeepStrictEqual(parsed, record))
-    if (mode === 'validate-pi-native') {
+    if (native) {
       if (count === 1) header = api.strictPiNativeHeaderSchema.parse(parsed)
-      else api.strictPiNativeEntrySchema.parse(parsed)
+      else entrySchema.parse(parsed)
       return
     }
     need(parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
@@ -112,7 +117,7 @@ export function validatePiSource(mode: 'validate-pi-trace' | 'validate-pi-native
       need(typeof detail.raw_line === 'string')
       const actual = api.parseStrictPiJson(detail.raw_line)
       need(isDeepStrictEqual(actual, detail.frame))
-      api.strictPiRawSchema.parse(actual)
+      rawSchema.parse(actual)
     } else if (row.event === 'write_intent') api.strictPiOutboundSchema.parse(detail.frame)
   }, () => { throw new Error('pi_observer_invalid_jsonl') }, { maxLineBytes: 8 * 1024 * 1024 })
   framer.feed(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
@@ -140,7 +145,7 @@ async function main() {
     process.stdout.write(JSON.stringify(decodePiRecord(parsed)) + '\n')
     return
   }
-  need(mode === 'validate-pi-trace' || mode === 'validate-pi-native')
+  need(mode === 'validate-pi-trace' || mode === 'validate-pi-native' || mode === 'validate-pi-question-trace' || mode === 'validate-pi-question-native')
   process.stdout.write(JSON.stringify(validatePiSource(mode, await readInput(12 * 1024 * 1024))) + '\n')
 }
 

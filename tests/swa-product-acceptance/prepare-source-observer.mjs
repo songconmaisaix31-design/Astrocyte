@@ -11,8 +11,9 @@ import { parseArgs } from 'node:util'
 
 const values = parseArgs({ options: Object.fromEntries(['candidate', 'source-repository', 'output', 'profile'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
 for (const key of ['candidate', 'source-repository', 'output']) assert.ok(values[key] && isAbsolute(values[key]), 'observer_absolute_paths_required')
-assert.ok(values.profile === undefined || values.profile === 'stepfun-pi-n3', 'observer_profile_unreviewed')
-const pi = values.profile === 'stepfun-pi-n3'
+assert.ok(values.profile === undefined || ['stepfun-pi-n3', 'stepfun-pi-questions'].includes(values.profile), 'observer_profile_unreviewed')
+const pi = ['stepfun-pi-n3', 'stepfun-pi-questions'].includes(values.profile)
+const questions = values.profile === 'stepfun-pi-questions'
 process.umask(0o077)
 const prototype = dirname(fileURLToPath(import.meta.url))
 const snapshotPaths = [
@@ -28,6 +29,10 @@ if (pi) snapshotPaths.push('third_party/orca-v1.4.230/src/main/pi/rpc-protocol.t
   'third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt.ts',
   'third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts',
   'third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts')
+const questionContractSources = questions ? ['runtime/swa-orca/src/contracts.ts', 'runtime/swa-orca/src/task-budget.ts',
+  'third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error.ts'] : []
+snapshotPaths.push(...questionContractSources)
+const questionExports = questions ? "\nexport { questionRequestID, questionWaitID, readQuestionMutationResult, questionResumeBody } from './source/runtime/swa-orca/src/contracts'\n" : ''
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 const inside = (root, path) => {
   const suffix = relative(root, path)
@@ -101,7 +106,10 @@ const extraction = execFileSync('python3', ['-I', join(prototype, 'extract-obser
 const archiveProof = JSON.parse(extraction)
 assert.equal(archiveProof.revision, installedRevision)
 const entryPath = join(output, 'entry.ts')
-await writeFile(entryPath, await readFile(join(prototype, pi ? 'pi-source-observer-entry.ts' : 'source-observer-entry.ts')), { flag: 'wx', mode: 0o600 })
+const prototypeEntry = await version(join(prototype, pi ? 'pi-source-observer-entry.ts' : 'source-observer-entry.ts'))
+const entryBytes = await readFile(prototypeEntry.path)
+assert.equal(sha(entryBytes), prototypeEntry.sha256, 'observer_entry_source_changed')
+await writeFile(entryPath, Buffer.concat([entryBytes, Buffer.from(questionExports, 'utf8')]), { flag: 'wx', mode: 0o600 })
 // 编译器单独记录为既有工具；产品源码与依赖只取本安装版本快照和安装原件。
 const requireCompiler = createRequire(new URL('../../runtime/swa-orca/package.json', import.meta.url))
 const esbuildPath = await ordinary(requireCompiler.resolve('esbuild'))
@@ -141,6 +149,10 @@ if (pi) {
   const inputs = Object.keys(meta.inputs).map(path => path.replaceAll('\\', '/'))
   assert.ok(inputs.some(path => path.endsWith(protocolSource)) && inputs.some(path => path.includes('/jsonc-parser/') && path.endsWith('/lib/esm/main.js')) && inputs.some(path => path.includes('/zod/')), 'observer_protocol_actual_inputs_missing')
   assert.ok(inputs.every(path => !/claude-agent-sdk|pi-coding-agent|pi-ai|native-pi-policy|pi-session-policy|process-host/.test(path)), 'observer_protocol_effectful_input_unreviewed')
+  if (questions) {
+    const protocol = requireInstalled(protocolModule.path)
+    for (const name of ['strictPiQuestionRawSchema', 'strictPiQuestionNativeEntrySchema', 'strictPiQuestionResultSchema']) assert.equal(typeof protocol[name]?.safeParse, 'function', 'observer_installed_question_schema_missing')
+  }
 }
 const builtins = new Set(builtinModules.flatMap(name => [name, `node:${name}`]))
 const seenInputs = new Map()
@@ -178,6 +190,11 @@ const manifest = {
   compiler: { version: esbuild.version, module: await version(esbuildPath) },
   journal_module: journalModule, inputs: [...seenInputs.values()], metafile: build.metafile,
   observer: await version(bundlePath),
+  ...(questions ? { entry_source: prototypeEntry, entry_exports: questionExports, question_contract_sources: questionContractSources.map(path => {
+    const source = archiveProof.entries.find(entry => entry.path === path)
+    assert.ok(source, 'observer_question_contract_git_source_missing')
+    return source
+  }) } : {}),
   ...(pi ? { profile: values.profile, protocol_module: protocolModule, protocol_metafile: protocolMetafile, protocol_mapping: protocolMapping, typescript_module: typescriptModule } : {}),
 }
 await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx', mode: 0o600 })

@@ -14,7 +14,7 @@ import zipfile
 def main():
     arguments = sys.argv[1:]
     profile = None
-    if len(arguments) == 6 and arguments[-2:] == ["--profile", "stepfun-pi-n3"]:
+    if len(arguments) == 6 and arguments[-2] == "--profile" and arguments[-1] in ("stepfun-pi-n3", "stepfun-pi-questions"):
         profile = arguments[-1]
         arguments = arguments[:4]
     archive_name, repository_name, revision, target_name = arguments
@@ -35,13 +35,19 @@ def main():
         "third_party/orca-v1.4.230/tsconfig.json",
         "third_party/orca-v1.4.230/config/tsconfig.node.json",
     ]
-    if profile == "stepfun-pi-n3":
+    if profile in ("stepfun-pi-n3", "stepfun-pi-questions"):
         allowed.extend([
             "third_party/orca-v1.4.230/src/main/pi/rpc-protocol.ts",
             "third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt.ts",
             "scripts/build-swa-runtime.mjs",
             "third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts",
             "third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts",
+        ])
+    if profile == "stepfun-pi-questions":
+        allowed.extend([
+            "runtime/swa-orca/src/contracts.ts",
+            "runtime/swa-orca/src/task-budget.ts",
+            "third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error.ts",
         ])
     git_environment = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_PAGER="cat")
     result = subprocess.run(
