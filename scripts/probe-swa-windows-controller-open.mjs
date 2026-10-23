@@ -289,6 +289,25 @@ try {
     assert.equal((await realpath(target)).toLowerCase(), resolve(target).toLowerCase())
     result.diagnostic_process_tree.source_inputs.push({ name, original_sha256: (await digest(target)).sha256 })
   }
+  result.diagnostic_process_tree.vendor_sources = []
+  for (const [name, targetName, sha256] of [
+    ['ntextapi.h', 'src/psutil-ntextapi.h', 'f706626568c9a152e98a4631182745ec47ecf4de6261f332703ce7d56fb5968e'],
+    ['LICENSE', 'psutil-LICENSE', 'b89c063b3786e28e0c0a38f1931db61fed35e69dd2a2966fbecffee0f46c8d10']
+  ]) {
+    const path = join(checkout, 'tests/swa-cli-headless/vendor/psutil-7.2.2', name), info = await lstat(path)
+    assert.ok(info.isFile() && !info.isSymbolicLink())
+    assert.equal((await realpath(path)).toLowerCase(), resolve(path).toLowerCase())
+    const bytes = await readFile(path)
+    assert.equal(hash(bytes), sha256)
+    assert.ok(bytes.equals(await fixed('tests/swa-cli-headless/vendor/psutil-7.2.2/' + name, goRevision)))
+    const target = join(diagnosticPackage, targetName)
+    await writeFile(target, bytes, { flag: 'wx' })
+    const targetInfo = await lstat(target)
+    assert.ok(targetInfo.isFile() && !targetInfo.isSymbolicLink() && targetInfo.nlink === 1)
+    assert.equal((await realpath(target)).toLowerCase(), resolve(target).toLowerCase())
+    result.diagnostic_process_tree.vendor_sources.push({ name: targetName, sha256,
+      upstream_revision: '9eea97dd6f1d16ea33f5144c8925f1ce7a0688e1', license: 'BSD-3-Clause' })
+  }
   const diagnosticPatch = join(checkout, 'tests/swa-cli-headless/windows-process-query-diagnostic.patch')
   result.diagnostic_process_tree.patch_sha256 = (await digest(diagnosticPatch)).sha256
   await command('git', ['-c', 'core.autocrlf=false', 'apply', '--check', '--unidiff-zero', diagnosticPatch], diagnosticPackage)
@@ -321,18 +340,36 @@ try {
       const info = await lstat(join(diagnosticPackage, item.name))
       assert.equal(info.nlink, 1); assert.equal((await digest(join(diagnosticPackage, item.name))).sha256, item.diagnostic_sha256)
     }
+    for (const item of result.diagnostic_process_tree.vendor_sources) {
+      const path = join(diagnosticPackage, item.name), info = await lstat(path)
+      assert.ok(info.isFile() && !info.isSymbolicLink() && info.nlink === 1)
+      assert.equal((await realpath(path)).toLowerCase(), resolve(path).toLowerCase())
+      assert.equal((await digest(path)).sha256, item.sha256)
+    }
   }
   await sourceInputGuards()
   native = requireDevelopment('@vscode/windows-process-tree')
   const diagnosticRows = await new Promise((resolveRows, reject) => {
     const timer = setTimeout(() => reject(new Error('Diagnostic native callback did not settle')), 15_000)
-    native.getAllProcesses(rows => { clearTimeout(timer); rows ? resolveRows(rows) : reject(new Error('Diagnostic native callback unavailable')) }, 4)
+    native.getAllProcesses(rows => { clearTimeout(timer); Array.isArray(rows) ? resolveRows(rows) : reject(rows instanceof Error ? rows : new Error('Diagnostic native callback unavailable')) }, 4)
   })
   const diagnosticSelf = diagnosticRows.filter(row => row.pid === process.pid)
-  assert.equal(diagnosticSelf.length, 1); assert.equal(diagnosticSelf[0].creationTimeDiagnosticVersion, 1)
-  assert.equal(diagnosticSelf[0].creationTimeQueryStage, 4); assert.equal(diagnosticSelf[0].creationTimeWin32Error, 0)
-  assert.equal(diagnosticSelf[0].creationTimeCloseError, 0)
-  result.diagnostic_process_tree.actual_callback_version = 1
+  assert.equal(diagnosticSelf.length, 1); assert.equal(diagnosticSelf[0].creationTimeDiagnosticVersion, 2)
+  assert.equal(diagnosticSelf[0].creationTimeProvider, 'NtQuerySystemInformation')
+  assert.equal(diagnosticSelf[0].creationTimeSnapshotComplete, true)
+  assert.ok(Number.isInteger(diagnosticSelf[0].creationTimeNtStatus) && diagnosticSelf[0].creationTimeNtStatus >= 0 && diagnosticSelf[0].creationTimeNtStatus <= 0x7fffffff)
+  assert.equal(diagnosticSelf[0].ppid, process.ppid)
+  assert.ok(Number.isSafeInteger(diagnosticSelf[0].creationTimeMs) && diagnosticSelf[0].creationTimeMs > 0)
+  assert.equal(diagnosticSelf[0].creationTimeMs, native.getProcessCreationTime(process.pid))
+  for (const row of diagnosticRows) {
+    assert.equal(row.creationTimeDiagnosticVersion, 2); assert.equal(row.creationTimeProvider, 'NtQuerySystemInformation')
+    assert.equal(row.creationTimeSnapshotComplete, true); assert.equal(row.creationTimeNtStatus, diagnosticSelf[0].creationTimeNtStatus)
+    assert.equal(typeof row.name, 'string')
+    for (const key of ['creationTimeQueryStage', 'creationTimeWin32Error', 'creationTimeCloseError']) assert.equal(Object.hasOwn(row, key), false)
+  }
+  result.diagnostic_process_tree.actual_callback_version = 2
+  result.native_snapshot = { provider: diagnosticSelf[0].creationTimeProvider, version: 2, ntstatus: diagnosticSelf[0].creationTimeNtStatus,
+    self_identity_matches: true, root_child_control: 'NOT_RUN' }
   result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
@@ -349,6 +386,28 @@ try {
     assert.ok(contains(source, path), 'Observer build dependency escaped the frozen source installation')
     return { name, path: relative(source, path).replaceAll('\\', '/') }
   }))
+  result.phase = 'native-process-snapshot-control'
+  const snapshotData = join(work, 'native-process-control-data'), snapshotOutput = join(privateOutput, 'native-process-control')
+  await mkdir(snapshotData)
+  const controlScript = join(source, 'tests/swa-cli-headless/windows-process-incarnation-control.mjs')
+  assert.ok((await readFile(controlScript)).equals(await fixed('tests/swa-cli-headless/windows-process-incarnation-control.mjs')))
+  await command(actualNode, [controlScript, '--source-root', source, '--runtime-root', developmentRuntime,
+    '--data-root', snapshotData, '--output-dir', snapshotOutput, '--source-revision', goRevision], source, 90_000)
+  const snapshotReportBytes = await readFile(join(snapshotOutput, 'result.json'))
+  assert.ok(snapshotReportBytes.length <= 1024 * 1024)
+  const snapshotReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(snapshotReportBytes))
+  assert.equal(snapshotReport.schema_version, 1); assert.equal(snapshotReport.source_revision, goRevision)
+  assert.equal(snapshotReport.status, 'PASS'); assert.equal(snapshotReport.control_complete, true); assert.equal(snapshotReport.probe_exit, 0)
+  assert.equal(snapshotReport.native_component.addon_sha256, result.diagnostic_process_tree.binary_sha256)
+  assert.equal(snapshotReport.closure_sha256, (await digest(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))).sha256)
+  assert.equal(snapshotReport.model_calls, 0); assert.equal(snapshotReport.service_started, false); assert.equal(snapshotReport.account_session_started, false)
+  assert.deepEqual(snapshotReport.cases.map(row => row.name), ['live-root-child', 'normal-eof'])
+  result.diagnostic_process_tree.root_child_control = { status: snapshotReport.status, report_sha256: hash(snapshotReportBytes),
+    live_observation_count: snapshotReport.cases[0].observations.length,
+    native_exit_remaining: snapshotReport.cases[1].native_exit_observations.map(row => row.remaining_count),
+    cim_exit: snapshotReport.cases[1].cim_process_exit.exit, cim_all_exited: snapshotReport.cases[1].cim_report.all_exited }
+  result.native_snapshot.root_child_control = snapshotReport.status
+  await sourceInputGuards()
   const dataParent = join(work, 'data')
   await mkdir(dataParent)
   result.phase = 'short-identify-then-controller-open'
@@ -478,7 +537,9 @@ try {
     const identity = { pid: number(entry?.actual?.pid), ppid: number(entry?.actual?.ppid), creation_time_ms: number(entry?.actual?.creationTimeMs) }
     const anchor = entry?.source_anchor && ['serve', 'additional'].includes(entry.source_anchor.kind)
       ? { kind: entry.source_anchor.kind, pid: number(entry.source_anchor.pid), creation_time_ms: number(entry.source_anchor.creation_time_ms) } : 'UNKNOWN'
-    const diagnostic = entry?.actual?.creationTimeDiagnosticVersion === 1 ? {
+    const diagnostic = entry?.actual?.creationTimeDiagnosticVersion === 2 ? {
+      version: 2, api_stage: entry.actual.creationTimeProvider === 'NtQuerySystemInformation' ? entry.actual.creationTimeProvider : 'UNKNOWN',
+      ntstatus: number(entry.actual.creationTimeNtStatus), snapshot_complete: boolean(entry.actual.creationTimeSnapshotComplete) } : entry?.actual?.creationTimeDiagnosticVersion === 1 ? {
       version: 1, api_stage: Number.isInteger(entry.actual.creationTimeQueryStage) && entry.actual.creationTimeQueryStage >= 0 && entry.actual.creationTimeQueryStage <= 4
         ? ['not_requested', 'OpenProcess', 'GetProcessTimes', 'invalid_filetime', 'complete'][entry.actual.creationTimeQueryStage] : 'UNKNOWN',
       win32_error: number(entry.actual.creationTimeWin32Error), close_error: number(entry.actual.creationTimeCloseError) } : 'UNKNOWN'
@@ -565,6 +626,7 @@ try {
   const projection = { status: result.status, phase: result.phase, scope: result.scope, source_revision: sourceRevision, input_revision: priorRevision,
     go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
     native_input_scope: 'baseline_except_diagnostic_process_tree', diagnostic_process_tree_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT',
+    native_snapshot: result.native_snapshot ?? 'NOT_RUN',
     windows_private_data_sdk: result.windows_private_data_sdk ? { exit: result.windows_private_data_sdk.exit,
       pass_count: result.windows_private_data_sdk.cases.filter(row => row.action === 'pass').length,
       not_run: result.windows_private_data_sdk.cases.filter(row => row.action === 'skip').map(row => row.test.split('/')[1]),

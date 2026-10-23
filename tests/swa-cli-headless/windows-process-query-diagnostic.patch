@@ -1,36 +1,165 @@
-diff --git a/src/process.h b/src/process.h
---- a/src/process.h
-+++ b/src/process.h
-@@ -25,0 +26,3 @@
-+  DWORD creationTimeQueryStage = 0;
-+  DWORD creationTimeWin32Error = 0;
-+  DWORD creationTimeCloseError = 0;
 diff --git a/src/process.cc b/src/process.cc
+index 9af0180..fd3a26f 100644
 --- a/src/process.cc
 +++ b/src/process.cc
-@@ -52,0 +53,3 @@
+@@ -5,0 +6 @@
++#include <winsock2.h>
+@@ -11,0 +13,112 @@
++#include <cstddef>
++#include <stdexcept>
++#include "psutil-ntextapi.h"
++
++namespace {
++
++[[noreturn]] void SnapshotFailure(const char* phase, const char* kind, ULONG code) {
++  throw std::runtime_error(std::string("NativeProcessSnapshotError phase=") + phase +
++                           "; kind=" + kind + "; code=" + std::to_string(code));
++}
++
++uint32_t GetNtProcessList(std::vector<ProcessInfo>& process_info) {
++  static_assert(sizeof(void*) == 8, "The diagnostic snapshot supports Windows x64 only");
++  const auto module = GetModuleHandleW(L"ntdll.dll");
++  if (module == nullptr) {
++    const DWORD error = GetLastError();
++    SnapshotFailure("load-system-module", "Win32", error);
++  }
++  const auto query = reinterpret_cast<decltype(_NtQuerySystemInformation)>(
++      GetProcAddress(module, "NtQuerySystemInformation"));
++  if (query == nullptr) {
++    const DWORD error = GetLastError();
++    SnapshotFailure("resolve-api", "Win32", error);
++  }
++
++  constexpr size_t limit = 64 * 1024 * 1024;
++  std::vector<ULONGLONG> storage(0x4000 / sizeof(ULONGLONG));
++  ULONG returned = 0;
++  NTSTATUS status = 0;
++  bool complete = false;
++  for (unsigned attempt = 0; attempt < 4; attempt++) {
++    const size_t capacity = storage.size() * sizeof(ULONGLONG);
++    returned = 0;
++    status = query(SystemProcessInformation, storage.data(),
++                   static_cast<ULONG>(capacity), &returned);
++    if (status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_TOO_SMALL) {
++      const size_t required = returned > capacity ? returned : capacity * 2;
++      if (required > limit) SnapshotFailure("buffer-limit", "NTSTATUS", static_cast<ULONG>(status));
++      storage.resize((required + sizeof(ULONGLONG) - 1) / sizeof(ULONGLONG));
++      continue;
++    }
++    if (status < 0) SnapshotFailure("query", "NTSTATUS", static_cast<ULONG>(status));
++    if (returned == 0 || returned > capacity) SnapshotFailure("returned-length", "InvalidBuffer", returned);
++    complete = true;
++    break;
++  }
++  if (!complete) SnapshotFailure("buffer-attempts", "NTSTATUS", static_cast<ULONG>(status));
++
++  const auto bytes = reinterpret_cast<const unsigned char*>(storage.data());
++  const auto first = reinterpret_cast<uintptr_t>(bytes);
++  if (first > (std::numeric_limits<uintptr_t>::max)() - returned)
++    SnapshotFailure("buffer-address", "InvalidBuffer", returned);
++  const auto last = first + returned;
++  constexpr size_t header = offsetof(SYSTEM_PROCESS_INFORMATION, Threads);
++  std::vector<ProcessInfo> actual;
++  size_t offset = 0, nameBytes = 0;
++  for (;;) {
++    if (offset > returned || returned - offset < header || offset % alignof(SYSTEM_PROCESS_INFORMATION) != 0)
++      SnapshotFailure("record-header", "InvalidBuffer", static_cast<ULONG>(offset));
++    const auto record = reinterpret_cast<const SYSTEM_PROCESS_INFORMATION*>(bytes + offset);
++    const auto pid = reinterpret_cast<uintptr_t>(record->UniqueProcessId);
++    const auto ppid = reinterpret_cast<uintptr_t>(record->InheritedFromUniqueProcessId);
++    if (pid > (std::numeric_limits<DWORD>::max)() || ppid > (std::numeric_limits<DWORD>::max)())
++      SnapshotFailure("process-id", "InvalidBuffer", 0);
++
++    // 原接口省略 PID0；PPID0 和系统记录中的空名字均保持合法。
++    if (pid != 0) {
++      ProcessInfo pinfo{};
++      pinfo.pid = static_cast<DWORD>(pid);
++      pinfo.ppid = static_cast<DWORD>(ppid);
++      pinfo.creationTimeNtStatus = static_cast<ULONG>(status);
++      const auto& image = record->ImageName;
++      if (image.Length % sizeof(WCHAR) != 0 || image.Length > image.MaximumLength)
++        SnapshotFailure("image-length", "InvalidBuffer", image.Length);
++      if (image.Length != 0) {
++        const auto address = reinterpret_cast<uintptr_t>(image.Buffer);
++        if (address < first || address > last || address % alignof(WCHAR) != 0 || image.Length > last - address)
++          SnapshotFailure("image-address", "InvalidBuffer", image.Length);
++        const int characters = image.Length / static_cast<int>(sizeof(WCHAR));
++        const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS,
++            image.Buffer, characters, nullptr, 0, nullptr, nullptr);
++        if (length == 0) {
++          const DWORD error = GetLastError();
++          SnapshotFailure("image-conversion", "Win32", error);
++        }
++        if (nameBytes > limit - static_cast<size_t>(length))
++          SnapshotFailure("image-limit", "InvalidBuffer", 0);
++        nameBytes += static_cast<size_t>(length);
++        pinfo.snapshotName.resize(static_cast<size_t>(length));
++        if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, image.Buffer,
++              characters, pinfo.snapshotName.data(), length, nullptr, nullptr) != length) {
++          const DWORD error = GetLastError();
++          SnapshotFailure("image-conversion", "Win32", error);
++        }
++      }
++      constexpr LONGLONG epoch = 116444736000000000LL;
++      if (record->CreateTime.QuadPart >= epoch)
++        pinfo.creationTimeMs = static_cast<ULONGLONG>((record->CreateTime.QuadPart - epoch) / 10000);
++      actual.push_back(std::move(pinfo));
++    }
++    if (record->NextEntryOffset == 0) break;
++    if (record->NextEntryOffset < header || record->NextEntryOffset > returned - offset ||
++        record->NextEntryOffset % alignof(SYSTEM_PROCESS_INFORMATION) != 0)
++      SnapshotFailure("record-offset", "InvalidBuffer", record->NextEntryOffset);
++    offset += record->NextEntryOffset;
++  }
++  if (actual.empty()) SnapshotFailure("empty-snapshot", "InvalidBuffer", 0);
++  process_info = std::move(actual);
++  return static_cast<uint32_t>(process_info.size());
++}
++
++}  // namespace
+@@ -14,0 +128,2 @@ uint32_t GetRawProcessList(std::vector<ProcessInfo>& process_info,
++  // 只替换诊断消费者准确 flags4 的身份来源，其余调用保持原实现。
++  if (process_data_flags == CREATIONTIME) return GetNtProcessList(process_info);
+@@ -52,0 +168,3 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  process_info.creationTimeQueryStage = 1;
 +  process_info.creationTimeWin32Error = 0;
 +  process_info.creationTimeCloseError = 0;
-@@ -54,0 +58 @@
+@@ -54,0 +173 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +    process_info.creationTimeWin32Error = GetLastError();
-@@ -58,0 +63 @@
+@@ -58,0 +178 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  process_info.creationTimeQueryStage = 2;
-@@ -64,0 +70 @@
+@@ -64,0 +185 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +    process_info.creationTimeQueryStage = 3;
-@@ -67,0 +74 @@
+@@ -67,0 +189 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +      process_info.creationTimeQueryStage = 4;
-@@ -68,0 +76,2 @@
+@@ -68,0 +191,2 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 +  } else {
 +    process_info.creationTimeWin32Error = GetLastError();
-@@ -71 +80 @@
+@@ -71 +195 @@ void GetProcessCreationTime(ProcessInfo& process_info) {
 -  CloseHandle(hProcess);
 +  if (!CloseHandle(hProcess)) process_info.creationTimeCloseError = GetLastError();
+diff --git a/src/process.h b/src/process.h
+index 087bf4c..e6b47af 100644
+--- a/src/process.h
++++ b/src/process.h
+@@ -25,0 +26,5 @@ struct ProcessInfo {
++  DWORD creationTimeQueryStage = 0;
++  DWORD creationTimeWin32Error = 0;
++  DWORD creationTimeCloseError = 0;
++  ULONG creationTimeNtStatus = 0;
++  std::string snapshotName;
 diff --git a/src/process_worker.cc b/src/process_worker.cc
+index 89f3339..3dd3af6 100644
 --- a/src/process_worker.cc
 +++ b/src/process_worker.cc
-@@ -50,0 +51,6 @@
-+    if (CREATIONTIME & process_data_flags_) {
+@@ -50,0 +51,12 @@ void GetProcessesWorker::OnOK() {
++    if (process_data_flags_ == CREATIONTIME) {
++      object.Set("name", Napi::String::New(env, pinfo.snapshotName));
++      object.Set("creationTimeDiagnosticVersion", Napi::Number::New(env, 2));
++      object.Set("creationTimeProvider", Napi::String::New(env, "NtQuerySystemInformation"));
++      object.Set("creationTimeNtStatus", Napi::Number::New(env, pinfo.creationTimeNtStatus));
++      object.Set("creationTimeSnapshotComplete", Napi::Boolean::New(env, true));
++    } else if (CREATIONTIME & process_data_flags_) {
 +      object.Set("creationTimeDiagnosticVersion", Napi::Number::New(env, 1));
 +      object.Set("creationTimeQueryStage", Napi::Number::New(env, pinfo.creationTimeQueryStage));
 +      object.Set("creationTimeWin32Error", Napi::Number::New(env, pinfo.creationTimeWin32Error));
