@@ -5,6 +5,7 @@ import { isDeepStrictEqual, stripVTControlCharacters } from 'node:util'
 import { z } from 'zod'
 import { buildRegistry, defineMethod, isStreamingMethod, type RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
+import type { TerminalCreateOptions } from '../../../third_party/orca-v1.4.230/src/main/runtime/runtime-terminal-contracts'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { deriveRemoteRuntimeTerminalCreateHandle } from '../../../third_party/orca-v1.4.230/src/main/runtime/remote-runtime-terminal-create-identity'
 import { getRepoMainWorktreeId } from '../../../third_party/orca-v1.4.230/src/shared/worktree/id'
@@ -145,6 +146,16 @@ async function effect<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
+// Linux 由原生宿主选择登录 shell；per-terminal override 只适用于 Windows。
+export function controllerTerminalOptions(node: string, entry: string, preAllocatedHandle: string, platform: NodeJS.Platform = process.platform): TerminalCreateOptions {
+  const command = platform === 'linux' ? `exec ${quotePosixShellString(node)} ${quotePosixShellString(entry)}` : `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}; exit $LASTEXITCODE`
+  return {
+    command, env: { SWA_CONTROLLER_HELPER: '1' }, ...(platform === 'win32' ? { shellOverride: 'pwsh.exe' } : {}), startupCommandDelivery: 'fast',
+    launchConfig: { agentCommand: `"${node}"`, agentArgs: `"${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
+    title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
+  }
+}
+
 async function createController(context: RpcContext, project: string, workspace: string, save: (receipt: Record<string, unknown>) => void) {
   const runtime = context.runtime, requestId = context.orchestrationMutation!.requestId
   const childId = `${requestId}/controller-pty`
@@ -156,13 +167,11 @@ async function createController(context: RpcContext, project: string, workspace:
   const entry = join(process.env.SWA_INSTALL_ROOT!, 'runtime', 'controller-helper.cjs')
   if (!node) throw new Error('installed_node_missing')
   const launchScope = await runtime.resolveTerminalWorkspaceLaunchScope(`id:${workspace}`)
-  const command = process.platform === 'linux' ? `exec ${quotePosixShellString(node)} ${quotePosixShellString(entry)}` : `& ${quotePowerShellNativeArgument(node)} ${quotePowerShellNativeArgument(entry)}; exit $LASTEXITCODE`
-  if (launchScope.connectionId || process.platform !== 'linux' && process.platform !== 'win32' || process.platform === 'win32' && !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
+  const options = controllerTerminalOptions(node, entry, controller)
+  if (launchScope.connectionId || process.platform !== 'linux' && process.platform !== 'win32' || process.platform === 'win32' && !resolveWindowsShellLaunchArgs('pwsh.exe', launchScope.path, launchScope.path, undefined, options.command).startupCommandDeliveredInShellArgs) throw new Error('native_controller_startup_delivery_unavailable')
   const terminal = await runtime.dedupeTerminalCreate('swa-controller-local', `id:${workspace}`, childId, false,
     (canonical, preAllocatedHandle) => runtime.createTerminal(canonical, {
-      command, env: { SWA_CONTROLLER_HELPER: '1' }, shellOverride: process.platform === 'linux' ? '/bin/bash' : 'pwsh.exe', startupCommandDelivery: 'fast',
-      launchConfig: { agentCommand: `"${node}"`, agentArgs: `"${entry}"`, agentEnv: { SWA_CONTROLLER_HELPER: '1' } },
-      title: 'SWA controller', presentation: 'background', focus: false, activate: false, preAllocatedHandle
+      ...options, preAllocatedHandle
     }))
   if (terminal.handle !== controller) throw new Error('native_controller_handle_mismatch')
   const observed = await helperCall(runtime, controller, requestId, 'identify')
