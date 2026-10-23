@@ -179,6 +179,8 @@ export interface PendingSwaRequest {
   controller?: string;
   taskID?: string;
   dispatchID?: string;
+  runID?: string;
+  questionID?: string;
 }
 
 /** 只恢复同范围已完成的原生回执；absent 和 pending 不能证明没有执行。 */
@@ -187,7 +189,7 @@ export function recoverSwaRequest(reply: SwaEnvelope, projectID: string, pending
   if (request.requestId !== pending.requestID) throw new Error('原请求查询返回了不同的请求身份');
   if (request.state !== 'completed') return null;
   const receipt = object(request.receipt);
-  const methods: Record<string, string> = { 'controller.open': 'swa.controllerOpen', 'task.create': 'swa.taskCreate', 'worker.start': 'swa.controllerDeliver', 'worker.send': 'swa.controllerDeliver', 'worker.stop': 'swa.controllerDeliver' };
+  const methods: Record<string, string> = { 'controller.open': 'swa.controllerOpen', 'task.create': 'swa.taskCreate', 'worker.start': 'swa.controllerDeliver', 'worker.send': 'swa.controllerDeliver', 'worker.stop': 'swa.controllerDeliver', 'question.answer': 'swa.controllerDeliver' };
   if (!methods[pending.action] || request.method !== methods[pending.action] || receipt.project_id !== projectID || pending.controller && receipt.controller !== pending.controller) throw new Error('原请求回执不属于当前项目、动作或 Controller');
   if (pending.action !== 'controller.open') {
     const command = object(object(receipt.invocation).command);
@@ -199,6 +201,7 @@ export function recoverSwaRequest(reply: SwaEnvelope, projectID: string, pending
   if (children.some(child => !expectedChildren.includes(child.requestId)) || new Set(children.map(child => child.requestId)).size !== children.length) throw new Error('原请求的子回执身份不一致');
   if (children.some(child => child.state !== 'completed')) return null;
   const controller = text(receipt.controller, 'receipt.controller');
+  if (pending.action === 'question.answer') return recoverQuestionAnswer(reply, projectID, pending, receipt, children);
   let taskID = pending.taskID, dispatchID = pending.dispatchID;
   if (pending.action === 'task.create') taskID = text(receipt.root_task_id, 'receipt.root_task_id');
   if (pending.action.startsWith('worker.')) {
@@ -214,4 +217,33 @@ export function recoverSwaRequest(reply: SwaEnvelope, projectID: string, pending
     }
   }
   return { ...reply, request_id: pending.requestID, controller, ...(taskID ? { task_id: taskID } : {}), ...(dispatchID ? { dispatch_id: dispatchID } : {}), result: receipt };
+}
+
+function recoverQuestionAnswer(reply: SwaEnvelope, projectID: string, pending: PendingSwaRequest, receipt: Record<string, unknown>, children: Record<string, unknown>[]): SwaEnvelope | null {
+  const invocation = object(receipt.invocation), command = object(invocation.command), scope = object(invocation.scope);
+  if (!pending.controller || !pending.runID || !pending.taskID || !pending.dispatchID || !pending.questionID || receipt.action !== pending.action || receipt.run_id !== pending.runID || receipt.root_task_id !== pending.taskID || object(invocation.project).id !== projectID || object(invocation.caller).project_id !== projectID || scope.project_id !== projectID || scope.controller !== pending.controller || scope.run_id !== pending.runID || scope.root_task_id !== pending.taskID || command.controller !== pending.controller || command.run_id !== pending.runID || command.task_id !== pending.taskID || command.dispatch_id !== pending.dispatchID || command.question_id !== pending.questionID || invocation.handoff !== undefined || invocation.submission !== undefined) throw new Error('回答回执的项目、Run、问题或原始选择不一致');
+  const inline = command.text !== undefined;
+  if (inline && (command.input_file !== undefined || invocation.input !== undefined) || !inline && (typeof command.input_file !== 'string' || !command.input_file)) throw new Error('原回答正文来源不完整');
+  const input = inline ? null : object(invocation.input);
+  if (input && (typeof input.path !== 'string' || !input.path || typeof input.version !== 'string' || !input.version)) throw new Error('原回答文件来源不完整');
+  const body = text(inline ? command.text : input?.text, 'answer.body');
+  if (!body.trim() || new TextEncoder().encode(body).length > 32000) throw new Error('原回答正文不满足字节上界');
+  const childID = `${pending.requestID}/native`;
+  if (receipt.child_request !== childID || children.length !== 1 || children[0].requestId !== childID || children[0].method !== 'orchestration.reply') throw new Error('原回答缺少准确的 reply 子回执');
+  const child = object(children[0].receipt), native = object(receipt.native);
+  for (const value of [child, native]) if (value.project_id !== projectID || value.controller !== pending.controller || value.run_id !== pending.runID || value.root_task_id !== pending.taskID || value.dispatch_id !== pending.dispatchID || value.question_id !== pending.questionID || value.request_id !== pending.requestID || value.native_request_id !== childID || value.body !== body) throw new Error('原回答子回执的身份或完整正文不一致');
+  const recovered = { ...reply, request_id: pending.requestID, controller: pending.controller, run_id: pending.runID, task_id: pending.taskID, dispatch_id: pending.dispatchID, result: receipt };
+  if (native.state === 'rejected') {
+    if (receipt.state !== 'rejected' || receipt.effects_applied !== false || child.state !== 'rejected' || child.effects_applied !== false || native.effects_applied !== false) return null;
+    const error = object(child.error);
+    if (JSON.stringify(error) !== JSON.stringify(native.error) || JSON.stringify(error) !== JSON.stringify(receipt.error) || typeof error.code !== 'string' || typeof error.message !== 'string' || error.retryable !== false || typeof error.required_action !== 'string') throw new Error('原回答未提供同一明确无效果拒绝');
+    return { ...recovered, ok: false, error: { code: error.code, message: error.message, retryable: error.retryable, required_action: error.required_action, ...(error.data === undefined ? {} : { data: error.data }) } };
+  }
+  if (native.state !== 'answered' || child.state !== 'answered') return null;
+  for (const value of [child, native]) {
+    const question = object(value.question), message = object(value.message);
+    if (question.message_id !== pending.questionID || question.run_id !== pending.runID || question.dispatch_id !== pending.dispatchID || question.status !== 'answered' || question.answer_body !== body || question.answer_message_id !== message.id || message.body !== body || message.thread_id !== pending.questionID || message.run_id !== pending.runID || message.from_handle !== `run:${pending.runID}` || message.to_handle !== `dispatch:${pending.dispatchID}` || !Number.isSafeInteger(question.answered_by_generation) || typeof question.answered_at !== 'string' || typeof value.duplicate !== 'boolean') throw new Error('原问题和唯一答案消息尚未完全确认');
+  }
+  if (object(child.question).answer_message_id !== object(native.question).answer_message_id) throw new Error('父子回执引用了不同的答案消息');
+  return { ...recovered, ok: true };
 }

@@ -58,7 +58,7 @@ async function main() {
   const envelope: Record<string, unknown> = {
     ok: true, request_id: command.request_id, runtime_id: status._meta.runtimeId,
     authority_domain: authority, controller: command.controller,
-    run_id: invocation.scope.run_id || undefined, task_id: command.task_id || undefined, dispatch_id: command.dispatch_id
+    run_id: invocation.scope.run_id || undefined, task_id: command.task_id || undefined, dispatch_id: command.dispatch_id, question_id: command.question_id
   }
   const mutationOptions = { orchestrationRequestId: command.request_id, timeoutMs: 130_000 }
   try {
@@ -86,6 +86,7 @@ async function main() {
       case 'task.complete':
       case 'worker.start':
       case 'worker.send':
+      case 'question.answer':
       case 'worker.stop':
       case 'worker.release': result = (await client.call('swa.controllerDeliver', { invocation }, mutationOptions)).result; break
       case 'request.show': result = await requestShow(client, invocation); break
@@ -123,11 +124,11 @@ async function main() {
 }
 
 function nativeOutcomeError(action: string, native: Record<string, unknown> | undefined) {
-  if (action === 'worker.send' && native?.state === 'rejected') {
+  if ((action === 'worker.send' || action === 'question.answer') && native?.state === 'rejected') {
     const failure = z.object({ code: z.string(), message: z.string(), retryable: z.boolean(), required_action: z.string(), data: z.unknown().optional() }).optional().parse(native.error)
     return failure ?? { code: 'provider_unavailable', message: 'The actual native Worker rejected this input', retryable: false, required_action: 'inspect_original_request', data: native }
   }
-  const expected = action === 'worker.start' ? ['ready'] : action === 'worker.send' ? ['journaled', 'queued', 'accepted', 'handed-to-terminal'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
+  const expected = action === 'worker.start' ? ['ready'] : action === 'worker.send' ? ['journaled', 'queued', 'accepted', 'handed-to-terminal'] : action === 'question.answer' ? ['answered'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
   if (!expected) return undefined
   if (typeof native?.state === 'string' && expected.includes(native.state)) return undefined
   const failed = action === 'worker.start' && native?.state === 'failed'

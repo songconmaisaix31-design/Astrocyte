@@ -7757,12 +7757,13 @@ export interface components {
         /** @description Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here. */
         command: {
             /** @enum {unknown} */
-            action: "status" | "capabilities" | "run.submit" | "run.show" | "run.export" | "role.list" | "role.show" | "role.create" | "role.update" | "role.archive" | "conversation.list" | "conversation.show" | "conversation.create" | "conversation.append" | "handoff.notify" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "request.show";
+            action: "status" | "capabilities" | "run.submit" | "run.show" | "run.export" | "role.list" | "role.show" | "role.create" | "role.update" | "role.archive" | "conversation.list" | "conversation.show" | "conversation.create" | "conversation.append" | "handoff.notify" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "question.answer" | "request.show";
             project_id?: string;
             controller?: string;
             run_id?: string;
             task_id?: string;
             dispatch_id?: string;
+            question_id?: string;
             /** Format: uuid */
             request_id?: string;
             workdir?: string;
@@ -7788,8 +7789,9 @@ export interface components {
             revision?: number;
             role?: components["schemas"]["roleDefinition"];
             conversation?: components["schemas"]["conversationDefinition"];
+            /** @description question.answer preserves the exact nonblank text and enforces a 32000 UTF-8 byte limit at execution; existing conversation text retains its normalization. */
             text?: string;
-        };
+        } & unknown;
         nativeError: {
             code: string;
             message: string;
@@ -7808,6 +7810,7 @@ export interface components {
             run_id?: string;
             task_id?: string;
             dispatch_id?: string;
+            question_id?: string;
             result?: unknown;
             error?: components["schemas"]["nativeError"];
         };

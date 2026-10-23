@@ -42,6 +42,13 @@ export function readSwaRun(reply: SwaEnvelope, projectID: string, selected: SwaR
   const dispatches = rows(view.dispatches, 'dispatches').map(dispatch => ({ id: text(dispatch.id, 'dispatch.id'), taskID: text(dispatch.task_id, 'dispatch.task_id'), status: text(dispatch.status, 'dispatch.status'), workerState: nullableText(dispatch.worker_state, 'worker_state'), releaseState: nullableText(dispatch.release_state, 'release_state'), parentDispatch: nullableText(dispatch.creator_dispatch_id, 'creator_dispatch_id'), sessionID: nullableText(dispatch.recipient_session_id, 'recipient_session_id') }));
   const blockers = rows(view.blockers, 'blockers').map(blocker => ({ kind: text(blocker.kind, 'blocker.kind'), reason: text(blocker.reason, 'blocker.reason'), taskID: nullableText(blocker.task_id, 'blocker.task_id'), dispatchID: nullableText(blocker.dispatch_id, 'blocker.dispatch_id') }));
   const questions = rows(view.questions, 'questions').map(question => ({ id: text(question.id, 'question.id'), taskID: text(question.task_id, 'question.task_id'), dispatchID: text(question.dispatch_id, 'question.dispatch_id'), question: text(question.question, 'question.question') }));
+  const answeredQuestions = rows(view.answered_questions, 'answered_questions').map(question => {
+    const answeredAt = text(question.answered_at, 'question.answered_at');
+    if (!Number.isSafeInteger(question.answered_by_generation) || Number(question.answered_by_generation) < 0 || !Number.isFinite(Date.parse(answeredAt))) throw new Error('原答案缺少实际代次或时间');
+    return { id: text(question.question_id, 'question.question_id'), taskID: text(question.task_id, 'question.task_id'), dispatchID: text(question.dispatch_id, 'question.dispatch_id'), question: text(question.question, 'question.question'), answerID: text(question.answer_message_id, 'question.answer_message_id'), answer: text(question.answer, 'question.answer'), answeredAt };
+  });
+  const allQuestions = [...questions, ...answeredQuestions];
+  if (new Set(allQuestions.map(question => question.id)).size !== allQuestions.length || allQuestions.some(question => !tasks.some(task => task.id === question.taskID) || !dispatches.some(dispatch => dispatch.id === question.dispatchID && dispatch.taskID === question.taskID))) throw new Error('原问题记录缺失或属于其它任务');
   const failures = rows(view.failures, 'failures').map(failure => ({ taskID: text(failure.task_id, 'failure.task_id'), dispatchID: typeof failure.dispatch_id === 'string' ? failure.dispatch_id : null, reason: text(failure.reason, 'failure.reason') }));
   const deliverables = rows(view.deliverables, 'deliverables').map(deliverable => {
     if (deliverable.kind !== 'result' || typeof deliverable.available !== 'boolean') throw new Error('成果来源与可用性未确认');
@@ -52,7 +59,7 @@ export function readSwaRun(reply: SwaEnvelope, projectID: string, selected: SwaR
     return { id: text(handoff.id, 'handoff.id'), from: text(handoff.from, 'handoff.from'), to: text(handoff.to, 'handoff.to'), text: handoff.text, read: handoff.read, record: object(handoff.record) };
   });
   if (new Set(handoffs.map(handoff => handoff.id)).size !== handoffs.length) throw new Error('Run 交接记录包含重复身份');
-  return { ...selected, status, acceptance: view.acceptance, complete: view.complete, tasks, dispatches, blockers, questions, failures, deliverables, handoffs, rootResult: nullableText(root.result, 'root.result'), observedAt: text(view.observed_at, 'observed_at') };
+  return { ...selected, status, acceptance: view.acceptance, complete: view.complete, tasks, dispatches, blockers, questions, answeredQuestions, failures, deliverables, handoffs, rootResult: nullableText(root.result, 'root.result'), observedAt: text(view.observed_at, 'observed_at') };
 }
 
 /** 逐一查询原提交已记录的阶段，绝不继续执行缺失或未知的阶段。 */

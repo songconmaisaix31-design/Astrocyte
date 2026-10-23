@@ -1,19 +1,30 @@
 import { z } from 'zod'
 import { workerLimitSchema } from './task-budget'
 
+export const answerTextSchema = z.string().refine(text => text.trim().length > 0 && Buffer.byteLength(text, 'utf8') <= 32000 && Buffer.from(text, 'utf8').toString('utf8') === text, 'The answer must be nonblank UTF-8 text within 32000 bytes')
+const normalizedTextSchema = z.string().trim().min(1).max(32000)
+export const roleDefinitionSchema = z.strictObject({ name: z.string().trim().min(1).max(200), responsibilities: z.string().trim().min(1).max(16000), default_agent: z.string().trim().min(1), default_model: z.string().trim().min(1), skills: z.array(z.string().min(1).max(2048)).max(32).nullable(), knowledge: z.array(z.string().min(1).max(2048)).max(32).nullable() })
 export const commandSchema = z.strictObject({
-  action: z.enum(['status', 'capabilities', 'run.submit', 'run.show', 'run.export', 'role.list', 'role.show', 'role.create', 'role.update', 'role.archive', 'conversation.list', 'conversation.show', 'conversation.create', 'conversation.append', 'handoff.notify', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'request.show']),
+  action: z.enum(['status', 'capabilities', 'run.submit', 'run.show', 'run.export', 'role.list', 'role.show', 'role.create', 'role.update', 'role.archive', 'conversation.list', 'conversation.show', 'conversation.create', 'conversation.append', 'handoff.notify', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'question.answer', 'request.show']),
   project_id: z.string().optional(), controller: z.string().optional(), task_id: z.string().optional(), run_id: z.string().optional(),
-  dispatch_id: z.string().optional(), request_id: z.string().optional(), workdir: z.string().optional(),
+  dispatch_id: z.string().optional(), question_id: z.string().optional(), request_id: z.string().optional(), workdir: z.string().optional(),
   spec_file: z.string().optional(), input_file: z.string().optional(), result_file: z.string().optional(),
   output_dir: z.string().optional(), name: z.string().optional(), agent: z.string().optional(), model: z.string().optional(),
   source: z.string().optional(), cursor: z.string().optional(), limit: z.number().int().optional(),
   parent_task_id: z.string().min(1).optional(), handoff_mode: z.enum(['work', 'consult']).optional(), reply_mode: z.enum(['resume', 'poll']).optional(),
   completion_criteria: z.array(z.string().trim().min(1)).optional(), role_id: z.string().min(1).optional(), conversation_id: z.string().min(1).optional(),
   revision: z.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
-  role: z.strictObject({ name: z.string().trim().min(1).max(200), responsibilities: z.string().trim().min(1).max(16000), default_agent: z.string().trim().min(1), default_model: z.string().trim().min(1), skills: z.array(z.string().min(1).max(2048)).max(32).nullable(), knowledge: z.array(z.string().min(1).max(2048)).max(32).nullable() }).optional(),
-  conversation: z.strictObject({ title: z.string().trim().min(1).max(200), role_id: z.string().min(1).optional() }).optional(), text: z.string().trim().min(1).max(32000).optional()
-})
+  role: roleDefinitionSchema.optional(),
+  conversation: z.strictObject({ title: z.string().trim().min(1).max(200), role_id: z.string().min(1).optional() }).optional(), text: z.string().optional()
+}).superRefine((command, context) => {
+  if (command.text !== undefined) {
+    const text = (command.action === 'question.answer' ? answerTextSchema : normalizedTextSchema).safeParse(command.text)
+    if (!text.success) context.addIssue({ code: 'custom', path: ['text'], message: 'The command text does not meet its content and size requirements' })
+  }
+  if (command.action !== 'question.answer') return
+  const allowed = new Set(['action', 'project_id', 'controller', 'run_id', 'task_id', 'dispatch_id', 'question_id', 'request_id', 'input_file', 'text'])
+  if (Object.keys(command).some(key => !allowed.has(key)) || !command.controller || !command.run_id || !command.task_id || !command.dispatch_id || !command.question_id || !z.uuid().safeParse(command.request_id).success || (command.input_file !== undefined) === (command.text !== undefined) || command.input_file === '') context.addIssue({ code: 'custom', message: 'Question answer requires its exact identities and exactly one body source' })
+}).transform(command => command.action !== 'question.answer' && command.text !== undefined ? { ...command, text: normalizedTextSchema.parse(command.text) } : command)
 export const contextSchema = z.looseObject({
   id: z.string(), project_id: z.string(), settings_revision: z.number().int().positive(),
   files: z.array(z.object({ path: z.string(), version: z.string(), text: z.string() })).nullable()

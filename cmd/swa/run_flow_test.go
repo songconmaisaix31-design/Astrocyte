@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/google/uuid"
+	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
 func TestRunCLIHelpIsLocal(t *testing.T) {
@@ -84,5 +86,51 @@ func TestRunExportPreflightUsesRealFilesystem(t *testing.T) {
 		if _, err := os.Lstat(filepath.Join(parent, relative)); !os.IsNotExist(err) {
 			t.Fatal("符号链接拒绝后创建了实际导出目标")
 		}
+	}
+}
+
+func TestRunQuestionCommandUsesOriginalSelectors(t *testing.T) {
+	view := runView{Controller: "rule-controller's value", RunID: "rule-run", RootTaskID: "rule-root"}
+	question := runQuestion{ID: "rule-question", TaskID: "rule-child", DispatchID: "rule-dispatch", Question: "保留原问题"}
+	for _, platform := range []string{"linux", "windows"} {
+		command := runQuestionCommand("rule-project", view, question, platform)
+		for _, required := range []string{"swa question answer", "--run 'rule-run'", "--task 'rule-root'", "--dispatch 'rule-dispatch'", "--question 'rule-question'", "--input-file '<ANSWER_FILE>'", "--request-id '<NEW_UUID>'", "--json"} {
+			if !strings.Contains(command, required) {
+				t.Fatalf("回答指引遗漏准确选择或必要输入：%s", command)
+			}
+		}
+		quoted := "'rule-controller'\"'\"'s value'"
+		if platform == "windows" {
+			quoted = "'rule-controller''s value'"
+		}
+		if !strings.Contains(command, "--controller "+quoted) {
+			t.Fatalf("平台参数引用错误：%s", command)
+		}
+	}
+	var stdout, stderr bytes.Buffer
+	view.Questions = []runQuestion{question}
+	output := cliOutput{stdout: &stdout, stderr: &stderr, projectID: "rule-project", identity: workspaceapp.OrcaEnvelope{Controller: view.Controller, RunID: view.RunID, TaskID: view.RootTaskID}}
+	action, err := writeRunQuestionActions(&output, view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeRunReconnect(&output)
+	if code := output.failure("run_input_required", "原问题待答", action, 9); code != 9 {
+		t.Fatalf("观察待答退出码改变：%d", code)
+	}
+	var reply workspaceapp.OrcaEnvelope
+	if err := json.Unmarshal(stdout.Bytes(), &reply); err != nil || reply.Error == nil || reply.Error.RequiredAction != action || reply.RunID != view.RunID || !strings.Contains(stderr.String(), "swa wait") || !strings.Contains(stderr.String(), "run_question") {
+		t.Fatal("待答指引没有保留原 Run、可执行回答和只读重连", err)
+	}
+}
+
+func TestQuestionCLIRequiresCurrentGrant(t *testing.T) {
+	t.Setenv("SWA_PROJECT_TOKEN", "")
+	var stdout, stderr bytes.Buffer
+	requestID := uuid.NewString()
+	exit := run(context.Background(), []string{"question", "answer", "--project", "rule-project", "--controller", "rule-controller", "--run", "rule-run", "--task", "rule-root", "--dispatch", "rule-dispatch", "--question", "rule-question", "--input-file", "input.txt", "--request-id", requestID, "--json"}, &stdout, &stderr)
+	var reply workspaceapp.OrcaEnvelope
+	if err := json.Unmarshal(stdout.Bytes(), &reply); err != nil || exit != 3 || reply.RequestID != requestID || reply.RunID != "rule-run" || reply.QuestionID != "rule-question" || reply.RuntimeID != "" || reply.Error == nil || reply.Error.Code != "scope_denied" {
+		t.Fatal("回答入口未按当前授权拒绝或丢失原选择", err, exit)
 	}
 }

@@ -28,6 +28,10 @@ swa export --controller C --task ROOT --run R --output-dir ABS [--json]
 
 HTTP 动作为 `run.submit`、`run.show`、`run.export`，沿当前 OrcaCommand/OrcaEnvelope；OrcaCommand 增加 `run_id`。后端共享快照位于 `result.native.run_view`，schema 为 `swa.run-view.v1`，包含 `controller/run_id/root_task_id/status/root/tasks/dispatches/questions/blockers/failures/deliverables/complete/observed_at`；status 为 `active/waiting_input/blocked/completed/failed/unknown`。GUI 与 CLI 使用同一快照，CLI 不通过任务数量计算完成。提交可先返回准确原身份，CLI 随即读取 Run。导出位于 `result.native={run_view,result}`，其中 result 是既有完整 task.result 原件。
 
+问题回答增补使用 `question.answer`，公开命令固定 controller/run_id/root task_id/dispatch_id/question_id/request_id 和 input_file 或 text 二选一；CLI使用 `swa question answer` 及文件，GUI使用同 Run 表单。新增 `answered_questions` 由原问题和答案消息完整派生，pending questions 含义保留。原文最多32000 UTF-8字节，原 request 未确认时只能查询；准确 completed parent/child 均明确 rejected/effects_applied:false 后才允许用户显式修正并新建请求。人类按当前项目独立send授权，Agent仍绑定原Grant。原 reply/ask 与 db.answerQuestion 是唯一答复语义，不另发worker.send。
+
+该增补统一由 `remaining_delivery_audit` 维护，经 Root 接受及独审计划 `dacf0594235054725dd6215b8ecd107d56bbe2b99bf854ea9a2f0b66a872e4b3` 后实施；业务/契约/GUI写域另含直接角色schema消费者和Vitest显式清单。当前产品没有合法生产 ask 入口，provider question journal也没有转换到原问题表；真实模型提问、原ask等待/返回和完整CLI/GUI效果链继续未验，属于具体后继功能及运行范围，不能以数据库局部检查代验。准确局部证据与已知失败修复写入 `.verification/cloud-setup/run-question-answer-implementation.md`。
+
 `run.submit` 由后端复用当前 controller/task/worker 的实际生产调用和原生请求账本。一个外部 UUID 派生固定阶段请求 ID，重复或重连不随机重造提交身份；同 ID 改变内容须沿原幂等规则拒绝。任何阶段已送出但结果未知时停止写入并查询原请求；客户端不自动重发提交。读请求可在暂时断线后继续重连同 Run；明确权限拒绝立即结束。
 
 主控确认本批 `run.show` 立即只读返回，不增加尚未实现的 `wait_ms`。CLI 在自身 timeout/context 内按有界间隔重读同一身份，不读取或确认 Agent 信箱，不建立后台轮询任务、调度器或另一套完成状态存储。

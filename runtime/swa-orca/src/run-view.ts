@@ -44,6 +44,7 @@ export type RunView = {
   tasks: { id: string; parent_id: string | null; status: string; title: string | null; dependencies: string[]; result: string | null }[]
   dispatches: { id: string; task_id: string; status: string; worker_state: string | null; release_state: string | null; creator_dispatch_id: string | null; recipient_session_id: string | null }[]
   questions: { id: string; task_id: string; dispatch_id: string; question: string }[]
+  answered_questions: { question_id: string; task_id: string; dispatch_id: string; question: string; answer_message_id: string; answer: string; answered_by_generation: number; answered_at: string }[]
   handoffs: { id: string; from: string; to: string; text: string; read: boolean; record: Record<string, unknown> }[]
   blockers: { kind: string; task_id: string | null; dispatch_id: string | null; reason: string }[]
   failures: { task_id: string; dispatch_id?: string; reason: string }[]
@@ -123,14 +124,24 @@ export function readRunView(db: OrchestrationDb, scope: RunScope, execution?: Ru
     const dispatchById = new Map(dispatches.map(row => [row.id, row]))
     if (dispatches.some(row => row.creator_dispatch_id !== null && !dispatchIds.has(row.creator_dispatch_id))) fail('A native Dispatch creator is outside this Run')
     const questionBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,
-      COALESCE(SUM(LENGTH(CAST(q.message_id || q.dispatch_id || COALESCE(d.task_id,'') || COALESCE(m.body,'') AS BLOB))),0) AS bytes
-      FROM question_threads q LEFT JOIN dispatch_contexts d ON d.id=q.dispatch_id LEFT JOIN messages m ON m.id=q.message_id
-      WHERE q.run_id=? AND q.status='pending'`).get(scope.run_id))
+      COALESCE(SUM(LENGTH(CAST(q.message_id || q.dispatch_id || COALESCE(d.task_id,'') || COALESCE(m.body,'') || COALESCE(q.answer_message_id,'') || COALESCE(q.answer_body,'') || COALESCE(a.body,'') AS BLOB))),0) AS bytes
+      FROM question_threads q LEFT JOIN dispatch_contexts d ON d.id=q.dispatch_id LEFT JOIN messages m ON m.id=q.message_id LEFT JOIN messages a ON a.id=q.answer_message_id
+      WHERE q.run_id=? AND q.status IN ('pending','answered')`).get(scope.run_id))
     if (questionBound.count > 100_000 || questionBound.bytes > 12 * 1024 * 1024) fail('The complete native question inventory exceeds its read bound')
     const questions = z.array(z.object({ id: z.string(), task_id: z.string(), dispatch_id: z.string(), question: z.string() })).parse(db.db.prepare(`SELECT q.message_id AS id,d.task_id,q.dispatch_id,m.body AS question
       FROM question_threads q LEFT JOIN dispatch_contexts d ON d.id=q.dispatch_id LEFT JOIN messages m ON m.id=q.message_id
       WHERE q.run_id=? AND q.status='pending' ORDER BY q.created_at,q.message_id`).all(scope.run_id))
     if (questions.some(row => !ids.has(row.task_id) || !dispatchIds.has(row.dispatch_id))) fail('A pending native question belongs to another task tree')
+    const answers = z.array(z.object({ question_id: z.string(), task_id: z.string(), dispatch_id: z.string(), question: z.string(), answer_message_id: z.string(), answer: z.string(), answered_by_generation: z.number().int().nonnegative(), answer_body: z.string(), thread_id: z.string(), answer_run_id: z.string(), from_handle: z.string(), to_handle: z.string(), question_run_id: z.string(), question_from: z.string(), question_to: z.string(), question_thread: z.string() })).parse(db.db.prepare(`SELECT q.message_id AS question_id,d.task_id,q.dispatch_id,m.body AS question,q.answer_message_id,a.body AS answer,q.answered_by_generation,q.answer_body,a.thread_id,a.run_id AS answer_run_id,a.from_handle,a.to_handle,m.run_id AS question_run_id,m.from_handle AS question_from,m.to_handle AS question_to,m.thread_id AS question_thread
+      FROM question_threads q LEFT JOIN dispatch_contexts d ON d.id=q.dispatch_id LEFT JOIN messages m ON m.id=q.message_id LEFT JOIN messages a ON a.id=q.answer_message_id
+      WHERE q.run_id=? AND q.status='answered' ORDER BY q.created_at,q.message_id`).all(scope.run_id))
+    if (questions.length + answers.length !== questionBound.count || new Set([...questions.map(row => row.id), ...answers.map(row => row.question_id)]).size !== questionBound.count) fail('The complete native question inventory is inconsistent')
+    const answered_questions = answers.map(row => {
+      if (!ids.has(row.task_id) || !dispatchIds.has(row.dispatch_id) || row.thread_id !== row.question_id || row.answer_run_id !== scope.run_id || row.answer_body !== row.answer || row.from_handle !== `run:${scope.run_id}` || row.to_handle !== `dispatch:${row.dispatch_id}` || row.question_run_id !== scope.run_id || row.question_from !== `dispatch:${row.dispatch_id}` || row.question_to !== `run:${scope.run_id}` || row.question_thread !== row.question_id) fail('An answered native question has a mismatched original message or task binding')
+      const question = db.getQuestion(row.question_id)
+      if (!question?.answered_at) fail('The original answer timestamp is unavailable')
+      return { question_id: row.question_id, task_id: row.task_id, dispatch_id: row.dispatch_id, question: row.question, answer_message_id: row.answer_message_id, answer: row.answer, answered_by_generation: row.answered_by_generation, answered_at: question.answered_at }
+    })
     const pendingWhere = `FROM mutation_receipts WHERE state='pending' AND json_valid(receipt)=1 AND
       (json_extract(receipt,'$.run_id')=? OR json_extract(receipt,'$.scope.run_id')=? OR json_extract(receipt,'$.invocation.scope.run_id')=?)`
     const pendingBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,COALESCE(SUM(LENGTH(CAST(caller_fingerprint||request_id||method||payload_hash||receipt AS BLOB))),0) AS bytes ${pendingWhere}`).get(scope.run_id, scope.run_id, scope.run_id))
@@ -207,7 +218,7 @@ export function readRunView(db: OrchestrationDb, scope: RunScope, execution?: Ru
       schema: 'swa.run-view.v1', controller: scope.controller, run_id: scope.run_id, root_task_id: scope.root_task_id,
       status, root: { id: root.id, status: root.status, result: root.result }, tasks,
       dispatches: dispatches.map(row => ({ id: row.id, task_id: row.task_id, status: row.status, worker_state: row.worker_state, release_state: row.release_state, creator_dispatch_id: row.creator_dispatch_id, recipient_session_id: row.assignee_orca_session_id })),
-      questions, handoffs, blockers, failures,
+      questions, answered_questions, handoffs, blockers, failures,
       deliverables: tasks.filter(task => task.result !== null).map(task => ({ task_id: task.id, kind: 'result', available: task.result !== null })),
       complete, acceptance: 'unreviewed', observed_at: new Date().toISOString()
     }

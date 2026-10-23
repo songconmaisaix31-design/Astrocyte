@@ -315,7 +315,7 @@ func (r *Runtime) ResolveSelection(ctx context.Context, projectID string, comman
 }
 
 func (r *Runtime) Execute(ctx context.Context, invocation app.OrcaInvocation) (app.OrcaEnvelope, error) {
-	mutations := map[string]bool{"controller.open": true, "controller.close": true, "controller.recover": true, "task.create": true, "task.complete": true, "worker.start": true, "worker.send": true, "worker.stop": true, "worker.release": true}
+	mutations := map[string]bool{"controller.open": true, "controller.close": true, "controller.recover": true, "task.create": true, "task.complete": true, "worker.start": true, "worker.send": true, "worker.stop": true, "worker.release": true, "question.answer": true}
 	response, err := r.call(ctx, bridgeRequest{Operation: "execute", Invocation: &invocation}, mutations[invocation.Command.Action])
 	if err != nil {
 		if response.Envelope != nil {

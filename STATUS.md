@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序与能力界面修复已独立接受源码和局部结果，新安装与模型验收仍待执行。Windows D17 的 SDK、Nt、传输与 Controller 检查通过，但完整关闭仍有一条未知记录；诊断分支后继 `2f2629c7` 已通过源码和真实 Linux 元数据局部检查，新的 Windows 场景未运行。主线 `6f40a399` 默认 CI 的三个失败作业已定位到四项测试；管道deadline和Web构建前置原因已确认，目录/导出路径原因仍待实际定位。获准清理四个旧副本已释放约3.40GB；下一完整构建仍待局部修复。N4完整业务验收和N6均未通过。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。该安装的 N4 四 Worker 均成功结算，但驱动首次来源核验失败，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL；准确余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份、观察时序、能力界面和问题回答已获源码及局部验证接受，真实生产提问入口仍待补齐。主线默认 CI 四项失败原因已分别定位并修复，Windows 定向回归3个根测试和6个子例全部通过。用户获准清理的四个旧副本已释放约3.40GB，下一 Linux 同来源构建与安装仍需实际容量前置。Windows D17完整关闭及后继父退出场景仍为 FAIL，正从固定原件定位；未推广诊断分支。N4完整业务验收和N6均未通过。
 
 ## 当前实现与验证
 
@@ -237,6 +237,6 @@ Windows 实际父进程退出场景的三路径后继 `b234cf81d07bc1ce5af9e470d
 
 路径修复 `e7ea038d4388bb95ba1b94ca4952981df3584bf2` 已完整进入主线，其源码、Linux定向测试及Windows实际回归均获独审接受。只在Windows使用现有逐级属性检查识别重解析点，其他平台保留原判断；私有目录测试比较真实目标规范路径。准确 run `40014389665` / job `120622593391` 的3个根测试和6个子例全部通过，真实junction直接/更高祖先拒绝、wrong-owner、真实服务监听/健康/关闭及SQLite检查均通过且没有跳过；另外9个job全部skipped。完整安全投影 SHA `b6c8a8ff1b6ff8f28e77d03c738c3e27da4a7b7ff44e55b765f1bc46d83f81db`，原件 `.verification/cloud-setup/main-ci-6f40a399/path-check-actual-e7ea038d/`；未下载artifact或raw日志。Windows普通symlink分支未单独捕获，完整检查、构建、正式安装及N4/N6不在该结果范围。该任务新建的临时工作树在提交整合和实际验收后已正常移除，源码提交和全部验证原件保留。
 
-`question.answer` 最终方案 `dacf0594235054725dd6215b8ecd107d56bbe2b99bf854ea9a2f0b66a872e4b3` 已独审接受，业务、公共契约和GUI正在实施及局部检查，`run_flow.go` 两文件已释放给同一负责人。源码核查同时确认普通SWA Run仍缺合法原生提问生产入口：上游原ask是本地问题的唯一正常生产者，SWA host未注册该方法，provider问题事件也未转入原问题表。当前回答入口不能被描述为已经完成模型提问到继续执行；同一负责人接续设计原ask入口，现N4/N6 ToolsOff合同不变。OpenCode Linux/StepFun 方案 `bb3c8573b8afcd80ad4b59f8c29b8c4d66f2ca9d38a44695ebc26d66ddf2b859` 已独审接受，仍仅为计划，尚未实施或调用模型。
+`question.answer` 的 CLI、同Run GUI、当前人类独立授权、原生reply、持久原请求恢复及已答历史已完成本批实施，准确30文件补丁SHA `763330e001e038ee859e3b651ee01e8d373807a9a526a099a5ee9f837271a6d7` 获独立源码及局部结果接受。Go定向、Node17项与最终问题2项、Web原18项与新表单2项、两侧类型、ESLint、264契约例、生成一致和架构检查通过；新增契约警告已修正，保留29条既有警告。实施报告为 `.verification/cloud-setup/run-question-answer-implementation.md`。真实helper成功回答、原ask返回、完整GUI交互、Worker释放后的完整重复命令及本批Windows尚未运行。普通SWA Run仍缺合法原生提问生产入口：上游原ask是本地问题的唯一正常生产者，SWA host未注册该方法，provider问题事件也未转入原问题表；完整问答闭环尚未交付。同一负责人接续设计原ask入口，现N4/N6 ToolsOff合同不变。OpenCode Linux/StepFun方案 `bb3c8573b8afcd80ad4b59f8c29b8c4d66f2ca9d38a44695ebc26d66ddf2b859` 已独审接受，仍仅为计划，尚未实施或调用模型。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

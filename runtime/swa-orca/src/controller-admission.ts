@@ -9,6 +9,7 @@ import { admitNativeWorkerInputRPC } from './worker-input'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { fixedTaskSpec, workerTaskSpec } from './collaboration-records'
 import { isTaskDescendant } from './run-view'
+import { questionReplyParams, readAnswerQuestion } from './question-answer'
 
 function deny(message: string): never { throw new OrchestrationError('scope_denied', message, { effectsApplied: false }) }
 const historyReads = new Set(['status.get', 'orchestration.requestShow', 'orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
@@ -164,9 +165,12 @@ function assertDispatch(context: RpcContext, dispatchId: unknown, runId: string,
 function admitOrdinaryMutation(request: RpcRequest, params: Record<string, unknown>, context: RpcContext, owner: Controller, runId: string, rootId: string) {
   const original = parentMutation(request, context, '/native', 'swa.controllerDeliver')
   const { invocation } = original, command = invocation.command
-  const method = new Map([['worker.start', 'orchestration.workerStart'], ['worker.stop', 'orchestration.workerStop'], ['worker.release', 'orchestration.workerRelease'], ['task.complete', 'orchestration.taskUpdate']]).get(command.action)
+  const method = new Map([['worker.start', 'orchestration.workerStart'], ['worker.stop', 'orchestration.workerStop'], ['worker.release', 'orchestration.workerRelease'], ['task.complete', 'orchestration.taskUpdate'], ['question.answer', 'orchestration.reply']]).get(command.action)
   if (request.method !== method || command.controller !== owner.controller || invocation.project.id !== owner.project_id || invocation.scope.run_id !== runId || invocation.scope.root_task_id !== rootId || original.receipt.child_request !== request.orchestrationRequestId) deny('The native mutation differs from its exact original parent and current consumer')
-  if (command.action === 'worker.start') {
+  if (command.action === 'question.answer') {
+    if (!isDeepStrictEqual(params, questionReplyParams(invocation))) deny('The native reply differs from the exact original question and answer')
+    readAnswerQuestion(context.runtime.getOrchestrationDb(), invocation.scope, command)
+  } else if (command.action === 'worker.start') {
     const parentId = command.parent_task_id ?? rootId
     if (parentId !== rootId && !isTaskDescendant(context.runtime.getOrchestrationDb(), runId, rootId, parentId)) deny('The handoff parent is outside the original Run')
     if (!invocation.input || !invocation.selection || !isDeepStrictEqual(params, { from: owner.controller, run: runId, parent: parentId, worktree: 'current', taskTitle: command.name, agent: invocation.selection.agent_id, model: invocation.selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) })) deny('The native Worker start differs from the approved fixed input')

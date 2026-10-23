@@ -24,6 +24,19 @@ Run 的 `completed` 表示执行已结束；成果的 `acceptance: unreviewed` �
 
 需要用户回答时默认返回 9，可用 `--on-input wait` 持续观察。等待上限默认 `30m`，支持 Go 时长格式如 `90s`、`5m`、`2h`；超时返回 8，Ctrl-C 返回 130，均只结束当前 CLI 等待，原任务继续运行。重连命令会包含准确 Run 身份。暂时读连接中断时只重读同一个 Run；提交结果未知时返回 6 并保留原请求，不能换 UUID 重发工作。权限不足返回 3，能力不可用返回 4，资源拒绝返回 5，任务或导出失败返回 7，参数错误返回 2。
 
+Run 中存在原生待答问题时，退出9会给出该问题的准确选择器。将回答保存为当前项目获准读取的 UTF-8 文件，首次发送前保存一个新的规范 UUID，再执行：
+
+```sh
+swa question answer --project "$project_id" --controller "$controller" --run "$run_id" --task "$root_task_id" --dispatch "$dispatch_id" --question "$question_id" --input-file "$answer_file" --request-id "$answer_request_id" --json
+swa wait --project "$project_id" --controller "$controller" --task "$root_task_id" --run "$run_id" --strict --json
+```
+
+回答保留完整原文，必须非空白且不超过32000 UTF-8字节。GUI在同 Run 的具体问题上提供回答表单，HTTP使用同一 `question.answer` 动作，接收 `input_file` 或内联 `text` 二选一。服务重新核当前项目 send、原上下文、原 Agent 选择和外发批准；合法人类可按独立当前权限回答 Agent 创建的任务，原创建者关联仍保留。
+
+退出0只证明原答案已保存或同内容已确认，不证明模型已读；已答问题与唯一答案进入同 Run 历史和导出。同一 request ID 改内容会拒绝，已答问题不能替换为不同答案。结果未知时仅查询该回答的原请求，不换 ID 重发；GUI只有取得准确父子回执中明确的无效果拒绝，才恢复编辑并允许用户显式修正后提交新请求。原 Worker 已释放时可以确认已有同内容答案，但实际 Controller consumer 和当前项目授权仍须有效。
+
+当前 SWA 宿主尚未公开上游 `orchestration.ask`，provider 自身问题记录也尚未接入原 `question_threads`。因此当前正常 SWA Run 缺少生产问题入口；这里提供对原生已有问题的回答和历史功能，不能把局部数据库验证视为“模型提问→用户回答→原任务继续”的完整验收。ToolsOff 不因此扩大。
+
 导出包含 `run.json` 的完整后端任务视图、`result.json` 的完整原生成果与会话记录，以及 `results/` 内实际任务结果文本；`results/index.json` 关联原 Task ID 与文本文件。CLI 不跟随回复中的任意链接读取文件，不复制账号配置或私有目录。尚未结算、原生成果不完整或导出写入失败时不会报告交付成功；部分写入的独占目录保留供检查，下一次导出选择另一个新目录。
 
 ## Windows安装
@@ -255,7 +268,7 @@ if ($LASTEXITCODE -ne 0) { throw '保留sendRequest核查原输入，不换键�
 & $swa task result --controller $controller --task $rootTask --output-dir $newOutputDirectory --json
 ```
 
-以上循环提交只说明如何操作N个Worker，不证明模型执行区间重叠；真实并发、指定停止期间其余Worker继续和原生会话接续须按安装验收核查。首次操作前保存`$workerCalls`、`$createRequest`及后续request变量于当前受保护会话，不把token或私有输出写入公开项目。`worker list/show/read`和`task show/list`返回原生快照；逐项检查所有Worker，不能把首个回复或HTTP成功当作整项任务完成。当前没有`run/wait/events/export`便捷命令；完整结果使用`task result`，不根据不完整列表推断终态。
+以上循环提交只说明如何操作N个Worker，不证明模型执行区间重叠；真实并发、指定停止期间其余Worker继续和原生会话接续须按安装验收核查。首次操作前保存`$workerCalls`、`$createRequest`及后续request变量于当前受保护会话，不把token或私有输出写入公开项目。`worker list/show/read`和`task show/list`返回原生快照；逐项检查所有Worker，不能把首个回复或HTTP成功当作整项任务完成。完整任务使用上文`run/wait/export`，低层成果查询仍可使用`task result`，不根据不完整列表推断终态。
 
 每个写动作的request变量为首次调用前保存的不同规范UUID。查询结果包含真实原生状态，查询成功不代表任务成功。退出码6表示效果未知：保留原request，使用`request show --controller ... --request-id ... --json`查询；controller尚未取得时使用`--project`形式。未知输入不能换键重发。CLI的HTTP等待上限为150秒；超时未收到确定结果时返回6，不停止后台或自动重发。普通查询/控制等待中的Ctrl-C返回130，只取消当前CLI等待；原请求仍需核查。`serve`的Ctrl-C或所属stdin结束会关闭本次所属服务，行为与普通命令分别处理。
 

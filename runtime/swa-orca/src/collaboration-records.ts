@@ -3,11 +3,11 @@ import { isDeepStrictEqual } from 'node:util'
 import type { OrchestrationDb } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/db'
 import type { RpcContext } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/core'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
-import { commandSchema, nativeObject, type Invocation, type Scope } from './contracts'
+import { roleDefinitionSchema, nativeObject, type Invocation, type Scope } from './contracts'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { isTaskDescendant } from './run-view'
 
-const roleDefinition = commandSchema.shape.role.unwrap()
+const roleDefinition = roleDefinitionSchema
 const roleSchema = roleDefinition.extend({ id: z.string(), project_id: z.string(), revision: z.number().int().positive(), archived: z.boolean(), created_at: z.string(), updated_at: z.string() })
 const conversationSchema = z.object({ id: z.string(), project_id: z.string(), title: z.string(), role_id: z.string().nullable(), created_at: z.string() })
 const entrySchema = z.object({ id: z.string(), request_id: z.string(), text: z.string(), created_at: z.string(), status: z.literal('stored'), author_id: z.string(), author_kind: z.enum(['human', 'agent']) })

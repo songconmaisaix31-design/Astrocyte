@@ -28,6 +28,7 @@ swa status|capabilities --json
 swa run --project P --workdir W --spec-file F --input-file I --agent A --model M --request-id UUID [--name lead] [--role ID --role-revision N] [--conversation ID] [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
 swa wait --controller C --task T --run R [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
 swa export --controller C --task T --run R --output-dir O --json
+swa question answer --controller C --run R --task T --dispatch D --question Q --input-file F --request-id UUID --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close|recover --controller C [--request-id UUID] --json
 swa task create --controller C --spec-file F --request-id UUID --json
@@ -85,7 +86,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		if len(rest) == 0 {
 			return output.failure("validation_failed", "缺少命令动作", "read_swa_help", 2)
 		}
-		if (rest[0] == "--help" || rest[0] == "-h") && (action == "controller" || action == "task" || action == "worker" || action == "request") {
+		if (rest[0] == "--help" || rest[0] == "-h") && (action == "controller" || action == "task" || action == "worker" || action == "request" || action == "question") {
 			return writeHelp(&output, nil)
 		}
 		action, rest = action+"."+rest[0], rest[1:]
@@ -99,7 +100,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	asJSON := flags.Bool("json", false, "输出 JSON")
 	flags.StringVar(&command.Controller, "controller", "", "原生控制端 selector")
 	flags.StringVar(&command.TaskID, "task", "", "原生根 Task ID")
+	flags.StringVar(&command.RunID, "run", "", "原生 Run ID")
 	flags.StringVar(&command.DispatchID, "dispatch", "", "原生 Dispatch ID")
+	flags.StringVar(&command.QuestionID, "question", "", "原生问题 ID")
 	flags.StringVar(&command.RequestID, "request-id", "", "原始 UUID")
 	flags.StringVar(&command.Workdir, "workdir", "", "明确项目目录")
 	flags.StringVar(&command.SpecFile, "spec-file", "", "固定任务文件")

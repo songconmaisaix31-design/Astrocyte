@@ -35,6 +35,7 @@ type OrcaCommand struct {
 	RunID              string                      `json:"run_id,omitempty"`
 	TaskID             string                      `json:"task_id,omitempty"`
 	DispatchID         string                      `json:"dispatch_id,omitempty"`
+	QuestionID         string                      `json:"question_id,omitempty"`
 	RequestID          string                      `json:"request_id,omitempty"`
 	Workdir            string                      `json:"workdir,omitempty"`
 	SpecFile           string                      `json:"spec_file,omitempty"`
@@ -292,6 +293,7 @@ type OrcaEnvelope struct {
 	RunID           string           `json:"run_id,omitempty"`
 	TaskID          string           `json:"task_id,omitempty"`
 	DispatchID      string           `json:"dispatch_id,omitempty"`
+	QuestionID      string           `json:"question_id,omitempty"`
 	Result          any              `json:"result,omitempty"`
 	Error           *OrcaNativeError `json:"error,omitempty"`
 }
@@ -359,7 +361,7 @@ func orcaAction(action string) (permission string, mutation bool, ok bool) {
 		return "observe", false, true
 	case "controller.open", "controller.recover", "task.create", "worker.start", "run.submit":
 		return "start", true, true
-	case "worker.send", "task.complete":
+	case "worker.send", "task.complete", "question.answer":
 		return "send", true, true
 	case "controller.close", "worker.stop", "worker.release":
 		return "stop", true, true
@@ -378,8 +380,9 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 		"status": "", "capabilities": "",
 		"role.list": "", "role.show": "role_id", "role.create": "role request_id", "role.update": "role_id revision role request_id", "role.archive": "role_id revision request_id",
 		"conversation.list": "", "conversation.show": "conversation_id", "conversation.create": "conversation request_id", "conversation.append": "conversation_id text request_id",
-		"handoff.notify": "controller task_id dispatch_id input_file request_id",
-		"run.submit":     "workdir spec_file input_file agent model name request_id role_id revision conversation_id", "run.show": "controller run_id task_id", "run.export": "controller run_id task_id output_dir",
+		"handoff.notify":  "controller task_id dispatch_id input_file request_id",
+		"question.answer": "controller run_id task_id dispatch_id question_id input_file text request_id",
+		"run.submit":      "workdir spec_file input_file agent model name request_id role_id revision conversation_id", "run.show": "controller run_id task_id", "run.export": "controller run_id task_id output_dir",
 		"controller.open": "workdir request_id", "controller.show": "controller", "controller.close": "controller request_id", "controller.recover": "controller request_id",
 		"task.create": "controller spec_file request_id", "task.show": "controller task_id", "task.list": "controller",
 		"task.complete": "controller task_id result_file request_id", "task.result": "controller task_id output_dir",
@@ -438,6 +441,14 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 	if c.Controller == "" {
 		return projectError(apierrors.ValidationFailed, "controller is required")
 	}
+	if c.Action == "question.answer" {
+		if c.RunID == "" || c.TaskID == "" || c.DispatchID == "" || c.QuestionID == "" || (c.InputFile == "") == (c.Text == "") {
+			return projectError(apierrors.ValidationFailed, "question answer requires the exact Run, root Task, Dispatch, question and exactly one of input_file/text")
+		}
+		if c.Text != "" {
+			return validateOrcaAnswer(c.Text)
+		}
+	}
 	if (c.Action == "run.show" || c.Action == "run.export") && (c.RunID == "" || c.TaskID == "") {
 		return projectError(apierrors.ValidationFailed, "run observation requires the exact Run and root Task identities")
 	}
@@ -476,6 +487,13 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 	}
 	if c.Action == "task.create" && c.SpecFile == "" || c.Action == "task.complete" && c.ResultFile == "" || (c.Action == "task.result" || c.Action == "run.export") && !filepath.IsAbs(c.OutputDir) {
 		return projectError(apierrors.ValidationFailed, "the action requires its explicit file or absolute output directory")
+	}
+	return nil
+}
+
+func validateOrcaAnswer(text string) error {
+	if !utf8.ValidString(text) || strings.TrimSpace(text) == "" || len(text) > 32000 {
+		return projectError(apierrors.ValidationFailed, "the answer must be nonblank UTF-8 text within 32000 bytes")
 	}
 	return nil
 }
@@ -549,7 +567,7 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 	if projectID == "" {
 		return reply, projectError(apierrors.ScopeDenied, "a current project-scoped caller is required")
 	}
-	model := command.Action == "worker.start" || command.Action == "worker.send"
+	model := command.Action == "worker.start" || command.Action == "worker.send" || command.Action == "question.answer"
 	initialPermission := permission
 	if model {
 		initialPermission = "observe"
@@ -656,7 +674,7 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 			return reply, projectError(apierrors.ScopeDenied, "native controller scope does not match the current project")
 		}
 		invocation.Scope = scope
-		if command.Action == "run.show" || command.Action == "run.export" {
+		if command.Action == "run.show" || command.Action == "run.export" || command.Action == "question.answer" {
 			if scope.RunID != command.RunID || scope.RootTaskID != command.TaskID {
 				return reply, projectError(apierrors.ScopeDenied, "Run and root Task do not match the current controller")
 			}
@@ -726,6 +744,11 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 			}
 		}
 		invocation.Input = &file
+		if command.Action == "question.answer" {
+			if err := validateOrcaAnswer(file.Text); err != nil {
+				return reply, err
+			}
+		}
 	}
 	// 文件读取和原生观察之后再次核准，撤销不能沿旧预检继续输入。
 	var finalRoots []string
@@ -814,10 +837,13 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 	if err := ValidateOrcaCommand(command); err != nil {
 		return result, err
 	}
-	if command.Action != "worker.start" && command.Action != "worker.send" {
+	if command.Action != "worker.start" && command.Action != "worker.send" && command.Action != "question.answer" {
 		return result, projectError(apierrors.ScopeDenied, "delivery admission requires an original Worker input")
 	}
 	actor, scope := invocation.Caller, invocation.Scope
+	if command.Action == "question.answer" && (invocation.Handoff != nil || invocation.Submission != nil || command.RunID != scope.RunID || command.TaskID != scope.RootTaskID) {
+		return result, projectError(apierrors.ScopeDenied, "question answer must retain its original Run and root without handoff or submission")
+	}
 	if actor.ID == "" || actor.ProjectID == "" || actor.ProjectID != invocation.Project.ID || actor.ProjectID != scope.ProjectID || actor.SettingsRevision < 1 || scope.Controller == "" || scope.Controller != command.Controller || scope.RunID == "" || scope.RootTaskID == "" || scope.AuthorityDomain == "" || (actor.Kind != "agent" && actor.Kind != "human") {
 		return result, projectError(apierrors.ScopeDenied, "the original Worker delivery association is incomplete")
 	}
@@ -842,27 +868,43 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 		return result, err
 	}
 	// 人类追加输入重新核准当前项目权限，保留创建者来源及 Agent 原批准绑定。
-	independentHumanInput := actor.Kind == "human" && command.Action == "worker.send" && invocation.Handoff == nil
+	independentHumanInput := actor.Kind == "human" && (command.Action == "worker.send" || command.Action == "question.answer") && invocation.Handoff == nil
 	if link.ProjectID != project.ID || !independentHumanInput && link.GrantAgentID != actor.ID || link.SettingsRevision != project.Settings.Revision || link.AuthorityDomain != scope.AuthorityDomain || link.RunID != scope.RunID || link.RootTaskID != scope.RootTaskID {
 		return result, projectError(apierrors.ScopeDenied, "the saved native Run association changed")
 	}
 	if err := s.checkOriginalOrcaGrant(ctx, actor); err != nil {
 		return result, err
 	}
-	if invocation.Input == nil || invocation.Input.Version == "" {
+	inlineAnswer := command.Action == "question.answer" && command.Text != ""
+	if inlineAnswer && invocation.Input != nil {
+		return result, projectError(apierrors.ScopeDenied, "an inline answer cannot carry a file input")
+	}
+	if !inlineAnswer && (invocation.Input == nil || invocation.Input.Version == "") {
 		return result, projectError(apierrors.EvidenceMissing, "the original Worker input is unavailable")
 	}
 	if invocation.Handoff != nil {
 		if err := validateOrcaHandoffResume(invocation); err != nil {
 			return result, err
 		}
-	} else {
+	} else if !inlineAnswer {
 		input, err := s.readInput(ctx, project, invocation.Input.Path)
 		if err != nil {
 			return result, err
 		}
 		if input != *invocation.Input {
 			return result, projectError(apierrors.ContextStale, "the original Worker input file changed")
+		}
+		if command.Action == "question.answer" {
+			selected, err := s.readInput(ctx, project, command.InputFile)
+			if err != nil {
+				return result, err
+			}
+			if selected != input {
+				return result, projectError(apierrors.ContextStale, "the answer file differs from its original command")
+			}
+			if err := validateOrcaAnswer(input.Text); err != nil {
+				return result, err
+			}
 		}
 	}
 	request := domain.ContextRequest{}

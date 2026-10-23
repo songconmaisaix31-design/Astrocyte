@@ -32,6 +32,7 @@ import { approvedWorkerLimit, assertCompletionInventory, assertWorkerCapacity, a
 import { readRunView, readRunTaskTree, isTaskDescendant } from './run-view'
 import { collaborationRead, writeCollaborationRecords, resolveCollaborationReferences, assertCurrentCollaborationAssignment } from './collaboration-records'
 import { requestRunSettlement, validateHandoffInput } from './run-settlement'
+import { assertQuestionReservation, questionStartSelection, readAnswerQuestion, validateQuestionAnswer } from './question-answer'
 import { getOrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
 import { ORCHESTRATION_RUN_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs'
 import { ORCHESTRATION_MESSAGE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods'
@@ -285,12 +286,12 @@ export const SWA_METHODS = [
   } }),
   defineMethod({ name: 'swa.controllerDeliver', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const c = invocation.command
-    if (!c.controller || !['worker.start', 'worker.send', 'worker.stop', 'worker.release', 'task.complete'].includes(c.action)) return fail('invalid_argument', 'Unsupported controller mutation')
+    if (!c.controller || !['worker.start', 'worker.send', 'worker.stop', 'worker.release', 'task.complete', 'question.answer'].includes(c.action)) return fail('invalid_argument', 'Unsupported controller mutation')
     const { scope, owner } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
     validateTaskAction(context.runtime, invocation, scope)
     validateHandoffInput(context.runtime, invocation)
-    if (c.action === 'worker.start' || c.action === 'worker.send') {
+    if (c.action === 'worker.start' || c.action === 'worker.send' || c.action === 'question.answer') {
       const selected = await resolveSelection(context.runtime, invocation.project.id, c)
       if (!invocation.selection || !isDeepStrictEqual(selected, invocation.selection)) return fail('request_mismatch', 'The exact selected Agent configuration changed before native execution')
     }
@@ -312,7 +313,9 @@ export const SWA_METHODS = [
     }
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${c.request_id}/native`, stage: 'helper-input' })
     return effect(async () => {
-      const result = { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, invocation: { ...invocation, scope }, child_request: `${requestId}/native`, native: (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result }
+      const native = (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result
+      const rejected = c.action === 'question.answer' && nativeObject(native).state === 'rejected'
+      const result = { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, invocation: { ...invocation, scope }, child_request: `${requestId}/native`, native, ...(rejected ? { state: 'rejected', effects_applied: false, error: nativeObject(native).error } : {}) }
       if (!context.recordMutationReceipt) return fail('operation_unknown', 'The original native delivery receipt cannot be committed')
       context.recordMutationReceipt(result)
       requestRunSettlement(context.runtime, scope)
@@ -458,7 +461,12 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
     return selectAgent(runtime, project, command.agent, command.model, projectRoot)
   }
   if (!command.controller) return fail('invalid_argument', 'An exact controller is required for the native account source boundary')
-  const { owner } = controllerScope(runtime, project, command.controller)
+  const { owner, scope } = controllerScope(runtime, project, command.controller)
+  if (command.action === 'question.answer') {
+    const target = readAnswerQuestion(runtime.getOrchestrationDb(), scope, command)
+    const original = questionStartSelection(runtime, scope, command)
+    if (target.question.status === 'answered') return original.selection
+  }
   await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
   const resolvePath = getStructuredAgentSessionHost()?.deps.resolveWorkspacePath
   if (!resolvePath) return fail('evidence_missing', 'The exact native project directory is unavailable')
@@ -467,8 +475,7 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
     if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
     return selectAgent(runtime, project, command.agent, command.model, projectRoot)
   }
-  if (command.action !== 'worker.send' || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
-  const { scope } = controllerScope(runtime, project, command.controller)
+  if (!['worker.send', 'question.answer'].includes(command.action) || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
   validateTaskAction(runtime, { command }, scope)
   const db = runtime.getOrchestrationDb()
   const rows = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
@@ -517,6 +524,10 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
     } else {
       validateTaskAction(runtime, invocation, fresh.scope)
       validateHandoffInput(runtime, invocation)
+      if (c.action === 'question.answer') {
+        validateQuestionAnswer(runtime, invocation, fresh.scope)
+        assertQuestionReservation(runtime, invocation)
+      }
       if (c.action === 'worker.start') {
         const completion = z.object({ count: z.number().int().nonnegative() }).parse(db.db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts
           WHERE caller_fingerprint=? AND method='swa.controllerDeliver' AND state='pending'

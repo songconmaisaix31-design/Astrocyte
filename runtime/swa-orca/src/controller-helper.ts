@@ -2,6 +2,7 @@ import { createInterface } from 'node:readline'
 import { RuntimeClient } from '../../../third_party/orca-v1.4.230/src/cli/runtime/client'
 import { helperInput, nativeObject, nativeError, type Invocation } from './contracts'
 import { fixedTaskSpec, workerTaskSpec } from './collaboration-records'
+import { questionReplyParams } from './question-answer'
 
 const controller = process.env.ORCA_TERMINAL_HANDLE
 const data = process.env.ORCA_USER_DATA
@@ -33,6 +34,7 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
   }
   if (!run) throw new Error('native_run_missing')
   switch (action) {
+    case 'question.answer': return call('orchestration.reply', questionReplyParams(invocation), `${requestId}/native`)
     case 'task.complete': return call('orchestration.taskUpdate', { id: c.task_id, status: 'completed', result: invocation.input?.text, run, callerTerminalHandle: controller }, `${requestId}/native`)
     case 'worker.start': {
       if (!invocation.input || !invocation.selection || invocation.selection.agent_id !== c.agent || invocation.selection.model !== c.model) throw new Error('selected_native_worker_input_required')

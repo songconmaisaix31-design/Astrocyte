@@ -37,7 +37,9 @@ func (o *cliOutput) validatedCommand(command workspaceapp.OrcaCommand) {
 	o.selected = command
 	o.identity.Controller = command.Controller
 	o.identity.TaskID = command.TaskID
+	o.identity.RunID = command.RunID
 	o.identity.DispatchID = command.DispatchID
+	o.identity.QuestionID = command.QuestionID
 }
 
 func (o *cliOutput) publish(value any) error {
@@ -95,9 +97,11 @@ func (o *cliOutput) outputFailure(err error) int {
 		{"run_id", o.identity.RunID},
 		{"task_id", o.identity.TaskID},
 		{"dispatch_id", o.identity.DispatchID},
+		{"question_id", o.identity.QuestionID},
 		{"requested_controller", o.selected.Controller},
 		{"requested_task_id", o.selected.TaskID},
 		{"requested_dispatch_id", o.selected.DispatchID},
+		{"requested_question_id", o.selected.QuestionID},
 	} {
 		if field.value != "" {
 			associations = append(associations, fmt.Sprintf("%s=%q", field.name, field.value))
@@ -108,7 +112,7 @@ func (o *cliOutput) outputFailure(err error) int {
 	}
 	o.recovery()
 	switch o.action {
-	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "run.submit", "serve":
+	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "question.answer", "run.submit", "serve":
 		return 6
 	default:
 		return 7
@@ -169,6 +173,9 @@ func (o *cliOutput) response(data []byte, status int) (workspaceapp.OrcaEnvelope
 		if reply.RequestID != "" && o.identity.RequestID != "" && reply.RequestID != o.identity.RequestID {
 			return reply, errors.New("The native response has a different original request ID")
 		}
+		if o.identity.QuestionID != "" && reply.QuestionID != "" && reply.QuestionID != o.identity.QuestionID {
+			return reply, errors.New("The native answer response changed its original question ID")
+		}
 	case shape.OK == nil && shape.SchemaVersion != nil && *shape.SchemaVersion == apierrors.SchemaVersion:
 		var actual apierrors.ErrorEnvelope
 		if err := decodeOneJSON(data, &actual); err != nil {
@@ -193,6 +200,12 @@ func (o *cliOutput) response(data []byte, status int) (workspaceapp.OrcaEnvelope
 	}
 	if reply.TaskID == "" {
 		reply.TaskID = o.identity.TaskID
+	}
+	if reply.RunID == "" {
+		reply.RunID = o.identity.RunID
+	}
+	if reply.QuestionID == "" {
+		reply.QuestionID = o.identity.QuestionID
 	}
 	if reply.DispatchID == "" {
 		reply.DispatchID = o.identity.DispatchID

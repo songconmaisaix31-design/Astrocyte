@@ -48,7 +48,7 @@ function ProjectRuntime({ project, disabled }: { project: Project; disabled: boo
     {!!status.data && <QueryState state={capabilities}>{reply => <><SwaAgentCapabilities reply={reply} /><details><summary>实际能力来源原件</summary><pre className={styles.output}>{observationJSON(reply.result)}</pre></details></>}</QueryState>}
     <SwaRoles key={project.id} project={project} disabled={disabled} onRoleSelected={setSelectedRole} onConversationSelected={setConversationID} />
     {(selectedRole || conversationID) && <div className={styles.form}>{selectedRole && <button type="button" className="ac-button secondary compact" onClick={() => setSelectedRole(null)}>清除本次角色选择</button>}{conversationID && <button type="button" className="ac-button secondary compact" onClick={() => setConversationID('')}>清除本次讨论关联</button>}</div>}
-    <SwaRunWorkspace project={project} capabilities={capabilities.data} disabled={disabled || !status.data || status.loading || status.stale || !!status.error} startDisabled={!available} command={submitRun} role={selectedRole} conversationID={conversationID} onAttached={selection => { setController(selection.controller); setTaskID(selection.taskID); setAttached({ controller: selection.controller, taskID: selection.taskID }); }} />
+    <SwaRunWorkspace project={project} capabilities={capabilities.data} disabled={disabled || !status.data || status.loading || status.stale || !!status.error} startDisabled={!available} command={submitRun} useAnswerCommand={useSwaCommand} role={selectedRole} conversationID={conversationID} onAttached={selection => { setController(selection.controller); setTaskID(selection.taskID); setAttached({ controller: selection.controller, taskID: selection.taskID }); }} />
     <details><summary>新建 Controller 与固定任务</summary><p className={styles.note}>以下路径指向当前服务机器。页面不上传文件或修改项目批准；任务规格文件中的 max_workers 限制总创建和预留名额，释放 Worker 不归还名额。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void open.run({ action: 'controller.open', project_id: project.id, workdir: workdir.trim() }, reply => { if (!reply.controller) throw new Error('回执缺少真实 Controller，请查询原请求'); setController(reply.controller); }); }}><label>已批准的服务端工作目录<input required value={workdir} onChange={event => setWorkdir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={!canStart || open.pending || !!open.unresolved}>创建 Controller</button></form><OperationState command={open} onRecovered={reply => { if (reply.controller) setController(reply.controller); }} />
       {controller.trim() && <TaskCreateForm key={controller.trim()} projectID={project.id} controller={controller.trim()} disabled={!canStart} onCreated={id => { setTaskID(id); setAttached({ controller: controller.trim(), taskID: id }); }} />}
     </details>
@@ -144,7 +144,7 @@ function useSwaCommand(projectID: string, scope: string) {
     const parsed: unknown = JSON.parse(saved);
     if (!parsed || typeof parsed !== 'object' || !('requestID' in parsed) || typeof parsed.requestID !== 'string' || !('action' in parsed) || typeof parsed.action !== 'string') throw new Error('保存的请求身份不可解析，请核查本标签页记录');
     const record = parsed as Record<string, unknown>;
-    for (const key of ['controller', 'taskID', 'dispatchID'] as const) if (key in record && typeof record[key] !== 'string') throw new Error('保存的请求选择范围不可解析');
+    for (const key of ['controller', 'taskID', 'dispatchID', 'runID', 'questionID'] as const) if (key in record && typeof record[key] !== 'string') throw new Error('保存的请求选择范围不可解析');
     return parsed as PendingSwaRequest;
   });
   const active = useRef(false), busy = useRef(false);
@@ -152,19 +152,26 @@ function useSwaCommand(projectID: string, scope: string) {
   async function run(body: SwaCommand, onSuccess?: (reply: SwaEnvelope) => void) {
     if (busy.current || unresolved) return;
     busy.current = true;
-    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop', 'run.submit'].includes(body.action);
+    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop', 'run.submit', 'question.answer'].includes(body.action);
     const requestID = mutation ? crypto.randomUUID() : undefined;
+    const original: PendingSwaRequest | null = requestID ? { requestID, action: body.action, ...(body.controller ? { controller: body.controller } : {}), ...(body.task_id ? { taskID: body.task_id } : {}), ...(body.dispatch_id ? { dispatchID: body.dispatch_id } : {}), ...(body.run_id ? { runID: body.run_id } : {}), ...(body.question_id ? { questionID: body.question_id } : {}) } : null;
     setPending(true); setError(null); setReply(null);
     try {
-      if (requestID) { const original: PendingSwaRequest = { requestID, action: body.action, ...(body.controller ? { controller: body.controller } : {}), ...(body.task_id ? { taskID: body.task_id } : {}), ...(body.dispatch_id ? { dispatchID: body.dispatch_id } : {}) }; sessionStorage.setItem(storageKey, JSON.stringify(original)); setUnresolved(original); }
-      const result = await swaApi.command(projectID, { ...body, ...(requestID ? { request_id: requestID } : {}) });
+      if (original) { sessionStorage.setItem(storageKey, JSON.stringify(original)); setUnresolved(original); }
+      let result = await swaApi.command(projectID, { ...body, ...(requestID ? { request_id: requestID } : {}) });
+      if (body.action === 'question.answer' && original) {
+        const queried = await swaApi.command(projectID, { action: 'request.show', controller: original.controller, request_id: original.requestID });
+        const recovered = recoverSwaRequest(queried, projectID, original);
+        if (!recovered?.ok) throw new Error('原回答尚未取得完整成功回执，请继续查询原请求');
+        result = recovered;
+      }
       if (active.current) { setReply(result); onSuccess?.(result); sessionStorage.removeItem(storageKey); setUnresolved(null); }
     } catch (failure) {
-      if (failure instanceof SwaRuntimeUnavailableError) sessionStorage.removeItem(storageKey);
+      if (failure instanceof SwaRuntimeUnavailableError && body.action !== 'question.answer') sessionStorage.removeItem(storageKey);
       if (active.current) {
         setError(formatError(failure));
         if (failure instanceof SwaCommandError) setReply(failure.reply);
-        if (failure instanceof SwaRuntimeUnavailableError) setUnresolved(null);
+        if (failure instanceof SwaRuntimeUnavailableError && body.action !== 'question.answer') setUnresolved(null);
         // 其余不确定错误保留原请求，不推断已执行效果。
       }
     } finally { busy.current = false; if (active.current) setPending(false); }
@@ -182,7 +189,11 @@ function useSwaCommand(projectID: string, scope: string) {
       if (active.current) {
         setReply(result);
         const recovered = recoverSwaRequest(result, projectID, unresolved);
-        if (recovered) { onRecovered?.(recovered); sessionStorage.removeItem(storageKey); setUnresolved(null); setError(null); }
+        if (recovered) {
+          if (recovered.ok) onRecovered?.(recovered);
+          sessionStorage.removeItem(storageKey); setUnresolved(null); setReply(recovered);
+          setError(recovered.ok ? null : recovered.error?.message ?? '原回答已明确拒绝且没有效果，可修正后重新提交');
+        }
       }
     } catch (failure) { if (active.current) setError(formatError(failure)); }
     finally { busy.current = false; if (active.current) setPending(false); }
