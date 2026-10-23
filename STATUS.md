@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。最新开发单 Worker pi07 使用 `60f5e6e6`，已通过启动、输入绑定、真实模型输出及运行中停止；随后验收器仍要求关闭后的空闲查询回复，导致原件读取断言失败，任务资源释放尚未执行。会话租约已释放，完整服务树关闭仍为 UNKNOWN。验收消费者修正已通过同原件回归及独立审查，下一步以全新 pi08 验证完整生命周期，原失败记录保留。Windows 权限修复已通过 SDK 六项及真实 Controller.open/close；D3、D4 的未知进程观测继续核查，新的最小诊断 D5 已启动。完整构建尚未重试，N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。开发单 Worker pi07 已通过真实模型输出和运行中停止，其验收器误拒关闭证据的问题已修正。后继 pi08 使用 `80e298c0`，启动及输入接受成功，原生会话记录实际 HTTP 502，严格消息 schema 却拒绝合法 error 结果，尚未执行停止或释放。该失败分支修复已通过真实样本规则、同原件回归、类型检查及独立审查，下一步固定新来源执行全新pi09；原失败、租约和资源状态保留。Windows 权限 SDK 及真实 Controller.open/close 曾在 D3 通过，完整关闭仍未通过；D5至D7均停在诊断组件准备，D7已定位多个Python路径被拼接，局部修正继续进行。完整构建尚未重试，N6 未运行。
 
 ## 当前实现与验证
 
@@ -98,6 +98,18 @@ pi07 使用 `60f5e6e6dc4b61eef716866f0573792b67e83421`，原件为 `/workspace/s
 [Pi 关闭证据消费者](tasks/swa-pi-stop-proof-20261023.md)的唯一只读最小复现证明首错在 `validatePiEventView` 的 custody_closed 分支，尚未进入 `originalPiTreeProof`。原320行轨迹 SHA `6a0d8a31f07a34a37f2b9871c7bc307031ed97b7fa63c5f95f281ba28c59c598` 保留 stop284、aborted312、agent_end314、settled315、abort回复316、custody_closed320，forced=false；停止后没有 get_state。消费者只在空闲查询回复时清除 active，因此拒绝这份已经中止并关闭的记录。修正仅涉及原验收消费者，以同一原件中的中止顺序和完整退出证明记录 closed，保持 idle 缺失及所有来源、身份、退出检查。准确源码和局部结果已独立接受：同一原件的旧模块仍失败，新模块通过完整停止证明；实际前缀316缺退出证明、实际 pi06 检查点交叉配对均拒绝，原件和原退出验证模块字节不变。Node 语法及差分检查通过，回归原件为 `.verification/worker-stop-proof-20261023/pi07-regression-report.json`。原 pi07 FAIL 和未执行的资源释放不改写。
 
 pi07 补充收尾通过原认证接口向准确 helper487158 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon487082/helper487158 的原 pidfd 连续两次退出，间隔50.133011ms，helper缺席，daemon仅余PID1 zombie。执行退出0、stderr为空，实际结果已独立接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-07-cleanup-01/result.json`，SHA `dff7cffc9aa22704d81630f0ef4441aaec29b49e0906407032f2fa21d82af763`。仅补证这两个准确进程，没有重试停止、调用资源释放或修改原数据库；原结果与完整服务树 UNKNOWN 保留。
+
+pi08 使用 `80e298c0aa07d35b7e1347630851ff65762076ef`，原件为 `/workspace/swa-worker-pi-08-GeT3c2/evidence/`，原结果 SHA `e82924af8134d707b891c67559aa47382f0f2a3b42033a91bc01de383052a203`。启动请求 `c7f8ad59-a3b5-4421-8bbc-65808f45a97a`、Dispatch `ctx_ef44d62f0153` 的启动、观察及原输入查询均退出0，Worker ready/input_accepted、structured。驱动未观察到 delta，原63行轨迹末尾为 protocol_unverifiable；实际前62行可通过原消费者，不能把此失败归为前一轮关闭证据问题，也不能由未观察 delta 推断模型未调用。原生会话末 assistant 记录 `stopReason=error`、HTTP502。将同一真实 message/entry 交原正式 schema，在 stopReason/errorMessage 两处实际拒绝；对应官方 Pi1.0.1 类型允许该结果。丢失的原 RPC envelope 未重建，不声称掌握历史被拒帧的完整字节。具体复现、来源和修复范围见[Pi 服务错误任务](tasks/swa-pi-provider-error-20261023.md)。
+
+pi08 未发送 stop/release；只读库存为2 Task（root ready、child dispatched）、1 Dispatch、Worker ready/input_accepted、资源 `wtr_444b04058a8f` owned/not_requested。会话租约仍 live/fence1，原失败记录不改；Grant撤销与dispatcher关闭确认，serve退出6、observer退出1、完整服务树UNKNOWN。补充收尾通过原认证接口向准确 helper503491 发送一次正常EOF，session清空后shutdownIfIdle为ACCEPTED；daemon503425/helper503491的原pidfd两次退出间隔50.109663ms，helper缺席，daemon仅余PID1 zombie。执行退出0、stderr为空，独立结果已接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-08-cleanup-01/result.json`，SHA `2915b83f028d1268cc55075e82503357899ce5c0f96dccf55b76e0a7ba2aa490`。没有重发业务请求、写数据库或发送OS信号；这只补证两个准确进程。
+
+Pi 服务错误修复只在 strictAssistant 增加官方 error 分支，保留原 aborted 两种文字、成功结果不得带 errorMessage、严格字段及来源检查；既有 turn/Task/Run 的失败映射继续使用。真实470字节末记录作为回归原件，5项规则通过，严格类型检查退出0且日志为空。同原件对照中，旧schema仍拒绝，新schema保留原error和HTTP502；pi08原63行failure仍拒绝，pi07完整320行退出证明继续通过，原文件与轨迹字节不变。关闭与提供者错误两组现有测试已加入默认检查列表，语法和路径核对通过，本次没有重跑完整默认检查。准确源码、样本、默认入口及局部结果均已独立接受；实际提供者错误的完整动态生命周期尚未验证，不将502写成成功。
+
+Windows D5 `8ba1d324e8b8b62e43e0d99d2bb29a1e7000ebfa` 的 run `39940960866` / job `120371978971` 最终FAIL；SDK六子项通过，诊断DLL未构建、服务未运行。失败在 diagnostic-process-tree-component，命令退出1且没有超时；原安全摘要未收集内部异常，保持UNKNOWN。源码和官方PowerShell局部复现单独证明隔离子进程缺少脚本必需的RUNNER_TEMP，缺键退出1、仅补该键后退出0。后继仅为该调用传已校验工作根，并捕获固定诊断阶段及异常类型，原权限和关闭检查不变。
+
+Windows D6 `02f7bfe32d64c3625ba06ec671716c95f65654bd` 的 run `39942104911` / job `120375787090` 最终FAIL；SDK继续通过，诊断DLL未构建、服务未运行。本轮取得真实 `ENOENT realpath '[observation-source]\\python'` 与 `native-diagnostic phase=validate; kind=RuntimeException`。原buildPython要求实际可执行路径，调用却传裸python；最小修正仅用PowerShell Get-Command取得Application.Source后交原版本及身份检查。官方PowerShell与固定7ff helper的局部对照复现原调用ENOENT，修后识别实际Python3.12.14并退出0，Parser及独立源码审查通过。
+
+Windows D7 `9916901651f1fa32b45441d949d822b63c4d117e` 的 run `39943240934` / job `120379542176` 最终FAIL；SDK继续通过，诊断DLL未构建、服务未运行。实际ENOENT显示hosted Python与WindowsApps的两个Application.Source被字符串参数拼为一路径，仍处validate阶段。后继计划按原成熟入口仅选首个真实Application，再保留原buildPython校验，并固定原生编译使用已验证的Python，当前尚无后继实际结果。D5至D7均无Task/Worker/模型；各原artifact已上传，本机官方下载各一次403，保留API及完整公开摘要，不猜内部未收集字段。旧六个原生job及同来源S0均跳过；D3/D4未知关闭记录不回填。
 
 ## 保留的安装基线
 

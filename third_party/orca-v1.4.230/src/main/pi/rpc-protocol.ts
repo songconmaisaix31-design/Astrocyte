@@ -162,12 +162,14 @@ const strictSystem = z.strictObject({ role: z.literal('system'), content: z.unio
   sections: z.record(z.string(), z.string().nullable()).optional(), toolsAdded: z.tuple([]).optional(), toolsRemoved: z.tuple([]).optional() })
 const strictAssistant = z.strictObject({
   role: z.literal('assistant'), content: z.array(z.union([strictText, strictThinking])), api: z.string(), provider: z.string(), model: z.string(),
-  usage: strictPiUsageSchema, stopReason: z.enum(['pending', 'stop', 'length', 'aborted']), timestamp: amount,
+  usage: strictPiUsageSchema, stopReason: z.enum(['pending', 'stop', 'length', 'aborted', 'error']), timestamp: amount,
   responseModel: z.string().optional(), responseId: z.string().optional(), providerThinkingLevel: z.string().optional(),
   thinkingLevel: strictPiThinkingLevelSchema.optional(), rawStopReason: z.enum(['stop', 'end', 'length']).optional(), endTurn: z.boolean().optional(),
-  diagnostics: z.tuple([]).optional(), errorMessage: z.enum(['Request aborted', 'Request was aborted']).optional()
+  diagnostics: z.tuple([]).optional(), errorMessage: z.string().optional()
 }).superRefine((message, ctx) => {
-  if (message.stopReason === 'aborted' ? message.errorMessage === undefined : message.errorMessage !== undefined) ctx.addIssue({ code: 'custom', message: 'native_pi_error_unreviewed' })
+  if (message.stopReason === 'aborted'
+    ? message.errorMessage !== 'Request aborted' && message.errorMessage !== 'Request was aborted'
+    : message.stopReason !== 'error' && message.errorMessage !== undefined) ctx.addIssue({ code: 'custom', message: 'native_pi_error_unreviewed' })
 })
 export const strictPiMessageSchema = z.union([strictUser, strictSystem, strictAssistant])
 export type StrictPiMessage = z.infer<typeof strictPiMessageSchema>
