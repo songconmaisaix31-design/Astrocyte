@@ -24,8 +24,18 @@ import type { AgentSessionAccountHome } from '../../shared/agent-session-account
 import type { PiDisabledToolsPolicy } from '../pi/rpc-launch'
 import type { SwaProviderJobLauncher, SwaOpenCodeToolsPolicy, SwaCodexToolsPolicy, SwaClaudeToolsPolicy } from '../provider-process/provider-process-launch'
 import type { AgentJournalMessageItem } from '../../shared/agent-session-journal-types'
+import type { AgentLaunchMode } from '../../shared/agent-launch-intent'
 
 export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
+
+export type StructuredWorkerStartAdmission = {
+  mutation?: { callerFingerprint: string; requestId: string; method: string; payloadHash: string }
+  controller: string
+  runId: string
+  worktreeId: string | undefined
+  agent: string | undefined
+  mode: AgentLaunchMode
+}
 
 export type StructuredAgentLaunchAdmission = {
   commandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
@@ -39,6 +49,7 @@ export type StructuredAgentLaunchAdmission = {
   providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
   beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
+  beforeWorkerStart?(input: StructuredWorkerStartAdmission): Promise<void | (() => void)>
 }
 
 let launchAdmission: StructuredAgentLaunchAdmission | null = null
@@ -65,6 +76,10 @@ export function reserveStructuredAgentInput(input: StructuredAgentInputAdmission
 
 export function admitStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void | (() => void)> {
   return launchAdmission?.beforeInput ? launchAdmission.beforeInput(input) : Promise.resolve()
+}
+
+export function admitStructuredWorkerStart(input: StructuredWorkerStartAdmission): Promise<void | (() => void)> {
+  return launchAdmission?.beforeWorkerStart ? launchAdmission.beforeWorkerStart(input) : Promise.resolve()
 }
 
 /** Where a launch's shared inputs come from. */

@@ -6,14 +6,15 @@ import { isAbsolute, join } from 'node:path'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { installStructuredAgentLaunchAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
-import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
+import { getPendingWorkerStartRecovery, hashCanonical, replayStableCallerParams } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
+import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
 import { agentSelectionSchema, invocationSchema, nativeObject, structuredInputBindingSchema as inputBindingSchema } from './contracts'
 import { codexProtectedRoots, selectAgent } from './agent-discovery'
 import { readAgentSettings } from './agent-settings'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiSessionAccount, privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
 import { assertDeliveryGrantCurrent, createDeliveryAdmission } from './delivery-admission'
-import type { StructuredAgentInputAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
+import type { StructuredAgentInputAdmission, StructuredWorkerStartAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { installWorkerInputApproval } from './worker-input'
 import { assertNativeOpenCodeCurrent, inspectNativeOpenCodePolicy } from './native-opencode-policy'
 import { materializePrivateOpenCodeAccount, privateOpenCodeEnvironment, readPrivateOpenCodeBinding } from './private-opencode-account'
@@ -27,12 +28,41 @@ import { createClaudeSessionPolicy } from './claude-session-policy'
 import { createPiSessionPolicy } from './pi-session-policy'
 import { isTaskDescendant } from './run-view'
 import { runCleanupApproval, validateHandoffInput } from './run-settlement'
+import { controllerScope } from './controller-scope'
+import { workerTaskSpec } from './collaboration-records'
 
 const mutationRowSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), state: z.enum(['pending', 'completed']), receipt: z.string().nullable() })
+
+export function requireStructuredWorkerMode(mode: StructuredWorkerStartAdmission['mode']) {
+  if (mode !== 'structured') throw new OrchestrationError('unsupported_capability', 'The approved Worker requires its native structured execution mode; terminal execution is not authorized', { effectsApplied: false })
+}
 
 export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: { ownerCapability: Buffer; ownerAlive(): boolean }) {
   const admitCurrentApproval = createDeliveryAdmission(owner.ownerCapability, owner.ownerAlive)
   const releaseInputApproval = installWorkerInputApproval(admitCurrentApproval)
+  async function beforeWorkerStart(input: StructuredWorkerStartAdmission) {
+    const inspect = () => {
+      requireStructuredWorkerMode(input.mode)
+      const mutation = input.mutation
+      if (!owner.ownerAlive() || !mutation || mutation.method !== 'orchestration.workerStart' || !mutation.requestId.endsWith('/native')) throw new OrchestrationError('scope_denied', 'The original owned Worker start identity is unavailable', { effectsApplied: false })
+      const requestId = z.uuid().parse(mutation.requestId.slice(0, -'/native'.length))
+      const db = runtime.getOrchestrationDb(), fingerprint = db.getOrCreateLocalMutationCallerFingerprint()
+      const row = db.getMutationReceipt(fingerprint, requestId)
+      if (mutation.callerFingerprint !== fingerprint || row?.method !== 'swa.controllerDeliver' || row.state !== 'pending' || !row.receipt || db.getMutationReceipt(fingerprint, mutation.requestId)) throw new OrchestrationError('request_mismatch', 'The original fresh Worker start reservation changed', { effectsApplied: false })
+      const receipt = nativeObject(JSON.parse(row.receipt)), invocation = invocationSchema.parse(receipt.invocation), selection = agentSelectionSchema.parse(receipt.selection)
+      const command = invocation.command, { scope, owner: controller } = controllerScope(runtime, invocation.project.id, input.controller)
+      const expected = { from: input.controller, run: scope.run_id, parent: command.parent_task_id ?? scope.root_task_id, worktree: 'current', taskTitle: command.name, agent: selection.agent_id, model: selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) }
+      if (command.action !== 'worker.start' || command.request_id !== requestId || command.controller !== input.controller || command.agent !== selection.agent_id || command.model !== selection.model || receipt.action !== command.action || receipt.child_request !== mutation.requestId || receipt.project_id !== invocation.project.id || receipt.controller !== input.controller || receipt.run_id !== scope.run_id || receipt.root_task_id !== scope.root_task_id || !isDeepStrictEqual(invocation.scope, scope) || !isDeepStrictEqual(invocation.selection, selection) || selection.execution_mode !== input.mode || input.agent !== selection.agent_id || input.runId !== scope.run_id || input.worktreeId !== controller.worktree_id || mutation.payloadHash !== hashCanonical({ method: mutation.method, params: replayStableCallerParams(runtime, expected, undefined, mutation.method) })) throw new OrchestrationError('request_mismatch', 'The actual Worker mode, source or request differs from its approved selection', { effectsApplied: false })
+      assertDeliveryGrantCurrent(invocation)
+      return { invocation, receipt: row.receipt, scope, controller }
+    }
+    const original = inspect()
+    await admitCurrentApproval(original.invocation)
+    return () => {
+      const current = inspect()
+      if (!isDeepStrictEqual(current, original)) throw new OrchestrationError('request_mismatch', 'The Worker reservation changed before its atomic acceptance', { effectsApplied: false })
+    }
+  }
   async function originalSelection(sessionId: string, agent: string, requireRecord = true) {
     if (!owner.ownerAlive()) throw new Error('The owning product service is unavailable')
     const identity = structuredWorkerIdentities.getBySessionId(sessionId)
@@ -243,6 +273,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     return finalAdmission
   }
   const releaseLaunchAdmission = installStructuredAgentLaunchAdmission({
+    beforeWorkerStart,
     commandSettings: async (sessionId, agent) => {
       const { original } = await originalSelection(sessionId, agent)
       return { agentCmdOverrides: { [agent]: `"${original.executable}"` } }

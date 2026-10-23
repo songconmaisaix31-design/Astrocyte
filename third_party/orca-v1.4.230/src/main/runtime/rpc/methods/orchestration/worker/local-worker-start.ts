@@ -36,6 +36,7 @@ import { requireWorkerAuthority, type WorkerEffect } from './worker-topology'
 import { prepareLocalWorkerStart } from './worker-start-validation'
 import { deliverAndSettleWorkerStartReadiness } from './worker-start-readiness-settlement'
 import type { WorkerStartMutation } from './worker-start-mutation'
+import { admitStructuredWorkerStart } from '../../../../structured-agent-launch-composition'
 
 export async function startLocalWorker(args: {
   params: WorkerStartInput
@@ -144,6 +145,15 @@ export async function startLocalWorker(args: {
         : 'orchestration_default'
       : 'existing_worktree'
   }
+  const finalAdmission = await admitStructuredWorkerStart({
+    mutation: orchestrationMutation,
+    controller: params.from,
+    runId: run.id,
+    worktreeId: resolvedWorktree?.id,
+    agent,
+    mode: mode.mode
+  })
+  finalAdmission?.()
   const started = db.createStartingWorkerDispatch({
     creator: resolveDispatchCreator(runtime, params.from, callerSession),
     maxDepth: runtime.getNestedWorkerMaxDepth(),
