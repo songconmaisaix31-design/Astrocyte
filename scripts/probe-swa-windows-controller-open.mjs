@@ -299,6 +299,56 @@ try {
     unknown_process_observation_count: record.unknown_process_observations.length,
     native_remaining: record.exit_observations.map(row => row.remaining.length), cim_exit: record.actual_cim_process_exit.exit,
     cim_all_exited: record.actual_cim_report?.all_exited ?? 'UNKNOWN' }
+  const reasons = new Set(['invalid_native_process_row', 'current_root_identity_unverified', 'root_in_descendant_branch',
+    'parent_incarnation_unverified', 'process_identity_not_unique', 'creation_time_unavailable', 'parent_incarnation_changed'])
+  const number = value => Number.isSafeInteger(value) && value >= 0 ? value : 'UNKNOWN'
+  const identifier = value => value === null ? null : typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value) ? value : 'UNKNOWN'
+  const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+  const counts = new Map(), groups = new Map()
+  assert.ok(Array.isArray(record.unknown_process_observations) && Array.isArray(record.observed_processes))
+  for (const entry of record.unknown_process_observations) {
+    const reason = reasons.has(entry?.reason) ? entry.reason : 'UNKNOWN'
+    counts.set(reason, (counts.get(reason) ?? 0) + 1)
+    const identity = { pid: number(entry?.actual?.pid), ppid: number(entry?.actual?.ppid), creation_time_ms: number(entry?.actual?.creationTimeMs) }
+    const key = JSON.stringify([reason, identity.pid, identity.ppid, identity.creation_time_ms])
+    const observedAt = number(entry?.observed_at_ms)
+    if (groups.has(key)) {
+      const group = groups.get(key)
+      group.count++
+      group.last_observed_at_ms = observedAt
+      continue
+    }
+    const parents = new Map()
+    if (typeof identity.ppid === 'number') for (const row of record.observed_processes) {
+      if (row?.pid === identity.ppid && number(row.pid) !== 'UNKNOWN' && Number.isSafeInteger(row.creationTimeMs) && row.creationTimeMs > 0) {
+        parents.set(row.pid + ':' + row.creationTimeMs, { pid: row.pid, creation_time_ms: row.creationTimeMs })
+      }
+    }
+    groups.set(key, { reason, ...identity, count: 1, first_observed_at_ms: observedAt, last_observed_at_ms: observedAt,
+      matches_recorded_identity_history: typeof identity.pid === 'number' && identity.pid > 0 && typeof identity.creation_time_ms === 'number' && identity.creation_time_ms > 0
+        ? record.observed_processes.some(row => row?.pid === identity.pid && row.creationTimeMs === identity.creation_time_ms) : 'UNKNOWN',
+      recorded_parent_identities_history: [...parents.values()].slice(0, 2), recorded_parent_identity_count: typeof identity.ppid === 'number' ? parents.size : 'UNKNOWN',
+      recorded_parent_identities_truncated: parents.size > 2 })
+  }
+  const spawnEvents = record.events?.filter(event => event?.type === 'actual-spawn' && event.pid === record.pid) ?? []
+  const rootCreation = spawnEvents.length === 1 ? number(spawnEvents[0].creation_time_ms) : 'UNKNOWN'
+  const readinessError = record.readiness_check_error
+  const unknownProjection = { go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
+    ownership_closure_incomplete: boolean(record.ownership_closure_incomplete),
+    serve_root: { pid: number(record.pid), creation_time_ms: rootCreation },
+    latch_inputs: { root_creation_time_readable: typeof rootCreation === 'number' && rootCreation > 0,
+      controller_input_ownership_incomplete: boolean(control?.ownership_incomplete), producer_ownership_incomplete: boolean(producer?.ownership_incomplete),
+      readiness_check_error: readinessError === null ? null : readinessError && typeof readinessError === 'object'
+        ? { name: identifier(readinessError.name), code: identifier(readinessError.code) } : 'UNKNOWN' },
+    unknown_item_count: record.unknown_process_observations.length,
+    reason_counts: [...counts].map(([reason, count]) => ({ reason, count })),
+    identity_group_count: groups.size, samples: [...groups.values()].slice(0, 8), samples_truncated: groups.size > 8,
+    identity_history_is_not_a_single_snapshot_chain: true }
+  while (Buffer.byteLength(JSON.stringify(unknownProjection)) > 3500 && unknownProjection.samples.length) {
+    unknownProjection.samples.pop(); unknownProjection.samples_truncated = true
+  }
+  assert.ok(Buffer.byteLength(JSON.stringify(unknownProjection)) <= 3500, 'Public unknown-process metadata exceeds its total bound')
+  result.unknown_process_observation_projection = unknownProjection
   const logs = []
   let errorLineCount = 0
   for (const [role, path] of [['service', join(smoke, 'readiness-eof/stderr.log')], ['daemon', join(dataParent, 'readiness-eof/logs/daemon.log')], ['short-helper', join(smoke, 'readiness-eof/controller-input/transport.stderr')]]) {
@@ -345,6 +395,11 @@ try {
   assert.ok(Buffer.byteLength(text) <= 3500, 'Public diagnostic metadata exceeds its total bound')
   const escaped = text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')
   process.stdout.write('::warning title=Windows Controller open development control::' + escaped + '\n')
+  if (result.unknown_process_observation_projection) {
+    const unknownText = JSON.stringify(result.unknown_process_observation_projection)
+    assert.ok(Buffer.byteLength(unknownText) <= 3500)
+    process.stdout.write('::warning title=Windows closure unknown observations::' + unknownText.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
+  }
 }
 if (failure) process.exitCode = 1
 }
