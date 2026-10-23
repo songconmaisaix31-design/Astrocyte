@@ -22,7 +22,9 @@
 
 相同 S7ff 的 Windows run `39912010769` / job `120276917189` 在 service-smoke 失败。只读取证 run `39916407634` 已成功，确认原 controller-open CLI 退出6，未进入 task.create；原 artifact 未保留该 CLI 内容，内部错误仍 UNKNOWN。release_audit 的 Windows 负责人准备无需完整构建的最小复现。此前长报文修复 `36fb24a9` 的真实 writer、r3 Go/RPC/SQLite 与永久 TTY/pipe 验证，以及 Windows 文件名修复 `06495931`、真实任务输入接线 `ab689087` 的局部证据继续保留。完成当前失败的根因和局部验证后，再固定新来源构建并继续 N4/N6、同 Run GUI 和逐平台核验。旧请求不重放，已结束服务不复用；每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
 
-关闭路径修复 `60f5e6e6` 已通过13项规则、类型检查、独立审查及 pi07 的真实运行中停止；该轮验收消费者误拒退出证据已由 `80e298c0` 修正并通过同原件回归。后继 pi08 启动和输入接受成功，实际原生会话记录 HTTP502，却被严格schema当作未知协议拒绝，尚未执行stop/release。[Pi服务错误任务](tasks/swa-pi-provider-error-20261023.md)的单产品修复、真实样本5项规则、同原件对照、类型检查及默认测试接线均已独立接受，复用既有失败投影，不把502改成成功。pi08准确daemon/helper已正常关闭并取得两次pidfd退出证明；原FAIL、live lease、owned/not_requested资源和完整服务树UNKNOWN保持。release_audit的pi09最小驱动已接受，Root固定新来源后执行唯一全新请求。Windows D3/D4完整关闭仍未知；D5准备失败（局部另证缺RUNNER_TEMP）、D6裸python路径之后，D7 `99169016` 仍在诊断准备失败，实际原因是两个Application.Source路径被字符串拼接，后继最小修正正在局部验证。原关闭门不变，缺失字段不回填。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿；完整构建继续暂停，准确事实查STATUS。
+当前单Worker检查已前进到pi09：关闭路径修复 `60f5e6e6`、关闭证据消费者修复 `80e298c0` 和[Pi服务错误修复](tasks/swa-pi-provider-error-20261023.md) `3e87f6b5` 已通过各自局部检查与独立源码审查。pi09使用最后提交，实际模型输出、运行中停止、完整非强制退出证据、资源与租约释放、Controller关闭及完整服务树双空均通过，整轮退出0，实际结果已获独立审查接受。该结果限定为开发组合单Worker，旧失败、租约和UNKNOWN按原记录保留，不代替同提交正式安装或N4/N6。release_audit现在刷新真实磁盘预算，通过空间核查后固定正式来源，继续安装、N4、N6与同Run GUI。
+
+Windows D3/D4完整关闭仍未知；D5准备失败（局部另证缺RUNNER_TEMP）、D6裸python路径、D7多个Application.Source拼接问题的局部处理均已记录。D8因Root提交消息缺少CI标记全跳过，后继metadata空提交 `bac45127` 保持相同源码树，局部门检查仅目标诊断为true。D9 run `39945504447` 正在执行；原关闭门与历史UNKNOWN保留。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿，准确原件和当前限制查STATUS。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 

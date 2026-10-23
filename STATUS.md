@@ -1,12 +1,12 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。开发单 Worker pi07 已通过真实模型输出和运行中停止，其验收器误拒关闭证据的问题已修正。后继 pi08 使用 `80e298c0`，启动及输入接受成功，原生会话记录实际 HTTP 502，严格消息 schema 却拒绝合法 error 结果，尚未执行停止或释放。该失败分支修复已通过真实样本规则、同原件回归、类型检查及独立审查，下一步固定新来源执行全新pi09；原失败、租约和资源状态保留。Windows 权限 SDK 及真实 Controller.open/close 曾在 D3 通过，完整关闭仍未通过；D5至D7均停在诊断组件准备，D7已定位多个Python路径被拼接，局部修正继续进行。完整构建尚未重试，N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。后继修复已通过局部检查与独立源码审查；使用 `3e87f6b5` 的开发单 Worker pi09 已取得真实模型输出、运行中停止、资源和租约释放、Controller关闭及完整服务树退出，整轮PASS，实际结果已获独立审查接受。该开发组合不代替同提交正式安装或N4/N6。Windows 权限 SDK 及真实 Controller.open/close 曾在 D3 通过，完整关闭仍未通过；D5至D7诊断准备错误已完成相应局部调查和修正，D8因提交缺触发标记全跳过，源码相同的D9正在执行最小诊断。正在刷新正式构建的磁盘预算，完整构建尚未重试，N6 未运行。
 
 ## 当前实现与验证
 
 | 范围 | 已取得的结果 | 剩余验收 |
 | --- | --- | --- |
-| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S7ff Linux 完整安装与 D12 通过 | 当前停止证据修正后的资源释放及完整验收 |
+| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S7ff Linux 完整安装与 D12 通过；pi09开发单Worker完整退出通过 | 当前源码同提交正式安装及N4/N6完整验收 |
 | Astrocyte | 独立本地仓库 `/workspace/astrocyte`，`426723b5525ec36b1e0c93dd4b6d9eb6e42287f1`；认知 MCP/sleep、快照/只读 HTTP、GUI 和显式单文件事件导入均已独立审查。Go 测试、Linux 构建、真实 MCP→快照→七 API→浏览器 DOM/原库不变/正常退出通过；真实 Git→实际导入二进制→SQLite 幂等与冲突回滚通过；Windows x64 交编通过 | 自动来源和外部完成证据仍为显式集成边界；Windows 原生运行未验 |
 | Attention Mirror | 独立仓库 `/workspace/attention-mirror`，`58bb6e4454e03db135cabe6de2dec8dfc481aee6`；独立资料服务/GUI、显式提取器配置、资产根限制及原适配器测试已独立审查。真实公开原件导入/重放/人工沉淀/Taste/撤回保全、Go 检查、前端 67 项规则、DOM 9 项规则、实际安装启动通过；Windows 交编通过 | 公开 ACL URL 实测因 DNS 解析失败；模型、PDF/媒体、OpenViking 当前空间权限集成与 Windows 原生仍未验 |
 | run/wait/export | CLI 与 GUI 接同一 Run；稳定请求 ID、递归 strict、分离退出码、完整导出已实现；CLI 局部测试、Web 类型检查/ESLint、观察规则 9 项、真实无原生运行时 DOM 2 项通过 | 完整真实 Run、断线恢复、实际递归失败和模型结果 |
@@ -111,6 +111,10 @@ Windows D6 `02f7bfe32d64c3625ba06ec671716c95f65654bd` 的 run `39942104911` / jo
 
 Windows D7 `9916901651f1fa32b45441d949d822b63c4d117e` 的 run `39943240934` / job `120379542176` 最终FAIL；SDK继续通过，诊断DLL未构建、服务未运行。实际ENOENT显示hosted Python与WindowsApps的两个Application.Source被字符串参数拼为一路径，仍处validate阶段。后继计划按原成熟入口仅选首个真实Application，再保留原buildPython校验，并固定原生编译使用已验证的Python，当前尚无后继实际结果。D5至D7均无Task/Worker/模型；各原artifact已上传，本机官方下载各一次403，保留API及完整公开摘要，不猜内部未收集字段。旧六个原生job及同来源S0均跳过；D3/D4未知关闭记录不回填。
 
+pi09 使用 `3e87f6b58be028f14d1389658daa50caeffd3be4` 与全新请求，原件为 `/workspace/swa-worker-pi-09-etvSsd/evidence/`。`result.json` SHA `8225857edbbdc5464e9894cd3bc13be3488d8cf0701e762bdd9d6291606c07f7`、`preparation.json` SHA `4978e13d0b67877908023aa43287df01a0fa3ecdd1bbc4b33f68a0dd78b2a3f0`。启动请求 `887b9d28-454f-4793-b83f-59df7217b1c2`、Dispatch `ctx_f7d25d6f76b7` 的实际模式为structured；完整输入绑定、原生会话全文和真实delta通过，停止前活动检查点为sequence75。停止请求 `23e1b9be-ca12-4276-b3b8-c4fb483d008a` 退出0，完整非强制关闭证据为sequence330，准确root已缺席、确认已送达、两次无子进程观察相隔50.456915ms。释放请求 `c88c4c75-48dc-4b0e-871c-50265ebfc6d0` 退出0，资源和租约释放检查通过；Controller关闭、Grant撤销、dispatcher关闭、serve/observer退出0与完整服务树双空均通过。整轮退出0，stderr550字节保留，未宣称为空。覆盖仅为I4c基底加当前源码的开发单Worker；原I4c/I7ff、旧失败与UNKNOWN记录不变，N4/N6仍待正式安装验证。
+
+Windows D7对应修正只在诊断脚本选择首个真实Python Application，并将原buildPython验证后的路径设为NODE_GYP_FORCE_PYTHON。官方PowerShell在两个实际程序上的对照重现旧拼接路径ENOENT，修后原helper成功识别Python3.12.14；Parser、源码和局部结果已独立接受。D8 `cbb64317883e3d4d3cd8028827b76b5aebb5e492` 的run `39945109716` 全部作业Skipped，原因是提交消息缺少工作流要求的marker，未执行SDK或服务。后继空提交 `bac45127512e31f4423e1accf94c98650201fd44` 与D8源码树完全相同；真实工作流条件的局部检查确认仅目标诊断启用。唯一D9 tag触发run `39945504447` / job `120387056901`，正在运行；其余六项原生作业及同来源S0均跳过，无模型授权扩大。
+
 ## 保留的安装基线
 
 - Linux 组合安装来源 `aefe6c4be30ec3ba0447fed9163eeff5a0fb04ad`，根为 `/workspace/swa-linux-installs/swa-linux-combined-aefe6c4b-pi-01`。构建、归档、严格安装、装内 D12 与组合服务正常 EOF 检查通过。旧 held 服务已经正常关闭，serve/observer 均退出 0，最终两次完整所属进程观察为空。
@@ -129,6 +133,6 @@ Windows D7 `9916901651f1fa32b45441d949d822b63c4d117e` 的 run `39943240934` / jo
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-下一步验证修复后的真实 Worker 停止和资源回收，并定位 Windows 短控制中止及完整关闭的未知进程观测。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+下一步完成正式构建空间核查，固定新提交构建并独立安装，继续N4/N6、同Run GUI；并行定位Windows短控制中止及完整关闭的未知进程观察。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建。正式发布、远端新仓库创建和main合并尚未执行。云环境配置草稿revision 9已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
