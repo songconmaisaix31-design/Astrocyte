@@ -1,0 +1,36 @@
+name: SWA main CI path evidence
+on:
+  push:
+    tags:
+      - 'ci/swa-windows-*-main-path-evidence-01'
+permissions:
+  contents: read
+concurrency:
+  group: swa-main-ci-path-evidence-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  windows-path-boundary:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-main-ci-path-evidence]') }}
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.27.2
+          cache: false
+      - name: Observe only the actual temporary path and pipe boundaries
+        shell: pwsh
+        run: |
+          go test -count=1 -mod=readonly -tags=swa_ci_path_evidence -timeout=60s -run '^TestWindowsCIPathBoundaryEvidence$' -v ./cmd/swa
+          if ($LASTEXITCODE -ne 0) { throw 'The fixed path boundary diagnostic failed; see the bounded observations' }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-main-ci-path-evidence-${{ github.sha }}
+          path: cmd/swa/.verification/swa-ci/windows-path-boundary/result.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

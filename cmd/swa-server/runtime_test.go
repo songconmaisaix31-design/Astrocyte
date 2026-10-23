@@ -24,29 +24,67 @@ func TestSWAActualCompositionListenerAndShutdown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer reader.Close()
-	defer writer.Close()
 	original := os.Stdout
 	os.Stdout = writer
-	defer func() { os.Stdout = original }()
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	done := make(chan error, 1)
-	go func() { done <- runProduct(ctx, slog.New(slog.NewTextHandler(io.Discard, nil))) }()
-	if err := reader.SetReadDeadline(time.Now().Add(10 * time.Second)); err != nil {
-		t.Fatal(err)
-	}
-	var announcement struct {
+	type listenerAnnouncement struct {
 		Type   string `json:"type"`
 		APIURL string `json:"api_url"`
 	}
-	if err := json.NewDecoder(reader).Decode(&announcement); err != nil {
-		t.Fatal("actual listener announcement", err)
+	type announcementResult struct {
+		value listenerAnnouncement
+		err   error
+	}
+	announcementReady := make(chan announcementResult, 1)
+	readerExited, serviceExited := make(chan struct{}), make(chan struct{})
+	var serviceErr error
+	defer func() {
+		cancel()
+		_ = reader.Close()
+		_ = writer.Close()
+		timer := time.NewTimer(10 * time.Second)
+		defer timer.Stop()
+		for _, exited := range []<-chan struct{}{readerExited, serviceExited} {
+			select {
+			case <-exited:
+			case <-timer.C:
+				// 未确认退出时终止本次测试进程，不让异步服务污染后续测试。
+				panic("actual composed service cleanup did not finish")
+			}
+		}
+		os.Stdout = original
+		if serviceErr != nil {
+			t.Errorf("actual composed service exit: %v", serviceErr)
+		}
+	}()
+	go func() {
+		defer close(readerExited)
+		var value listenerAnnouncement
+		err := json.NewDecoder(reader).Decode(&value)
+		announcementReady <- announcementResult{value: value, err: err}
+	}()
+	go func() {
+		defer close(serviceExited)
+		serviceErr = runProduct(ctx, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	}()
+	var announcement listenerAnnouncement
+	select {
+	case result := <-announcementReady:
+		if result.err != nil {
+			t.Fatal("actual listener announcement", result.err)
+		}
+		announcement = result.value
+	case <-serviceExited:
+		t.Fatal("actual service exited before its listener announcement", serviceErr)
+	case <-time.After(10 * time.Second):
+		t.Fatal("actual listener announcement timed out")
 	}
 	if announcement.Type != "http_listening" || announcement.APIURL == "" {
 		t.Fatal("missing actual listener address")
 	}
-	response, err := http.Get(announcement.APIURL + "/api/v1/health")
+	client := &http.Client{Timeout: 10 * time.Second}
+	defer client.CloseIdleConnections()
+	response, err := client.Get(announcement.APIURL + "/api/v1/health")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,9 +96,9 @@ func TestSWAActualCompositionListenerAndShutdown(t *testing.T) {
 	}
 	cancel()
 	select {
-	case err := <-done:
-		if err != nil {
-			t.Fatal(err)
+	case <-serviceExited:
+		if serviceErr != nil {
+			t.Fatal(serviceErr)
 		}
 	case <-time.After(10 * time.Second):
 		t.Fatal("actual service failed to shut down")

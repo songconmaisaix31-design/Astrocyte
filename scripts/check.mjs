@@ -16,6 +16,7 @@ if (!race) {
   await checkGofmt(go, directories);
   await run(go, ['vet', '-mod=readonly', ...directories]);
 }
+await runTool('vite', ['build']);
 const testArguments = ['test', '-mod=readonly', '-count=1', ...(race ? ['-race'] : [])];
 await run(go, [...testArguments, '-skip', installedTests, ...packages]);
 await run(go, [...testArguments, './internal/adapters/orca', '-run', orcaTests]);
