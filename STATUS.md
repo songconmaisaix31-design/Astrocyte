@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。清理、前后端及默认检查已集成；安装候选来源为 `50d099ddf9787a283573a477fb5f29017aef6c89`。后继 `214ab146c33680504c39216d7ad41863c834177c` 只修正外部验收工具的空间回执校验，不改变该安装物。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `4c007f756d6a67f0c9c7fcdcd87f7a81855276a5`。后继 Windows 文件名修复 `06495931`、长任务输入修复 `36fb24a9` 与 Windows 真实任务输入检查 `ab689087` 已推送，不改变该安装物。真实 N4 尚未启动 Worker，N6 未运行。
 
 ## 当前实现与验证
 
@@ -13,7 +13,7 @@
 | Go 组合提交 | 原 controller/task/worker 三阶段、输入完整内容绑定、已完成任务关联恢复；真实文件同大小同时间变更拒绝测试通过 | 本轮安装中的原生幂等恢复 |
 | 能力与角色 | 实际观察层级、送达/恢复状态、角色/讨论界面已接入；能力、角色和实际 SQLite CRUD/CAS 规则通过，源码接受 | 实际模型及账号归属、父任务恢复 |
 | 原生 Run 生命周期 | 原 Task/Dispatch、journal、成果和原资源释放路径已实现并获独立源码接受；完成邮件仅经明确 worker.send 恢复，notify 只存记录，成果保持 unreviewed。严格 TS 与实际 SQLite 规则检查通过 | 实际子成果唤醒父任务、完整资源回收、最终递归聚合 |
-| N4/N6 | 同 Run/角色复用/实际孙任务/父恢复/停止隔离/自动释放驱动已审查；实际 N4 已通过来源、授权和原生依赖检查，随后在控制器创建时拒绝 Linux shellOverride，未启动 Worker | 修复并局部验证真实控制器，再运行新安装的 N4/N6；并发、停止隔离、继续输出与完整业务结算未通过 |
+| N4/N6 | 同 Run/角色复用/实际孙任务/父恢复/停止隔离/自动释放驱动已审查；S4c 安装任务创建失败后，长输入修复已通过真实 writer、Go/RPC/SQLite 任务往返与永久回归入口；仍未启动模型 Worker | 构建新安装后继续 N4/N6；并发、停止隔离、继续输出与完整业务结算未通过 |
 
 旧混合 Go/SQL 与配套资源已按独立审查清单移出，公开 testdata 和研究数据保留；完整保存点与归档见 [LEGACY](docs/LEGACY.md)。清理后的 `pnpm check`、`pnpm check:race`、`pnpm build` 与实际默认启动检查均退出0，同产物页面/JS/CSS、独立 SQLite、健康/会话/项目及正常退出通过。Go 依赖清理后双平台含测试图、17包架构、空 tidy 差分与模块校验通过。
 
@@ -25,7 +25,21 @@ S50 Linux 组合包构建、归档、解包、严格安装及装内 D12（12通�
 
 Linux 控制器改为省略仅适用 Windows 的 shell override。严格 TypeScript 和真实本地 PTY→原 helper 两次同 PID 识别→正常 EOF/进程消失的局部检查通过，细节见[修复记录](tasks/swa-controller-linux-startup-20261023.md)。该局部检查不代替完整 RPC、Run 或模型验收。每次失败均先交代最小复现、根因证据和局部验证，再启动后继完整构建。
 
+S4c Linux 组合包构建、归档、解包和严格安装均退出0，安装根为 `/workspace/swa-linux-installs/swa-linux-combined-4c007f75-n46-02`。装内 D12 首次因共享树已有 Windows 修复而在干净源码前置检查被拒绝，未启动原生测试；随后在独立同提交检出 `/workspace/swa-s4c-verification` 执行，12通过、0失败、0跳过。实际结果为 `.verification/swa-linux/evidence/4c007f756d6a67f0c9c7fcdcd87f7a81855276a5-combined-n46-02/`。
+
+S4c Windows run `39903915697` / job `120251402016` 已完成前六项 setup，但在 Web 类型检查遇到 `SwaRoles.tsx` 与 `swaRoles.ts` 的大小写文件名冲突，build 退出1，未安装。修复 `06495931` 将组件原字节改名为 `SwaRolesPanel.tsx`，只更新唯一 import；全 Web 类型检查、实际 manifest 构建及引用核查通过，156个 TypeScript 源文件无大小写 stem 冲突，已独立审查。该局部验证不代表 Windows 完整构建通过。
+
+S4c N4 使用新的独立服务，原 Run 请求 `fd652447-4a93-48aa-8628-78d0f1ee2602` 的控制器创建已完成；子请求 `654666e4-58a1-599c-825a-8746ac4ba8cf` 的 `swa.taskCreate` 停在 `helper-input` pending，实际 PTY 在 05:17:46.955Z 退出1，Worker 数量为零。任务消息为322,411字节。隔离真实 PTY 使用原公开 invocation 和新 identify 请求，短报文成功，322,408字节长报文触发 helper 自然退出1；其 JSON 解析错误与同一报文前4095字节的解析错误完全相同，证实该传输路径存在长行截断。此复现只执行身份请求，未代替真正任务创建往返。原 runtime 未注册 `terminal.read`，原 daemon 对已退出终端返回 snapshot null，旧现场错误正文未能取回。授权撤销已确认；Root 正常 EOF 后服务因未决业务退出6，观察器退出0，连续两次所属进程观察为空且最终 complete 为 true。业务 UNKNOWN 与资源退出分别保留，原请求未重放。原件在 `/workspace/swa-pi-n4-packet-4c007f75-20261023-01/evidence`、对应 owned 目录及 `.verification/controller-taskcreate-diagnosis-20261023/`。
+
 两份独立仓库另有可恢复完整 main 历史的 `/workspace/astrocyte-426723b5.bundle` 和 `/workspace/attention-mirror-58bb6e4.bundle`，均通过 `git bundle verify`。它们不包含 ignored 数据或账号；远端仓库尚未创建。
+
+helper 初步改为标准 readline 的 `terminal: process.stdin.isTTY`。真实 TTY 的短消息、322,408字节长消息和后续短消息均由同一进程响应，Ctrl-D 自然退出0、进程消失；同一公开 invocation 的 pipe 对照也响应成功并在 stdin EOF 后退出0，未强制终止。准确原件为 `.verification/controller-taskcreate-diagnosis-20261023/long-WNtUBF/` 与 `pipe-uY69to/`。该结果覆盖 LF 输入对照，尚未覆盖生产 writer 的分段输入与 CR 提交。
+
+新开发副本 `/workspace/swa-tcrpc-r1-N9ptBE` 使用原 S4c Go/Node/runtime 与局部重编 helper，不能作为同来源完整安装。原 controller.open 请求 `93b72058-4ee3-46e5-9538-88f82b22bb39` 返回 `operation_unknown`，SQLite 保持 `pending/pty-spawn`；未调用 task.create，Worker/model 为零。实际 PTY 日志证明 helper 已启动并返回 `ready=true`，但回显的输入 JSON 与回复 JSON 相邻且没有换行，原正式 NDJSON 读取器无法识别回复；正式 writer 分别写入文本和 CR。Grant 已撤销，原服务退出6、观察器退出1，原报告的完整进程退出 UNKNOWN 保留。补充收尾通过原认证 daemon 接口向准确会话发送 Ctrl-D，helper 自然退出；随后多余的会话删除得到 SessionNotFound，该工具退出1保留。独立只读 `cleanup-final-01.json` 连续两次证明原 daemon 的准确 pidfd 已退出、helper 的 /proc 记录缺席；这两个已观察资源均已结束，daemon 仅剩 PID1 尚未回收的 zombie，未发送 TERM/KILL。该补充证明不覆盖未观察过的后代。原 `result.json` 的 `controller_closed:NOT_CREATED` 只反映 CLI 未返回 selector，不能证明未创建；以 pending 请求和实际 PTY 为准，业务 FAIL 不变。未重放该请求、未启动下一次完整构建。
+
+正式 writer 的局部最小复现 `writer-27bsPU` 重现同一行回显与回复，原读取器记录零条回复并超时。helper 补上标准 readline 的 `output:process.stdout` 后，`writer-N4J60x` 经原分段 writer/CR 提交完成短→322,408字节长→短的三次响应、同一进程及 Ctrl-D 自然退出0；实际 ANSI 输出323,608字节，未超限。`pipe-RTTy6Q` 的真实 pipe 响应、stdin EOF 和进程退出也通过。准确源码与实际验证查[完整任务输入修复](tasks/swa-controller-task-input-20261023.md)。
+
+后继 r2 在复用开发副本的预检阶段因已退出 esbuild zombie 的 `/proc/100013/fd` 不可读而停止，未替 helper、启动服务或发送业务请求。独立确认状态 Z 后，预检仅对明确退出的记录保留未枚举计数。r3 使用同一开发副本及全新数据、项目、请求完成真实 RPC 验证，原件为 `/workspace/swa-tcrpc-r3-ZM9XQg/evidence/result.json`：请求 `c8eff090-40a1-4179-8fdc-06d4b985d870` 及两个子操作 completed，SQLite 唯一根任务和完整 spec/context 一致，原只读查询前后回执总数不变，后续 helper observe 正常。真实回执按原序列化规则得到6105字节报文，超过4095边界；该数字不是独立 wire 抓取。controller close、Grant revoke、serve/observer 退出0和两次完整所属进程为空通过，原安装关键 SHA 不变。该结果证明开发集成，Worker/model 为零。永久回归入口随后消费这次 completed invocation，TTY/pipe 各完成三次响应、6102字节长输入、自然 EOF 退出0、实际进程缺席及来源首末不变检查，未强制清理；原件为 `.verification/controller-taskcreate-diagnosis-20261023/formal-r3-01/`。这些结果未替代新安装、N4/N6 或 Windows 动态验证。
 
 ## 保留的安装基线
 
@@ -34,6 +48,8 @@ Linux 控制器改为省略仅适用 Windows 的 shell override。严格 TypeScr
 - 两平台基线来源不同。过期 N=3 执行包永久失效，不得执行或借用旧身份。
 - 已清理四份可从保留归档恢复的旧解包副本，实际释放 3,967,369,216 字节；原归档、SHA、独立安装、数据库、账号与证据均保留。记录见 `.verification/cloud-setup/release-cleanup-20261023-01/operation-01/`。
 - 本轮另核对并清理 `559c621b-02`、`f71eec93-03`、`aefe6c4b-pi-01`、`50d099dd-n46-01` 的四份 packages 解包副本，实际可用空间增加 3,957,583,872 字节。完整成员内容与硬链接核验、当前用户进程引用核查、删除后原归档校验通过；dist 候选、独立安装及所有数据和证据保留。系统 Docker/containerd 进程资源不可读的范围单独保留，未宣称核查所有系统进程。原件为 `.verification/cloud-setup/release-cleanup-n46-20261023-02/operation-01/`。
+- 后续清理八份已有完整保留归档的旧 dist 候选，准确固定清单见 `.verification/cloud-setup/dist-cleanup-n46-20261023-03/PLAN.md`；实际操作退出0、八份全部移除，可用空间从1,191,329,792增至4,540,567,552字节。共享文件的树外硬链接未计入回收量，也未修改内容或权限；八份原 tar 的官方 SHA 校验前后均通过。当前 S4c、所有独立安装、账号、源码、数据、证据及两独立仓 bundle 均保留。实际原件为同目录 `operation-01/`，未来需要旧候选时从对应保留归档恢复。
+- 随后只移除 S4c 的 packages 解包副本，完整归档、dist 候选和独立安装均保留，操作退出0。可用空间从3,513,548,800增至4,494,946,304字节；完整归档比较、当前用户进程无引用及归档 SHA 前后检查通过。原件为 `.verification/cloud-setup/package-cleanup-s4c-20261023-04/operation-01/`；下一次构建前重新检查实际空间。
 
 ## 当前边界与下一步
 
@@ -41,6 +57,6 @@ Linux 控制器改为省略仅适用 Windows 的 shell override。严格 TypeScr
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-Linux 控制器与 Windows 安装选择器的修复、局部验证和独立审查均已完成。下一步固定整合后的来源，构建新候选，继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+Windows 文件名修复与原生验收接线已完成局部验证和独立审查；Linux 长报文修复通过真实 writer、Go/RPC/SQLite 任务创建与关闭、永久 TTY/pipe 回归。下一步固定来源构建新的 Linux/Windows 完整候选，继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。
