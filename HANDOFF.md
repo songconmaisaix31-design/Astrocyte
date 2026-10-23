@@ -16,7 +16,9 @@
 
 共享工作树已有用户授权，禁止覆盖其他负责人的未提交改动。按准确路径分批提交，普通 push；不要 `git add .`、重写历史或修改原安装。前端/后端生成类型由 Root 串行维护。
 
-默认检查、清理及 Linux S50/S4c 安装和 D12 已通过。S4c 的实际 N4 在长任务消息处失败，未启动 Worker；原请求及关闭结果见 STATUS。修复 `36fb24a9` 已通过正式分段 writer 的短/322KB长/短消息、Ctrl-D、pipe EOF 及 strict 检查。后继 r3 使用新数据和新请求，通过真实 Go/RPC/SQLite 任务创建、同 helper 后续响应、关闭与授权撤销、serve/observer 退出0及两次完整所属进程为空；永久回归入口消费该 completed invocation，TTY/pipe 的三次响应和自然 EOF 均通过。旧失败和 UNKNOWN 原件保留，开发集成不代替新安装验收。Windows 文件名修复 `06495931` 及真实任务输入接线 `ab689087` 已局部验证、独立审查并推送。下一步固定源码构建新的 Linux/Windows 完整候选，再继续 N4/N6、同 Run GUI 和逐平台核验。原请求不重放，已结束服务不复用。每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
+默认检查、清理及 Linux S50/S4c/S7ff 安装和 D12 已通过。当前完整来源 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f` 的 N4 已完成真实 Controller 与根任务创建，但 Worker 启动因 `worktree:'current'` 同时携带仅用于新工作树的 `name` 被上游拒绝。原请求保留 pending/UNKNOWN，尚无 Worker 输出；Grant 已撤销，正常 EOF 后服务退出6、观察器退出1，所属资源关闭仍 UNKNOWN。collaboration_model 负责最小参数修复和真实局部验证；release_audit 只读核查原资源后再提交准确收尾方案。原件和 ID 见 STATUS。
+
+相同 S7ff 的 Windows run `39912010769` / job `120276917189` 在 service-smoke 失败，具体子因尚未从原 artifact 取回；release_audit 的 Windows 负责人准备仅读取原 artifact 的诊断，不重跑完整构建。此前长报文修复 `36fb24a9` 的真实 writer、r3 Go/RPC/SQLite 与永久 TTY/pipe 验证，以及 Windows 文件名修复 `06495931`、真实任务输入接线 `ab689087` 的局部证据继续保留。完成当前失败的根因和局部验证后，再固定新来源构建并继续 N4/N6、同 Run GUI 和逐平台核验。旧请求不重放，已结束服务不复用；每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
