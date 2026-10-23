@@ -40,6 +40,7 @@ export function requireStructuredWorkerMode(mode: StructuredWorkerStartAdmission
 export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: { ownerCapability: Buffer; ownerAlive(): boolean }) {
   const admitCurrentApproval = createDeliveryAdmission(owner.ownerCapability, owner.ownerAlive)
   const releaseInputApproval = installWorkerInputApproval(admitCurrentApproval)
+  const piPolicies = new Map<string, Awaited<ReturnType<typeof createPiSessionPolicy>>>()
   function inspectWorkerLaunch(input: StructuredWorkerLaunchAdmission) {
     const mutation = input.mutation
     if (!owner.ownerAlive() || !mutation || mutation.method !== 'orchestration.workerStart' || !mutation.requestId.endsWith('/native')) throw new OrchestrationError('scope_denied', 'The original owned Worker start identity is unavailable', { effectsApplied: false })
@@ -284,6 +285,15 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     return finalAdmission
   }
   const releaseLaunchAdmission = installStructuredAgentLaunchAdmission({
+    afterAttach: async input => {
+      if (input.record.provider !== 'pi') return
+      const identity = structuredWorkerIdentities.getBySessionId(input.record.sessionId)
+      const key = `${input.record.sessionId}/${input.record.lease.runtimeFence}`
+      const policy = piPolicies.get(key)
+      if (!owner.ownerAlive() || !identity?.dispatchId || identity.agent !== 'pi' || !policy) throw new Error('The original native Pi acquisition policy is unavailable')
+      piPolicies.delete(key)
+      await policy.adoptAcquiredRecord(input)
+    },
     beforeWorkerStart,
     workerCommandSettings,
     createCommandSettings: async (sessionId, agent) => {
@@ -351,6 +361,9 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       if (!record) throw new Error('The native Pi session record is unavailable')
       const sessionPolicy = await createPiSessionPolicy({ snapshot: selected.snapshot, sessionId, fence: record.lease.runtimeFence, runtimeEpoch: runtime.getRuntimeId(), launcher, cwd, expectedEnvironment: environment, record: () => runtime.openedAgentSessionRecordStore()?.getRecord(sessionId) ?? undefined, approveInitialization: () => approved(sessionId, agent), approveStop: () => approvePiStop(selected, sessionId), inputBinding: clientMessageId => inputBinding(sessionId, agent, clientMessageId) })
       final()
+      const policyKey = `${sessionId}/${record.lease.runtimeFence}`
+      if (piPolicies.has(policyKey)) throw new Error('The native Pi acquisition policy is already registered')
+      piPolicies.set(policyKey, sessionPolicy)
       const account = selected.snapshot.policy.account
       if (!selected.snapshot.sources.interpreter) throw new Error('The approved native Pi interpreter is unavailable')
       return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, sessionPolicy }
@@ -404,5 +417,5 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     },
     beforeInput
   })
-  return () => { releaseLaunchAdmission(); releaseInputApproval() }
+  return () => { releaseLaunchAdmission(); releaseInputApproval(); piPolicies.clear() }
 }

@@ -33,6 +33,7 @@ import {
 import type { DeferredStructuredAgentSessionEventSink } from './structured-agent-session-event-sink'
 import { noteStructuredAgentSessionProviderStarted } from './structured-agent-session-provider-started'
 import { structuredAgentSessionLaunchPermission } from './structured-agent-session-launch-permission'
+import { admitStructuredAgentAttached } from '../../runtime/structured-agent-launch-composition'
 import type { AgentSessionJournal } from '../agent-session-journal/journal-store'
 import { isStructuredAgentSessionStartupExpired } from './structured-agent-session-startup-attempt'
 import type { StructuredAgentSessionStartupAttempt } from './structured-agent-session-startup-attempt-contract'
@@ -220,6 +221,11 @@ async function runAttachUnderAbort(
         endStructuredAgentSessionReleasedChild(context, sessionId, cause, verdict),
       onAttached: async (attached, acquisitionGeneration, owner, providerChildPhase) => {
         const fence = structuredAgentSessionConversationFence(context.deps.store, sessionId)
+        if (owner === 'acquired' && providerChildPhase === 'ready') {
+          const record = context.deps.store.getRecord(sessionId)
+          if (!record || record.lease.runtimeFence !== fence) throw new Error('agent_session_ownership_unknown')
+          await admitStructuredAgentAttached({ record, acquisitionGeneration })
+        }
         const current = context.sessions.get(sessionId)?.child ?? null
         const startedFor = owner === 'acquired' ? options.startedFor : current?.startedFor
         // A re-attach to a live child keeps the mode that child was launched with.

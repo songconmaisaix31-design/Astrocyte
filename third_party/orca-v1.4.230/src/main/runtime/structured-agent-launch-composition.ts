@@ -27,6 +27,7 @@ import type { AgentJournalMessageItem } from '../../shared/agent-session-journal
 import type { AgentLaunchMode } from '../../shared/agent-launch-intent'
 
 export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
+export type StructuredAgentAttachedAdmission = { record: AgentSessionRecord; acquisitionGeneration: string | null }
 
 export type StructuredWorkerLaunchAdmission = {
   mutation?: { callerFingerprint: string; requestId: string; method: string; payloadHash: string }
@@ -50,6 +51,7 @@ export type StructuredAgentLaunchAdmission = {
   providerJobLauncher?(sessionId: string, agent: string): Promise<SwaProviderJobLauncher>
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
   beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
+  afterAttach?(input: StructuredAgentAttachedAdmission): Promise<void>
   beforeWorkerStart?(input: StructuredWorkerStartAdmission): Promise<void | (() => void)>
   workerCommandSettings?(input: StructuredWorkerLaunchAdmission): Promise<StructuredAgentCommandSettings>
   createCommandSettings?(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
@@ -79,6 +81,10 @@ export function reserveStructuredAgentInput(input: StructuredAgentInputAdmission
 
 export function admitStructuredAgentInput(input: StructuredAgentInputAdmission): Promise<void | (() => void)> {
   return launchAdmission?.beforeInput ? launchAdmission.beforeInput(input) : Promise.resolve()
+}
+
+export function admitStructuredAgentAttached(input: StructuredAgentAttachedAdmission): Promise<void> {
+  return launchAdmission?.afterAttach ? launchAdmission.afterAttach(input) : Promise.resolve()
 }
 
 export function admitStructuredWorkerStart(input: StructuredWorkerStartAdmission): Promise<void | (() => void)> {

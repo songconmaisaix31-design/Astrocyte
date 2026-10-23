@@ -21,6 +21,9 @@ import { getAppEnvironment, hasAppEnvironment } from '../../../third_party/orca-
 import { prependOrcaCliDirToChildPath } from '../../../third_party/orca-v1.4.230/src/main/cli/orca-cli-child-path'
 import { structuredWorkerIdentities } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-worker-identity'
 import { requireNativeClaudePath } from './claude-file-security'
+import { nativeSessionOptionsFromReport } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-option-restoration'
+import { agentSessionProviderHandleChainHead } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
+import type { StructuredAgentAttachedAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 
 const maximum = 12 * 1024 * 1024
 const samePath = (a: string, b: string) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
@@ -30,6 +33,17 @@ type Binding = z.infer<typeof structuredInputBindingSchema>
 const inputBodySchema = SendBodyStructure.omit({ kind: true }).extend({ kind: z.literal('message'), from: z.unknown().optional() })
 const localFailureSchema = z.strictObject({ stage: z.enum(['source', 'approval', 'settings', 'write', 'protocol', 'stdout', 'custody', 'persistence']),
   code: z.enum(['source_changed', 'approval_changed', 'settings_unverifiable', 'write_unsettled', 'protocol_unverifiable', 'stdout_incomplete', 'custody_unverifiable', 'trace_unavailable']), writeAttempted: z.boolean().optional() })
+
+export function assertPiAcquiredRecord(input: {
+  initial: AgentSessionRecord; record: AgentSessionRecord; generation: string | undefined; acquisitionGeneration: string | null
+  native: { sessionId: string; sessionFile: string } | undefined
+  state: z.infer<typeof strictPiStateSchema> | undefined
+}) {
+  const { initial, record, native, state } = input, link = agentSessionProviderHandleChainHead(record.providerHandleChain)
+  if (!input.generation || input.acquisitionGeneration !== input.generation || !native || !state?.model || state.sessionId !== native.sessionId || state.sessionFile !== native.sessionFile || record.sessionId !== initial.sessionId || record.provider !== 'pi' || record.lease.runtimeFence !== initial.lease.runtimeFence || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || !isDeepStrictEqual(record.accountHome, initial.accountHome) || !link || link.linkId !== record.lease.provenHandleLinkId || link.mintedAtFence !== record.lease.runtimeFence || link.handle.transport !== 'jsonl-rpc' || link.handle.agent !== 'pi' || link.handle.nativeId !== native.sessionFile) throw new Error('native_pi_acquired_record_unverifiable')
+  const observed = nativeSessionOptionsFromReport({ priorOptions: initial.options, restoreSkipped: [], reported: { model: `${state.model.provider}/${state.model.id}`, effort: state.thinkingLevel } })
+  if (initial.options?.model && observed.model !== initial.options.model || initial.options?.effort && observed.effort !== initial.options.effort || !isDeepStrictEqual(record.options, observed)) throw new Error('native_pi_acquired_options_changed')
+}
 
 export function validatePiExport(snapshot: NativePiPerSessionSnapshot, text: string, env: Readonly<Record<string, string>> = {}) {
   const secrets = Object.values(snapshot.auth).map(value => value.key)
@@ -100,8 +114,10 @@ export async function createPiSessionPolicy(input: {
   approveStop(): () => void
   inputBinding(clientMessageId: string): Binding
   expectedEnvironment: Readonly<Record<string, string>>
-}): Promise<SwaPiSessionPolicy> {
+}): Promise<SwaPiSessionPolicy & { adoptAcquiredRecord(input: StructuredAgentAttachedAdmission): Promise<void> }> {
   const { snapshot, sessionId } = input, account = snapshot.policy.account
+  const initialRecord = input.record()
+  if (!initialRecord || initialRecord.sessionId !== sessionId || initialRecord.provider !== 'pi' || initialRecord.lease.runtimeFence !== input.fence) throw new Error('native_pi_initial_record_unavailable')
   const home = join(account.private_root, sessionId), tracePath = join(input.launcher.eventDirectory, 'provider-events.ndjson')
   let approval = await input.approveInitialization()
   await verifyPrivatePiSessionAccount(snapshot, sessionId)
@@ -123,6 +139,7 @@ export async function createPiSessionPolicy(input: {
   let tree: SwaProviderProcessTree | undefined, failed: Error | undefined, sequence = 0, generation: string | undefined
   let processIdentity: Record<string, unknown> | undefined, nativeCLI: unknown
   let native: { sessionId: string; sessionFile: string } | undefined, available: unknown
+  let lastState: z.infer<typeof strictPiStateSchema> | undefined, adoptionAttempted = false
   let pendingInput: { id: string; frame: PiWriteContext['frame']; binding: Binding; echo?: StrictPiMessage } | undefined
   let preparedInput: { id: string; frame: PiWriteContext['frame']; binding: Binding } | undefined
   const usedInputs = new Set<string>(), unsettled = new Set<string>()
@@ -214,10 +231,27 @@ export async function createPiSessionPolicy(input: {
     requireNativeCodexPrivatePath(dirname(result.sessionFile), true)
     if (native && (native.sessionId !== result.sessionId || !samePath(native.sessionFile, result.sessionFile))) fail('session_identity_changed')
     native ??= { sessionId: result.sessionId, sessionFile: result.sessionFile }
+    lastState = result
     return result as ReturnType<typeof strictPiStateSchema.parse> & { sessionFile: string }
   }
-  const policy: SwaPiSessionPolicy = {
+  const policy: SwaPiSessionPolicy & { adoptAcquiredRecord(input: StructuredAgentAttachedAdmission): Promise<void> } = {
     nativeContract: 'pi-cli-1.0.1',
+    async adoptAcquiredRecord(attached) {
+      if (adoptionAttempted) fail('acquired_record_already_admitted')
+      adoptionAttempted = true
+      const before = record()
+      const check = () => {
+        const current = record()
+        assertPiAcquiredRecord({ initial: initialRecord, record: current, generation, acquisitionGeneration: attached.acquisitionGeneration, native, state: lastState })
+        if (attached.record.sessionId !== sessionId || attached.record.lease.runtimeFence !== input.fence || !isDeepStrictEqual(current.accountHome, attached.record.accountHome) || !isDeepStrictEqual(current.options, attached.record.options) || !isDeepStrictEqual(current.providerHandleChain, attached.record.providerHandleChain) || !isDeepStrictEqual(current.lease.ownerProcess, attached.record.lease.ownerProcess) || !isDeepStrictEqual(current.lease.ownerProcess, before.lease.ownerProcess)) fail('acquired_record_changed')
+        custody()
+      }
+      // 原生读回持久化后重新批准；旧闭包只在这个准确 acquisition 边界替换一次。
+      check()
+      const freshApproval = await input.approveInitialization()
+      check(); assertSources(freshApproval); freshApproval()
+      approval = freshApproval
+    },
     hasRecordedOwner() { const current = input.record(); if (!current || current.sessionId !== sessionId || current.lease.runtimeFence !== input.fence) fail('owner_record_unavailable'); return current.lease.ownerProcess !== null && current.lease.ownerProcess !== undefined },
     attach(value) { if (tree) fail('custody_attached_twice'); tree = value },
     assertSpawn(launch: ProviderProcessLaunch) {
