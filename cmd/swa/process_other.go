@@ -11,6 +11,10 @@ import (
 
 func configureServiceChild(_ *exec.Cmd) {}
 
+func ensurePrivateDataRoot(_ string) error {
+	return errors.New("此产品安装候选仅支持 Windows 和 Linux")
+}
+
 func requirePlainDataPath(_ string) error {
 	return errors.New("此产品安装候选仅支持 Windows")
 }

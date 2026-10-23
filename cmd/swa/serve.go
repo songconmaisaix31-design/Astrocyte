@@ -531,7 +531,7 @@ func privateDataDirectory(input, install string, protected []string) (string, er
 			return "", err
 		}
 	}
-	if err := os.MkdirAll(actual, 0o700); err != nil {
+	if err := ensurePrivateDataRoot(actual); err != nil {
 		return "", err
 	}
 	return projectfiles.CanonicalRoot(actual)
