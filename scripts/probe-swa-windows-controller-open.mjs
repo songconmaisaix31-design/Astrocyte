@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { createReadStream } from 'node:fs'
 import { copyFile, cp, lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -115,7 +115,8 @@ async function ordinaryTree(root, base = root) {
   const entry = await lstat(root)
   assert.ok(entry.isFile() || entry.isDirectory(), 'Retained package contains a nonordinary input')
   if (entry.isDirectory()) for (const name of await readdir(root)) await ordinaryTree(join(root, name), base)
-  else if (/\.(?:node|dll)$/i.test(root)) originalNative.push({ path: relative(base, root).replaceAll('\\', '/'), sha256: (await digest(root)).sha256 })
+  else if (/\.(?:node|dll)$/i.test(root)) originalNative.push({ path: relative(base, root).replaceAll('\\', '/'), sha256: (await digest(root)).sha256,
+    dev: entry.dev, ino: entry.ino, nlink: entry.nlink })
 }
 try {
   const goRevision = (await git(['rev-parse', 'HEAD'])).toString().trim()
@@ -250,6 +251,78 @@ try {
   }
   const actualNode = join(development, 'node/node.exe')
   assert.equal((await command(join(development, 'swa.exe'), ['--version'], development)).bytes.toString().trim(), goRevision)
+  result.phase = 'diagnostic-process-tree-component'
+  const developmentRuntime = join(development, 'runtime'), requireDevelopment = createRequire(join(developmentRuntime, 'package.json'))
+  const originalPackage = await realpath(dirname(requireOriginal.resolve('@vscode/windows-process-tree/package.json')))
+  const sourcePackage = await realpath(dirname(requireRuntime.resolve('@vscode/windows-process-tree/package.json')))
+  const diagnosticPackage = await realpath(dirname(requireDevelopment.resolve('@vscode/windows-process-tree/package.json')))
+  assert.ok(contains(developmentRuntime, diagnosticPackage) && !contains(original, diagnosticPackage) && !contains(source, diagnosticPackage))
+  const diagnosticBinary = join(diagnosticPackage, 'build/Release/windows_process_tree.node')
+  const retainedBinary = join(originalPackage, 'build/Release/windows_process_tree.node')
+  const [diagnosticBinaryInfo, retainedBinaryInfo] = await Promise.all([lstat(diagnosticBinary), lstat(retainedBinary)])
+  assert.ok(diagnosticBinaryInfo.isFile() && !diagnosticBinaryInfo.isSymbolicLink() && diagnosticBinaryInfo.nlink === 1)
+  assert.ok(diagnosticBinaryInfo.dev !== retainedBinaryInfo.dev || diagnosticBinaryInfo.ino !== retainedBinaryInfo.ino, 'Diagnostic DLL aliases the retained native input')
+  const diagnosticSources = ['src/process.h', 'src/process.cc', 'src/process_worker.cc']
+  const unchangedSources = []
+  result.diagnostic_process_tree = { scope: 'diagnostic_development_copy_only', observation_revision: goRevision, baseline_revision: priorRevision, source_inputs: [] }
+  for (const name of diagnosticSources) {
+    const originalPath = join(originalPackage, name), sourcePath = join(sourcePackage, name), target = join(diagnosticPackage, name)
+    const [originalInfo, sourceInfo, targetInfo] = await Promise.all([lstat(originalPath), lstat(sourcePath), lstat(target)])
+    assert.ok([originalInfo, sourceInfo, targetInfo].every(info => info.isFile() && !info.isSymbolicLink()))
+    assert.equal(targetInfo.nlink, 1, 'Diagnostic source must not share a hardlink')
+    for (const [path, info] of [[originalPath, originalInfo], [sourcePath, sourceInfo]]) {
+      assert.ok(targetInfo.dev !== info.dev || targetInfo.ino !== info.ino, 'Diagnostic source aliases a retained or shared source')
+      const bytes = await readFile(path)
+      assert.ok(bytes.equals(await readFile(target)), 'Diagnostic source differs from its fixed retained input')
+      unchangedSources.push({ path, sha256: hash(bytes), dev: info.dev, ino: info.ino, nlink: info.nlink })
+    }
+    assert.equal((await realpath(target)).toLowerCase(), resolve(target).toLowerCase())
+    result.diagnostic_process_tree.source_inputs.push({ name, original_sha256: (await digest(target)).sha256 })
+  }
+  const diagnosticPatch = join(checkout, 'tests/swa-cli-headless/windows-process-query-diagnostic.patch')
+  result.diagnostic_process_tree.patch_sha256 = (await digest(diagnosticPatch)).sha256
+  await command('git', ['-c', 'core.autocrlf=false', 'apply', '--check', '--unidiff-zero', diagnosticPatch], diagnosticPackage)
+  await command('git', ['-c', 'core.autocrlf=false', 'apply', '--unidiff-zero', diagnosticPatch], diagnosticPackage)
+  for (const item of result.diagnostic_process_tree.source_inputs) item.diagnostic_sha256 = (await digest(join(diagnosticPackage, item.name))).sha256
+  const buildRoot = join(checkout, '.verification/swa-cli-headless-20261020/build')
+  await mkdir(buildRoot, { recursive: true })
+  assert.equal((await realpath(buildRoot)).toLowerCase(), resolve(buildRoot).toLowerCase())
+  const nativeWork = join(buildRoot, 'candidate-' + randomBytes(3).toString('hex'))
+  await mkdir(nativeWork)
+  const componentResult = join(privateOutput, 'diagnostic-native-preparation.json')
+  await command(powershell, ['-NoProfile', '-NonInteractive', '-File', join(checkout, 'scripts/build-swa-windows-process-diagnostic.ps1'),
+    '-SourceRoot', source, '-Runtime', developmentRuntime, '-Node', actualNode, '-Work', nativeWork, '-OutputFile', componentResult], checkout, 1_300_000)
+  const nativePreparation = JSON.parse(await readFile(componentResult, 'utf8'))
+  assert.equal(nativePreparation.status, 'PASS'); assert.equal(nativePreparation.native_component, '@vscode/windows-process-tree')
+  assert.equal(nativePreparation.native_component_index, 1); assert.equal(nativePreparation.other_native_components_built, false)
+  result.diagnostic_process_tree.preparation = nativePreparation
+  result.diagnostic_process_tree.binary_path = relative(development, diagnosticBinary).replaceAll('\\', '/')
+  result.diagnostic_process_tree.binary_sha256 = (await digest(diagnosticBinary)).sha256
+  const retainedProcessTree = originalNative.filter(item => item.path === result.diagnostic_process_tree.binary_path)
+  assert.equal(retainedProcessTree.length, 1)
+  assert.notEqual(result.diagnostic_process_tree.binary_sha256, retainedProcessTree[0].sha256)
+  result.diagnostic_process_tree.baseline_binary_sha256 = retainedProcessTree[0].sha256
+  const sourceInputGuards = async () => {
+    for (const item of unchangedSources) {
+      const info = await lstat(item.path)
+      assert.equal(info.dev, item.dev); assert.equal(info.ino, item.ino); assert.equal(info.nlink, item.nlink); assert.equal((await digest(item.path)).sha256, item.sha256)
+    }
+    for (const item of result.diagnostic_process_tree.source_inputs) {
+      const info = await lstat(join(diagnosticPackage, item.name))
+      assert.equal(info.nlink, 1); assert.equal((await digest(join(diagnosticPackage, item.name))).sha256, item.diagnostic_sha256)
+    }
+  }
+  await sourceInputGuards()
+  native = requireDevelopment('@vscode/windows-process-tree')
+  const diagnosticRows = await new Promise((resolveRows, reject) => {
+    const timer = setTimeout(() => reject(new Error('Diagnostic native callback did not settle')), 15_000)
+    native.getAllProcesses(rows => { clearTimeout(timer); rows ? resolveRows(rows) : reject(new Error('Diagnostic native callback unavailable')) }, 4)
+  })
+  const diagnosticSelf = diagnosticRows.filter(row => row.pid === process.pid)
+  assert.equal(diagnosticSelf.length, 1); assert.equal(diagnosticSelf[0].creationTimeDiagnosticVersion, 1)
+  assert.equal(diagnosticSelf[0].creationTimeQueryStage, 4); assert.equal(diagnosticSelf[0].creationTimeWin32Error, 0)
+  assert.equal(diagnosticSelf[0].creationTimeCloseError, 0)
+  result.diagnostic_process_tree.actual_callback_version = 1
   result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
@@ -273,9 +346,14 @@ try {
   const observed = await command(actualNode, [join(source, 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', development, '--evidence', smoke,
     '--data-parent', dataParent, '--protected-roots', env.ProgramFiles ?? env.PROGRAMFILES, '--port', '18793', '--mode', 'readiness-eof', '--source-revision', goRevision, '--controller-open-only'], checkout, 660_000, {}, true)
   result.fixture_exit = observed.exit
-  result.native_inputs_after = await Promise.all(originalNative.map(async item => ({ path: item.path, sha256: (await digest(join(original, item.path))).sha256 })))
+  result.native_inputs_after = await Promise.all(originalNative.map(async item => {
+    const path = join(original, item.path), info = await lstat(path)
+    return { path: item.path, sha256: (await digest(path)).sha256, dev: info.dev, ino: info.ino, nlink: info.nlink }
+  }))
   assert.deepEqual(result.native_inputs_after, originalNative)
-  for (const item of originalNative) assert.equal((await digest(join(development, item.path))).sha256, item.sha256)
+  for (const item of originalNative) assert.equal((await digest(join(development, item.path))).sha256,
+    item.path === result.diagnostic_process_tree.binary_path ? result.diagnostic_process_tree.binary_sha256 : item.sha256)
+  await sourceInputGuards()
   for (const item of result.source_inputs) assert.equal((await digest(join(source, item.path))).sha256, item.sha256)
   for (const item of result.go_source_inputs) assert.equal((await digest(join(checkout, item.path))).sha256, item.sha256)
   assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
@@ -294,6 +372,44 @@ try {
     const transport = JSON.parse(await readFile(transportPath, 'utf8'))
     assert.equal(transport.schema, 'swa.controller-input-check.v1')
     result.control.short_error = transport.error ? { kind: kind(transport.error), message: publicText(transport.error.message) } : null
+    const integer = value => Number.isSafeInteger(value) ? value : 'UNKNOWN'
+    const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+    const tag = value => value === null ? null : typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value) ? value : 'UNKNOWN'
+    const traceEvent = event => !event || typeof event !== 'object' ? 'UNKNOWN' : {
+      lane: ['tty', 'pipe'].includes(event.lane) ? event.lane : 'UNKNOWN',
+      stage: ['create', 'spawn_identity', 'native_inputs', 'write', 'reply', 'identity', 'eof', 'absence', 'cleanup', 'exit'].includes(event.stage) ? event.stage : 'UNKNOWN',
+      boundary: ['start', 'complete', 'observed'].includes(event.boundary) ? event.boundary : 'UNKNOWN',
+      packet_index: event.packet_index === null ? null : integer(event.packet_index),
+      packet_bytes: event.packet_bytes === null ? null : integer(event.packet_bytes),
+      elapsed_ms: Number.isFinite(event.elapsed_ms) ? event.elapsed_ms : 'UNKNOWN',
+      deadline_remaining_ms: Number.isFinite(event.deadline_remaining_ms) ? event.deadline_remaining_ms : 'UNKNOWN' }
+    const identity = value => value && Number.isSafeInteger(value.pid) && value.pid > 0 && Number.isSafeInteger(value.creationTimeMs) && value.creationTimeMs > 0
+      ? { pid: value.pid, creation_time_ms: value.creationTimeMs } : null
+    result.short_transport_diagnostic = { status: ['PASS', 'FAIL'].includes(transport.status) ? transport.status : 'UNKNOWN',
+      error: transport.error ? { name: tag(transport.error.name), code: tag(transport.error.code) } : null,
+      cleanup_unknown: boolean(transport.cleanup_unknown), trace_total: integer(transport.trace_total),
+      trace: Array.isArray(transport.trace) ? transport.trace.slice(0, 64).map(traceEvent) : [],
+      trace_truncated: transport.trace_truncated === true || transport.trace?.length > 64,
+      last_event: traceEvent(transport.last_event), lanes: {}, identities_history: [] }
+    for (const lane of ['tty', 'pipe']) {
+      const row = transport[lane]
+      result.short_transport_diagnostic.lanes[lane] = row === null ? null : row && typeof row === 'object' ? {
+        status: ['PASS', 'FAIL'].includes(row.status) ? row.status : 'UNKNOWN', natural_eof: boolean(row.natural_eof), forced_cleanup: boolean(row.forced_cleanup),
+        reply_count: Array.isArray(row.observations) ? row.observations.length : 'UNKNOWN',
+        exit: row.exit === null ? null : row.exit ? { code: integer(row.exit.code), signal: row.exit.signal === null ? null : tag(row.exit.signal),
+          cause: row.exit.cause ? { kind: ['operator_close', 'signaled', 'exited', 'unknown'].includes(row.exit.cause.kind) ? row.exit.cause.kind : 'UNKNOWN',
+            ...(row.exit.cause.kind === 'exited' ? { exit_code: integer(row.exit.cause.exitCode) } : {}),
+            ...(row.exit.cause.kind === 'signaled' ? { signal: integer(row.exit.cause.signal) } : {}),
+            ...(row.exit.cause.kind === 'unknown' ? { reason: ['stop_unverified', 'host_status_unavailable', 'cause_unreported'].includes(row.exit.cause.reason) ? row.exit.cause.reason : 'UNKNOWN' } : {}) } : row.exit.cause === null ? null : 'NOT_RECORDED' } : 'UNKNOWN',
+        failure_phase: row.failure_phase ? traceEvent(row.failure_phase) : null,
+        sessions_after_dispose_count: Array.isArray(row.sessions_after_dispose) ? row.sessions_after_dispose.length : 'NOT_APPLICABLE',
+        raw_output_bytes: row.raw_output_bytes === undefined ? 'NOT_RECORDED' : integer(row.raw_output_bytes) } : 'UNKNOWN'
+    }
+    for (const [role, value] of [['tty_root', transport.tty?.root ?? transport.tty?.spawn_incarnation], ['tty_helper', transport.tty?.helper],
+      ['pipe_helper', transport.pipe?.helper], ['short_checker', control?.transport_process]]) {
+      const actualIdentity = identity(value)
+      if (actualIdentity) result.short_transport_diagnostic.identities_history.push({ role, ...actualIdentity })
+    }
   } catch (error) { result.control.short_error = { status: 'UNKNOWN', kind: kind(error) } }
   result.service = { exit: record.exit, signal: record.signal, ownership_closure_incomplete: record.ownership_closure_incomplete,
     unknown_process_observation_count: record.unknown_process_observations.length,
@@ -304,18 +420,28 @@ try {
   const number = value => Number.isSafeInteger(value) && value >= 0 ? value : 'UNKNOWN'
   const identifier = value => value === null ? null : typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value) ? value : 'UNKNOWN'
   const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
-  const counts = new Map(), groups = new Map()
+  const counts = new Map(), groups = new Map(), queryCounts = new Map()
   assert.ok(Array.isArray(record.unknown_process_observations) && Array.isArray(record.observed_processes))
   for (const entry of record.unknown_process_observations) {
     const reason = reasons.has(entry?.reason) ? entry.reason : 'UNKNOWN'
     counts.set(reason, (counts.get(reason) ?? 0) + 1)
     const identity = { pid: number(entry?.actual?.pid), ppid: number(entry?.actual?.ppid), creation_time_ms: number(entry?.actual?.creationTimeMs) }
-    const key = JSON.stringify([reason, identity.pid, identity.ppid, identity.creation_time_ms])
+    const anchor = entry?.source_anchor && ['serve', 'additional'].includes(entry.source_anchor.kind)
+      ? { kind: entry.source_anchor.kind, pid: number(entry.source_anchor.pid), creation_time_ms: number(entry.source_anchor.creation_time_ms) } : 'UNKNOWN'
+    const diagnostic = entry?.actual?.creationTimeDiagnosticVersion === 1 ? {
+      version: 1, api_stage: Number.isInteger(entry.actual.creationTimeQueryStage) && entry.actual.creationTimeQueryStage >= 0 && entry.actual.creationTimeQueryStage <= 4
+        ? ['not_requested', 'OpenProcess', 'GetProcessTimes', 'invalid_filetime', 'complete'][entry.actual.creationTimeQueryStage] : 'UNKNOWN',
+      win32_error: number(entry.actual.creationTimeWin32Error), close_error: number(entry.actual.creationTimeCloseError) } : 'UNKNOWN'
+    const queryKey = JSON.stringify(diagnostic)
+    const queryCount = queryCounts.get(queryKey)
+    queryCounts.set(queryKey, { query: diagnostic, count: (queryCount?.count ?? 0) + 1 })
+    const key = JSON.stringify([reason, identity.pid, identity.ppid, identity.creation_time_ms, anchor, diagnostic])
     const observedAt = number(entry?.observed_at_ms)
     if (groups.has(key)) {
       const group = groups.get(key)
       group.count++
       group.last_observed_at_ms = observedAt
+      group.last_sample_sequence = number(entry?.sample_sequence)
       continue
     }
     const parents = new Map()
@@ -324,7 +450,16 @@ try {
         parents.set(row.pid + ':' + row.creationTimeMs, { pid: row.pid, creation_time_ms: row.creationTimeMs })
       }
     }
-    groups.set(key, { reason, ...identity, count: 1, first_observed_at_ms: observedAt, last_observed_at_ms: observedAt,
+    const roleHistory = result.short_transport_diagnostic?.identities_history ?? []
+    const roles = value => {
+      const matches = value && typeof value.pid === 'number' && typeof value.creation_time_ms === 'number'
+        ? [...new Set(roleHistory.filter(row => row.pid === value.pid && row.creation_time_ms === value.creation_time_ms).map(row => row.role))] : []
+      return matches.length === 1 ? matches[0] : 'UNKNOWN'
+    }
+    groups.set(key, { reason, ...identity, source_anchor: anchor, diagnostic_query: diagnostic,
+      actual_role_history: roles(identity), source_anchor_role_history: roles(anchor),
+      count: 1, first_observed_at_ms: observedAt, last_observed_at_ms: observedAt,
+      first_sample_sequence: number(entry?.sample_sequence), last_sample_sequence: number(entry?.sample_sequence),
       matches_recorded_identity_history: typeof identity.pid === 'number' && identity.pid > 0 && typeof identity.creation_time_ms === 'number' && identity.creation_time_ms > 0
         ? record.observed_processes.some(row => row?.pid === identity.pid && row.creationTimeMs === identity.creation_time_ms) : 'UNKNOWN',
       recorded_parent_identities_history: [...parents.values()].slice(0, 2), recorded_parent_identity_count: typeof identity.ppid === 'number' ? parents.size : 'UNKNOWN',
@@ -342,12 +477,10 @@ try {
         ? { name: identifier(readinessError.name), code: identifier(readinessError.code) } : 'UNKNOWN' },
     unknown_item_count: record.unknown_process_observations.length,
     reason_counts: [...counts].map(([reason, count]) => ({ reason, count })),
-    identity_group_count: groups.size, samples: [...groups.values()].slice(0, 8), samples_truncated: groups.size > 8,
+    native_query_type_count: queryCounts.size, native_query_counts: [...queryCounts.values()].slice(0, 8), native_query_counts_truncated: queryCounts.size > 8,
+    identity_group_count: groups.size, samples: groups.size > 8 ? [...groups.values()].slice(0, 4).concat([...groups.values()].slice(-4)) : [...groups.values()], samples_truncated: groups.size > 8,
+    short_transport: result.short_transport_diagnostic ?? 'NOT_OBSERVED',
     identity_history_is_not_a_single_snapshot_chain: true }
-  while (Buffer.byteLength(JSON.stringify(unknownProjection)) > 3500 && unknownProjection.samples.length) {
-    unknownProjection.samples.pop(); unknownProjection.samples_truncated = true
-  }
-  assert.ok(Buffer.byteLength(JSON.stringify(unknownProjection)) <= 3500, 'Public unknown-process metadata exceeds its total bound')
   result.unknown_process_observation_projection = unknownProjection
   const logs = []
   let errorLineCount = 0
@@ -377,6 +510,7 @@ try {
   await save('result.json', result)
   const projection = { status: result.status, phase: result.phase, scope: result.scope, source_revision: sourceRevision, input_revision: priorRevision,
     go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
+    native_input_scope: 'baseline_except_diagnostic_process_tree', diagnostic_process_tree_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT',
     windows_private_data_sdk: result.windows_private_data_sdk ? { exit: result.windows_private_data_sdk.exit,
       pass_count: result.windows_private_data_sdk.cases.filter(row => row.action === 'pass').length,
       not_run: result.windows_private_data_sdk.cases.filter(row => row.action === 'skip').map(row => row.test.split('/')[1]),
@@ -396,7 +530,26 @@ try {
   const escaped = text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')
   process.stdout.write('::warning title=Windows Controller open development control::' + escaped + '\n')
   if (result.unknown_process_observation_projection) {
-    const unknownText = JSON.stringify(result.unknown_process_observation_projection)
+    const diagnosticProjection = structuredClone(result.unknown_process_observation_projection)
+    while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.short_transport?.trace?.length > 2) {
+      diagnosticProjection.short_transport.trace.splice(1, 1); diagnosticProjection.short_transport.trace_truncated = true
+    }
+    while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.samples.length > 2) {
+      diagnosticProjection.samples.splice(1, 1); diagnosticProjection.samples_truncated = true
+    }
+    while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.short_transport?.trace?.length) {
+      diagnosticProjection.short_transport.trace.shift(); diagnosticProjection.short_transport.trace_truncated = true
+    }
+    if (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.samples.length === 2) {
+      diagnosticProjection.samples.shift(); diagnosticProjection.samples_truncated = true
+    }
+    while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.native_query_counts.length > 1) {
+      diagnosticProjection.native_query_counts.splice(1, 1); diagnosticProjection.native_query_counts_truncated = true
+    }
+    for (const sample of diagnosticProjection.samples) while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && sample.recorded_parent_identities_history.length) {
+      sample.recorded_parent_identities_history.pop(); sample.recorded_parent_identities_truncated = true
+    }
+    const unknownText = JSON.stringify(diagnosticProjection)
     assert.ok(Buffer.byteLength(unknownText) <= 3500)
     process.stdout.write('::warning title=Windows closure unknown observations::' + unknownText.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
   }

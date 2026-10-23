@@ -311,7 +311,7 @@ for (const mode of selectedModes) {
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
   let settled = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
   let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
-  let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0
+  let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0, sampleSequence = 0
   const exited = new Promise(resolve => {
     child.once('error', error => { spawnError = error })
     child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now() }; resolve(settled) })
@@ -330,19 +330,22 @@ for (const mode of selectedModes) {
   const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
     const rows = await processes()
+    const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs })
+    const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
     for (const anchor of additionalRoots.values()) {
       const extra = collectOwnedIncarnations(rows, anchor)
       for (const row of extra.ownedRows) if (!ownedRows.some(value => value.pid === row.pid && value.creationTimeMs === row.creationTimeMs)) ownedRows.push(row)
       excludedEdges.push(...extra.excludedEdges)
       unknownRows.push(...extra.unknownRows)
+      annotatedUnknown.push(...extra.unknownRows.map(entry => ({ ...entry, source_anchor: { kind: 'additional', pid: anchor.pid, creation_time_ms: anchor.creationTimeMs } })))
     }
     // Once provenance is incomplete, disappearance of its first unknown PID
     // cannot prove that unobserved descendants have also exited.
     closureIncomplete ||= unknownRows.length > 0
     for (const row of ownedRows) observed.set(row.pid + ':' + row.creationTimeMs, row)
     if (unknownRows.length) {
-      for (const entry of unknownRows) unknown.push({ observed_at_ms: Date.now(), ...entry })
+      for (const entry of annotatedUnknown) unknown.push({ observed_at_ms: sampleObservedAt, sample_sequence: sampleSequenceNumber, ...entry })
       await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
     }
     await writeFile(join(directory, 'latest-actual-observation.json'), JSON.stringify({ mode, pid: child.pid, creation_time_ms: rootCreationTimeMs, events, current_owned_processes: ownedRows, excluded_parent_edges: excludedEdges, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), observed_at_ms: Date.now() }, null, 2) + '\n')

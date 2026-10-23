@@ -46,6 +46,17 @@ const report = { schema: 'swa.controller-input-check.v1', status: 'FAIL', platfo
   process_proof: 'observed_process_identities_and_absence', kernel_job_empty: 'NOT_CLAIMED', tty: null, pipe: null }
 let failure = null
 let stopBuild = () => {}, readAddonPaths = async () => [], cleanupUnknown = false
+report.trace = []; report.trace_total = 0; report.trace_truncated = false
+const traceLane = (lane, deadline, input) => {
+  const started = performance.now()
+  return (stage, boundary, packetIndex = null) => {
+    const event = { lane, stage, boundary, packet_index: packetIndex, packet_bytes: packetIndex === null ? null : input[packetIndex - 1].bytes,
+      elapsed_ms: performance.now() - started, deadline_remaining_ms: deadline - Date.now() }
+    report.trace_total++; report.trace.push(event); report.last_event = event
+    if (report.trace.length > 64) { report.trace.splice(32, 1); report.trace_truncated = true }
+    return event
+  }
+}
 const boundedCleanup = async (operation, label) => {
   let timer
   try {
@@ -182,6 +193,7 @@ try {
     if (!values['short-only']) assert.ok(input[1].bytes > 4095, 'actual task packet must exercise the long-line boundary')
     const options = production.controllerTerminalOptions(node, helper, handle), observation = observe(), readiness = []
     const deadline = Date.now() + 25_000
+    const trace = traceLane('tty', deadline, input)
     const host = new production.TerminalHost({ spawnSubprocess: production.createPtySubprocess, reportReadinessEvent: (event, details) => readiness.push({ event, details }) })
     // 复用正式发送器的分块、延迟和 CR；这里只观察本地 host 写入，不声称远程结算。
     const writer = new production.RuntimeTerminalWriter((id, text) => { host.write(id, text); return true })
@@ -191,37 +203,53 @@ try {
         assert.equal(production.resolveWindowsShellLaunchArgs('pwsh.exe', join(output, 'cwd'), join(output, 'cwd'), undefined, options.command).startupCommandDeliveredInShellArgs, true)
       } else assert.equal(Object.hasOwn(options, 'shellOverride'), false)
       const childEnv = { ...env, ...options.env, ORCA_TERMINAL_HANDLE: handle }
+      trace('create', 'start')
       const created = await host.createOrAttach({ sessionId, cwd: join(output, 'cwd'), cols: 120, rows: 40,
         command: options.command, startupCommandDelivery: options.startupCommandDelivery, shellOverride: options.shellOverride, env: childEnv,
         envToDelete: Object.keys(process.env).filter(key => !Object.keys(childEnv).some(allowed => allowed.toLowerCase() === key.toLowerCase())),
         cancelSignal: AbortSignal.timeout(25_000),
         shellReadySupported: production.shellPathSupportsPtyStartupBarrier(options.shellOverride ?? production.resolvePtyShellPath(childEnv)),
-        streamClient: { onData: value => observation.data(value), onExit: (code, incarnationId, cause) => { result.exit = { code, incarnationId, cause } } }
+        streamClient: { onData: value => observation.data(value), onExit: (code, incarnationId, cause) => { result.exit = { code, incarnationId, cause }; trace('exit', 'observed') } }
       })
+      trace('create', 'complete'); trace('spawn_identity', 'start')
       result.spawn_incarnation = process.platform === 'linux' ? production.readSwaLinuxProcessIncarnation(created.pid) : await identity(created.pid)
+      trace('spawn_identity', 'complete'); trace('native_inputs', 'start')
       addons = await addonPaths()
       assert.ok(addons.length > 0 && addons.some(path => path.includes('node-pty')), 'actual installed node-pty addon must be loaded')
       report.addons_before = await Promise.all(addons.map(digest))
-      for (const packet of input) {
+      trace('native_inputs', 'complete')
+      for (const [index, packet] of input.entries()) {
+        trace('write', 'start', index + 1)
         await writer.writeAction(sessionId, { text: packet.text, enter: true }, packet.text + '\r', { inputKind: 'driving', signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())) })
+        trace('write', 'complete', index + 1); trace('reply', 'start', index + 1)
         await waitUntil(() => observation.replies.has(packet.request_id) || result.exit, deadline, observation, 'TTY reply timed out')
         assert.equal(result.exit, null, 'helper exited before TTY reply')
+        trace('reply', 'complete', index + 1); trace('identity', 'start', index + 1)
         if (process.platform === 'linux') production.requireSwaLinuxIncarnation(result.spawn_incarnation)
         else await requireIdentity(result.spawn_incarnation)
         result.root ??= await identity(created.pid)
         result.helper = await checkReply(observation, packet, handle, result.root, result.helper)
         result.observations.push({ request_id: packet.request_id, bytes: packet.bytes, ready: true, pid: result.helper.pid })
+        trace('identity', 'complete', index + 1)
       }
+      trace('eof', 'start')
       host.write(sessionId, '\x04')
       await waitUntil(() => result.exit, deadline, observation, 'TTY Ctrl-D did not reach natural EOF')
       assert.equal(result.exit.code, 0)
+      trace('eof', 'complete'); trace('absence', 'start')
       await waitUntil(() => absent([result.root, result.helper]), deadline, observation, 'observed TTY processes remain after EOF')
       assert.deepEqual(host.listSessions(), [])
       result.natural_eof = true
       result.status = 'PASS'
+      trace('absence', 'complete')
+    } catch (error) {
+      result.failure_phase = report.last_event
+      throw error
     } finally {
+      const cleanupEvent = trace('cleanup', 'start')
       result.forced_cleanup = result.exit === null
-      try { await boundedCleanup(host.dispose(), 'TTY host') }
+      try { await boundedCleanup(host.dispose(), 'TTY host'); trace('cleanup', 'complete') }
+      catch (error) { result.failure_phase ??= cleanupEvent; throw error }
       finally {
         result.sessions_after_dispose = host.listSessions()
         result.readiness = readiness
@@ -236,34 +264,52 @@ try {
   async function checkPipe() {
     const result = report.pipe = { status: 'FAIL', natural_eof: false, forced_cleanup: false, exit: null, helper: null, observations: [] }
     const input = packets(), handle = `pipe-controller-${randomUUID()}`, observation = observe(), deadline = Date.now() + 25_000
+    const trace = traceLane('pipe', deadline, input)
     if (!values['short-only']) assert.ok(input[1].bytes > 4095)
+    trace('create', 'start')
     const child = spawn(node, [helper], { cwd: join(output, 'cwd'), env: { ...env, ORCA_TERMINAL_HANDLE: handle }, stdio: ['pipe', 'pipe', 'pipe'] })
+    trace('create', 'complete')
     child.stdout.on('data', value => observation.data(value))
     child.stderr.on('data', value => observation.data(value, true))
     child.stdin.on('error', value => observation.fail(value))
     child.on('error', value => observation.fail(value))
-    const closed = new Promise(done => child.once('close', (code, signal) => { result.exit = { code, signal }; done() }))
+    const closed = new Promise(done => child.once('close', (code, signal) => { result.exit = { code, signal }; trace('exit', 'observed'); done() }))
     try {
+      trace('spawn_identity', 'start')
       result.helper = await identity(child.pid)
-      for (const packet of input) {
+      trace('spawn_identity', 'complete')
+      for (const [index, packet] of input.entries()) {
+        trace('write', 'start', index + 1)
         child.stdin.write(packet.text + '\n')
+        trace('write', 'complete', index + 1); trace('reply', 'start', index + 1)
         await waitUntil(() => observation.replies.has(packet.request_id) || result.exit, deadline, observation, 'pipe reply timed out')
         assert.equal(result.exit, null, 'helper exited before pipe reply')
+        trace('reply', 'complete', index + 1); trace('identity', 'start', index + 1)
         await checkReply(observation, packet, handle, result.helper, result.helper)
         result.observations.push({ request_id: packet.request_id, bytes: packet.bytes, ready: true, pid: result.helper.pid })
+        trace('identity', 'complete', index + 1)
       }
+      trace('eof', 'start')
       child.stdin.end()
       await waitUntil(() => result.exit, deadline, observation, 'pipe stdin EOF did not settle')
       await closed
       assert.equal(result.exit.code, 0)
       assert.equal(result.exit.signal, null)
+      trace('eof', 'complete'); trace('absence', 'start')
       await waitUntil(() => absent([result.helper]), deadline, observation, 'pipe helper remains after EOF')
       result.natural_eof = true
       result.status = 'PASS'
+      trace('absence', 'complete')
+    } catch (error) {
+      result.failure_phase = report.last_event
+      throw error
     } finally {
+      const cleanupEvent = trace('cleanup', 'start')
       try {
         if (!result.exit) { result.forced_cleanup = true; child.kill('SIGKILL'); await boundedCleanup(closed, 'pipe helper') }
-      } finally {
+        trace('cleanup', 'complete')
+      } catch (error) { result.failure_phase ??= cleanupEvent; throw error }
+      finally {
         result.rejected_output = observation.rejected
         await save('pipe-stdout.jsonl', observation.stdout)
         await save('pipe-stderr.log', observation.stderr)
@@ -275,7 +321,7 @@ try {
   report.status = 'PASS'
 } catch (error) {
   failure = error
-  report.error = { name: error.name, message: error.message }
+  report.error = { name: error.name, message: error.message, code: typeof error.code === 'string' ? error.code : null }
 } finally {
   stopBuild()
   report.cleanup_unknown = cleanupUnknown

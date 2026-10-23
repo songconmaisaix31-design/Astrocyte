@@ -1,0 +1,38 @@
+diff --git a/src/process.h b/src/process.h
+--- a/src/process.h
++++ b/src/process.h
+@@ -25,0 +26,3 @@
++  DWORD creationTimeQueryStage = 0;
++  DWORD creationTimeWin32Error = 0;
++  DWORD creationTimeCloseError = 0;
+diff --git a/src/process.cc b/src/process.cc
+--- a/src/process.cc
++++ b/src/process.cc
+@@ -52,0 +53,3 @@
++  process_info.creationTimeQueryStage = 1;
++  process_info.creationTimeWin32Error = 0;
++  process_info.creationTimeCloseError = 0;
+@@ -54,0 +58 @@
++    process_info.creationTimeWin32Error = GetLastError();
+@@ -58,0 +63 @@
++  process_info.creationTimeQueryStage = 2;
+@@ -64,0 +70 @@
++    process_info.creationTimeQueryStage = 3;
+@@ -67,0 +74 @@
++      process_info.creationTimeQueryStage = 4;
+@@ -68,0 +76,2 @@
++  } else {
++    process_info.creationTimeWin32Error = GetLastError();
+@@ -71 +80 @@
+-  CloseHandle(hProcess);
++  if (!CloseHandle(hProcess)) process_info.creationTimeCloseError = GetLastError();
+diff --git a/src/process_worker.cc b/src/process_worker.cc
+--- a/src/process_worker.cc
++++ b/src/process_worker.cc
+@@ -50,0 +51,6 @@
++    if (CREATIONTIME & process_data_flags_) {
++      object.Set("creationTimeDiagnosticVersion", Napi::Number::New(env, 1));
++      object.Set("creationTimeQueryStage", Napi::Number::New(env, pinfo.creationTimeQueryStage));
++      object.Set("creationTimeWin32Error", Napi::Number::New(env, pinfo.creationTimeWin32Error));
++      object.Set("creationTimeCloseError", Napi::Number::New(env, pinfo.creationTimeCloseError));
++    }
