@@ -7747,6 +7747,8 @@ export interface components {
             responsibilities: string;
             default_agent: string;
             default_model: string;
+            /** @enum {unknown} */
+            question_mode?: "disabled" | "native";
             skills: string[] | null;
             knowledge: string[] | null;
         };
@@ -7757,7 +7759,7 @@ export interface components {
         /** @description Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here. */
         command: {
             /** @enum {unknown} */
-            action: "status" | "capabilities" | "run.submit" | "run.show" | "run.export" | "role.list" | "role.show" | "role.create" | "role.update" | "role.archive" | "conversation.list" | "conversation.show" | "conversation.create" | "conversation.append" | "handoff.notify" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "question.answer" | "request.show";
+            action: "status" | "capabilities" | "run.submit" | "run.show" | "run.export" | "role.list" | "role.show" | "role.create" | "role.update" | "role.archive" | "conversation.list" | "conversation.show" | "conversation.create" | "conversation.append" | "handoff.notify" | "controller.open" | "controller.show" | "controller.close" | "controller.recover" | "task.create" | "task.show" | "task.list" | "task.complete" | "task.result" | "worker.start" | "worker.show" | "worker.list" | "worker.read" | "worker.send" | "worker.stop" | "worker.release" | "question.answer" | "question.resume" | "request.show";
             project_id?: string;
             controller?: string;
             run_id?: string;
@@ -7774,6 +7776,11 @@ export interface components {
             name?: string;
             agent?: string;
             model?: string;
+            /**
+             * @description Explicit new Run/Worker question mode. Native requires the fixed Pi questions-only contract; omitted retains the selected role default or disabled.
+             * @enum {unknown}
+             */
+            question_mode?: "disabled" | "native";
             /** @constant */
             source?: "transcript";
             cursor?: string;
@@ -7791,7 +7798,7 @@ export interface components {
             conversation?: components["schemas"]["conversationDefinition"];
             /** @description question.answer preserves the exact nonblank text and enforces a 32000 UTF-8 byte limit at execution; existing conversation text retains its normalization. */
             text?: string;
-        } & unknown;
+        } & (unknown & unknown);
         nativeError: {
             code: string;
             message: string;
@@ -7978,6 +7985,7 @@ export interface components {
                     tools: components["schemas"]["observation"];
                     images?: components["schemas"]["observation"];
                     model_switch?: components["schemas"]["observation"];
+                    questions?: components["schemas"]["observation"];
                 };
                 requirements: components["schemas"]["requirements"];
             }[];
@@ -8122,6 +8130,13 @@ export interface components {
                 mode: "disabled";
                 /** @constant */
                 native_contract: "pi-cli-1.0.1";
+            } | {
+                /** @constant */
+                mode: "questions-only";
+                /** @constant */
+                native_contract: "pi-cli-1.0.1";
+                extension: components["schemas"]["nativeConfigurationSource"];
+                allowed: "swa_ask"[];
             };
         };
         nativeLaunchPolicy: components["schemas"]["nativePiLaunchPolicy"] | components["schemas"]["nativeOpenCodeLaunchPolicy"] | components["schemas"]["nativeCodexLaunchPolicy"] | components["schemas"]["nativeClaudeLaunchPolicy"] | components["schemas"]["nativePiPerSessionLaunchPolicy"];

@@ -155,7 +155,7 @@ export class PiRpcSession {
       ...(this.policy ? { swaPiPolicy: this.policy, onWritesClosing: () => this.turns.beginClose(), beforeExitPublication: () => this.drainNativeProjection() } : {}),
       ...(input.onOutput ? { onOutput: input.onOutput } : {}),
       onRecord: (frame, context) => {
-        if (toolsOff && (frame.type === 'extension_ui_request' || frame.type.startsWith('tool_execution_'))) {
+        if (toolsOff && (frame.type === 'extension_ui_request' || !toolsOff.questionExtension && frame.type.startsWith('tool_execution_'))) {
           this.fail(new Error('SWA received an unapproved Pi tool or extension request'))
           return
         }

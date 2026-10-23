@@ -128,7 +128,6 @@ export const ORCHESTRATION_ASK_METHODS = [
           options
         })
         question = created.question
-        runtime.notifyMessageArrived(`run:${run.id}`, created.message.type)
       }
 
       const questionId = question.message_id
@@ -142,6 +141,7 @@ export const ORCHESTRATION_ASK_METHODS = [
         connectionLost: false,
         timeoutMs
       })
+      if (!params.resume) runtime.notifyMessageArrived(`run:${activeDispatch.run_id}`, 'question')
       const deadline = Date.now() + timeoutMs
       while (true) {
         const current = db.getQuestion(questionId)

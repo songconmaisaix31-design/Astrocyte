@@ -16,6 +16,7 @@ export type PiDisabledToolsPolicy = {
   api: 'openai-responses' | 'openai-completions' | 'azure-openai-responses'
   baseUrl: string
   sessionPolicy?: SwaPiSessionPolicy
+  questionExtension?: string
 }
 
 export type PiRpcLaunchOptions = {
@@ -78,7 +79,9 @@ export function buildPiRpcLaunch(options: PiRpcLaunchOptions): ProviderProcessLa
     policy.sessionPolicy.assertCurrent()
     const launcher = options.swaJobLauncher
     if (!launcher || ![launcher.node, launcher.entry, launcher.eventDirectory, options.command].every(isAbsolute)) throw new Error('Native Pi requires its owning Job launcher')
-    const args = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', policy.provider, '--model', policy.modelId, '--no-tools', '--no-extensions', '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', ...(options.sessionFile ? ['--session', options.sessionFile] : []), ...(options.forkFile ? ['--fork', options.forkFile] : [])]
+    if (policy.questionExtension !== undefined && !isAbsolute(policy.questionExtension)) throw new Error('Native Pi requires its fixed absolute question extension')
+    const toolArgs = policy.questionExtension ? ['--no-builtin-tools', '--tools', 'swa_ask', '--no-extensions', '--extension', policy.questionExtension] : ['--no-tools', '--no-extensions']
+    const args = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', policy.provider, '--model', policy.modelId, ...toolArgs, '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files', ...(options.sessionFile ? ['--session', options.sessionFile] : []), ...(options.forkFile ? ['--fork', options.forkFile] : [])]
     return {
       command: launcher.node, cwd: options.cwd,
       args: ['--max-old-space-size=1024', launcher.entry, JSON.stringify({ command: options.command, args })],

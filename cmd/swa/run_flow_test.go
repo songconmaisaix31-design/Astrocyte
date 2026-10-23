@@ -134,3 +134,81 @@ func TestQuestionCLIRequiresCurrentGrant(t *testing.T) {
 		t.Fatal("回答入口未按当前授权拒绝或丢失原选择", err, exit)
 	}
 }
+
+func TestQuestionResumeCLIRequiresCurrentGrant(t *testing.T) {
+	t.Setenv("SWA_PROJECT_TOKEN", "")
+	var stdout, stderr bytes.Buffer
+	requestID := uuid.NewString()
+	exit := run(context.Background(), []string{"question", "resume", "--project", "rule-project", "--controller", "rule-controller", "--run", "rule-run", "--task", "rule-root", "--dispatch", "rule-dispatch", "--question", "rule-question", "--request-id", requestID, "--json"}, &stdout, &stderr)
+	var reply workspaceapp.OrcaEnvelope
+	if err := json.Unmarshal(stdout.Bytes(), &reply); err != nil || exit != 3 || reply.RequestID != requestID || reply.RunID != "rule-run" || reply.QuestionID != "rule-question" || reply.RuntimeID != "" || reply.Error == nil || reply.Error.Code != "scope_denied" {
+		t.Fatal("继续入口未按当前授权拒绝或丢失原选择", err, exit)
+	}
+}
+
+func TestRunQuestionResumeCommandRequiresObservedEligibility(t *testing.T) {
+	view := runView{Controller: "original-controller", RunID: "original-run", RootTaskID: "original-root"}
+	question := runQuestion{ID: "original-question", TaskID: "original-child", DispatchID: "original-dispatch", Question: "原问题", ReadState: "continuation_required", ContinuationRequired: true}
+	for _, platform := range []string{"linux", "windows"} {
+		command := runQuestionCommand("original-project", view, question, platform)
+		if !strings.Contains(command, "swa question resume") || strings.Contains(command, "--input-file") || !strings.Contains(command, "--request-id '<NEW_UUID>'") || !strings.Contains(command, "--question 'original-question'") || !strings.Contains(command, "--task 'original-root'") {
+			t.Fatal("继续命令没有保留原选择或引入自定义输入", command)
+		}
+	}
+	for _, eligible := range []bool{true, false} {
+		question.ContinuationRequired = eligible
+		question.ReadState = "read_unconfirmed"
+		if eligible {
+			question.ReadState = "continuation_required"
+		}
+		view.AnsweredQuestions = []runAnsweredQuestion{{QuestionID: question.ID, TaskID: question.TaskID, DispatchID: question.DispatchID, Question: question.Question, ReadState: question.ReadState, ContinuationRequired: eligible}}
+		var stdout, stderr bytes.Buffer
+		output := cliOutput{stdout: &stdout, stderr: &stderr, projectID: "original-project"}
+		action, err := writeRunQuestionActions(&output, view)
+		if err != nil || strings.Contains(action, "swa question resume") != eligible || strings.Contains(stderr.String(), "swa question answer") || strings.Contains(stderr.String(), "ANSWER_FILE") {
+			t.Fatal("未确认读取状态被改写成再次回答或自动继续", eligible, action, err)
+		}
+		if exit := output.failure("run_input_required", "原问题待继续", action, 9); exit != 9 {
+			t.Fatal("原问题继续改变了待答退出码", exit)
+		}
+	}
+}
+
+func TestRunAndWorkerQuestionModeFlagIsValidatedLocally(t *testing.T) {
+	t.Setenv("SWA_PROJECT_TOKEN", "")
+	for _, command := range [][]string{
+		{"run", "--project", "original-project", "--workdir", t.TempDir(), "--spec-file", "task.json", "--input-file", "input.txt", "--agent", "pi", "--model", "stepfun/step-3.5-flash", "--request-id", uuid.NewString()},
+		{"worker", "start", "--project", "original-project", "--controller", "original-controller", "--task", "original-root", "--name", "lead", "--input-file", "input.txt", "--agent", "pi", "--model", "stepfun/step-3.5-flash", "--request-id", uuid.NewString()},
+	} {
+		for _, mode := range []string{"disabled", "native", "arbitrary-tools"} {
+			args := append(append([]string{}, command...), "--question-mode", mode, "--json")
+			var stdout, stderr bytes.Buffer
+			exit := run(context.Background(), args, &stdout, &stderr)
+			wantedExit := 3
+			if mode == "arbitrary-tools" {
+				wantedExit = 2
+			}
+			if exit != wantedExit {
+				t.Fatal("问答选择没有在实际 CLI 解析与当前授权前置正确处理", command[0], mode, exit)
+			}
+		}
+	}
+}
+
+func TestRunAndWorkerNativeQuestionsKeepUnsupportedCapability(t *testing.T) {
+	t.Setenv("SWA_PROJECT_TOKEN", "")
+	t.Setenv("SWA_ENDPOINT", "invalid-endpoint")
+	requestID := uuid.NewString()
+	for _, command := range [][]string{
+		{"run", "--project", "original-project", "--workdir", t.TempDir(), "--spec-file", "task.json", "--input-file", "input.txt", "--agent", "codex", "--model", "gpt-5.5", "--request-id", requestID},
+		{"worker", "start", "--project", "original-project", "--controller", "original-controller", "--task", "original-root", "--name", "lead", "--input-file", "input.txt", "--agent", "codex", "--model", "gpt-5.5", "--request-id", requestID},
+	} {
+		var stdout, stderr bytes.Buffer
+		args := append(append([]string{}, command...), "--question-mode", "native", "--json")
+		exit := run(context.Background(), args, &stdout, &stderr)
+		var reply workspaceapp.OrcaEnvelope
+		if err := json.Unmarshal(stdout.Bytes(), &reply); err != nil || exit != 4 || reply.Error == nil || reply.Error.Code != "unsupported_capability" || reply.RequestID != requestID || reply.OK || reply.RuntimeID != "" || reply.AuthorityDomain != "" {
+			t.Fatal("完整 Run 与 Worker 启动未保留原能力拒绝类别", command[0], exit, err)
+		}
+	}
+}

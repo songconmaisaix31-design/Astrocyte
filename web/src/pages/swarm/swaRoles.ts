@@ -31,7 +31,8 @@ function scoped(value: unknown, projectID: string) {
 function role(value: unknown, projectID: string): SwaRole {
   const row = scoped(value, projectID);
   if (!Number.isSafeInteger(row.revision) || Number(row.revision) < 1 || typeof row.archived !== 'boolean') throw new Error('角色版本或归档状态无法确认');
-  return { id: text(row.id, 'role.id'), project_id: projectID, revision: Number(row.revision), archived: row.archived, name: text(row.name, 'name'), responsibilities: text(row.responsibilities, 'responsibilities'), default_agent: text(row.default_agent, 'default_agent'), default_model: text(row.default_model, 'default_model'), skills: strings(row.skills, 'skills'), knowledge: strings(row.knowledge, 'knowledge'), created_at: text(row.created_at, 'created_at'), updated_at: text(row.updated_at, 'updated_at') };
+  if (row.question_mode !== undefined && row.question_mode !== 'disabled' && row.question_mode !== 'native') throw new Error('角色的问题模式无法确认');
+  return { id: text(row.id, 'role.id'), project_id: projectID, revision: Number(row.revision), archived: row.archived, name: text(row.name, 'name'), responsibilities: text(row.responsibilities, 'responsibilities'), default_agent: text(row.default_agent, 'default_agent'), default_model: text(row.default_model, 'default_model'), question_mode: row.question_mode ?? 'disabled', skills: strings(row.skills, 'skills'), knowledge: strings(row.knowledge, 'knowledge'), created_at: text(row.created_at, 'created_at'), updated_at: text(row.updated_at, 'updated_at') };
 }
 function conversation(value: unknown, projectID: string): SwaConversation {
   const row = scoped(value, projectID);

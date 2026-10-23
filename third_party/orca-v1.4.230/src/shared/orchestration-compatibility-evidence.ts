@@ -34,6 +34,8 @@ export type OrchestrationCompatibilityEvidence = {
 }
 
 const SECRET_KEYS = new Set([
+  'swaQuestionProducerProof',
+  'ORCA_AGENT_SESSION_SPAWN_TOKEN',
   'launchToken',
   'connectionIncarnation',
   'attachmentId',

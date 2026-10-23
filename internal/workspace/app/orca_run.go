@@ -131,6 +131,9 @@ func (s *OrcaExecutionService) submitOrcaRun(ctx context.Context, caller domain.
 	if err = validateOrcaNativeLaunch(selection, p.ID); err != nil {
 		return reply, err
 	}
+	if err = validateOrcaQuestionSelection(command, selection); err != nil {
+		return reply, err
+	}
 	current, err := s.authorize(ctx, caller, p.ID, "start", []string{root}, selection.ExternalTarget)
 	if err != nil {
 		return reply, err
@@ -148,7 +151,7 @@ func (s *OrcaExecutionService) submitOrcaRun(ctx context.Context, caller domain.
 	stages := []OrcaCommand{
 		{Action: "controller.open", ProjectID: p.ID, Workdir: root, RequestID: command.RequestID},
 		{Action: "task.create", ProjectID: p.ID, SpecFile: command.SpecFile, RequestID: taskRequest},
-		{Action: "worker.start", ProjectID: p.ID, Name: command.Name, Agent: command.Agent, Model: command.Model, InputFile: command.InputFile, RequestID: workerRequest, RoleID: command.RoleID, Revision: command.Revision},
+		{Action: "worker.start", ProjectID: p.ID, Name: command.Name, Agent: command.Agent, Model: command.Model, QuestionMode: command.QuestionMode, InputFile: command.InputFile, RequestID: workerRequest, RoleID: command.RoleID, Revision: command.Revision},
 	}
 	identity := OrcaEnvelope{RequestID: command.RequestID}
 	for i := range stages {

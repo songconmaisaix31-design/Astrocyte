@@ -77,6 +77,8 @@ export type RuntimeRpcResponse<TResult> = RuntimeRpcSuccess<TResult> | RuntimeRp
 
 export type RuntimeOrchestrationEnvelope = {
   swaOwnerCapability?: string
+  swaQuestionProducerProof?: string
+  swaQuestionOrigin?: { nativeSessionId: string; assistantEntryId: string; toolCallId: string }
   orchestrationCapability?: string
   orchestrationContractVersion?: number
   orchestrationRequestId?: string

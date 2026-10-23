@@ -25,15 +25,16 @@ import (
 
 const usage = `swa serve --data-dir D --port N --protected-roots R [--agent-profile P] [--web-dir INSTALL/web] --json
 swa status|capabilities --json
-swa run --project P --workdir W --spec-file F --input-file I --agent A --model M --request-id UUID [--name lead] [--role ID --role-revision N] [--conversation ID] [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
+swa run --project P --workdir W --spec-file F --input-file I --agent A --model M --request-id UUID [--question-mode disabled|native] [--name lead] [--role ID --role-revision N] [--conversation ID] [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
 swa wait --controller C --task T --run R [--timeout 30m] [--on-input exit|wait] [--strict] [--export O] --json
 swa export --controller C --task T --run R --output-dir O --json
 swa question answer --controller C --run R --task T --dispatch D --question Q --input-file F --request-id UUID --json
+swa question resume --controller C --run R --task T --dispatch D --question Q --request-id UUID --json
 swa controller open --project P --workdir W --request-id UUID --json
 swa controller show|close|recover --controller C [--request-id UUID] --json
 swa task create --controller C --spec-file F --request-id UUID --json
 swa task show|list|complete|result --controller C [--task T] [--result-file F|--output-dir O] [--request-id UUID] --json
-swa worker start --controller C --task T --name NAME --agent AGENT --model PROVIDER/MODEL --input-file F --request-id UUID --json
+swa worker start --controller C --task T --name NAME --agent AGENT --model PROVIDER/MODEL --input-file F --request-id UUID [--question-mode disabled|native] --json
 swa worker show|list|read|send|stop|release --controller C [--task T|--dispatch X] [--source transcript --limit 100 --cursor K] [--input-file F] [--request-id UUID] --json
 swa request show --controller C|--project P --request-id UUID --json
 
@@ -48,6 +49,7 @@ task spec 的 max_workers 是任务批准创建或预留的 Worker 总席位；�
 业务 --json 调用只输出一个 JSON 结果；help/--help/--version 输出本地文本，不连接服务。
 退出码：0=命令成功，2=参数错误，3=权限或批准不足，4=能力不可用，5=资源拒绝，6=效果未知，7=运行或导出失败，8=等待超时，9=需要用户回答，130=等待已取消。
 run 默认等待同一 Run 的全部递归任务；wait 只读重连，--strict 在任一子任务失败时返回7。
+question-mode 默认关闭；native 仅为实际 Pi 开放固定 swa_ask 问答工具。question resume 只在原问题已答且原 Worker 需要显式继续时使用，不接受自定义输入。
 run/wait 的超时和 Ctrl-C 仅结束当前等待；stderr 显示进度和原 Run 重连命令。
 普通查询/控制的 Ctrl-C 只取消当前 CLI 等待，不停止 Worker；serve 的 Ctrl-C/所属 stdin 结束会关闭本次所属服务。
 安装及完整调用说明见安装目录 USAGE.md；使用独立目录，保持 serve 所属 stdin 开启。
@@ -112,6 +114,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	flags.StringVar(&command.Name, "name", "", "Worker 名称")
 	flags.StringVar(&command.Agent, "agent", "", "已批准的 Agent")
 	flags.StringVar(&command.Model, "model", "", "已批准的 provider/model")
+	flags.StringVar(&command.QuestionMode, "question-mode", "", "disabled 或 native；只在启动时选择")
 	flags.StringVar(&command.Source, "source", "", "明确原件来源")
 	flags.StringVar(&command.Cursor, "cursor", "", "原来源 cursor")
 	defaultLimit := 0

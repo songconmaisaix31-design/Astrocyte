@@ -1,11 +1,33 @@
 import { z } from 'zod'
+import { createHash } from 'node:crypto'
 import { workerLimitSchema } from './task-budget'
+import { strictPiQuestionParamsSchema, strictPiQuestionResultSchema } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 
 export const answerTextSchema = z.string().refine(text => text.trim().length > 0 && Buffer.byteLength(text, 'utf8') <= 32000 && Buffer.from(text, 'utf8').toString('utf8') === text, 'The answer must be nonblank UTF-8 text within 32000 bytes')
 const normalizedTextSchema = z.string().trim().min(1).max(32000)
-export const roleDefinitionSchema = z.strictObject({ name: z.string().trim().min(1).max(200), responsibilities: z.string().trim().min(1).max(16000), default_agent: z.string().trim().min(1), default_model: z.string().trim().min(1), skills: z.array(z.string().min(1).max(2048)).max(32).nullable(), knowledge: z.array(z.string().min(1).max(2048)).max(32).nullable() })
+export const questionModeSchema = z.enum(['disabled', 'native'])
+export const questionOriginSchema = z.strictObject({ nativeSessionId: z.uuidv7(), assistantEntryId: z.string().min(1).max(64), toolCallId: z.string().min(1).max(512) })
+export const questionToolParamsSchema = strictPiQuestionParamsSchema
+export function readQuestionMutationResult(value: unknown, requestId: string) {
+  const { mutation, ...result } = nativeObject(value)
+  const receipt = z.strictObject({ requestId: z.uuid(), replayed: z.boolean() }).parse(mutation)
+  if (receipt.requestId !== requestId || result.request_id !== requestId) throw new Error('The native question mutation changed its original request')
+  return strictPiQuestionResultSchema.parse(result)
+}
+export type QuestionOrigin = z.infer<typeof questionOriginSchema>
+// RFC 9562 UUID v5：仅给原工具调用稳定命名，回执和执行状态仍由原运行系统保存。
+function questionUUID(name: string) {
+  const bytes = createHash('sha1').update(Buffer.from('6ba7b8109dad11d180b400c04fd430c8', 'hex')).update(`swa.question.v1/${name}`, 'utf8').digest().subarray(0, 16)
+  bytes[6] = (bytes[6]! & 15) | 80; bytes[8] = (bytes[8]! & 63) | 128
+  const hex = bytes.toString('hex')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+export const questionRequestID = (sessionId: string, origin: QuestionOrigin) => questionUUID(JSON.stringify([sessionId, origin.nativeSessionId, origin.assistantEntryId, origin.toolCallId]))
+export const questionWaitID = (requestId: string) => questionUUID(`${requestId}/wait`)
+export const questionResumeBody = (questionId: string) => `使用 swa_ask 的 resume 参数读取原问题 ${questionId} 的答案，并继续当前任务。`
+export const roleDefinitionSchema = z.strictObject({ name: z.string().trim().min(1).max(200), responsibilities: z.string().trim().min(1).max(16000), default_agent: z.string().trim().min(1), default_model: z.string().trim().min(1), question_mode: questionModeSchema.optional(), skills: z.array(z.string().min(1).max(2048)).max(32).nullable(), knowledge: z.array(z.string().min(1).max(2048)).max(32).nullable() })
 export const commandSchema = z.strictObject({
-  action: z.enum(['status', 'capabilities', 'run.submit', 'run.show', 'run.export', 'role.list', 'role.show', 'role.create', 'role.update', 'role.archive', 'conversation.list', 'conversation.show', 'conversation.create', 'conversation.append', 'handoff.notify', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'question.answer', 'request.show']),
+  action: z.enum(['status', 'capabilities', 'run.submit', 'run.show', 'run.export', 'role.list', 'role.show', 'role.create', 'role.update', 'role.archive', 'conversation.list', 'conversation.show', 'conversation.create', 'conversation.append', 'handoff.notify', 'controller.open', 'controller.show', 'controller.close', 'controller.recover', 'task.create', 'task.show', 'task.list', 'task.result', 'task.complete', 'worker.start', 'worker.show', 'worker.list', 'worker.read', 'worker.send', 'worker.stop', 'worker.release', 'question.answer', 'question.resume', 'request.show']),
   project_id: z.string().optional(), controller: z.string().optional(), task_id: z.string().optional(), run_id: z.string().optional(),
   dispatch_id: z.string().optional(), question_id: z.string().optional(), request_id: z.string().optional(), workdir: z.string().optional(),
   spec_file: z.string().optional(), input_file: z.string().optional(), result_file: z.string().optional(),
@@ -14,6 +36,7 @@ export const commandSchema = z.strictObject({
   parent_task_id: z.string().min(1).optional(), handoff_mode: z.enum(['work', 'consult']).optional(), reply_mode: z.enum(['resume', 'poll']).optional(),
   completion_criteria: z.array(z.string().trim().min(1)).optional(), role_id: z.string().min(1).optional(), conversation_id: z.string().min(1).optional(),
   revision: z.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
+  question_mode: questionModeSchema.optional(),
   role: roleDefinitionSchema.optional(),
   conversation: z.strictObject({ title: z.string().trim().min(1).max(200), role_id: z.string().min(1).optional() }).optional(), text: z.string().optional()
 }).superRefine((command, context) => {
@@ -21,6 +44,11 @@ export const commandSchema = z.strictObject({
     const text = (command.action === 'question.answer' ? answerTextSchema : normalizedTextSchema).safeParse(command.text)
     if (!text.success) context.addIssue({ code: 'custom', path: ['text'], message: 'The command text does not meet its content and size requirements' })
   }
+  if (command.action === 'question.resume') {
+    const allowed = new Set(['action', 'project_id', 'controller', 'run_id', 'task_id', 'dispatch_id', 'question_id', 'request_id'])
+    if (Object.keys(command).some(key => !allowed.has(key)) || !command.controller || !command.run_id || !command.task_id || !command.dispatch_id || !command.question_id || !z.uuid().safeParse(command.request_id).success) context.addIssue({ code: 'custom', message: 'Question resume requires its exact identities and no custom input' })
+  }
+  if (command.question_mode !== undefined && !['run.submit', 'worker.start'].includes(command.action)) context.addIssue({ code: 'custom', message: 'Question mode can only be selected when starting a new Run or Worker' })
   if (command.action !== 'question.answer') return
   const allowed = new Set(['action', 'project_id', 'controller', 'run_id', 'task_id', 'dispatch_id', 'question_id', 'request_id', 'input_file', 'text'])
   if (Object.keys(command).some(key => !allowed.has(key)) || !command.controller || !command.run_id || !command.task_id || !command.dispatch_id || !command.question_id || !z.uuid().safeParse(command.request_id).success || (command.input_file !== undefined) === (command.text !== undefined) || command.input_file === '') context.addIssue({ code: 'custom', message: 'Question answer requires its exact identities and exactly one body source' })
@@ -42,6 +70,10 @@ export const settingsSourceSchema = z.strictObject({
   kind: z.enum(['native', 'orca-profile']), path: z.string().min(1).optional(), revision: z.number().int().nonnegative().optional()
 })
 const nativeConfigurationSourceSchema = z.strictObject({ path: z.string().min(1), version: z.string().min(1) })
+export const nativePiToolsSchema = z.discriminatedUnion('mode', [
+  z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') }),
+  z.strictObject({ mode: z.literal('questions-only'), native_contract: z.literal('pi-cli-1.0.1'), extension: nativeConfigurationSourceSchema, allowed: z.tuple([z.literal('swa_ask')]) })
+])
 export const nativePiLaunchPolicySchema = z.strictObject({
   schema: z.literal('swa.native-launch.v1'),
   account: z.strictObject({
@@ -60,7 +92,7 @@ export const nativePiPerSessionLaunchPolicySchema = z.strictObject({
     private_root: z.string().min(1),
     model_target: z.strictObject({ model_id: z.string().min(1), api: z.enum(['openai-responses', 'openai-completions', 'azure-openai-responses']), base_url: z.url() })
   }),
-  tools: z.strictObject({ mode: z.literal('disabled'), native_contract: z.literal('pi-cli-1.0.1') })
+  tools: nativePiToolsSchema
 })
 export const nativeOpenCodeLaunchPolicySchema = z.strictObject({
   schema: z.literal('swa.native-launch.v1'),
@@ -146,7 +178,7 @@ export const agentCapabilitiesSchema = z.strictObject({
     configured: observationSchema.extend({ model: z.string().optional(), provider: z.string().optional(), account_source: z.string().optional() }),
     launchable: observationSchema, authenticated: observationSchema.optional(),
     declared_features: declaredAgentFeaturesSchema.optional(), model_catalog: modelCatalogObservationSchema.optional(),
-    control: z.strictObject({ start: observationSchema, send: observationSchema, read: observationSchema, stop: observationSchema, resume: observationSchema, tools: observationSchema, images: observationSchema.optional(), model_switch: observationSchema.optional() }),
+    control: z.strictObject({ start: observationSchema, send: observationSchema, read: observationSchema, stop: observationSchema, resume: observationSchema, tools: observationSchema, questions: observationSchema.optional(), images: observationSchema.optional(), model_switch: observationSchema.optional() }),
     requirements: capabilityRequirementsSchema
   }))
 })
@@ -155,6 +187,8 @@ export const invocationSchema = z.object({
   caller: z.strictObject({ id: z.string().min(1), kind: z.enum(['agent', 'human']), project_id: z.string().min(1), settings_revision: z.number().int().positive(), grant_expires_at: z.string().optional() }),
   project: z.looseObject({ id: z.string().min(1), root: z.string().min(1) }),
   scope: scopeSchema,
+  question_ask: z.strictObject({ start_request_id: z.uuid(), request_id: z.uuid(), question_id: z.string().min(1).optional(),
+    session_id: z.string().min(1), dispatch_id: z.string().min(1), origin: questionOriginSchema, params: questionToolParamsSchema }).optional(),
   handoff: z.strictObject({
     schema: z.literal('swa.handoff-resume.v1'), source_task_id: z.string().min(1).max(512), source_dispatch_id: z.string().min(1).max(512),
     parent_task_id: z.string().min(1).max(512), parent_dispatch_id: z.string().min(1).max(512), mail_id: z.string().min(1).max(512)

@@ -38,6 +38,7 @@ export type StructuredWorkerLaunchAdmission = {
 }
 
 export type StructuredWorkerStartAdmission = StructuredWorkerLaunchAdmission & { mode: AgentLaunchMode }
+export type StructuredWorkerPreambleAdmission = { sessionId: string; agent: string; dispatchId: string }
 
 export type StructuredAgentLaunchAdmission = {
   commandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
@@ -55,6 +56,7 @@ export type StructuredAgentLaunchAdmission = {
   beforeWorkerStart?(input: StructuredWorkerStartAdmission): Promise<void | (() => void)>
   workerCommandSettings?(input: StructuredWorkerLaunchAdmission): Promise<StructuredAgentCommandSettings>
   createCommandSettings?(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
+  workerPreambleMode?(input: StructuredWorkerPreambleAdmission): Promise<'disabled' | 'questions-only'>
 }
 
 let launchAdmission: StructuredAgentLaunchAdmission | null = null
@@ -97,6 +99,10 @@ export function admitStructuredWorkerCommandSettings(input: StructuredWorkerLaun
 
 export function admitStructuredAgentCreateCommandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings | undefined> {
   return launchAdmission?.createCommandSettings ? launchAdmission.createCommandSettings(sessionId, agent) : Promise.resolve(undefined)
+}
+
+export function readStructuredWorkerPreambleMode(input: StructuredWorkerPreambleAdmission): Promise<'disabled' | 'questions-only' | undefined> {
+  return launchAdmission?.workerPreambleMode ? launchAdmission.workerPreambleMode(input) : Promise.resolve(undefined)
 }
 
 /** Where a launch's shared inputs come from. */

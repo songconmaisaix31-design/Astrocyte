@@ -121,6 +121,11 @@ export async function buildSWARuntime(output) {
     for (const input of Object.keys(result.metafile.inputs)) inputs.add(input)
     await writeFile(join(output, name + '.mjs.metafile.json'), JSON.stringify(result.metafile, null, 2) + '\n', { flag: 'wx' })
   }
+  const questionExtension = await build({ ...common, entryPoints: [join(runtime, 'src/pi-question-extension.ts')], outfile: join(output, 'pi-question-extension.mjs'), format: 'esm',
+    banner: { js: 'import { createRequire as swaCreateRequire } from "node:module"; const require = swaCreateRequire(import.meta.url);' },
+    define: { 'process.env.NODE_ENV': '"production"' }, external: [...common.external, '@earendil-works/pi-ai'] })
+  for (const input of Object.keys(questionExtension.metafile.inputs)) inputs.add(input)
+  await writeFile(join(output, 'pi-question-extension.mjs.metafile.json'), JSON.stringify(questionExtension.metafile, null, 2) + '\n', { flag: 'wx' })
   const policyDirectory = join(output, 'opencode-policy')
   await mkdir(policyDirectory)
   const policy = await build({ ...common, entryPoints: [join(runtime, 'src/opencode-policy-plugin.ts')], outfile: join(policyDirectory, 'server.js'), format: 'esm', banner: {}, define: { 'process.env.NODE_ENV': '"production"' } })

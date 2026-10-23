@@ -33,6 +33,7 @@ import { readRunView, readRunTaskTree, isTaskDescendant } from './run-view'
 import { collaborationRead, writeCollaborationRecords, resolveCollaborationReferences, assertCurrentCollaborationAssignment } from './collaboration-records'
 import { requestRunSettlement, validateHandoffInput } from './run-settlement'
 import { assertQuestionReservation, questionStartSelection, readAnswerQuestion, validateQuestionAnswer } from './question-answer'
+import { assertQuestionResume, observeRunQuestions } from './question-ask'
 import { getOrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
 import { ORCHESTRATION_RUN_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs'
 import { ORCHESTRATION_MESSAGE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods'
@@ -259,7 +260,8 @@ export const SWA_METHODS = [
     if (!command.controller || !command.run_id || !command.task_id || !['run.show', 'run.export'].includes(command.action)) return fail('invalid_argument', 'An exact Run, root task and controller are required')
     const { scope, owner } = controllerScope(runtime, invocation.project.id, command.controller, { history: true })
     if (scope.run_id !== command.run_id || scope.root_task_id !== command.task_id) return fail('scope_denied', 'The Run observation differs from its original project association')
-    const execution = { executor: getOrchestrationMutationExecutor(runtime), runtimeEpoch: runtime.getRuntimeId() }
+    requestRunSettlement(runtime, scope)
+    const execution = { executor: getOrchestrationMutationExecutor(runtime), runtimeEpoch: runtime.getRuntimeId(), questions: () => observeRunQuestions(runtime, scope) }
     const runView = readRunView(runtime.getOrchestrationDb(), scope, execution)
     if (command.action === 'run.show') return { scope, native: { run_view: runView } }
     const summary = await observeTask(runtime, { ...invocation, command: { ...command, action: 'task.result' } }, scope)
@@ -286,12 +288,12 @@ export const SWA_METHODS = [
   } }),
   defineMethod({ name: 'swa.controllerDeliver', permission: 'workspace', params: wrapper, handler: async ({ invocation }, context) => {
     const c = invocation.command
-    if (!c.controller || !['worker.start', 'worker.send', 'worker.stop', 'worker.release', 'task.complete', 'question.answer'].includes(c.action)) return fail('invalid_argument', 'Unsupported controller mutation')
+    if (!c.controller || !['worker.start', 'worker.send', 'worker.stop', 'worker.release', 'task.complete', 'question.answer', 'question.resume'].includes(c.action)) return fail('invalid_argument', 'Unsupported controller mutation')
     const { scope, owner } = controllerScope(context.runtime, invocation.project.id, c.controller)
     await exactController(context.runtime, owner)
     validateTaskAction(context.runtime, invocation, scope)
     validateHandoffInput(context.runtime, invocation)
-    if (c.action === 'worker.start' || c.action === 'worker.send' || c.action === 'question.answer') {
+    if (['worker.start', 'worker.send', 'question.answer', 'question.resume'].includes(c.action)) {
       const selected = await resolveSelection(context.runtime, invocation.project.id, c)
       if (!invocation.selection || !isDeepStrictEqual(selected, invocation.selection)) return fail('request_mismatch', 'The exact selected Agent configuration changed before native execution')
     }
@@ -314,7 +316,7 @@ export const SWA_METHODS = [
     const requestId = reserve(context, invocation, { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, child_request: `${c.request_id}/native`, stage: 'helper-input' })
     return effect(async () => {
       const native = (await helperCall(context.runtime, c.controller!, requestId, c.action, { ...invocation, scope })).result
-      const rejected = c.action === 'question.answer' && nativeObject(native).state === 'rejected'
+      const rejected = ['question.answer', 'question.resume'].includes(c.action) && nativeObject(native).state === 'rejected' && nativeObject(native).effects_applied === false
       const result = { project_id: invocation.project.id, controller: c.controller, run_id: scope.run_id, root_task_id: scope.root_task_id, action: c.action, selection: invocation.selection, invocation: { ...invocation, scope }, child_request: `${requestId}/native`, native, ...(rejected ? { state: 'rejected', effects_applied: false, error: nativeObject(native).error } : {}) }
       if (!context.recordMutationReceipt) return fail('operation_unknown', 'The original native delivery receipt cannot be committed')
       context.recordMutationReceipt(result)
@@ -456,13 +458,13 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   if (command.action === 'run.submit') {
     if (!command.workdir || !isAbsolute(command.workdir) || !command.agent || !command.model || command.controller) return fail('invalid_argument', 'Run submission requires its explicit project directory, Agent and model')
     const projectRoot = await realpath(command.workdir)
-    resolveCollaborationReferences(runtime.getOrchestrationDb(), project, { role_id: command.role_id, role_revision: command.revision, conversation_id: command.conversation_id })
+    const references = resolveCollaborationReferences(runtime.getOrchestrationDb(), project, { role_id: command.role_id, role_revision: command.revision, conversation_id: command.conversation_id })
     await runtime.ensureStructuredAgentSessionHost({ prewarmModelCatalog: false })
-    return selectAgent(runtime, project, command.agent, command.model, projectRoot)
+    return selectAgent(runtime, project, command.agent, command.model, projectRoot, command.question_mode ?? references.role_snapshot?.question_mode ?? 'disabled')
   }
   if (!command.controller) return fail('invalid_argument', 'An exact controller is required for the native account source boundary')
   const { owner, scope } = controllerScope(runtime, project, command.controller)
-  if (command.action === 'question.answer') {
+  if (command.action === 'question.answer' || command.action === 'question.resume') {
     const target = readAnswerQuestion(runtime.getOrchestrationDb(), scope, command)
     const original = questionStartSelection(runtime, scope, command)
     if (target.question.status === 'answered') return original.selection
@@ -473,9 +475,10 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   const projectRoot = await realpath(await resolvePath(owner.worktree_id))
   if (command.action === 'worker.start') {
     if (!command.agent || !command.model) return fail('invalid_argument', 'An explicit native Agent and model are required')
-    return selectAgent(runtime, project, command.agent, command.model, projectRoot)
+    const references = resolveCollaborationReferences(runtime.getOrchestrationDb(), project, { role_id: command.role_id, role_revision: command.revision })
+    return selectAgent(runtime, project, command.agent, command.model, projectRoot, command.question_mode ?? references.role_snapshot?.question_mode ?? 'disabled')
   }
-  if (!['worker.send', 'question.answer'].includes(command.action) || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
+  if (!['worker.send', 'question.answer', 'question.resume'].includes(command.action) || !command.controller || !command.dispatch_id) return fail('invalid_argument', 'Only a start or an exact existing Worker input resolves a model selection')
   validateTaskAction(runtime, { command }, scope)
   const db = runtime.getOrchestrationDb()
   const rows = z.array(z.object({ receipt: z.string() })).parse(db.db.prepare(`SELECT receipt FROM mutation_receipts
@@ -488,7 +491,7 @@ async function resolveSelection(runtime: OrcaRuntimeService, project: string, co
   const dispatch = db.getDispatchContextById(command.dispatch_id)
   const record = dispatch?.assignee_orca_session_id && runtime.openedAgentSessionRecordStore()?.getRecord(dispatch.assignee_orca_session_id)
   if (!record || record.provider !== original.agent_id || record.options?.model !== original.model) return fail('worker_identity_changed', 'The actual Worker session does not match its original Agent selection')
-  const current = await selectAgent(runtime, project, original.agent_id, original.model, projectRoot)
+  const current = await selectAgent(runtime, project, original.agent_id, original.model, projectRoot, original.native_launch.tools.mode === 'questions-only' ? 'native' : 'disabled')
   if (!isDeepStrictEqual(original, current)) return fail('request_mismatch', 'The original Worker Agent source changed; preserve the original selection')
   return original
 }
@@ -524,6 +527,7 @@ function reserve(context: RpcContext, invocation: Invocation, receipt: Record<st
     } else {
       validateTaskAction(runtime, invocation, fresh.scope)
       validateHandoffInput(runtime, invocation)
+      assertQuestionResume(runtime, invocation)
       if (c.action === 'question.answer') {
         validateQuestionAnswer(runtime, invocation, fresh.scope)
         assertQuestionReservation(runtime, invocation)
@@ -569,10 +573,10 @@ function validateTaskAction(runtime: OrcaRuntimeService, invocation: Pick<Invoca
     const dispatch = db.getDispatchContextById(c.dispatch_id)
     const task = dispatch && db.getTask(dispatch.task_id)
     if (!dispatch || dispatch.run_id !== scope.run_id || !task || !isTaskDescendant(db, scope.run_id, scope.root_task_id, task.id)) fail('scope_denied', 'The exact Worker does not belong to this root task')
-    if (['worker.send', 'worker.stop', 'worker.release'].includes(c.action)) {
+    if (['worker.send', 'worker.stop', 'worker.release', 'question.resume'].includes(c.action)) {
       const worker = db.getWorkerDispatch(c.dispatch_id)
       if (!worker || worker.runtime_epoch !== runtime.getRuntimeId()) fail('operation_unknown', 'The original Worker Job belongs to a different runtime generation; preserve its resources')
-      if (c.action === 'worker.send' && worker.state !== 'ready') fail('operation_unknown', 'The exact Worker is not ready for a new approved input')
+      if (['worker.send', 'question.resume'].includes(c.action) && worker.state !== 'ready') fail('operation_unknown', 'The exact Worker is not ready for a new approved input')
     }
   }
   const tasks = readRunTaskTree(db, scope).tasks

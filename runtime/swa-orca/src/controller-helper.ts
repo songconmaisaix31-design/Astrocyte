@@ -46,7 +46,8 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
     }
     case 'worker.stop': return call('orchestration.workerStop', { dispatch: c.dispatch_id }, `${requestId}/native`)
     case 'worker.release': return call('orchestration.workerRelease', { dispatch: c.dispatch_id }, `${requestId}/native`)
-    case 'worker.send': {
+    case 'worker.send':
+    case 'question.resume': {
       return call('swa.workerSend', { controller, parent_request: requestId }, `${requestId}/native`)
     }
     default: throw new Error('unsupported_controller_action')

@@ -36,6 +36,7 @@ type OrcaCommand struct {
 	TaskID             string                      `json:"task_id,omitempty"`
 	DispatchID         string                      `json:"dispatch_id,omitempty"`
 	QuestionID         string                      `json:"question_id,omitempty"`
+	QuestionMode       string                      `json:"question_mode,omitempty"`
 	RequestID          string                      `json:"request_id,omitempty"`
 	Workdir            string                      `json:"workdir,omitempty"`
 	SpecFile           string                      `json:"spec_file,omitempty"`
@@ -65,6 +66,7 @@ type OrcaRoleDefinition struct {
 	Responsibilities string   `json:"responsibilities"`
 	DefaultAgent     string   `json:"default_agent"`
 	DefaultModel     string   `json:"default_model"`
+	QuestionMode     string   `json:"question_mode,omitempty"`
 	Skills           []string `json:"skills"`
 	Knowledge        []string `json:"knowledge"`
 }
@@ -111,16 +113,39 @@ func validateOrcaTaskSpec(spec OrcaTaskSpec) error {
 }
 
 type OrcaInvocation struct {
-	Command    OrcaCommand           `json:"command"`
-	Caller     OrcaExecutionCaller   `json:"caller"`
-	Project    domain.LocalProject   `json:"project"`
-	Scope      OrcaScope             `json:"scope"`
-	Spec       *OrcaTaskSpec         `json:"spec,omitempty"`
-	Context    *domain.ContextPacket `json:"context,omitempty"`
-	Input      *domain.ContextFile   `json:"input,omitempty"`
-	Selection  *OrcaAgentSelection   `json:"selection,omitempty"`
-	Submission *OrcaRunSubmission    `json:"submission,omitempty"`
-	Handoff    *OrcaHandoffResume    `json:"handoff,omitempty"`
+	Command     OrcaCommand           `json:"command"`
+	Caller      OrcaExecutionCaller   `json:"caller"`
+	Project     domain.LocalProject   `json:"project"`
+	Scope       OrcaScope             `json:"scope"`
+	Spec        *OrcaTaskSpec         `json:"spec,omitempty"`
+	Context     *domain.ContextPacket `json:"context,omitempty"`
+	Input       *domain.ContextFile   `json:"input,omitempty"`
+	Selection   *OrcaAgentSelection   `json:"selection,omitempty"`
+	Submission  *OrcaRunSubmission    `json:"submission,omitempty"`
+	Handoff     *OrcaHandoffResume    `json:"handoff,omitempty"`
+	QuestionAsk *OrcaQuestionAsk      `json:"question_ask,omitempty"`
+}
+
+// 原生宿主私有准入只传递已核来源；公开 command 不接受这些字段。
+type OrcaQuestionOrigin struct {
+	NativeSessionID  string `json:"nativeSessionId"`
+	AssistantEntryID string `json:"assistantEntryId"`
+	ToolCallID       string `json:"toolCallId"`
+}
+
+type OrcaQuestionParams struct {
+	Question *string `json:"question,omitempty"`
+	Resume   *string `json:"resume,omitempty"`
+}
+
+type OrcaQuestionAsk struct {
+	StartRequestID string             `json:"start_request_id"`
+	RequestID      string             `json:"request_id"`
+	QuestionID     string             `json:"question_id,omitempty"`
+	SessionID      string             `json:"session_id"`
+	DispatchID     string             `json:"dispatch_id"`
+	Origin         OrcaQuestionOrigin `json:"origin"`
+	Params         OrcaQuestionParams `json:"params"`
 }
 
 type OrcaCapabilityRequirements struct {
@@ -255,8 +280,10 @@ func (account *OrcaNativeLaunchAccount) UnmarshalJSON(data []byte) error {
 }
 
 type OrcaNativeLaunchTools struct {
-	Mode           string `json:"mode"`
-	NativeContract string `json:"native_contract"`
+	Mode           string                         `json:"mode"`
+	NativeContract string                         `json:"native_contract"`
+	Extension      *OrcaNativeConfigurationSource `json:"extension,omitempty"`
+	Allowed        []string                       `json:"allowed,omitempty"`
 }
 
 type OrcaNativeLaunchPolicy struct {
@@ -361,7 +388,7 @@ func orcaAction(action string) (permission string, mutation bool, ok bool) {
 		return "observe", false, true
 	case "controller.open", "controller.recover", "task.create", "worker.start", "run.submit":
 		return "start", true, true
-	case "worker.send", "task.complete", "question.answer":
+	case "worker.send", "task.complete", "question.answer", "question.resume":
 		return "send", true, true
 	case "controller.close", "worker.stop", "worker.release":
 		return "stop", true, true
@@ -382,11 +409,12 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 		"conversation.list": "", "conversation.show": "conversation_id", "conversation.create": "conversation request_id", "conversation.append": "conversation_id text request_id",
 		"handoff.notify":  "controller task_id dispatch_id input_file request_id",
 		"question.answer": "controller run_id task_id dispatch_id question_id input_file text request_id",
-		"run.submit":      "workdir spec_file input_file agent model name request_id role_id revision conversation_id", "run.show": "controller run_id task_id", "run.export": "controller run_id task_id output_dir",
+		"question.resume": "controller run_id task_id dispatch_id question_id request_id",
+		"run.submit":      "workdir spec_file input_file agent model name question_mode request_id role_id revision conversation_id", "run.show": "controller run_id task_id", "run.export": "controller run_id task_id output_dir",
 		"controller.open": "workdir request_id", "controller.show": "controller", "controller.close": "controller request_id", "controller.recover": "controller request_id",
 		"task.create": "controller spec_file request_id", "task.show": "controller task_id", "task.list": "controller",
 		"task.complete": "controller task_id result_file request_id", "task.result": "controller task_id output_dir",
-		"worker.start": "controller task_id name agent model input_file request_id parent_task_id handoff_mode reply_mode completion_criteria role_id revision", "worker.list": "controller task_id",
+		"worker.start": "controller task_id name agent model input_file question_mode request_id parent_task_id handoff_mode reply_mode completion_criteria role_id revision", "worker.list": "controller task_id",
 		"worker.show": "controller dispatch_id", "worker.read": "controller dispatch_id source cursor limit",
 		"worker.send": "controller dispatch_id input_file request_id", "worker.stop": "controller dispatch_id request_id",
 		"worker.release": "controller dispatch_id request_id", "request.show": "controller request_id",
@@ -407,6 +435,12 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 		if !allowed[name] {
 			return projectError(apierrors.ValidationFailed, "the action does not accept "+name)
 		}
+	}
+	if c.QuestionMode != "" && c.QuestionMode != "disabled" && c.QuestionMode != "native" {
+		return projectError(apierrors.ValidationFailed, "question_mode must be disabled or native")
+	}
+	if c.QuestionMode == "native" && (c.Agent != "pi" || c.HandoffMode == "consult") {
+		return projectError(apierrors.UnsupportedCapability, "native questions require Pi work; consult keeps its disabled-tool policy")
 	}
 	if mutation || c.Action == "request.show" {
 		id, err := uuid.Parse(c.RequestID)
@@ -448,6 +482,9 @@ func ValidateOrcaCommand(c OrcaCommand) error {
 		if c.Text != "" {
 			return validateOrcaAnswer(c.Text)
 		}
+	}
+	if c.Action == "question.resume" && (c.RunID == "" || c.TaskID == "" || c.DispatchID == "" || c.QuestionID == "") {
+		return projectError(apierrors.ValidationFailed, "question resume requires the exact Run, root Task, Dispatch and question")
 	}
 	if (c.Action == "run.show" || c.Action == "run.export") && (c.RunID == "" || c.TaskID == "") {
 		return projectError(apierrors.ValidationFailed, "run observation requires the exact Run and root Task identities")
@@ -498,6 +535,80 @@ func validateOrcaAnswer(text string) error {
 	return nil
 }
 
+func orcaQuestionResumeBody(questionID string) string {
+	return "使用 swa_ask 的 resume 参数读取原问题 " + questionID + " 的答案，并继续当前任务。"
+}
+
+func validateOrcaQuestionSelection(command OrcaCommand, selection OrcaAgentSelection) error {
+	mode := selection.NativeLaunch.Tools.Mode
+	if command.Action == "question.resume" && mode != "questions-only" {
+		return projectError(apierrors.UnsupportedCapability, "question continuation requires the original native question tool mode")
+	}
+	if command.Action != "worker.start" && command.Action != "run.submit" {
+		return nil
+	}
+	if command.HandoffMode == "consult" && mode != "disabled" {
+		return projectError(apierrors.UnsupportedCapability, "consult retains its disabled-tool policy")
+	}
+	requested := command.QuestionMode
+	if requested == "" && command.RoleID != "" {
+		// 角色版本与其默认模式由原生选择端核验；显式选项仍须精确匹配。
+		return nil
+	}
+	wanted := "disabled"
+	if requested == "native" {
+		wanted = "questions-only"
+	}
+	if mode != wanted {
+		return projectError(apierrors.EvidenceMissing, "native selection changed the requested question mode")
+	}
+	return nil
+}
+
+func validateOrcaQuestionAsk(invocation OrcaInvocation) error {
+	command, ask := invocation.Command, invocation.QuestionAsk
+	if ask == nil || command.Action != "worker.send" || invocation.Handoff != nil || invocation.Submission != nil || invocation.Input == nil || invocation.Selection == nil || invocation.Selection.NativeLaunch.Tools.Mode != "questions-only" {
+		return projectError(apierrors.ScopeDenied, "native question admission requires its original exclusive question input binding")
+	}
+	for _, value := range []string{ask.StartRequestID, ask.RequestID} {
+		id, err := uuid.Parse(value)
+		if err != nil || id.String() != value {
+			return projectError(apierrors.ScopeDenied, "native question admission requires canonical original request identities")
+		}
+	}
+	origin := ask.Origin
+	nativeID, err := uuid.Parse(origin.NativeSessionID)
+	if err != nil || nativeID.String() != origin.NativeSessionID || nativeID.Version() != 7 || strings.TrimSpace(ask.SessionID) == "" || origin.AssistantEntryID == "" || utf8.RuneCountInString(origin.AssistantEntryID) > 64 || origin.ToolCallID == "" || utf8.RuneCountInString(origin.ToolCallID) > 512 || !utf8.ValidString(origin.AssistantEntryID) || !utf8.ValidString(origin.ToolCallID) {
+		return projectError(apierrors.ScopeDenied, "native question admission lacks its exact native session and tool entry")
+	}
+	if command.RequestID != ask.RequestID || ask.DispatchID == "" || command.DispatchID != ask.DispatchID || command.InputFile != "native-question:"+ask.RequestID || invocation.Input.Path != command.InputFile || invocation.Input.Version != ask.RequestID {
+		return projectError(apierrors.ScopeDenied, "native question admission changed its original request or input binding")
+	}
+	if (ask.Params.Question == nil) == (ask.Params.Resume == nil) {
+		return projectError(apierrors.ValidationFailed, "native question accepts exactly one question or resume parameter")
+	}
+	if ask.Params.Question != nil {
+		if ask.QuestionID != "" {
+			return projectError(apierrors.ScopeDenied, "a new native question cannot select an existing question")
+		}
+		if err := validateOrcaAnswer(*ask.Params.Question); err != nil {
+			return err
+		}
+	} else if *ask.Params.Resume == "" || !utf8.ValidString(*ask.Params.Resume) || utf8.RuneCountInString(*ask.Params.Resume) > 512 || ask.QuestionID != *ask.Params.Resume {
+		return projectError(apierrors.ScopeDenied, "native question resume must retain its original question")
+	}
+	var params OrcaQuestionParams
+	if !json.Valid([]byte(invocation.Input.Text)) {
+		return projectError(apierrors.ScopeDenied, "native question input must contain its exact JSON parameters")
+	}
+	decoder := json.NewDecoder(strings.NewReader(invocation.Input.Text))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&params); err != nil || !reflect.DeepEqual(params, ask.Params) {
+		return projectError(apierrors.ScopeDenied, "native question input differs from its original parameters")
+	}
+	return nil
+}
+
 func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Caller, projectID, permission string, roots []string, externalTarget string) (domain.LocalProject, error) {
 	p, err := s.projects.LoadProject(ctx, projectID)
 	if err != nil {
@@ -526,8 +637,8 @@ func (s *OrcaExecutionService) authorize(ctx context.Context, caller domain.Call
 
 func (s *OrcaExecutionService) readInput(ctx context.Context, p domain.LocalProject, path string) (domain.ContextFile, error) {
 	var result domain.ContextFile
-	if strings.HasPrefix(path, "native-handoff:") {
-		return result, projectError(apierrors.ScopeDenied, "native handoff input must originate from the owning runtime")
+	if strings.HasPrefix(path, "native-handoff:") || strings.HasPrefix(path, "native-question:") || strings.HasPrefix(path, "native-question-resume:") {
+		return result, projectError(apierrors.ScopeDenied, "native internal input must originate from its exact owning command")
 	}
 	if filepath.IsAbs(path) {
 		rel, err := filepath.Rel(p.Root, path)
@@ -567,7 +678,7 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 	if projectID == "" {
 		return reply, projectError(apierrors.ScopeDenied, "a current project-scoped caller is required")
 	}
-	model := command.Action == "worker.start" || command.Action == "worker.send" || command.Action == "question.answer"
+	model := command.Action == "worker.start" || command.Action == "worker.send" || command.Action == "question.answer" || command.Action == "question.resume"
 	initialPermission := permission
 	if model {
 		initialPermission = "observe"
@@ -641,6 +752,9 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 		if err := validateOrcaNativeLaunch(selection, projectID); err != nil {
 			return reply, err
 		}
+		if err := validateOrcaQuestionSelection(command, selection); err != nil {
+			return reply, err
+		}
 		if submission != nil && !reflect.DeepEqual(submission.Selection, selection) {
 			return reply, projectError(apierrors.ContextStale, "run submission Agent selection changed before delivery")
 		}
@@ -674,7 +788,7 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 			return reply, projectError(apierrors.ScopeDenied, "native controller scope does not match the current project")
 		}
 		invocation.Scope = scope
-		if command.Action == "run.show" || command.Action == "run.export" || command.Action == "question.answer" {
+		if command.Action == "run.show" || command.Action == "run.export" || command.Action == "question.answer" || command.Action == "question.resume" {
 			if scope.RunID != command.RunID || scope.RootTaskID != command.TaskID {
 				return reply, projectError(apierrors.ScopeDenied, "Run and root Task do not match the current controller")
 			}
@@ -750,6 +864,9 @@ func (s *OrcaExecutionService) executeOrcaCommand(ctx context.Context, caller do
 			}
 		}
 	}
+	if command.Action == "question.resume" {
+		invocation.Input = &domain.ContextFile{Path: "native-question-resume:" + command.QuestionID, Version: command.RequestID, Text: orcaQuestionResumeBody(command.QuestionID)}
+	}
 	// 文件读取和原生观察之后再次核准，撤销不能沿旧预检继续输入。
 	var finalRoots []string
 	if outputRoot != "" {
@@ -793,6 +910,9 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 	policy := selection.NativeLaunch
 	account := policy.Account
 	target := account.ModelTarget
+	if policy.Tools.Mode == "disabled" && (policy.Tools.Extension != nil || len(policy.Tools.Allowed) != 0) {
+		return projectError(apierrors.EvidenceMissing, "disabled native tools cannot carry an extension or allowed tools")
+	}
 	if account.Kind == "claude-native-api-key" {
 		if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "claude-cli-2.1.284-sdk-0.3.284" || selection.AgentID != "claude" || selection.ExternalTarget != "claude" || selection.Version != "2.1.284" || selection.ExecutionMode != "structured" || account.Provider != "anthropic" || selection.Provider != "anthropic" || selection.Model != "claude-opus-5" || target.ModelID != "claude-opus-5" || target.API != "anthropic-messages" || target.BaseURL != "https://api.anthropic.com" || account.PrivateHome != "" || account.ModelsSource != nil || account.CredentialID != "" {
 			return projectError(apierrors.EvidenceMissing, "the selected native Claude API account and disabled-tool policy are unverified")
@@ -821,8 +941,14 @@ func validateOrcaNativeLaunch(selection OrcaAgentSelection, projectID string) er
 		return nil
 	}
 	endpoint, err := url.Parse(target.BaseURL)
-	if policy.Schema != "swa.native-launch.v1" || policy.Tools.Mode != "disabled" || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.ExternalTarget != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key-per-session" || account.Provider == "" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
-		return projectError(apierrors.EvidenceMissing, "the selected native account and disabled-tool policy are unverified")
+	if policy.Schema != "swa.native-launch.v1" || (policy.Tools.Mode != "disabled" && policy.Tools.Mode != "questions-only") || policy.Tools.NativeContract != "pi-cli-1.0.1" || selection.AgentID != "pi" || selection.ExternalTarget != "pi" || selection.Version != "1.0.1" || selection.ExecutionMode != "structured" || account.Kind != "pi-native-api-key-per-session" || account.Provider == "" || account.Provider != selection.Provider || target.ModelID == "" || selection.Model != account.Provider+"/"+target.ModelID || !slices.Contains([]string{"openai-responses", "openai-completions", "azure-openai-responses"}, target.API) || err != nil || endpoint.Host == "" || (endpoint.Scheme != "https" && endpoint.Scheme != "http") || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
+		return projectError(apierrors.EvidenceMissing, "the selected native account and tool policy are unverified")
+	}
+	if policy.Tools.Mode == "questions-only" {
+		extension := policy.Tools.Extension
+		if extension == nil || !filepath.IsAbs(extension.Path) || filepath.Clean(extension.Path) != extension.Path || filepath.Base(extension.Path) != "pi-question-extension.mjs" || filepath.Base(filepath.Dir(extension.Path)) != "runtime" || extension.Version == "" || !slices.Equal(policy.Tools.Allowed, []string{"swa_ask"}) {
+			return projectError(apierrors.EvidenceMissing, "native questions require their fixed installed extension source and exact allowed tool")
+		}
 	}
 	if !filepath.IsAbs(account.SourceHome) || filepath.Clean(account.SourceHome) != account.SourceHome || !filepath.IsAbs(account.PrivateRoot) || filepath.Clean(account.PrivateRoot) != account.PrivateRoot || filepath.Base(account.PrivateRoot) != projectID || filepath.Base(filepath.Dir(account.PrivateRoot)) != "pi-workers" || account.PrivateHome != "" || account.AuthSource.Version == "" || account.AuthSource.Path != filepath.Join(account.SourceHome, "auth.json") || account.ModelsSource != nil && (account.ModelsSource.Version == "" || account.ModelsSource.Path != filepath.Join(account.SourceHome, "models.json")) {
 		return projectError(apierrors.EvidenceMissing, "the selected native account source and per-session project root are incomplete")
@@ -837,12 +963,12 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 	if err := ValidateOrcaCommand(command); err != nil {
 		return result, err
 	}
-	if command.Action != "worker.start" && command.Action != "worker.send" && command.Action != "question.answer" {
+	if command.Action != "worker.start" && command.Action != "worker.send" && command.Action != "question.answer" && command.Action != "question.resume" {
 		return result, projectError(apierrors.ScopeDenied, "delivery admission requires an original Worker input")
 	}
 	actor, scope := invocation.Caller, invocation.Scope
-	if command.Action == "question.answer" && (invocation.Handoff != nil || invocation.Submission != nil || command.RunID != scope.RunID || command.TaskID != scope.RootTaskID) {
-		return result, projectError(apierrors.ScopeDenied, "question answer must retain its original Run and root without handoff or submission")
+	if (command.Action == "question.answer" || command.Action == "question.resume") && (invocation.Handoff != nil || invocation.Submission != nil || invocation.QuestionAsk != nil || command.RunID != scope.RunID || command.TaskID != scope.RootTaskID) {
+		return result, projectError(apierrors.ScopeDenied, "question input must retain its original Run and root without another internal source")
 	}
 	if actor.ID == "" || actor.ProjectID == "" || actor.ProjectID != invocation.Project.ID || actor.ProjectID != scope.ProjectID || actor.SettingsRevision < 1 || scope.Controller == "" || scope.Controller != command.Controller || scope.RunID == "" || scope.RootTaskID == "" || scope.AuthorityDomain == "" || (actor.Kind != "agent" && actor.Kind != "human") {
 		return result, projectError(apierrors.ScopeDenied, "the original Worker delivery association is incomplete")
@@ -853,6 +979,14 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 	}
 	if err := validateOrcaNativeLaunch(*selection, actor.ProjectID); err != nil {
 		return result, err
+	}
+	if err := validateOrcaQuestionSelection(command, *selection); err != nil {
+		return result, err
+	}
+	if invocation.QuestionAsk != nil {
+		if err := validateOrcaQuestionAsk(invocation); err != nil {
+			return result, err
+		}
 	}
 	caller := domain.Caller{ID: actor.ID, Kind: actor.Kind, ProjectID: actor.ProjectID}
 	permission, _, _ := orcaAction(command.Action)
@@ -868,7 +1002,7 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 		return result, err
 	}
 	// 人类追加输入重新核准当前项目权限，保留创建者来源及 Agent 原批准绑定。
-	independentHumanInput := actor.Kind == "human" && (command.Action == "worker.send" || command.Action == "question.answer") && invocation.Handoff == nil
+	independentHumanInput := actor.Kind == "human" && (command.Action == "worker.send" || command.Action == "question.answer" || command.Action == "question.resume") && invocation.Handoff == nil && invocation.QuestionAsk == nil
 	if link.ProjectID != project.ID || !independentHumanInput && link.GrantAgentID != actor.ID || link.SettingsRevision != project.Settings.Revision || link.AuthorityDomain != scope.AuthorityDomain || link.RunID != scope.RunID || link.RootTaskID != scope.RootTaskID {
 		return result, projectError(apierrors.ScopeDenied, "the saved native Run association changed")
 	}
@@ -886,7 +1020,11 @@ func (s *OrcaExecutionService) AdmitOrcaDelivery(ctx context.Context, invocation
 		if err := validateOrcaHandoffResume(invocation); err != nil {
 			return result, err
 		}
-	} else if !inlineAnswer {
+	} else if command.Action == "question.resume" {
+		if invocation.Input.Path != "native-question-resume:"+command.QuestionID || invocation.Input.Version != command.RequestID || invocation.Input.Text != orcaQuestionResumeBody(command.QuestionID) {
+			return result, projectError(apierrors.ScopeDenied, "question continuation changed its exact generated input")
+		}
+	} else if !inlineAnswer && invocation.QuestionAsk == nil {
 		input, err := s.readInput(ctx, project, invocation.Input.Path)
 		if err != nil {
 			return result, err

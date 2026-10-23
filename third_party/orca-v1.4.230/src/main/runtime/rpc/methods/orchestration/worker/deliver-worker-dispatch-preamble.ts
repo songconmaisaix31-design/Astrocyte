@@ -18,14 +18,14 @@ import { dispatchTaskSource } from '../../../../orchestration/dispatch-task-sour
 import type { AgentMessageSource } from '../../../../../../shared/agent-session-message-source'
 import type { WorkerTurnStartObservation } from './worker-start-turn-observation'
 import type { createStructuredWorkerSessionForWorktree } from './worker-topology'
+import { readStructuredWorkerPreambleMode } from '../../../../structured-agent-launch-composition'
 
 type StructuredSession = Awaited<ReturnType<typeof createStructuredWorkerSessionForWorktree>> | null
 
 /**
  * Hands a started worker the dispatch preamble, over whichever transport it has.
  *
- * The preamble differs only in how it names the worker and calls it a chat or a terminal: a worker
- * is taught the same verbs whichever mode it runs in, and only the delivery differs — a PTY write
+ * The preamble names the worker and uses its admitted tool mode; delivery differs — a PTY write
  * returns a queued/accepted receipt, while a structured turn is acknowledged, still held for an
  * agent that has not started, or throws. Held is a turn start nobody observed yet: the start is left
  * unknown, not torn down. A chat's task is a queued send, held as a card while the chat is busy:
@@ -53,11 +53,18 @@ export async function deliverWorkerDispatchPreamble(args: {
   structuredTurnStart?: WorkerTurnStartObservation
 }> {
   const { runtime, structuredSession, terminalHandle } = args
+  let toolsMode: 'disabled' | 'questions-only' | undefined
+  if (structuredSession) {
+    const { identity } = structuredSession
+    if (!identity.agent || identity.dispatchId !== args.dispatchId) {
+      throw new OrchestrationError('scope_denied', 'The preamble does not name its original structured Worker.')
+    }
+    toolsMode = await readStructuredWorkerPreambleMode({ sessionId: identity.sessionId, agent: identity.agent, dispatchId: args.dispatchId })
+  }
   const preamble = buildDispatchPreamble({
-    // Depth only. A worker is taught the same verbs whichever mode it runs in, so this must not
-    // become a second gate: resolving the caller's worktree is what lets a structured worker
-    // dispatch sub-workers exactly like a PTY one.
+    // 原深度权限继续保留；受限模式只描述实际可用能力。
     canDispatchSubWorkers: args.dispatchDepth < runtime.getNestedWorkerMaxDepth(),
+    ...(toolsMode ? { toolsMode } : {}),
     taskId: args.taskId,
     dispatchId: args.dispatchId,
     taskSpec: args.taskSpec,

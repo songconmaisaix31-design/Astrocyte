@@ -87,6 +87,7 @@ async function main() {
       case 'worker.start':
       case 'worker.send':
       case 'question.answer':
+      case 'question.resume':
       case 'worker.stop':
       case 'worker.release': result = (await client.call('swa.controllerDeliver', { invocation }, mutationOptions)).result; break
       case 'request.show': result = await requestShow(client, invocation); break
@@ -124,11 +125,11 @@ async function main() {
 }
 
 function nativeOutcomeError(action: string, native: Record<string, unknown> | undefined) {
-  if ((action === 'worker.send' || action === 'question.answer') && native?.state === 'rejected') {
+  if (['worker.send', 'question.answer', 'question.resume'].includes(action) && native?.state === 'rejected') {
     const failure = z.object({ code: z.string(), message: z.string(), retryable: z.boolean(), required_action: z.string(), data: z.unknown().optional() }).optional().parse(native.error)
     return failure ?? { code: 'provider_unavailable', message: 'The actual native Worker rejected this input', retryable: false, required_action: 'inspect_original_request', data: native }
   }
-  const expected = action === 'worker.start' ? ['ready'] : action === 'worker.send' ? ['journaled', 'queued', 'accepted', 'handed-to-terminal'] : action === 'question.answer' ? ['answered'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
+  const expected = action === 'worker.start' ? ['ready'] : ['worker.send', 'question.resume'].includes(action) ? ['journaled', 'queued', 'accepted', 'handed-to-terminal'] : action === 'question.answer' ? ['answered'] : action === 'worker.stop' ? ['stopped'] : action === 'worker.release' ? ['released', 'already_released'] : undefined
   if (!expected) return undefined
   if (typeof native?.state === 'string' && expected.includes(native.state)) return undefined
   const failed = action === 'worker.start' && native?.state === 'failed'

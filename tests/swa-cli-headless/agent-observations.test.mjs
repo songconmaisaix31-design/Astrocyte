@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir, mkdtemp } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 
@@ -12,7 +12,7 @@ await mkdir(join(root, '.verification/agent-observations'), { recursive: true })
 const directory = await mkdtemp(join(root, '.verification/agent-observations/run-'))
 function compile(name, entry) {
   const output = join(directory, `${name}.cjs`)
-  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], logLevel: 'silent' })
+  buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib/esm/main.js') }, nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], logLevel: 'silent' })
   return createRequire(output)(output)
 }
 const { describeAgentFeatures, modelCatalogObservation, executionObservation } = compile('observations', 'runtime/swa-orca/src/execution-observation.ts')

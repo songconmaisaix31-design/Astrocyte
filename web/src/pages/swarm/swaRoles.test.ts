@@ -24,6 +24,12 @@ describe('角色与讨论的原记录边界', () => {
     expect(() => readSwaConversation(envelope({ conversation, entries: [entry] }), projectID, 'other-conversation')).toThrow('另一个讨论');
   });
 
+  it('旧角色明确使用 disabled，保存和归档记录保留原生问答选择', () => {
+    expect(readSwaRoles(envelope({ roles: [role] }), projectID)[0]?.question_mode).toBe('disabled');
+    for (const archived of [false, true]) expect(readSwaRoles(envelope({ roles: [{ ...role, question_mode: 'native', archived }] }), projectID)[0]).toMatchObject({ question_mode: 'native', archived });
+    for (const question_mode of [null, '', 'all-tools']) expect(() => readSwaRoles(envelope({ roles: [{ ...role, question_mode }] }), projectID)).toThrow('问题模式');
+  });
+
   it('原创建身份和原追加条目必须出现在成功回执中，未保存不能显示成功', () => {
     expect(collaborationOutcome(envelope({ role }), projectID, { action: 'role.create' }).status).toBe('succeeded');
     expect(() => collaborationOutcome(envelope({ role: { ...role, id: 'another-role' } }), projectID, { action: 'role.create' })).toThrow('原创建请求');

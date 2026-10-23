@@ -17,8 +17,10 @@ export async function sendRequest<TResult>(
   timeoutMs: number,
   envelope?: RuntimeOrchestrationEnvelope,
   // Why separate from the envelope: federation forwards envelopes to other runtimes.
-  expectedRuntimeSource?: ExpectedRuntimeSource
+  expectedRuntimeSource?: ExpectedRuntimeSource,
+  signal?: AbortSignal
 ): Promise<RuntimeRpcResponse<TResult>> {
+  if (signal?.aborted) throw new RuntimeClientError('operation_cancelled', 'The local runtime request was cancelled before connecting.')
   if (!isSafeTimerDelayMs(timeoutMs)) {
     throw new RuntimeClientError(
       'invalid_argument',
@@ -39,6 +41,7 @@ export async function sendRequest<TResult>(
     const socket = createConnection(transport.endpoint)
     let lineSegments: string[] = []
     let settled = false
+    let onAbort: (() => void) | undefined
     const requestId = randomUUID()
 
     const timeout = setTimeout(() => {
@@ -46,6 +49,7 @@ export async function sendRequest<TResult>(
         return
       }
       settled = true
+      if (onAbort) signal?.removeEventListener('abort', onAbort)
       lineSegments = []
       socket.destroy()
       reject(
@@ -63,6 +67,7 @@ export async function sendRequest<TResult>(
         return
       }
       settled = true
+      if (onAbort) signal?.removeEventListener('abort', onAbort)
       lineSegments = []
       clearTimeout(timeout)
       socket.end()
@@ -72,6 +77,13 @@ export async function sendRequest<TResult>(
         resolve(result.response)
       }
     }
+
+    onAbort = () => {
+      finish({ ok: false, error: new RuntimeClientError('operation_cancelled', 'The local runtime request was cancelled; inspect its original request before retrying.') })
+      socket.destroy()
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+    if (signal?.aborted) { onAbort(); return }
 
     socket.setEncoding('utf8')
     socket.once('error', (error) => {
@@ -198,6 +210,7 @@ export async function sendRequest<TResult>(
       }
     })
     socket.on('connect', () => {
+      if (settled) return
       socket.write(
         `${JSON.stringify({
           id: requestId,
@@ -210,6 +223,8 @@ export async function sendRequest<TResult>(
           compatibilityInvocationId: envelope?.compatibilityInvocationId,
           orchestrationCompatibilityEvidence: envelope?.orchestrationCompatibilityEvidence,
           swaOwnerCapability: envelope?.swaOwnerCapability,
+          swaQuestionProducerProof: envelope?.swaQuestionProducerProof,
+          swaQuestionOrigin: envelope?.swaQuestionOrigin,
           expectedRuntimeSource
         })}\n`
       )

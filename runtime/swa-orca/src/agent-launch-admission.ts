@@ -13,6 +13,9 @@ import { codexProtectedRoots, selectAgent } from './agent-discovery'
 import { readAgentSettings } from './agent-settings'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiSessionAccount, privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
+import { getAppEnvironment } from '../../../third_party/orca-v1.4.230/src/shared/app-environment'
+import { getRuntimeSourceStamp } from '../../../third_party/orca-v1.4.230/src/main/runtime/host-descriptor'
+import { stampRuntimeSourceEnv } from '../../../third_party/orca-v1.4.230/src/shared/runtime-source-env'
 import { assertDeliveryGrantCurrent, createDeliveryAdmission } from './delivery-admission'
 import type { StructuredAgentInputAdmission, StructuredWorkerLaunchAdmission, StructuredWorkerStartAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { installWorkerInputApproval } from './worker-input'
@@ -119,7 +122,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
         if (!('variable' in record.accountHome) || record.accountHome.variable !== 'CLAUDE_CONFIG_DIR' || record.accountHome.path !== join(account.private_root, sessionId, 'config')) throw new Error('The native Claude account changed before launch')
       } else if (!('kind' in record.accountHome) || record.accountHome.kind !== 'opencode' || record.accountHome.locator.kind !== 'private' || record.accountHome.locator.root !== join(account.private_root, sessionId)) throw new Error('The native OpenCode account changed before launch')
     }
-    const current = await selectAgent(runtime, invocation.project.id, original.agent_id, original.model, invocation.project.root)
+    const current = await selectAgent(runtime, invocation.project.id, original.agent_id, original.model, invocation.project.root, original.native_launch.tools.mode === 'questions-only' ? 'native' : 'disabled')
     if (!isDeepStrictEqual(original, current)) throw new Error('The selected native Agent configuration changed before launch')
     return { original, invocation, parentRow, childRow }
   }
@@ -130,7 +133,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const account = original.native_launch.account
     if (agent === 'pi' && account.kind === 'pi-native-api-key-per-session' && original.version === '1.0.1') {
       const settings = await readAgentSettings()
-      const snapshot = await inspectNativePiPolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, provider: account.provider, modelId: account.model_target.model_id, env: process.env, protectedRoots: codexProtectedRoots(settings, selected.invocation.project.root) })
+      const snapshot = await inspectNativePiPolicy({ executable: original.executable, version: original.version, sourceHome: account.source_home, projectId: selected.invocation.project.id, questionMode: original.native_launch.tools.mode === 'questions-only' ? 'native' : 'disabled', provider: account.provider, modelId: account.model_target.model_id, env: process.env, protectedRoots: codexProtectedRoots(settings, selected.invocation.project.root) })
       if (!sameNativeLaunchPolicy(original.native_launch, snapshot.policy)) throw new Error('The original native account policy changed')
       return { ...selected, snapshot, kind: 'pi' as const }
     }
@@ -250,7 +253,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     const record = runtime.openedAgentSessionRecordStore()?.getRecord(sessionId)
     const dispatch = db.getDispatchContextById(binding.dispatch_id)
     const run = db.getRun(invocation.scope.run_id)
-    if (!owner.ownerAlive() || !identity || identity.dispatchId !== binding.dispatch_id || binding.agent !== agent || binding.session_id !== sessionId || binding.operation_id !== clientMessageId || binding.parent_request !== rows[0]!.request_id || binding.child_request !== `${binding.parent_request}/native` || parent.child_request !== binding.child_request || !['worker.start', 'worker.send'].includes(String(parent.action)) || invocation.command.request_id !== binding.parent_request || invocation.command.action !== parent.action || invocation.project.id !== parent.project_id || invocation.scope.run_id !== parent.run_id || invocation.scope.root_task_id !== parent.root_task_id || !isDeepStrictEqual(invocation.selection, parent.selection) || !record || record.provider !== agent || record.lease.runtimeFence !== binding.runtime_fence || !dispatch || dispatch.run_id !== invocation.scope.run_id || !run || run.consumer_generation !== binding.consumer_generation || run.coordinator_handle !== invocation.scope.controller || children.length !== 1 || children[0]!.method !== (parent.action === 'worker.start' ? 'orchestration.workerStart' : 'swa.workerSend') || !children[0]!.receipt || !isDeepStrictEqual(nativeObject(JSON.parse(children[0]!.receipt)).swa_input_binding, binding)) throw new Error('The native input original receipt or session binding changed')
+    if (!owner.ownerAlive() || !identity || identity.dispatchId !== binding.dispatch_id || binding.agent !== agent || binding.session_id !== sessionId || binding.operation_id !== clientMessageId || binding.parent_request !== rows[0]!.request_id || binding.child_request !== `${binding.parent_request}/native` || parent.child_request !== binding.child_request || !['worker.start', 'worker.send', 'question.resume'].includes(String(parent.action)) || invocation.command.request_id !== binding.parent_request || invocation.command.action !== parent.action || invocation.project.id !== parent.project_id || invocation.scope.run_id !== parent.run_id || invocation.scope.root_task_id !== parent.root_task_id || !isDeepStrictEqual(invocation.selection, parent.selection) || !record || record.provider !== agent || record.lease.runtimeFence !== binding.runtime_fence || !dispatch || dispatch.run_id !== invocation.scope.run_id || !run || run.consumer_generation !== binding.consumer_generation || run.coordinator_handle !== invocation.scope.controller || children.length !== 1 || children[0]!.method !== (parent.action === 'worker.start' ? 'orchestration.workerStart' : 'swa.workerSend') || !children[0]!.receipt || !isDeepStrictEqual(nativeObject(JSON.parse(children[0]!.receipt)).swa_input_binding, binding)) throw new Error('The native input original receipt or session binding changed')
     return binding
   }
   async function beforeInput(input: StructuredAgentInputAdmission) {
@@ -296,6 +299,15 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
     },
     beforeWorkerStart,
     workerCommandSettings,
+    workerPreambleMode: async input => {
+      const { original } = await originalSelection(input.sessionId, input.agent)
+      const identity = structuredWorkerIdentities.getBySessionId(input.sessionId)
+      const record = runtime.openedAgentSessionRecordStore()?.getRecord(input.sessionId)
+      const worker = runtime.getOrchestrationDb().getWorkerDispatch(input.dispatchId)
+      if (!owner.ownerAlive() || identity?.dispatchId !== input.dispatchId || identity.agent !== input.agent || !record?.lease.ownerProcess || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !worker || !['starting', 'ready'].includes(worker.state) || worker.runtime_epoch !== runtime.getRuntimeId()) throw new Error('The native Worker preamble has no current launch identity')
+      if (!['disabled', 'questions-only'].includes(original.native_launch.tools.mode)) throw new Error('The native Worker preamble tool mode is unavailable')
+      return original.native_launch.tools.mode
+    },
     createCommandSettings: async (sessionId, agent) => {
       const { original } = await originalSelection(sessionId, agent, false)
       return { agentCmdOverrides: { [agent]: `"${original.executable}"` } }
@@ -349,7 +361,16 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       const selected = await policySnapshot(sessionId, agent)
       await verifyAccount(selected, sessionId, selected.kind === 'codex')
       assertDeliveryGrantCurrent(invocation)
-      return selected.kind === 'pi' ? privatePiEnvironment(join(selected.snapshot.policy.account.private_root, sessionId), inherited) : selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : selected.kind === 'claude' ? privateClaudeEnvironment(selected.snapshot, sessionId) : privateCodexEnvironment(selected.snapshot, sessionId)
+      if (selected.kind === 'pi') {
+        const environment = privatePiEnvironment(join(selected.snapshot.policy.account.private_root, sessionId), inherited)
+        if (selected.snapshot.policy.tools.mode === 'questions-only') {
+          const stamp = getRuntimeSourceStamp(runtime, getAppEnvironment().getPath('userData'))
+          if (!stamp?.profilePath) throw new Error('The native question runtime source is unavailable')
+          stampRuntimeSourceEnv(environment, stamp)
+        }
+        return environment
+      }
+      return selected.kind === 'opencode' ? privateOpenCodeEnvironment((await binding(selected, sessionId)).root, inherited) : selected.kind === 'claude' ? privateClaudeEnvironment(selected.snapshot, sessionId) : privateCodexEnvironment(selected.snapshot, sessionId)
     },
     disabledPiTools: async (sessionId, agent, cwd, environment) => {
       const final = await approved(sessionId, agent)
@@ -366,7 +387,7 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
       piPolicies.set(policyKey, sessionPolicy)
       const account = selected.snapshot.policy.account
       if (!selected.snapshot.sources.interpreter) throw new Error('The approved native Pi interpreter is unavailable')
-      return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, sessionPolicy }
+      return { nativeContract: 'pi-cli-1.0.1', provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, sessionPolicy, ...(selected.snapshot.policy.tools.mode === 'questions-only' ? { questionExtension: selected.snapshot.policy.tools.extension.path } : {}) }
     },
     disabledOpenCodeTools: async (sessionId, agent) => {
       const final = await approved(sessionId, agent)

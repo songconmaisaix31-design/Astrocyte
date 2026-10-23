@@ -36,6 +36,7 @@ export type PreambleParams = {
   workerKind?: 'prompt-returning-agent' | 'bare-shell'
   // Why gated: advertising a verb the depth cap will reject just burns a turn.
   canDispatchSubWorkers?: boolean
+  toolsMode?: 'disabled' | 'questions-only'
 }
 
 // Why: 5 minutes is frequent enough that the coordinator's stale-heartbeat
@@ -68,6 +69,40 @@ function dispatchIdentityLines(params: PreambleParams): string {
 // not as a separate prose block — LLM readers anchor on examples and skim
 // trailing prose, so rules must land at the point of use.
 export function buildDispatchPreamble(params: PreambleParams): string {
+  if (params.toolsMode === 'questions-only') {
+    const drift = params.baseDrift && params.baseDrift.behind > 0
+      ? `\n\nBase state: ${params.baseDrift.behind} commits behind ${params.baseDrift.base}.\n${params.baseDrift.recentSubjects.map(subject => `  - ${subject}`).join('\n')}`
+      : ''
+    return `You are a dispatched worker inside SWA.
+${dispatchIdentityLines(params)}
+Your dispatch ID is: ${params.dispatchId}
+
+Work from the supplied task and context. Your only tool is swa_ask, which asks the owner of this Run for a necessary clarification and returns their original answer.
+Use the actual swa_ask tool when an answer is required. After timeout keep its question ID and use resume to read that same question; never create a second question as a retry.
+Return your findings, source evidence, uncertainties, and unfinished work in your final answer. The runtime records your actual answer and execution state.
+File, command, browser, and delegation tools are unavailable. Do not emit simulated tool calls or run Orca CLI commands.${drift}
+
+=== TASK ===
+${params.taskSpec}`
+  }
+  if (params.toolsMode === 'disabled') {
+    // 工具限制来自实际启动选择；原任务正文不改写。
+    const drift = params.baseDrift && params.baseDrift.behind > 0
+      ? `\n\nBase state: ${params.baseDrift.behind} commits behind ${params.baseDrift.base}.\n${params.baseDrift.recentSubjects.map(subject => `  - ${subject}`).join('\n')}`
+      : ''
+    return `You are a dispatched worker inside SWA.
+${dispatchIdentityLines(params)}
+Your dispatch ID is: ${params.dispatchId}
+
+Tools are disabled for this session. Work only from the supplied task and context.
+Return your findings, source evidence, uncertainties, and unfinished work directly in your final answer.
+The runtime records your actual answer and execution state for the coordinator to review.
+Do not execute commands, read or write files, send messages, or emit simulated tool calls.
+If the supplied context is insufficient, explain the missing information in your answer.${drift}
+
+=== TASK ===
+${params.taskSpec}`
+  }
   // Why: in dev mode, agents must use orca-dev to connect to the dev runtime's
   // socket. Without this, agents inside the dev Electron app would call the
   // production CLI and talk to the wrong Orca instance (Section 6.4).

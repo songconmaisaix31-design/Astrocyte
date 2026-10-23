@@ -10,6 +10,7 @@ import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { fixedTaskSpec, workerTaskSpec } from './collaboration-records'
 import { isTaskDescendant } from './run-view'
 import { questionReplyParams, readAnswerQuestion } from './question-answer'
+import { admitQuestionProducer } from './question-ask'
 
 function deny(message: string): never { throw new OrchestrationError('scope_denied', message, { effectsApplied: false }) }
 const historyReads = new Set(['status.get', 'orchestration.requestShow', 'orchestration.runShow', 'orchestration.taskList', 'orchestration.workerShow', 'orchestration.workerList', 'orchestration.workerRead'])
@@ -22,6 +23,10 @@ export function isProductOwner(request: RpcRequest, context: RpcContext, capabil
 
 export async function admitControllerRPC(request: RpcRequest, input: unknown, context: RpcContext, capability: Buffer) {
   const params = input == null ? {} : nativeObject(input)
+  if (request.swaQuestionProducerProof !== undefined || request.swaQuestionOrigin !== undefined) {
+    await admitQuestionProducer(request, params, { ...context, orchestrationCompatibilityEvidence: request.orchestrationCompatibilityEvidence })
+    return
+  }
   const ownerBridge = isProductOwner(request, context, capability)
   if (request.method.startsWith('swa.')) {
     if (request.method === 'swa.workerSend') {

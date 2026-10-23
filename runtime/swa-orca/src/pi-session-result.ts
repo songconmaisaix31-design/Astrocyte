@@ -11,7 +11,7 @@ import { parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src
 import { isRootAgentJournalItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-producer'
 import type { AgentJournalRenderItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-types'
 import { providerTimelineKeyPart, spelledProviderTimelineItemKey } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity'
-import { parseStrictPiJson, strictPiNativeEntrySchema, strictPiNativeHeaderSchema, strictPiOutboundSchema, strictPiRawSchema, type StrictPiMessage } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
+import { parseStrictPiJson, strictPiNativeEntrySchema, strictPiQuestionNativeEntrySchema, strictPiNativeHeaderSchema, strictPiOutboundSchema, strictPiRawSchema, strictPiQuestionRawSchema, type StrictPiQuestionMessage } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 import { structuredInputBindingSchema } from './contracts'
 import { readNativePiFile, type nativeConfigurationSource } from './native-pi-policy'
 import { requireNativeCodexPrivatePath } from './native-codex-policy'
@@ -23,6 +23,7 @@ export type NativePiSessionSourceInput = {
   path: string; privateRoot: string; nativeId?: string; cwd: string; provider: string; modelId: string; api: string; baseUrl: string
   source: Source; stopped: boolean; maximum: number; traceRows: readonly TraceRow[]; bindings: readonly Binding[]
   journal: JournalReducerState; fence: number; validateExport(serialized: string): void
+  toolsMode?: 'disabled' | 'questions-only'
 }
 const maximum = 12 * 1024 * 1024
 const bodySchema = SendBodyStructure.omit({ kind: true }).extend({ kind: z.literal('message'), from: z.unknown().optional() })
@@ -43,6 +44,35 @@ function fail(reason: string): never { throw new Error(`native_pi_result_${reaso
 const checked = <T extends z.ZodType>(schema: T, value: unknown): z.output<T> => { const parsed = schema.safeParse(value); if (!parsed.success) fail('invalid_record'); return parsed.data }
 const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
 const samePath = (a: string, b: string) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
+
+// 准入读取当前原件，不要求模型已经结束；准确工具 entry 由调用方核对。
+export function readPiQuestionEntries(input: { path: string; privateRoot: string; cwd?: string; provider: string; modelId: string; api: string }) {
+  if (!isAbsolute(input.path) || !isAbsolute(input.privateRoot)) fail('source_binding_invalid')
+  const part = relative(input.privateRoot, input.path)
+  if (!part || part === '..' || part.startsWith('../') || part.startsWith('..\\') || isAbsolute(part)) fail('outside_private_home')
+  requireNativeCodexPrivatePath(input.privateRoot, true)
+  requireNativeCodexPrivatePath(dirname(input.path), true)
+  const snapshot = readNativePiFile(input.path, maximum, true)
+  if (snapshot.bytes.at(-1) !== 10) fail('source_changed_or_incomplete')
+  const rows: unknown[] = []
+  const framer = createIncrementalNdjsonFramer((record, line) => {
+    if (rows.length >= 100_000 || !isDeepStrictEqual(record, parseStrictPiJson(line))) fail('invalid_record')
+    rows.push(record)
+  }, () => fail('invalid_jsonl'), { maxLineBytes: 8 * 1024 * 1024 })
+  framer.feed(new TextDecoder('utf-8', { fatal: true }).decode(snapshot.bytes))
+  if (framer.takeTail()) fail('unterminated_jsonl')
+  const header = checked(strictPiNativeHeaderSchema, rows[0])
+  if (input.cwd !== undefined && !samePath(header.cwd, input.cwd) || !basename(input.path).endsWith(`_${header.id}.jsonl`)) fail('native_identity_changed')
+  const entries = rows.slice(1).map(row => checked(strictPiQuestionNativeEntrySchema, row)), ids = new Set<string>()
+  let parent: string | null = null
+  for (const entry of entries) {
+    if (ids.has(entry.id) || entry.parentId !== parent) fail('native_parent_chain_changed')
+    ids.add(entry.id); parent = entry.id
+    if (entry.type === 'model_change' && (entry.provider !== input.provider || entry.modelId !== input.modelId)) fail('native_model_changed')
+    if (entry.type === 'message' && entry.message.role === 'assistant' && (entry.message.provider !== input.provider || entry.message.model !== input.modelId || entry.message.api !== input.api || entry.message.stopReason === 'pending')) fail('native_message_unreviewed')
+  }
+  return { header, entries, source: snapshot.source }
+}
 
 /** 开局用户项可属于thread；它打开的turn由原userItemId声明，不能按顺序或最新项猜测。 */
 export function readPiJournalInputTurn(journal: Pick<JournalReducerState, 'items' | 'aliases' | 'itemFences'>,
@@ -74,6 +104,8 @@ export function readPiFinalBlock(content: readonly { type: string }[], providerI
 
 /** 真正native原件、原R回执和已发布journal交叉消费；没有来源时不补造会话。 */
 export async function readNativePiSessionSource(input: NativePiSessionSourceInput) {
+  const entrySchema = input.toolsMode === 'questions-only' ? strictPiQuestionNativeEntrySchema : strictPiNativeEntrySchema
+  const recordSchema = input.toolsMode === 'questions-only' ? nativeRecordSchema.extend({ frame: strictPiQuestionRawSchema }) : nativeRecordSchema
   const cap = Math.min(maximum, input.maximum)
   if (!Number.isSafeInteger(cap) || cap < 1 || !isAbsolute(input.path) || !isAbsolute(input.privateRoot) || !isAbsolute(input.cwd) || !samePath(input.path, input.source.path)) fail('source_binding_invalid')
   const part = relative(input.privateRoot, input.path)
@@ -94,7 +126,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
   if (framer.takeTail()) fail('unterminated_jsonl')
   const header = checked(strictPiNativeHeaderSchema, rows[0])
   if (!samePath(header.cwd, input.cwd) || !basename(input.path).endsWith(`_${header.id}.jsonl`) || input.nativeId !== undefined && input.nativeId !== header.id) fail('native_identity_changed')
-  const entries = rows.slice(1).map(row => checked(strictPiNativeEntrySchema, row))
+  const entries = rows.slice(1).map(row => checked(entrySchema, row))
   const ids = new Set<string>()
   let parent: string | null = null
   for (const entry of entries) {
@@ -103,15 +135,15 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
     if (entry.type === 'model_change' && (entry.provider !== input.provider || entry.modelId !== input.modelId)) fail('native_model_changed')
     if (entry.type === 'message') assertMessage(entry.message)
   }
-  function assertMessage(message: StrictPiMessage) {
+  function assertMessage(message: StrictPiQuestionMessage) {
     if (message.role === 'assistant' && (message.provider !== input.provider || message.model !== input.modelId || message.api !== input.api || message.stopReason === 'pending')) fail('native_message_unreviewed')
   }
   const readyRows = input.traceRows.filter(row => row.event === 'policy_ready')
   if (readyRows.length !== 1) fail('policy_ready_missing')
-  const ready = checked(readySchema, readyRows[0]!.detail)
+  const ready = checked(readySchema.extend({ tools: z.literal(input.toolsMode ?? 'disabled') }), readyRows[0]!.detail)
   if (ready.session_id !== header.id || !samePath(ready.session_file, input.path) || ready.provider !== input.provider || ready.model.model_id !== input.modelId || ready.model.api !== input.api || ready.model.base_url !== input.baseUrl) fail('policy_ready_changed')
   const writes = new Map<string, { sequence: number; detail: z.output<typeof writeIntentSchema>; settled: boolean; reply: boolean }>()
-  const rawMessages: { sequence: number; message: StrictPiMessage; cid?: string }[] = []
+  const rawMessages: { sequence: number; message: StrictPiQuestionMessage; cid?: string }[] = []
   const projections: { sequence: number; value: z.output<typeof projectionSchema> }[] = []
   let stopSequence: number | undefined, endedSequence = 0, settledSequence = 0, idleSequence = 0
   for (const row of input.traceRows) {
@@ -128,7 +160,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
       if (stopSequence !== undefined) fail('stop_repeated')
       stopSequence = row.sequence
     } else if (row.event === 'native_record') {
-      const detail = checked(nativeRecordSchema, row.detail), frame = detail.frame
+      const detail = checked(recordSchema, row.detail), frame = detail.frame
       if (!isDeepStrictEqual(parseStrictPiJson(detail.raw_line), frame)) fail('raw_line_changed')
       if (frame.type === 'response') {
         const original = writes.get(frame.id)
@@ -163,7 +195,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
     return { binding, sequence: submission.submittedSequence }
   }).sort((a, b) => a.sequence - b.sequence)
   if (new Set(orderedBindings.map(row => row.binding.operation_id)).size !== orderedBindings.length || orderedBindings.some((row, index) => index > 0 && row.sequence <= orderedBindings[index - 1]!.sequence)) fail('latest_input_ambiguous')
-  const joined: { cid: string; sequence: number; sourceSequence: number; turnItemId: string; entry: Extract<z.output<typeof strictPiNativeEntrySchema>, { type: 'message' }> }[] = []
+  const joined: { cid: string; sequence: number; sourceSequence: number; turnItemId: string; entry: Extract<z.output<typeof strictPiQuestionNativeEntrySchema>, { type: 'message' }> }[] = []
   for (const { binding } of orderedBindings) {
     if (binding.agent !== 'pi' || binding.runtime_fence !== input.fence) fail('input_binding_changed')
     const { from: _sender, ...body } = checked(bodySchema, binding.body)
@@ -185,7 +217,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
       const prefix: unknown[] = []
       const prefixFramer = createIncrementalNdjsonFramer(value => prefix.push(value), () => fail('native_prefix_invalid'), { maxLineBytes: 8 * 1024 * 1024 })
       prefixFramer.feed(new TextDecoder('utf-8', { fatal: true }).decode(snapshot.bytes.subarray(0, baseline.bytes)))
-      if (prefixFramer.takeTail() || prefix.some(value => { const parsed = strictPiNativeEntrySchema.safeParse(value); return parsed.success && parsed.data.id === entry.id })) fail('native_input_before_submit')
+      if (prefixFramer.takeTail() || prefix.some(value => { const parsed = entrySchema.safeParse(value); return parsed.success && parsed.data.id === entry.id })) fail('native_input_before_submit')
     }
     const acceptance = projections.filter(row => row.value.sourceSequence === echo.sequence && row.value.eventType === 'input.accepted' && row.value.clientMessageId === binding.operation_id)
     // opener-only事件可没有真实journal step，也就没有onPublished回调；真实accepted回执仍是前置。
@@ -210,7 +242,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
       if (!itemIds.size) fail('final_projection_missing')
       const expected = readPiFinalBlock(finalMessage.message.content, close.value.providerItem!)
       const block = finalMessage.message.content[expected.index]!
-      const expectedText = block.type === 'text' ? block.text : block.thinking
+      const expectedText = block.type === 'text' ? block.text : block.type === 'thinking' ? block.thinking : fail('final_journal_text_changed')
       for (const itemId of itemIds) {
         const item = input.journal.items.get(input.journal.aliases.get(itemId) ?? itemId)
         if (!item || !isRootAgentJournalItem(item) || item.body.kind !== 'message' || item.body.role !== expected.role || input.journal.itemFences.get(item.itemId) !== input.fence || item.turnScope?.kind !== 'turn' || item.turnScope.turnItemId !== latest.turnItemId) fail('final_journal_identity_changed')

@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
@@ -36,22 +37,37 @@ type runView struct {
 		ID     string          `json:"id"`
 		Result json.RawMessage `json:"result"`
 	} `json:"tasks"`
-	Dispatches        []json.RawMessage `json:"dispatches"`
-	Questions         []runQuestion     `json:"questions"`
-	AnsweredQuestions []json.RawMessage `json:"answered_questions"`
-	Blockers          []json.RawMessage `json:"blockers"`
-	Failures          []json.RawMessage `json:"failures"`
-	Deliverables      []json.RawMessage `json:"deliverables"`
-	Handoffs          []json.RawMessage `json:"handoffs"`
-	Complete          bool              `json:"complete"`
-	ObservedAt        string            `json:"observed_at"`
+	Dispatches        []json.RawMessage     `json:"dispatches"`
+	Questions         []runQuestion         `json:"questions"`
+	AnsweredQuestions []runAnsweredQuestion `json:"answered_questions"`
+	Blockers          []json.RawMessage     `json:"blockers"`
+	Failures          []json.RawMessage     `json:"failures"`
+	Deliverables      []json.RawMessage     `json:"deliverables"`
+	Handoffs          []json.RawMessage     `json:"handoffs"`
+	Complete          bool                  `json:"complete"`
+	ObservedAt        string                `json:"observed_at"`
 }
 
 type runQuestion struct {
-	ID         string `json:"id"`
-	TaskID     string `json:"task_id"`
-	DispatchID string `json:"dispatch_id"`
-	Question   string `json:"question"`
+	ID                   string `json:"id"`
+	TaskID               string `json:"task_id"`
+	DispatchID           string `json:"dispatch_id"`
+	Question             string `json:"question"`
+	ContinuationRequired bool   `json:"continuation_required"`
+	ReadState            string `json:"read_state"`
+}
+
+type runAnsweredQuestion struct {
+	QuestionID           string `json:"question_id"`
+	TaskID               string `json:"task_id"`
+	DispatchID           string `json:"dispatch_id"`
+	Question             string `json:"question"`
+	ContinuationRequired bool   `json:"continuation_required"`
+	ReadState            string `json:"read_state"`
+}
+
+func (question runAnsweredQuestion) actionQuestion() runQuestion {
+	return runQuestion{ID: question.QuestionID, TaskID: question.TaskID, DispatchID: question.DispatchID, Question: question.Question, ContinuationRequired: question.ContinuationRequired, ReadState: question.ReadState}
 }
 
 type runCallFailure struct {
@@ -90,6 +106,7 @@ func runWorkflow(ctx context.Context, args []string, stdout, stderr io.Writer) i
 		flags.StringVar(&command.InputFile, "input-file", "", "主 Agent 输入文件")
 		flags.StringVar(&command.Agent, "agent", "", "已批准的 Agent")
 		flags.StringVar(&command.Model, "model", "", "实际 provider/model")
+		flags.StringVar(&command.QuestionMode, "question-mode", "", "disabled 或 native；默认关闭原生问答工具")
 		flags.StringVar(&command.Name, "name", "lead", "主 Worker 名称")
 		flags.StringVar(&command.RequestID, "request-id", "", "稳定提交 UUID")
 		flags.StringVar(&command.RoleID, "role", "", "复用的长期角色 ID")
@@ -129,6 +146,10 @@ func runWorkflow(ctx context.Context, args []string, stdout, stderr io.Writer) i
 		command.OutputDir = exportPath
 	}
 	if err := workspaceapp.ValidateOrcaCommand(command); err != nil {
+		var service *apierrors.ServiceError
+		if errors.As(err, &service) {
+			return output.failure(string(service.Code), service.Message, service.RequiredAction, failureExit(string(service.Code)))
+		}
 		return output.failure("validation_failed", err.Error(), "read_swa_help", 2)
 	}
 	output.projectID = projectID
@@ -224,7 +245,7 @@ func runWorkflow(ctx context.Context, args []string, stdout, stderr io.Writer) i
 					return output.outputFailure(err)
 				}
 				writeRunReconnect(&output)
-				return output.failure("run_input_required", "该 Run 需要用户回答；填写回答文件路径和新的稳定 UUID 后执行所示命令", action, 9)
+				return output.failure("run_input_required", "该 Run 需要回答或确认原问题的继续状态；按所示原请求指引操作", action, 9)
 			}
 			if view.Complete {
 				if exportPath != "" {
@@ -349,13 +370,20 @@ func decodeRunView(reply workspaceapp.OrcaEnvelope) (runView, error) {
 		return runView{}, errors.New("Run 任务集合缺少原根任务")
 	}
 	questionIDs := make(map[string]bool, len(view.Questions))
-	for _, question := range view.Questions {
+	questions := append([]runQuestion{}, view.Questions...)
+	for _, answer := range view.AnsweredQuestions {
+		questions = append(questions, answer.actionQuestion())
+	}
+	for _, question := range questions {
 		if question.ID == "" || questionIDs[question.ID] || question.DispatchID == "" || !seen[question.TaskID] || strings.TrimSpace(question.Question) == "" {
 			return runView{}, errors.New("原问题缺少准确身份、正文或原 Task 关联")
 		}
 		questionIDs[question.ID] = true
+		if question.ContinuationRequired && question.ReadState != "continuation_required" {
+			return runView{}, errors.New("问题继续操作缺少确切的原读取状态")
+		}
 	}
-	if view.Status == "waiting_input" && len(view.Questions) == 0 {
+	if view.Status == "waiting_input" && len(view.Questions) == 0 && len(view.AnsweredQuestions) == 0 {
 		return runView{}, errors.New("等待回答的 Run 没有提供原问题")
 	}
 	switch view.Status {
@@ -396,23 +424,40 @@ func quoteRunArgument(value, platform string) string {
 
 func runQuestionCommand(projectID string, view runView, question runQuestion, platform string) string {
 	quote := func(value string) string { return quoteRunArgument(value, platform) }
+	if question.ContinuationRequired {
+		return fmt.Sprintf("swa question resume --project %s --controller %s --run %s --task %s --dispatch %s --question %s --request-id %s --json", quote(projectID), quote(view.Controller), quote(view.RunID), quote(view.RootTaskID), quote(question.DispatchID), quote(question.ID), quote("<NEW_UUID>"))
+	}
 	return fmt.Sprintf("swa question answer --project %s --controller %s --run %s --task %s --dispatch %s --question %s --input-file %s --request-id %s --json", quote(projectID), quote(view.Controller), quote(view.RunID), quote(view.RootTaskID), quote(question.DispatchID), quote(question.ID), quote("<ANSWER_FILE>"), quote("<NEW_UUID>"))
 }
 
 func writeRunQuestionActions(output *cliOutput, view runView) (string, error) {
 	var first string
-	for _, question := range view.Questions {
+	questions := append([]runQuestion{}, view.Questions...)
+	for _, question := range view.AnsweredQuestions {
+		if question.ContinuationRequired {
+			questions = append(questions, question.actionQuestion())
+		}
+	}
+	for _, question := range questions {
 		command := runQuestionCommand(output.projectID, view, question, runtime.GOOS)
 		if first == "" {
 			first = command
 		}
-		encoded, err := json.Marshal(map[string]any{"event": "run_question", "run_id": view.RunID, "task_id": view.RootTaskID, "dispatch_id": question.DispatchID, "question_id": question.ID, "command": command, "required_values": []string{"ANSWER_FILE: 当前项目获准的回答文件", "NEW_UUID: 此次回答首次发送前保存的规范 UUID"}})
+		required := []string{"NEW_UUID: 此次操作首次发送前保存的规范 UUID"}
+		if !question.ContinuationRequired {
+			required = append(required, "ANSWER_FILE: 当前项目获准的回答文件")
+		}
+		encoded, err := json.Marshal(map[string]any{"event": "run_question", "run_id": view.RunID, "task_id": view.RootTaskID, "dispatch_id": question.DispatchID, "question_id": question.ID, "command": command, "required_values": required})
 		if err != nil {
 			return "", err
 		}
 		if _, err := fmt.Fprintln(output.stderr, string(encoded)); err != nil {
 			return "", err
 		}
+	}
+	if first == "" {
+		quote := func(value string) string { return quoteRunArgument(value, runtime.GOOS) }
+		first = fmt.Sprintf("swa wait --project %s --controller %s --run %s --task %s --json", quote(output.projectID), quote(view.Controller), quote(view.RunID), quote(view.RootTaskID))
 	}
 	return first, nil
 }

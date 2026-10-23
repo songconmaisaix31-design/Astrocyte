@@ -12,6 +12,7 @@ import { invocationSchema, nativeError, nativeObject, structuredInputBindingSche
 import { controllerScope, exactController } from './controller-scope'
 import { isTaskDescendant } from './run-view'
 import { validateHandoffInput } from './run-settlement'
+import { assertQuestionResume } from './question-ask'
 
 let admitCurrentApproval: ((invocation: z.infer<typeof invocationSchema>) => Promise<unknown>) | null = null
 
@@ -28,7 +29,7 @@ export async function admitNativeWorkerInputRPC(params: unknown, requestId: stri
   const row = db.getMutationReceipt(db.getOrCreateLocalMutationCallerFingerprint(), input.parent_request)
   if (!row?.receipt || row.method !== 'swa.controllerDeliver') throw new OrchestrationError('scope_denied', 'The original parent input reservation is unavailable')
   const invocation = invocationSchema.parse(nativeObject(JSON.parse(row.receipt)).invocation)
-  if (invocation.command.action !== 'worker.send' || invocation.command.controller !== input.controller || invocation.command.request_id !== input.parent_request) throw new OrchestrationError('scope_denied', 'The original parent input scope differs')
+  if (!['worker.send', 'question.resume'].includes(invocation.command.action) || invocation.command.controller !== input.controller || invocation.command.request_id !== input.parent_request) throw new OrchestrationError('scope_denied', 'The original parent input scope differs')
   const { owner, scope } = controllerScope(context.runtime, invocation.project.id, input.controller)
   validateHandoffInput(context.runtime, invocation)
   await exactController(context.runtime, owner)
@@ -55,6 +56,7 @@ async function prepareStructuredInput(invocation: Invocation, controller: string
   if (!host || !sessionId || !identity || identity.dispatchId !== dispatchId || !record || record.provider !== selection.agent_id || record.options?.model !== selection.model || record.lease.claimStatus !== 'live' || record.lease.unreconciled || !record.lease.ownerProcess || dispatch?.run_id !== scope.run_id || !task || !isTaskDescendant(db, scope.run_id, scope.root_task_id, task.id) || worker?.state !== 'ready' || worker.runtime_epoch !== runtime.getRuntimeId()) throw new OrchestrationError('worker_identity_changed', 'The original live Worker session is unavailable')
   if (!admitCurrentApproval) throw new OrchestrationError('approval_unverified', 'Current Worker input approval is unavailable')
   await admitCurrentApproval(invocation)
+  assertQuestionResume(runtime, invocation)
   const run = db.getRun(scope.run_id)
   if (!run || run.coordinator_handle !== controller) throw new OrchestrationError('scope_denied', 'The original controller is no longer the current consumer')
   return { scope, host, sessionId, record, run }
@@ -68,7 +70,7 @@ export async function deliverNativeWorkerInput(params: { controller: string; par
   const receipt = nativeObject(JSON.parse(parent.receipt)), invocation = invocationSchema.parse(receipt.invocation)
   validateHandoffInput(runtime, invocation)
   const command = invocation.command, selection = invocation.selection
-  if (command.action !== 'worker.send' || command.controller !== params.controller || command.request_id !== params.parent_request || !command.dispatch_id || !invocation.input || !selection || receipt.child_request !== mutation.requestId) throw new OrchestrationError('scope_denied', 'The native child does not match its original Worker input')
+  if (!['worker.send', 'question.resume'].includes(command.action) || command.controller !== params.controller || command.request_id !== params.parent_request || !command.dispatch_id || !invocation.input || !selection || receipt.child_request !== mutation.requestId) throw new OrchestrationError('scope_denied', 'The native child does not match its original Worker input')
   const recordNativeResult = context.recordMutationReceipt
   if (!recordNativeResult) throw new OrchestrationError('operation_unknown', 'Durable native input settlement is unavailable')
   const recordResult = (result: Record<string, unknown>) => {
@@ -95,6 +97,7 @@ export async function deliverNativeWorkerInput(params: { controller: string; par
     const delivery = await sendAgentTurn({ kind: 'structured-session', host, sessionId, callerKey: structuredPointerCallerKey(command.dispatch_id), turn: { body, operationId, expectedRuntimeFence: record.lease.runtimeFence, delivery: 'now', beforeRun: () => {
       const current = host.deps.store.getRecord(sessionId)
       if (current?.lease.runtimeFence !== binding.runtime_fence || !isDeepStrictEqual(current.lease.ownerProcess, record.lease.ownerProcess) || db.getRun(run.id)?.consumer_generation !== binding.consumer_generation || db.getWorkerDispatch(command.dispatch_id!)?.state !== 'ready') throw new Error('The original Worker identity changed before input admission')
+      assertQuestionResume(runtime, invocation)
     } } })
     if (delivery.kind === 'refused') throw new Error(`The native host refused this operation without a confirmed input settlement: ${delivery.refusal.code}`)
     const state = delivery.kind === 'queued' ? 'queued' : delivery.submission?.dispatchState

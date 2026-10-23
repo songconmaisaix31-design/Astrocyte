@@ -4,9 +4,10 @@ import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/
 import type { OrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
 import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { approvedWorkerLimit } from './task-budget'
+import type { QuestionObservation, QuestionReadState } from './question-ask'
 
 type RunScope = { project_id: string; controller: string; run_id: string; root_task_id: string }
-type RunExecution = { executor: OrchestrationMutationExecutor; runtimeEpoch: string }
+type RunExecution = { executor: OrchestrationMutationExecutor; runtimeEpoch: string; questions?: () => QuestionObservation[] }
 const mutationSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), receipt: z.string() })
 const mutationIdentity = (row: z.infer<typeof mutationSchema>) => ({ callerFingerprint: row.caller_fingerprint, requestId: row.request_id, method: row.method, payloadHash: row.payload_hash })
 const taskSchema = z.object({
@@ -44,7 +45,7 @@ export type RunView = {
   tasks: { id: string; parent_id: string | null; status: string; title: string | null; dependencies: string[]; result: string | null }[]
   dispatches: { id: string; task_id: string; status: string; worker_state: string | null; release_state: string | null; creator_dispatch_id: string | null; recipient_session_id: string | null }[]
   questions: { id: string; task_id: string; dispatch_id: string; question: string }[]
-  answered_questions: { question_id: string; task_id: string; dispatch_id: string; question: string; answer_message_id: string; answer: string; answered_by_generation: number; answered_at: string }[]
+  answered_questions: { question_id: string; task_id: string; dispatch_id: string; question: string; answer_message_id: string; answer: string; answered_by_generation: number; answered_at: string; read_state: QuestionReadState; continuation_required: boolean }[]
   handoffs: { id: string; from: string; to: string; text: string; read: boolean; record: Record<string, unknown> }[]
   blockers: { kind: string; task_id: string | null; dispatch_id: string | null; reason: string }[]
   failures: { task_id: string; dispatch_id?: string; reason: string }[]
@@ -136,11 +137,13 @@ export function readRunView(db: OrchestrationDb, scope: RunScope, execution?: Ru
       FROM question_threads q LEFT JOIN dispatch_contexts d ON d.id=q.dispatch_id LEFT JOIN messages m ON m.id=q.message_id LEFT JOIN messages a ON a.id=q.answer_message_id
       WHERE q.run_id=? AND q.status='answered' ORDER BY q.created_at,q.message_id`).all(scope.run_id))
     if (questions.length + answers.length !== questionBound.count || new Set([...questions.map(row => row.id), ...answers.map(row => row.question_id)]).size !== questionBound.count) fail('The complete native question inventory is inconsistent')
+    const nativeQuestions = execution?.questions?.() ?? []
     const answered_questions = answers.map(row => {
       if (!ids.has(row.task_id) || !dispatchIds.has(row.dispatch_id) || row.thread_id !== row.question_id || row.answer_run_id !== scope.run_id || row.answer_body !== row.answer || row.from_handle !== `run:${scope.run_id}` || row.to_handle !== `dispatch:${row.dispatch_id}` || row.question_run_id !== scope.run_id || row.question_from !== `dispatch:${row.dispatch_id}` || row.question_to !== `run:${scope.run_id}` || row.question_thread !== row.question_id) fail('An answered native question has a mismatched original message or task binding')
       const question = db.getQuestion(row.question_id)
       if (!question?.answered_at) fail('The original answer timestamp is unavailable')
-      return { question_id: row.question_id, task_id: row.task_id, dispatch_id: row.dispatch_id, question: row.question, answer_message_id: row.answer_message_id, answer: row.answer, answered_by_generation: row.answered_by_generation, answered_at: question.answered_at }
+      const observed = nativeQuestions.find(value => value.question_id === row.question_id)
+      return { question_id: row.question_id, task_id: row.task_id, dispatch_id: row.dispatch_id, question: row.question, answer_message_id: row.answer_message_id, answer: row.answer, answered_by_generation: row.answered_by_generation, answered_at: question.answered_at, read_state: observed?.read_state ?? 'read_unconfirmed' as const, continuation_required: observed?.continuation_required ?? false }
     })
     const pendingWhere = `FROM mutation_receipts WHERE state='pending' AND json_valid(receipt)=1 AND
       (json_extract(receipt,'$.run_id')=? OR json_extract(receipt,'$.scope.run_id')=? OR json_extract(receipt,'$.invocation.scope.run_id')=?)`
@@ -207,11 +210,12 @@ export function readRunView(db: OrchestrationDb, scope: RunScope, execution?: Ru
       }
     }
     for (const question of questions) blockers.push({ kind: 'question', task_id: question.task_id, dispatch_id: question.dispatch_id, reason: question.id })
+    for (const question of answered_questions) if (nativeQuestions.find(value => value.question_id === question.question_id)?.blocks_settlement) blockers.push({ kind: 'question', task_id: question.task_id, dispatch_id: question.dispatch_id, reason: `${question.read_state}:${question.question_id}` })
     if (tasks.length === 1) blockers.push({ kind: 'task', task_id: root.id, dispatch_id: null, reason: 'no_worker_task_submitted' })
     const initial = z.object({ spec: z.object({ initial_workers: z.number().int().positive().optional() }) }).parse(JSON.parse(root.spec)).spec.initial_workers ?? 1
     if (tasks.length - 1 < initial) blockers.push({ kind: 'task', task_id: root.id, dispatch_id: null, reason: `initial_workers_missing:${initial - tasks.length + 1}` })
     const complete = tasks.length > 1 && tasks.every(task => terminalTask(task.status)) && dispatches.every(dispatch => terminalDispatch(dispatch.status)) && blockers.length === 0
-    const status: RunView['status'] = unknown ? 'unknown' : questions.length ? 'waiting_input'
+    const status: RunView['status'] = unknown ? 'unknown' : questions.length || nativeQuestions.some(value => value.blocks_settlement) ? 'waiting_input'
       : complete ? root.status === 'failed' ? 'failed' : 'completed'
       : active.size > 0 || tasks.some(task => task.status === 'dispatched') || dispatches.some(dispatch => ['starting', 'ready', 'stopping'].includes(dispatch.worker_state ?? '')) ? 'active' : 'blocked'
     const view: RunView = {

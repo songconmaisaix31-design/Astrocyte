@@ -72,7 +72,7 @@ function formAgentInput(): FormAgent {
   return {
     id: 'form-agent-input', model: 'form-model-input', settingsRevision: formSettings.revision,
     registered: observationInput('available'), enabled: observationInput('available'), installed: observationInput('available'), configured: observationInput('available'), start: observationInput('available'),
-    launchable: observationInput('unknown'), read: observationInput('unknown'), tools: observationInput('unknown'),
+    launchable: observationInput('unknown'), read: observationInput('unknown'), tools: observationInput('unknown'), questions: null,
   };
 }
 const startInput = (agent: FormAgent | undefined = formAgentInput()) => ({ agent, settings: formSettings, disabled: false, pending: false, unresolved: false, name: 'explicit-worker-name-input', inputFile: '/explicit/server-input-path' });

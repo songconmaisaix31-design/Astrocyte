@@ -104,7 +104,7 @@ export function readSwaCapabilityDetails(reply: SwaEnvelope) {
     const agent = object(value), control = object(agent.control), configured = object(agent.configured);
     const stages = [
       ['注册', agent.registered], ['安装', agent.installed], ['配置', agent.configured], ['账号认证', agent.authenticated], ['可启动', agent.launchable],
-      ['追加指令', control.send], ['读取', control.read], ['停止', control.stop], ['会话恢复', control.resume], ['图片', control.images], ['切换模型', control.model_switch], ['工具限制', control.tools],
+      ['追加指令', control.send], ['读取', control.read], ['停止', control.stop], ['会话恢复', control.resume], ['图片', control.images], ['切换模型', control.model_switch], ['工具限制', control.tools], ['原生问答', control.questions],
     ].map(([label, observation]) => ({ label: String(label), observation: observation === undefined ? null : readObservation(observation) }));
     let catalog: { origin: string; verified: boolean; models: { id: string; label: string; provider: string | null }[] } | null = null;
     if (agent.model_catalog !== undefined) {
@@ -126,6 +126,7 @@ export function readSwaAgents(reply: SwaEnvelope) {
       id: text(agent.id, 'agent.id'), model: typeof configured.model === 'string' ? configured.model : '', settingsRevision: Number(requirements.settings_revision),
       registered: readObservation(agent.registered), enabled: readObservation(agent.enabled), installed: readObservation(agent.installed), configured: readObservation(configured),
       launchable: readObservation(agent.launchable), start: readObservation(control.start), read: readObservation(control.read), tools: readObservation(control.tools),
+      questions: control.questions === undefined ? null : readObservation(control.questions),
     };
   });
   if (new Set(agents.map(agent => agent.id)).size !== agents.length) throw new Error('能力清单包含重复 Agent，保持未确认');
@@ -189,7 +190,7 @@ export function recoverSwaRequest(reply: SwaEnvelope, projectID: string, pending
   if (request.requestId !== pending.requestID) throw new Error('原请求查询返回了不同的请求身份');
   if (request.state !== 'completed') return null;
   const receipt = object(request.receipt);
-  const methods: Record<string, string> = { 'controller.open': 'swa.controllerOpen', 'task.create': 'swa.taskCreate', 'worker.start': 'swa.controllerDeliver', 'worker.send': 'swa.controllerDeliver', 'worker.stop': 'swa.controllerDeliver', 'question.answer': 'swa.controllerDeliver' };
+  const methods: Record<string, string> = { 'controller.open': 'swa.controllerOpen', 'task.create': 'swa.taskCreate', 'worker.start': 'swa.controllerDeliver', 'worker.send': 'swa.controllerDeliver', 'worker.stop': 'swa.controllerDeliver', 'question.answer': 'swa.controllerDeliver', 'question.resume': 'swa.controllerDeliver' };
   if (!methods[pending.action] || request.method !== methods[pending.action] || receipt.project_id !== projectID || pending.controller && receipt.controller !== pending.controller) throw new Error('原请求回执不属于当前项目、动作或 Controller');
   if (pending.action !== 'controller.open') {
     const command = object(object(receipt.invocation).command);
@@ -202,15 +203,29 @@ export function recoverSwaRequest(reply: SwaEnvelope, projectID: string, pending
   if (children.some(child => child.state !== 'completed')) return null;
   const controller = text(receipt.controller, 'receipt.controller');
   if (pending.action === 'question.answer') return recoverQuestionAnswer(reply, projectID, pending, receipt, children);
+  if (pending.action === 'question.resume') {
+    const invocation = object(receipt.invocation), command = object(invocation.command), scope = object(invocation.scope), input = object(invocation.input), native = object(receipt.native);
+    if (!pending.questionID || !pending.runID || !pending.taskID || !pending.dispatchID || !pending.controller || receipt.action !== pending.action || object(invocation.project).id !== projectID || object(invocation.caller).project_id !== projectID || scope.project_id !== projectID || scope.controller !== pending.controller || command.controller !== pending.controller || command.question_id !== pending.questionID || command.run_id !== pending.runID || command.task_id !== pending.taskID || scope.run_id !== pending.runID || scope.root_task_id !== pending.taskID || receipt.run_id !== pending.runID || receipt.root_task_id !== pending.taskID || command.text !== undefined || command.input_file !== undefined || invocation.handoff !== undefined || invocation.submission !== undefined || invocation.question_ask !== undefined || input.path !== `native-question-resume:${pending.questionID}` || input.version !== pending.requestID || input.text !== `使用 swa_ask 的 resume 参数读取原问题 ${pending.questionID} 的答案，并继续当前任务。`) throw new Error('原问题继续回执的身份或固定输入不一致');
+    if (children.length !== 1 || children[0].method !== 'swa.workerSend' || children[0].requestId !== `${pending.requestID}/native`) throw new Error('原问题继续缺少准确子请求');
+    const child = object(children[0].receipt);
+    for (const value of [native, child]) if (value.project_id !== projectID || value.controller !== pending.controller || value.run_id !== pending.runID || value.request_id !== pending.requestID || value.native_request_id !== `${pending.requestID}/native` || value.dispatch_id !== pending.dispatchID) throw new Error('原问题继续父子回执的身份不一致');
+    if (receipt.state === 'rejected' && receipt.effects_applied === false && native.state === 'rejected' && native.effects_applied === false && child.state === 'rejected' && child.effects_applied === false && object(native.source).kind === 'native_pre_input_admission' && object(child.source).kind === 'native_pre_input_admission' && object(native.source).child_request === `${pending.requestID}/native` && object(child.source).child_request === `${pending.requestID}/native` && receipt.swa_input_binding === undefined && native.swa_input_binding === undefined && child.swa_input_binding === undefined) {
+      const error = object(native.error), other = object(child.error);
+      if (error.code !== other.code || error.message !== other.message) throw new Error('原问题继续拒绝回执不一致');
+      return { ...reply, ok: false, request_id: pending.requestID, controller, task_id: pending.taskID, dispatch_id: pending.dispatchID, result: receipt, error: { code: text(error.code, 'error.code'), message: text(error.message, 'error.message'), retryable: false, required_action: 'revise_explicit_question_resume' } };
+    }
+    const binding = object(receipt.swa_input_binding), body = object(binding.body), current = object(request.current_input);
+    if (binding.parent_request !== pending.requestID || binding.child_request !== `${pending.requestID}/native` || binding.dispatch_id !== pending.dispatchID || binding.agent !== 'pi' || binding.execution_mode !== 'structured' || typeof binding.session_id !== 'string' || !binding.session_id || typeof binding.operation_id !== 'string' || !binding.operation_id || !Number.isSafeInteger(binding.runtime_fence) || !Number.isSafeInteger(binding.consumer_generation) || body.kind !== 'message' || body.role !== 'user' || !Array.isArray(body.blocks) || body.blocks.length !== 1 || object(body.blocks[0]).type !== 'text' || object(body.blocks[0]).text !== input.text || JSON.stringify(binding) !== JSON.stringify(native.swa_input_binding) || JSON.stringify(binding) !== JSON.stringify(child.swa_input_binding) || JSON.stringify(binding) !== JSON.stringify(current.binding) || native.session_id !== binding.session_id || child.session_id !== binding.session_id || native.operation_id !== binding.operation_id || child.operation_id !== binding.operation_id) throw new Error('原问题继续的输入绑定不一致');
+  }
   let taskID = pending.taskID, dispatchID = pending.dispatchID;
   if (pending.action === 'task.create') taskID = text(receipt.root_task_id, 'receipt.root_task_id');
-  if (pending.action.startsWith('worker.')) {
+  if (pending.action.startsWith('worker.') || pending.action === 'question.resume') {
     if (receipt.action !== pending.action) throw new Error('原请求回执的动作不一致');
     const native = object(receipt.native);
-    const states: Record<string, string[]> = { 'worker.start': ['ready'], 'worker.stop': ['stopped'], 'worker.send': ['journaled', 'queued', 'accepted', 'handed-to-terminal'] };
+    const states: Record<string, string[]> = { 'worker.start': ['ready'], 'worker.stop': ['stopped'], 'worker.send': ['journaled', 'queued', 'accepted', 'handed-to-terminal'], 'question.resume': ['journaled', 'queued', 'accepted', 'handed-to-terminal'] };
     if (!states[pending.action]?.includes(String(native.state))) return null;
     if (pending.action === 'worker.start') dispatchID = text(native.dispatchId, 'receipt.native.dispatchId');
-    if (pending.action === 'worker.send') {
+    if (pending.action === 'worker.send' || pending.action === 'question.resume') {
       const current = object(request.current_input);
       if (current.request_id !== pending.requestID || current.dispatch_id !== pending.dispatchID) throw new Error('原输入的当前结算身份不一致');
       if (!states['worker.send'].includes(String(current.state))) return null;

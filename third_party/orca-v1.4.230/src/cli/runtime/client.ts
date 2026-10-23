@@ -22,6 +22,8 @@ import {
 } from './terminal-prompt-mutation-recovery'
 import { markEnvironmentUsed } from './environments'
 import { createRuntimeSourceFence, type RuntimeSourceFence } from './runtime-source-fence'
+import { readRuntimeSourceStamp, type RuntimeSourceStamp } from '../../shared/runtime-source-env'
+import { isSameUserDataPath } from '../../shared/serve-user-data-path'
 import { resolveRemoteConnection } from './runtime-remote-pairing'
 import {
   ORCHESTRATION_CONTRACT_RUNTIME_CAPABILITY,
@@ -59,6 +61,8 @@ export class RuntimeClient {
   )
   private readonly runtimeSourceFence: RuntimeSourceFence
   private readonly swaOwnerCapability = process.env.SWA_OWNER_CAPABILITY || undefined
+  private readonly swaQuestionProducerProof: string | undefined
+  private readonly swaQuestionSource: RuntimeSourceStamp | null
 
   // Why: browser commands trigger first-time session init (agent-browser connect +
   // CDP proxy setup) which can take 15-30s. 60s accommodates cold start without
@@ -69,13 +73,18 @@ export class RuntimeClient {
     remotePairingCode = process.env.ORCA_PAIRING_CODE ?? process.env.ORCA_REMOTE_PAIRING ?? null,
     environmentSelector = process.env.ORCA_ENVIRONMENT ?? null,
     cliExecutable = resolveOrchestrationCliExecutable(),
-    originalArgs?: readonly string[]
+    originalArgs?: readonly string[],
+    questionProducer?: { proof: string }
   ) {
     this.userDataPath = userDataPath
     this.requestTimeoutMs = requestTimeoutMs
     this.environmentSelector = environmentSelector
     this.cliExecutable = cliExecutable
     this.originalArgs = originalArgs ? [...originalArgs] : undefined
+    this.swaQuestionProducerProof = questionProducer?.proof
+    this.swaQuestionSource = questionProducer ? readRuntimeSourceStamp(process.env) : null
+    if (questionProducer && (remotePairingCode || environmentSelector || this.swaOwnerCapability || !questionProducer.proof)) throw new RuntimeClientError('scope_denied', 'The question producer requires its isolated local runtime.')
+    if (questionProducer && (!this.swaQuestionSource?.profilePath || !isSameUserDataPath(userDataPath, this.swaQuestionSource.profilePath))) throw new RuntimeClientError('runtime_source_unverifiable', 'The question producer requires its exact launching runtime profile.')
     this.remote = resolveRemoteConnection(userDataPath, remotePairingCode, environmentSelector)
     this.remoteCompat = new RemoteRuntimeCompatGate(userDataPath, environmentSelector)
     this.runtimeSourceFence = createRuntimeSourceFence(process.env, userDataPath, requestTimeoutMs)
@@ -90,19 +99,23 @@ export class RuntimeClient {
     params?: unknown,
     options?: {
       timeoutMs?: number
+      signal?: AbortSignal
       legacyTerminalPrompt?: true
       terminalPromptPreflight?: { runtimeId: string | null }
     } & RuntimeOrchestrationEnvelope
   ): Promise<RuntimeRpcSuccess<TResult>> {
     if (this.remote && this.swaOwnerCapability) throw new RuntimeClientError('scope_denied', 'The private product owner capability cannot be sent to a remote runtime')
+    if (options?.signal?.aborted) throw new RuntimeClientError('operation_cancelled', 'The local runtime request was cancelled before sending.')
+    if (options?.signal && this.remote) throw new RuntimeClientError('scope_denied', 'Cancellation is only supported by the local runtime transport.')
+    if (this.swaQuestionProducerProof && !['status.get', 'orchestration.ask', 'orchestration.requestShow'].includes(method)) throw new RuntimeClientError('scope_denied', 'The question producer cannot call this runtime method.')
     const effectiveTimeoutMs = options?.timeoutMs ?? this.resolveMethodTimeoutMs(method, params)
     const orchestrationMutation = isOrchestrationMutation(method, params)
     const terminalPromptMutation = isTerminalPromptMutation(method, params)
     const legacyTerminalPrompt = options?.legacyTerminalPrompt === true && terminalPromptMutation
     const durableMutation = !legacyTerminalPrompt && isDurableMutation(method, params)
-    const carriesCompatibility = method.startsWith('orchestration.') || method === 'swa.workerSend' || method === 'status.get' && process.env.SWA_CONTROLLER_HELPER === '1'
+    const carriesCompatibility = method.startsWith('orchestration.') || method === 'swa.workerSend' || method === 'status.get' && (process.env.SWA_CONTROLLER_HELPER === '1' || !!this.swaQuestionProducerProof)
     if (orchestrationMutation || method === 'swa.workerSend') {
-      await this.ensureOrchestrationContractCompatible(effectiveTimeoutMs)
+      await this.ensureOrchestrationContractCompatible(effectiveTimeoutMs, options?.signal)
     }
     const orchestrationRequestId = durableMutation
       ? (options?.orchestrationRequestId ?? randomUUID())
@@ -136,6 +149,8 @@ export class RuntimeClient {
       : {}
     const envelope = {
       swaOwnerCapability: this.swaOwnerCapability,
+      swaQuestionProducerProof: this.swaQuestionProducerProof,
+      swaQuestionOrigin: this.swaQuestionProducerProof ? options?.swaQuestionOrigin : undefined,
       orchestrationCapability: options?.orchestrationCapability,
       orchestrationContractVersion: carriesCompatibility
         ? ORCHESTRATION_CONTRACT_VERSION
@@ -170,7 +185,10 @@ export class RuntimeClient {
     }
     const metadata = readMetadata(this.userDataPath)
     // Why outside recover(): a refusal here happens before anything is sent, so there is nothing to retry.
-    const expectedRuntimeSource = await this.runtimeSourceFence.check(metadata, method)
+    if (this.swaQuestionProducerProof && (!this.swaQuestionSource || metadata.runtimeId !== this.swaQuestionSource.incarnation)) throw new RuntimeClientError('runtime_source_mismatch', 'The original question runtime incarnation changed. No private proof was sent.')
+    const expectedRuntimeSource = this.swaQuestionSource
+      ? { sourceId: this.swaQuestionSource.sourceId, runtimeId: this.swaQuestionSource.incarnation }
+      : await this.runtimeSourceFence.check(metadata, method)
     let response
     try {
       response = await sendRequest<TResult>(
@@ -179,7 +197,8 @@ export class RuntimeClient {
         params,
         effectiveTimeoutMs,
         envelope,
-        expectedRuntimeSource
+        expectedRuntimeSource,
+        options?.signal
       )
     } catch (error) {
       throw recover(error, metadata.runtimeId ?? null)
@@ -259,10 +278,10 @@ export class RuntimeClient {
     return getCliStatus(this.userDataPath)
   }
 
-  private async ensureOrchestrationContractCompatible(timeoutMs: number): Promise<void> {
+  private async ensureOrchestrationContractCompatible(timeoutMs: number, signal?: AbortSignal): Promise<void> {
     if (!this.orchestrationContractCheck) {
       this.orchestrationContractCheck = this.checkOrchestrationContractCompatibility(
-        timeoutMs
+        timeoutMs, signal
       ).catch((error: unknown) => {
         // Why: a failed probe must not be cached, or a retry after a brief outage never reaches the app.
         this.orchestrationContractCheck = null
@@ -272,8 +291,8 @@ export class RuntimeClient {
     await this.orchestrationContractCheck
   }
 
-  private async checkOrchestrationContractCompatibility(timeoutMs: number): Promise<void> {
-    const response = await this.call<RuntimeStatus>('status.get', undefined, { timeoutMs })
+  private async checkOrchestrationContractCompatibility(timeoutMs: number, signal?: AbortSignal): Promise<void> {
+    const response = await this.call<RuntimeStatus>('status.get', undefined, { timeoutMs, signal })
     if (this.remote) {
       this.remoteCompat.noteVerifiedStatus(response.result)
     }

@@ -8,7 +8,7 @@ import { collaborationFailure, collaborationOutcome, collaborationPermission, ex
 import styles from './SwaRoles.module.css';
 
 type Project = components['schemas']['LocalProjectV1'];
-export type SelectedSwaRole = Pick<SwaRole, 'id' | 'revision' | 'default_agent' | 'default_model'>;
+export type SelectedSwaRole = Pick<SwaRole, 'id' | 'revision' | 'default_agent' | 'default_model' | 'question_mode'>;
 interface Props { project: Project; disabled: boolean; onRoleSelected?: (role: SelectedSwaRole) => void; onConversationSelected?: (id: string) => void }
 
 export function SwaRoles({ project, disabled, onRoleSelected, onConversationSelected }: Props) {
@@ -24,7 +24,7 @@ export function SwaRoles({ project, disabled, onRoleSelected, onConversationSele
     {!canObserve ? <p role="status">当前项目未允许观察角色与讨论，请刷新项目权限或在项目设置中调整。</p> : <>
       <div className={styles.actions}><button className="ac-button secondary compact" type="button" disabled={roles.loading} onClick={roles.retry}>刷新角色</button><button className="ac-button compact" type="button" disabled={!canEdit} onClick={() => setSelectedID('')}>新建角色</button></div>
       <QueryState state={roles}>{items => <div className={styles.columns}>
-        <ul className={styles.list} aria-label="项目角色">{items.map(item => <li key={item.id}><button className={styles.choice} type="button" aria-pressed={selectedID === item.id} disabled={!fresh} onClick={() => choose(item)}><strong>{item.name}</strong><span className={styles.meta}>{item.default_agent} · {item.default_model}</span><span className={styles.meta}>版本 {item.revision}{item.archived ? ' · 已归档' : ''}</span></button></li>)}</ul>
+        <ul className={styles.list} aria-label="项目角色">{items.map(item => <li key={item.id}><button className={styles.choice} type="button" aria-pressed={selectedID === item.id} disabled={!fresh} onClick={() => choose(item)}><strong>{item.name}</strong><span className={styles.meta}>{item.default_agent} · {item.default_model} · {item.question_mode === 'native' ? '原生问答' : '禁用工具'}</span><span className={styles.meta}>版本 {item.revision}{item.archived ? ' · 已归档' : ''}</span></button></li>)}</ul>
         {!selectedID || selected ? <RoleEditor key={selectedID || 'new'} project={project} role={selected} disabled={!canEdit} onSaved={role => { choose(role); roles.retry(); }} /> : <p role="status">所选角色不在当前列表中，请刷新角色。</p>}
       </div>}</QueryState>
       <ConversationWorkspace project={project} disabled={disabled} roles={fresh ? roles.data ?? [] : []} selectedRoleID={selected?.archived ? '' : selected?.id ?? ''} onSelected={onConversationSelected} />
@@ -66,27 +66,30 @@ function CommandState({ command, recovered }: { command: ReturnType<typeof useCo
 }
 
 function RoleEditor({ project, role, disabled, onSaved }: { project: Project; role?: SwaRole; disabled: boolean; onSaved: (role: SwaRole) => void }) {
-  const [fields, setFields] = useState<RoleDefinition>(() => role ? { name: role.name, responsibilities: role.responsibilities, default_agent: role.default_agent, default_model: role.default_model, skills: role.skills, knowledge: role.knowledge } : { name: '', responsibilities: '', default_agent: project.settings.external_model_cli, default_model: '', skills: [], knowledge: [] });
+  const [fields, setFields] = useState<RoleDefinition>(() => role ? { name: role.name, responsibilities: role.responsibilities, default_agent: role.default_agent, default_model: role.default_model, question_mode: role.question_mode ?? 'disabled', skills: role.skills, knowledge: role.knowledge } : { name: '', responsibilities: '', default_agent: project.settings.external_model_cli, default_model: '', question_mode: 'disabled', skills: [], knowledge: [] });
   const [skills, setSkills] = useState(role?.skills.join('\n') ?? ''), [knowledge, setKnowledge] = useState(role?.knowledge.join('\n') ?? '');
   const [revision, setRevision] = useState(role?.revision ?? 0);
   const save = useCollaborationCommand(project.id, { action: role ? 'role.update' : 'role.create', ...(role ? { roleID: role.id } : {}) }, collaborationPermission(project.settings, 'observe', false));
   const archive = useCollaborationCommand(project.id, { action: 'role.archive', roleID: role?.id ?? 'new' }, collaborationPermission(project.settings, 'observe', false));
   const changed = !!role && role.revision !== revision;
   const blocked = disabled || !!role?.archived || changed || save.pending || save.uncertain || archive.pending || archive.uncertain;
-  const valid = !!fields.name.trim() && !!fields.responsibilities.trim() && !!fields.default_agent.trim() && !!fields.default_model.trim();
+  const nativeUnavailable = fields.question_mode === 'native' && fields.default_agent.trim() !== 'pi';
+  const valid = !!fields.name.trim() && !!fields.responsibilities.trim() && !!fields.default_agent.trim() && !!fields.default_model.trim() && !nativeUnavailable;
   function saved(reply: SwaEnvelope) { const current = readSwaRole(reply, project.id); setRevision(current.revision); onSaved(current); }
   return <section className={styles.workspace} aria-label={role ? '角色详情与编辑' : '新角色'}><h3>{role ? role.name : '新建可复用角色'}</h3>
     {role && <p className={styles.meta}>角色 {role.id} · 版本 {role.revision}{role.archived ? ' · 已归档，历史任务保留原角色版本' : ''}</p>}
     {changed && <div><p role="alert">角色已有新版本。你的编辑保留在表单中，请核对最新记录后重新载入。</p><button className="ac-button secondary compact" type="button" disabled={disabled || save.pending || save.uncertain || archive.pending || archive.uncertain} onClick={() => { if (role) { setFields(role); setSkills(role.skills.join('\n')); setKnowledge(role.knowledge.join('\n')); setRevision(role.revision); } }}>载入最新保存版本</button></div>}
     <form className={styles.form} onSubmit={event => {
       event.preventDefault(); if (blocked || !valid) return;
-      const definition: RoleDefinition = { name: fields.name.trim(), responsibilities: fields.responsibilities.trim(), default_agent: fields.default_agent.trim(), default_model: fields.default_model.trim(), skills: explicitReferences(skills), knowledge: explicitReferences(knowledge) };
+      const definition: RoleDefinition = { name: fields.name.trim(), responsibilities: fields.responsibilities.trim(), default_agent: fields.default_agent.trim(), default_model: fields.default_model.trim(), question_mode: fields.question_mode ?? 'disabled', skills: explicitReferences(skills), knowledge: explicitReferences(knowledge) };
       const body: SwaCommand = role ? { action: 'role.update', role_id: role.id, revision, role: definition } : { action: 'role.create', role: definition };
       void save.run(requestID => swaApi.command(project.id, { ...body, request_id: requestID }), saved);
     }}>
       <label>角色名称<input required value={fields.name} disabled={blocked} onChange={event => setFields({ ...fields, name: event.target.value })} placeholder="代码审查员" /></label>
       <label>职责<textarea required value={fields.responsibilities} disabled={blocked} onChange={event => setFields({ ...fields, responsibilities: event.target.value })} placeholder="检查变更风险、核对验收条件并提出具体意见" /></label>
       <div className={styles.columns}><label>默认 Agent<input required value={fields.default_agent} disabled={blocked} onChange={event => setFields({ ...fields, default_agent: event.target.value })} /></label><label>默认模型<input required value={fields.default_model} disabled={blocked} onChange={event => setFields({ ...fields, default_model: event.target.value })} /></label></div>
+      <label>默认问题模式<select value={fields.question_mode ?? 'disabled'} disabled={blocked} onChange={event => setFields({ ...fields, question_mode: event.target.value as 'disabled' | 'native' })}><option value="disabled">禁用工具</option><option value="native" disabled={fields.default_agent.trim() !== 'pi'}>原生问答 · 仅 Pi</option></select></label>
+      {nativeUnavailable ? <p role="alert">此角色保留的原生问答模式不适用于当前 Agent。请明确选择 Pi 或改为禁用工具。</p> : <p className={styles.note}>原生问答只允许提问与读取原答案；任务启动时核查当前 Agent 的实际能力。已保存的角色模式会随本次角色版本复用。</p>}
       <label>技能引用（每行一个）<textarea value={skills} disabled={blocked} onChange={event => setSkills(event.target.value)} /></label>
       <label>长期知识引用（每行一个）<textarea value={knowledge} disabled={blocked} onChange={event => setKnowledge(event.target.value)} /></label>
       <p className={styles.note}>引用在这里保存。任务读取引用内容时仍按项目当前权限核查。</p>

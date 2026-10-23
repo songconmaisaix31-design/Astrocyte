@@ -112,7 +112,7 @@ func (o *cliOutput) outputFailure(err error) int {
 	}
 	o.recovery()
 	switch o.action {
-	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "question.answer", "run.submit", "serve":
+	case "controller.open", "controller.close", "controller.recover", "task.create", "task.complete", "worker.start", "worker.send", "worker.stop", "worker.release", "question.answer", "question.resume", "run.submit", "serve":
 		return 6
 	default:
 		return 7

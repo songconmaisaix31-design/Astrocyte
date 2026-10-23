@@ -73,6 +73,8 @@ export type RpcRequest = {
   compatibilityInvocationId?: string
   orchestrationCompatibilityEvidence?: OrchestrationCompatibilityEvidence
   swaOwnerCapability?: unknown
+  swaQuestionProducerProof?: unknown
+  swaQuestionOrigin?: unknown
   // Why unknown: untrusted wire input; runtime-source-admission.ts validates it.
   expectedRuntimeSource?: unknown
   // Why unknown: phone-supplied routing target (`runtime:<env>`), validated where it is read.
@@ -91,6 +93,8 @@ export type RpcExecutionAdmission = (request: Readonly<RpcRequest>, params: unkn
 
 export type RpcContext = {
   runtime: OrcaRuntimeService
+  swaQuestionProducerProof?: unknown
+  swaQuestionOrigin?: unknown
   // Why: lets long-poll handlers release immediately on client disconnect instead of running down timeoutMs. See design doc §3.1.
   signal?: AbortSignal
   // Why: per-WebSocket key so the server reaps a closing socket's subscriptions without touching sibling sockets sharing the deviceToken.

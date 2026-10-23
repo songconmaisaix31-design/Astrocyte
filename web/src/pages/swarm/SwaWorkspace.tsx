@@ -6,7 +6,7 @@ import { useReadApi, formatError } from '../../hooks/useReadState';
 import { QueryState } from '../../components/QueryState';
 import { SectionCard } from '../../components/SectionCard';
 import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, swaStartRequestBlock, canRequestSwaStart, type PendingSwaRequest } from './swaObservation';
-import { SwaAgentCapabilities, SwaRunWorkspace } from './SwaRunWorkspace';
+import { SwaAgentCapabilities, SwaQuestionModeField, SwaRunWorkspace } from './SwaRunWorkspace';
 import { SwaRoles, type SelectedSwaRole } from './SwaRolesPanel';
 import { SwaExecutionDetails } from './SwaExecutionDetails';
 import { inspectSwaRunSubmission } from './swaRunView';
@@ -116,15 +116,18 @@ function WorkerStartForm({ project, controller, taskID, capabilities, disabled, 
   let agents: ReturnType<typeof readSwaAgents> = [], capabilityError: string | null = null;
   try { agents = readSwaAgents(capabilities).filter(agent => agent.id === project.settings.external_model_cli); } catch (error) { capabilityError = formatError(error); }
   const [agentID, setAgentID] = useState(''), [name, setName] = useState(''), [inputFile, setInputFile] = useState('');
+  const [questionMode, setQuestionMode] = useState<'disabled' | 'native'>('disabled');
   const agent = agents.find(item => item.id === agentID);
   const command = useSwaCommand(project.id, `worker.start:${controller}:${taskID}`);
-  const canRequestStart = canRequestSwaStart({ agent, settings: project.settings, disabled, pending: command.pending, unresolved: !!command.unresolved, name, inputFile });
+  const nativeQuestionsAvailable = agent?.id === 'pi' && agent.questions?.status === 'available';
+  const canRequestStart = (questionMode === 'disabled' || nativeQuestionsAvailable) && canRequestSwaStart({ agent, settings: project.settings, disabled, pending: command.pending, unresolved: !!command.unresolved, name, inputFile });
   const observationLabel = (status: string) => status === 'unknown' ? '尚未验证' : status === 'available' ? '已观察可用' : '不可用';
-  return <details><summary>向同一任务添加 Worker</summary><p className={styles.note}>服务将在启动时检查账号、工具限制和权限。数量由任务额度和实际资源决定。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!canRequestStart || !agent) return; void command.run({ action: 'worker.start', controller, task_id: taskID, name: name.trim(), agent: agent.id, model: agent.model, input_file: inputFile.trim() }, reply => { if (!reply.dispatch_id) throw new Error('回执缺少真实 Dispatch，请查询原请求'); onStarted(); }); }}>
+  return <details><summary>向同一任务添加 Worker</summary><p className={styles.note}>服务将在启动时检查账号、工具限制和权限。数量由任务额度和实际资源决定。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!canRequestStart || !agent) return; void command.run({ action: 'worker.start', controller, task_id: taskID, name: name.trim(), agent: agent.id, model: agent.model, question_mode: questionMode, input_file: inputFile.trim() }, reply => { if (!reply.dispatch_id) throw new Error('回执缺少真实 Dispatch，请查询原请求'); onStarted(); }); }}>
     <label>当前项目的 Agent<select required value={agentID} onChange={event => setAgentID(event.target.value)}><option value="">选择 Agent</option>{agents.map(item => {
       const blocked = swaStartRequestBlock(item, project.settings);
       return <option key={item.id} value={item.id} disabled={!!blocked}>{item.id} · {item.model || '模型未提供'} · {blocked ?? `启动${observationLabel(item.launchable.status)}`}</option>;
     })}</select></label>
+    <SwaQuestionModeField value={questionMode} nativeAvailable={nativeQuestionsAvailable} disabled={disabled || command.pending || !!command.unresolved} onChange={setQuestionMode} />
     <label>此 Worker 名称<input required value={name} onChange={event => setName(event.target.value)} /></label><label>已批准的服务端输入文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={!canRequestStart}>提交启动请求</button>
   </form>{agent && <p className={styles.note}>启动：{observationLabel(agent.launchable.status)}；读取：{observationLabel(agent.read.status)}；工具限制：{observationLabel(agent.tools.status)}。{swaStartRequestBlock(agent, project.settings)}</p>}<p className={styles.note}>CLI 创建的任务可按独立许可追加输入；新增 Worker 仍由服务核查任务权限。</p>{capabilityError && <p role="alert">{capabilityError}</p>}{!agents.length && <p role="status">当前能力清单未返回项目选择的 Agent，启动不可用。</p>}<OperationState command={command} controller={controller} onRecovered={onStarted} /></details>;
 }
@@ -152,26 +155,27 @@ function useSwaCommand(projectID: string, scope: string) {
   async function run(body: SwaCommand, onSuccess?: (reply: SwaEnvelope) => void) {
     if (busy.current || unresolved) return;
     busy.current = true;
-    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop', 'run.submit', 'question.answer'].includes(body.action);
+    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop', 'run.submit', 'question.answer', 'question.resume'].includes(body.action);
+    const questionMutation = body.action === 'question.answer' || body.action === 'question.resume';
     const requestID = mutation ? crypto.randomUUID() : undefined;
     const original: PendingSwaRequest | null = requestID ? { requestID, action: body.action, ...(body.controller ? { controller: body.controller } : {}), ...(body.task_id ? { taskID: body.task_id } : {}), ...(body.dispatch_id ? { dispatchID: body.dispatch_id } : {}), ...(body.run_id ? { runID: body.run_id } : {}), ...(body.question_id ? { questionID: body.question_id } : {}) } : null;
     setPending(true); setError(null); setReply(null);
     try {
       if (original) { sessionStorage.setItem(storageKey, JSON.stringify(original)); setUnresolved(original); }
       let result = await swaApi.command(projectID, { ...body, ...(requestID ? { request_id: requestID } : {}) });
-      if (body.action === 'question.answer' && original) {
+      if (questionMutation && original) {
         const queried = await swaApi.command(projectID, { action: 'request.show', controller: original.controller, request_id: original.requestID });
         const recovered = recoverSwaRequest(queried, projectID, original);
-        if (!recovered?.ok) throw new Error('原回答尚未取得完整成功回执，请继续查询原请求');
+        if (!recovered?.ok) throw new Error('原问题操作尚未取得完整成功回执，请继续查询原请求');
         result = recovered;
       }
       if (active.current) { setReply(result); onSuccess?.(result); sessionStorage.removeItem(storageKey); setUnresolved(null); }
     } catch (failure) {
-      if (failure instanceof SwaRuntimeUnavailableError && body.action !== 'question.answer') sessionStorage.removeItem(storageKey);
+      if (failure instanceof SwaRuntimeUnavailableError && !questionMutation) sessionStorage.removeItem(storageKey);
       if (active.current) {
         setError(formatError(failure));
         if (failure instanceof SwaCommandError) setReply(failure.reply);
-        if (failure instanceof SwaRuntimeUnavailableError && body.action !== 'question.answer') setUnresolved(null);
+        if (failure instanceof SwaRuntimeUnavailableError && !questionMutation) setUnresolved(null);
         // 其余不确定错误保留原请求，不推断已执行效果。
       }
     } finally { busy.current = false; if (active.current) setPending(false); }
@@ -192,7 +196,7 @@ function useSwaCommand(projectID: string, scope: string) {
         if (recovered) {
           if (recovered.ok) onRecovered?.(recovered);
           sessionStorage.removeItem(storageKey); setUnresolved(null); setReply(recovered);
-          setError(recovered.ok ? null : recovered.error?.message ?? '原回答已明确拒绝且没有效果，可修正后重新提交');
+          setError(recovered.ok ? null : recovered.error?.message ?? '原操作已明确拒绝且没有效果，可修正后重新提交');
         }
       }
     } catch (failure) { if (active.current) setError(formatError(failure)); }

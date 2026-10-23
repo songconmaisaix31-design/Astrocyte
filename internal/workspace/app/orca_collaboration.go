@@ -26,6 +26,9 @@ func validateOrcaCollaborationCommand(c OrcaCommand) error {
 		if len(role.Name) > 200 || len(role.Responsibilities) > 16000 || len(role.Skills) > 32 || len(role.Knowledge) > 32 {
 			return invalid("role metadata exceeds its declared bound")
 		}
+		if role.QuestionMode != "" && role.QuestionMode != "disabled" && role.QuestionMode != "native" || role.QuestionMode == "native" && role.DefaultAgent != "pi" {
+			return invalid("role question mode requires disabled or native with the Pi default Agent")
+		}
 		for _, values := range [][]string{role.Skills, role.Knowledge} {
 			seen := map[string]bool{}
 			for _, value := range values {

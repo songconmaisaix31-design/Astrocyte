@@ -1199,22 +1199,32 @@ Workspace 独占开发空间存储责任，沿用 `attention_project_spaces` 原
 
 | 对象 | 保存的业务事实 |
 | --- | --- |
-| Role | 职责、默认 Agent/模型、技能及长期知识引用；有项目范围、版本和归档状态 |
+| Role | 职责、默认 Agent/模型及问题模式、技能及长期知识引用；有项目范围、版本和归档状态 |
 | Conversation | 当前讨论及追加要求；追加讨论不隐式调用模型 |
 | Task | 目标、依赖、验收条件和结果；固定角色版本及来源 |
 | Worker | 实际 Dispatch、进程与原生会话身份、输入和释放状态 |
 
-`run.submit` 接原 project/workdir/spec_file/input_file/agent/model/name/request_id，可选 role_id+revision 和 conversation_id。Go 在原权限下组合 controller.open、task.create、worker.start；外部稳定 UUID 为首阶段身份，后两阶段确定派生，持久化完整 spec/input/context/selection。恢复只读取并验证原请求回执，unknown 不自动重发或生成新身份。`initial_workers` 省略为 1，显式值须在 1 至 max_workers 以内；它防止已批准的初始并发尚未启动就收尾，实际动态后代仍全部纳入观察。
+`run.submit` 接原 project/workdir/spec_file/input_file/agent/model/name/request_id，可选 role_id+revision、conversation_id 和 question_mode。Go 在原权限下组合 controller.open、task.create、worker.start；外部稳定 UUID 为首阶段身份，后两阶段确定派生，持久化完整 spec/input/context/selection。恢复只读取并验证原请求回执，unknown 不自动重发或生成新身份。`initial_workers` 省略为 1，显式值须在 1 至 max_workers 以内；它防止已批准的初始并发尚未启动就收尾，实际动态后代仍全部纳入观察。
 
-CLI `run` 默认等待整个递归 Run；`wait` 用精确 controller/run_id/root task_id 重连，只观察现有工作。`--strict` 将任一递归子任务失败计为失败，非严格模式仍展示完整失败列表。退出码沿既有 2—7，新增 8 超时、9 需要用户回答、130 取消等待；取消等待不自动停止 Worker。`export` 读取同 Run 的完整记录、原生成果和产物索引，CLI 写入明确的新输出目录，GUI 下载实际数据。GUI 与 CLI 共用 `swa.run-view.v1`，显示后代、依赖、Dispatch、问题、阻塞、失败和成果。
+`question_mode: disabled | native` 只在新 Run、worker.start 或 Role 默认值中选择；旧记录没有该字段时使用 disabled。Run/Worker 未显式选择时沿准确角色版本继承其默认值，没有角色时为 disabled；当前 Worker 不支持中途切换。角色编辑、归档、复用和实际启动记录保留原模式。native 仅适用于固定 Pi 1.0.1 的 per-session 账号合同，对应 `native_launch.tools.mode: questions-only`、固定安装扩展来源和唯一允许工具 `swa_ask`；其它 Agent 或账号合同明确拒绝。GUI 依据当前 `control.questions` 声明及项目选择开放入口，未得到能力时保留已选模式并阻止启动。声明支持、来源配置、实际启动和真实提问成功分别记录。
 
-`question.answer` 接收准确 controller/run_id/root task_id/dispatch_id/question_id 和稳定 request_id，正文为 input_file 或 text 二选一。CLI `swa question answer` 读取明确文件；GUI 在同 Run 的原问题上提交文字，复用同公开 command。正文保留原文，须非空白且在32000 UTF-8字节以内。人类回答按当前项目 send、目录/固定上下文、原 selection 与外发批准独立授权，保留原创建者来源；Agent 继续绑定原 Grant。效果前重新核准后复用原 `orchestration.reply`、`db.answerQuestion` 和原 ask 唤醒，答案保存不证明模型已读，不附加 worker.send 或第二状态库。
+questions-only 只允许以原文 question 创建问题或以 resume 读取所属原问题的答案，不接受路径、命令、模型、账号或任意收件人；原生文件和命令工具保持关闭。disabled 的原工具集合与启动参数不变。Worker preamble 从实际原启动选择取得模式：disabled 要求直接交付最终助手正文，由运行系统收集；questions-only 只说明可用的 `swa_ask` 和最终成果。原任务规格与验收条件保留，不能要求模型使用实际不可用的协作命令。consult 继续要求 disabled，不能隐式升级工具范围；既定 ToolsOff N4/N6 验收与本问答模式分别记录。
+
+CLI `run` 默认等待整个递归 Run；`wait` 用精确 controller/run_id/root task_id 重连，只观察现有工作。`--strict` 将任一递归子任务失败计为失败，非严格模式仍展示完整失败列表。退出码沿既有 2—7，新增 8 超时、9 需要回答或继续原问题、130 取消等待；取消等待不自动停止 Worker。`export` 读取同 Run 的完整记录、原生成果和产物索引，CLI 写入明确的新输出目录，GUI 下载实际数据。GUI 与 CLI 共用 `swa.run-view.v1`，显示后代、依赖、Dispatch、问题、阻塞、失败和成果。
+
+原生问题生产沿固定 Pi 扩展、原本地 RuntimeClient 和经 Worker 来源准入的 `orchestration.ask`，复用原 question_threads 与等待机制。准入核当前实际 Worker/session/fence/Dispatch、原启动选择、当前 controller consumer、项目 send/固定上下文/外发批准，以及真实原生 assistant entry/toolCallId/参数；不从模型自报字段确定 Run。实际 lease 的私有进程来源证明只走本地运输，不进入模型参数、请求正文、回执或导出；它不构成同一 OS 用户之间的安全隔离。创建与等待请求由真实会话/entry/toolCallId 派生稳定 UUID，完成回放前同样核原来源，未知创建只查询原请求，不能用新请求绕过。一个 Dispatch 的待答问题或未确认创建阻止第二次创建；不同 Worker 的问题独立记录。首次工具调用早于启动结算时仅有界等待原启动完成，未完成前不创建问题。
+
+`question.answer` 接收准确 controller/run_id/root task_id/dispatch_id/question_id 和稳定 request_id，正文为 input_file 或 text 二选一。CLI `swa question answer` 读取明确文件；GUI 在同 Run 的原问题上提交文字，复用同公开 command。正文保留原文，须非空白且在32000 UTF-8字节以内。人类回答按当前项目 send、目录/固定上下文、原 selection 与外发批准独立授权，保留原创建者来源；Agent 继续绑定原 Grant。效果前重新核准后复用原 `orchestration.reply`、`db.answerQuestion` 和原 ask 唤醒，答案保存不证明模型已读。回答动作不附加模型输入；原 ask 仍等待时，答案沿原工具结果返回同一 Pi 会话。
 
 原 parent R 和 child R/native 持久记录准确答案与归属。同 R 改内容拒绝；未知只查询原 R，不自动重发；同问题另一回答 pending 时禁止换 R 绕过。已答同内容以原答案返回 duplicate，允许原 Worker 已释放，但当前项目授权和实际 controller consumer 仍须成立，不产生新输入；不同答案冲突、closed 拒绝。只有准确 parent/child 均完成且明确 rejected/effects_applied:false 才恢复 GUI 编辑，保留错误和当前页面正文，由用户显式修正后提交新 R。回答成功退出0，观察待答仍退出9并显示可执行回答及原 wait 命令。run_view 的 pending questions 与原记录派生的 answered_questions 分别展示，后者及完整答案进入同 Run 导出；完整集合和字节边界继续核验。
 
+原工具等待已 timeout/cancelled/connectionLost 时，保存答案不会重新执行已返回的工具。`question.resume` 提供明确继续入口，接收准确 controller/run_id/root task_id/dispatch_id/question_id 和新的稳定 request_id，不接受 text、input_file 或自定义指令。只有实际工具结果证明原等待已结束、答案已保存、同一当前 session/fence 与 consumer 有效，且原生记录和输入 journal 证明 idle、没有未知或待投递输入时才允许。它重新核当前人类独立 send/外发批准，沿原 helper→swa.workerSend→sendAgentTurn 投递固定正文“使用 swa_ask 的 resume 参数读取原问题 Q 的答案，并继续当前任务。”，不会复制答案或伪造工具结果。模型随后实际调用 resume:Q，原 ask 返回唯一答案；真实工具结果及后继模型轮次共同决定正常完成。没有 Conversation 的 Run 使用相同入口。
+
+`question.resume` 返回0只确认该次继续输入已接受；原请求未知时仅查询同 R，不能自动重发，已完成回放也不再次输入。新一轮确实结束但仍未读取答案时，重新呈现明确继续入口，由用户选择下一次请求。`answered_questions.read_state` 区分 answer_saved、read_unconfirmed、read_observed、continuation_required 和 interrupted；`continuation_required` 布尔仅在同名状态为 true。CLI 对尚需回答或继续的问题保持退出9：可以继续时给出 `swa question resume --project P --controller C --run R --task ROOT --dispatch D --question Q --request-id NEW_UUID --json`；证据不足时给原 wait/request 查询指引。GUI 同 Run 按相同库存显示继续按钮，并沿原 request.show 恢复，pending、未知或普通权限错误均不清除原请求锁。
+
 work 委派执行，consult 必须由实际工具策略禁止外部操作，notify 仅保存单向邮件且不新建 Task/Worker。交接保存原始来源、父任务、接收者、完成条件和 reply。`handoff.notify` 接收原 Controller、根任务、接收 Dispatch 和 `input_file`；Go 按当前项目权限读取并版本化该文件，原生邮件逐字保存 `invocation.input.text`。该操作不接收内联 `text`。notify 的 `delivery:stored` 只表示记录已保存；通知和完成邮件使用原 `audit_only` 合同，不进入会自动向模型投递的邮箱。reply=poll 由调用者观察；reply=resume 由原生完成消费者把真实子成果通过原邮件和经过当前权限检查的 worker.send 输入路径递交父会话。内部 `handoff` 引用 source_task_id/source_dispatch_id/parent_task_id/parent_dispatch_id/mail_id；后台核原记录、当前项目权限和原会话，外部请求不能提供该证明。邮件已保存、实际接受输入、父 Agent 继续输出分别记录。
 
-Run 自动收尾复用原 journal 完成通知、Task/Dispatch、完整成果 reader 和原 worker.stop/release，不新增调度器或第二任务状态库。所有实际后代、待答问题、未知输入和所属资源均须闭合；执行终态标记 `acceptance:unreviewed`，不代替验收条件审查。
+Run 自动收尾复用原 journal 完成通知、Task/Dispatch、完整成果 reader 和原 worker.stop/release，不新增调度器或第二任务状态库。Run 观察触发同 scope 的既有结算；问题库存同时核原问题、创建/等待回执及真实工具结果，覆盖报告、自动停止/释放、根任务交付与最终清理前复核。已保存但读取未确认的答案仍阻止自动交付；仅 Q=answered 或 Q=closed 不代表模型继续或停止完成。用户显式 stop 在原停止及退出证据确认后可沿原流程回收，保留 interrupted 与原答案，不宣称模型已读。所有实际后代、问题、未知输入和所属资源均须闭合；执行终态标记 `acceptance:unreviewed`，不代替验收条件审查。
 
 Agent 能力分别标记 declaration/configuration/probe/session/result 证据层级；安装、配置、可启动、实际控制和执行成功分别展示。图片、工具和模型切换分别声明，界面按实际可用操作开放。追加输入仅有原生接受证据才为 sent，明确无效果拒绝才为 not_sent，其余为 unknown；unknown 不自动重发。恢复区别 resumed/rebuilt/failed/unknown，保留真实模型、provider、非秘密账号来源及原会话。模型目录优先使用当前真实会话支持的账号目录；静态配置标为 unverified，不能回退其他账号后声称同来源。
 

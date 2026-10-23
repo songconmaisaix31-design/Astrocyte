@@ -23,6 +23,13 @@ function rows(value: unknown, field: string): Record<string, unknown>[] {
 }
 
 export interface SwaRunSelection { controller: string; taskID: string; runID: string }
+export type SwaQuestionReadState = 'answer_saved' | 'read_unconfirmed' | 'read_observed' | 'interrupted' | 'continuation_required';
+
+export function readQuestionContinuation(question: Record<string, unknown>): { readState: SwaQuestionReadState; continuationRequired: boolean } {
+  const state = question.read_state;
+  if (typeof state !== 'string' || !['answer_saved', 'read_unconfirmed', 'read_observed', 'interrupted', 'continuation_required'].includes(state) || typeof question.continuation_required !== 'boolean' || question.continuation_required !== (state === 'continuation_required')) throw new Error('原答案的读取与继续状态无法确认');
+  return { readState: state as SwaQuestionReadState, continuationRequired: question.continuation_required };
+}
 
 export function submittedRun(reply: SwaEnvelope): SwaRunSelection {
   return { controller: text(reply.controller, 'controller'), taskID: text(reply.task_id, 'root_task_id'), runID: text(reply.run_id, 'run_id') };
@@ -45,7 +52,7 @@ export function readSwaRun(reply: SwaEnvelope, projectID: string, selected: SwaR
   const answeredQuestions = rows(view.answered_questions, 'answered_questions').map(question => {
     const answeredAt = text(question.answered_at, 'question.answered_at');
     if (!Number.isSafeInteger(question.answered_by_generation) || Number(question.answered_by_generation) < 0 || !Number.isFinite(Date.parse(answeredAt))) throw new Error('原答案缺少实际代次或时间');
-    return { id: text(question.question_id, 'question.question_id'), taskID: text(question.task_id, 'question.task_id'), dispatchID: text(question.dispatch_id, 'question.dispatch_id'), question: text(question.question, 'question.question'), answerID: text(question.answer_message_id, 'question.answer_message_id'), answer: text(question.answer, 'question.answer'), answeredAt };
+    return { id: text(question.question_id, 'question.question_id'), taskID: text(question.task_id, 'question.task_id'), dispatchID: text(question.dispatch_id, 'question.dispatch_id'), question: text(question.question, 'question.question'), answerID: text(question.answer_message_id, 'question.answer_message_id'), answer: text(question.answer, 'question.answer'), answeredAt, ...readQuestionContinuation(question) };
   });
   const allQuestions = [...questions, ...answeredQuestions];
   if (new Set(allQuestions.map(question => question.id)).size !== allQuestions.length || allQuestions.some(question => !tasks.some(task => task.id === question.taskID) || !dispatches.some(dispatch => dispatch.id === question.dispatchID && dispatch.taskID === question.taskID))) throw new Error('原问题记录缺失或属于其它任务');

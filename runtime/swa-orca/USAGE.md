@@ -16,13 +16,23 @@ swa export --project "$project_id" --controller "$controller" --task "$root_task
 
 示例变量均需使用实际值；`--export` 和 `--output-dir` 要求尚不存在的绝对目录及已存在、获准的父目录。目标路径经过符号链接或重解析点时拒绝。`run --export` 在提交之前核对本地目标，最终导出时再次独占创建，已有目录不会覆盖。
 
-复用当前项目角色时，为 `run` 同时提供 `--role "$role_id" --role-revision "$role_revision"`，可用 `--conversation "$conversation_id"` 关联已有讨论。服务核查准确角色版本、归档状态与项目身份，并将关联保存在根任务规格；仍需明确本次 `--agent` 与 `--model`。GUI 中选择角色会填入默认 Agent 与模型，提交时按当前项目批准重新核查。
+复用当前项目角色时，为 `run` 同时提供 `--role "$role_id" --role-revision "$role_revision"`，可用 `--conversation "$conversation_id"` 关联已有讨论。服务核查准确角色版本、归档状态与项目身份，并将关联保存在根任务规格；仍需明确本次 `--agent` 与 `--model`。GUI 中选择角色会填入默认 Agent、模型及问题模式，提交时按当前项目批准重新核查。
+
+新 Run 和 `worker start` 可用 `--question-mode disabled|native` 选择问题模式。省略时继承所选角色的准确默认值，没有角色或旧角色没有该字段时为 disabled；显式 disabled 保持模型工具全部关闭。native 仅支持固定 Pi 1.0.1 的 per-session 账号模式，通过随安装固定的 `swa_ask` 扩展提问与读取原答案，原生文件和命令工具仍关闭。其它 Agent 或不相容账号合同返回能力不可用；不能在已有 Worker 中切换模式。GUI 只在当前 Agent 已声明该能力时开放选项，声明支持不表示真实提问已经验收。
 
 CLI 与 GUI 读取同一后端 Run 视图。stderr 的进度包含当前状态、阻塞原因、问题及失败数量；stdout 只发布一个最终 JSON。`--strict` 在完整递归任务集合的任一子任务失败时返回 7，实际创建 Task 的咨询同样计入；单向通知不创建 Task。普通成功仍保留子任务失败事实，不能将主 Agent 的结束当作全部任务完成。
 
 Run 的 `completed` 表示执行已结束；成果的 `acceptance: unreviewed` 单独保留，等待成功和导出均不表示人工已经验收。`handoffs` 保留真实交接消息、来源合同和实际读取状态，观察不会确认消息已读；恢复请求进入队列也不能视为父 Agent 已继续处理。
 
-需要用户回答时默认返回 9，可用 `--on-input wait` 持续观察。等待上限默认 `30m`，支持 Go 时长格式如 `90s`、`5m`、`2h`；超时返回 8，Ctrl-C 返回 130，均只结束当前 CLI 等待，原任务继续运行。重连命令会包含准确 Run 身份。暂时读连接中断时只重读同一个 Run；提交结果未知时返回 6 并保留原请求，不能换 UUID 重发工作。权限不足返回 3，能力不可用返回 4，资源拒绝返回 5，任务或导出失败返回 7，参数错误返回 2。
+需要用户回答或继续原问题时默认返回 9，可用 `--on-input wait` 持续观察。等待上限默认 `30m`，支持 Go 时长格式如 `90s`、`5m`、`2h`；超时返回 8，Ctrl-C 返回 130，均只结束当前 CLI 等待，原任务继续运行。重连命令会包含准确 Run 身份。暂时读连接中断时只重读同一个 Run；提交结果未知时返回 6 并保留原请求，不能换 UUID 重发工作。权限不足返回 3，能力不可用返回 4，资源拒绝返回 5，任务或导出失败返回 7，参数错误返回 2。
+
+需要 Worker 能在任务中提问时，在首次提交明确选择 native，使用当前实际批准的 Agent、模型和新请求 ID：
+
+```sh
+swa run --project "$project_id" --workdir "$project_root" --spec-file task.json --input-file brief.md --agent pi --model stepfun/step-3.5-flash --question-mode native --request-id "$question_run_request_id" --strict --json
+```
+
+实际 `swa_ask` 调用创建同一 Run 的原生问题；模型输出普通问句或字面工具调用不算提问成功。禁用工具模式要求 Worker 直接给出最终助手成果，运行系统收集；问答模式只额外允许 `swa_ask`，两种模式均保留任务的原验收条件。
 
 Run 中存在原生待答问题时，退出9会给出该问题的准确选择器。将回答保存为当前项目获准读取的 UTF-8 文件，首次发送前保存一个新的规范 UUID，再执行：
 
@@ -35,7 +45,17 @@ swa wait --project "$project_id" --controller "$controller" --task "$root_task_i
 
 退出0只证明原答案已保存或同内容已确认，不证明模型已读；已答问题与唯一答案进入同 Run 历史和导出。同一 request ID 改内容会拒绝，已答问题不能替换为不同答案。结果未知时仅查询该回答的原请求，不换 ID 重发；GUI只有取得准确父子回执中明确的无效果拒绝，才恢复编辑并允许用户显式修正后提交新请求。原 Worker 已释放时可以确认已有同内容答案，但实际 Controller consumer 和当前项目授权仍须有效。
 
-当前 SWA 宿主尚未公开上游 `orchestration.ask`，provider 自身问题记录也尚未接入原 `question_threads`。因此当前正常 SWA Run 缺少生产问题入口；这里提供对原生已有问题的回答和历史功能，不能把局部数据库验证视为“模型提问→用户回答→原任务继续”的完整验收。ToolsOff 不因此扩大。
+原工具仍在等待时，保存答案后由原 ask 将答案交回同一 Pi 工具调用，模型可以继续当前轮次。原等待已超时或取消时，答案仍保存；只有实际记录确认当前原 Worker 已空闲且可以继续，CLI 才给出 `question resume`，GUI 才显示“继续此问题”。该入口无需先建立讨论会话。
+
+```sh
+swa question resume --project "$project_id" --controller "$controller" --run "$run_id" --task "$root_task_id" --dispatch "$dispatch_id" --question "$question_id" --request-id "$resume_request_id" --json
+swa request show --project "$project_id" --controller "$controller" --request-id "$resume_request_id" --json
+swa wait --project "$project_id" --controller "$controller" --task "$root_task_id" --run "$run_id" --strict --json
+```
+
+`resume_request_id` 是用户明确继续时首次保存的新 UUID；请求未知后只执行原 `request show`，不要重新发送或换 ID。继续命令不接受正文或文件，服务重新核当前独立 send 权限，向原 Worker 投递固定的“读取此原问题并继续”指令。退出0只确认该输入已接受；随后必须观察到真实 `swa_ask resume` 读回唯一答案和后继成果，才能确认问题已解决。原等待尚活跃、模型仍运行、输入未知或会话改变时不能继续，应按返回指引查询原请求或等待同一 Run。
+
+已答记录区分 `answer_saved`、`read_unconfirmed`、`read_observed`、`continuation_required` 和 `interrupted`；仅 `continuation_required` 提供明确继续入口。等待仍返回9并保留原 Run 身份；未知读取不能被当作交付完成。用户明确停止 Worker 后，原停止与退出证据确认才允许回收，已存答案仍进入历史。当前问答实现的局部类型、表单和记录检查不替代安装后的真实提问、回答、超时继续及成果验收；真实模型、GUI点击和 Windows 问答链的已验范围以交付记录为准。既定 ToolsOff N4/N6 测试继续使用原模式。
 
 导出包含 `run.json` 的完整后端任务视图、`result.json` 的完整原生成果与会话记录，以及 `results/` 内实际任务结果文本；`results/index.json` 关联原 Task ID 与文本文件。CLI 不跟随回复中的任意链接读取文件，不复制账号配置或私有目录。尚未结算、原生成果不完整或导出写入失败时不会报告交付成功；部分写入的独占目录保留供检查，下一次导出选择另一个新目录。
 
@@ -281,6 +301,8 @@ if ($LASTEXITCODE -ne 0) { throw '保留sendRequest核查原输入，不换键�
 | 5 | 资源额度、端口或实例锁拒绝 |
 | 6 | 原请求、停止或释放效果未知，先查询原回执 |
 | 7 | 运行、响应处理或导出失败 |
+| 8 | 完整任务等待超时，原 Run 继续运行 |
+| 9 | Run 需要用户回答或继续原问题，按准确指引处理 |
 | 130 | 当前等待已取消；`serve`按所属生命周期回收服务 |
 
 指定停止仅处理该Worker的专有Job；root退出、tree退出和资源释放分别记录。全部相关Worker确认退出并按原生流程归档释放后，可显式提交固定成功条件的真实结果，再关闭controller：

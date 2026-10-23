@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -125,5 +126,84 @@ func TestHandoffNotifyRequiresApprovedInputFile(t *testing.T) {
 	withText.Text = "Unbound inline input"
 	if ValidateOrcaCommand(withText) == nil {
 		t.Fatal("notification accepted inline text outside the file contract")
+	}
+}
+
+func TestNativeQuestionModePreservesExplicitSelection(t *testing.T) {
+	for _, action := range []string{"run.submit", "worker.start"} {
+		command := OrcaCommand{Action: action, ProjectID: "project", Agent: "pi", Model: "stepfun/step-3.5-flash", Name: "lead", InputFile: "input.txt", RequestID: uuid.NewString()}
+		if action == "run.submit" {
+			command.Workdir, command.SpecFile = t.TempDir(), "task.json"
+		} else {
+			command.Controller, command.TaskID = "original-controller", "original-root"
+		}
+		for _, mode := range []string{"", "disabled", "native"} {
+			command.QuestionMode = mode
+			if err := ValidateOrcaCommand(command); err != nil {
+				t.Fatal(action, mode, err)
+			}
+			selection := OrcaAgentSelection{NativeLaunch: OrcaNativeLaunchPolicy{Tools: OrcaNativeLaunchTools{Mode: "disabled"}}}
+			if mode == "native" {
+				selection.NativeLaunch.Tools.Mode = "questions-only"
+			}
+			if err := validateOrcaQuestionSelection(command, selection); err != nil {
+				t.Fatal(action, mode, err)
+			}
+			selection.NativeLaunch.Tools.Mode = "enabled"
+			if validateOrcaQuestionSelection(command, selection) == nil {
+				t.Fatal("原选择改变问答模式仍被接受")
+			}
+		}
+		command.QuestionMode = "native"
+		command.Agent = "codex"
+		if ValidateOrcaCommand(command) == nil {
+			t.Fatal("未适配 Agent 接受原生问题模式")
+		}
+		command.Agent = "pi"
+		command.QuestionMode = "enabled"
+		if ValidateOrcaCommand(command) == nil {
+			t.Fatal("未知问答模式被接受")
+		}
+	}
+	role := OrcaRoleDefinition{Name: "澄清员", Responsibilities: "按原 Run 提问", DefaultAgent: "pi", DefaultModel: "stepfun/step-3.5-flash", QuestionMode: "native"}
+	command := OrcaCommand{Action: "role.create", Role: &role, RequestID: uuid.NewString()}
+	if err := ValidateOrcaCommand(command); err != nil {
+		t.Fatal(err)
+	}
+	wire, err := json.Marshal(command)
+	var decoded OrcaCommand
+	if err != nil || json.Unmarshal(wire, &decoded) != nil || decoded.Role == nil || decoded.Role.QuestionMode != "native" {
+		t.Fatal("角色原问答模式未保存到公共表示", err)
+	}
+	role.DefaultAgent = "codex"
+	if ValidateOrcaCommand(command) == nil {
+		t.Fatal("角色以其他 Agent 选择了 Pi 问答模式")
+	}
+}
+
+func TestQuestionResumeAllowsOnlyExactIdentity(t *testing.T) {
+	command := OrcaCommand{Action: "question.resume", Controller: "original-controller", RunID: "original-run", TaskID: "original-root", DispatchID: "original-dispatch", QuestionID: "original-question", RequestID: uuid.NewString()}
+	if err := ValidateOrcaCommand(command); err != nil {
+		t.Fatal(err)
+	}
+	for _, mutate := range []func(*OrcaCommand){
+		func(c *OrcaCommand) { c.InputFile = "input.txt" },
+		func(c *OrcaCommand) { c.Text = "未批准自定义输入" },
+		func(c *OrcaCommand) { c.QuestionMode = "native" },
+		func(c *OrcaCommand) { c.QuestionID = "" },
+		func(c *OrcaCommand) { c.RunID = "" },
+		func(c *OrcaCommand) { c.TaskID = "" },
+		func(c *OrcaCommand) { c.DispatchID = "" },
+		func(c *OrcaCommand) { c.RequestID = "not-a-request" },
+	} {
+		invalid := command
+		mutate(&invalid)
+		if ValidateOrcaCommand(invalid) == nil {
+			t.Fatalf("受限继续入口接受了额外输入或缺失身份：%+v", invalid)
+		}
+	}
+	permission, mutation, known := orcaAction(command.Action)
+	if permission != "send" || !mutation || !known {
+		t.Fatal("继续入口未沿用原 send 权限")
 	}
 }

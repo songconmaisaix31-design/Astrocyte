@@ -52,7 +52,7 @@
       "additionalProperties": false,
       "required": ["action"],
       "properties": {
-        "action": { "enum": ["status", "capabilities", "run.submit", "run.show", "run.export", "role.list", "role.show", "role.create", "role.update", "role.archive", "conversation.list", "conversation.show", "conversation.create", "conversation.append", "handoff.notify", "controller.open", "controller.show", "controller.close", "controller.recover", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "question.answer", "request.show"] },
+        "action": { "enum": ["status", "capabilities", "run.submit", "run.show", "run.export", "role.list", "role.show", "role.create", "role.update", "role.archive", "conversation.list", "conversation.show", "conversation.create", "conversation.append", "handoff.notify", "controller.open", "controller.show", "controller.close", "controller.recover", "task.create", "task.show", "task.list", "task.complete", "task.result", "worker.start", "worker.show", "worker.list", "worker.read", "worker.send", "worker.stop", "worker.release", "question.answer", "question.resume", "request.show"] },
         "project_id": { "type": "string", "minLength": 1 },
         "controller": { "type": "string", "minLength": 1 },
         "run_id": { "type": "string", "minLength": 1 },
@@ -68,6 +68,7 @@
         "name": { "type": "string", "minLength": 1 },
         "agent": { "type": "string", "minLength": 1 },
         "model": { "type": "string", "minLength": 1 },
+        "question_mode": { "enum": ["disabled", "native"], "description": "Explicit new Run/Worker question mode. Native requires the fixed Pi questions-only contract; omitted retains the selected role default or disabled." },
         "source": { "const": "transcript" },
         "cursor": { "type": "string", "minLength": 1 },
         "limit": { "type": "integer", "minimum": 1, "maximum": 1000 },
@@ -83,6 +84,10 @@
         "properties": {"controller": {}, "run_id": {}, "task_id": {}, "dispatch_id": {}, "question_id": {}, "request_id": {}},
         "required": ["controller", "run_id", "task_id", "dispatch_id", "question_id", "request_id"],
         "oneOf": [{"properties": {"input_file": {}}, "required": ["input_file"]}, {"properties": {"text": {}}, "required": ["text"]}]
+      }}, {"if": {"properties": {"action": {"const": "question.resume"}}, "required": ["action"]}, "then": {
+        "properties": {"controller": {}, "run_id": {}, "task_id": {}, "dispatch_id": {}, "question_id": {}, "request_id": {}},
+        "required": ["controller", "run_id", "task_id", "dispatch_id", "question_id", "request_id"],
+        "not": {"anyOf": [{"properties": {"text": {}}, "required": ["text"]}, {"properties": {"input_file": {}}, "required": ["input_file"]}]}
       }}],
       "description": "Each action accepts only its documented fields. Mutations require the original canonical UUID; task/result paths are checked against current project directory permission. Trusted caller, native identities and context cannot be supplied here."
     },
@@ -102,6 +107,7 @@
       "properties": {
         "name": {"type": "string", "minLength": 1, "maxLength": 200}, "responsibilities": {"type": "string", "minLength": 1, "maxLength": 16000},
         "default_agent": {"type": "string", "minLength": 1}, "default_model": {"type": "string", "minLength": 1},
+        "question_mode": {"enum": ["disabled", "native"]},
         "skills": {"type": ["array", "null"], "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
         "knowledge": {"type": ["array", "null"], "maxItems": 32, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 2048}}
       }
@@ -239,7 +245,10 @@
             }
           }
         },
-        "tools": {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract"], "properties": {"mode": {"const": "disabled"}, "native_contract": {"const": "pi-cli-1.0.1"}}}
+        "tools": {"oneOf": [
+          {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract"], "properties": {"mode": {"const": "disabled"}, "native_contract": {"const": "pi-cli-1.0.1"}}},
+          {"type": "object", "additionalProperties": false, "required": ["mode", "native_contract", "extension", "allowed"], "properties": {"mode": {"const": "questions-only"}, "native_contract": {"const": "pi-cli-1.0.1"}, "extension": {"$ref": "#/$defs/nativeConfigurationSource"}, "allowed": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"const": "swa_ask"}}}}
+        ]}
       }
     },
     "agentSelection": {
@@ -273,7 +282,7 @@
           "registered": {"$ref": "#/$defs/observation"}, "enabled": {"$ref": "#/$defs/observation"}, "installed": {"$ref": "#/$defs/installedObservation"}, "configured": {"$ref": "#/$defs/configuredObservation"}, "launchable": {"$ref": "#/$defs/observation"},
           "authenticated": {"$ref": "#/$defs/observation"}, "model_catalog": {"$ref": "#/$defs/modelCatalogObservation"},
           "declared_features": {"type": "object", "additionalProperties": false, "required": ["images", "model_switch", "steering"], "properties": {"images": {"type": "boolean"}, "model_switch": {"type": "boolean"}, "steering": {"enum": ["inject", "queue"]}}},
-          "control": {"type": "object", "additionalProperties": false, "required": ["start", "send", "read", "stop", "resume", "tools"], "properties": {"start": {"$ref": "#/$defs/observation"}, "send": {"$ref": "#/$defs/observation"}, "read": {"$ref": "#/$defs/observation"}, "stop": {"$ref": "#/$defs/observation"}, "resume": {"$ref": "#/$defs/observation"}, "tools": {"$ref": "#/$defs/observation"}, "images": {"$ref": "#/$defs/observation"}, "model_switch": {"$ref": "#/$defs/observation"}}},
+          "control": {"type": "object", "additionalProperties": false, "required": ["start", "send", "read", "stop", "resume", "tools"], "properties": {"start": {"$ref": "#/$defs/observation"}, "send": {"$ref": "#/$defs/observation"}, "read": {"$ref": "#/$defs/observation"}, "stop": {"$ref": "#/$defs/observation"}, "resume": {"$ref": "#/$defs/observation"}, "tools": {"$ref": "#/$defs/observation"}, "images": {"$ref": "#/$defs/observation"}, "model_switch": {"$ref": "#/$defs/observation"}, "questions": {"$ref": "#/$defs/observation"}}},
           "requirements": {"$ref": "#/$defs/requirements"}
         }}}
       }

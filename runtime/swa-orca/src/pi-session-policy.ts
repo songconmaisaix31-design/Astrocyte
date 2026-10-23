@@ -9,7 +9,7 @@ import type { AgentSessionRecord } from '../../../third_party/orca-v1.4.230/src/
 import { agentSessionRuntimeIncarnation } from '../../../third_party/orca-v1.4.230/src/main/runtime/agent-session-runtime-attribution'
 import type { SwaPiSessionPolicy, SwaProviderJobLauncher, PiPolicyConnection, PiWriteContext, PiObservedProjection, ProviderProcessLaunch } from '../../../third_party/orca-v1.4.230/src/main/provider-process/provider-process-launch'
 import type { SwaProviderProcessTree } from '../../../third_party/orca-v1.4.230/src/main/provider-process/swa-provider-process-tree'
-import { parseStrictPiJson, strictPiOutboundSchema, strictPiRawSchema, strictPiStateSchema, type StrictPiMessage } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
+import { parseStrictPiJson, strictPiOutboundSchema, strictPiRawSchema, strictPiQuestionRawSchema, strictPiStateSchema, type StrictPiQuestionMessage } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 import { structuredInputBindingSchema } from './contracts'
 import { assertNativePiSnapshotCurrent, inspectPrivatePiModelMetadata, nativeConfigurationSource, readNativePiFile, type NativePiPerSessionSnapshot } from './native-pi-policy'
 import { acquirePrivatePiSettingsGuardSync, privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
@@ -24,6 +24,8 @@ import { requireNativeClaudePath } from './claude-file-security'
 import { nativeSessionOptionsFromReport } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-option-restoration'
 import { agentSessionProviderHandleChainHead } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
 import type { StructuredAgentAttachedAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
+import { getRuntimeSourceStamp } from '../../../third_party/orca-v1.4.230/src/main/runtime/host-descriptor'
+import { readRuntimeSourceStamp, stampRuntimeSourceEnv } from '../../../third_party/orca-v1.4.230/src/shared/runtime-source-env'
 
 const maximum = 12 * 1024 * 1024
 const samePath = (a: string, b: string) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
@@ -126,6 +128,11 @@ export async function createPiSessionPolicy(input: {
   approval()
   const privateSources = await Promise.all(['auth.json', ...(snapshot.models === null ? [] : ['models.json'])].map(name => nativeConfigurationSource(join(home, name))))
   const env = privatePiEnvironment(home, input.expectedEnvironment)
+  if (snapshot.policy.tools.mode === 'questions-only') {
+    const stamp = getRuntimeSourceStamp({ getRuntimeId: () => input.runtimeEpoch }, getAppEnvironment().getPath('userData'))
+    if (!stamp?.profilePath || !isDeepStrictEqual(readRuntimeSourceStamp(input.expectedEnvironment), stamp)) throw new Error('native_question_runtime_source_changed')
+    stampRuntimeSourceEnv(env, stamp)
+  }
   const workerIdentity = structuredWorkerIdentities.getBySessionId(sessionId)
   // 实际launch的公开transport值只在assertSpawn后保存，绝不保存完整继承环境。
   let childEnvironment: Readonly<Record<string, string>> = env
@@ -140,7 +147,7 @@ export async function createPiSessionPolicy(input: {
   let processIdentity: Record<string, unknown> | undefined, nativeCLI: unknown
   let native: { sessionId: string; sessionFile: string } | undefined, available: unknown
   let lastState: z.infer<typeof strictPiStateSchema> | undefined, adoptionAttempted = false
-  let pendingInput: { id: string; frame: PiWriteContext['frame']; binding: Binding; echo?: StrictPiMessage } | undefined
+  let pendingInput: { id: string; frame: PiWriteContext['frame']; binding: Binding; echo?: StrictPiQuestionMessage } | undefined
   let preparedInput: { id: string; frame: PiWriteContext['frame']; binding: Binding } | undefined
   const usedInputs = new Set<string>(), unsettled = new Set<string>()
   let running = false, stopping = false, settled = true, closed = false
@@ -216,7 +223,7 @@ export async function createPiSessionPolicy(input: {
   function model(value: unknown) {
     if (!metadata.models.some(expected => isDeepStrictEqual(expected, value))) fail('model_unreviewed')
   }
-  function message(value: StrictPiMessage, terminal: boolean) {
+  function message(value: StrictPiQuestionMessage, terminal: boolean) {
     if (value.role !== 'assistant') return
     if (value.provider !== account.provider || value.model !== account.model_target.model_id || value.api !== account.model_target.api || terminal && value.stopReason === 'pending' || value.stopReason === 'aborted' && !stopping) fail('message_policy_changed')
   }
@@ -260,7 +267,8 @@ export async function createPiSessionPolicy(input: {
       let payload: unknown
       try { payload = parseStrictPiJson(launch.args[2]!) } catch { fail('launch_changed') }
       const command = z.strictObject({ command: z.string(), args: z.array(z.string()) }).safeParse(payload)
-      const expectedArgs = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', account.provider, '--model', account.model_target.model_id, '--no-tools', '--no-extensions', '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files']
+      const toolArgs = snapshot.policy.tools.mode === 'questions-only' ? ['--no-builtin-tools', '--tools', 'swa_ask', '--no-extensions', '--extension', snapshot.policy.tools.extension.path] : ['--no-tools', '--no-extensions']
+      const expectedArgs = ['--mode', 'rpc', '--offline', '--no-approve', '--provider', account.provider, '--model', account.model_target.model_id, ...toolArgs, '--no-skills', '--no-prompt-templates', '--no-themes', '--no-context-files']
       if (!command.success || !samePath(command.data.command, snapshot.sources.launch.path) || !isDeepStrictEqual(command.data.args, expectedArgs)) fail('native_argv_changed')
       const actual = launch.env ?? {}, projected = { ...env }
       const install = snapshot.sourceInput.env.SWA_INSTALL_ROOT, data = dirname(dirname(account.private_root))
@@ -288,7 +296,7 @@ export async function createPiSessionPolicy(input: {
       await connection.request('get_available_models'); assertCurrent()
       if (available === undefined) fail('available_models_missing')
       trace('policy_ready', { native_contract: 'pi-cli-1.0.1', session_id: actual.sessionId, session_file: actual.sessionFile, acquisition_generation: generation,
-        provider: account.provider, model: account.model_target, tools: 'disabled', sources: [...snapshot.sources.pinnedFiles, ...privateSources], settings: acquireSettingsObservation() }, true)
+        provider: account.provider, model: account.model_target, tools: snapshot.policy.tools.mode, sources: [...snapshot.sources.pinnedFiles, ...privateSources, ...(snapshot.policy.tools.mode === 'questions-only' ? [snapshot.policy.tools.extension] : [])], settings: acquireSettingsObservation() }, true)
       return actual
     },
     async verifyCurrent(connection: PiPolicyConnection) {
@@ -352,7 +360,7 @@ export async function createPiSessionPolicy(input: {
       if (!processIdentity || !generation) { custody(); if (!generation) fail('preowner_native_record') }
       if (Buffer.byteLength(line) > 8 * 1024 * 1024 || !isDeepStrictEqual(parseStrictPiJson(line), value)) fail('raw_line_unverifiable')
       validatePiExport(snapshot, line, childEnvironment)
-      const parsed = strictPiRawSchema.safeParse(value)
+      const parsed = (snapshot.policy.tools.mode === 'questions-only' ? strictPiQuestionRawSchema : strictPiRawSchema).safeParse(value)
       if (!parsed.success) fail('raw_dto_unreviewed')
       const frame = parsed.data
       if (frame.type === 'response') {

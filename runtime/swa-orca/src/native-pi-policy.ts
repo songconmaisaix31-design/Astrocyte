@@ -233,7 +233,7 @@ function reviewedModel(value: Record<string, unknown>, fields: ReadonlySet<strin
 }
 
 // 只调用真实安装CLI的只读配置、原composer和catalog，不调用认证解析、刷新或模型请求。
-export async function inspectNativePiPolicy(input: NativePiSourceHomeInput & { executable: string; version: string; projectId: string; provider: string; modelId: string }) {
+export async function inspectNativePiPolicy(input: NativePiSourceHomeInput & { executable: string; version: string; projectId: string; provider: string; modelId: string; questionMode?: 'disabled' | 'native' }) {
   if (!z.uuid().safeParse(input.projectId).success || input.projectId !== input.projectId.toLowerCase()) throw new Error('native_project_identity_unverifiable')
   const sourceHome = await requireNativePiSourceHome(input)
   const dataRoot = await realpath(z.string().min(1).parse(process.env.SWA_DATA_DIR))
@@ -304,7 +304,10 @@ export async function inspectNativePiPolicy(input: NativePiSourceHomeInput & { e
     const handler = apiRegistry.getApiProvider(target.data.api)
     if (handler?.api !== target.data.api || typeof handler.stream !== 'function' || typeof handler.streamSimple !== 'function') throw new Error('native_model_api_unreviewed')
   }
-  const policy = nativePiPerSessionLaunchPolicySchema.parse({ schema: 'swa.native-launch.v1', account: { kind: 'pi-native-api-key-per-session', provider: input.provider, source_home: sourceHome, auth_source: auth.source, models_source: modelsSource, private_root: privateRoot, model_target: target.data }, tools: { mode: 'disabled', native_contract: 'pi-cli-1.0.1' } })
+  const tools = input.questionMode === 'native'
+    ? { mode: 'questions-only', native_contract: 'pi-cli-1.0.1', allowed: ['swa_ask'], extension: await nativeConfigurationSource(join(z.string().min(1).parse(input.env.SWA_INSTALL_ROOT), 'runtime', 'pi-question-extension.mjs')) }
+    : { mode: 'disabled', native_contract: 'pi-cli-1.0.1' }
+  const policy = nativePiPerSessionLaunchPolicySchema.parse({ schema: 'swa.native-launch.v1', account: { kind: 'pi-native-api-key-per-session', provider: input.provider, source_home: sourceHome, auth_source: auth.source, models_source: modelsSource, private_root: privateRoot, model_target: target.data }, tools })
   if (!isDeepStrictEqual(auth.source, await nativeConfigurationSource(authPath)) || !isDeepStrictEqual(modelsSource, await optionalSource(modelsPath))) throw new Error('native_configuration_changed_during_read')
   for (const source of [sources.launch, sources.entry, sources.interpreter, sources.manifest, sources.aiManifest, ...sources.files, sources.catalog, ...sources.apiSources, ...sources.pinnedFiles]) {
     if (source && !isDeepStrictEqual(source, await nativeConfigurationSource(source.path))) throw new Error('native_cli_source_changed_during_read')
@@ -357,7 +360,7 @@ export function assertNativePiSnapshotCurrent(snapshot: NativePiPolicySnapshot) 
   const sources = snapshot.sources, account = snapshot.policy.account
   if (!samePath(assertNativePiSourceHome(snapshot.sourceInput), account.source_home)) throw new Error('native_pi_source_home_changed')
   assertNativePiSourcesCurrent(sources)
-  for (const source of [account.auth_source, account.models_source, snapshot.settingsSource]) {
+  for (const source of [account.auth_source, account.models_source, snapshot.settingsSource, ...(snapshot.policy.tools.mode === 'questions-only' ? [snapshot.policy.tools.extension] : [])]) {
     if (!source) continue
     const path = realpathSync.native(source.path), info = statSync(path, { bigint: true })
     const version = `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`

@@ -11,6 +11,7 @@ import { answerTextSchema, agentSelectionSchema, invocationSchema, nativeError, 
 import { authority, controllerScope } from './controller-scope'
 import { assertDeliveryGrantCurrent } from './delivery-admission'
 import { isTaskDescendant } from './run-view'
+import { observeRunQuestions } from './question-ask'
 
 function deny(code: string, message: string): never { throw new OrchestrationError(code, message, { effectsApplied: false }) }
 
@@ -31,7 +32,7 @@ export function questionReplyParams(invocation: Invocation) {
 
 // 所有身份来自原表；外部 ID 只选择要回答的原问题。
 export function readAnswerQuestion(db: OrchestrationDb, scope: Scope, command: Invocation['command'], answer?: string) {
-  if (command.action !== 'question.answer' || command.controller !== scope.controller || command.run_id !== scope.run_id || command.task_id !== scope.root_task_id || !command.dispatch_id || !command.question_id) deny('scope_denied', 'The answer must identify its exact controller, Run, root, Dispatch and question')
+  if (!['question.answer', 'question.resume'].includes(command.action) || command.controller !== scope.controller || command.run_id !== scope.run_id || command.task_id !== scope.root_task_id || !command.dispatch_id || !command.question_id) deny('scope_denied', 'The answer must identify its exact controller, Run, root, Dispatch and question')
   const question = db.getQuestion(command.question_id), message = db.getMessageById(command.question_id)
   const dispatch = db.getDispatchContextById(command.dispatch_id)
   if (!question || question.run_id !== scope.run_id || question.dispatch_id !== command.dispatch_id || !dispatch || dispatch.run_id !== scope.run_id || !isTaskDescendant(db, scope.run_id, scope.root_task_id, dispatch.task_id) || !message || message.type !== 'question' || message.run_id !== scope.run_id || message.thread_id !== question.message_id || message.from_handle !== `dispatch:${dispatch.id}` || message.to_handle !== `run:${scope.run_id}` || message.delivery_contract === 'legacy_direct' || message.delivery_contract === 'audit_only' || db.getRun(scope.run_id)?.legacy !== 0 || db.getFederatedDispatch(dispatch.id)) deny('scope_denied', 'The original local question, message and Dispatch do not belong to this Run')
@@ -130,7 +131,12 @@ export function questionReplyMethod(admit: (invocation: Invocation) => Promise<u
       const recorded = (value: unknown) => {
         const result = nativeObject(value), question = nativeObject(result.question), message = nativeObject(result.message)
         if (question.message_id !== c.question_id || question.run_id !== c.run_id || question.dispatch_id !== c.dispatch_id || question.status !== 'answered' || question.answer_message_id !== message.id || question.answer_body !== base.body || question.answered_by_generation !== answerGeneration || typeof question.answered_at !== 'string' || !question.answered_at || message.body !== base.body || message.thread_id !== c.question_id || message.run_id !== c.run_id || message.from_handle !== `run:${c.run_id}` || message.to_handle !== `dispatch:${c.dispatch_id}` || typeof result.duplicate !== 'boolean') throw new Error('The original answer result does not confirm its exact question, generation and body')
-        return save({ ...base, ...result, state: 'answered' })
+        const observed = observeRunQuestions(runtime, invocation.scope, c.dispatch_id).find(value => value.question_id === c.question_id)
+        const continuationRequired = observed?.continuation_required === true
+        const requiredAction = continuationRequired
+          ? `swa question resume --project ${JSON.stringify(invocation.project.id)} --controller ${JSON.stringify(c.controller)} --run ${JSON.stringify(c.run_id)} --task ${JSON.stringify(c.task_id)} --dispatch ${JSON.stringify(c.dispatch_id)} --question ${JSON.stringify(c.question_id)} --request-id "<NEW_UUID>" --json`
+          : `swa wait --project ${JSON.stringify(invocation.project.id)} --controller ${JSON.stringify(c.controller)} --run ${JSON.stringify(c.run_id)} --task ${JSON.stringify(c.task_id)} --json`
+        return save({ ...base, ...result, state: 'answered', read_state: observed?.read_state ?? 'read_unconfirmed', continuation_required: continuationRequired, required_action: requiredAction })
       }
       return recorded(await original.handler(original.params?.parse(params), { ...context, recordMutationReceipt: value => { recorded(value) } }))
     } catch (error) { throw new OrchestrationError('operation_unknown', error instanceof Error ? error.message : 'The original answer outcome is unknown') }

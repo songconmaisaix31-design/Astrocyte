@@ -6,10 +6,10 @@ import type { Invocation } from './contracts'
 const resultSchema = z.strictObject({ schema: z.literal('swa.delivery-admission.v1'), project_id: z.string().min(1), request_id: z.string().min(1), settings_revision: z.number().int().positive(), grant_expires_at: z.string().optional() })
 const errorSchema = z.object({ error: z.object({ code: z.string().min(1), message: z.string().min(1) }) })
 
-export function deliveryAdmissionInvocation(invocation: Invocation): Pick<Invocation, 'command' | 'caller' | 'project' | 'scope' | 'input' | 'selection' | 'handoff' | 'submission'> {
-  const { command, caller, project, scope, input, selection, handoff, submission } = invocation
+export function deliveryAdmissionInvocation(invocation: Invocation): Pick<Invocation, 'command' | 'caller' | 'project' | 'scope' | 'input' | 'selection' | 'handoff' | 'submission' | 'question_ask'> {
+  const { command, caller, project, scope, input, selection, handoff, submission, question_ask } = invocation
   // 原生 spec 留在原账本；完整 scope 与 submission 保留 Go 当前准入和交接冲突判断。
-  return { command, caller, project, scope, input, selection, handoff, submission }
+  return { command, caller, project, scope, input, selection, handoff, submission, question_ask }
 }
 
 export function assertDeliveryGrantCurrent(invocation: Invocation) {

@@ -73,29 +73,36 @@ func TestOrcaCLIMissingCurrentGrantIsDenied(t *testing.T) {
 }
 
 func TestQuestionCLIOutputFailureRetainsOriginalRequest(t *testing.T) {
-	file, err := os.Create(filepath.Join(t.TempDir(), "closed-output.json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := file.Close(); err != nil {
-		t.Fatal(err)
-	}
-	command := workspaceapp.OrcaCommand{Action: "question.answer", Controller: "original-controller", RunID: uuid.NewString(), TaskID: uuid.NewString(), DispatchID: uuid.NewString(), QuestionID: uuid.NewString(), RequestID: uuid.NewString(), Text: "原问题回答"}
-	var stderr bytes.Buffer
-	output := cliOutput{stdout: file, stderr: &stderr, projectID: "original-project"}
-	output.parsedRequest(command)
-	output.validatedCommand(command)
-	err = output.publish(output.identity)
-	if err == nil || output.outputFailure(err) != 6 || !output.attempted {
-		t.Fatal("实际输出失败没有保留变更效果未知退出码")
-	}
-	for _, value := range []string{command.RequestID, command.RunID, command.QuestionID, "swa request show", "original-project"} {
-		if !strings.Contains(stderr.String(), value) {
-			t.Fatalf("输出失败丢失原请求查询定位 %q", value)
-		}
-	}
-	if output.publish(output.identity) == nil {
-		t.Fatal("输出失败后不应再次写结果")
+	for _, action := range []string{"question.answer", "question.resume"} {
+		t.Run(action, func(t *testing.T) {
+			file, err := os.Create(filepath.Join(t.TempDir(), "closed-output.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := file.Close(); err != nil {
+				t.Fatal(err)
+			}
+			command := workspaceapp.OrcaCommand{Action: action, Controller: "original-controller", RunID: uuid.NewString(), TaskID: uuid.NewString(), DispatchID: uuid.NewString(), QuestionID: uuid.NewString(), RequestID: uuid.NewString()}
+			if action == "question.answer" {
+				command.Text = "原问题回答"
+			}
+			var stderr bytes.Buffer
+			output := cliOutput{stdout: file, stderr: &stderr, projectID: "original-project"}
+			output.parsedRequest(command)
+			output.validatedCommand(command)
+			err = output.publish(output.identity)
+			if err == nil || output.outputFailure(err) != 6 || !output.attempted {
+				t.Fatal("实际输出失败没有保留变更效果未知退出码")
+			}
+			for _, value := range []string{command.RequestID, command.RunID, command.QuestionID, "swa request show", "original-project"} {
+				if !strings.Contains(stderr.String(), value) {
+					t.Fatalf("输出失败丢失原请求查询定位 %q", value)
+				}
+			}
+			if output.publish(output.identity) == nil {
+				t.Fatal("输出失败后不应再次写结果")
+			}
+		})
 	}
 }
 
@@ -110,7 +117,7 @@ func TestOrcaCLIHelpDoesNotRequireGrantOrService(t *testing.T) {
 		{"--help"}, {"controller", "--help"}, {"worker", "-h"},
 		{"status", "--help"}, {"task", "create", "--help"},
 		{"worker", "start", "--help"}, {"request", "show", "-h"},
-		{"question", "--help"}, {"question", "answer", "--help"},
+		{"question", "--help"}, {"question", "answer", "--help"}, {"question", "resume", "--help"},
 		{"serve", "--help"}, {"serve", "--json", "--help"},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {

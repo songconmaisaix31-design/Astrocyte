@@ -4,11 +4,11 @@ import { swaApi, type SwaCommand, type SwaEnvelope } from '../../api/swa';
 import { useReadApi, formatError } from '../../hooks/useReadState';
 import { QueryState } from '../../components/QueryState';
 import { canRequestSwaStart, readSwaAgents, readSwaCapabilityDetails, observationJSON, swaStartRequestBlock, type PendingSwaRequest } from './swaObservation';
-import { readSwaRun, submittedRun, type SwaRunSelection } from './swaRunView';
+import { readSwaRun, submittedRun, type SwaQuestionReadState, type SwaRunSelection } from './swaRunView';
 import styles from './SwaWorkspace.module.css';
 
 type Project = components['schemas']['LocalProjectV1'];
-export interface SwaRunRoleSelection { id: string; revision: number; default_agent: string; default_model: string }
+export interface SwaRunRoleSelection { id: string; revision: number; default_agent: string; default_model: string; question_mode?: 'disabled' | 'native' }
 interface CommandState {
   pending: boolean; error: string | null; reply: SwaEnvelope | null; unresolved: PendingSwaRequest | null;
   run: (body: SwaCommand, onSuccess?: (reply: SwaEnvelope) => void) => Promise<void>;
@@ -16,7 +16,7 @@ interface CommandState {
 }
 type UseAnswerCommand = (projectID: string, scope: string) => CommandState;
 
-const statusLabel: Record<string, string> = { active: '执行中', waiting_input: '等待用户回答', blocked: '等待依赖或结算', completed: '执行已完成', failed: '任务失败', unknown: '效果尚未确认' };
+const statusLabel: Record<string, string> = { active: '执行中', waiting_input: '等待回答或继续原问题', blocked: '等待依赖或结算', completed: '执行已完成', failed: '任务失败', unknown: '效果尚未确认' };
 
 export function SwaAgentCapabilities({ reply }: { reply: SwaEnvelope }) {
   let agents: ReturnType<typeof readSwaCapabilityDetails>;
@@ -28,8 +28,10 @@ export function SwaAgentCapabilities({ reply }: { reply: SwaEnvelope }) {
 export function SwaRunWorkspace({ project, capabilities, disabled, startDisabled, command, useAnswerCommand, onAttached, role = null, conversationID = '' }: { project: Project; capabilities: SwaEnvelope | null; disabled: boolean; startDisabled: boolean; command: CommandState; useAnswerCommand: UseAnswerCommand; onAttached: (selection: SwaRunSelection) => void; role?: SwaRunRoleSelection | null; conversationID?: string }) {
   const [workdir, setWorkdir] = useState(project.root), [specFile, setSpecFile] = useState(''), [inputFile, setInputFile] = useState(''), [name, setName] = useState('lead');
   const [agentChoice, setAgentChoice] = useState({ roleKey: '', value: '' }), [modelChoice, setModelChoice] = useState({ key: '', value: '' });
+  const [questionChoice, setQuestionChoice] = useState<{ roleKey: string; value: 'disabled' | 'native' }>({ roleKey: '', value: 'disabled' });
   const roleKey = role ? `${role.id}:${role.revision}` : '';
   const agentID = agentChoice.roleKey === roleKey ? agentChoice.value : role?.default_agent ?? '';
+  const questionMode = questionChoice.roleKey === roleKey ? questionChoice.value : role?.question_mode ?? 'disabled';
   const [controller, setController] = useState(''), [taskID, setTaskID] = useState(''), [runID, setRunID] = useState('');
   const [selected, setSelected] = useState<SwaRunSelection | null>(null);
   let agents: ReturnType<typeof readSwaAgents> = [], capabilityError: string | null = null;
@@ -39,7 +41,8 @@ export function SwaRunWorkspace({ project, capabilities, disabled, startDisabled
   const agent = agents.find(item => item.id === agentID);
   const modelKey = `${roleKey}:${agentID}`;
   const model = modelChoice.key === modelKey ? modelChoice.value : role?.default_agent === agentID ? role.default_model : agent?.model ?? '';
-  const canSubmit = !!workdir.trim() && !!specFile.trim() && canRequestSwaStart({ agent: agent ? { ...agent, model } : undefined, settings: project.settings, disabled: disabled || startDisabled, pending: command.pending, unresolved: !!command.unresolved, name, inputFile });
+  const nativeQuestionsAvailable = agent?.id === 'pi' && agent.questions?.status === 'available';
+  const canSubmit = !!workdir.trim() && !!specFile.trim() && (questionMode === 'disabled' || nativeQuestionsAvailable) && canRequestSwaStart({ agent: agent ? { ...agent, model } : undefined, settings: project.settings, disabled: disabled || startDisabled, pending: command.pending, unresolved: !!command.unresolved, name, inputFile });
   function attach(selection: SwaRunSelection) {
     setSelected(selection); setController(selection.controller); setTaskID(selection.taskID); setRunID(selection.runID); onAttached(selection);
   }
@@ -47,12 +50,13 @@ export function SwaRunWorkspace({ project, capabilities, disabled, startDisabled
     <h3>提交目标，跟踪到交付</h3>
     <p className={styles.note}>一次提交使用当前批准的任务与输入文件。完成进度、递归子任务和成果与 CLI 共享同一个 Run；关闭页面后可用原身份重新连接。</p>
     {role && <p className={styles.identity}>复用角色 · {role.id} · 版本 {role.revision}</p>}{conversationID && <p className={styles.identity}>关联讨论会话 · {conversationID}</p>}
-    <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!canSubmit || !agent) return; void command.run({ action: 'run.submit', project_id: project.id, workdir: workdir.trim(), spec_file: specFile.trim(), input_file: inputFile.trim(), agent: agent.id, model: model.trim(), name: name.trim(), ...(role ? { role_id: role.id, revision: role.revision } : {}), ...(conversationID ? { conversation_id: conversationID } : {}) }, reply => attach(submittedRun(reply))); }}>
+    <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!canSubmit || !agent) return; void command.run({ action: 'run.submit', project_id: project.id, workdir: workdir.trim(), spec_file: specFile.trim(), input_file: inputFile.trim(), agent: agent.id, model: model.trim(), question_mode: questionMode, name: name.trim(), ...(role ? { role_id: role.id, revision: role.revision } : {}), ...(conversationID ? { conversation_id: conversationID } : {}) }, reply => attach(submittedRun(reply))); }}>
       <label>任务工作目录<input required value={workdir} onChange={event => setWorkdir(event.target.value)} /></label>
       <label>任务规格文件<input required value={specFile} onChange={event => setSpecFile(event.target.value)} /></label>
       <label>目标与要求的输入文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label>
       <label>主 Agent<select required value={agentID} onChange={event => setAgentChoice({ roleKey, value: event.target.value })}><option value="">选择当前项目 Agent</option>{agents.map(item => <option key={item.id} value={item.id} disabled={!!swaStartRequestBlock(item, project.settings)}>{item.id} · {item.model || '模型未配置'}</option>)}</select></label>
       <label>本次模型<input required value={model} onChange={event => setModelChoice({ key: modelKey, value: event.target.value })} /></label>
+      <SwaQuestionModeField value={questionMode} nativeAvailable={nativeQuestionsAvailable} disabled={disabled || startDisabled || command.pending || !!command.unresolved} onChange={value => setQuestionChoice({ roleKey, value })} />
       <label>主 Worker 名称<input required value={name} onChange={event => setName(event.target.value)} /></label>
       <button type="submit" className="ac-button compact" disabled={!canSubmit}>提交完整任务</button>
     </form>
@@ -72,6 +76,7 @@ export function SwaRunWorkspace({ project, capabilities, disabled, startDisabled
 function RunProgress({ project, selected, disabled, useAnswerCommand }: { project: Project; selected: SwaRunSelection; disabled: boolean; useAnswerCommand: UseAnswerCommand }) {
   const [following, setFollowing] = useState(true), [exporting, setExporting] = useState(false), [exportError, setExportError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [questionAction, setQuestionAction] = useState<'question.answer' | 'question.resume'>('question.answer');
   const answer = useAnswerCommand(project.id, `question.answer:${selected.controller}:${selected.runID}:${selected.taskID}`);
   const active = useRef(false), exportAbort = useRef<AbortController | null>(null);
   useEffect(() => { active.current = true; return () => { active.current = false; exportAbort.current?.abort(); }; }, [project.id, project.settings.revision]);
@@ -102,15 +107,15 @@ function RunProgress({ project, selected, disabled, useAnswerCommand }: { projec
       <p className={styles.note}>成果验收 · 尚未审核。执行结束和成果下载均保留此验收状态。</p>
       {data.failures.length > 0 && <p role="alert">严格模式将报告失败；请查看以下实际失败记录。</p>}
       {data.blockers.length > 0 && <section aria-label="阻塞原因"><h4>当前等待原因</h4><ul>{data.blockers.map((blocker, index) => <li key={`${blocker.kind}:${blocker.taskID}:${index}`}>{blocker.reason}{blocker.taskID && ` · Task ${blocker.taskID}`}{blocker.dispatchID && ` · Dispatch ${blocker.dispatchID}`}</li>)}</ul></section>}
-      {data.questions.length > 0 && <section aria-label="需要回答"><h4>需要用户回答</h4>{data.questions.map(question => <SwaQuestionAnswerForm key={question.id} question={question} text={answers[question.id] ?? ''} disabled={disabled || view.stale || view.loading || answer.pending || !!answer.unresolved || !project.settings.allow_agent_control || !project.settings.allowed_actions.includes('send')} onChange={text => setAnswers(previous => ({ ...previous, [question.id]: text }))} onSubmit={() => { void answer.run({ action: 'question.answer', controller: selected.controller, run_id: selected.runID, task_id: selected.taskID, dispatch_id: question.dispatchID, question_id: question.id, text: answers[question.id] }, view.retry); }} />)}</section>}
-      {data.answeredQuestions.length > 0 && <section aria-label="原问题与回答"><h4>已保存的回答</h4>{data.answeredQuestions.map(question => <article key={question.id}><p>{question.question}</p><pre className={styles.output}>{question.answer}</pre><p className={styles.identity}>问题 {question.id} · 答案 {question.answerID} · {question.answeredAt}</p></article>)}</section>}
+      {data.questions.length > 0 && <section aria-label="需要回答"><h4>需要用户回答</h4>{data.questions.map(question => <SwaQuestionAnswerForm key={question.id} question={question} text={answers[question.id] ?? ''} disabled={disabled || view.stale || view.loading || answer.pending || !!answer.unresolved || !project.settings.allow_agent_control || !project.settings.allowed_actions.includes('send')} onChange={text => setAnswers(previous => ({ ...previous, [question.id]: text }))} onSubmit={() => { setQuestionAction('question.answer'); void answer.run({ action: 'question.answer', controller: selected.controller, run_id: selected.runID, task_id: selected.taskID, dispatch_id: question.dispatchID, question_id: question.id, text: answers[question.id] }, view.retry); }} />)}</section>}
+      {data.answeredQuestions.length > 0 && <section aria-label="原问题与回答"><h4>已保存的回答</h4>{data.answeredQuestions.map(question => <SwaQuestionHistory key={question.id} question={question} disabled={disabled || view.stale || view.loading || answer.pending || !!answer.unresolved || !project.settings.allow_agent_control || !project.settings.allowed_actions.includes('send')} onResume={() => { setQuestionAction('question.resume'); void answer.run({ action: 'question.resume', controller: selected.controller, run_id: selected.runID, task_id: selected.taskID, dispatch_id: question.dispatchID, question_id: question.id }, view.retry); }} />)}</section>}
       <section aria-label="真实交接记录"><h4>实际交接与返回</h4><p className={styles.note}>观察此列表不会标记消息已读。恢复请求排队后，仍以父 Agent 的实际输入完成记录确认读取。</p>{data.handoffs.length ? <ul className={styles.workers}>{data.handoffs.map(handoff => <li key={handoff.id} className={styles.message}><p className={styles.identity}>{handoff.from} → {handoff.to} · {handoff.read ? '已确认读取' : '尚未确认读取'}</p>{handoff.text && <pre className={styles.output}>{handoff.text}</pre>}<details><summary>交接合同与实际来源</summary><pre className={styles.output}>{JSON.stringify(handoff.record, null, 2)}</pre></details></li>)}</ul> : <p className={styles.note}>本次完整快照没有交接消息。</p>}</section>
       <section aria-label="完整递归任务"><h4>全部任务与交接</h4><ul className={styles.workers}>{data.tasks.map(task => <li key={task.id} className={styles.message}><strong>{task.title || task.id}</strong><p>{task.status} · {task.parentID ? `父任务 ${task.parentID}` : '根任务'}</p><p className={styles.identity}>Task {task.id}{task.dependencies.length > 0 && ` · 等待 ${task.dependencies.join('、')}`}</p>{data.dispatches.filter(dispatch => dispatch.taskID === task.id).map(dispatch => <p className={styles.identity} key={dispatch.id}>Dispatch {dispatch.id} · 业务 {dispatch.status} · Worker {dispatch.workerState ?? '未观察'} · 资源 {dispatch.releaseState ?? '未观察'}{dispatch.parentDispatch && ` · 交接来源 ${dispatch.parentDispatch}`}{dispatch.sessionID && ` · 会话 ${dispatch.sessionID}`}</p>)}{task.result !== null && <details><summary>实际任务成果</summary><pre className={styles.output}>{task.result}</pre><button type="button" className="ac-button secondary compact" disabled={view.stale || view.loading} onClick={() => download(`swa-task-${task.id}.txt`, task.result!, 'text/plain')}>下载此任务成果文本</button></details>}</li>)}</ul></section>
       {data.failures.length > 0 && <details open><summary>实际失败记录</summary><ul>{data.failures.map((failure, index) => <li key={`${failure.taskID}:${index}`}>{failure.taskID} · {failure.reason}{failure.dispatchID && ` · ${failure.dispatchID}`}</li>)}</ul></details>}
       <button type="button" className="ac-button compact" disabled={disabled || view.stale || view.loading || !data.complete || exporting} onClick={() => { void exportRun(); }}>{exporting ? '正在核查完整成果…' : '下载完整任务记录'}</button>
       <p className={styles.note}>完整下载由服务核查全部原生成果后生成；包含任务、实际会话记录与结果。最近观察：{data.observedAt}</p>
     </>}</QueryState>
-    <div aria-live="polite">{answer.pending && <p role="status">正在保存回答或核查原请求…</p>}{answer.error && <p role="alert">{answer.error}</p>}{answer.unresolved && <div role="alert"><p>问题 {answer.unresolved.questionID} 的原回答尚未确认 · {answer.unresolved.requestID}。后续仅查询此请求。</p><button type="button" className="ac-button secondary compact" disabled={disabled || answer.pending} onClick={() => { void answer.inspect(view.retry); }}>查询原回答请求</button></div>}{answer.reply?.ok && !answer.unresolved && <p role="status">回答已保存，继续观察原任务；模型读取以原运行记录为准。</p>}</div>
+    <div aria-live="polite">{answer.pending && <p role="status">正在处理问题或核查原请求…</p>}{answer.error && <p role="alert">{answer.error}</p>}{answer.unresolved && <div role="alert"><p>问题 {answer.unresolved.questionID} 的原操作 {answer.unresolved.action} 尚未确认 · {answer.unresolved.requestID}。后续仅查询此请求。</p><button type="button" className="ac-button secondary compact" disabled={disabled || answer.pending} onClick={() => { const action = answer.unresolved?.action; void answer.inspect(() => { setQuestionAction(action === 'question.resume' ? 'question.resume' : 'question.answer'); view.retry(); }); }}>查询原问题请求</button></div>}{answer.reply?.ok && !answer.unresolved && <p role="status">{questionAction === 'question.resume' ? '继续指令已投递；原答案是否已被模型读取，以此 Run 的实际记录为准。' : '回答已保存；正在等待的原工具可继续，已结束等待的问题会显示明确的继续入口。'}</p>}</div>
     {exportError && <p role="alert">{exportError}</p>}
   </div>;
 }
@@ -118,7 +123,16 @@ function RunProgress({ project, selected, disabled, useAnswerCommand }: { projec
 export function SwaQuestionAnswerForm({ question, text, disabled, onChange, onSubmit }: { question: { id: string; taskID: string; dispatchID: string; question: string }; text: string; disabled: boolean; onChange: (text: string) => void; onSubmit: () => void }) {
   const bytes = new TextEncoder().encode(text).length;
   const valid = !!text.trim() && bytes <= 32000;
-  return <article><p>{question.question}</p><p className={styles.identity}>Task {question.taskID} · Dispatch {question.dispatchID} · 问题 {question.id}</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!disabled && valid) onSubmit(); }}><label>回答原问题<textarea required value={text} disabled={disabled} onChange={event => onChange(event.target.value)} /></label><p className={styles.note}>{bytes}/32000 UTF-8字节。回答保留原文字和换行。</p><button type="submit" className="ac-button compact" disabled={disabled || !valid}>保存回答并继续原任务</button></form></article>;
+  return <article><p>{question.question}</p><p className={styles.identity}>Task {question.taskID} · Dispatch {question.dispatchID} · 问题 {question.id}</p><form className={styles.form} onSubmit={event => { event.preventDefault(); if (!disabled && valid) onSubmit(); }}><label>回答原问题<textarea required value={text} disabled={disabled} onChange={event => onChange(event.target.value)} /></label><p className={styles.note}>{bytes}/32000 UTF-8字节。回答保留原文字和换行。</p><button type="submit" className="ac-button compact" disabled={disabled || !valid}>保存原问题的回答</button></form></article>;
+}
+
+export function SwaQuestionModeField({ value, nativeAvailable, disabled, onChange }: { value: 'disabled' | 'native'; nativeAvailable: boolean; disabled: boolean; onChange: (value: 'disabled' | 'native') => void }) {
+  return <><label>本次问题模式<select value={value} disabled={disabled} onChange={event => onChange(event.target.value as 'disabled' | 'native')}><option value="disabled">禁用工具</option><option value="native" disabled={!nativeAvailable}>原生问答 · 仅允许提问与读取原答案</option></select></label>{value === 'native' && !nativeAvailable ? <p role="alert">当前 Agent 的原生问答能力不可用。已选模式保留，请明确选择可用 Agent 或禁用工具。</p> : <p className={styles.note}>{value === 'native' ? '允许 Worker 在此 Run 提问。此模式不提供文件或命令工具。' : '本次 Worker 的模型工具保持关闭。'}</p>}</>;
+}
+
+export function SwaQuestionHistory({ question, disabled, onResume }: { question: { id: string; dispatchID: string; question: string; answer: string; answerID: string; answeredAt: string; readState: SwaQuestionReadState; continuationRequired: boolean }; disabled: boolean; onResume: () => void }) {
+  const labels: Record<SwaQuestionReadState, string> = { answer_saved: '回答已保存，等待原工具读取', read_unconfirmed: '回答已保存，模型读取尚未确认', read_observed: '原工具已读取答案', interrupted: '原 Worker 已中断，保留已保存的答案', continuation_required: '回答已保存，需要明确继续此问题' };
+  return <article><p>{question.question}</p><pre className={styles.output}>{question.answer}</pre><p className={styles.identity}>问题 {question.id} · Dispatch {question.dispatchID} · 答案 {question.answerID} · {question.answeredAt}</p><p role="status">{labels[question.readState]}</p>{question.continuationRequired && <><p className={styles.note}>原等待已结束，当前 Worker 可接收继续指令。明确继续后，模型通过原问题读取已保存的答案。</p><button type="button" className="ac-button compact" disabled={disabled} onClick={() => { if (!disabled) onResume(); }}>继续此问题</button></>}</article>;
 }
 
 function download(name: string, text: string, type: string) {
