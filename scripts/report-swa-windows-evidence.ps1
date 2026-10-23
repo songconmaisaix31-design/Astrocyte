@@ -9,17 +9,28 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not [IO.Path]::IsPathFullyQualified($EvidenceRoot)) { throw 'An absolute downloaded evidence directory is required' }
 if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
+    $d10Phase = 'input-file'
+    $d10Input = [ordered]@{ actual_length_bytes = 'UNKNOWN'; file_is_ordinary = 'UNKNOWN'; file_is_reparse = 'UNKNOWN'; original_limit_bytes = 1048576; source_matches = 'UNKNOWN' }
+    try {
     if ($ControllerOpenSection -cnotin @('Short', 'Closure')) { throw 'The fixed D10 section is required' }
     $file = Get-Item -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Force
+    $d10Phase = 'file-validation'
+    $d10Input.file_is_ordinary = $file -is [IO.FileInfo]
+    $d10Input.file_is_reparse = ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0
+    if ($file -is [IO.FileInfo] -and $file.Length -ge 0 -and $file.Length -le 9007199254740991) { $d10Input.actual_length_bytes = $file.Length }
     if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $file.Length -gt 1048576) { throw 'The saved D10 result must be a bounded ordinary file' }
+    $d10Phase = 'parse-result'
     $saved = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
+    $d10Phase = 'source-binding'
     $expected = @{
         schema = 'swa.windows-controller-open-development.v1'; status = 'FAIL'; phase = 'short-identify-then-controller-open'
         scope = 'development_composition_not_candidate'; observation_revision = $ExpectedRevision; go_source_revision = $ExpectedRevision
         source_revision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'; runtime_source_revision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'
         input_revision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'; native_input_revision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'; task_create = 'NOT_RUN'
     }
-    foreach ($name in $expected.Keys) { if ($saved.$name -cne $expected[$name]) { throw ('The fixed D10 source or result differs: ' + $name) } }
+    $d10Input.source_matches = [ordered]@{}
+    foreach ($name in $expected.Keys) { $d10Input.source_matches[$name] = $saved.$name -is [string] -and $saved.$name -ceq $expected[$name] }
+    if ($d10Input.source_matches.Values -contains $false) { throw 'The fixed D10 source or result differs' }
     if (($saved.model_calls -isnot [int] -and $saved.model_calls -isnot [long]) -or ($saved.worker_calls -isnot [int] -and $saved.worker_calls -isnot [long]) -or $saved.model_calls -cne 0 -or $saved.worker_calls -cne 0) { throw 'The fixed D10 no-model scope differs' }
     function Get-D10Value($Object, [string]$Field, [string]$Type, [bool]$Nullable = $false, [string[]]$Allowed = @()) {
         if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
@@ -68,6 +79,14 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
             observed_at_ms = Get-D10Value $event observed_at_ms Count; monotonic_ms = Get-D10Value $event monotonic_ms Number }
     }
     function Write-D10Observation([string]$Title, $Observation) {
+        $script:d10Phase = switch -CaseSensitive ($Title) {
+            'Retained D10 short transport' { 'publish-short' }
+            'Retained D10 short raw fragment' { 'publish-raw' }
+            'Retained D10 ready events' { 'publish-ready' }
+            'Retained D10 closure counts' { 'publish-counts' }
+            'Retained D10 native query counts' { 'publish-queries' }
+            'Retained D10 closure identity group' { 'publish-group' }
+        }
         $text = $Observation | ConvertTo-Json -Depth 12 -Compress
         if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 3500) { throw 'The typed retained D10 observation exceeds its fixed bound' }
         Write-Host ('::warning title=' + $Title + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
@@ -76,6 +95,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         section = $ControllerOpenSection; original_status = 'FAIL'; complete_service_acceptance = 'FAIL'; model_calls = 0; worker_calls = 0 }
     $short = $saved.short_transport_diagnostic
     if ($ControllerOpenSection -ceq 'Short') {
+        $d10Phase = 'short-projection'
         $lanes = [ordered]@{}
         foreach ($name in @('tty', 'pipe')) {
             $lane = $short.lanes.$name
@@ -112,6 +132,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
             ready_events_status = if ($short.ready_events -is [array]) { 'OBSERVED' } elseif ($short.ready_events -ceq 'NOT_RECORDED') { 'NOT_RECORDED' } else { 'UNKNOWN' }
             ready_events_truncated = Get-D10Value $short ready_events_truncated Boolean })
         Write-D10Observation 'Retained D10 short raw fragment' ([ordered]@{ original_revision = $ExpectedRevision; raw = $raw })
+        $d10Phase = 'short-projection'
         if ($short.ready_events -is [array]) {
             if ($short.ready_events.Count -gt 32) { throw 'The saved D10 ready events exceed their source bound' }
             for ($offset = 0; $offset -lt $short.ready_events.Count; $offset += 8) {
@@ -132,6 +153,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         }
         return
     }
+    $d10Phase = 'closure-projection'
     $unknown = $saved.unknown_process_observation_projection
     $reasons = @('invalid_native_process_row', 'current_root_identity_unverified', 'root_in_descendant_branch', 'parent_incarnation_unverified', 'process_identity_not_unique', 'creation_time_unavailable', 'parent_incarnation_changed', 'UNKNOWN')
     $reasonCounts = 'UNKNOWN'; $queryCounts = 'UNKNOWN'
@@ -171,6 +193,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
             cim_exit = Get-D10Value $saved.service cim_exit Integer $true; cim_all_exited = Get-D10Value $saved.service cim_all_exited Boolean } })
     Write-D10Observation 'Retained D10 native query counts' ([ordered]@{ original_revision = $ExpectedRevision
         total_type_count = Get-D10Value $unknown native_query_type_count Count; source_truncated = Get-D10Value $unknown native_query_counts_truncated Boolean; counts = $queryCounts })
+    $d10Phase = 'closure-projection'
     if ($unknown.samples -is [array]) {
         if ($unknown.samples.Count -gt 8) { throw 'The saved D10 samples exceed their source bound' }
         for ($index = 0; $index -lt $unknown.samples.Count; $index++) {
@@ -197,6 +220,19 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
         }
     }
     return
+    } catch {
+        $exceptionKind = $_.Exception.GetType().Name
+        if ($exceptionKind -cnotmatch '^[A-Za-z][A-Za-z0-9]{0,63}$') { $exceptionKind = 'UNKNOWN' }
+        $phase = if ($d10Phase -cin @('input-file', 'file-validation', 'parse-result', 'source-binding', 'short-projection', 'closure-projection', 'publish-short', 'publish-raw', 'publish-ready', 'publish-counts', 'publish-queries', 'publish-group')) { $d10Phase } else { 'UNKNOWN' }
+        $section = if ($ControllerOpenSection -cin @('Short', 'Closure')) { $ControllerOpenSection } else { 'UNKNOWN' }
+        $failure = [ordered]@{ diagnostic_only = $true; original_run = '39952528075'; artifact_id = '12500479586'; original_revision = $ExpectedRevision
+            section = $section; phase = $phase; kind = $exceptionKind; input = $d10Input; original_status = 'FAIL'; complete_service_acceptance = 'FAIL' }
+        $text = $failure | ConvertTo-Json -Depth 5 -Compress
+        if ([Text.Encoding]::UTF8.GetByteCount($text) -le 3500) {
+            Write-Host ('::error title=Retained D10 reader failure::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
+        }
+        throw
+    }
 }
 if ($PSBoundParameters.ContainsKey('ControllerOpenSection')) { throw 'The section parameter belongs only to the fixed D10 artifact' }
 $source = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'SOURCE') -Raw).Trim()
