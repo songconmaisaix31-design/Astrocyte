@@ -91,32 +91,47 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Verify the exact retained D17 artifact metadata
+      - name: Verify the exact retained b234 continuity artifact metadata
         uses: actions/github-script@v7
         with:
           script: |
             const assert = require('node:assert/strict');
-            const { data: artifact } = await github.rest.actions.getArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: 12520617964 });
-            assert.equal(artifact.id, 12520617964);
-            assert.equal(artifact.name, 'swa-windows-controller-open-control-3780f2b53d509231ebce34431aa36590385dacef');
-            assert.equal(artifact.workflow_run.id, 39997485398);
-            assert.equal(artifact.workflow_run.head_sha, '3780f2b53d509231ebce34431aa36590385dacef');
-            assert.equal(artifact.size_in_bytes, 311023);
-            assert.equal(artifact.digest, 'sha256:e172c5a3362ab8c62ce56078cb62770d1e8f1fa1e6b25a663c7569200941c473');
+            const { data: artifact } = await github.rest.actions.getArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: 12527445614 });
+            assert.equal(artifact.id, 12527445614);
+            assert.equal(artifact.name, 'swa-windows-controller-open-control-b234cf81d07bc1ce5af9e470db3cf34515b6855a');
+            assert.equal(artifact.workflow_run.id, 40012110754);
+            assert.equal(artifact.workflow_run.head_sha, 'b234cf81d07bc1ce5af9e470db3cf34515b6855a');
+            assert.equal(artifact.size_in_bytes, 13288);
+            assert.equal(artifact.digest, 'sha256:aa6e82330d8a656092db24a7a3aee4f4eb27fab780747f4dbbeff1a7688a62d6');
             assert.equal(artifact.expired, false);
-            core.notice('Fixed D17 artifact metadata verified; no product execution requested');
+            core.notice('Fixed b234 continuity artifact metadata verified; no product execution requested');
       - uses: actions/download-artifact@v4
-        id: download_d17
+        id: download_b234
         with:
           github-token: ${{ github.token }}
-          run-id: 39997485398
-          name: swa-windows-controller-open-control-3780f2b53d509231ebce34431aa36590385dacef
-          path: ${{ runner.temp }}/swa-retained-controller-open-d17
-      - name: Read only the saved D17 closure observations
-        if: ${{ !cancelled() && steps.download_d17.outcome == 'success' }}
+          run-id: 40012110754
+          name: swa-windows-controller-open-control-b234cf81d07bc1ce5af9e470db3cf34515b6855a
+          path: ${{ runner.temp }}/swa-retained-continuity-b234
+      - name: Read only the saved b234 result and complete callback frames
+        if: ${{ !cancelled() && steps.download_b234.outcome == 'success' }}
         shell: pwsh
         run: |
-          & ./scripts/report-swa-windows-evidence.ps1 -EvidenceRoot (Join-Path $env:RUNNER_TEMP 'swa-retained-controller-open-d17') -ExpectedRevision '3780f2b53d509231ebce34431aa36590385dacef' -ControllerOpenSection Closure
+          node ./scripts/report-swa-windows-continuity.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-retained-continuity-b234')
+          if ($LASTEXITCODE -ne 0) { throw 'The fixed continuity artifact reader failed; no fixture was executed' }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-windows-continuity-retained-${{ github.sha }}
+          path: |
+            .verification/swa-ci/windows-continuity-retained/summary.json
+            .verification/swa-ci/windows-continuity-retained/failure.json
+            .verification/swa-ci/windows-continuity-retained/original-result.json
+            .verification/swa-ci/windows-continuity-retained/continuity-snapshot-a.json
+            .verification/swa-ci/windows-continuity-retained/continuity-snapshot-b.json
+            .verification/swa-ci/windows-continuity-retained/continuity-snapshot-c.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   windows-controller-open-control:
     if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-controller-open-control]') }}
     runs-on: windows-2025
