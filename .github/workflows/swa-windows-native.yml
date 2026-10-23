@@ -54,6 +54,32 @@ concurrency:
   group: swa-windows-native-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  retained-main-ci-failure-evidence:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-main-ci-failure-evidence]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read only the three fixed failed main CI job logs
+        uses: actions/github-script@v7
+        with:
+          retries: 0
+          script: |
+            const { default: report } = await import(`${process.env.GITHUB_WORKSPACE}/scripts/report-swa-fixed-ci-failures.mjs`);
+            await report({ github, context, core });
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swa-main-ci-failure-evidence-${{ github.sha }}
+          path: .verification/swa-ci/main-ci-failures/*.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7
   retained-windows-controller-open-evidence:
     if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[swa-windows-controller-open-evidence]') }}
     runs-on: windows-2025
