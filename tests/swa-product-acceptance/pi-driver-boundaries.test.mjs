@@ -43,8 +43,8 @@ async function publicDirectory() {
   return mkdtemp(join(parent, 'pi-driver-boundaries-'))
 }
 
-test('Linux Pi driver accepts only the approved StepFun N3 tuple', () => {
-  assert.equal(isLinuxPiTarget('linux', 'pi', 'stepfun/step-3.5-flash', 3), true)
+test('Linux Pi driver accepts only the approved StepFun N3/N4/N6 tuples', () => {
+  for (const workers of [3, 4, 6]) assert.equal(isLinuxPiTarget('linux', 'pi', 'stepfun/step-3.5-flash', workers), true)
 })
 
 test('Linux Pi driver rejects other platforms, selections and worker counts', () => {
@@ -55,7 +55,7 @@ test('Linux Pi driver rejects other platforms, selections and worker counts', ()
     ['linux', 'opencode', 'stepfun/step-3.5-flash', 3],
     ['linux', 'pi', 'step-3.5-flash', 3],
     ['linux', 'pi', 'stepfun/other', 3],
-    ...[2, 4, 100, 3.5, '3', NaN, Infinity, null, undefined].map(workers => ['linux', 'pi', 'stepfun/step-3.5-flash', workers]),
+    ...[2, 5, 7, 100, 3.5, '3', '4', '6', NaN, Infinity, null, undefined].map(workers => ['linux', 'pi', 'stepfun/step-3.5-flash', workers]),
   ]
   for (const tuple of tuples) assert.equal(isLinuxPiTarget(...tuple), false)
 })

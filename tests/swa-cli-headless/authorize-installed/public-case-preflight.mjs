@@ -5,7 +5,10 @@ import { lstat, readFile, realpath } from 'node:fs/promises'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const [definition, project] = process.argv.slice(2)
+const [definition, project, requestedWorkers = '3'] = process.argv.slice(2)
+assert.ok(process.argv.length >= 4 && process.argv.length <= 5)
+assert.ok(['3', '4', '6'].includes(requestedWorkers))
+const workers = Number(requestedWorkers)
 assert.ok(isAbsolute(definition) && isAbsolute(project))
 async function ordinary(path, directory = false) {
   assert.equal(await realpath(path), resolve(path))
@@ -38,10 +41,10 @@ for (const path of publicFiles) {
   originals.push({ path, source_revision: publicRevision, text })
 }
 const directory = join(project, '.verification/swa-product-input')
-const prepared = publicCase(3, originals)
+const prepared = publicCase(workers, originals)
 assert.deepEqual(JSON.parse(await read(join(directory, 'task.json'))), prepared.spec)
 assert.deepEqual(JSON.parse(await read(join(directory, 'source.json'))), { project_root: project, source: publicSource, revision: publicRevision, originals })
 assert.deepEqual(JSON.parse(await read(join(directory, 'inputs.json'))), prepared.inputs.map(({ name, file }) => ({ name, input_file: join(directory, file) })))
 for (const input of prepared.inputs) assert.equal(await read(join(directory, input.file)), input.body)
 assert.equal(await read(join(directory, 'followup.txt')), prepared.followup)
-process.stdout.write(JSON.stringify({ status: 'VERIFIED_FIXED_PUBLIC_INPUT', source: publicSource, revision: publicRevision, workers: 3, files: hashes, http_calls: 0, model_calls: 0, project_registration: 'NOT_RUN' }) + '\n')
+process.stdout.write(JSON.stringify({ status: 'VERIFIED_FIXED_PUBLIC_INPUT', source: publicSource, revision: publicRevision, workers, files: hashes, http_calls: 0, model_calls: 0, project_registration: 'NOT_RUN' }) + '\n')

@@ -20,7 +20,7 @@ const help = `真实安装物多Worker验收；不会签发Grant、启动服务�
 --candidate ABS --data-root ABS --project ABS --project-id ID --endpoint LOOPBACK
 --agent ID --model ID --output ABS_NEW_DIRECTORY [--workers 3]
 Windows Pi/OpenCode另需--service-log ABS；Linux Codex/Pi另需--source-repository ABS。
-Linux StepFun Pi仅workers=3，另需--pi-launch-record ABS --pi-launch-sha256 SHA256，取自本次serve owner原件。
+Linux StepFun Pi仅workers=3、4、6，另需--pi-launch-record ABS --pi-launch-sha256 SHA256，取自本次serve owner原件。
 SWA_PROJECT_TOKEN仅通过受保护环境提供。来源、ToolsOff、当前Grant或完整资源证据缺失时不发送worker.start。
 支持Windows Pi/OpenCode、Linux Codex0.163.0与封闭StepFun Pi1.0.1来源；缺项目化静态配置仍在启动前NOT_RUN。
 业务成果必须由真实Reviewer/Agent控制端审阅；驱动不会自动生成通过记录。
@@ -1192,7 +1192,7 @@ async function run() {
       assert.ok(view.cycles[0].idle, 'pi_survivor_not_idle_before_followup')
     }
   }
-  const follow = survivors[0], followupFile = join(inputDirectory, 'followup.txt'), sendRequest = randomUUID()
+  const follow = piLinux && workers > 3 ? report.started_workers[3] : survivors[0], followupFile = join(inputDirectory, 'followup.txt'), sendRequest = randomUUID()
   const followup = await readFile(await ordinary(followupFile, false), 'utf8')
   assert.equal(followup, prepared.followup, 'public_followup_changed_before_send')
   const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', follow.dispatch_id, '--input-file', followupFile, '--request-id', sendRequest]

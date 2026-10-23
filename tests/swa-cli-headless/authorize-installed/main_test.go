@@ -4,26 +4,37 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
 func profileIntent(profile string) executionPackage {
 	p := executionPackage{SchemaVersion: 1, Profile: profile, Caller: caller, Agent: "codex", Model: "gpt-5.5", Workers: 3, Project: publicRoot}
-	if profile == piProfile {
+	if profile == piProfile || profile == piN4Profile || profile == piN6Profile {
 		p.Caller, p.Agent, p.Model = "swa-stepfun-pi-n3-20261023", "pi", "stepfun/step-3.5-flash"
+		if profile == piN4Profile {
+			p.Workers, p.Project = 4, "/workspace/swa-public-case-20261023-n4/public-project"
+		} else if profile == piN6Profile {
+			p.Workers, p.Project = 6, "/workspace/swa-public-case-20261023-n6/public-project"
+		}
+		p.Caller = "swa-stepfun-pi-n" + strconv.Itoa(p.Workers) + "-20261023"
 	}
 	return p
 }
 
 func TestAuthorizationProfileScope(t *testing.T) {
-	for _, profile := range []string{"", piProfile} {
+	for _, profile := range []string{"", piProfile, piN4Profile, piN6Profile} {
 		p := profileIntent(profile)
 		scope, err := fixedProfile(p)
 		if err != nil || scope.agent != p.Agent || scope.model != p.Model || scope.caller != p.Caller {
 			t.Fatalf("fixed profile rejected: %v", err)
 		}
-		if profile == piProfile {
-			if scope.project != "SWA StepFun Pi N3 public stats" || scope.space != "SWA StepFun Pi N3 public stats 20261023" || scope.version != "1.0.1" || scope.provider != "stepfun" || scope.accountSource != "pi-api-key-file" || scope.sourceName != "pi_source_home" {
+		if scope.workers != p.Workers || scope.projectRoot != p.Project {
+			t.Fatal("fixed worker count or public root changed")
+		}
+		if profile != "" {
+			count := strconv.Itoa(p.Workers)
+			if scope.project != "SWA StepFun Pi N"+count+" public stats" || scope.space != "SWA StepFun Pi N"+count+" public stats 20261023" || scope.version != "1.0.1" || scope.provider != "stepfun" || scope.accountSource != "pi-api-key-file" || scope.sourceName != "pi_source_home" {
 				t.Fatal("Pi authorization scope changed")
 			}
 		} else if scope.project != projectName || scope.space != spaceTitle || scope.version != "0.163.0" || scope.provider != "openai" || scope.accountSource != "codex-native-api-key" || scope.sourceName != "codex_api_key_home" {
@@ -33,7 +44,7 @@ func TestAuthorizationProfileScope(t *testing.T) {
 			"caller":  func(p *executionPackage) { p.Caller += "-other" },
 			"agent":   func(p *executionPackage) { p.Agent = "opencode" },
 			"model":   func(p *executionPackage) { p.Model = "other/model" },
-			"workers": func(p *executionPackage) { p.Workers = 4 },
+			"workers": func(p *executionPackage) { p.Workers++ },
 			"project": func(p *executionPackage) { p.Project += "/other" },
 			"schema":  func(p *executionPackage) { p.SchemaVersion = 2 },
 		} {
@@ -46,14 +57,14 @@ func TestAuthorizationProfileScope(t *testing.T) {
 			})
 		}
 	}
-	for _, profile := range []string{"codex", "stepfun", "stepfun-pi-n4", " stepfun-pi-n3"} {
+	for _, profile := range []string{"codex", "stepfun", "stepfun-pi-n5", "stepfun-pi-n7", " stepfun-pi-n3"} {
 		if _, err := fixedProfile(profileIntent(profile)); err == nil {
 			t.Fatalf("unknown profile accepted: %q", profile)
 		}
 	}
-	for _, profile := range []string{"", piProfile} {
+	for _, profile := range []string{"", piProfile, piN4Profile, piN6Profile} {
 		p := profileIntent(profile)
-		if profile == piProfile {
+		if profile != "" {
 			p.CodexSourceHome = "/ordinary-codex-source"
 		} else {
 			p.PiSourceHome = "/ordinary-pi-source"
@@ -66,13 +77,13 @@ func TestAuthorizationProfileScope(t *testing.T) {
 
 func TestAuthorizationProfileDependencySet(t *testing.T) {
 	base := []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
-	for _, profile := range []string{"", piProfile} {
+	for _, profile := range []string{"", piProfile, piN4Profile, piN6Profile} {
 		scope, err := fixedProfile(profileIntent(profile))
 		if err != nil {
 			t.Fatal(err)
 		}
 		expected := append([]string(nil), base...)
-		if profile == piProfile {
+		if profile != "" {
 			expected = append(expected, "pi-event-view.mjs", "pi-source-observer-entry.ts")
 		}
 		if !reflect.DeepEqual(scope.dependencies, expected) {

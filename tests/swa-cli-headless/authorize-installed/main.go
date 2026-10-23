@@ -35,6 +35,8 @@ const projectName = "SWA Codex N3 public stats"
 const spaceTitle = "SWA Codex N3 public stats 20261022"
 const requiredGo = "go1.27.2"
 const piProfile = "stepfun-pi-n3"
+const piN4Profile = "stepfun-pi-n4"
+const piN6Profile = "stepfun-pi-n6"
 
 var stages = []string{"session", "space", "project", "observe-settings", "observe-grant", "observe-token", "execute-settings", "execute-grant", "execute-token", "revoke"}
 var actions = []string{"read_context", "observe", "start", "send", "stop"}
@@ -79,6 +81,8 @@ type profileScope struct {
 	agent, model, caller, project, space, version, provider, accountSource string
 	sourceName, sourceHome                                                 string
 	dependencies                                                           []string
+	workers                                                                int
+	projectRoot                                                            string
 }
 
 func fixedProfile(p executionPackage) (profileScope, error) {
@@ -87,25 +91,32 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
 		sourceName: "codex_api_key_home", sourceHome: p.CodexSourceHome,
 		dependencies: []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"},
+		workers:      3, projectRoot: publicRoot,
 	}
 	switch p.Profile {
 	case "":
 		if p.PiSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
-	case piProfile:
+	case piProfile, piN4Profile, piN6Profile:
 		if p.CodexSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
-		scope.agent, scope.model, scope.caller = "pi", "stepfun/step-3.5-flash", "swa-stepfun-pi-n3-20261023"
-		scope.project, scope.space = "SWA StepFun Pi N3 public stats", "SWA StepFun Pi N3 public stats 20261023"
+		if p.Profile == piN4Profile {
+			scope.workers, scope.projectRoot = 4, "/workspace/swa-public-case-20261023-n4/public-project"
+		} else if p.Profile == piN6Profile {
+			scope.workers, scope.projectRoot = 6, "/workspace/swa-public-case-20261023-n6/public-project"
+		}
+		count := strconv.Itoa(scope.workers)
+		scope.agent, scope.model, scope.caller = "pi", "stepfun/step-3.5-flash", "swa-stepfun-pi-n"+count+"-20261023"
+		scope.project, scope.space = "SWA StepFun Pi N"+count+" public stats", "SWA StepFun Pi N"+count+" public stats 20261023"
 		scope.version, scope.provider, scope.accountSource = "1.0.1", "stepfun", "pi-api-key-file"
 		scope.sourceName, scope.sourceHome = "pi_source_home", p.PiSourceHome
 		scope.dependencies = append(scope.dependencies, "pi-event-view.mjs", "pi-source-observer-entry.ts")
 	default:
 		return profileScope{}, fail("reviewed_profile_required")
 	}
-	if p.SchemaVersion != 1 || p.Caller != scope.caller || p.Agent != scope.agent || p.Model != scope.model || p.Workers != 3 || p.Project != publicRoot {
+	if p.SchemaVersion != 1 || p.Caller != scope.caller || p.Agent != scope.agent || p.Model != scope.model || p.Workers != scope.workers || p.Project != scope.projectRoot {
 		return profileScope{}, fail("fixed_public_case_scope_required")
 	}
 	return scope, nil
@@ -459,22 +470,27 @@ func privateRuntimeRoots(p executionPackage, scope profileScope) ([]string, erro
 }
 
 func checkPublic(p executionPackage) (json.RawMessage, error) {
+	scope, err := fixedProfile(p)
+	if err != nil {
+		return nil, err
+	}
 	consumer, err := consumerPath()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), consumer, definitionPath(p), p.Project)
+	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), consumer, definitionPath(p), p.Project, strconv.Itoa(scope.workers))
 	cmd.Env = childEnvironment(p.EvidenceRoot)
 	stdout, err := runBounded(cmd, 64<<10, 64<<10)
 	if err != nil {
 		return nil, fail("fixed_public_input_verification_failed")
 	}
 	var observed struct {
-		Status string `json:"status"`
+		Status  string `json:"status"`
+		Workers int    `json:"workers"`
 	}
-	if json.Unmarshal(stdout, &observed) != nil || observed.Status != "VERIFIED_FIXED_PUBLIC_INPUT" {
+	if json.Unmarshal(stdout, &observed) != nil || observed.Status != "VERIFIED_FIXED_PUBLIC_INPUT" || observed.Workers != scope.workers {
 		return nil, fail("fixed_public_input_verification_failed")
 	}
 	return append(json.RawMessage(nil), stdout...), nil
@@ -575,7 +591,7 @@ func serviceIdentity(p executionPackage) (string, error) {
 	if err := readWire(p.ProofFile, &proof, p.ProofSHA); err != nil {
 		return "", err
 	}
-	if p.Profile == piProfile {
+	if scope.agent == "pi" {
 		var record piLaunchWire
 		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
 			return "", err
@@ -908,8 +924,8 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 	}
 	ctx, cancel := context.WithDeadline(context.Background(), token.ExpiresAt.Add(-30*time.Second))
 	defer cancel()
-	args := []string{driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", scope.agent, "--model", scope.model, "--workers", "3", "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository}
-	if p.Profile == piProfile {
+	args := []string{driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", scope.agent, "--model", scope.model, "--workers", strconv.Itoa(scope.workers), "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository}
+	if scope.agent == "pi" {
 		args = append(args, "--pi-launch-record", p.LaunchFile, "--pi-launch-sha256", p.LaunchSHA)
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
@@ -1162,7 +1178,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 		if agent.ID == scope.agent {
 			matches++
 			found = agent.Installed.Status == "available" && agent.Installed.Version == scope.version && agent.Configured.Status == "available" && agent.Configured.Model == scope.model && agent.Configured.Provider == scope.provider && agent.Configured.Source == scope.accountSource
-			if p.Profile == piProfile {
+			if scope.agent == "pi" {
 				found = found && agent.Registered.Status == "available" && agent.Enabled.Status == "available" && agent.Control.Start.Status == "available" && agent.Control.Send.Status == "available" && agent.Control.Stop.Status == "available" && plain(agent.Installed.Executable, false, false) == nil
 				for _, status := range []string{agent.Launchable.Status, agent.Control.Read.Status, agent.Control.Tools.Status} {
 					found = found && (status == "unknown" || status == "available")
@@ -1171,8 +1187,8 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 			}
 		}
 	}
-	if !found || p.Profile == piProfile && matches != 1 {
-		if p.Profile == piProfile {
+	if !found || scope.agent == "pi" && matches != 1 {
+		if scope.agent == "pi" {
 			return report, fail("pi_source_not_observed_available")
 		}
 		return report, fail("codex_source_not_observed_available")
@@ -1205,8 +1221,8 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 }
 
 func run() int {
-	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires explicit prior user delegation to the exact reviewed package")
-	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex) or stepfun-pi-n3; prepare writes a separate .prepared.json")
+	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires prior user delegation for the scope and a current verified technical package")
+	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex) or stepfun-pi-n3/n4/n6; prepare writes a separate .prepared.json")
 	flag.Parse()
 	if flag.NArg() != 0 || (*mode != "prepare" && *mode != "verify" && *mode != "execute-authorized") {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INVALID_ARGUMENTS", "http_calls": 0})

@@ -32,7 +32,7 @@ const frameOf = row => row.event === 'native_record' ? row.detail?.frame : undef
 export const isPiDelta = row => row.protocol === 'pi-jsonl-rpc' && row.event === 'native_record' && frameOf(row)?.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(frameOf(row).assistantMessageEvent?.type) && typeof frameOf(row).assistantMessageEvent.delta === 'string' && frameOf(row).assistantMessageEvent.delta.length > 0
 export const piStarts = rows => rows.filter(row => frameOf(row)?.type === 'agent_start')
 export const piEnds = rows => rows.filter(row => frameOf(row)?.type === 'agent_settled')
-export const isLinuxPiTarget = (platform, agent, model, workers) => platform === 'linux' && agent === 'pi' && model === 'stepfun/step-3.5-flash' && workers === 3
+export const isLinuxPiTarget = (platform, agent, model, workers) => platform === 'linux' && agent === 'pi' && model === 'stepfun/step-3.5-flash' && [3, 4, 6].includes(workers)
 
 // 真实 owned-launch consumer；先有界读取并核同 FD/路径，再交同安装的成熟严格 JSON parser。
 export function readPiPrivateJson(path, maxBytes, parse) {
