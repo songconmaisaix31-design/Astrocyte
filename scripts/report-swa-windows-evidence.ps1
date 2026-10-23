@@ -8,15 +8,17 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if (-not [IO.Path]::IsPathFullyQualified($EvidenceRoot)) { throw 'An absolute downloaded evidence directory is required' }
-if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a1746ae13e8bd36eb461af1067061f5b71aac')) {
+if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a1746ae13e8bd36eb461af1067061f5b71aac', 'ff2d46c12a7e80c00d49d3d15f2b9c2b3d08c6e7')) {
     $isD11 = $ExpectedRevision -ceq 'eb7a1746ae13e8bd36eb461af1067061f5b71aac'
-    $retainedRun = if ($isD11) { '39963000754' } else { '39952528075' }
-    $retainedArtifact = if ($isD11) { '12506006977' } else { '12500479586' }
+    $isD16 = $ExpectedRevision -ceq 'ff2d46c12a7e80c00d49d3d15f2b9c2b3d08c6e7'
+    $retainedRun = if ($isD16) { '39992592663' } elseif ($isD11) { '39963000754' } else { '39952528075' }
+    $retainedArtifact = if ($isD16) { '12517849309' } elseif ($isD11) { '12506006977' } else { '12500479586' }
     $d10Phase = 'input-file'
     $d10Input = [ordered]@{ actual_length_bytes = 'UNKNOWN'; file_is_ordinary = 'UNKNOWN'; file_is_reparse = 'UNKNOWN'; original_limit_bytes = 2097152; source_matches = 'UNKNOWN' }
     try {
     if ($ControllerOpenSection -cnotin @('Short', 'Closure')) { throw 'The fixed D10 section is required' }
     if ($isD11 -and $ControllerOpenSection -cne 'Closure') { throw 'Only the fixed D11 closure section is permitted' }
+    if ($isD16 -and $ControllerOpenSection -cne 'Closure') { throw 'Only the fixed D16 closure section is permitted' }
     $file = Get-Item -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Force
     $d10Phase = 'file-validation'
     $d10Input.file_is_ordinary = $file -is [IO.FileInfo]
@@ -94,7 +96,7 @@ if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a17
         }
         $text = $Observation | ConvertTo-Json -Depth 12 -Compress
         if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 3500) { throw 'The typed retained D10 observation exceeds its fixed bound' }
-        $publicTitle = if ($isD11) { $Title.Replace('Retained D10', 'Retained D11') } else { $Title }
+        $publicTitle = if ($isD16) { $Title.Replace('Retained D10', 'Retained D16') } elseif ($isD11) { $Title.Replace('Retained D10', 'Retained D11') } else { $Title }
         Write-Host ('::warning title=' + $publicTitle + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
     }
     $identity = [ordered]@{ diagnostic_only = $true; original_run = $retainedRun; artifact_id = $retainedArtifact; original_revision = $ExpectedRevision
@@ -169,6 +171,14 @@ if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a17
     }
     function Get-D10Query($Query) {
         if ($Query -isnot [pscustomobject]) { return 'UNKNOWN' }
+        if ($isD16) {
+            $version = Get-D10Value $Query version Count
+            if ($version -ceq 2) {
+                return [ordered]@{ version = $version; api_stage = Get-D10Value $Query api_stage Enum $false @('NtQuerySystemInformation')
+                    ntstatus = Get-D10Value $Query ntstatus Count; snapshot_complete = Get-D10Value $Query snapshot_complete Boolean }
+            }
+            if ($version -cne 1) { return 'UNKNOWN' }
+        }
         return [ordered]@{ version = Get-D10Value $Query version Count; api_stage = Get-D10Value $Query api_stage Enum $false @('not_requested', 'OpenProcess', 'GetProcessTimes', 'invalid_filetime', 'complete')
             win32_error = Get-D10Value $Query win32_error Count; close_error = Get-D10Value $Query close_error Count }
     }
@@ -197,7 +207,7 @@ if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a17
         service = [ordered]@{ exit = Get-D10Value $saved.service exit Integer $true; signal = Get-D10Value $saved.service signal Tag $true
             unknown_process_observation_count = Get-D10Value $saved.service unknown_process_observation_count Count; native_remaining = $remaining
             cim_exit = Get-D10Value $saved.service cim_exit Integer $true; cim_all_exited = Get-D10Value $saved.service cim_all_exited Boolean } }
-    if ($isD11) {
+    if ($isD11 -or $isD16) {
         $pure = [ordered]@{ status = 'UNKNOWN'; recorded_count = 'UNKNOWN'; original_7ff_sha256 = 'UNKNOWN'; observation_sha256 = 'UNKNOWN'
             original_matches_expected = 'UNKNOWN'; observation_matches_expected = 'UNKNOWN' }
         if ($saved.observer_sources -is [array]) {
@@ -212,6 +222,18 @@ if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a17
             }
         }
         $closureObservation.pure_overlay = $pure
+    }
+    if ($isD16) {
+        $patchSha = Get-D10Value $saved.diagnostic_process_tree patch_sha256 Sha256
+        $binarySha = Get-D10Value $saved.diagnostic_process_tree binary_sha256 Sha256
+        $closureObservation.native_source = [ordered]@{
+            patch_sha256 = $patchSha; patch_matches_expected = if ($patchSha -cne 'UNKNOWN') { $patchSha -ceq '95c22247cbe29c0cea68f93fc3342a0ecb6e60cd0cd94f062e86664625da5b4d' } else { 'UNKNOWN' }
+            binary_sha256 = $binarySha; binary_matches_original_annotation = if ($binarySha -cne 'UNKNOWN') { $binarySha -ceq 'fec8ae4b8e4e9ffdc981e6f887e008e5edb167fb5d4d72eedac9c74e240e41e2' } else { 'UNKNOWN' }
+            actual_callback_version = Get-D10Value $saved.diagnostic_process_tree actual_callback_version Count
+            provider = Get-D10Value $saved.native_snapshot provider Enum $false @('NtQuerySystemInformation')
+            version = Get-D10Value $saved.native_snapshot version Count; ntstatus = Get-D10Value $saved.native_snapshot ntstatus Count
+            self_identity_matches = Get-D10Value $saved.native_snapshot self_identity_matches Boolean
+        }
     }
     Write-D10Observation 'Retained D10 closure counts' $closureObservation
     Write-D10Observation 'Retained D10 native query counts' ([ordered]@{ original_revision = $ExpectedRevision
@@ -252,7 +274,7 @@ if ($ExpectedRevision -cin @('1b8828d6add9eaab6ed59f445c2ee2c11c4f6511', 'eb7a17
             section = $section; phase = $phase; kind = $exceptionKind; input = $d10Input; original_status = 'FAIL'; complete_service_acceptance = 'FAIL' }
         $text = $failure | ConvertTo-Json -Depth 5 -Compress
         if ([Text.Encoding]::UTF8.GetByteCount($text) -le 3500) {
-            $failureTitle = if ($isD11) { 'Retained D11 reader failure' } else { 'Retained D10 reader failure' }
+            $failureTitle = if ($isD16) { 'Retained D16 reader failure' } elseif ($isD11) { 'Retained D11 reader failure' } else { 'Retained D10 reader failure' }
             Write-Host ('::error title=' + $failureTitle + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
         }
         throw
