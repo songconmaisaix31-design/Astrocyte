@@ -6,6 +6,12 @@ import type { Invocation } from './contracts'
 const resultSchema = z.strictObject({ schema: z.literal('swa.delivery-admission.v1'), project_id: z.string().min(1), request_id: z.string().min(1), settings_revision: z.number().int().positive(), grant_expires_at: z.string().optional() })
 const errorSchema = z.object({ error: z.object({ code: z.string().min(1), message: z.string().min(1) }) })
 
+export function deliveryAdmissionInvocation(invocation: Invocation): Pick<Invocation, 'command' | 'caller' | 'project' | 'scope' | 'input' | 'selection' | 'handoff' | 'submission'> {
+  const { command, caller, project, scope, input, selection, handoff, submission } = invocation
+  // 原生 spec 留在原账本；完整 scope 与 submission 保留 Go 当前准入和交接冲突判断。
+  return { command, caller, project, scope, input, selection, handoff, submission }
+}
+
 export function assertDeliveryGrantCurrent(invocation: Invocation) {
   const expiresAt = invocation.caller.grant_expires_at
   if (expiresAt === undefined) return
@@ -22,7 +28,7 @@ export function createDeliveryAdmission(owner: Buffer, ownerAlive: () => boolean
     if (!ownerAlive() || !timingSafeEqual(owner, capability)) throw new OrchestrationError('operation_unknown', 'The owning product service is unavailable')
     const response = await fetch(`http://127.0.0.1:${port}/api/internal/swa/delivery-admission`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SWA-Owner-Capability': capability.toString('hex') },
-      body: JSON.stringify(invocation), redirect: 'error', signal: AbortSignal.timeout(10_000)
+      body: JSON.stringify(deliveryAdmissionInvocation(invocation)), redirect: 'error', signal: AbortSignal.timeout(10_000)
     })
     const body: unknown = await response.json()
     if (!response.ok) {
