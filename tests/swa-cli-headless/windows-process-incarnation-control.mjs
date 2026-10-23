@@ -96,7 +96,7 @@ async function continuityParent() {
   await send({ type: 'continuity-parent-ready', pid: process.pid })
   const [request] = await bounded(spawnRequest, 10_000, 'Continuity child start was not requested')
   assert.deepEqual(request, { type: 'spawn-continuity-child' })
-  const child = fork(helper, ['--fixture-role', 'continuity-child'], { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'] })
+  const child = fork(helper, ['--fixture-role', 'continuity-child'], { windowsHide: true, detached: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'] })
   try {
     const [ready] = await bounded(once(child, 'message'), 10_000, 'Continuity child readiness was not observed')
     assert.deepEqual(ready, { type: 'continuity-child-ready', pid: child.pid, lifetime_ms: 30_000 })
