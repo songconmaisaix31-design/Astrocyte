@@ -5,7 +5,7 @@ import { lstat, mkdir, readFile, realpath, stat, symlink, writeFile } from 'node
 import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs, stripVTControlCharacters } from 'node:util'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
@@ -72,7 +72,10 @@ try {
     banner: { js: 'var __swaModuleUrl = require("node:url").pathToFileURL(__filename).href;' },
     define: { 'import.meta.url': '__swaModuleUrl', 'process.env.NODE_ENV': '"production"' }, logOverride: { 'empty-import-meta': 'error' },
     plugins: [{ name: 'installed-native-dependencies', setup(builder) {
-      builder.onResolve({ filter: /^(?:node-pty|@parcel\/watcher|@orca\/windows-security|@orca\/windows-registry|@vscode\/windows-process-tree|@anthropic-ai\/claude-agent-sdk)$/ }, args => ({ path: requireInstalled.resolve(args.path), external: true }))
+      builder.onResolve({ filter: /^(?:node-pty|@parcel\/watcher|@orca\/windows-security|@orca\/windows-registry|@vscode\/windows-process-tree|@anthropic-ai\/claude-agent-sdk)$/ }, args => {
+        const path = requireInstalled.resolve(args.path)
+        return { path: args.kind === 'dynamic-import' ? pathToFileURL(path).href : path, external: true }
+      })
       builder.onResolve({ filter: /^(?:electron|fsevents)$/ }, args => ({ path: args.path, external: true }))
       builder.onResolve({ filter: /\.node$/ }, args => ({ path: args.path, external: true }))
       builder.onResolve({ filter: /^@orca\/process-host(?:\/|$)/ }, async args => {
