@@ -310,14 +310,37 @@ export function validatePiEventView(rows, expected) {
       projections.push(row)
     } else if (row.event === 'custody_closed') {
       assert.equal(index, rows.length - 1)
-      assert.ok(ready && !active && (!pendingPrompt || pendingPrompt.echo))
+      assert.ok(ready && (!pendingPrompt || pendingPrompt.echo))
       for (const write of writes.values()) assert.ok(write.settled && write.reply)
-      validateLinuxFinalCustody(detail, { custody, nativeCLI })
+      const final = validateLinuxFinalCustody(detail, { custody, nativeCLI })
+      if (active) {
+        assert.equal(final.observation.fullTreeProof.forced, false, 'pi_normal_stop_was_forced')
+        const abort = stoppedPiCycle(active, stopIntent, writes)
+        assert.ok(abort.reply.sequence < row.sequence, 'pi_closed_before_abort_reply')
+        // 这是实际进程树关闭观察，不能生成缺失的 get_state idle 记录。
+        active.closed = row
+        active = undefined
+      }
       finalRow = row
     } else assert.fail('pi_event_failed_or_unreviewed')
   }
   assert.ok(ready && observedModel && availableModels, 'pi_actual_policy_ready_or_metadata_missing')
   return { custody, nativeCLI, ready, writes, prompts, cycles, projections, stopIntent, finalRow, active }
+}
+
+function stoppedPiCycle(cycle, stopIntent, writes) {
+  assert.ok(cycle && stopIntent && !cycle.message, 'pi_stopped_cycle_missing')
+  assert.equal(cycle.cid, stopIntent.detail.cid, 'pi_stopped_cycle_identity_changed')
+  assert.ok(cycle.start.sequence < stopIntent.sequence && cycle.end?.sequence > stopIntent.sequence && cycle.settled?.sequence > cycle.end.sequence)
+  const cancelled = cycle.finalMessage
+  assert.ok(cancelled && cancelled.sequence > stopIntent.sequence && cancelled.sequence < cycle.end.sequence)
+  assert.equal(cancelled.detail.frame.message.stopReason, 'aborted')
+  assert.ok(['Request aborted', 'Request was aborted'].includes(cancelled.detail.frame.message.errorMessage))
+  const aborts = [...writes.values()].filter(write => write.detail.command === 'abort' && write.row.sequence > stopIntent.sequence)
+  assert.equal(aborts.length, 1)
+  assert.ok(aborts[0].settled && aborts[0].reply?.sequence > cycle.settled.sequence)
+  if (cycle.idle) assert.ok(cycle.idle.sequence > aborts[0].reply.sequence)
+  return aborts[0]
 }
 
 export function originalPiTreeProof(rows, view, checkpoint, activeStop) {
@@ -332,14 +355,9 @@ export function originalPiTreeProof(rows, view, checkpoint, activeStop) {
     assert.ok(checkpoint.running && typeof checkpoint.cid === 'string', 'pi_checkpoint_was_not_running')
     assert.equal(view.stopIntent.detail.cid, checkpoint.cid)
     const cycle = view.cycles.find(value => value.cid === checkpoint.cid)
-    assert.ok(cycle && cycle.start.sequence <= checkpoint.sequence && cycle.end?.sequence > view.stopIntent.sequence && cycle.settled?.sequence > cycle.end.sequence && cycle.idle?.sequence > cycle.settled.sequence)
-    const cancelled = cycle.finalMessage
-    assert.ok(cancelled && cancelled.sequence > view.stopIntent.sequence && cancelled.sequence < cycle.end.sequence)
-    assert.equal(cancelled.detail.frame.message.stopReason, 'aborted')
-    assert.ok(['Request aborted', 'Request was aborted'].includes(cancelled.detail.frame.message.errorMessage))
-    const aborts = [...view.writes.values()].filter(write => write.detail.command === 'abort' && write.row.sequence > view.stopIntent.sequence)
-    assert.equal(aborts.length, 1)
-    assert.ok(aborts[0].settled && aborts[0].reply?.sequence > cycle.settled.sequence && cycle.idle.sequence > aborts[0].reply.sequence)
+    assert.ok(cycle && cycle.start.sequence <= checkpoint.sequence)
+    const abort = stoppedPiCycle(cycle, view.stopIntent, view.writes)
+    assert.ok(cycle.idle || cycle.closed === row && cycle.closed.sequence > abort.reply.sequence, 'pi_stop_has_no_idle_or_closed_observation')
     assert.equal(final.observation.fullTreeProof.native_cli.state, 'created')
     assert.deepEqual(final.observation.fullTreeProof.native_cli.identity, view.custody.nativeState.identity)
     assert.ok(rows.some(item => isPiDelta(item) && item.sequence <= checkpoint.sequence))

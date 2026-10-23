@@ -1,12 +1,12 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。最新开发单 Worker pi06 使用 `1aa20e3f`，已通过启动、输入观察、完整输入绑定并取得真实模型输出；停止时返回 stop_unknown，完整释放未证。关闭路径修复已通过13项局部规则、类型检查及独立审查，下一步用全新pi07验证真实停止。Windows 权限修复已通过 SDK 六项及真实 Controller.open/close；D3仍有17项未知进程观测，后继D4短控制中止并记录1项创建时间不可用，原因继续核查。完整构建尚未重试，N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。最新开发单 Worker pi07 使用 `60f5e6e6`，已通过启动、输入绑定、真实模型输出及运行中停止；随后验收器仍要求关闭后的空闲查询回复，导致原件读取断言失败，任务资源释放尚未执行。会话租约已释放，完整服务树关闭仍为 UNKNOWN。验收消费者修正已通过同原件回归及独立审查，下一步以全新 pi08 验证完整生命周期，原失败记录保留。Windows 权限修复已通过 SDK 六项及真实 Controller.open/close；D3、D4 的未知进程观测继续核查，新的最小诊断 D5 已启动。完整构建尚未重试，N6 未运行。
 
 ## 当前实现与验证
 
 | 范围 | 已取得的结果 | 剩余验收 |
 | --- | --- | --- |
-| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S7ff Linux 完整安装与 D12 通过 | 当前 Worker 启动失败修复后的完整验收 |
+| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S7ff Linux 完整安装与 D12 通过 | 当前停止证据修正后的资源释放及完整验收 |
 | Astrocyte | 独立本地仓库 `/workspace/astrocyte`，`426723b5525ec36b1e0c93dd4b6d9eb6e42287f1`；认知 MCP/sleep、快照/只读 HTTP、GUI 和显式单文件事件导入均已独立审查。Go 测试、Linux 构建、真实 MCP→快照→七 API→浏览器 DOM/原库不变/正常退出通过；真实 Git→实际导入二进制→SQLite 幂等与冲突回滚通过；Windows x64 交编通过 | 自动来源和外部完成证据仍为显式集成边界；Windows 原生运行未验 |
 | Attention Mirror | 独立仓库 `/workspace/attention-mirror`，`58bb6e4454e03db135cabe6de2dec8dfc481aee6`；独立资料服务/GUI、显式提取器配置、资产根限制及原适配器测试已独立审查。真实公开原件导入/重放/人工沉淀/Taste/撤回保全、Go 检查、前端 67 项规则、DOM 9 项规则、实际安装启动通过；Windows 交编通过 | 公开 ACL URL 实测因 DNS 解析失败；模型、PDF/媒体、OpenViking 当前空间权限集成与 Windows 原生仍未验 |
 | run/wait/export | CLI 与 GUI 接同一 Run；稳定请求 ID、递归 strict、分离退出码、完整导出已实现；CLI 局部测试、Web 类型检查/ESLint、观察规则 9 项、真实无原生运行时 DOM 2 项通过 | 完整真实 Run、断线恢复、实际递归失败和模型结果 |
@@ -92,6 +92,12 @@ pi06 使用 `1aa20e3fe7fbb38a86d3fb2631c0047bf6d82ca7` 和全新请求，原件�
 pi06 补充收尾通过原认证接口向准确 helper468494 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon468427/helper468494 的原 pidfd 连续两次退出，间隔50.165839ms，helper缺席，daemon仅余PID1 zombie。执行退出0、stderr为空，实际结果已独立接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-06-cleanup-01/result.json`，SHA `a7b711fe338680fd91fefeb98e1a22428d46922d52269b3b44b57d445b371ea5`。没有重试Worker停止或修改数据库、lease、资源状态；仅补证这两个准确进程，原业务失败与完整树UNKNOWN保留。
 
 [未写请求关闭任务](tasks/swa-pi-unwritten-close-20261023.md)的四处产品改动、既有测试及任务记录已独立接受。真实流最小复现证明旧队列在异步准入结束前完成关闭屏障，并吞掉随后真实EEXIST；现场栈也显示未进入同步写入准入的请求触发要求已有write intent的结算，但原trace未记录具体未写command，不推断完整历史队列。queue/peer现在等待在途准入，只将准确正常关闭中的未写请求作为取消；Pi session/turns在关闭开始时停止后台探测，保留尾部事件、EOF及退出屏障。真实准入、已经写入和清理失败保持原失败语义。首次局部9通过/1失败暴露错误优先级，修复后最终13通过/0失败，严格类型检查退出0；原件在 `.verification/worker-stop-write-close-20261023/`。新pi07驱动已接受，使用新来源、新数据和新请求验证真实停止、释放与完整树；局部结果不代替该实际验收。
+
+pi07 使用 `60f5e6e6dc4b61eef716866f0573792b67e83421`，原件为 `/workspace/swa-worker-pi-07-gcesGe/evidence/`，原结果 SHA `49915958f9af053cf9a2d1d2787c58e26d283d1167b77922f16badda19e3138e`。启动请求 `df83dd1d-faf6-4e7e-9ab3-d4a8f254bc9e`、Dispatch `ctx_78eb61349a36` 通过启动、输入观察和完整绑定，已取得真实模型 delta，活动检查点为 sequence81。停止请求 `d3312e64-6cdb-43aa-b702-5a8d7be935f6` 实际退出0、原生 stopped/closed_agent_terminal，随后 worker.show 退出0。只读数据库为2 Task（root ready、child blocked）、1 Dispatch failed、Worker stopped/process_stopped；资源 `wtr_bf084d0823ea` 仍 owned/not_requested。原停止已释放会话租约：fence2、ownerProcess=null、deathEvidence.ownerFence=1；任务资源 release 尚未调用。Grant 撤销和 dispatcher 关闭确认，serve 退出6、observer 退出1，Controller 及完整服务树关闭 UNKNOWN。
+
+[Pi 关闭证据消费者](tasks/swa-pi-stop-proof-20261023.md)的唯一只读最小复现证明首错在 `validatePiEventView` 的 custody_closed 分支，尚未进入 `originalPiTreeProof`。原320行轨迹 SHA `6a0d8a31f07a34a37f2b9871c7bc307031ed97b7fa63c5f95f281ba28c59c598` 保留 stop284、aborted312、agent_end314、settled315、abort回复316、custody_closed320，forced=false；停止后没有 get_state。消费者只在空闲查询回复时清除 active，因此拒绝这份已经中止并关闭的记录。修正仅涉及原验收消费者，以同一原件中的中止顺序和完整退出证明记录 closed，保持 idle 缺失及所有来源、身份、退出检查。准确源码和局部结果已独立接受：同一原件的旧模块仍失败，新模块通过完整停止证明；实际前缀316缺退出证明、实际 pi06 检查点交叉配对均拒绝，原件和原退出验证模块字节不变。Node 语法及差分检查通过，回归原件为 `.verification/worker-stop-proof-20261023/pi07-regression-report.json`。原 pi07 FAIL 和未执行的资源释放不改写。
+
+pi07 补充收尾通过原认证接口向准确 helper487158 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon487082/helper487158 的原 pidfd 连续两次退出，间隔50.133011ms，helper缺席，daemon仅余PID1 zombie。执行退出0、stderr为空，实际结果已独立接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-07-cleanup-01/result.json`，SHA `dff7cffc9aa22704d81630f0ef4441aaec29b49e0906407032f2fa21d82af763`。仅补证这两个准确进程，没有重试停止、调用资源释放或修改原数据库；原结果与完整服务树 UNKNOWN 保留。
 
 ## 保留的安装基线
 
