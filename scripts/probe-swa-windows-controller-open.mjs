@@ -13,7 +13,8 @@ async function main() {
 // 只组合固定原包中的 Node/native 与原失败源码；不产生正式候选。
 const sourceRevision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'
 const priorRevision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'
-const { values } = parseArgs({ options: Object.fromEntries(['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli'].map(name => [name, { type: 'string' }])), strict: true, allowPositionals: false })
+const { values } = parseArgs({ options: { ...Object.fromEntries(['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli'].map(name => [name, { type: 'string' }])), 'native-compile-only': { type: 'boolean', default: false } }, strict: true, allowPositionals: false })
+const nativeCompileOnly = values['native-compile-only']
 assert.equal(process.platform, 'win32'); assert.equal(process.arch, 'x64')
 for (const name of ['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli']) assert.ok(values[name] && isAbsolute(values[name]))
 const checkout = await realpath(fileURLToPath(new URL('../', import.meta.url)))
@@ -38,8 +39,11 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 const digest = async path => ({ path: await realpath(path), sha256: hash(await readFile(path)) })
 const result = { schema: 'swa.windows-controller-open-development.v1', status: 'FAIL', phase: 'preflight',
   source_revision: sourceRevision, input_revision: priorRevision, observation_revision: process.env.GITHUB_SHA ?? 'UNKNOWN',
-  runtime_source_revision: sourceRevision, native_input_revision: priorRevision, go_source_revision: 'UNKNOWN',
-  scope: 'development_composition_not_candidate', model_calls: 0, worker_calls: 0, task_create: 'NOT_RUN', commands: [], private_raw_uploaded: false }
+  runtime_source_revision: nativeCompileOnly ? priorRevision : sourceRevision, native_input_revision: priorRevision, go_source_revision: nativeCompileOnly ? 'NOT_RUN' : 'UNKNOWN',
+  scope: nativeCompileOnly ? 'development_native_compile_only_not_candidate' : 'development_composition_not_candidate',
+  ...(nativeCompileOnly ? { native_compile_only: true, application_entries: 'COPIED_NOT_EXECUTED', go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
+    native_self: 'NOT_RUN', root_child_control: 'NOT_RUN', controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
+  model_calls: 0, worker_calls: 0, task_create: 'NOT_RUN', commands: [], private_raw_uploaded: false }
 const env = {}
 for (const key of Object.keys(process.env)) if (/^(?:systemroot|windir|comspec|pathext|programfiles|programfiles\(x86\)|programw6432|systemdrive|number_of_processors|processor_architecture|os)$/i.test(key)) env[key] = process.env[key]
 const pathKeys = Object.keys(process.env).filter(key => key.toLowerCase() === 'path')
@@ -113,6 +117,56 @@ async function command(executable, args, cwd, cap = 120_000, extra = {}, allowNo
   if (!allowNonzero) assert.equal(exit.exit, 0, 'Actual preparation command exited nonzero')
   return { bytes: Buffer.concat(out), exit: exit.exit }
 }
+async function observeComponentFailure(nativeWork) {
+  const observed = { status: 'UNKNOWN', actual_bytes: 'UNKNOWN', error_line_total: 'UNKNOWN', errors: [], errors_truncated: false }
+  result.native_component_log = observed
+  try {
+    const command = result.commands.at(-1)
+    if (command?.timed_out !== false || !command.stdout_eof || !command.stderr_eof || command.stream_failure ||
+        !Number.isInteger(command.exit?.exit) || command.exit?.spawn_error !== null) {
+      observed.status = 'NOT_CAPTURED'; observed.reason = 'command_not_settled'
+      if (result.command_failure) result.command_failure.component_log = { status: observed.status, reason: observed.reason }
+      return
+    }
+    const path = join(nativeWork, 'single-diagnostic-process-tree-build.raw.log'), info = await lstat(path)
+    observed.actual_bytes = info.size
+    assert.ok(info.isFile() && !info.isSymbolicLink() && info.nlink === 1 && info.size <= 16 * 1024 * 1024)
+    assert.equal((await realpath(path)).toLowerCase(), resolve(path).toLowerCase())
+    const input = createReadStream(path), reader = createInterface({ input, crlfDelay: Infinity })
+    const first = [], last = [], codes = new Set()
+    observed.error_line_total = 0
+    try {
+      for await (const line of reader) {
+        const compiler = /\b(?:fatal )?error ((?:C|LNK|MSB)\d{4})\b/i.exec(line)
+        const gyp = /^gyp ERR! (?:configure error\b|build error\b|stack Error: (?!Command failed\b))/i.test(line)
+        const nodeError = /^(Error|TypeError|RangeError|ReferenceError|SyntaxError|SystemError|AssertionError)(?: \[(?:ERR_[A-Z0-9_]{1,96}|E[A-Z0-9_]{1,31})\])?: (?!Command failed\b)[^\r\n]*$/u.exec(line)
+        if (!compiler && !gyp && !nodeError) continue
+        observed.error_line_total++
+        if (compiler) codes.add(compiler[1].toUpperCase())
+        const text = /\b(?:command|argv)\b/i.test(line) ? (compiler ? compiler[1].toUpperCase() : nodeError ? nodeError[1] : 'gyp error') + ': [command text omitted]' : publicText(line)
+        if (first.length < 10) first.push(text)
+        else { last.push(text); if (last.length > 10) last.shift() }
+      }
+    } finally { reader.close(); input.destroy() }
+    observed.status = 'OBSERVED'
+    observed.errors = [...new Set(first.concat(last))]
+    observed.errors_truncated = observed.error_line_total > observed.errors.length
+    observed.error_code_total = codes.size; observed.error_codes = [...codes].slice(0, 8); observed.error_codes_truncated = codes.size > 8
+    if (result.command_failure) {
+      const original = result.command_failure
+      original.component_log = { status: observed.status, actual_bytes: observed.actual_bytes, error_line_total: observed.error_line_total,
+        error_codes: observed.error_codes, error_code_total: observed.error_code_total, error_codes_truncated: observed.error_codes_truncated }
+      original.error_line_total += observed.error_line_total
+      original.errors = observed.errors.concat(original.errors).slice(0, 20)
+      original.error_lines_truncated ||= observed.errors_truncated || original.error_line_total > original.errors.length
+    }
+  } catch (error) {
+    observed.status = error?.code === 'ENOENT' ? 'NOT_CAPTURED' : 'UNKNOWN'
+    observed.error_line_total = 'UNKNOWN'
+    observed.kind = kind(error)
+    if (result.command_failure) result.command_failure.component_log = { status: observed.status, actual_bytes: observed.actual_bytes, kind: observed.kind }
+  }
+}
 const git = async args => (await command('git', ['-c', 'credential.helper=', ...args], checkout)).bytes
 async function fixed(path, revision = sourceRevision) { return git(['show', `${revision}:${path}`]) }
 async function compareFixed(path) {
@@ -137,7 +191,7 @@ try {
   const approvedGo = ['cmd/swa/serve.go', 'cmd/swa/process_linux.go', 'cmd/swa/process_other.go', 'cmd/swa/process_windows.go', 'cmd/swa/data_directory_windows_test.go'].sort()
   assert.deepEqual(changedGo, approvedGo, 'Development Go source differs beyond the accepted private-data repair')
   assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
-  result.go_source_revision = goRevision
+  if (!nativeCompileOnly) result.go_source_revision = goRevision
   result.go_source_inputs = await Promise.all(approvedGo.map(async path => {
     const bytes = await readFile(join(checkout, path))
     assert.ok(bytes.equals(await fixed(path, goRevision)), 'Development Go input differs from its observation commit')
@@ -197,12 +251,15 @@ try {
   }
   for (const name of ['runtime/swa-orca', 'third_party/orca-v1.4.230/native/windows-security', 'third_party/orca-v1.4.230/native/windows-registry', 'third_party/orca-v1.4.230/src/packages/process-host']) assert.deepEqual(priorLock.importers[name], targetLock.importers[name])
   assert.deepEqual(priorLock.patchedDependencies, targetLock.patchedDependencies)
-  result.phase = 'partial-application-build'
+  result.phase = nativeCompileOnly ? 'native-runtime-copy' : 'partial-application-build'
   const development = join(work, 'development-7ff3a7d7')
   await mkdir(development)
   const entries = ['host.cjs', 'client.cjs', 'controller-helper.cjs', 'daemon-entry.js']
   for (const name of ['node', 'runtime', 'third-party-licenses']) await cp(join(original, name), join(development, name), { recursive: true, force: false, errorOnExist: true,
-    filter: path => !entries.some(entry => path === join(original, 'runtime', entry) || path === join(original, 'runtime', entry + '.metafile.json')) })
+    filter: path => nativeCompileOnly || !entries.some(entry => path === join(original, 'runtime', entry) || path === join(original, 'runtime', entry + '.metafile.json')) })
+  const actualNode = join(development, 'node/node.exe')
+  result.source_inputs = []
+  if (!nativeCompileOnly) {
   await writeFile(join(development, 'VERSION'), goRevision + '\n', { flag: 'wx' })
   for (const [name, text] of [['PLATFORM', 'win32-x64'], ['EDITION', 'cli']]) await writeFile(join(development, name), text + '\n', { flag: 'wx' })
   const builderPath = join(source, 'scripts/build-swa-runtime.mjs'), builderText = await readFile(builderPath, 'utf8')
@@ -259,8 +316,8 @@ try {
   for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/swa-server']]) {
     await command('go', ['build', '-mod=readonly', '-p=4', '-trimpath', ...(name === 'swa.exe' ? ['-ldflags=-X main.version=' + goRevision] : []), '-o', join(development, name), entry], checkout, 480_000)
   }
-  const actualNode = join(development, 'node/node.exe')
   assert.equal((await command(join(development, 'swa.exe'), ['--version'], development)).bytes.toString().trim(), goRevision)
+  }
   result.phase = 'diagnostic-process-tree-component'
   const developmentRuntime = join(development, 'runtime'), requireDevelopment = createRequire(join(developmentRuntime, 'package.json'))
   const originalPackage = await realpath(dirname(requireOriginal.resolve('@vscode/windows-process-tree/package.json')))
@@ -319,8 +376,15 @@ try {
   const nativeWork = join(buildRoot, 'candidate-' + randomBytes(3).toString('hex'))
   await mkdir(nativeWork)
   const componentResult = join(privateOutput, 'diagnostic-native-preparation.json')
-  await command(powershell, ['-NoProfile', '-NonInteractive', '-File', join(checkout, 'scripts/build-swa-windows-process-diagnostic.ps1'),
-    '-SourceRoot', source, '-Runtime', developmentRuntime, '-Node', actualNode, '-Work', nativeWork, '-OutputFile', componentResult], checkout, 1_300_000, { RUNNER_TEMP: dirname(work) })
+  try {
+    await command(powershell, ['-NoProfile', '-NonInteractive', '-File', join(checkout, 'scripts/build-swa-windows-process-diagnostic.ps1'),
+      '-SourceRoot', source, '-Runtime', developmentRuntime, '-Node', actualNode, '-Work', nativeWork, '-OutputFile', componentResult], checkout, 1_300_000, { RUNNER_TEMP: dirname(work) })
+  } catch (error) {
+    await observeComponentFailure(nativeWork)
+    await sourceInputGuards()
+    await originalInputGuards()
+    throw error
+  }
   const nativePreparation = JSON.parse(await readFile(componentResult, 'utf8'))
   assert.equal(nativePreparation.status, 'PASS'); assert.equal(nativePreparation.native_component, '@vscode/windows-process-tree')
   assert.equal(nativePreparation.native_component_index, 1); assert.equal(nativePreparation.other_native_components_built, false)
@@ -331,7 +395,7 @@ try {
   assert.equal(retainedProcessTree.length, 1)
   assert.notEqual(result.diagnostic_process_tree.binary_sha256, retainedProcessTree[0].sha256)
   result.diagnostic_process_tree.baseline_binary_sha256 = retainedProcessTree[0].sha256
-  const sourceInputGuards = async () => {
+  async function sourceInputGuards() {
     for (const item of unchangedSources) {
       const info = await lstat(item.path)
       assert.equal(info.dev, item.dev); assert.equal(info.ino, item.ino); assert.equal(info.nlink, item.nlink); assert.equal((await digest(item.path)).sha256, item.sha256)
@@ -347,7 +411,27 @@ try {
       assert.equal((await digest(path)).sha256, item.sha256)
     }
   }
+  async function originalInputGuards() {
+    result.native_inputs_after = await Promise.all(originalNative.map(async item => {
+      const path = join(original, item.path), info = await lstat(path)
+      return { path: item.path, sha256: (await digest(path)).sha256, dev: info.dev, ino: info.ino, nlink: info.nlink }
+    }))
+    assert.deepEqual(result.native_inputs_after, originalNative)
+    const diagnosticRelative = relative(development, diagnosticBinary).replaceAll('\\', '/')
+    for (const item of originalNative) if (item.path !== diagnosticRelative) assert.equal((await digest(join(development, item.path))).sha256, item.sha256)
+    for (const item of result.go_source_inputs) assert.equal((await digest(join(checkout, item.path))).sha256, item.sha256)
+    assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
+    assert.equal(hash(await readFile(archive)), actualArchiveHash)
+    result.native_input_protection = 'PASS'
+  }
   await sourceInputGuards()
+  if (nativeCompileOnly) {
+    await originalInputGuards()
+    for (const item of originalNative) assert.equal((await digest(join(development, item.path))).sha256,
+      item.path === result.diagnostic_process_tree.binary_path ? result.diagnostic_process_tree.binary_sha256 : item.sha256)
+    result.phase = 'native-process-tree-compile-complete'; result.status = 'PASS'
+    return
+  }
   native = requireDevelopment('@vscode/windows-process-tree')
   const diagnosticRows = await new Promise((resolveRows, reject) => {
     const timer = setTimeout(() => reject(new Error('Diagnostic native callback did not settle')), 15_000)
@@ -624,7 +708,9 @@ try {
   await stopBuild()
   await save('result.json', result)
   const projection = { status: result.status, phase: result.phase, scope: result.scope, source_revision: sourceRevision, input_revision: priorRevision,
-    go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
+    observation_revision: result.observation_revision, go_source_revision: result.go_source_revision, runtime_source_revision: result.runtime_source_revision, native_input_revision: priorRevision,
+    ...(nativeCompileOnly ? { native_compile_only: true, application_entries: result.application_entries, go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
+      native_self: 'NOT_RUN', root_child_control: 'NOT_RUN', controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
     native_input_scope: 'baseline_except_diagnostic_process_tree', diagnostic_process_tree_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT',
     native_snapshot: result.native_snapshot ?? 'NOT_RUN',
     windows_private_data_sdk: result.windows_private_data_sdk ? { exit: result.windows_private_data_sdk.exit,
@@ -632,7 +718,7 @@ try {
       not_run: result.windows_private_data_sdk.cases.filter(row => row.action === 'skip').map(row => row.test.split('/')[1]),
       failures: result.windows_private_data_sdk.cases.filter(row => row.action === 'fail').map(row => row.test) } : 'NOT_RUN',
     fixture_exit: result.fixture_exit ?? 'NOT_RUN', error: result.error ?? null, control: structuredClone(result.control ?? null), service: result.service ?? null,
-    command_failure: result.command_failure ?? null, errors: [...result.errors ?? []], error_line_total: result.error_line_total ?? 0, error_lines_truncated: result.error_lines_truncated ?? false, model_calls: 0, worker_calls: 0 }
+    command_failure: structuredClone(result.command_failure ?? null), errors: [...result.errors ?? []], error_line_total: result.error_line_total ?? 0, error_lines_truncated: result.error_lines_truncated ?? false, model_calls: 0, worker_calls: 0 }
   if (projection.control?.producer && typeof projection.control.producer === 'object') {
     const rows = projection.control.producer.directory_observations
     projection.control.producer.directory_observations = rows.filter((row, index) => row.role === 'data' || rows.findLastIndex(other => other.role === row.role) === index)
@@ -640,7 +726,22 @@ try {
         ...(status === 'OBSERVED' ? { owner_matches_current_user, protected: protectedDacl, ace_count } : { error_kind: error_kind ?? null }) }))
   }
   while (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.errors.length) { projection.errors.pop(); projection.error_lines_truncated = true }
-  while (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.command_failure?.errors.length) { projection.command_failure.errors.pop(); projection.command_failure.error_lines_truncated = true }
+  while (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.command_failure?.errors.length > 1) { projection.command_failure.errors.pop(); projection.command_failure.error_lines_truncated = true }
+  if (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.command_failure?.errors.length === 1) {
+    const errors = projection.command_failure.errors, original = errors[0]
+    projection.command_failure.first_error_text_truncated = true
+    errors[0] = ''
+    assert.ok(Buffer.byteLength(JSON.stringify(projection)) <= 3500, 'Public diagnostic metadata leaves no first-error text budget')
+    let low = 0, high = Buffer.byteLength(original)
+    while (low < high) {
+      const limit = Math.ceil((low + high) / 2)
+      errors[0] = utf8Fragment(original, limit)
+      if (Buffer.byteLength(JSON.stringify(projection)) <= 3500) low = limit
+      else high = limit - 1
+    }
+    errors[0] = utf8Fragment(original, low)
+    assert.ok(errors[0].length > 0 || original.length === 0, 'Public diagnostic metadata leaves no first-error text budget')
+  }
   const text = JSON.stringify(projection)
   assert.ok(Buffer.byteLength(text) <= 3500, 'Public diagnostic metadata exceeds its total bound')
   const escaped = text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')

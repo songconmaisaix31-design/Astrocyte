@@ -132,7 +132,7 @@ jobs:
       - name: Run the fixed-source short identify and Controller open development control
         shell: pwsh
         run: |
-          node ./scripts/probe-swa-windows-controller-open.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-input-1d3006fe') --work-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7') --evidence-root (Join-Path $env:GITHUB_WORKSPACE '.verification/swa-ci/windows-controller-open') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs')
+          node ./scripts/probe-swa-windows-controller-open.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-input-1d3006fe') --work-root (Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7') --evidence-root (Join-Path $env:GITHUB_WORKSPACE '.verification/swa-ci/windows-controller-open') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs') --native-compile-only
           if ($LASTEXITCODE -ne 0) { throw 'The Windows Controller open development control failed; bounded evidence retained' }
       - uses: actions/upload-artifact@v4
         if: always()
