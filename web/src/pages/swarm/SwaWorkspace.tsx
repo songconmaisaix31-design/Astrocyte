@@ -7,7 +7,7 @@ import { QueryState } from '../../components/QueryState';
 import { SectionCard } from '../../components/SectionCard';
 import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, swaStartRequestBlock, canRequestSwaStart, type PendingSwaRequest } from './swaObservation';
 import { SwaAgentCapabilities, SwaRunWorkspace } from './SwaRunWorkspace';
-import { SwaRoles, type SelectedSwaRole } from './SwaRoles';
+import { SwaRoles, type SelectedSwaRole } from './SwaRolesPanel';
 import { inspectSwaRunSubmission } from './swaRunView';
 import styles from './SwaWorkspace.module.css';
 
