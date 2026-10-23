@@ -770,7 +770,7 @@ try {
       native_self: result.native_self, root_child_control: result.root_child_control, controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
     native_input_scope: 'baseline_except_diagnostic_process_tree', diagnostic_process_tree_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT',
     native_snapshot: result.native_snapshot ?? 'NOT_RUN',
-    ...(rootChild ? { root_child_fixture: { exit: rootChild.exit, status: rootChild.status,
+    ...(nativeAbiOnly && rootChild ? { root_child_fixture: { exit: rootChild.exit, status: rootChild.status,
       failed_phase: rootChild.failed_phase, probe_exit: rootChild.probe_exit,
       cleanup_attempted: rootChild.cleanup_attempted, cleanup_unknown: rootChild.cleanup_unknown,
       kernel_tree_exit_proven: rootChild.kernel_tree_exit_proven,
