@@ -38,6 +38,7 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 const digest = async path => ({ path: await realpath(path), sha256: hash(await readFile(path)) })
 const result = { schema: 'swa.windows-controller-open-development.v1', status: 'FAIL', phase: 'preflight',
   source_revision: sourceRevision, input_revision: priorRevision, observation_revision: process.env.GITHUB_SHA ?? 'UNKNOWN',
+  runtime_source_revision: sourceRevision, native_input_revision: priorRevision, go_source_revision: 'UNKNOWN',
   scope: 'development_composition_not_candidate', model_calls: 0, worker_calls: 0, task_create: 'NOT_RUN', commands: [], private_raw_uploaded: false }
 const env = {}
 for (const key of Object.keys(process.env)) if (/^(?:systemroot|windir|comspec|pathext|programfiles|programfiles\(x86\)|programw6432|systemdrive|number_of_processors|processor_architecture|os)$/i.test(key)) env[key] = process.env[key]
@@ -117,6 +118,20 @@ async function ordinaryTree(root, base = root) {
   else if (/\.(?:node|dll)$/i.test(root)) originalNative.push({ path: relative(base, root).replaceAll('\\', '/'), sha256: (await digest(root)).sha256 })
 }
 try {
+  const goRevision = (await git(['rev-parse', 'HEAD'])).toString().trim()
+  assert.match(goRevision, /^[0-9a-f]{40}$/)
+  assert.equal(goRevision, process.env.GITHUB_SHA)
+  const goScope = ['cmd', 'internal', 'contracts', 'go.mod', 'go.sum']
+  const changedGo = (await git(['diff', '--name-only', sourceRevision, goRevision, '--', ...goScope])).toString().trim().split(/\r?\n/).filter(Boolean).sort()
+  const approvedGo = ['cmd/swa/serve.go', 'cmd/swa/process_linux.go', 'cmd/swa/process_other.go', 'cmd/swa/process_windows.go', 'cmd/swa/data_directory_windows_test.go'].sort()
+  assert.deepEqual(changedGo, approvedGo, 'Development Go source differs beyond the accepted private-data repair')
+  assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
+  result.go_source_revision = goRevision
+  result.go_source_inputs = await Promise.all(approvedGo.map(async path => {
+    const bytes = await readFile(join(checkout, path))
+    assert.ok(bytes.equals(await fixed(path, goRevision)), 'Development Go input differs from its observation commit')
+    return { path, sha256: hash(bytes) }
+  }))
   const metadata = JSON.parse(await readFile(join(artifact, 'artifact-metadata.json'), 'utf8'))
   assert.equal(metadata.id, 12461580039); assert.equal(metadata.name, 'swa-windows-cli-' + priorRevision)
   assert.equal(metadata.workflow_run.id, 39858402174); assert.equal(metadata.expired, false)
@@ -177,7 +192,7 @@ try {
   const entries = ['host.cjs', 'client.cjs', 'controller-helper.cjs', 'daemon-entry.js']
   for (const name of ['node', 'runtime', 'third-party-licenses']) await cp(join(original, name), join(development, name), { recursive: true, force: false, errorOnExist: true,
     filter: path => !entries.some(entry => path === join(original, 'runtime', entry) || path === join(original, 'runtime', entry + '.metafile.json')) })
-  await writeFile(join(development, 'VERSION'), sourceRevision + '\n', { flag: 'wx' })
+  await writeFile(join(development, 'VERSION'), goRevision + '\n', { flag: 'wx' })
   for (const [name, text] of [['PLATFORM', 'win32-x64'], ['EDITION', 'cli']]) await writeFile(join(development, name), text + '\n', { flag: 'wx' })
   const builderPath = join(source, 'scripts/build-swa-runtime.mjs'), builderText = await readFile(builderPath, 'utf8')
   const tree = ts.createSourceFile(builderPath, builderText, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS)
@@ -214,15 +229,27 @@ try {
     result.reused_child_entries.push({ name, git_input_count: count, sha256: (await digest(join(original, 'runtime', name))).sha256 })
   }
   result.source_inputs = await Promise.all([...sourceInputs].sort().map(async path => ({ path: relative(source, path).replaceAll('\\', '/'), sha256: (await digest(path)).sha256 })))
-  assert.equal((await command('go', ['version'], source)).bytes.toString().trim().split(' ')[2], 'go1.27.2')
-  await command('go', ['mod', 'download'], source, 240_000)
-  await command('go', ['mod', 'verify'], source, 120_000)
+  assert.equal((await command('go', ['version'], checkout)).bytes.toString().trim().split(' ')[2], 'go1.27.2')
+  await command('go', ['mod', 'download'], checkout, 240_000)
+  await command('go', ['mod', 'verify'], checkout, 120_000)
   await command(originalNode, [join(source, 'scripts/check-dependencies.mjs')], source, 120_000)
+  result.phase = 'windows-private-data-sdk-control'
+  const sdk = await command('go', ['test', '-json', '-mod=readonly', '-count=1', '-timeout=90s', '-run', '^TestWindowsPrivateDataDirectory$', './cmd/swa'], checkout, 180_000, {}, true)
+  const sdkCases = sdk.bytes.toString('utf8').split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line))
+    .filter(row => typeof row.Test === 'string' && ['pass', 'skip', 'fail'].includes(row.Action))
+    .map(row => { assert.match(row.Test, /^TestWindowsPrivateDataDirectory(?:\/[a-z_]+)?$/); return { test: row.Test, action: row.Action } })
+  const sdkNames = ['fresh_nested_and_existing_private', 'existing_extra_administrators_ace_unchanged', 'existing_wrong_owner_unchanged', 'ordinary_file_unchanged', 'reparse_target_and_ancestor', 'protected_roots_before_creation']
+  result.windows_private_data_sdk = { exit: sdk.exit, cases: sdkCases }
+  assert.equal(sdk.exit, 0)
+  assert.deepEqual(sdkCases.filter(row => row.test.includes('/')).map(row => row.test.split('/')[1]).sort(), [...sdkNames].sort())
+  for (const row of sdkCases) assert.ok(row.action === 'pass' || row.action === 'skip' && ['existing_wrong_owner_unchanged', 'reparse_target_and_ancestor'].includes(row.test.split('/')[1]))
+  assert.ok(sdkCases.some(row => row.test === 'TestWindowsPrivateDataDirectory' && row.action === 'pass'))
+  result.phase = 'partial-go-build'
   for (const [name, entry] of [['swa.exe', './cmd/swa'], ['server.exe', './cmd/swa-server']]) {
-    await command('go', ['build', '-mod=readonly', '-p=4', '-trimpath', ...(name === 'swa.exe' ? ['-ldflags=-X main.version=' + sourceRevision] : []), '-o', join(development, name), entry], source, 480_000)
+    await command('go', ['build', '-mod=readonly', '-p=4', '-trimpath', ...(name === 'swa.exe' ? ['-ldflags=-X main.version=' + goRevision] : []), '-o', join(development, name), entry], checkout, 480_000)
   }
   const actualNode = join(development, 'node/node.exe')
-  assert.equal((await command(join(development, 'swa.exe'), ['--version'], development)).bytes.toString().trim(), sourceRevision)
+  assert.equal((await command(join(development, 'swa.exe'), ['--version'], development)).bytes.toString().trim(), goRevision)
   result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
@@ -244,15 +271,17 @@ try {
   result.phase = 'short-identify-then-controller-open'
   const smoke = join(privateOutput, 'smoke')
   const observed = await command(actualNode, [join(source, 'tests/swa-cli-headless/serve-lifecycle.mjs'), '--candidate', development, '--evidence', smoke,
-    '--data-parent', dataParent, '--protected-roots', env.ProgramFiles ?? env.PROGRAMFILES, '--port', '18793', '--mode', 'readiness-eof', '--source-revision', sourceRevision, '--controller-open-only'], checkout, 660_000, {}, true)
+    '--data-parent', dataParent, '--protected-roots', env.ProgramFiles ?? env.PROGRAMFILES, '--port', '18793', '--mode', 'readiness-eof', '--source-revision', goRevision, '--controller-open-only'], checkout, 660_000, {}, true)
   result.fixture_exit = observed.exit
   result.native_inputs_after = await Promise.all(originalNative.map(async item => ({ path: item.path, sha256: (await digest(join(original, item.path))).sha256 })))
   assert.deepEqual(result.native_inputs_after, originalNative)
   for (const item of originalNative) assert.equal((await digest(join(development, item.path))).sha256, item.sha256)
   for (const item of result.source_inputs) assert.equal((await digest(join(source, item.path))).sha256, item.sha256)
+  for (const item of result.go_source_inputs) assert.equal((await digest(join(checkout, item.path))).sha256, item.sha256)
+  assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
   assert.equal(hash(await readFile(archive)), actualArchiveHash)
   const actual = JSON.parse(await readFile(join(smoke, 'result.json'), 'utf8'))
-  assert.equal(actual.source_revision, sourceRevision); assert.equal(actual.records.length, 1)
+  assert.equal(actual.source_revision, goRevision); assert.equal(actual.records.length, 1)
   const record = actual.records[0], control = record.controller_input_check, producer = control?.producer
   result.control = { status: control?.status ?? 'UNKNOWN', transport: control?.transport ?? 'NOT_OBSERVED',
     producer: producer ? { status: producer.status, phase: producer.phase, error: producer.error ?? null, native_error: producer.native_error ?? null,
@@ -297,15 +326,23 @@ try {
   await stopBuild()
   await save('result.json', result)
   const projection = { status: result.status, phase: result.phase, scope: result.scope, source_revision: sourceRevision, input_revision: priorRevision,
+    go_source_revision: result.go_source_revision, runtime_source_revision: sourceRevision, native_input_revision: priorRevision,
+    windows_private_data_sdk: result.windows_private_data_sdk ? { exit: result.windows_private_data_sdk.exit,
+      pass_count: result.windows_private_data_sdk.cases.filter(row => row.action === 'pass').length,
+      not_run: result.windows_private_data_sdk.cases.filter(row => row.action === 'skip').map(row => row.test.split('/')[1]),
+      failures: result.windows_private_data_sdk.cases.filter(row => row.action === 'fail').map(row => row.test) } : 'NOT_RUN',
     fixture_exit: result.fixture_exit ?? 'NOT_RUN', error: result.error ?? null, control: structuredClone(result.control ?? null), service: result.service ?? null,
     command_failure: result.command_failure ?? null, errors: [...result.errors ?? []], error_line_total: result.error_line_total ?? 0, error_lines_truncated: result.error_lines_truncated ?? false, model_calls: 0, worker_calls: 0 }
   if (projection.control?.producer && typeof projection.control.producer === 'object') {
-    projection.control.producer.directory_observations = projection.control.producer.directory_observations.map(row => row.aces ? { ...row, aces: row.aces.slice(0, 2), truncated: row.truncated || row.aces.length > 2 } : row)
+    const rows = projection.control.producer.directory_observations
+    projection.control.producer.directory_observations = rows.filter((row, index) => row.role === 'data' || rows.findLastIndex(other => other.role === row.role) === index)
+      .map(({ phase, role, status, owner_matches_current_user, protected: protectedDacl, ace_count, error_kind }) => ({ phase, role, status,
+        ...(status === 'OBSERVED' ? { owner_matches_current_user, protected: protectedDacl, ace_count } : { error_kind: error_kind ?? null }) }))
   }
-  while (Buffer.byteLength(JSON.stringify(projection)) > 8000 && projection.errors.length) { projection.errors.pop(); projection.error_lines_truncated = true }
-  while (Buffer.byteLength(JSON.stringify(projection)) > 8000 && projection.command_failure?.errors.length) { projection.command_failure.errors.pop(); projection.command_failure.error_lines_truncated = true }
+  while (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.errors.length) { projection.errors.pop(); projection.error_lines_truncated = true }
+  while (Buffer.byteLength(JSON.stringify(projection)) > 3500 && projection.command_failure?.errors.length) { projection.command_failure.errors.pop(); projection.command_failure.error_lines_truncated = true }
   const text = JSON.stringify(projection)
-  assert.ok(Buffer.byteLength(text) <= 8000, 'Public diagnostic metadata exceeds its total bound')
+  assert.ok(Buffer.byteLength(text) <= 3500, 'Public diagnostic metadata exceeds its total bound')
   const escaped = text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')
   process.stdout.write('::warning title=Windows Controller open development control::' + escaped + '\n')
 }
