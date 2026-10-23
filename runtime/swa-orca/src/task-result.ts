@@ -33,6 +33,7 @@ import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, nativeConfigurati
 import { privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
 import { validatePiExport } from './pi-session-policy'
 import { readNativePiSessionSource as readNativePiBoundSessionSource } from './pi-session-result'
+export { readPiJournalInputTurn } from './pi-session-result'
 import { codexProtectedRoots } from './agent-discovery'
 import { readAgentSettings } from './agent-settings'
 import { swaLinuxProcessIncarnationSchema } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'

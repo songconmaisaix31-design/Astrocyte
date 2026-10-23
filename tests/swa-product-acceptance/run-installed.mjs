@@ -1102,6 +1102,8 @@ async function verifyPiJournalInputs(worker, original, bindings, actualNative) {
   for (const row of worker.journal.rows) assert.equal(folded.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
   const actual = folded.finish()
   assert.equal(actual.damage, null); assert.equal(actual.newer, null)
+  const { readPiJournalInputTurn } = requireRuntime('./task-result.cjs')
+  assert.equal(typeof readPiJournalInputTurn, 'function')
   for (const submission of actual.state.submissions.values()) assert.ok(!['pending', 'unknown'].includes(submission.dispatchState), 'pi_unresolved_journal_input')
   const messages = actualNative.entries.filter(entry => entry.type === 'message')
   const raw = sources.get(original.source.native_session_id).rows.filter(row => row.event === 'native_record' && row.detail.frame.type === 'message_end')
@@ -1125,7 +1127,6 @@ async function verifyPiJournalInputs(worker, original, bindings, actualNative) {
     assert.equal(item?.body.kind, 'message'); assert.equal(item.body.role, 'user')
     assert.equal(item.agentId, undefined)
     assert.deepEqual(item.body.blocks, binding.body.blocks)
-    assert.equal(item.turnScope?.kind, 'turn')
     assert.equal(actual.state.itemFences.get(item.itemId), binding.runtime_fence)
     const prompt = view.prompts.filter(value => value.cid === binding.operation_id)
     assert.equal(prompt.length, 1)
@@ -1145,7 +1146,7 @@ async function verifyPiJournalInputs(worker, original, bindings, actualNative) {
         for await (const value of Readable.from([prefix]).pipe(jsonlParser.asStream())) assert.notEqual(value.value.id, messages[rawIndex].id, 'pi_user_entry_predates_original_submit')
       }
     } else assert.equal(baseline.absent, true)
-    const turn = actual.state.items.get(item.turnScope.turnItemId)
+    const turn = readPiJournalInputTurn(actual.state, item, binding.session_id, binding.runtime_fence)
     assert.equal(turn?.body.kind, 'turn'); assert.equal(turn.agentId, undefined)
     assert.equal(actual.state.itemFences.get(turn.itemId), binding.runtime_fence)
     submitted.push({ sequence: submission.submittedSequence, cid: binding.operation_id, nativeEntry: messages[rawIndex], baseline, turn })
@@ -1752,9 +1753,9 @@ async function run() {
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
   if (runFlow) {
-    const notificationText = approvedFiles.get(inputs[3].input_file).trim()
+    const notificationText = approvedFiles.get(inputs[3].input_file)
     const current = await publicCommand({ action: 'handoff.notify', controller, task_id: rootTask, dispatch_id: report.started_workers[3].dispatch_id,
-      text: notificationText, request_id: randomUUID() })
+      input_file: inputs[3].input_file, request_id: randomUUID() })
     assert.equal(native(current).delivery, 'stored')
     assert.equal(native(current).message.delivery_contract, 'audit_only')
     assert.equal(native(current).new_task, false)

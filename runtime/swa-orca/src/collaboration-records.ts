@@ -105,14 +105,14 @@ export function writeCollaborationRecords(db: OrchestrationDb, invocation: Invoc
       requireConversation(db, project, c.conversation_id)
       db.db.prepare('INSERT INTO swa_conversation_entries(id,conversation_id,request_id,text,author_id,author_kind,created_at) VALUES (?,?,?,?,?,?,?)').run(request, c.conversation_id, request, c.text, invocation.caller.id, invocation.caller.kind, now)
       native = conversationView(db, project, c.conversation_id)
-    } else if (c.action === 'handoff.notify' && c.controller && c.dispatch_id && c.text) {
+    } else if (c.action === 'handoff.notify' && c.controller && c.dispatch_id && c.input_file && invocation.input && c.text === undefined) {
       if (!scope || scope.project_id !== project || scope.controller !== c.controller || c.task_id !== scope.root_task_id) fail('scope_denied', 'The notification must name its original root task')
       const dispatch = db.getDispatchContextById(c.dispatch_id)
       if (!dispatch || dispatch.run_id !== scope.run_id || !isTaskDescendant(db, scope.run_id, scope.root_task_id, dispatch.task_id)) fail('scope_denied', 'The notification recipient is outside this task tree')
       const payload = { schema: 'swa.handoff.v1', mode: 'notify', reply: 'none', parent_task_id: scope.root_task_id,
         origin: { kind: invocation.caller.kind, caller_id: invocation.caller.id, project_id: project, request_id: request }, recipient_dispatch_id: dispatch.id }
       const message = db.insertMessage({ id: `${request}/notify`, runId: scope.run_id, from: `${invocation.caller.kind}:${invocation.caller.id}`, to: `dispatch:${dispatch.id}`,
-        type: 'handoff', deliveryContract: 'audit_only', subject: 'SWA notification', body: c.text, payload: JSON.stringify(payload) })
+        type: 'handoff', deliveryContract: 'audit_only', subject: 'SWA notification', body: invocation.input.text, payload: JSON.stringify(payload) })
       native = { handoff: payload, message, delivery: 'stored', new_task: false, new_worker: false }
     } else return fail('invalid_argument', 'An exact collaboration mutation is required')
     assertDeliveryGrantCurrent(invocation)

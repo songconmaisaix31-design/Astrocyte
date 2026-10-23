@@ -8,6 +8,8 @@ import { agentSessionSendBodyFingerprint } from '../../../third_party/orca-v1.4.
 import { SendBodyStructure } from '../../../third_party/orca-v1.4.230/src/shared/rpc-contract/structured-agent-session-message-params'
 import { preparePiRpcPrompt } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-prompt'
 import { parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
+import { isRootAgentJournalItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-producer'
+import type { AgentJournalRenderItem } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-types'
 import { providerTimelineKeyPart, spelledProviderTimelineItemKey } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity'
 import { parseStrictPiJson, strictPiNativeEntrySchema, strictPiNativeHeaderSchema, strictPiOutboundSchema, strictPiRawSchema, type StrictPiMessage } from '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
 import { structuredInputBindingSchema } from './contracts'
@@ -41,6 +43,24 @@ function fail(reason: string): never { throw new Error(`native_pi_result_${reaso
 const checked = <T extends z.ZodType>(schema: T, value: unknown): z.output<T> => { const parsed = schema.safeParse(value); if (!parsed.success) fail('invalid_record'); return parsed.data }
 const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
 const samePath = (a: string, b: string) => process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b
+
+/** 开局用户项可属于thread；它打开的turn由原userItemId声明，不能按顺序或最新项猜测。 */
+export function readPiJournalInputTurn(journal: Pick<JournalReducerState, 'items' | 'aliases' | 'itemFences'>,
+  user: Pick<AgentJournalRenderItem, 'itemId' | 'turnScope'>, sessionId: string, fence: number) {
+  const resolve = (id: string) => journal.aliases.get(id) ?? id
+  const scope = user.turnScope
+  let candidates: AgentJournalRenderItem[]
+  if (scope?.kind === 'turn') {
+    const item = journal.items.get(resolve(scope.turnItemId))
+    candidates = item ? [item] : []
+  } else if (scope?.kind === 'thread') {
+    candidates = [...journal.items.values()].filter(item => item.body.kind === 'turn' && item.body.userItemId !== undefined && resolve(item.body.userItemId) === user.itemId)
+  } else fail('accepted_user_turn_missing')
+  if (candidates.length !== 1) fail('accepted_user_turn_missing')
+  const turn = candidates[0]!, identity = parseAgentJournalItemKey(turn.itemId)
+  if (!isRootAgentJournalItem(turn) || turn.body.kind !== 'turn' || identity?.provider !== 'legacy' || identity.agent !== 'pi' || identity.sessionId !== sessionId || journal.itemFences.get(turn.itemId) !== fence) fail('accepted_user_turn_changed')
+  return turn
+}
 
 /** 真正native原件、原R回执和已发布journal交叉消费；没有来源时不补造会话。 */
 export async function readNativePiSessionSource(input: NativePiSessionSourceInput) {
@@ -133,7 +153,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
     return { binding, sequence: submission.submittedSequence }
   }).sort((a, b) => a.sequence - b.sequence)
   if (new Set(orderedBindings.map(row => row.binding.operation_id)).size !== orderedBindings.length || orderedBindings.some((row, index) => index > 0 && row.sequence <= orderedBindings[index - 1]!.sequence)) fail('latest_input_ambiguous')
-  const joined: { cid: string; sequence: number; sourceSequence: number; entry: Extract<z.output<typeof strictPiNativeEntrySchema>, { type: 'message' }> }[] = []
+  const joined: { cid: string; sequence: number; sourceSequence: number; turnItemId: string; entry: Extract<z.output<typeof strictPiNativeEntrySchema>, { type: 'message' }> }[] = []
   for (const { binding } of orderedBindings) {
     if (binding.agent !== 'pi' || binding.runtime_fence !== input.fence) fail('input_binding_changed')
     const { from: _sender, ...body } = checked(bodySchema, binding.body)
@@ -142,7 +162,8 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
     const submission = input.journal.submissions.get(binding.operation_id), receipt = input.journal.receipts.get(binding.operation_id)
     if (!submission || submission.clientMessageId !== binding.operation_id || submission.fence !== input.fence || submission.dispatchState !== 'accepted' || submission.payloadFingerprint !== agentSessionSendBodyFingerprint(binding.session_id, body) || !submission.submittedSequence || !submission.providerItemId || !receipt || receipt.providerItemId !== submission.providerItemId || receipt.clientMessageId !== binding.operation_id || receipt.cursor.epoch !== input.journal.epoch) fail('accepted_input_missing')
     const userItem = input.journal.items.get(input.journal.aliases.get(submission.providerItemId) ?? submission.providerItemId)
-    if (!userItem || userItem.agentId || userItem.body.kind !== 'message' || userItem.body.role !== 'user' || !isDeepStrictEqual(userItem.body.blocks, body.blocks) || input.journal.itemFences.get(userItem.itemId) !== input.fence || userItem.turnScope?.kind !== 'turn') fail('accepted_user_journal_missing')
+    if (!userItem || !isRootAgentJournalItem(userItem) || userItem.body.kind !== 'message' || userItem.body.role !== 'user' || !isDeepStrictEqual(userItem.body.blocks, body.blocks) || input.journal.itemFences.get(userItem.itemId) !== input.fence) fail('accepted_user_journal_missing')
+    const inputTurn = readPiJournalInputTurn(input.journal, userItem, binding.session_id, input.fence)
     const original = writes.get(binding.operation_id)
     const echoes = users.filter(row => row.cid === binding.operation_id)
     if (!original || original.detail.command !== 'prompt' || original.detail.cid !== binding.operation_id || !isDeepStrictEqual(original.detail.binding, binding) || !original.detail.native_baseline || original.detail.frame.type !== 'prompt' || original.detail.frame.message !== prompt.message || !isDeepStrictEqual(original.detail.frame.images ?? [], prompt.images) || echoes.length !== 1 || !isDeepStrictEqual(echoes[0]!.message.content, [{ type: 'text', text: prompt.message }])) fail('original_request_echo_join_missing')
@@ -159,7 +180,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
     const acceptance = projections.filter(row => row.value.sourceSequence === echo.sequence && row.value.eventType === 'input.accepted' && row.value.clientMessageId === binding.operation_id)
     // opener-only事件可没有真实journal step，也就没有onPublished回调；真实accepted回执仍是前置。
     if (acceptance.length > 1 || acceptance.some(row => row.value.report.published !== row.value.report.steps.some(step => step.written))) fail('accepted_projection_changed')
-    joined.push({ cid: binding.operation_id, sequence: submission.submittedSequence, sourceSequence: echo.sequence, entry })
+    joined.push({ cid: binding.operation_id, sequence: submission.submittedSequence, sourceSequence: echo.sequence, turnItemId: inputTurn.itemId, entry })
   }
   if ([...input.journal.submissions.values()].some(value => value.dispatchState === 'accepted' && !input.bindings.some(binding => binding.operation_id === value.clientMessageId))) fail('unbound_accepted_journal_input')
   if (!joined.length || joined.length !== users.length || new Set(joined.map(row => row.cid)).size !== users.length || joined.some((row, index) => index > 0 && (row.sequence <= joined[index - 1]!.sequence || row.sourceSequence <= joined[index - 1]!.sourceSequence))) fail('latest_input_ambiguous')
@@ -179,7 +200,7 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
       if (!itemIds.size) fail('final_projection_missing')
       for (const itemId of itemIds) {
         const item = input.journal.items.get(input.journal.aliases.get(itemId) ?? itemId)
-        if (!item || item.agentId || item.body.kind !== 'message' || item.body.role !== 'assistant' || input.journal.itemFences.get(item.itemId) !== input.fence || item.turnScope?.kind !== 'turn') fail('final_journal_identity_changed')
+        if (!item || !isRootAgentJournalItem(item) || item.body.kind !== 'message' || item.body.role !== 'assistant' || input.journal.itemFences.get(item.itemId) !== input.fence || item.turnScope?.kind !== 'turn' || item.turnScope.turnItemId !== latest.turnItemId) fail('final_journal_identity_changed')
         const blocks = finalMessage.message.content
         const matching = blocks.filter((block, index) => close.value.providerItem!.endsWith(`:${index}:${block.type === 'text' ? 'assistant' : 'reasoning'}`))
         const expectedText = matching.map(block => block.type === 'text' ? block.text : block.thinking).join('')

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -25,8 +25,9 @@ function createCase(name) {
 function invocation(value, command) {
   return { command, project: { id: value.project, root }, caller: { id: 'public-task-author', kind: 'human', project_id: value.project, settings_revision: 1 }, scope: { project_id: value.project, controller: '', run_id: '', root_task_id: '', authority_domain: value.db.getOrCreateLocalMutationCallerFingerprint(), context: {} } }
 }
-function write(value, command, scope) {
+function write(value, command, scope, file) {
   const input = invocation(value, { ...command, request_id: command.request_id ?? randomUUID() })
+  if (file) input.input = file
   const identity = { callerFingerprint: value.db.getOrCreateLocalMutationCallerFingerprint(), requestId: input.command.request_id, method: 'swa.collaborationWrite', payloadHash: hashCanonical(input) }
   const reserved = value.db.beginMutationReceipt(identity)
   const result = reserved.disposition === 'completed' ? JSON.parse(reserved.row.receipt) : writeCollaborationRecords(value.db, input, identity, scope)
@@ -101,19 +102,26 @@ test('missing original mutation receipt rolls back metadata instead of leaving a
   } finally { value.db.close() }
 })
 
-test('notify creates one native mailbox record without another task or worker', () => {
+test('notify stores the approved file verbatim in one native mailbox record without another task or worker', async () => {
   const value = createCase('notification')
   try {
+    const path = 'README.md', info = await stat(join(root, path), { bigint: true })
+    const file = { path, version: `mtime:${info.mtimeNs};size:${info.size}`, text: await readFile(join(root, path), 'utf8') }
     const run = value.db.createRun({ objective: 'Observe notification records', coordinatorHandle: null, coordinatorPaneKey: null })
     const parent = value.db.createTask({ runId: run.id, spec: JSON.stringify({ project_id: value.project, spec: { max_workers: 2 } }) })
     const task = value.db.createTask({ runId: run.id, parentId: parent.id, spec: 'Observe native mailbox delivery' })
     const dispatch = value.db.createDispatchContext({ taskId: task.id, assigneeHandle: 'database-recipient', creator: { kind: 'system' }, maxDepth: 4 })
     const scope = { project_id: value.project, controller: 'database-observation', run_id: run.id, root_task_id: parent.id, authority_domain: value.db.getOrCreateLocalMutationCallerFingerprint(), context: {} }
-    const request_id = randomUUID(), command = { action: 'handoff.notify', controller: scope.controller, task_id: parent.id, dispatch_id: dispatch.id, text: 'The public review requirement is recorded.', request_id }
-    const first = write(value, command, scope), second = write(value, command, scope)
+    const request_id = randomUUID(), command = { action: 'handoff.notify', controller: scope.controller, task_id: parent.id, dispatch_id: dispatch.id, input_file: path, request_id }
+    assert.throws(() => write(value, { ...command, request_id: randomUUID() }, scope), { code: 'invalid_argument' })
+    assert.throws(() => write(value, { ...command, request_id: randomUUID(), text: file.text }, scope, file), { code: 'invalid_argument' })
+    assert.equal(value.db.db.prepare('SELECT COUNT(*) count FROM messages').get().count, 0)
+    assert.equal(value.db.db.isTransaction, false)
+    const first = write(value, command, scope, file), second = write(value, command, scope, file)
     assert.equal(first.result.native.delivery, 'stored')
     assert.equal(first.result.native.message.delivery_contract, 'audit_only')
     assert.equal(first.result.native.message.id, second.result.native.message.id)
+    assert.equal(first.result.native.message.body, file.text)
     assert.equal(first.result.native.handoff.reply, 'none')
     assert.equal(value.db.db.prepare('SELECT COUNT(*) count FROM tasks').get().count, 2)
     assert.equal(value.db.db.prepare('SELECT COUNT(*) count FROM worker_dispatches').get().count, 0)

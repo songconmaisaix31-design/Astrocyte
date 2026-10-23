@@ -25,7 +25,7 @@ if (!race) {
   await run(process.execPath, ['scripts/check-dependencies.mjs']);
   await run(process.execPath, ['scripts/check-architecture.mjs', '--swa']);
   await run(process.execPath, ['--test', 'scripts/stop-process.test.mjs', 'tests/s1/development-lifecycle.test.mjs']);
-  await run(process.execPath, ['--test', 'tests/swa-cli-headless/task-budget.test.mjs', 'tests/swa-cli-headless/project-capabilities.test.mjs', 'tests/swa-cli-headless/agent-observations.test.mjs', 'tests/swa-cli-headless/run-view.test.mjs', 'tests/swa-cli-headless/collaboration-records.test.mjs', 'tests/swa-cli-headless/pi-worker-launch.test.mjs', 'tests/swa-cli-headless/worker-start-mode.test.mjs', 'tests/swa-cli-headless/worker-acquired-options.test.mjs', 'tests/swa-cli-headless/pi-stdio-write.test.mjs', 'tests/swa-cli-headless/pi-provider-error.test.mjs']);
+  await run(process.execPath, ['--test', 'tests/swa-cli-headless/task-budget.test.mjs', 'tests/swa-cli-headless/project-capabilities.test.mjs', 'tests/swa-cli-headless/agent-observations.test.mjs', 'tests/swa-cli-headless/run-view.test.mjs', 'tests/swa-cli-headless/collaboration-records.test.mjs', 'tests/swa-cli-headless/pi-worker-launch.test.mjs', 'tests/swa-cli-headless/worker-start-mode.test.mjs', 'tests/swa-cli-headless/worker-acquired-options.test.mjs', 'tests/swa-cli-headless/pi-stdio-write.test.mjs', 'tests/swa-cli-headless/pi-provider-error.test.mjs', 'tests/swa-cli-headless/pi-input-turn.test.mjs']);
   await runTool('redocly', ['lint', 'contracts/openapi.yaml', '--config', 'contracts/redocly.yaml'], { cwd: root });
   await run(process.execPath, ['scripts/validate-examples.mjs']);
   await run(process.execPath, ['scripts/generate-client.mjs', '--check']);

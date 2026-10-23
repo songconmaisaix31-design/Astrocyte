@@ -110,3 +110,20 @@ func TestRoleAndDiscussionDoNotAcceptExecutionAuthority(t *testing.T) {
 		t.Fatal("saving discussion must not implicitly send to a Worker")
 	}
 }
+
+func TestHandoffNotifyRequiresApprovedInputFile(t *testing.T) {
+	command := OrcaCommand{Action: "handoff.notify", Controller: "controller", TaskID: "root", DispatchID: "recipient", InputFile: "README.md", RequestID: uuid.NewString()}
+	if err := ValidateOrcaCommand(command); err != nil {
+		t.Fatal(err)
+	}
+	withoutFile := command
+	withoutFile.InputFile = ""
+	if ValidateOrcaCommand(withoutFile) == nil {
+		t.Fatal("notification accepted without an approved input file")
+	}
+	withText := command
+	withText.Text = "Unbound inline input"
+	if ValidateOrcaCommand(withText) == nil {
+		t.Fatal("notification accepted inline text outside the file contract")
+	}
+}

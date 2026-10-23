@@ -1206,7 +1206,7 @@ Workspace 独占开发空间存储责任，沿用 `attention_project_spaces` 原
 
 CLI `run` 默认等待整个递归 Run；`wait` 用精确 controller/run_id/root task_id 重连，只观察现有工作。`--strict` 将任一递归子任务失败计为失败，非严格模式仍展示完整失败列表。退出码沿既有 2—7，新增 8 超时、9 需要用户回答、130 取消等待；取消等待不自动停止 Worker。`export` 读取同 Run 的完整记录、原生成果和产物索引，CLI 写入明确的新输出目录，GUI 下载实际数据。GUI 与 CLI 共用 `swa.run-view.v1`，显示后代、依赖、Dispatch、问题、阻塞、失败和成果。
 
-work 委派执行，consult 必须由实际工具策略禁止外部操作，notify 仅保存单向邮件且不新建 Task/Worker。交接保存原始来源、父任务、接收者、完成条件和 reply。notify 的 `delivery:stored` 只表示记录已保存；通知和完成邮件使用原 `audit_only` 合同，不进入会自动向模型投递的邮箱。reply=poll 由调用者观察；reply=resume 由原生完成消费者把真实子成果通过原邮件和经过当前权限检查的 worker.send 输入路径递交父会话。内部 `handoff` 引用 source_task_id/source_dispatch_id/parent_task_id/parent_dispatch_id/mail_id；后台核原记录、当前项目权限和原会话，外部请求不能提供该证明。邮件已保存、实际接受输入、父 Agent 继续输出分别记录。
+work 委派执行，consult 必须由实际工具策略禁止外部操作，notify 仅保存单向邮件且不新建 Task/Worker。交接保存原始来源、父任务、接收者、完成条件和 reply。`handoff.notify` 接收原 Controller、根任务、接收 Dispatch 和 `input_file`；Go 按当前项目权限读取并版本化该文件，原生邮件逐字保存 `invocation.input.text`。该操作不接收内联 `text`。notify 的 `delivery:stored` 只表示记录已保存；通知和完成邮件使用原 `audit_only` 合同，不进入会自动向模型投递的邮箱。reply=poll 由调用者观察；reply=resume 由原生完成消费者把真实子成果通过原邮件和经过当前权限检查的 worker.send 输入路径递交父会话。内部 `handoff` 引用 source_task_id/source_dispatch_id/parent_task_id/parent_dispatch_id/mail_id；后台核原记录、当前项目权限和原会话，外部请求不能提供该证明。邮件已保存、实际接受输入、父 Agent 继续输出分别记录。
 
 Run 自动收尾复用原 journal 完成通知、Task/Dispatch、完整成果 reader 和原 worker.stop/release，不新增调度器或第二任务状态库。所有实际后代、待答问题、未知输入和所属资源均须闭合；执行终态标记 `acceptance:unreviewed`，不代替验收条件审查。
 

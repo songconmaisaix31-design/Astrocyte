@@ -23,9 +23,13 @@ pi09已通过实际单Worker输出、活动停止、完整退出、资源与租�
 
 S74aa新N4原件位于 `/workspace/swa-pi-n4-packet-74aa5aa8-20261023-01/` 及对应owned目录。前三Worker ready/input_accepted，第四个consult孙任务已创建但父请求因helper串行处理在120秒外层超时；默认wait另外把正常执行pending误判unknown并过早退出6。随后Grant撤销引起的403是尾部后果。原执行FAIL、正常EOF后serve6/observer1及完整树UNKNOWN均保留。两个余留daemon531361/helper532517已通过原认证接口正常EOF及shutdownIfIdle结束，双pidfd两次退出间隔50.130200ms，补充结果已独立接受；不改数据库资源/租约或原全树UNKNOWN。工具首次模块加载失败及同安装NODE_PATH局部修正均保留。不得重放旧请求或改写原租约。
 
-产品修复已固定 `26f5db17`，11项真实规则、strict、架构和独立源码审查通过；提前启动driver `de51498d` 及真实旧原件局部结果也已接受。唯一无模型RPC实际的公共路径和完整关闭通过，但原task.create在writer的501ms等待期间结束，长输入与在途EOF未执行，结果FAIL/覆盖未命中保留。下一fresh N4以实际慢workerStart验证并发长输入，不因此多加模型轮或假延迟；在途EOF仍未验。新driver须按稳定来源生成新packet，旧授权包不可复用。S74aa两份可恢复候选/解包副本已清理，tar/独立安装/数据均保留；下一批开发副本及六份官方Node输入只读检查继续，Root未授权删除或完整构建。
+产品修复 `26f5db17` 的11项真实规则、strict、架构和源码审查通过；提前启动driver已随 `6190b773` 完成新正式Linux构建、安装、D12（12通过）及实际服务检查。I为 `/workspace/swa-linux-installs/swa-linux-combined-6190b773-n46-05`。服务smoke产品记录和原脚本退出0；工具曾把最外层显式exit回传为1，无服务Node对照已复现该采集边界，原两个值均保留，后继使用独立脚本或子shell。唯一无模型RPC的在途EOF仍未验。
 
-Windows D10 `1b8828d6` / run `39952528075` 的SDK7项、真实TTY三次ready和自然EOF0通过，pipe被全局excludedEdges空断言拒绝，关闭unknown649、latch=true、CIM6，B未启动。只读取证在查明固定result超过1MiB后，将读取上限窄调到2MiB；`3ffa2774` / run `39959519000` 成功。649项全部父身份未验证，native查询本身全部complete/error0；仅保存8个身份样本，均为已结束pipe helper起点下创建更早的进程。原pure先传播未验证父身份再比较时间，与样本吻合，不能据此重建全历史或清除UNKNOWN。12条非raw投影独立接受，raw原文保留但JSON转义解析失败。Windows负责人继续最小collector/checker计划审查，不重跑SDK/A/B/模型。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿，准确原件和当前限制查STATUS。
+S6190新N4四Worker均ready/input_accepted、默认wait在真实pending期间持续active。原packet `/workspace/swa-pi-n4-packet-6190b773-20261023-01` 和owned目录保持FAIL。notify误传text被公开Go拒绝且原R absent；现两消费者统一使用获准input_file和invocation.input.text。另slot3接受用户journal实际存在且为threadscope，现reader按原turn.userItemId唯一关联。两项源码、直接消费者、Go/SQLite和关联规则、合并strict已全部独立接受。该slot原native 403 No approved upstream IPv4 address发生在撤Grant前，其余3有真实输出；当前一次无认证GET返回401仅证明当前端点可达，不解释原403。原driver未到正式overlap、计划停止、业务审阅或GUI。正常EOF退出后serve6/observer1、整树UNKNOWN保持；daemon571091/helper571741已通过原认证正常EOF/idle收尾，双pidfd退出50.142113ms/helper缺席/daemon为退出僵尸，补证获独立接受。原DB四资源与三live租约未改，旧请求不重放。
+
+S74aa候选与解包两副本、开发副本与六份官方Node解包输入已按独立完整恢复核对清理。S6190 candidate/package及旧I50/I7ff四根也经逐成员恢复/引用/check-only独审后执行唯一删除，operation-01记录0/四根已删、remaining空，净增加3403153408字节；I4c和当前I6190、所有tar/备份/数据/证据保留。下一步固定已接受源码，按原阶段空间门进行新n46-06正式构建、安装、D12与Root服务检查，再以新packet进行N4；N4完整通过后才N6。
+
+Windows D10 `1b8828d6` / run `39952528075` 仍为FAIL/unknown649；`3ffa2774`只读取证成功，不能清除原UNKNOWN。D11 `eb7a1746` / run `39963000754` 的SDK7项、TTY/pipe各三次ready及自然EOF、真实Controller打开和关闭均通过；整体fixture6、serve0、关闭latch=true/unknown5，完整树仍未通过。`79639b18`、evidence-04 tag的只读run `39967710170` 已SUCCESS，原5项全部OpenProcess 87、创建时间UNKNOWN，分为2项当前root身份未验证和3项父身份未验证；此次root行存在，原predates排除条件不适用。原实际pure overlay两SHA均匹配，不按错误码猜进程角色或退出原因。Windows owner继续仅基于原件审查最小收集方案，未重跑SDK/A/B/模型；06子独审。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
