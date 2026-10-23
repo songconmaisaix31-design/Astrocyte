@@ -8,6 +8,7 @@ import { isAbsolute, join } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { isLinuxPiTarget, readPiPrivateJson, validatePiEventView, validatePiLaunchRecord } from './pi-event-view.mjs'
+import { validateLinuxServiceReady } from './codex-event-view.mjs'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 const protocolPath = process.env.SWA_PI_DRIVER_PROTOCOL_MODULE
@@ -64,6 +65,7 @@ test('the actual public package JSON is neither an owned launch record nor a Pi 
   const actual = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8'))
   assert.throws(() => validatePiLaunchRecord(actual, {}), /pi_source_unknown_fields/)
   assert.throws(() => validatePiEventView(actual, {}), /pi_trace_inventory_bound/)
+  assert.throws(() => validateLinuxServiceReady(actual, {}), /linux_service_ready_fields/)
 })
 
 test('real private public files use the driver FD reader and reviewed strict parser', async () => {

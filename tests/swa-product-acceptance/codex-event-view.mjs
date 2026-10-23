@@ -26,6 +26,28 @@ export const isCodexDelta = row => row.protocol === 'codex-app-server' && row.ev
 export const codexStarts = rows => rows.filter(row => row.event === 'notification' && row.detail?.method === 'turn/started')
 export const codexEnds = rows => rows.filter(row => row.event === 'notification' && row.detail?.method === 'turn/completed')
 
+export function validateLinuxServiceReady(value, expected) {
+  const ready = object(value)
+  const required = ['ok', 'http', 'data_root', 'install_root', 'runtime_pid', 'server_pid', 'readiness']
+  assert.ok(required.every(key => Object.hasOwn(ready, key)) && Object.keys(ready).every(key => required.includes(key) || key === 'resource_samples'), 'linux_service_ready_fields')
+  assert.equal(ready.ok, true)
+  assert.equal(ready.http, expected.endpoint, 'linux_service_endpoint_changed')
+  assert.equal(ready.data_root, expected.data_root, 'linux_service_data_root_changed')
+  assert.equal(ready.install_root, expected.installation, 'linux_service_installation_changed')
+  assert.deepEqual(ready.readiness, { runtimeId: expected.runtime_id, dataRoot: expected.data_root, node: expected.node }, 'linux_service_readiness_changed')
+  for (const pid of [ready.runtime_pid, ready.server_pid]) assert.ok(Number.isSafeInteger(pid) && pid > 0, 'linux_service_pid_invalid')
+  assert.notEqual(ready.runtime_pid, ready.server_pid, 'linux_service_process_roles_overlap')
+  if (ready.resource_samples !== undefined) {
+    const samples = object(ready.resource_samples)
+    assert.deepEqual(Object.keys(samples).sort(), ['available_bytes', 'logical_cpus', 'platform', 'sampled_at'])
+    assert.equal(samples.platform, 'linux')
+    assert.ok(Number.isSafeInteger(samples.available_bytes) && samples.available_bytes >= 0)
+    assert.ok(Number.isSafeInteger(samples.logical_cpus) && samples.logical_cpus > 0)
+    assert.ok(typeof samples.sampled_at === 'string' && Number.isFinite(Date.parse(samples.sampled_at)))
+  }
+  return ready
+}
+
 export function validateCodexEventView(rows, expected) {
   assert.ok(Array.isArray(rows) && rows.length > 0 && rows.length <= 100_000, 'codex_trace_inventory_bound')
   const first = object(rows[0])

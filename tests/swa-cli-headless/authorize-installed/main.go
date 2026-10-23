@@ -90,7 +90,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		agent: "codex", model: "gpt-5.5", caller: caller, project: projectName, space: spaceTitle,
 		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
 		sourceName: "codex_api_key_home", sourceHome: p.CodexSourceHome,
-		dependencies: []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"},
+		dependencies: []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py", "pi-event-view.mjs"},
 		workers:      3, projectRoot: publicRoot,
 	}
 	switch p.Profile {
@@ -112,7 +112,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		scope.project, scope.space = "SWA StepFun Pi N"+count+" public stats", "SWA StepFun Pi N"+count+" public stats 20261023"
 		scope.version, scope.provider, scope.accountSource = "1.0.1", "stepfun", "pi-api-key-file"
 		scope.sourceName, scope.sourceHome = "pi_source_home", p.PiSourceHome
-		scope.dependencies = append(scope.dependencies, "pi-event-view.mjs", "pi-source-observer-entry.ts")
+		scope.dependencies = append(scope.dependencies, "pi-source-observer-entry.ts")
 	default:
 		return profileScope{}, fail("reviewed_profile_required")
 	}
@@ -935,6 +935,7 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 	ctx, cancel := context.WithDeadline(context.Background(), token.ExpiresAt.Add(-30*time.Second))
 	defer cancel()
 	args := []string{driverPath(p), "--candidate", p.Installation, "--data-root", p.DataRoot, "--project", p.Project, "--project-id", projectID, "--endpoint", p.Endpoint, "--agent", scope.agent, "--model", scope.model, "--workers", strconv.Itoa(scope.workers), "--output", filepath.Join(p.EvidenceRoot, "driver-report"), "--source-repository", p.SourceRepository}
+	args = append(args, "--service-ready-record", p.ReadyFile, "--service-ready-sha256", p.ReadySHA)
 	if scope.agent == "pi" {
 		args = append(args, "--pi-launch-record", p.LaunchFile, "--pi-launch-sha256", p.LaunchSHA)
 	}

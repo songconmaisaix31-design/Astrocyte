@@ -76,7 +76,7 @@ func TestAuthorizationProfileScope(t *testing.T) {
 }
 
 func TestAuthorizationProfileDependencySet(t *testing.T) {
-	base := []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
+	base := []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py", "pi-event-view.mjs"}
 	for _, profile := range []string{"", piProfile, piN4Profile, piN6Profile} {
 		scope, err := fixedProfile(profileIntent(profile))
 		if err != nil {
@@ -84,7 +84,7 @@ func TestAuthorizationProfileDependencySet(t *testing.T) {
 		}
 		expected := append([]string(nil), base...)
 		if profile != "" {
-			expected = append(expected, "pi-event-view.mjs", "pi-source-observer-entry.ts")
+			expected = append(expected, "pi-source-observer-entry.ts")
 		}
 		if !reflect.DeepEqual(scope.dependencies, expected) {
 			t.Fatal("execution dependency set changed")

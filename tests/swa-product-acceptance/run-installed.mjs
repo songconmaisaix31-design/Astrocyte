@@ -13,7 +13,7 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { publicCase, publicFiles, publicRevision, publicSource } from './public-case-definition.mjs'
-import { codexEnds, codexStarts, isCodexDelta, originalLinuxTreeProof, validateCodexEventView, validateLinuxFinalCustody } from './codex-event-view.mjs'
+import { codexEnds, codexStarts, isCodexDelta, originalLinuxTreeProof, validateCodexEventView, validateLinuxFinalCustody, validateLinuxServiceReady } from './codex-event-view.mjs'
 import { isLinuxPiTarget, isPiDelta, originalPiTreeProof, piEnds, piStarts, readPiPrivateJson, validatePiEventView, validatePiLaunchRecord, validatePiSelection } from './pi-event-view.mjs'
 
 const help = `真实安装物多Worker验收；不会签发Grant、启动服务或直接调用原生Agent。
@@ -22,6 +22,7 @@ const help = `真实安装物多Worker验收；不会签发Grant、启动服务�
 --agent ID --model ID --output ABS_NEW_DIRECTORY [--workers 3]
 Windows Pi/OpenCode另需--service-log ABS；Linux Codex/Pi另需--source-repository ABS。
 Linux StepFun Pi仅workers=3、4、6，另需--pi-launch-record ABS --pi-launch-sha256 SHA256，取自本次serve owner原件。
+Linux Codex/Pi另需--service-ready-record ABS --service-ready-sha256 SHA256，绑定本次独立serve readiness。
 SWA_PROJECT_TOKEN仅通过受保护环境提供。来源、ToolsOff、当前Grant或完整资源证据缺失时不发送worker.start。
 支持Windows Pi/OpenCode、Linux Codex0.163.0与封闭StepFun Pi1.0.1来源；缺项目化静态配置仍在启动前NOT_RUN。
 业务成果必须由真实Reviewer/Agent控制端审阅；驱动不会自动生成通过记录。
@@ -44,7 +45,7 @@ const within = (parent, child) => {
 }
 let values, workers
 try {
-  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers', 'pi-launch-record', 'pi-launch-sha256'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
+  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers', 'pi-launch-record', 'pi-launch-sha256', 'service-ready-record', 'service-ready-sha256'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
   values.workers ??= '3'
   if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error()
   workers = Number(values.workers)
@@ -54,6 +55,9 @@ try {
   if (process.platform === 'linux' && values.agent === 'pi') {
     if (!isLinuxPiTarget(process.platform, values.agent, values.model, workers) || !isAbsolute(values['pi-launch-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['pi-launch-sha256'] ?? '')) throw new Error()
   } else if (values['pi-launch-record'] !== undefined || values['pi-launch-sha256'] !== undefined) throw new Error()
+  if (process.platform === 'linux' && ['codex', 'pi'].includes(values.agent)) {
+    if (!isAbsolute(values['service-ready-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['service-ready-sha256'] ?? '')) throw new Error()
+  } else if (values['service-ready-record'] !== undefined || values['service-ready-sha256'] !== undefined) throw new Error()
   for (const key of ['project-id', 'endpoint', 'agent', 'model']) if (!values[key]?.trim()) throw new Error()
   const endpoint = new URL(values.endpoint)
   if (endpoint.protocol !== 'http:' || !['127.0.0.1', '[::1]'].includes(endpoint.hostname) || !endpoint.port || endpoint.username || endpoint.password || endpoint.pathname !== '/' || endpoint.search || endpoint.hash) throw new Error()
@@ -70,6 +74,7 @@ const linuxStructured = process.platform === 'linux' && (values.agent === 'codex
 const token = process.env.SWA_PROJECT_TOKEN
 const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.model, model_execution: 'NOT_RUN', acceptance: 'REQUIRES_INDEPENDENT_REVIEW', checks: [], commands: [], unknown_requests: [], provider_events: [], started_workers: [] }
 let output, candidate, dataRoot, project, inputDirectory, swa, runtimeId, controller, rootTask, runId, database, requireRuntime, processAPI, daemonOwner
+let serviceReady, runtimeCustodian, serviceCustodianBinding
 let source, inputs, spec, jsonlParser, foldJournal, observer, capabilityRevision, resultLimits, completed = false
 const sources = new Map(), witnesses = new Map(), stopped = new Set()
 const sessionOwners = new Map()
@@ -146,6 +151,22 @@ async function verifyPiMetadata() {
   for (const [path, expected] of piMetadata) assert.deepEqual(await piSourceMetadata(path, false), expected, 'pi_source_or_launch_metadata_changed')
   assert.deepEqual(await observeSource('incarnation', piLaunch.value.serve_pid), { absent: false, incarnation: piLaunch.serve }, 'pi_owned_serve_changed')
   assert.equal(await realpath(`/proc/${piLaunch.value.serve_pid}/exe`), join(candidate, 'swa'))
+  if (serviceReady) verifyServiceReadySource()
+}
+function readServiceReady() {
+  const actual = readPiPrivateJson(values['service-ready-record'], 16 * 1024, piLinux ? piProtocol.parseStrictPiJson : JSON.parse)
+  assert.equal(createHash('sha256').update(actual.bytes).digest('hex'), values['service-ready-sha256'], 'linux_service_ready_hash_changed')
+  validateLinuxServiceReady(actual.value, { endpoint: values.endpoint, data_root: dataRoot, installation: candidate, runtime_id: runtimeId, node: join(candidate, 'node/node') })
+  return actual
+}
+function verifyServiceReadySource() {
+  const current = readServiceReady()
+  assert.deepEqual(current.source, serviceReady.source, 'linux_service_ready_source_changed')
+  assert.deepEqual(current.value, serviceReady.value, 'linux_service_ready_changed')
+}
+async function verifyRuntimeCustodian() {
+  verifyServiceReadySource()
+  assert.deepEqual(await observeSource('runtime-custodian', JSON.stringify(serviceCustodianBinding)), runtimeCustodian, 'linux_runtime_custodian_changed')
 }
 async function verifyPiDriverSources(revision) {
   const repository = await ordinary(values['source-repository'], true)
@@ -878,7 +899,7 @@ async function events(workerSource) {
       assert.deepEqual(view.nativeCLI, previous.nativeCLI)
     } else {
       assert.deepEqual((await observeSource('incarnation', view.nativeCLI.pid)), { absent: false, incarnation: { platform: 'linux', pid: view.nativeCLI.pid, boot_id: view.nativeCLI.boot_id, start_ticks: view.nativeCLI.start_ticks, owner_uid: view.nativeCLI.owner_uid } })
-      assert.deepEqual(view.custody.owner, daemonOwner)
+      assert.deepEqual(view.custody.owner, runtimeCustodian, 'linux_custody_owner_differs_from_service_runtime')
     }
     if (rows.at(-1).event === 'custody_closed') assert.deepEqual(workerSource.custody, rows.at(-1).detail)
     codexViews.set(workerSource.native_session_id, view)
@@ -902,7 +923,7 @@ async function events(workerSource) {
       assert.deepEqual(view.ready, previous.ready)
     } else {
       assert.deepEqual(await observeSource('incarnation', view.nativeCLI.pid), { absent: false, incarnation: { platform: 'linux', pid: view.nativeCLI.pid, boot_id: view.nativeCLI.boot_id, start_ticks: view.nativeCLI.start_ticks, owner_uid: view.nativeCLI.owner_uid } })
-      assert.deepEqual(view.custody.owner, daemonOwner)
+      assert.deepEqual(view.custody.owner, runtimeCustodian, 'linux_custody_owner_differs_from_service_runtime')
     }
     if (view.finalRow) assert.deepEqual(workerSource.custody, view.finalRow.detail)
     piViews.set(workerSource.native_session_id, view)
@@ -1324,6 +1345,8 @@ function piFinalSourceCheck(inventory, result) {
   for (const [path, expected] of piDriverSources) assert.equal(version(statSync(path, { bigint: true })), expected.version, 'pi_driver_changed_before_export')
   assert.deepEqual(observer.module.observeIncarnation(piLaunch.value.serve_pid), { absent: false, incarnation: piLaunch.serve })
   assert.deepEqual(observer.module.observeIncarnation(daemonOwner.pid), { absent: false, incarnation: daemonOwner })
+  verifyServiceReadySource()
+  assert.deepEqual(observer.module.observeRuntimeCustodian(serviceCustodianBinding), runtimeCustodian, 'linux_runtime_custodian_changed_before_export')
   // 产品完整导出已含原 trace/native content，不能重复把同一原件另计一次。
   assert.ok(Buffer.byteLength(JSON.stringify(result)) <= resultLimits.result_bytes, 'pi_total_export_observation_exceeds_bound')
   for (const worker of result.workers) {
@@ -1668,6 +1691,7 @@ async function run() {
       observer.module = createRequire(observer.manifest.observer.path)(observer.manifest.observer.path)
       assert.equal(typeof observer.module.decodePiRecord, 'function')
       assert.equal(typeof observer.module.observeIncarnation, 'function')
+      assert.equal(typeof observer.module.observeRuntimeCustodian, 'function')
       assert.equal(typeof observer.module.matchesPiJournalItem, 'function')
       assert.equal(typeof observer.module.fingerprintPiBody, 'function')
       await verifyObserverSources()
@@ -1704,6 +1728,18 @@ async function run() {
   const status = await cli(['status'])
   runtimeId = status.runtime_id
   assert.ok(runtimeId)
+  if (linuxStructured) {
+    serviceReady = readServiceReady()
+    const ownership = daemon.swa_service_job
+    const serve = { platform: 'linux', pid: ownership.serve_pid, boot_id: ownership.boot_id,
+      start_ticks: ownership.serve_start_ticks, owner_uid: ownership.owner_uid }
+    assert.deepEqual(await observeSource('incarnation', serve.pid), { absent: false, incarnation: serve }, 'linux_owned_serve_changed')
+    if (piLinux) assert.deepEqual(serve, piLaunch.serve)
+    serviceCustodianBinding = { runtime_pid: serviceReady.value.runtime_pid, serve, daemon: daemonOwner,
+      node_executable: join(candidate, 'node/node'), serve_executable: join(candidate, 'swa') }
+    runtimeCustodian = await observeSource('runtime-custodian', JSON.stringify(serviceCustodianBinding))
+    check('service.runtime_custodian', { ready: serviceReady.source, incarnation: runtimeCustodian })
+  }
   database = status.result.databases.find(row => row.name === 'main')?.file
   assert.ok(database && within(dataRoot, await ordinary(database, false)))
   const capabilities = (await cli(['capabilities'])).result
@@ -2035,6 +2071,7 @@ async function run() {
   const tasks = native(await cli(['task', 'show', '--controller', controller, '--task', rootTask]))
   assert.equal(tasks.tasks.find(task => task.id === rootTask)?.status, 'completed')
   await cli(['controller', 'close', '--controller', controller, '--request-id', randomUUID()])
+  if (linuxStructured) await verifyRuntimeCustodian()
   report.business_review = review
   report.status = 'EXECUTED_ASSERTIONS_COMPLETED'
   report.model_execution = 'ACTUAL_NATIVE_EVENTS_OBSERVED'

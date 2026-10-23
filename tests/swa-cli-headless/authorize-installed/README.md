@@ -28,9 +28,9 @@ Pi新增profile `stepfun-pi-n4`和`stepfun-pi-n6`，workers分别只能4、6；c
 
 旧Codex/Pi N3包仍只接受既有公开项目`/workspace/swa-public-case-20261022/public-project`。所有profile核同公开revision四原文及固定task/input/followup；N4/N6使用六种区别明确的公开审阅职责中的前四/全部六项，显式initial_workers=N，经默认等待run创建lead后补同Run N−1；槽位4为lead的真实孙任务。两批均主动停非lead槽位2；N4只在lead首轮idle且孙任务仍运行时追加lead，N6用子成果原mail/callback产生lead第二轮，不另加手工模型轮。四个实际项目Role和Conversation、完整递归wait/export与自动release沿原回执/原生来源核对；提示职责不代替持久Role，stored通知不当provider送达。未知profile、错caller/agent/model/N/项目或另一profile的非空来源字段在HTTP之前拒绝。来源必须为显式、独立、当前用户0700普通目录；工具只检查其路径元数据，不读取auth、key、models或settings正文，不创建或修复来源。缺少来源、真实启动记录或服务身份时包保持INCOMPLETE，不能执行。Pi的API为openai-completions，endpoint为https://api.stepfun.com/v1，ToolsOff合同为pi-cli-1.0.1，新账户kind为pi-native-api-key-per-session；这项固定目标不表示账号、推理、原生ToolsOff或N已通过。
 
-原serve owner须在真实spawn时保存非秘密启动记录并提供原ready/proof与准确SHA/runtime。Codex记录严格为installation、source_revision、data_root、endpoint、serve_pid、codex_api_key_home六键；Pi记录最后一键为pi_source_home。工具不生成或补造记录。Pi驱动只接收已核记录的`--pi-launch-record`和`--pi-launch-sha256`，从中独立核对SOURCE。真实serve捕获来源的入口是PI_CODING_AGENT_DIR，由原owner负责；工具不启动serve或调整PATH。
+原serve owner须在真实spawn时保存非秘密启动记录并提供原ready/proof与准确SHA/runtime。Codex记录严格为installation、source_revision、data_root、endpoint、serve_pid、codex_api_key_home六键；Pi记录最后一键为pi_source_home。工具不生成或补造记录。Linux Codex/Pi驱动均接收已核原ready的`--service-ready-record`和`--service-ready-sha256`；驱动绑定实际status/runtimeId、装内Node与原daemon→runtime→serve身份链，使用独立runtime托管者核Worker custody。daemon原身份与认证检查保留。Pi另接收已核记录的`--pi-launch-record`和`--pi-launch-sha256`，从中独立核对SOURCE。真实serve捕获来源的入口是PI_CODING_AGENT_DIR，由原owner负责；工具不启动serve或调整PATH。
 
-Codex固定原六个执行依赖；Pi在原六源基础上增加pi-event-view.mjs与pi-source-observer-entry.ts，全部逐安装VERSION的Git blob和实际SHA核对。缺少新Pi依赖的历史安装不能作为Pi执行候选。源码测试、编译与help只能证明离线范围。
+Codex/Pi共同固定driver-failure.mjs、codex-event-view.mjs、prepare-source-observer.mjs、source-observer-entry.ts、extract-observer-source.py和pi-event-view.mjs六个执行依赖；Pi再增加pi-source-observer-entry.ts。pi-event-view的私有FD读取器也被Codex用于ready文件，Codex仍使用已有JSON解析，不引入Pi protocol运行依赖。全部依赖逐安装VERSION的Git blob和实际SHA核对。缺少依赖的历史安装不能作为执行候选。源码测试、编译与help只能证明离线范围。
 
 委托效果包括本次human会话、实际项目/空间登记、observe及execute两阶段settings CAS/Grant/token、原驱动业务请求和明确清理。cookie/CSRF/token只保存在内存，token只通过子进程环境传递；key不进入本工具。human写结果未知时停写且不重放，不能用CLI请求账本宣称human写已结算。业务未知只查原R。撤销与human未知后的撤销分别由包中明确委托控制；服务由原serve owner正常EOF并取得全树关闭证据。过期055b及其旧owned服务不得复用为新执行包。
 

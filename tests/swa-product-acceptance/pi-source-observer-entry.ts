@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import { realpathSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 import { isPersistedAgentSessionRecord } from './source/third_party/orca-v1.4.230/src/shared/agent-session-record'
@@ -9,7 +10,7 @@ import { parseAgentJournalItemKey } from './source/third_party/orca-v1.4.230/src
 import { providerTimelineKeyPart, spelledProviderTimelineItemKey } from './source/third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity'
 import { agentSessionSendBodyFingerprint } from './source/third_party/orca-v1.4.230/src/shared/structured-agent-session-send-mutation'
 import { SendBodyStructure } from './source/third_party/orca-v1.4.230/src/shared/rpc-contract/structured-agent-session-message-params'
-import { isSwaLinuxProcessAbsent, readSwaLinuxProcessIncarnation } from './source/third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
+import { isSwaLinuxProcessAbsent, readSwaLinuxProcess, readSwaLinuxProcessIncarnation, requireSwaLinuxAncestor, requireSwaLinuxIncarnation, swaLinuxProcessIncarnationSchema } from './source/third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
 
 const need: (value: unknown) => asserts value = value => { if (!value) throw new Error('pi_observer_unavailable') }
 async function readInput(maximum: number) {
@@ -55,6 +56,28 @@ export function observeIncarnation(pid: number) {
   need(Number.isSafeInteger(pid) && pid > 0)
   return isSwaLinuxProcessAbsent(pid) ? { absent: true, pid } : { absent: false, incarnation: readSwaLinuxProcessIncarnation(pid) }
 }
+export function observeRuntimeCustodian(parsed: unknown) {
+  need(parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
+  const value = parsed as Record<string, unknown>
+  need(isDeepStrictEqual(Object.keys(value).sort(), ['daemon', 'node_executable', 'runtime_pid', 'serve', 'serve_executable']))
+  need(typeof value.runtime_pid === 'number' && Number.isSafeInteger(value.runtime_pid) && value.runtime_pid > 0)
+  need(typeof value.node_executable === 'string' && typeof value.serve_executable === 'string')
+  const expectedServe = swaLinuxProcessIncarnationSchema.parse(value.serve), expectedDaemon = swaLinuxProcessIncarnationSchema.parse(value.daemon)
+  need(new Set([value.runtime_pid, expectedServe.pid, expectedDaemon.pid]).size === 3)
+  requireSwaLinuxIncarnation(expectedServe); requireSwaLinuxIncarnation(expectedDaemon)
+  const runtime = readSwaLinuxProcess(value.runtime_pid), serve = readSwaLinuxProcess(expectedServe.pid), daemon = readSwaLinuxProcess(expectedDaemon.pid)
+  const executables = () => {
+    need(realpathSync(`/proc/${runtime.pid}/exe`) === value.node_executable)
+    need(realpathSync(`/proc/${daemon.pid}/exe`) === value.node_executable)
+    need(realpathSync(`/proc/${serve.pid}/exe`) === value.serve_executable)
+  }
+  executables()
+  requireSwaLinuxAncestor(daemon, runtime); requireSwaLinuxAncestor(runtime, serve)
+  const { name: _name, ...incarnation } = runtime
+  requireSwaLinuxIncarnation(expectedServe); requireSwaLinuxIncarnation(expectedDaemon); requireSwaLinuxIncarnation(incarnation)
+  executables()
+  return incarnation
+}
 export function matchesPiJournalItem(itemId: string, sessionId: string, providerItem: string) {
   const actual = parseAgentJournalItemKey(itemId)
   return actual?.provider === 'legacy' && actual.agent === 'pi' && actual.sessionId === sessionId && spelledProviderTimelineItemKey(actual.recordId) === providerTimelineKeyPart(providerItem)
@@ -75,6 +98,11 @@ async function main() {
     return
   }
   need(pidText === undefined)
+  if (mode === 'runtime-custodian') {
+    const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(16 * 1024)))
+    process.stdout.write(JSON.stringify(observeRuntimeCustodian(parsed)) + '\n')
+    return
+  }
   if (mode === 'decode-pi-record') {
     const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(1024 * 1024)))
     process.stdout.write(JSON.stringify(decodePiRecord(parsed)) + '\n')
