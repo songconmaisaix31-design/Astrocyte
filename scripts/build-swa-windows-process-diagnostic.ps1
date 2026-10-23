@@ -48,11 +48,12 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'The fixed runtime pin is unavailable' }
     $pin = $pinJSON | ConvertFrom-Json
     if ($pin.version -cne '24.21.0' -or (Get-FileHash -LiteralPath $Node -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.asset.executableSha256) { throw 'The retained Node differs from the original pin' }
-    $Python = (Get-Command $Python -CommandType Application -ErrorAction Stop).Source
+    $Python = (Get-Command $Python -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $pythonJSON = & $Node --input-type=module -e 'import{pathToFileURL}from"node:url";const m=await import(pathToFileURL(process.argv[1]));console.log(JSON.stringify(await m.buildPython(process.argv[2])))' (Join-Path $SourceRoot 'scripts/swa-package-config.mjs') $Python
     if ($LASTEXITCODE -ne 0) { throw 'The original Python preflight failed' }
     $pythonInfo = $pythonJSON | ConvertFrom-Json
     $Python = $pythonInfo.executable
+    $env:NODE_GYP_FORCE_PYTHON = $Python
     $download = Join-Path $checkout 'scripts/download-swa-node.ps1'
     if ((Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash -cne (Get-FileHash -LiteralPath (Join-Path $SourceRoot 'scripts/download-swa-node.ps1') -Algorithm SHA256).Hash) { throw 'The original guarded downloader differs' }
     $powershell = Join-Path $PSHOME 'pwsh.exe'
