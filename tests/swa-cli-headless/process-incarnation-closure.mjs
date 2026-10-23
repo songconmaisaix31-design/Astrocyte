@@ -39,7 +39,13 @@ export function collectOwnedIncarnations(actualRows, root) {
     visitedRows.add(roots[0])
   } else {
     for (const row of roots) {
-      unknown('current_root_identity_unverified', row)
+      // 较晚的同 PID 行是不同身份；原根的未验证子链仍由下面的队列逐条检查。
+      if (positivePID(root.pid) && creation(root.creationTimeMs) && roots.length === 1 &&
+          creation(row.creationTimeMs) && row.creationTimeMs > root.creationTimeMs) {
+        excludedEdges.push({ reason: 'different-root-incarnation', actual: row, anchor: { pid: root.pid, creationTimeMs: root.creationTimeMs } })
+      } else {
+        unknown('current_root_identity_unverified', row)
+      }
       visitedRows.add(row)
     }
   }
