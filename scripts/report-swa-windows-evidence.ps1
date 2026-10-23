@@ -11,8 +11,9 @@ $source = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'SOURCE') -Raw).Tri
 if ($source -cne $ExpectedRevision) { throw 'The prior artifact source revision differs' }
 $result = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Raw | ConvertFrom-Json
 if ($result.status -cne 'FAIL') { throw 'This is not an original failed artifact' }
-if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c') {
-    $priorRun = if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') { '39778043411' } else { '39846687508' }
+if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c' -or $source -ceq '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f') {
+    $priorRun = if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2') { '39778043411' } elseif ($source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c') { '39846687508' } else { '39912010769' }
+    if ($source -ceq '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f' -and ($result.source_revision -cne $source -or $result.platform -cne 'win32-x64' -or $result.edition -cne 'combined' -or ($result.model_calls -isnot [int] -and $result.model_calls -isnot [long]) -or $result.model_calls -ne 0)) { throw 'The retained N46 combined candidate source or scope differs' }
     if ($result.failed_stage -cne 'service-smoke') { throw 'The original service candidate failed at a different stage' }
     function Format-ServiceError([string]$Text) {
         if ($Text -match '(?i)(authorization|\bbearer\b|\bbasic\s+[A-Za-z0-9+/=]+|token|nonce|api[-_]?key|secret|password|cookie|credential)') { return '[sensitive log line omitted]' }
@@ -67,6 +68,113 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
     }
     $facts = ($observation | ConvertTo-Json -Depth 7 -Compress).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
     Write-Host ('::warning title=Retained Windows service failure facts::' + $facts)
+    if ($source -ceq '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f') {
+        function Get-N46Number($Value) {
+            if (($Value -is [int] -or $Value -is [long] -or $Value -is [double] -or $Value -is [decimal]) -and [double]::IsFinite([double]$Value) -and $Value -ge 0 -and $Value -le 9007199254740991) { return $Value }
+            return 'UNKNOWN'
+        }
+        function Get-N46Boolean($Value) { if ($Value -is [bool]) { return $Value }; return 'UNKNOWN' }
+        function Get-N46Phase($Value) { if ($Value -cin @('public-clone', 'human-project-permission', 'controller-open', 'task-create', 'controller-observe-close', 'complete')) { return $Value }; return 'UNKNOWN' }
+        function Get-N46Code($Object, [string]$Field) {
+            if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
+            if ($null -eq $Object.$Field) { return $null }
+            if ($Object.$Field -is [string] -and $Object.$Field -cmatch '^[A-Za-z_][A-Za-z0-9_.]{0,79}$') { return $Object.$Field }
+            return 'UNKNOWN'
+        }
+        function Get-N46Exit($Object) {
+            if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains 'exit') { return 'UNKNOWN' }
+            if ($null -eq $Object.exit) { return $null }
+            if (($Object.exit -is [int] -or $Object.exit -is [long]) -and $Object.exit -ge -2147483648 -and $Object.exit -le 2147483647) { return $Object.exit }
+            return 'UNKNOWN'
+        }
+        function Get-N46ExitRecord($Value) {
+            if ($Value -is [string] -and $Value -cin @('UNKNOWN', 'NOT_STARTED')) { return $Value }
+            if ($null -eq $Value) { return $null }
+            return [ordered]@{ exit = Get-N46Exit $Value; signal = Get-N46Code $Value 'signal'; spawn_error = Get-N46Code $Value 'spawn_error' }
+        }
+        function Get-N46Identity($Value) {
+            if ($null -eq $Value) { return $null }
+            return [ordered]@{ pid = Get-N46Number $Value.pid; creationTimeMs = Get-N46Number $Value.creationTimeMs }
+        }
+        function Get-N46Cleanup($Value) { if ($Value -is [bool] -or $Value -cin @('UNKNOWN', 'NOT_CREATED')) { return $Value }; return 'UNKNOWN' }
+        function Test-N46RecordedRequest($Object, [string]$Field) {
+            if ($null -ne $Object -and $Object.PSObject.Properties.Name -contains $Field -and $Object.$Field -is [string] -and $Object.$Field -cmatch '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') { return $true }
+            return 'UNKNOWN'
+        }
+        function Write-N46Projection([string]$Title, $Value) {
+            $text = $Value | ConvertTo-Json -Depth 12 -Compress
+            if ($text.Length -gt 8000) { throw 'The retained N46 field projection exceeds its output limit' }
+            $escapedText = $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host ('::warning title=' + $Title + '::' + $escapedText)
+        }
+        $control = $actual.controller_input_check
+        $producer = $control.producer
+        $transport = $control.transport
+        $transportProjection = 'UNKNOWN'
+        if ($null -ne $control -and $control.PSObject.Properties.Name -contains 'transport') {
+            if ($null -eq $transport) { $transportProjection = $null } else {
+                $transportProjection = [ordered]@{ status = if ($transport.status -cin @('PASS', 'FAIL')) { $transport.status } else { 'UNKNOWN' }; platform = if ($transport.platform -ceq 'win32') { 'win32' } else { 'UNKNOWN' } }
+                foreach ($kind in @('tty', 'pipe')) {
+                    $row = $transport.$kind
+                    $transportProjection[$kind] = if ($transport.PSObject.Properties.Name -notcontains $kind) { 'UNKNOWN' } elseif ($null -eq $row) { $null } else { [ordered]@{
+                        status = if ($row.status -cin @('PASS', 'FAIL')) { $row.status } else { 'UNKNOWN' }
+                        natural_eof = Get-N46Boolean $row.natural_eof; forced_cleanup = Get-N46Boolean $row.forced_cleanup
+                        reply_count = Get-N46Number $row.reply_count; long_bytes = if ($row.PSObject.Properties.Name -contains 'long_bytes' -and $null -eq $row.long_bytes) { $null } else { Get-N46Number $row.long_bytes }
+                        exit_code = if ($row.PSObject.Properties.Name -contains 'exit_code' -and $null -eq $row.exit_code) { $null } elseif ($row.exit_code -is [int] -or $row.exit_code -is [long]) { $row.exit_code } else { 'UNKNOWN' }
+                    } }
+                }
+                $transportProjection.rpc_mutations = if ($transport.rpc_mutations -ceq 'NOT_RUN') { 'NOT_RUN' } else { 'UNKNOWN' }
+                $transportProjection.model_execution = if ($transport.model_execution -ceq 'NOT_RUN') { 'NOT_RUN' } else { 'UNKNOWN' }
+                $transportProjection.kernel_job_empty = if ($transport.kernel_job_empty -ceq 'NOT_CLAIMED') { 'NOT_CLAIMED' } else { 'UNKNOWN' }
+            }
+        }
+        $details = [ordered]@{
+            diagnostic_only = $true; prior_run = '39912010769'; source_revision = $source; complete_service_acceptance = 'FAIL'
+            mode_status = if ($mode.status -cin @('FAIL', 'UNKNOWN', 'OBSERVED', 'INCONCLUSIVE', 'AWAITING_ASSERTIONS')) { $mode.status } else { 'UNKNOWN' }
+            readiness_check_error = if ($actual.PSObject.Properties.Name -notcontains 'readiness_check_error') { 'UNKNOWN' } elseif ($null -eq $actual.readiness_check_error) { $null } else { [ordered]@{ name = Get-N46Code $actual.readiness_check_error 'name'; code = Get-N46Code $actual.readiness_check_error 'code' } }
+            controller_input_present = $actual.PSObject.Properties.Name -contains 'controller_input_check'
+            control_status = if ($control.status -cin @('PASS', 'FAIL')) { $control.status } else { 'UNKNOWN' }
+            control_ownership_incomplete = Get-N46Boolean $control.ownership_incomplete
+            control_error = if ($control.PSObject.Properties.Name -notcontains 'error') { 'UNKNOWN' } elseif ($null -eq $control.error) { $null } else { [ordered]@{ name = Get-N46Code $control.error 'name'; code = Get-N46Code $control.error 'code' } }
+            transport_actual_spawned = Get-N46Boolean $control.transport_actual_spawned
+            transport_process = if ($control.PSObject.Properties.Name -contains 'transport_process') { Get-N46Identity $control.transport_process } else { 'UNKNOWN' }
+            transport_exit = if ($control.PSObject.Properties.Name -contains 'transport_exit') { Get-N46ExitRecord $control.transport_exit } else { 'UNKNOWN' }
+            transport_streams = [ordered]@{ stdout_bytes = Get-N46Number $control.transport_streams.stdout_bytes; stderr_bytes = Get-N46Number $control.transport_streams.stderr_bytes; stdout_eof = Get-N46Boolean $control.transport_streams.stdout_eof; stderr_eof = Get-N46Boolean $control.transport_streams.stderr_eof; failure = Get-N46Boolean $control.transport_streams.failure }
+            transport = $transportProjection
+            producer = [ordered]@{
+                status = if ($producer.status -cin @('PASS', 'FAIL')) { $producer.status } else { 'UNKNOWN' }; phase = Get-N46Phase $producer.phase
+                ownership_incomplete = Get-N46Boolean $producer.ownership_incomplete; human_session_created = Get-N46Boolean $producer.human_session_created
+                public_source_matches = if ($producer.public_source -is [string]) { $producer.public_source -ceq 'https://github.com/songconmaisaix31-design/astrocyte-s3-public-stats.git' } else { 'UNKNOWN' }
+                public_revision_matches = if ($producer.public_revision -is [string]) { $producer.public_revision -ceq 'da3bdddb085808863090a05f60cc1c64415039cf' } else { 'UNKNOWN' }
+                error = if ($producer.PSObject.Properties.Name -notcontains 'error') { 'UNKNOWN' } elseif ($null -eq $producer.error) { $null } else { [ordered]@{ phase = Get-N46Phase $producer.error.phase; kind = Get-N46Code $producer.error 'kind' } }
+                open_request_recorded = Test-N46RecordedRequest $producer 'open_request_id'; close_request_recorded = Test-N46RecordedRequest $producer 'close_request_id'; create_request_recorded = Test-N46RecordedRequest $producer 'create_request_id'
+                open_receipt = [ordered]@{ state = if ($producer.open_receipt.state -ceq 'completed') { 'completed' } else { 'UNKNOWN' }; method = if ($producer.open_receipt.method -ceq 'swa.controllerOpen') { 'swa.controllerOpen' } else { 'UNKNOWN' }; original_owner_verified = Get-N46Boolean $producer.open_receipt.original_owner_verified }
+                close_receipt = [ordered]@{ state = if ($producer.close_receipt.state -ceq 'completed') { 'completed' } else { 'UNKNOWN' }; method = if ($producer.close_receipt.method -ceq 'swa.controllerClose') { 'swa.controllerClose' } else { 'UNKNOWN' }; original_close_verified = Get-N46Boolean $producer.close_receipt.original_close_verified }
+                task_create_completed = Get-N46Boolean $producer.task_create_completed; sqlite_original_request_unchanged = Get-N46Boolean $producer.sqlite_original_request_unchanged
+                helper_packet_bytes = Get-N46Number $producer.helper_packet_bytes
+                cleanup = [ordered]@{ controller_closed = Get-N46Cleanup $producer.cleanup.controller_closed; grant_revoked = Get-N46Cleanup $producer.cleanup.grant_revoked; dispatcher_closed = Get-N46Cleanup $producer.cleanup.dispatcher_closed }
+            }
+            native_exit_observations = if ($actual.exit_observations -is [array]) { @($actual.exit_observations | Select-Object -First 2 | ForEach-Object { [ordered]@{ observed_at_ms = Get-N46Number $_.observed_at_ms; remaining_count = if ($_.remaining -is [array]) { $_.remaining.Count } else { 'UNKNOWN' } } }) } else { 'UNKNOWN' }
+            cim_observations = if ($actual.actual_cim_report.observations -is [array]) { @($actual.actual_cim_report.observations | Select-Object -First 2 | ForEach-Object { [ordered]@{ query_succeeded = Get-N46Boolean $_.query_succeeded; complete_result_count = Get-N46Number $_.complete_result_count; required_identity_fields_complete = Get-N46Boolean $_.required_identity_fields_complete; known_identities_exited = Get-N46Boolean $_.known_identities_exited; unknown_pids_absent = Get-N46Boolean $_.unknown_pids_absent; monotonic_ms = Get-N46Number $_.monotonic_ms } }) } else { 'UNKNOWN' }
+        }
+        Write-N46Projection 'Retained N46 controller input facts' $details
+        $commands = 'UNKNOWN'
+        if ($producer.commands -is [array]) { $commands = @($producer.commands | Select-Object -First 20 | ForEach-Object {
+            [ordered]@{ name = if ($_.name -is [string] -and $_.name -cmatch '^(?:git|cli)-[0-9]{2}$') { $_.name } else { 'UNKNOWN' }
+                actual_spawned = Get-N46Boolean $_.actual_spawned; identity = if ($_.PSObject.Properties.Name -contains 'identity') { Get-N46Identity $_.identity } else { 'UNKNOWN' }
+                exit = if ($_.PSObject.Properties.Name -contains 'exit') { Get-N46ExitRecord $_.exit } else { 'UNKNOWN' }
+                timed_out = Get-N46Boolean $_.timed_out; cleanup_attempted = Get-N46Boolean $_.cleanup_attempted
+                stdout_bytes = Get-N46Number $_.stdout_bytes; stderr_bytes = Get-N46Number $_.stderr_bytes
+                stdout_eof = Get-N46Boolean $_.stdout_eof; stderr_eof = Get-N46Boolean $_.stderr_eof; stream_failure = Get-N46Boolean $_.stream_failure }
+        }) }
+        Write-N46Projection 'Retained N46 actual command exits' ([ordered]@{ prior_run = '39912010769'; source_revision = $source; commands_count = if ($producer.commands -is [array]) { $producer.commands.Count } else { 'UNKNOWN' }; commands_truncated = if ($producer.commands -is [array]) { $producer.commands.Count -gt 20 } else { 'UNKNOWN' }; commands = $commands })
+        $human = 'UNKNOWN'
+        if ($producer.human -is [array]) { $human = @($producer.human | Select-Object -First 12 | ForEach-Object {
+            $route = if ($_.path -ceq '/api/v1/auth/session') { 'session' } elseif ($_.path -ceq '/api/v1/project-spaces') { 'space' } elseif ($_.path -ceq '/api/v1/local-projects') { 'project' } elseif ($_.path -cmatch '^/api/v1/local-projects/[^/]+/settings$') { 'settings' } elseif ($_.path -cmatch '^/api/v1/local-projects/[^/]+/grants/revoke$') { 'revoke' } elseif ($_.path -cmatch '^/api/v1/local-projects/[^/]+/grants$') { 'grant' } elseif ($_.path -cmatch '^/api/v1/local-projects/[^/]+/agent-token$') { 'agent-token' } else { 'UNKNOWN' }
+            [ordered]@{ method = if ($_.method -cin @('GET', 'POST', 'PUT')) { $_.method } else { 'UNKNOWN' }; route = $route; status = if ($_.status -cin @('UNKNOWN', 'COMPLETE_JSON_RESPONSE')) { $_.status } else { 'UNKNOWN' }; http_status = Get-N46Number $_.http_status }
+        }) }
+        Write-N46Projection 'Retained N46 human operation metadata' ([ordered]@{ prior_run = '39912010769'; source_revision = $source; human_count = if ($producer.human -is [array]) { $producer.human.Count } else { 'UNKNOWN' }; human_truncated = if ($producer.human -is [array]) { $producer.human.Count -gt 12 } else { 'UNKNOWN' }; human = $human })
+    }
     if ($source -ceq '4aef552c63dd1ab5cd787fd2514d92a7815b943c') {
         function Get-RetainedNumber($Value) {
             if (($Value -is [int] -or $Value -is [long] -or $Value -is [double] -or $Value -is [decimal]) -and [double]::IsFinite([double]$Value) -and $Value -ge 0 -and $Value -le 9007199254740991) { return $Value }
@@ -245,6 +353,12 @@ if ($source -ceq '11717767f82a8a4070351ff74674aa0d268f79b2' -or $source -ceq '4a
         Write-Host ('::warning title=Retained Windows CIM exit predicates::' + $escapedDetails)
     }
     $errorLines = [Collections.Generic.List[string]]::new()
+    if ($source -ceq '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f') {
+        $serviceLog = Join-Path $EvidenceRoot 'logs/service-smoke.log'
+        if (Test-Path -LiteralPath $serviceLog -PathType Leaf) {
+            foreach ($line in (Get-Content -LiteralPath $serviceLog | Where-Object { $_ -match 'tests[\\/]swa-cli-headless[\\/](?:controller-taskcreate-check|controller-input-check)\.mjs:[0-9]+(?::[0-9]+)?' } | Select-Object -Last 20)) { $errorLines.Add((Format-ServiceError $line)) }
+        }
+    }
     foreach ($relative in @('logs/service-smoke.log', 'smoke/readiness-eof/stderr.log')) {
         $log = Join-Path $EvidenceRoot $relative
         if (Test-Path -LiteralPath $log -PathType Leaf) {
