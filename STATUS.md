@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 已修复模式设置与命令来源；pi-03 在效果前准入的 Go 严格 JSON 解码阶段失败，实际 Dispatch/Worker 均为零，尚未取得模型输出。该报文投影修复已通过局部验证并固定为 `5170d9bcb36ae29527dc7c943350641d48c5a9ce`，继续全新 pi-04 请求。Windows 最小复现的短输入已通过，Controller.open 实际触发私有目录权限检查，目录创建过程继续定位。N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`，已建立[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 已修复模式、命令来源、严格准入报文和原生选项读回后的批准时序；最新 pi05 在 `45ce26f0` 实际启动为 ready/structured，但读取状态时拒绝了真实 orca 输入回执。该投影修复已通过同原件前后对照和局部检查，完整输入绑定、模型输出和资源释放仍待新请求。Windows 权限修复已通过原生 SDK 六项及真实 Controller.open/close；D3服务退出0但17项未知观测使完整关闭未证。后继D4短控制中止、记录1项创建时间不可用，原因继续核查，不回填D3历史。N6 未运行。
 
 ## 当前实现与验证
 
@@ -63,11 +63,29 @@ pi-03 使用已推送的 `063adec6e802e733f47f407df80069b14fdedaf3` 和全新请
 
 该次 Grant 撤销、dispatcher 关闭确认，原服务退出6、observer退出1、完整树 UNKNOWN 保留。补充正常 EOF 结束唯一 helper407835，session 空后 shutdownIfIdle 返回 ACCEPTED；原 daemon407752/helper407835 的两个 pidfd 连续两次退出，间隔50.131274ms，helper 已缺席，daemon 仅余 PID1 zombie。收尾退出0且独立审查接受，原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-03-cleanup-01/result.json`；只证明两个准确资源，原业务 FAIL/pending 和完整树 UNKNOWN 未改。
 
-[准入投影修复](tasks/swa-delivery-admission-projection-20261023.md)仅在现有发送文件选择8个原字段，完整保留 Scope.Context 和 Submission，原 native spec、账本及输入绑定不变。同一284632字节原报文仍被正式严格 Decoder 拒绝，282957字节投影解码成功且8值与原对象相等。既有真实 SQLite 六组、50个子测试通过，包括 submission 与 handoff 冲突拒绝；TypeScript strict 退出0。准确源码与局部结果已独立接受，提交为 `5170d9bcb36ae29527dc7c943350641d48c5a9ce`；后继实际单 Worker 尚待结果。
+[准入投影修复](tasks/swa-delivery-admission-projection-20261023.md)仅在现有发送文件选择8个原字段，完整保留 Scope.Context 和 Submission，原 native spec、账本及输入绑定不变。同一284632字节原报文仍被正式严格 Decoder 拒绝，282957字节投影解码成功且8值与原对象相等。既有真实 SQLite 六组、50个子测试通过，包括 submission 与 handoff 冲突拒绝；TypeScript strict 退出0。准确源码与局部结果已独立接受，提交为 `5170d9bcb36ae29527dc7c943350641d48c5a9ce`；后继实际单 Worker 结果如下。
+
+pi-04 使用该提交和全新请求，原件在 `/workspace/swa-worker-pi-04-zo0osP/evidence/`。Controller、根任务创建和只读查询成功；Worker CLI05 退出6，CLI06 查询原请求退出0。原请求 `6a91ab20-58ad-4f57-9ea2-80e2aa95f9f0` 及 `/native` 均 completed，业务状态为 outcome_unknown/dispatch_input，Worker 为 start_unknown。实际 mode 与 preferredMode 均为 structured；错误为 `The dispatch preamble was submitted but not acknowledged (unknown): The native launch identity changed during current approval.` 继续定位同步身份检查的具体失败条件，不将原请求 completed 解释为输入送达。数据库有2 Task（ready 根任务 `task_8dcff3c1f59f`、blocked 子任务 `task_67a921c7101e`）、1 Dispatch `ctx_0694ee721c2f`、1 Worker 和1 owned/not_requested资源 `wtr_45dfbb6215f8`；完整 binding-proof 和模型 delta 未确认。Grant 撤销和 dispatcher 关闭确认，serve退出6、observer退出1、controller关闭及完整树 UNKNOWN。原 custody 中 host/bootstrap/native CLI 当前缺席，不能据此把原 lease 或资源标为 released；准确 daemon/helper 的补充正常收尾另行记录。I4c/I7ff 未改，未启动完整构建。
+
+pi04 补充收尾经原认证接口向唯一 helper427585 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon427514/helper427585 的原 pidfd 连续两次退出，间隔50.167381ms，helper 缺席，daemon 仅余 PID1 zombie，执行退出0、stderr为空。原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-04-cleanup-01/result.json`。仅这两个准确资源得到补证；原 Worker start_unknown、owned/not_requested 资源、live lease 和完整树 UNKNOWN 均保留。
 
 Windows 最小复现只组合保留1d原生组件和固定7ff生产源码，不创建任务或 Worker。观察提交 `f589b2b7e49c8ab3a8ac22e663c96a8c2f38dbb0` 的 run `39924868969` / job `120318666615` 在短消息检查失败，未进入 controller-open：诊断 checker 将原 `import('node-pty')` 改写为裸 Windows 绝对路径，ESM loader 拒绝 `d:` 协议。服务正常退出0、无未知进程观察、两次原生观察为空、CIM确认退出；模型和 Worker 为零。局部修复仅对 dynamic-import 使用标准文件 URL，实际两个 bundle 比较确认3处动态导入改变、8处静态 require 不变，真实模块 URL 加载和语法检查通过；两次局部检查数量假设错误的原件保留。
 
 后继观察提交 `75e69fcf84ba6853aeb2f24b69ed01800658c618` 的 run `39926780628` / job `120325012614` 已完成同一最小诊断，TTY/pipe 各三次短消息成功并自然退出0，验证了动态导入修复。Controller.open 实际返回 `operation_unknown/native_codex_private_security_changed`，原请求 `99a68634-7047-4435-8592-5881bbf403cd` 停在 pending/workspace-registration，尚无子任务。公开 ACL 观察显示新 data 根 owner 与当前用户不符、包含额外 Administrators ACE；新 Pi/OpenCode 项目目录满足 User/System 严格权限，Codex 目录缺席。继续追踪 data 创建过程。Grant 撤销及 dispatcher 关闭确认；服务退出6、8项未知进程观察、完整关闭 UNKNOWN，原生两次剩余为0和 CIM 已知身份退出通过不覆盖该限制。原件为 `.verification/cloud-setup/windows-controller-open-actual-75e69fcf-02/`，实际结果已独立接受；公开 annotation 尾部被 API 截断，未补造缺失字段。两轮其他六个原生 job 及各自 S0 均 Skipped。原7ff历史目录权限和内部原因仍 UNKNOWN，当前开发复现不能替代完整候选。
+
+创建路径已定位到产品 `privateDataDirectory` 的 `os.MkdirAll(0700)`：实际 Go1.27.2 在 Windows 调用 `CreateDirectory(path,nil)`，不指定 owner/DACL，无法保证后继 Codex 严格检查要求的安全形状。未读取历史 TokenOwner，不声称确定原历史目录的 SID 或继承来源。修复 `447ccb059d8d4ae3e40afec86d276b9fc268f1de` 仅在 Go 平台函数中为新目录显式设置 TokenUser owner、受保护的唯一 User/System 权限；已有目录只读强验，原路径保护与原生严格检查保留。Linux `go test ./cmd/swa` 退出0（1.213s），Windows `go test -c ./cmd/swa` 交叉编译退出0；五源前后与准确清单一致，独立源码审查接受。原件为 `.verification/cloud-setup/windows-data-root-source-r1/`；后继实际结果如下，完整候选仍未重建。
+
+Windows D3 `f5b004565d8e292ddf403d991de0d12bc8e5d997` 的 run `39932389781` / job `120343569017` 已执行原生 SDK 六项测试，全部通过且无跳过；TTY/pipe 各三次短响应与自然退出0通过，Controller.open/close 的原回执均 completed，原 owner 和关闭验证通过。新 data 及三个 Agent 目录均为当前用户 owner、受保护的两项权限。Controller 关闭、Grant 撤销、dispatcher 关闭和 serve退出0确认，但 fixture退出6，closure latch=true、unknown_process_observations=17；两次原生剩余0及 CIM 已知身份退出不能消除未知项。原件为 `.verification/cloud-setup/windows-controller-open-actual-f5b00456-03/`，源码与实际结果独立接受；Go 使用 D3，runtime 固定7ff，原生组件固定1d，不代表同来源候选或模型验收。原 artifact 未收集17项具体原因，后继 D4 `7af48f8de3f0ed5ade18018392ca19663190fb25` 只增加有界原因与数字身份投影，保留全部关闭判定；run `39934353177` 已结束，最终结果另见下文，旧六个原生 job 和 S0 均跳过。
+
+[批准时序修复](tasks/swa-worker-acquired-options-20261023.md)已提交并推送为 `45ce26f0df82598bd1c6d454376efcfde9e41c3c`。pi04 原生 get_state 返回 thinkingLevel=off，原选项持久化将显式 model 扩展为 model/effort=off，但同步批准闭包仍捕获取得原生会话前的选项。用实际记录和原 SQLite 更新路径最小复现该拒绝后，修复在 owner 持久化之后、输入前，按原生读回和完整身份取得一次当前批准；后续选项和身份变化仍被拒绝。3项新规则、4项模式规则及 strict 通过，源码和局部结果独立接受；首次测试因测试对象共享嵌套引用失败的原件保留，修正测试隔离后通过。
+
+pi05 使用该提交和全新请求，原件为 `/workspace/swa-worker-pi-05-obRHpk/evidence/`。Controller/根任务创建通过，Worker 请求 `293f1f84-fd8c-4708-9259-f6ac4ec81a5c` 的启动 CLI 实际退出0，ready/structured；随后只读 worker.show 退出7：`The accepted input has no matching native provider identity`。原请求及/native 均 completed，数据库2 Task、1 Dispatch `ctx_2dd3636acea5`、1 ready/input_accepted Worker、1 owned/not_requested资源 `wtr_e47d70336c6c`；lease仍live。只读原 SQLite/replayJournal 的最小复现确认 accepted submission 和原回执的 providerItemId 一致，值为 orca 消息 ID，原 user item 存在；当前能力投影只接受 codex/claude/legacy 分支而抛错，修复仍须保留原会话、消息和 fence 绑定。未完成完整输入绑定及模型 delta 检查，不推断模型调用次数。Grant 撤销、dispatcher关闭确认，serve退出6、observer退出1，原完整树及Controller关闭 UNKNOWN；准确 daemon/helper 的正常收尾另行记录，原请求不重放。
+
+pi05 补充收尾经原认证接口向唯一 helper451847 发送一次正常 EOF，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon451779/helper451847 的原 pidfd 连续两次退出，间隔50.168720ms，helper 缺席，daemon 仅余 PID1 zombie，执行退出0、stderr为空，实际结果已独立接受。原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-05-cleanup-01/result.json`。仅这两个准确资源得到补证；原业务 FAIL、ready/input_accepted Worker、owned/not_requested 资源、live lease 和完整树 UNKNOWN 保留。
+
+[Pi 输入观察修复](tasks/swa-pi-input-observation-20261023.md)只增加已验证 per-session/jsonl-rpc 合同的同消息 orca 身份分支，原请求、Dispatch、session、fence及accepted settlement检查不变。用同一pi05真实输入调用保留的修前和修后生产投影，修前仍抛原错误，修后为sent/accepted/control available，result与authenticated仍unknown；输入对象未改，原写入/全文用户回显/接受事件关联已核。8项规则、strict及该原件对照退出0，准确源码和局部结果独立接受。未重放旧请求、未重新执行模型；新单 Worker实际验证仍待运行。
+
+Windows D4 run `39934353177` / job `120350113249` 最终FAIL，原件为 `.verification/cloud-setup/windows-controller-open-actual-7af48f8d-04/`。SDK六子项继续全部通过；短控制返回 request_aborted，transport未观察、B producer未启动，不声称Controller.open回归。新投影记录唯一 creation_time_unavailable：PID1368/PPID8500、创建时间UNKNOWN；父8500的记录只是历史身份，不补同一快照的归属链。serve退出0、fixture退出6、closure latch=true；两次原生剩余0和CIM已知身份退出不能消除未知项。两条安全摘要完整，结果已独立核对；D3原17项具体原因仍UNKNOWN。该轮无模型或Worker，旧六个原生job及S0均跳过。继续先核短控制中止和创建时间读取路径，完整构建未重试。
 
 ## 保留的安装基线
 
@@ -79,6 +97,7 @@ Windows 最小复现只组合保留1d原生组件和固定7ff生产源码，不�
 - 后续清理八份已有完整保留归档的旧 dist 候选，准确固定清单见 `.verification/cloud-setup/dist-cleanup-n46-20261023-03/PLAN.md`；实际操作退出0、八份全部移除，可用空间从1,191,329,792增至4,540,567,552字节。共享文件的树外硬链接未计入回收量，也未修改内容或权限；八份原 tar 的官方 SHA 校验前后均通过。当前 S4c、所有独立安装、账号、源码、数据、证据及两独立仓 bundle 均保留。实际原件为同目录 `operation-01/`，未来需要旧候选时从对应保留归档恢复。
 - 随后只移除 S4c 的 packages 解包副本，完整归档、dist 候选和独立安装均保留，操作退出0。可用空间从3,513,548,800增至4,494,946,304字节；完整归档比较、当前用户进程无引用及归档 SHA 前后检查通过。原件为 `.verification/cloud-setup/package-cleanup-s4c-20261023-04/operation-01/`；下一次构建前重新检查实际空间。
 - S7ff 验收失败后，按新的准确范围先移除 S7ff packages 副本和 S4c dist 副本，再独立移除 S7ff dist 副本，两次操作均退出0。完整归档比较、链接与当前用户进程引用核查、保留归档前后校验通过；全部独立安装、数据、源码、账号和证据保留。原件为 `.verification/cloud-setup/package-cleanup-s7ff-20261023-05/operation-01/` 与 `operation-02/`。两窗口净增加空间分别为1,398,685,696和413,003,776字节；后一窗口末实际可用3,272,003,584字节，期间其他写入另计。未清 Go 缓存，下一阶段重新读取实际空间。
+- 随后仅清理 S50/S4c/S7ff 成功 compiler_work 下六份 `headers`/`node-extract` 官方输入副本，唯一操作退出0。六树完整比对保留官方归档、当前用户无引用、保留真实编译输出及原构建证据不变、两份官方和三份发行归档前后校验均通过。三个父目录及 pty-source/tmp/gypi、所有安装、源码和数据保留，系统进程不可读限制单列。原件为 `.verification/cloud-setup/space-budget-063adec6-20261023-06/operation-01/`；结果时点可用空间从2,885,894,144增至3,471,818,752字节，净增585,924,608字节。未清 Go 缓存；预算已计入下一 compiler_work，完整构建和各安装阶段仍须刷新实际空间。
 
 ## 当前边界与下一步
 
@@ -86,6 +105,6 @@ Windows 最小复现只组合保留1d原生组件和固定7ff生产源码，不�
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-下一步完成真实单 Worker 的启动、输出和回收验证，并通过 Windows 最小复现定位 controller-open 的内部错误。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+下一步验证修复后的真实 Worker 输入观察、模型输出和资源回收，并定位 Windows 完整关闭的未知进程观测。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建，随后继续 N4/N6、同 Run GUI 和 Windows 适用检查。正式发布、远端新仓库创建和 main 合并尚未执行。云环境配置草稿 revision 9 已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有 SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

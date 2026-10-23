@@ -80,7 +80,8 @@ export function executionObservation(sourceValue: unknown, options: { dispatchId
         const item = parseAgentJournalItemKey(submission.providerItemId)
         const sameProvider = item?.provider === 'codex' ? selected.agent_id === 'codex' && item.threadId === link.handle.nativeId
           : item?.provider === 'claude' ? selected.agent_id === 'claude' && item.sessionId === link.handle.nativeId
-            : item?.provider === 'legacy' && item.agent === selected.agent_id && item.sessionId === source.native_session_id
+            : item?.provider === 'orca' ? selected.agent_id === 'pi' && selected.native_launch.account.kind === 'pi-native-api-key-per-session' && link.handle.transport === 'jsonl-rpc' && item.clientMessageId === binding.operation_id
+              : item?.provider === 'legacy' && item.agent === selected.agent_id && item.sessionId === source.native_session_id
         if (!sameProvider) throw new Error('The accepted input has no matching native provider identity')
         delivery.state = 'sent'
       } else if (input.state === 'rejected' && submission?.dispatchState === 'rejected' && submission.providerItemId === null) {

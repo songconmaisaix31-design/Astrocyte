@@ -101,6 +101,47 @@ test('pure delivery mapping requires original settlement and provider identity',
   assert.throws(() => executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: phaseMismatch }), /phase differs/)
 })
 
+test('Pi correlated input uses its exact accepted operation identity without promoting a placeholder', () => {
+  // 原 Pi correlatedPrompts 合同的纯规则参数；不执行原生协议、CLI 或账号读取。
+  const source = ruleSource()
+  Object.assign(source.selection, { agent_id: 'pi', adapter: 'PiRpcSessionAdapter', version: '1.0.1', provider: 'stepfun', model: 'stepfun/step-3.5-flash', external_target: 'pi' })
+  source.selection.native_launch = {
+    schema: 'swa.native-launch.v1',
+    account: { kind: 'pi-native-api-key-per-session', provider: 'stepfun', source_home: '/not-read/pi-source', auth_source: { path: '/not-read/pi-source/auth.json', version: 'rule-parameter' }, models_source: null, private_root: '/not-read/pi-private', model_target: { model_id: 'step-3.5-flash', api: 'openai-completions', base_url: 'https://api.stepfun.com/v1' } },
+    tools: { mode: 'disabled', native_contract: 'pi-cli-1.0.1' }
+  }
+  source.provider_link.handle = { agent: 'pi', transport: 'jsonl-rpc', nativeId: '/not-read/pi-private/session.jsonl' }
+  const input = ruleInput('accepted')
+  input.agent = input.binding.agent = 'pi'
+  input.submission.providerItemId = agentJournalItemKey({ provider: 'orca', clientMessageId: input.operation_id })
+  const observed = executionObservation(source, { dispatchId: 'rule-dispatch', currentInput: input })
+  assert.equal(observed.delivery.state, 'sent')
+  assert.equal(observed.delivery.phase, 'accepted')
+  assert.equal(observed.control.status, 'available')
+  assert.equal(observed.result.status, 'unknown')
+  assert.equal(observed.authenticated.status, 'unknown')
+
+  const wrongOperation = structuredClone(input)
+  wrongOperation.submission.providerItemId = agentJournalItemKey({ provider: 'orca', clientMessageId: 'different-operation' })
+  assert.throws(() => executionObservation(source, { dispatchId: 'rule-dispatch', currentInput: wrongOperation }), /provider identity/)
+  const wrongContract = structuredClone(source)
+  const { private_root, ...account } = wrongContract.selection.native_launch.account
+  wrongContract.selection.native_launch.account = { ...account, kind: 'pi-native-api-key', private_home: private_root }
+  assert.throws(() => executionObservation(wrongContract, { dispatchId: 'rule-dispatch', currentInput: input }), /provider identity/)
+  const otherAgent = ruleInput('accepted')
+  otherAgent.submission.providerItemId = input.submission.providerItemId
+  assert.throws(() => executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: otherAgent }), /provider identity/)
+  for (const state of ['journaled', 'queued', 'unknown', 'accepted']) {
+    const pending = structuredClone(input)
+    pending.state = state
+    pending.submission.dispatchState = ['journaled', 'queued'].includes(state) ? 'pending' : state
+    pending.submission.providerItemId = null
+    const result = executionObservation(source, { dispatchId: 'rule-dispatch', currentInput: pending })
+    assert.equal(result.delivery.state, 'unknown')
+    assert.equal(result.control.status, 'unknown')
+  }
+})
+
 test('resume and safe selection projection preserve the original identity and omit source paths', () => {
   const source = ruleSource()
   const original = executionObservation(source, { dispatchId: 'rule-dispatch' })
