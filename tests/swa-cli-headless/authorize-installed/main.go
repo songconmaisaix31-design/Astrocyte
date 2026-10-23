@@ -90,7 +90,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		agent: "codex", model: "gpt-5.5", caller: caller, project: projectName, space: spaceTitle,
 		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
 		sourceName: "codex_api_key_home", sourceHome: p.CodexSourceHome,
-		dependencies: []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"},
+		dependencies: []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"},
 		workers:      3, projectRoot: publicRoot,
 	}
 	switch p.Profile {

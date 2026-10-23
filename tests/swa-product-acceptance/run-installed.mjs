@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { driverFailure } from './driver-failure.mjs'
 import { execFileSync, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { constants, closeSync, fsyncSync, lstatSync, openSync, realpathSync, statSync, writeFileSync } from 'node:fs'
@@ -148,7 +149,7 @@ async function verifyPiMetadata() {
 }
 async function verifyPiDriverSources(revision) {
   const repository = await ordinary(values['source-repository'], true)
-  for (const name of ['run-installed.mjs', 'public-case-definition.mjs', 'codex-event-view.mjs', 'prepare-source-observer.mjs', 'source-observer-entry.ts', 'extract-observer-source.py', 'pi-event-view.mjs', 'pi-source-observer-entry.ts']) {
+  for (const name of ['run-installed.mjs', 'driver-failure.mjs', 'public-case-definition.mjs', 'codex-event-view.mjs', 'prepare-source-observer.mjs', 'source-observer-entry.ts', 'extract-observer-source.py', 'pi-event-view.mjs', 'pi-source-observer-entry.ts']) {
     const relativePath = 'tests/swa-product-acceptance/' + name
     const path = await ordinary(fileURLToPath(new URL('./' + name, import.meta.url)), false)
     assert.equal(path, join(repository, relativePath), 'pi_driver_not_from_explicit_source_repository')
@@ -2048,6 +2049,7 @@ try {
 } catch (error) {
   report.status = error instanceof NotRun ? 'NOT_RUN' : 'FAIL'
   report.reason = error instanceof NotRun ? error.message : 'actual_check_failed_preserve_original_evidence'
+  report.failure = driverFailure(error, import.meta.url)
   process.exitCode = error instanceof NotRun ? 3 : 1
   for (const command of report.commands) if (command.mutation && !['not-submitted', 'completed-response-observed', 'completed-run-failure-observed', 'refused-response-observed'].includes(command.state) && !report.unknown_requests.some(request => request.request_id === command.request_id)) report.unknown_requests.push({ request_id: command.request_id, args: command.args, original_command: command.ordinal })
   // 修改结果未知时只查询原请求，不复发原修改或替换Worker。

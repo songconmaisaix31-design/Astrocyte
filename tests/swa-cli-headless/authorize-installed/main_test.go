@@ -76,7 +76,7 @@ func TestAuthorizationProfileScope(t *testing.T) {
 }
 
 func TestAuthorizationProfileDependencySet(t *testing.T) {
-	base := []string{"codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
+	base := []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py"}
 	for _, profile := range []string{"", piProfile, piN4Profile, piN6Profile} {
 		scope, err := fixedProfile(profileIntent(profile))
 		if err != nil {
