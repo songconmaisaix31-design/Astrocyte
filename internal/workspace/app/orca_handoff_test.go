@@ -48,9 +48,7 @@ func TestOrcaHandoffCurrentApprovalSQLite(t *testing.T) {
 			case "missing-send":
 				settings := input.project.Settings
 				settings.AllowedActions = []string{"observe", "read_context", "start"}
-				if _, err := input.projects.SetProjectSettings(context.Background(), input.human, input.project.ID, domain.SettingsCommand{ExpectedRevision: settings.Revision, Settings: settings}); err != nil {
-					t.Fatal(err)
-				}
+				saveAdmissionSettings(t, input.db, input.project, settings)
 			case "changed-context":
 				if err := os.WriteFile(filepath.Join(input.project.Root, "context.txt"), []byte("原公开上下文发生变更。"), 0o600); err != nil {
 					t.Fatal(err)

@@ -64,6 +64,7 @@ try {
 
 process.umask(0o077)
 const piLinux = isLinuxPiTarget(process.platform, values.agent, values.model, workers)
+const runFlow = piLinux && workers > 3
 const linuxStructured = process.platform === 'linux' && (values.agent === 'codex' || piLinux)
 const token = process.env.SWA_PROJECT_TOKEN
 const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.model, model_execution: 'NOT_RUN', acceptance: 'REQUIRES_INDEPENDENT_REVIEW', checks: [], commands: [], unknown_requests: [], provider_events: [], started_workers: [] }
@@ -77,6 +78,15 @@ const codexViews = new Map()
 const piViews = new Map()
 let piLaunch, piSourceHome, piSourceRoot, piExecutable
 let piProtocol
+let submittedRun, runningRun, runArguments, runProcess
+const roleDefinitions = [
+  { name: '公开来源分析', responsibilities: '核对固定stats四原文的模块、Mean API、来源事实、复杂度与实现选择条件。' },
+  { name: 'Median设计审阅', responsibilities: '审阅Median设计条件、奇偶长度、输入顺序保持与现有API兼容。' },
+  { name: '边界条件审阅', responsibilities: '核对空输入、NaN/Infinity、有限大值和中间值溢出边界，区分事实与待验证行为。' },
+  { name: '独立成果审阅', responsibilities: '独立核对现有测试覆盖、证据缺口和任务交付可审性，不把建议当已实现。' },
+]
+const actualRoles = []
+let conversation
 const piMetadata = new Map()
 const piRecords = new Map(), piNativeFiles = new Map()
 const piDriverSources = new Map()
@@ -184,7 +194,7 @@ function requestId(args) {
   const index = args.indexOf('--request-id')
   return index < 0 ? null : args[index + 1]
 }
-async function cli(args, expected = 0) {
+async function cli(args, expected = 0, observeProgress) {
   const ordinal = report.commands.length + 1
   const entry = { ordinal, args, request_id: requestId(args), mutation: !!requestId(args) && args[0] !== 'request', prepared_at: new Date().toISOString(), state: 'not-submitted' }
   report.commands.push(entry)
@@ -203,9 +213,15 @@ async function cli(args, expected = 0) {
   entry.state = 'pending'
   entry.started_at = new Date().toISOString()
   const child = spawn(swa, [...args, '--json'], { cwd: project, env: { ...process.env, SWA_ENDPOINT: values.endpoint, SWA_PROJECT_ID: values['project-id'] }, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true })
+  if (args === runArguments) runProcess = child
   const stdout = [], stderr = []
   let stdoutBytes = 0, stderrBytes = 0, transportUnknown = false
-  const timer = setTimeout(() => { transportUnknown = true; child.kill('SIGTERM') }, 150_000)
+  const timer = setTimeout(() => { transportUnknown = true; child.kill('SIGTERM') }, observeProgress ? 31 * 60_000 : 150_000)
+  const progress = observeProgress ? createInterface({ input: child.stderr, crlfDelay: Infinity, terminal: false }) : null
+  progress?.on('line', line => {
+    try { observeProgress(object(JSON.parse(line))) }
+    catch { transportUnknown = true; child.kill('SIGTERM') }
+  })
   child.stdout.on('data', bytes => {
     stdoutBytes += bytes.length
     if (stdoutBytes > 16 * 1024 * 1024) { transportUnknown = true; child.kill('SIGTERM') }
@@ -214,6 +230,7 @@ async function cli(args, expected = 0) {
   child.stderr.on('data', bytes => {
     stderrBytes += bytes.length
     if (stderrBytes <= 256 * 1024) stderr.push(bytes)
+    else if (observeProgress) { transportUnknown = true; child.kill('SIGTERM') }
   })
   for (const stream of [child.stdout, child.stderr]) stream.on('error', () => { transportUnknown = true; child.kill('SIGTERM') })
   let result
@@ -222,27 +239,190 @@ async function cli(args, expected = 0) {
       child.once('error', reject)
       child.once('close', (code, signal) => resolveExit({ code, signal }))
     })
-  } finally { clearTimeout(timer) }
+  } finally { clearTimeout(timer); progress?.close() }
   Object.assign(entry, result, { ended_at: new Date().toISOString(), pid: child.pid })
   const text = safeText(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(stdout)))
   await save(`cli-${ordinal}.stdout.json`, text)
   await save(`cli-${ordinal}.stderr.log`, safeText(Buffer.concat(stderr).toString('utf8')))
   const reply = text.trim() ? object(JSON.parse(text)) : null
-  if (transportUnknown || result.signal || result.code !== expected || !reply || expected === 0 && reply.ok !== true) {
+  const expectedCodes = Array.isArray(expected) ? expected : [expected]
+  if (transportUnknown || result.signal || !expectedCodes.includes(result.code) || !reply || result.code === 0 && reply.ok !== true || result.code === 7 && ['run', 'wait'].includes(args[0]) && reply.error?.code !== 'run_failed') {
     entry.state = 'unknown-or-refused'
     if (entry.mutation) report.unknown_requests.push({ request_id: entry.request_id, args, original_command: ordinal })
     throw new Error('actual_cli_command_failed_preserve_original_request')
   }
-  entry.state = expected === 0 ? 'completed-response-observed' : 'refused-response-observed'
-  if (expected === 0 && runtimeId) assert.equal(reply.runtime_id, runtimeId, 'runtime_changed')
+  entry.state = result.code === 0 ? 'completed-response-observed' : result.code === 7 && ['run', 'wait'].includes(args[0]) ? 'completed-run-failure-observed' : 'refused-response-observed'
+  if (runtimeId && (result.code === 0 || result.code === 7 && ['run', 'wait'].includes(args[0]))) assert.equal(reply.runtime_id, runtimeId, 'runtime_changed')
   return reply
 }
+
+// 角色与交接消费既有公开命令入口；原请求先保存，未知不重新提交。
+async function publicCommand(command) {
+  assert.ok(['role.create', 'role.show', 'conversation.create', 'conversation.append', 'conversation.show', 'handoff.notify', 'worker.start'].includes(command.action))
+  for (const flag of ['input_file']) if (command[flag]) {
+    assert.ok(approvedFiles.has(command[flag]))
+    assert.equal(await readFile(await ordinary(command[flag], false), 'utf8'), approvedFiles.get(command[flag]))
+  }
+  const commands = report.collaboration_commands ??= []
+  const entry = { ordinal: commands.length + 1, command, state: 'intent-only' }
+  commands.push(entry)
+  await save(`collaboration-${entry.ordinal}.command.json`, entry)
+  entry.state = 'pending'
+  const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 150_000)
+  try {
+    const response = await fetch(`${values.endpoint}/api/v1/local-projects/${encodeURIComponent(values['project-id'])}/orca/commands`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(command.request_id ? { 'Idempotency-Key': command.request_id } : {}) },
+      body: JSON.stringify(command), redirect: 'error', signal: abort.signal,
+    })
+    const chunks = []
+    let bytes = 0
+    for await (const chunk of Readable.fromWeb(response.body)) {
+      bytes += chunk.length
+      assert.ok(bytes <= 12 * 1024 * 1024, 'collaboration_response_exceeds_bound')
+      chunks.push(chunk)
+    }
+    const text = safeText(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks)))
+    await save(`collaboration-${entry.ordinal}.response.json`, text)
+    const reply = object(JSON.parse(text))
+    assert.equal(response.status, 200)
+    assert.equal(reply.ok, true)
+    assert.equal(reply.runtime_id, runtimeId)
+    if (command.request_id) assert.equal(reply.request_id, command.request_id)
+    entry.state = 'completed-response-observed'
+    return reply
+  } catch (error) {
+    entry.state = 'unknown-or-refused'
+    if (command.request_id) report.unknown_requests.push({ request_id: command.request_id, args: ['public-command', command.action], original_command: entry.ordinal })
+    throw error
+  } finally { clearTimeout(timer) }
+}
+
+async function prepareCollaboration() {
+  for (const definition of roleDefinitions) {
+    const command = { action: 'role.create', request_id: randomUUID(), role: { ...definition, default_agent: values.agent, default_model: values.model, skills: [], knowledge: [] } }
+    const role = object(native(await publicCommand(command)).role)
+    assert.equal(role.id, command.request_id)
+    assert.equal(role.project_id, values['project-id'])
+    assert.equal(role.revision, 1)
+    assert.equal(role.archived, false)
+    for (const [key, value] of Object.entries(command.role)) assert.deepEqual(role[key], value)
+    actualRoles.push(role)
+  }
+  conversation = object(native(await publicCommand({ action: 'conversation.create', request_id: randomUUID(), conversation: { title: `固定公开stats N${workers}审阅`, role_id: actualRoles[0].id } })).conversation)
+  assert.equal(conversation.project_id, values['project-id'])
+  assert.equal(conversation.role_id, actualRoles[0].id)
+  report.collaboration = { roles: actualRoles, conversation, role_slots: [0, 1, 2, 3, 0, 3].slice(0, workers) }
+  await appendConversation(approvedFiles.get(inputs[0].input_file))
+}
+
+async function appendConversation(text) {
+  assert.ok(typeof text === 'string' && text.length > 0)
+  const command = { action: 'conversation.append', conversation_id: conversation.id, text: text.trim(), request_id: randomUUID() }
+  const observed = native(await publicCommand(command))
+  assert.deepEqual(observed.conversation, conversation)
+  const entry = observed.entries.find(item => item.id === command.request_id)
+  assert.ok(entry)
+  assert.equal(entry.request_id, command.request_id); assert.equal(entry.text, command.text)
+  assert.equal(entry.status, 'stored'); assert.equal(entry.author_kind, 'agent')
+  report.collaboration.conversation_observation = observed
+}
+
+function runView(reply, complete = false) {
+  const view = object(native(reply).run_view)
+  assert.equal(view.schema, 'swa.run-view.v1')
+  assert.equal(view.controller, controller)
+  assert.equal(view.run_id, runId)
+  assert.equal(view.root_task_id, rootTask)
+  assert.equal(view.root.id, rootTask)
+  for (const name of ['tasks', 'dispatches', 'questions', 'blockers', 'failures', 'deliverables', 'handoffs']) assert.ok(Array.isArray(view[name]))
+  assert.equal(view.acceptance, 'unreviewed')
+  assert.equal(view.tasks.length, workers + 1)
+  assert.equal(new Set(view.tasks.map(task => task.id)).size, workers + 1)
+  assert.deepEqual(view.tasks.filter(task => task.id !== rootTask).map(task => task.id).sort(), report.started_workers.map(worker => worker.task_id).sort())
+  assert.deepEqual(view.dispatches.map(item => item.id).sort(), report.started_workers.map(worker => worker.dispatch_id).sort())
+  assert.equal(view.tasks.find(task => task.id === report.started_workers[0].task_id).parent_id, rootTask)
+  assert.equal(view.tasks.find(task => task.id === report.started_workers[3].task_id).parent_id, report.started_workers[0].task_id)
+  if (complete) {
+    assert.equal(view.complete, true)
+    assert.ok(['completed', 'failed'].includes(view.status))
+    assert.equal(view.questions.length, 0)
+    assert.equal(view.blockers.length, 0)
+    assert.ok(view.tasks.every(task => ['completed', 'failed'].includes(task.status)))
+    assert.ok(view.dispatches.every(item => item.release_state === 'released'))
+  }
+  return view
+}
+
+async function submitRun(inputFile) {
+  const ready = Promise.withResolvers()
+  runArguments = ['run', '--workdir', project, '--spec-file', join(inputDirectory, 'task.json'), '--input-file', inputFile, '--agent', values.agent, '--model', values.model,
+    '--name', inputs[0].name, '--role', actualRoles[0].id, '--role-revision', String(actualRoles[0].revision), '--conversation', conversation.id, '--request-id', randomUUID()]
+  runningRun = cli(runArguments, [0, 7], event => {
+    assert.ok(['run_submitted', 'run_reconnect', 'run_progress', 'run_reconnecting'].includes(event.event), 'unknown_run_progress_event')
+    report.run_progress ??= []
+    report.run_progress.push(event)
+    if (event.event === 'run_submitted') {
+      assert.equal(event.request_id, requestId(runArguments))
+      for (const key of ['controller', 'run_id', 'task_id', 'dispatch_id']) assert.ok(typeof event[key] === 'string' && event[key].length > 0)
+      if (submittedRun) assert.deepEqual(event, submittedRun)
+      submittedRun = event
+      ready.resolve(event)
+    }
+  }).then(reply => ({ reply }), error => ({ error }))
+  const submitted = await Promise.race([ready.promise, runningRun.then(outcome => { throw outcome.error ?? new Error('run_ended_before_submission_observation') }), delay(180_000, undefined, { ref: false }).then(() => { throw new Error('run_submission_observation_deadline') })])
+  controller = submitted.controller; rootTask = submitted.task_id; runId = submitted.run_id
+  Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
+  const original = object((await cli(['request', 'show', '--project', values['project-id'], '--request-id', requestId(runArguments)])).result)
+  assert.equal(original.state, 'completed')
+  const receipt = object(original.receipt), submission = object(receipt.submission)
+  assert.equal(receipt.controller, controller)
+  assert.equal(submission.schema, 'swa.run-submission.v1')
+  assert.equal(submission.command.request_id, requestId(runArguments))
+  assert.equal(submission.command.role_id, actualRoles[0].id)
+  assert.equal(submission.command.revision, actualRoles[0].revision)
+  assert.equal(submission.command.conversation_id, conversation.id)
+  assert.equal(submission.spec_input.text, approvedFiles.get(join(inputDirectory, 'task.json')))
+  assert.equal(submission.lead_input.text, approvedFiles.get(inputFile))
+  const task = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.task_request_id])).result)
+  const worker = object((await cli(['request', 'show', '--controller', controller, '--request-id', submission.worker_request_id])).result)
+  assert.equal(task.state, 'completed'); assert.equal(worker.state, 'completed')
+  assert.equal(task.receipt.run_id, runId); assert.equal(task.receipt.root_task_id, rootTask)
+  assert.equal(worker.receipt.run_id, runId); assert.equal(worker.receipt.root_task_id, rootTask)
+  assert.equal(worker.receipt.native.dispatchId, submitted.dispatch_id)
+  assert.equal(worker.receipt.invocation.command.role_id, actualRoles[0].id)
+  report.run_submission = { submitted, outer: original, task, worker }
+  return { dispatch_id: submitted.dispatch_id, task_id: worker.receipt.native.taskId, request_id: submission.worker_request_id, name: inputs[0].name,
+    start_receipt: worker, source_checkpoint: null, actual_input_file: inputFile }
+}
+
 const identity = value => ({ session: value.native_session_id, fence: value.fence, process: value.process, provider_link: value.provider_link })
 async function queryWorker(dispatch) {
   const observed = native(await cli(['worker', 'show', '--controller', controller, '--dispatch', dispatch]))
   assert.equal(observed.worker.dispatchId, dispatch, 'worker_dispatch_changed')
   assert.equal(observed.worker.runtimeEpoch, runtimeId, 'worker_service_epoch_changed')
+  if (runFlow) verifyExecution(observed.execution, observed.source)
   return observed
+}
+function verifyExecution(value, source, complete = false) {
+  const execution = object(value), selection = object(source.selection)
+  assert.deepEqual(execution.selection, { agent: selection.agent_id, adapter: selection.adapter, version: selection.version, execution_mode: selection.execution_mode,
+    provider: selection.provider, model: selection.model, account_source: selection.native_launch.account.kind })
+  for (const name of ['launch', 'control', 'result', 'authenticated']) {
+    const observation = object(execution[name])
+    assert.ok(['available', 'unavailable', 'unknown'].includes(observation.status))
+    assert.ok(typeof observation.reason === 'string' && typeof observation.source === 'string' && typeof observation.basis === 'string')
+  }
+  assert.equal(execution.launch.status, 'available')
+  assert.ok(['sent', 'not_sent', 'unknown'].includes(execution.delivery.state))
+  assert.ok(['not_requested', 'resumed', 'rebuilt', 'failed', 'unknown'].includes(execution.resume.state))
+  assert.equal(execution.resume.state, 'not_requested', 'this_fresh_worker_must_not_claim_session_recovery')
+  if (complete) {
+    assert.equal(execution.result.status, 'available')
+    assert.equal(execution.authenticated.status, 'available')
+    assert.equal(execution.result.basis, 'result')
+    assert.equal(execution.authenticated.basis, 'result')
+  }
+  return execution
 }
 async function originalStartBinding(worker, workerSource) {
   let request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
@@ -266,6 +446,12 @@ async function originalStartBinding(worker, workerSource) {
   assert.equal(binding.execution_mode, 'structured')
   assert.equal(binding.runtime_fence, workerSource.fence)
   assert.equal(input.operation_id, binding.operation_id)
+  if (runFlow) {
+    const execution = object((await queryWorker(worker.dispatch_id)).execution)
+    assert.equal(execution.delivery.state, 'sent')
+    assert.equal(execution.delivery.request_id, worker.request_id)
+    assert.equal(execution.delivery.operation_id, binding.operation_id)
+  }
   assert.equal(object(object(request.receipt).invocation).caller.settings_revision, capabilityRevision, 'project_settings_changed_after_static_discovery')
   if (values.agent === 'codex') {
     const selection = object(object(request.receipt).selection)
@@ -362,10 +548,14 @@ async function verifySessionOwner(record, workerSource, owner, worker) {
     assert.equal(record.lease.deathEvidence?.kind, 'exit-observed')
     assert.equal(record.lease.deathEvidence?.ownerFence, owner.binding.runtime_fence)
     if (linuxStructured) {
-      assert.ok(worker.stop?.reply && stopRequests.get(worker.dispatch_id)?.request_id === worker.stop.request_id, 'released_owner_has_no_original_stop_response')
-      assert.equal(native(worker.stop.reply).state, 'stopped')
+      if (runFlow && !worker.stop?.reply) await verifyAutomaticRelease(worker, owner)
+      else {
+        assert.ok(worker.stop?.reply && stopRequests.get(worker.dispatch_id)?.request_id === worker.stop.request_id, 'released_owner_has_no_original_stop_response')
+        assert.equal(native(worker.stop.reply).state, 'stopped')
+      }
       const final = validateLinuxFinalCustody(workerSource.custody, (piLinux ? piViews : codexViews).get(workerSource.native_session_id))
       assert.deepEqual(final.observation.root, owner.incarnation)
+      assert.equal(final.observation.fullTreeProof.forced, false)
     } else {
       assert.ok(stopped.has(worker.dispatch_id) && worker.stop?.proof, 'released_owner_has_no_original_complete_job_proof')
       assert.equal(worker.stop.proof.root.pid, owner.process.pid)
@@ -381,6 +571,38 @@ async function verifySessionOwner(record, workerSource, owner, worker) {
     if (record.lease.claimStatus === 'live') assert.deepEqual(observed, { absent: false, incarnation: expected })
     else assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(expected), 'original_bootstrap_identity_still_alive')
   } else assert.equal(workerSource.process.creation_time_ms, owner.process.processStartTimeMs)
+}
+function workerResource(dispatch) {
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    const rows = db.prepare('SELECT id,origin_dispatch_id,owner_dispatch_id,terminal_handle,process_incarnation,ownership_state,release_state FROM worker_terminal_resources WHERE owner_dispatch_id=?').all(dispatch)
+    assert.equal(rows.length, 1, 'original_worker_resource_missing_or_ambiguous')
+    return rows[0]
+  } finally { db.close() }
+}
+async function verifyAutomaticRelease(worker, owner) {
+  const request = `${rootTask}/native-lifecycle/${worker.dispatch_id}/release`
+  const db = new DatabaseSync(database, { readOnly: true })
+  let row
+  try {
+    for (const deadline = Date.now() + 30_000; Date.now() < deadline;) {
+      const rows = db.prepare('SELECT method,state,receipt FROM mutation_receipts WHERE request_id=?').all(request)
+      assert.ok(rows.length <= 1, 'automatic_release_receipt_ambiguous')
+      if (rows.length && rows[0].state === 'completed') { row = rows[0]; break }
+      assert.ok(!rows.length || rows[0].method === 'orchestration.workerRelease' && rows[0].state === 'pending', 'automatic_release_has_unknown_terminal_state')
+      await delay(100)
+    }
+  } finally { db.close() }
+  assert.ok(row, 'automatic_release_original_request_not_completed')
+  assert.equal(row.method, 'orchestration.workerRelease')
+  const receipt = object(JSON.parse(row.receipt)), resource = workerResource(worker.dispatch_id)
+  assert.equal(receipt.dispatchId, worker.dispatch_id)
+  assert.ok(['released', 'already_released'].includes(receipt.state))
+  assert.equal(resource.release_state, 'released')
+  assert.equal(resource.ownership_state, 'released')
+  for (const key of ['id', 'origin_dispatch_id', 'owner_dispatch_id', 'terminal_handle', 'process_incarnation']) assert.equal(resource[key], owner.resource[key], 'automatic_release_changed_original_resource')
+  worker.automatic_release = { request_id: request, receipt, resource }
+  stopped.add(worker.dispatch_id)
 }
 async function events(workerSource) {
   assert.equal(workerSource.availability, 'observed')
@@ -399,6 +621,11 @@ async function events(workerSource) {
     assert.match(process.runtime, /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i, 'actual_process_runtime_incarnation_missing')
     assert.deepEqual(beforeRecord.head, workerSource.provider_link, 'provider_source_head_differs_from_actual_record')
     owner = { binding, process, head: beforeRecord.head, journal_source: beforeRecord.journal_source }
+    if (runFlow) {
+      owner.resource = workerResource(worker.dispatch_id)
+      assert.equal(owner.resource.ownership_state, 'owned')
+      assert.equal(owner.resource.owner_dispatch_id, worker.dispatch_id)
+    }
     if (linuxStructured) {
       const observed = await observeSource('incarnation', process.pid)
       assert.equal(observed.absent, false)
@@ -523,8 +750,8 @@ async function piReplayNativeInventory(view) {
   assert.equal(entries.length, checked.record_count)
   return { path, source_version: before.version, sha256: createHash('sha256').update(bytes).digest('hex'), entry_ids: entries.slice(1).map(entry => entry.id) }
 }
-async function settledReplay(args, original) {
-  const status = await cli(['request', 'show', '--controller', controller, '--request-id', requestId(args)])
+async function settledReplay(args, original, submit, originalRequest = requestId(args)) {
+  const status = await cli(['request', 'show', '--controller', controller, '--request-id', originalRequest])
   assert.equal(status.result.state, 'completed', 'unknown_request_must_not_replay')
   const executionCounts = async () => Promise.all([...sources.values()].map(async ({ source: actual }) => {
     const rows = await events(actual)
@@ -538,15 +765,15 @@ async function settledReplay(args, original) {
     return counts
   }))
   const before = await executionCounts()
-  const replay = await cli(args)
+  const replay = submit ? await submit() : await cli(args)
   for (const key of ['request_id', 'controller', 'run_id', 'task_id', 'dispatch_id']) if (original[key] !== undefined) assert.equal(replay[key], original[key])
-  const afterRequest = await cli(['request', 'show', '--controller', controller, '--request-id', requestId(args)])
+  const afterRequest = await cli(['request', 'show', '--controller', controller, '--request-id', originalRequest])
   assert.deepEqual(afterRequest.result.receipt, status.result.receipt, 'replay_changed_original_receipt')
   assert.deepEqual(afterRequest.result.current_input, status.result.current_input, 'replay_changed_input_operation')
   assert.deepEqual(await executionCounts(), before, 'replay_started_another_native_operation')
   await delay(300)
   assert.deepEqual(await executionCounts(), before, 'replay_native_execution_count_changed_after_response')
-  check('completed_request_replay.native_execution_counts', { request_id: requestId(args), sessions: before.map(row => ({ session: row.session, fence: row.fence, starts: row.starts.length, ends: row.ends.length, ...(piLinux ? { prompt_writes: row.prompt_writes.length, user_echoes: row.user_echoes.length, native_entry_ids: row.native.entry_ids, native_sha256: row.native.sha256 } : {}) })), observation_ms: 300 })
+  check('completed_request_replay.native_execution_counts', { request_id: originalRequest, sessions: before.map(row => ({ session: row.session, fence: row.fence, starts: row.starts.length, ends: row.ends.length, ...(piLinux ? { prompt_writes: row.prompt_writes.length, user_echoes: row.user_echoes.length, native_entry_ids: row.native.entry_ids, native_sha256: row.native.sha256 } : {}) })), observation_ms: 300 })
   return replay
 }
 async function proveWindowsTree(workerSource, checkpoint) {
@@ -829,20 +1056,33 @@ function piRootInventory() {
     const receipts = db.prepare(`SELECT caller_fingerprint,request_id,method,state,payload_hash,receipt FROM mutation_receipts WHERE request_id IN
       (SELECT request_id ${receiptsWhere} UNION SELECT request_id||'/native' ${receiptsWhere}) ORDER BY caller_fingerprint,request_id`).all(...params, ...params)
     for (const receipt of receipts) assert.ok(!['pending', 'unknown'].includes(receipt.state), 'pi_root_has_unresolved_original_request')
-    const taskBound = db.prepare('SELECT COUNT(*) AS count,SUM(LENGTH(CAST(spec AS BLOB))) AS bytes FROM tasks WHERE run_id=? AND (id=? OR parent_id=?)').get(runId, rootTask, rootTask)
+    const taskWhere = runFlow ? 'run_id=?' : 'run_id=? AND (id=? OR parent_id=?)'
+    const taskParameters = runFlow ? [runId] : [runId, rootTask, rootTask]
+    const taskBound = db.prepare(`SELECT COUNT(*) AS count,SUM(LENGTH(CAST(spec AS BLOB))) AS bytes FROM tasks WHERE ${taskWhere}`).get(...taskParameters)
     assert.ok(taskBound.count <= 101 && (taskBound.bytes ?? 0) <= 12 * 1024 * 1024)
-    const tasks = db.prepare('SELECT id,run_id,parent_id,status,spec FROM tasks WHERE run_id=? AND (id=? OR parent_id=?) ORDER BY id').all(runId, rootTask, rootTask)
-    assert.equal(tasks.filter(row => row.parent_id === rootTask).length, workers)
+    const tasks = db.prepare(`SELECT id,run_id,parent_id,status,spec FROM tasks WHERE ${taskWhere} ORDER BY id`).all(...taskParameters)
+    if (runFlow) {
+      assert.equal(tasks.length, workers + 1)
+      assert.equal(tasks.find(task => task.id === rootTask).parent_id, null)
+      for (const [index, worker] of report.started_workers.entries()) {
+        const task = tasks.find(item => item.id === worker.task_id)
+        assert.ok(task)
+        assert.equal(task.parent_id, index === 3 ? report.started_workers[0].task_id : rootTask)
+        const spec = object(JSON.parse(task.spec)), role = actualRoles[[0, 1, 2, 3, 0, 3][index]]
+        assert.equal(spec.role_snapshot.id, role.id)
+        assert.equal(spec.role_snapshot.revision, role.revision)
+      }
+    } else assert.equal(tasks.filter(row => row.parent_id === rootTask).length, workers)
     const run = db.prepare('SELECT id,coordinator_handle,consumer_generation FROM runs WHERE id=?').get(runId)
     assert.equal(run.coordinator_handle, controller)
     const dispatches = db.prepare(`SELECT d.id,d.run_id,d.task_id,d.status,d.assignee_handle,d.assignee_orca_session_id,d.process_incarnation,d.contract_version,d.capability_revoked_at,
       w.runtime_epoch,w.state,w.stage,w.agent_terminal_handle FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id
-      LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id WHERE d.run_id=? AND t.parent_id=? ORDER BY d.id LIMIT 101`).all(runId, rootTask)
+      LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id WHERE d.run_id=? ${runFlow ? '' : 'AND t.parent_id=?'} ORDER BY d.id LIMIT 101`).all(...(runFlow ? [runId] : [runId, rootTask]))
     assert.equal(dispatches.length, workers)
     assert.deepEqual(dispatches.map(row => row.id).sort(), report.started_workers.map(row => row.dispatch_id).sort())
     const resources = db.prepare(`SELECT id,origin_dispatch_id,owner_dispatch_id,terminal_handle,process_incarnation,ownership_state,release_state
-      FROM worker_terminal_resources WHERE origin_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? AND t.parent_id=?)
-      OR owner_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? AND t.parent_id=?) ORDER BY id LIMIT 101`).all(runId, rootTask, runId, rootTask)
+      FROM worker_terminal_resources WHERE origin_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? ${runFlow ? '' : 'AND t.parent_id=?'})
+      OR owner_dispatch_id IN (SELECT d.id FROM dispatch_contexts d JOIN tasks t ON t.id=d.task_id WHERE d.run_id=? ${runFlow ? '' : 'AND t.parent_id=?'}) ORDER BY id LIMIT 101`).all(...(runFlow ? [runId, runId] : [runId, rootTask, runId, rootTask]))
     assert.equal(resources.length, workers)
     const value = JSON.stringify({ run, tasks, receipts, dispatches, resources })
     assert.ok(Buffer.byteLength(value) <= 12 * 1024 * 1024)
@@ -951,6 +1191,191 @@ async function verifyCodexJournalInputs(worker, original, bindings) {
     assert.equal(latest.outcome, 'success')
     assert.ok(ends(await events(original.source)).some(row => row.detail.frame.params.turn.id === latest.turnId && row.detail.frame.params.turn.status === 'completed'))
   }
+}
+
+async function verifyQuota() {
+  const extra = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'extra-quota-check', '--agent', values.agent, '--model', values.model, '--input-file', inputs[0].input_file, '--request-id', randomUUID()], 5)
+  assert.equal(extra.error.code, 'resource_limit')
+  const fleet = native(await cli(['worker', 'list', '--controller', controller, '--task', rootTask]))
+  assert.equal(fleet.page.hasMore, false)
+  assert.equal(fleet.page.total, workers)
+  assert.deepEqual(fleet.workers.map(worker => worker.dispatchId).sort(), report.started_workers.map(worker => worker.dispatch_id).sort())
+  const inventory = native(await cli(['task', 'show', '--controller', controller, '--task', rootTask])).tasks
+  if (runFlow) {
+    assert.equal(inventory.length, workers + 1, 'quota_refusal_created_extra_task')
+    assert.deepEqual(inventory.filter(task => task.id !== rootTask).map(task => task.id).sort(), report.started_workers.map(worker => worker.task_id).sort())
+  } else assert.equal(inventory.filter(task => task.parent_id === rootTask).length, workers, 'quota_refusal_created_extra_child_task')
+  report.quota = { extra, fleet, inventory }
+}
+
+function completionMail(child, parent) {
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    db.exec('BEGIN')
+    const rows = db.prepare(`SELECT id,run_id,delivery_contract,from_handle,to_handle,body,type,payload,read,delivered_at FROM messages WHERE id=?`).all(`${child.task_id}/completed`)
+    assert.ok(rows.length <= 1)
+    if (!rows.length) return null
+    const mail = rows[0], payload = object(JSON.parse(mail.payload))
+    const task = db.prepare('SELECT id,run_id,parent_id,status,result FROM tasks WHERE id=?').get(child.task_id)
+    assert.equal(mail.run_id, runId); assert.equal(mail.type, 'handoff')
+    assert.equal(mail.delivery_contract, 'audit_only')
+    assert.equal(mail.from_handle, `dispatch:${child.dispatch_id}`)
+    assert.equal(mail.to_handle, `dispatch:${parent.dispatch_id}`)
+    assert.equal(payload.schema, 'swa.handoff-completion.v1')
+    assert.equal(payload.source_task_id, child.task_id); assert.equal(payload.source_dispatch_id, child.dispatch_id)
+    assert.equal(payload.parent_task_id, parent.task_id); assert.equal(payload.parent_dispatch_id, parent.dispatch_id)
+    assert.equal(payload.reply, 'resume'); assert.equal(payload.acceptance, 'unreviewed')
+    assert.equal(payload.outcome, 'success'); assert.match(payload.resume_request_id, /^[0-9a-f-]{36}$/)
+    assert.equal(task.run_id, runId); assert.equal(task.parent_id, parent.task_id)
+    assert.equal(task.status, 'completed'); assert.equal(mail.body, task.result)
+    assert.ok(typeof mail.body === 'string' && mail.body.length > 0 && Buffer.byteLength(mail.body) <= 1024 * 1024)
+    return { ...mail, payload }
+  } finally { db.close() }
+}
+
+async function continueLead(prepared) {
+  const follow = report.started_workers[0], child = report.started_workers[3]
+  let sent, input, sendRequest, sendArgs, followup
+  if (workers === 4) {
+    let window
+    for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
+      await events(follow.source); await events(child.source)
+      const leadView = piViews.get(follow.source.native_session_id), childView = piViews.get(child.source.native_session_id)
+      if (leadView.cycles[0]?.idle && !childView.cycles[0]?.idle) {
+        const record = await sessionRecord((await queryWorker(follow.dispatch_id)).source)
+        assert.equal(record.lease.claimStatus, 'live', 'lead_released_before_mid_run_followup')
+        window = { lead_first_idle: leadView.cycles[0].idle, grandchild_active: childView.active, original_lease: record.lease }
+        assert.ok(window.grandchild_active && !window.grandchild_active.end)
+        break
+      }
+      assert.ok(!childView.cycles[0]?.idle, 'grandchild_finished_before_lead_followup_window')
+      await delay(100)
+    }
+    assert.ok(window, 'actual_mid_run_followup_window_not_observed')
+    const followupFile = join(inputDirectory, 'followup.txt')
+    followup = await readFile(await ordinary(followupFile, false), 'utf8')
+    assert.equal(followup, prepared.followup)
+    await appendConversation(followup)
+    await events(child.source)
+    assert.ok(!piViews.get(child.source.native_session_id).cycles[0]?.idle, 'grandchild_completed_before_mid_run_send')
+    assert.equal((await sessionRecord((await queryWorker(follow.dispatch_id)).source)).lease.claimStatus, 'live')
+    sendRequest = randomUUID()
+    sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', follow.dispatch_id, '--input-file', followupFile, '--request-id', sendRequest]
+    sent = await cli(sendArgs); input = native(sent)
+    report.followup_window = window
+  } else {
+    let mail
+    for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
+      await events(child.source); await events(follow.source)
+      mail = completionMail(child, follow)
+      if (mail) {
+        sendRequest = mail.payload.resume_request_id
+        const db = new DatabaseSync(database, { readOnly: true })
+        let row
+        try { row = db.prepare('SELECT method,state,receipt FROM mutation_receipts WHERE request_id=?').get(sendRequest) } finally { db.close() }
+        if (row) {
+          assert.equal(row.method, 'swa.controllerDeliver')
+          assert.ok(['pending', 'completed'].includes(row.state), 'parent_resume_original_request_failed_or_unknown')
+          if (row.state === 'completed') {
+            const original = object((await cli(['request', 'show', '--controller', controller, '--request-id', sendRequest])).result)
+            assert.equal(original.state, 'completed')
+            const receipt = object(original.receipt), invocation = object(receipt.invocation)
+            assert.equal(receipt.action, 'worker.send')
+            assert.equal(receipt.run_id, runId); assert.equal(receipt.root_task_id, rootTask)
+            assert.deepEqual(invocation.handoff, { schema: 'swa.handoff-resume.v1', source_task_id: child.task_id, source_dispatch_id: child.dispatch_id,
+              parent_task_id: follow.task_id, parent_dispatch_id: follow.dispatch_id, mail_id: mail.id })
+            assert.equal(invocation.command.dispatch_id, follow.dispatch_id)
+            assert.equal(invocation.command.request_id, sendRequest)
+            assert.deepEqual(invocation.input, { path: `native-handoff:${mail.id}`, version: mail.id, text: mail.body })
+            followup = mail.body; input = object(receipt.native)
+            assert.deepEqual(input.swa_input_binding, receipt.swa_input_binding)
+            sent = original
+            report.parent_resume = { mail, request: original }
+            break
+          }
+        }
+      }
+      await delay(250)
+    }
+    assert.ok(input, 'real_parent_resume_request_not_observed')
+  }
+  assert.equal(input.session_id, follow.source.native_session_id)
+  assert.equal(input.request_id, sendRequest)
+  const binding = object(input.swa_input_binding)
+  assert.equal(binding.parent_request, sendRequest)
+  assert.equal(binding.child_request, `${sendRequest}/native`)
+  assert.equal(binding.dispatch_id, follow.dispatch_id)
+  assert.equal(binding.session_id, follow.source.native_session_id)
+  assert.equal(binding.runtime_fence, follow.source.fence)
+  assert.equal(binding.body.kind, 'message')
+  assert.deepEqual(binding.body.blocks, [{ type: 'text', text: followup }])
+  for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
+    const rows = await events(follow.source)
+    if (ends(rows).length >= 2 && piViews.get(follow.source.native_session_id).cycles[1]?.idle) break
+    await delay(250)
+  }
+  const rows = await events(follow.source), view = piViews.get(follow.source.native_session_id)
+  assert.equal(starts(rows).length, 2); assert.equal(ends(rows).length, 2)
+  assert.equal(view.cycles[1].cid, binding.operation_id)
+  assert.ok(view.cycles[1].idle && view.cycles[1].deltas.length > 0, 'lead_second_turn_has_no_actual_continuation_output')
+  assert.deepEqual(identity((await queryWorker(follow.dispatch_id)).source), identity(follow.source))
+  const sendStatus = (await cli(['request', 'show', '--controller', controller, '--request-id', sendRequest])).result.current_input
+  assert.equal(sendStatus.state, 'accepted'); assert.deepEqual(sendStatus.binding, binding)
+  assert.equal(sendStatus.session_id, follow.source.native_session_id); assert.equal(sendStatus.operation_id, input.operation_id)
+  report.followup = { kind: workers === 6 ? 'actual_parent_resume' : 'mid_run_manual_input', dispatch_id: follow.dispatch_id, request_id: sendRequest, reply: sent, current_input: sendStatus }
+  return { follow, followup, input, sendArgs, sent }
+}
+
+async function finishRun(target, continuation) {
+  const outcome = await runningRun
+  if (outcome.error) throw outcome.error
+  const reply = outcome.reply, view = runView(reply, true)
+  assert.equal(reply.ok, true, 'planned_nonlead_stop_must_preserve_successful_lead_run')
+  assert.equal(view.status, 'completed')
+  assert.ok(view.failures.every(failure => failure.task_id === target.task_id && (!failure.dispatch_id || failure.dispatch_id === target.dispatch_id)), 'unplanned_worker_or_root_failure')
+  const notification = native(report.notification), projectedNotification = view.handoffs.find(item => item.id === notification.message.id)
+  assert.ok(projectedNotification)
+  assert.equal(projectedNotification.from, notification.message.from_handle)
+  assert.equal(projectedNotification.to, notification.message.to_handle)
+  assert.equal(projectedNotification.text, notification.message.body)
+  assert.deepEqual(projectedNotification.record, notification.handoff)
+  for (const worker of report.started_workers) {
+    const rows = await events(worker.source)
+    assert.equal(ends(rows).length, worker === continuation.follow ? 2 : 1)
+    const record = await sessionRecord((await queryWorker(worker.dispatch_id)).source)
+    assert.equal(record.lease.claimStatus, 'released')
+    const owner = sessionOwners.get(worker.source.native_session_id)
+    await verifyAutomaticRelease(worker, owner)
+  }
+  const sameView = value => { const { observed_at, ...rest } = value; return rest }
+  const args = ['wait', '--controller', controller, '--task', rootTask, '--run', runId]
+  const waited = await cli(args)
+  assert.deepEqual(sameView(runView(waited, true)), sameView(view))
+  const strict = await cli([...args, '--strict'], view.failures.length ? 7 : 0)
+  assert.deepEqual(sameView(runView(strict, true)), sameView(view))
+  if (workers === 6) {
+    const mail = completionMail(report.started_workers[3], continuation.follow)
+    assert.equal(mail.read, 1); assert.ok(mail.delivered_at)
+    assert.deepEqual({ ...mail, read: report.parent_resume.mail.read, delivered_at: report.parent_resume.mail.delivered_at }, report.parent_resume.mail)
+    const projected = view.handoffs.find(item => item.id === mail.id)
+    assert.deepEqual(projected, { id: mail.id, from: mail.from_handle, to: mail.to_handle, text: mail.body, read: true, record: mail.payload })
+    report.parent_resume.completed_mail = mail
+  }
+  await settledReplay(runArguments, reply, () => cli(runArguments), requestId(runArguments))
+  for (const worker of report.started_workers.slice(1)) await settledReplay(null, worker.start, () => publicCommand(worker.start_command), worker.request_id)
+  if (continuation.sendArgs) await settledReplay(continuation.sendArgs, continuation.sent)
+  const changed = [...runArguments]
+  changed[changed.indexOf('--input-file') + 1] = inputs[1].input_file
+  const mismatched = await cli(changed, 2)
+  assert.equal(mismatched.error.code, 'request_mismatch')
+  report.changed_original_request_refusal = mismatched
+  for (const role of actualRoles) {
+    const current = object(native(await publicCommand({ action: 'role.show', role_id: role.id })).role)
+    assert.deepEqual(current, role, 'role_changed_when_workers_released')
+  }
+  assert.deepEqual(native(await publicCommand({ action: 'conversation.show', conversation_id: conversation.id })), report.collaboration.conversation_observation)
+  report.run_completion = { default_wait: reply, reconnected_wait: waited, strict_wait: strict }
+  return view
 }
 
 async function run() {
@@ -1102,16 +1527,18 @@ async function run() {
     check('pi.independent_owned_source', { launch: piLaunch.source, source_home: piSourceHome, provider: 'stepfun', model: values.model, auth: 'NOT_READ_BY_DRIVER' })
   }
   Object.assign(report, { runtime_id: runtimeId, capabilities })
-  const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])
-  controller = opened.controller
-  assert.ok(controller)
-  const createArgs = ['task', 'create', '--controller', controller, '--spec-file', join(inputDirectory, 'task.json'), '--request-id', randomUUID()]
-  const created = await cli(createArgs)
-  rootTask = created.task_id; runId = created.run_id
-  assert.ok(rootTask && runId)
-  Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
-  await settledReplay(createArgs, created)
-  const startArgs = []
+  if (!runFlow) {
+    const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])
+    controller = opened.controller
+    assert.ok(controller)
+    const createArgs = ['task', 'create', '--controller', controller, '--spec-file', join(inputDirectory, 'task.json'), '--request-id', randomUUID()]
+    const created = await cli(createArgs)
+    rootTask = created.task_id; runId = created.run_id
+    assert.ok(rootTask && runId)
+    Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
+    await settledReplay(createArgs, created)
+  } else await prepareCollaboration()
+  const startArgs = [], startFiles = [], startCommands = []
   const beforeStarts = linuxStructured ? null : await stat(values['service-log'], { bigint: true })
   const sourceCheckpoint = beforeStarts ? { identity: `${beforeStarts.dev}:${beforeStarts.ino}:${beforeStarts.birthtimeNs}`, size: beforeStarts.size.toString() } : null
   for (const [index, input] of inputs.entries()) {
@@ -1123,17 +1550,31 @@ async function run() {
     const file = join(inputDirectory, input.name + '-chunked-' + randomUUID() + '.txt')
     await writeFile(file, body, { flag: 'wx', mode: 0o600 })
     approvedFiles.set(file, body)
+    startFiles.push(file)
     startArgs.push(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', input.name, '--agent', values.agent, '--model', values.model, '--input-file', file, '--request-id', randomUUID()])
   }
   report.model_execution = 'REQUESTED_THROUGH_PRODUCT'
-  const startsSettled = await Promise.allSettled(startArgs.map(args => cli(args)))
+  if (runFlow) {
+    assert.equal(spec.initial_workers, workers)
+    report.started_workers.push(await submitRun(startFiles[0]))
+    for (let index = 1; index < workers; index++) {
+      const role = actualRoles[[0, 1, 2, 3, 0, 3][index]]
+      startCommands.push({ action: 'worker.start', controller, task_id: rootTask, parent_task_id: index === 3 ? report.started_workers[0].task_id : rootTask,
+        handoff_mode: index === 3 ? 'consult' : 'work', reply_mode: index === 3 && workers === 6 ? 'resume' : 'poll',
+        completion_criteria: [prepared.spec.success_criteria[2]], role_id: role.id, revision: role.revision,
+        name: inputs[index].name, agent: values.agent, model: values.model, input_file: startFiles[index], request_id: randomUUID() })
+    }
+  }
+  const startsSettled = await Promise.allSettled(runFlow ? startCommands.map(command => publicCommand(command)) : startArgs.map(args => cli(args)))
   for (let index = 0; index < startsSettled.length; index++) {
     const item = startsSettled[index]
     if (item.status === 'fulfilled') {
       const reply = item.value
       assert.equal(reply.run_id, runId)
       assert.ok(reply.dispatch_id && reply.task_id && reply.task_id !== rootTask)
-      report.started_workers.push({ dispatch_id: reply.dispatch_id, task_id: reply.task_id, request_id: requestId(startArgs[index]), name: inputs[index].name, start: reply, source_checkpoint: sourceCheckpoint, actual_input_file: startArgs[index][startArgs[index].indexOf('--input-file') + 1] })
+      const slot = runFlow ? index + 1 : index
+      report.started_workers.push({ dispatch_id: reply.dispatch_id, task_id: reply.task_id, request_id: runFlow ? startCommands[index].request_id : requestId(startArgs[index]), name: inputs[slot].name,
+        start: reply, ...(runFlow ? { start_command: startCommands[index] } : {}), source_checkpoint: sourceCheckpoint, actual_input_file: startFiles[slot] })
     }
   }
   assert.ok(startsSettled.every(item => item.status === 'fulfilled'), 'some_worker_starts_refused_or_unknown_preserve_all_requests')
@@ -1142,6 +1583,17 @@ async function run() {
   for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
+  if (runFlow) {
+    const notificationText = approvedFiles.get(inputs[3].input_file).trim()
+    const current = await publicCommand({ action: 'handoff.notify', controller, task_id: rootTask, dispatch_id: report.started_workers[3].dispatch_id,
+      text: notificationText, request_id: randomUUID() })
+    assert.equal(native(current).delivery, 'stored')
+    assert.equal(native(current).message.delivery_contract, 'audit_only')
+    assert.equal(native(current).new_task, false)
+    assert.equal(native(current).new_worker, false)
+    assert.equal(native(current).message.body, notificationText)
+    report.notification = current
+  }
   if (piLinux) {
     await Promise.all(report.started_workers.map(worker => events(worker.source)))
     assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
@@ -1167,7 +1619,8 @@ async function run() {
   }
   assert.ok(overlap, 'no_common_actual_native_delta_interval')
   report.overlap = overlap
-  const target = report.started_workers[0], survivors = report.started_workers.slice(1)
+  if (runFlow) await verifyQuota()
+  const target = report.started_workers[runFlow ? 1 : 0], survivors = report.started_workers.filter(worker => worker !== target)
   assert.equal(ends(await events(target.source)).length, 0)
   const stoppedAt = Date.now()
   await stopWorker(target, true)
@@ -1176,6 +1629,12 @@ async function run() {
     const rows = await events(worker.source)
     if (!piLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
   }
+  let follow, followup, input, continuation
+  if (runFlow) {
+    continuation = await continueLead(prepared)
+    follow = continuation.follow; followup = continuation.followup; input = continuation.input
+    await finishRun(target, continuation)
+  } else {
   for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
     const lists = await Promise.all(survivors.map(worker => events(worker.source)))
     if (lists.every((rows, index) => ends(rows).length === 1 && (!piLinux || piViews.get(survivors[index].source.native_session_id).cycles[0]?.idle))) break
@@ -1192,11 +1651,13 @@ async function run() {
       assert.ok(view.cycles[0].idle, 'pi_survivor_not_idle_before_followup')
     }
   }
-  const follow = piLinux && workers > 3 ? report.started_workers[3] : survivors[0], followupFile = join(inputDirectory, 'followup.txt'), sendRequest = randomUUID()
-  const followup = await readFile(await ordinary(followupFile, false), 'utf8')
+  follow = survivors[0]
+  const followupFile = join(inputDirectory, 'followup.txt'), sendRequest = randomUUID()
+  followup = await readFile(await ordinary(followupFile, false), 'utf8')
   assert.equal(followup, prepared.followup, 'public_followup_changed_before_send')
   const sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', follow.dispatch_id, '--input-file', followupFile, '--request-id', sendRequest]
-  const sent = await cli(sendArgs), input = native(sent)
+  const sent = await cli(sendArgs)
+  input = native(sent)
   assert.equal(input.session_id, follow.source.native_session_id)
   assert.equal(input.request_id, sendRequest)
   assert.equal(input.swa_input_binding.dispatch_id, follow.dispatch_id)
@@ -1215,26 +1676,35 @@ async function run() {
   assert.equal(sendStatus.session_id, follow.source.native_session_id)
   assert.equal(sendStatus.operation_id, input.operation_id)
   report.followup = { request_id: sendRequest, reply: sent, current_input: sendStatus }
-  const extra = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'extra-quota-check', '--agent', values.agent, '--model', values.model, '--input-file', inputs[0].input_file, '--request-id', randomUUID()], 5)
-  assert.equal(extra.error.code, 'resource_limit')
-  const fleet = native(await cli(['worker', 'list', '--controller', controller, '--task', rootTask]))
-  assert.equal(fleet.page.hasMore, false)
-  assert.equal(fleet.page.total, workers)
-  assert.deepEqual(fleet.workers.map(worker => worker.dispatchId).sort(), report.started_workers.map(worker => worker.dispatch_id).sort())
-  report.quota = { extra, fleet }
-  const inventory = native(await cli(['task', 'show', '--controller', controller, '--task', rootTask])).tasks
-  assert.equal(inventory.filter(task => task.parent_id === rootTask).length, workers, 'quota_refusal_created_extra_child_task')
+  await verifyQuota()
   for (let index = 0; index < startArgs.length; index++) await settledReplay(startArgs[index], startsSettled[index].value)
   const changedInput = [...startArgs[0]]
   changedInput[changedInput.indexOf('--input-file') + 1] = inputs[1].input_file
   const mismatched = await cli(changedInput, 2)
   assert.equal(mismatched.error.code, 'request_mismatch')
   report.changed_original_request_refusal = mismatched
+  }
   await settledReplay(target.stop.args, target.stop.reply)
+  if (runFlow) {
+    for (const worker of survivors) {
+      await events(worker.source)
+      const view = piViews.get(worker.source.native_session_id), proof = target.stop.proof
+      assert.deepEqual(view.custody.owner, piViews.get(target.source.native_session_id).custody.owner)
+      assert.ok(view.cycles[0].idle)
+      assert.ok(sources.get(worker.source.native_session_id).rows.some(row => isPiDelta(row) && row.monotonic_ms > proof.stop_intent.monotonic_ms && row.monotonic_ms > proof.row.monotonic_ms), 'pi_survivor_has_no_same_daemon_monotonic_delta_after_full_stop')
+    }
+  }
   for (const worker of report.started_workers) worker.transcript = await readTranscript(worker.dispatch_id)
   const piInventory = piLinux ? piRootInventory() : null
-  const exported = await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'result-' + randomUUID())])
-  const result = native(exported)
+  const exported = await cli(runFlow ? ['export', '--controller', controller, '--task', rootTask, '--run', runId, '--output-dir', join(inputDirectory, 'result-' + randomUUID())]
+    : ['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'result-' + randomUUID())])
+  const result = runFlow ? object(native(exported).result) : native(exported)
+  if (runFlow) {
+    const view = runView(exported, true), { observed_at: exportedAt, ...exportedView } = view, { observed_at: completedAt, ...completedView } = runView(report.run_completion.default_wait, true)
+    assert.deepEqual(exportedView, completedView)
+    assert.deepEqual(result.tasks.tasks.map(task => task.id).sort(), view.tasks.map(task => task.id).sort())
+    report.run_completion.exported = exported
+  }
   assert.equal(result.workers.length, workers)
   for (const worker of result.workers) {
     const original = report.started_workers.find(item => item.dispatch_id === worker.worker.dispatchId)
@@ -1283,6 +1753,11 @@ async function run() {
       assert.equal(worker.provider_events.record_count, actualRows.length)
       await verifyPiJournalInputs(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding], piNative)
     }
+    if (runFlow) {
+      verifyExecution(worker.execution, worker.source, original !== target)
+      assert.equal(worker.execution.delivery.state, 'sent')
+      assert.equal(worker.execution.delivery.operation_id, original === follow ? input.operation_id : binding.operation_id)
+    }
     const journal = new DatabaseSync(original.source.journal_database, { readOnly: true })
     try {
       for (const row of worker.journal.rows) {
@@ -1318,6 +1793,7 @@ async function run() {
     const fd = openSync(join(output, 'actual-result.json'), constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o600)
     try { writeFileSync(fd, safeText(JSON.stringify(exported, null, 2) + '\n')); fsyncSync(fd) } finally { closeSync(fd) }
   } else await save('actual-result.json', exported)
+  if (!runFlow) {
   for (const worker of survivors) await stopWorker(worker)
   for (const worker of report.started_workers) {
     const args = ['worker', 'release', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
@@ -1325,6 +1801,7 @@ async function run() {
     const released = await cli(args)
     assert.equal(native(released).state, 'released')
     await settledReplay(args, released)
+  }
   }
   report.provider_events = [...sources.values()]
   await save('before-business-review.json', report)
@@ -1341,14 +1818,16 @@ async function run() {
   const checkedBody = JSON.stringify({ reviewed_result: review.reviewed_result, checked_result: review.checked_result, reviewed_by: 'current_actual_agent_controller' }) + '\n'
   await writeFile(checkedFile, checkedBody, { flag: 'wx', mode: 0o600 })
   approvedFiles.set(checkedFile, checkedBody)
-  await cli(['task', 'complete', '--controller', controller, '--task', rootTask, '--result-file', checkedFile, '--request-id', randomUUID()])
+  if (!runFlow) await cli(['task', 'complete', '--controller', controller, '--task', rootTask, '--result-file', checkedFile, '--request-id', randomUUID()])
   const tasks = native(await cli(['task', 'show', '--controller', controller, '--task', rootTask]))
   assert.equal(tasks.tasks.find(task => task.id === rootTask)?.status, 'completed')
   await cli(['controller', 'close', '--controller', controller, '--request-id', randomUUID()])
   report.business_review = review
   report.status = 'EXECUTED_ASSERTIONS_COMPLETED'
   report.model_execution = 'ACTUAL_NATIVE_EVENTS_OBSERVED'
-  report.scenarios = { cli_multiworker: 'REQUIRES_INDEPENDENT_REVIEW', input_chunk_observation: piLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_PI_CHUNKS' : 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
+  report.scenarios = { cli_multiworker: 'REQUIRES_INDEPENDENT_REVIEW', run_recursive_role_handoff: runFlow ? 'REQUIRES_INDEPENDENT_REVIEW_OF_SAME_RUN_ACTUAL_RESULTS' : 'NOT_RUN',
+    parent_continuation: runFlow && workers === 6 ? 'REQUIRES_INDEPENDENT_REVIEW_OF_REAL_CHILD_MAIL_AND_LEAD_SECOND_TURN' : 'NOT_RUN',
+    input_chunk_observation: piLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_PI_CHUNKS' : 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
   completed = true
 }
 
@@ -1358,7 +1837,7 @@ try {
   report.status = error instanceof NotRun ? 'NOT_RUN' : 'FAIL'
   report.reason = error instanceof NotRun ? error.message : 'actual_check_failed_preserve_original_evidence'
   process.exitCode = error instanceof NotRun ? 3 : 1
-  for (const command of report.commands) if (command.mutation && !['not-submitted', 'completed-response-observed', 'refused-response-observed'].includes(command.state) && !report.unknown_requests.some(request => request.request_id === command.request_id)) report.unknown_requests.push({ request_id: command.request_id, args: command.args, original_command: command.ordinal })
+  for (const command of report.commands) if (command.mutation && !['not-submitted', 'completed-response-observed', 'completed-run-failure-observed', 'refused-response-observed'].includes(command.state) && !report.unknown_requests.some(request => request.request_id === command.request_id)) report.unknown_requests.push({ request_id: command.request_id, args: command.args, original_command: command.ordinal })
   // 修改结果未知时只查询原请求，不复发原修改或替换Worker。
   if (swa && token && output) for (const request of [...report.unknown_requests]) {
     try { await cli(['request', 'show', ...(controller ? ['--controller', controller] : ['--project', values['project-id']]), '--request-id', request.request_id]) }
@@ -1372,10 +1851,23 @@ try {
       report.checks.push({ name: 'owned_worker_cleanup_original_stop_or_release_only', status: 'UNKNOWN', dispatch_id: worker.dispatch_id, request_id: pending.request_id })
       continue
     }
-    try { worker.source ??= object((await queryWorker(worker.dispatch_id)).source); await stopWorker(worker) }
+    try {
+      worker.source ??= object((await queryWorker(worker.dispatch_id)).source)
+      if (runFlow && sessionOwners.has(worker.source.native_session_id)) {
+        await events(worker.source)
+        if (stopped.has(worker.dispatch_id)) continue
+      }
+      await stopWorker(worker)
+    }
     catch { report.checks.push({ name: 'owned_worker_cleanup', status: 'UNKNOWN', dispatch_id: worker.dispatch_id }) }
   }
 } finally {
+  if (runProcess && runProcess.exitCode === null && runProcess.signalCode === null) {
+    // 只终止本次CLI观察者；产品Worker退出仍由原资源证据判断。
+    runProcess.kill('SIGTERM')
+    await Promise.race([runningRun, delay(5000)])
+    report.run_observer_cleanup = { pid: runProcess.pid, exit_code: runProcess.exitCode, signal: runProcess.signalCode, worker_exit_proven_by_cli: false }
+  }
   report.completed_at = new Date().toISOString()
   if (output) await save(completed ? 'driver-completed.json' : 'driver-incomplete.json', report)
   process.stdout.write(JSON.stringify({ status: report.status, reason: report.reason, evidence: output ?? null, acceptance: report.acceptance }) + '\n')

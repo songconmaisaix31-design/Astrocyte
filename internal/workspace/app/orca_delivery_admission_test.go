@@ -9,17 +9,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	orcaadapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/orca"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
-	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectfiles"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/swastore"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
-	"github.com/songconmaisaix31-design/Astrocyte/migrations"
+	migrations "github.com/songconmaisaix31-design/Astrocyte/migrations/swa"
 )
 
 type deliveryAdmissionInput struct {
-	db         *sqlite.DB
+	db         *swastore.DB
 	projects   workspace.LocalProjects
 	service    *workspace.OrcaExecutionService
 	human      domain.Caller
@@ -32,7 +31,7 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 	t.Helper()
 	ctx := context.Background()
 	directory := t.TempDir()
-	db, err := sqlite.Open(filepath.Join(directory, "state.sqlite"))
+	db, err := swastore.Open(filepath.Join(directory, "state.sqlite"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,8 +40,8 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 		t.Fatal(err)
 	}
 	human := domain.Caller{Kind: "human", ID: "delivery-current-human"}
-	spaces := attention.NewAttentionService(sqlite.NewAttentionRepository(db), nil, nil, attention.ServiceOptions{ProjectSpaces: actualAttentionSpaces(db)})
-	space, err := spaces.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "公开准入规则验证"})
+	spaces := workspace.NewProjectSpaceService(swastore.NewProjectSpaceRepository(db), workspace.ProjectSpaceOptions{})
+	space, err := spaces.CreateProjectSpace(ctx, human, workspace.ProjectSpaceCommand{WorkspaceCommandMeta: workspace.WorkspaceCommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "公开准入规则验证"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +54,7 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 			t.Fatal(err)
 		}
 	}
-	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, agents.NewRegistry(filepath.Join(directory, "native")))
+	projects := workspace.NewLocalProjectService(db, nil, projectfiles.Files{}, nil)
 	project, err := projects.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "公开输入准入", Root: root, SpaceID: space.Space.ID})
 	if err != nil {
 		t.Fatal(err)
@@ -65,16 +64,13 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 	settings.AllowedSubdirs = []string{"."}
 	settings.AllowedActions = []string{"observe", "read_context", "start", "send", "stop"}
 	settings.ExternalModelCLI = "pi"
-	project, err = projects.SetProjectSettings(ctx, human, project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings})
-	if err != nil {
-		t.Fatal(err)
-	}
+	project = saveAdmissionSettings(t, db, project, settings)
 	human.ProjectID = project.ID
 	packet, err := projects.ReadProjectContext(ctx, human, project.ID, domain.ContextRequest{Files: []string{"context.txt"}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	inputs, err := (agents.ProjectFiles{}).ReadProjectFiles(ctx, project, []string{"input.txt"})
+	inputs, err := (projectfiles.Files{}).ReadProjectFiles(ctx, project, []string{"input.txt"})
 	if err != nil || len(inputs) != 1 {
 		t.Fatal("实际输入文件读取失败", err)
 	}
@@ -87,11 +83,27 @@ func newDeliveryAdmissionInput(t *testing.T, creator string) *deliveryAdmissionI
 		t.Fatal(err)
 	}
 	// 使用未调用的实际适配器满足构造契约；一旦错误进入原生路径就应失败，不提供替身返回。
-	service, err := workspace.NewOrcaExecutionService(db, agents.ProjectFiles{}, projects, &orcaadapter.Runtime{}, db)
+	service, err := workspace.NewOrcaExecutionService(db, projectfiles.Files{}, projects, &orcaadapter.Runtime{}, db)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return &deliveryAdmissionInput{db: db, projects: projects, service: service, human: human, project: project, invocation: invocation, link: link}
+}
+
+// 设置是效果前规则参数；实际 CAS 存储不代表已观察原生注册或账号。
+func saveAdmissionSettings(t *testing.T, db *swastore.DB, project domain.LocalProject, settings domain.ProjectSettings) domain.LocalProject {
+	t.Helper()
+	expected := project.Settings.Revision
+	settings.Revision = expected + 1
+	project.Settings = settings
+	if err := db.SaveProject(context.Background(), project, expected); err != nil {
+		t.Fatal(err)
+	}
+	stored, err := db.LoadProject(context.Background(), project.ID)
+	if err != nil || !reflect.DeepEqual(stored.Settings, settings) {
+		t.Fatal("实际准入规则参数没有按原 revision 保存", err)
+	}
+	return stored
 }
 
 func (input *deliveryAdmissionInput) grant(t *testing.T, id string) domain.ProjectGrant {
@@ -207,9 +219,7 @@ func TestOrcaDeliveryCurrentAuthorizationBoundariesSQLite(t *testing.T) {
 				case "wrong-external-target":
 					settings.ExternalModelCLI = "codex"
 				}
-				if _, err := input.projects.SetProjectSettings(context.Background(), input.human, input.project.ID, domain.SettingsCommand{ExpectedRevision: settings.Revision, Settings: settings}); err != nil {
-					t.Fatal(err)
-				}
+				saveAdmissionSettings(t, input.db, input.project, settings)
 			}
 			input.check(t, false)
 		})

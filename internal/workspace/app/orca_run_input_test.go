@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectfiles"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
@@ -18,7 +18,7 @@ func TestRunSubmissionDetectsSameSizeSameTimeInputChanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reader := agents.ProjectFiles{}
+	reader := projectfiles.Files{}
 	before, err := reader.ReadProjectFiles(context.Background(), input.project, []string{"input.txt"})
 	if err != nil || len(before) != 1 {
 		t.Fatal("actual input read failed", err)

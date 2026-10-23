@@ -1,15 +1,20 @@
-package orca
+package orca_test
 
 import (
+	"context"
+	"errors"
 	"io"
+	"net"
 	"net/http"
-	"net/http/httptest"
+	"net/http/cookiejar"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/orca"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/swahttp"
 )
 
 func installedWebInput(t *testing.T) (string, string) {
@@ -36,18 +41,33 @@ func installedWebInput(t *testing.T) (string, string) {
 
 func TestInstalledWebDirectoryAndHTTPRoutes(t *testing.T) {
 	install, web := installedWebInput(t)
-	actual, err := InstalledWebDirectory(install, web)
+	actual, err := orca.InstalledWebDirectory(install, web)
 	if err != nil || actual != web {
 		t.Fatalf("trusted installed Web directory: %q %v", actual, err)
 	}
-	if actual, err := InstalledWebDirectory("", ""); err != nil || actual != "" {
+	if actual, err := orca.InstalledWebDirectory("", ""); err != nil || actual != "" {
 		t.Fatal("CLI without an explicit Web directory must remain available", err)
 	}
-	server := httpapi.NewServer(httpapi.Config{WebDir: actual})
-	httpServer := httptest.NewServer(server.Handler())
-	defer httpServer.Close()
-	for _, path := range []string{"/attention", "/assets/index.js"} {
-		response, err := http.Get(httpServer.URL + path)
+	server := swahttp.NewServer(swahttp.Config{WebDir: actual})
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	finished := make(chan error, 1)
+	go func() { finished <- server.Serve(listener) }()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			t.Error(err)
+		}
+		if err := <-finished; !errors.Is(err, http.ErrServerClosed) {
+			t.Error("actual SWA asset listener failed", err)
+		}
+	})
+	endpoint := "http://" + listener.Addr().String()
+	for _, path := range []string{"/swarm", "/assets/index.js"} {
+		response, err := http.Get(endpoint + path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -57,8 +77,36 @@ func TestInstalledWebDirectoryAndHTTPRoutes(t *testing.T) {
 			t.Fatalf("installed asset %s: HTTP %d %v", path, response.StatusCode, err)
 		}
 	}
+	response, err := http.Get(endpoint + "/api/v1/does-not-exist")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := io.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil || response.StatusCode != http.StatusForbidden || !strings.Contains(response.Header.Get("Content-Type"), "application/json") || strings.Contains(string(body), "<!doctype") {
+		t.Fatal("unauthenticated API did not retain the actual permission gate", response.StatusCode, err)
+	}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	client := &http.Client{Jar: jar, Timeout: 5 * time.Second}
+	request, err := http.NewRequest(http.MethodGet, endpoint+"/api/v1/auth/session", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Origin", endpoint)
+	response, err = client.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = io.Copy(io.Discard, response.Body)
+	response.Body.Close()
+	if err != nil || response.StatusCode != http.StatusOK {
+		t.Fatal("actual local session was not established", response.StatusCode, err)
+	}
 	for _, path := range []string{"/api", "/api/v1/does-not-exist"} {
-		response, err := http.Get(httpServer.URL + path)
+		response, err := client.Get(endpoint + path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -129,7 +177,7 @@ func TestInstalledWebDirectoryRejectsUntrustedInputs(t *testing.T) {
 				link(install, alias)
 				install, web = alias, filepath.Join(alias, "web")
 			}
-			if _, err := InstalledWebDirectory(install, web); err == nil {
+			if _, err := orca.InstalledWebDirectory(install, web); err == nil {
 				t.Fatal("untrusted installed Web input was accepted")
 			}
 		})

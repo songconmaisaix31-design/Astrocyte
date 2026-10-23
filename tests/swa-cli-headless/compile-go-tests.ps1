@@ -24,7 +24,7 @@ $swaPackages = @(
     @{ package = './cmd/swa'; binary = 'cmd-swa.test.exe'; test = 'TestOrcaCLIRealInstalledController' },
     @{ package = './internal/adapters/orca'; binary = 'orca-adapter.test.exe'; test = 'TestOrcaCLIRealPrivateRuntimeScope' },
     @{ package = './internal/workspace/app'; binary = 'workspace-app.test.exe'; test = 'TestOrcaCLIRealCurrentProjectAuthorization' },
-    @{ package = './internal/adapters/httpapi'; binary = 'httpapi.test.exe'; test = 'TestOrcaCLIRealHTTPAuthorityBoundary' }
+    @{ package = './internal/adapters/swahttp'; binary = 'swahttp.test.exe'; test = 'TestOrcaCLIRealHTTPAuthorityBoundary' }
 )
 Push-Location $swaRepository
 try {

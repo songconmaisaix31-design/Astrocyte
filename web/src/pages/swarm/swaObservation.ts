@@ -51,7 +51,28 @@ type ProjectSettings = components['schemas']['LocalProjectSettingsV1'];
 function readObservation(value: unknown): SwaObservation {
   const observation = object(value);
   if (typeof observation.status !== 'string' || !['available', 'unavailable', 'unknown'].includes(observation.status)) throw new Error('服务返回了未知的能力观察状态');
-  return { status: observation.status as SwaObservation['status'], reason: text(observation.reason, 'observation.reason'), source: text(observation.source, 'observation.source') };
+  const basis = observation.basis;
+  if (basis !== undefined && !['declaration', 'configuration', 'probe', 'session', 'result'].includes(String(basis))) throw new Error('能力观察依据不明');
+  return { status: observation.status as SwaObservation['status'], reason: text(observation.reason, 'observation.reason'), source: text(observation.source, 'observation.source'), ...(basis ? { basis: basis as NonNullable<SwaObservation['basis']> } : {}) };
+}
+
+export function readSwaCapabilityDetails(reply: SwaEnvelope) {
+  const result = object(reply.result);
+  if (result.schema !== 'swa.capabilities.v1' || !Array.isArray(result.agents)) throw new Error('服务未返回已知 Agent 能力合同');
+  return result.agents.map(value => {
+    const agent = object(value), control = object(agent.control), configured = object(agent.configured);
+    const stages = [
+      ['注册', agent.registered], ['安装', agent.installed], ['配置', agent.configured], ['账号认证', agent.authenticated], ['可启动', agent.launchable],
+      ['追加指令', control.send], ['读取', control.read], ['停止', control.stop], ['会话恢复', control.resume], ['图片', control.images], ['切换模型', control.model_switch], ['工具限制', control.tools],
+    ].map(([label, observation]) => ({ label: String(label), observation: observation === undefined ? null : readObservation(observation) }));
+    let catalog: { origin: string; verified: boolean; models: { id: string; label: string; provider: string | null }[] } | null = null;
+    if (agent.model_catalog !== undefined) {
+      const source = object(agent.model_catalog);
+      if (!['live-session', 'probe', 'configured', 'unknown'].includes(String(source.origin)) || !['verified', 'unverified'].includes(String(source.availability)) || !Array.isArray(source.models)) throw new Error('模型目录来源不完整');
+      catalog = { origin: String(source.origin), verified: source.availability === 'verified', models: source.models.map(value => { const model = object(value); return { id: text(model.id, 'model.id'), label: text(model.label, 'model.label'), provider: typeof model.provider === 'string' ? model.provider : null }; }) };
+    }
+    return { id: text(agent.id, 'agent.id'), model: typeof configured.model === 'string' ? configured.model : null, stages, catalog };
+  });
 }
 
 export function readSwaAgents(reply: SwaEnvelope) {

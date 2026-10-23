@@ -1,4 +1,4 @@
-import { api, ApiError, type ApiErrorBody, type components } from './client';
+import { api, ApiError, type ApiErrorBody, type components } from './transport';
 
 export type SwaCommand = components['schemas']['command'];
 export type SwaEnvelope = components['schemas']['envelope'];

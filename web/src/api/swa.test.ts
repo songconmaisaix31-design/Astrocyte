@@ -5,11 +5,12 @@ import { startS1Server, type S1Server } from '../../../tests/s1/server.mjs';
 import { humanAPI } from '../../../tests/s1/api.mjs';
 import { recordedClient } from './realHttpTest';
 import { createSwaApi } from './swa';
+import { ApiError } from './transport';
 
 describe('SWA 工作台使用同一生产 Go HTTP 边界', () => {
   let server: S1Server, projectID: string;
   beforeAll(async () => {
-    server = await startS1Server();
+    server = await startS1Server({ product: 'swa' });
     const human = await humanAPI(server.apiURL);
     const space = await human.write('/project-spaces', { title: 'SWA 公开仓库接口核查' }, { status: 201 });
     const registered = await human.write('/local-projects', { root: fileURLToPath(new URL('../../../', import.meta.url)), name: 'swa-browser-boundary', space_id: space.space.id });
@@ -19,7 +20,9 @@ describe('SWA 工作台使用同一生产 Go HTTP 边界', () => {
 
   it('未配置原生运行时时保留真实 503，读取 POST 不重发或产生执行关联', async () => {
     const recorded = recordedClient(server), client = createSwaApi(recorded.client);
-    await expect(client.command(projectID, { action: 'status' })).rejects.toMatchObject({ name: 'SwaRuntimeUnavailableError', status: 503, code: 'provider_unavailable' });
+    const observed = client.command(projectID, { action: 'status' });
+    await expect(observed).rejects.toMatchObject({ name: 'SwaRuntimeUnavailableError', status: 503, code: 'provider_unavailable' });
+    await expect(observed).rejects.toBeInstanceOf(ApiError);
     expect(recorded.requests.map(request => request.method)).toEqual(['GET', 'POST']);
     expect(new URL(recorded.requests[1].url).pathname).toBe(`/api/v1/local-projects/${projectID}/orca/commands`);
     expect(recorded.requests[1].headers.has('X-CSRF-Token')).toBe(true);

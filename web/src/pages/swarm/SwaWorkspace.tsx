@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { components } from '../../api/schema';
-import { localProjectsApi } from '../../api/s1';
+import { workspaceApi as localProjectsApi } from '../../api/workspace';
 import { swaApi, SwaCommandError, SwaRuntimeUnavailableError, type SwaCommand, type SwaEnvelope } from '../../api/swa';
-import { useReadApi, formatError } from '../../hooks/useReadApi';
+import { useReadApi, formatError } from '../../hooks/useReadState';
 import { QueryState } from '../../components/QueryState';
 import { SectionCard } from '../../components/SectionCard';
 import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, swaStartRequestBlock, canRequestSwaStart, type PendingSwaRequest } from './swaObservation';
+import { SwaAgentCapabilities, SwaRunWorkspace } from './SwaRunWorkspace';
+import { SwaRoles, type SelectedSwaRole } from './SwaRoles';
+import { inspectSwaRunSubmission } from './swaRunView';
 import styles from './SwaWorkspace.module.css';
 
 type Project = components['schemas']['LocalProjectV1'];
@@ -32,14 +35,19 @@ function ProjectRuntime({ project, disabled }: { project: Project; disabled: boo
   const [controller, setController] = useState(''), [taskID, setTaskID] = useState('');
   const [attached, setAttached] = useState<{ controller: string; taskID: string } | null>(null);
   const [workdir, setWorkdir] = useState(project.root);
+  const [selectedRole, setSelectedRole] = useState<SelectedSwaRole | null>(null), [conversationID, setConversationID] = useState('');
   const open = useSwaCommand(project.id, 'controller.open');
+  const submitRun = useSwaCommand(project.id, 'run.submit');
   const available = !disabled && !!status.data && !status.loading && !status.stale && !status.error && !!capabilities.data && !capabilities.loading && !capabilities.stale && !capabilities.error;
   const canStart = available && project.settings.allow_agent_control && project.settings.allowed_actions?.includes('start');
   return <div className={styles.workspace}>
     <p className={styles.identity}>项目 · {project.name} · {project.id} · 权限版本 {project.settings.revision}</p>
     <p className={styles.note}>页面权限快照仅用于表单提示。提交时，服务会独立核查当前人工身份、项目动作、目录及模型批准；可提交不代表操作已经获准。</p>
     <QueryState state={status}>{reply => <details><summary>执行服务 · 已取得状态快照</summary><p className={styles.note}>查询完成仅证明本次观察。任务状态和资源退出仍以各自原生记录为准。</p><pre className={styles.output}>{observationJSON(reply)}</pre></details>}</QueryState>
-    {!!status.data && <QueryState state={capabilities}>{reply => <details><summary>实际 Agent 与逐项能力</summary><p className={styles.note}>注册、安装、配置、可启动和控制能力分别核实。此清单不创建 Worker。</p><pre className={styles.output}>{observationJSON(reply.result)}</pre></details>}</QueryState>}
+    {!!status.data && <QueryState state={capabilities}>{reply => <><SwaAgentCapabilities reply={reply} /><details><summary>实际能力来源原件</summary><pre className={styles.output}>{observationJSON(reply.result)}</pre></details></>}</QueryState>}
+    <SwaRoles key={project.id} project={project} disabled={disabled} onRoleSelected={setSelectedRole} onConversationSelected={setConversationID} />
+    {(selectedRole || conversationID) && <div className={styles.form}>{selectedRole && <button type="button" className="ac-button secondary compact" onClick={() => setSelectedRole(null)}>清除本次角色选择</button>}{conversationID && <button type="button" className="ac-button secondary compact" onClick={() => setConversationID('')}>清除本次讨论关联</button>}</div>}
+    <SwaRunWorkspace project={project} capabilities={capabilities.data} disabled={disabled || !status.data || status.loading || status.stale || !!status.error} startDisabled={!available} command={submitRun} role={selectedRole} conversationID={conversationID} onAttached={selection => { setController(selection.controller); setTaskID(selection.taskID); setAttached({ controller: selection.controller, taskID: selection.taskID }); }} />
     <details><summary>新建 Controller 与固定任务</summary><p className={styles.note}>以下路径指向当前服务机器。页面不上传文件或修改项目批准；任务规格文件中的 max_workers 限制总创建和预留名额，释放 Worker 不归还名额。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void open.run({ action: 'controller.open', project_id: project.id, workdir: workdir.trim() }, reply => { if (!reply.controller) throw new Error('回执缺少真实 Controller，请查询原请求'); setController(reply.controller); }); }}><label>已批准的服务端工作目录<input required value={workdir} onChange={event => setWorkdir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={!canStart || open.pending || !!open.unresolved}>创建 Controller</button></form><OperationState command={open} onRecovered={reply => { if (reply.controller) setController(reply.controller); }} />
       {controller.trim() && <TaskCreateForm key={controller.trim()} projectID={project.id} controller={controller.trim()} disabled={!canStart} onCreated={id => { setTaskID(id); setAttached({ controller: controller.trim(), taskID: id }); }} />}
     </details>
@@ -76,7 +84,7 @@ function TaskWorkspace({ project, controller, taskID, capabilities, startDisable
         {selected && !fleet.stale ? <WorkerWorkspace key={selected.dispatchID} project={project} controller={controller} dispatchID={selected.dispatchID} onChanged={fleet.retry} /> : <p className={styles.note}>{data.workers.length ? '选择 Worker 查看原生输出与可用操作。' : '服务本次没有返回 Worker。'}</p>}
       </div>
     </>}</QueryState>
-    <details><summary>完整成果导出</summary><p className={styles.note}>成果导出与消息预览分别处理。服务核查全部实际来源与大小边界后，将成果写入当前项目已批准父目录下的全新目录；浏览器不会把预览当作完整成果下载。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void exportCommand.run({ action: 'task.result', controller, task_id: taskID, output_dir: outputDir.trim() }); }}><label>服务端新的绝对输出目录<input required value={outputDir} onChange={event => setOutputDir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={fleet.loading || fleet.stale || !fleet.data || exportCommand.pending || !outputDir.trim()}>导出实际成果</button></form><OperationState command={exportCommand} controller={controller} /></details>
+    <details><summary>完整成果原件查询</summary><p className={styles.note}>服务核查全部实际来源、大小与目录批准后返回完整成果原件。此处显示查询回执；使用上方完整任务下载，或使用 CLI 将原件写入本机新目录。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void exportCommand.run({ action: 'task.result', controller, task_id: taskID, output_dir: outputDir.trim() }); }}><label>服务端新的绝对输出目录<input required value={outputDir} onChange={event => setOutputDir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={fleet.loading || fleet.stale || !fleet.data || exportCommand.pending || !outputDir.trim()}>查询完整成果原件</button></form><OperationState command={exportCommand} controller={controller} /></details>
   </div>;
 }
 
@@ -143,7 +151,7 @@ function useSwaCommand(projectID: string, scope: string) {
   async function run(body: SwaCommand, onSuccess?: (reply: SwaEnvelope) => void) {
     if (busy.current || unresolved) return;
     busy.current = true;
-    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop'].includes(body.action);
+    const mutation = ['controller.open', 'task.create', 'worker.start', 'worker.send', 'worker.stop', 'run.submit'].includes(body.action);
     const requestID = mutation ? crypto.randomUUID() : undefined;
     setPending(true); setError(null); setReply(null);
     try {
@@ -164,6 +172,11 @@ function useSwaCommand(projectID: string, scope: string) {
     if (!unresolved || busy.current) return;
     busy.current = true; setPending(true);
     try {
+      if (unresolved.action === 'run.submit') {
+        const recovered = await inspectSwaRunSubmission(projectID, unresolved);
+        if (active.current && recovered) { setReply(recovered); onRecovered?.(recovered); sessionStorage.removeItem(storageKey); setUnresolved(null); setError(null); }
+        return;
+      }
       const result = await swaApi.command(projectID, { action: 'request.show', ...(unresolved.controller ? { controller: unresolved.controller } : { project_id: projectID }), request_id: unresolved.requestID });
       if (active.current) {
         setReply(result);

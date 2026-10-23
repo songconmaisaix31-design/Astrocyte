@@ -1,5 +1,5 @@
 {
-  "name": "astrocyte",
+  "name": "swarm-anything",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,12 +11,13 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "check": "node scripts/check.mjs",
+    "check:race": "node scripts/check.mjs --race",
     "check:contracts": "redocly lint contracts/openapi.yaml --config contracts/redocly.yaml && node scripts/validate-examples.mjs && node scripts/generate-client.mjs --check",
     "generate": "node scripts/generate-client.mjs",
-    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs --swa",
     "check:dependencies": "node scripts/check-dependencies.mjs",
     "test:e2e": "pnpm --dir web test:e2e",
-    "test:s1": "node --test tests/s1/acceptance.test.mjs",
+    "test:s1": "node --test tests/s1/development-lifecycle.test.mjs",
     "build": "node scripts/build.mjs",
     "start": "node scripts/start.mjs",
     "build:swa": "node --max-old-space-size=1024 scripts/build-swa.mjs",
@@ -30,8 +31,5 @@
     "ajv-formats": "3.0.1",
     "openapi-typescript": "7.13.0",
     "yaml": "2.9.1"
-  },
-  "dependencies": {
-    "@steipete/summarize": "0.25.1"
   }
 }

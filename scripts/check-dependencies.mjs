@@ -2,9 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseAllDocuments } from 'yaml';
 import { execFileSync } from 'node:child_process';
-import { dirname } from 'node:path';
 import { root, web, findGo } from './process.mjs';
-import { summarizeEnvironment, summarizeVersion } from './summarize.mjs';
 
 const json = async path => JSON.parse(await readFile(path, 'utf8'));
 const inventory = await json(join(root, 'dependencies.lock.json'));
@@ -37,11 +35,4 @@ for (const [name, version] of Object.entries(inventory.direct_dependencies.go)) 
   if (module.Version !== version || module.Indirect || module.Replace) throw new Error(`${name} dependency inventory differs from Go module metadata`);
 }
 if (goMod.Go !== inventory.toolchain.go) throw new Error('Go toolchain inventory differs from parsed go.mod');
-const extraction = await summarizeEnvironment({});
-const version = execFileSync(extraction.ASTROCYTE_NODE, [extraction.ASTROCYTE_SUMMARIZE_CLI, '--version'], {
-  encoding: 'utf8', windowsHide: true, timeout: 60000,
-  env: { PATH: dirname(extraction.ASTROCYTE_NODE), SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR },
-}).trim();
-if (version !== summarizeVersion) throw new Error(`Project summarize CLI reports ${version}, expected ${summarizeVersion}`);
-console.log(`Project summarize CLI loads and reports ${version}; media extraction is checked separately`);
 console.log('Exact dependency pins, installed versions and lock inventory agree');

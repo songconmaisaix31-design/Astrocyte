@@ -9,7 +9,6 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 func TestOrcaCapabilitiesRejectBeforeNativeSQLite(t *testing.T) {
@@ -25,9 +24,7 @@ func TestOrcaCapabilitiesRejectBeforeNativeSQLite(t *testing.T) {
 			case "observe_not_allowed":
 				settings := input.project.Settings
 				settings.AllowedActions = []string{"read_context", "start", "send", "stop"}
-				if _, err := input.projects.SetProjectSettings(context.Background(), input.human, input.project.ID, domain.SettingsCommand{ExpectedRevision: input.project.Settings.Revision, Settings: settings}); err != nil {
-					t.Fatal(err)
-				}
+				saveAdmissionSettings(t, input.db, input.project, settings)
 				expected = apierrors.ApprovalRequired
 			case "root_missing":
 				if err := os.Rename(input.project.Root, input.project.Root+"-moved"); err != nil {

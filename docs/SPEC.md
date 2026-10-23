@@ -1,13 +1,13 @@
 # SWA 产品规格
 ## DDD 开发规格
 
-**Attention Mirror · 共同工作区 · Morphogenesis**
+**工作区 · 角色 · 任务 · Agent 执行**
 
-版本：v0.1　　日期：2026-10-09　　语言：Go + TypeScript
+版本：开发中　　日期：2026-10-23　　语言：Go + TypeScript
 
 **任务流程：用户目标与既有项目 → 提案及批准 → 蜂群执行 → 检查与成果 → 用户采用与经验回流。**
 
-资料沉淀作为可选入口：收藏 → 沉淀 → 品味筛选 → 工作区候选。Attention、Workspace、Swarm 保持各自业务归属，用户可围绕已有项目筹划任务。原整合方向见 [META_PLAN](META_PLAN.md)，当前实现与验证范围见根 [STATUS](../STATUS.md)。用户最新首版为抽取 Orca CLI 执行能力并交付可控 Swarm CLI，已审方案与接口边界见 §21.1；原 M2/M3 通用 CLI/MCP 及 M2—M6 保留后续规划，其 MCP 与完整 S3 不自动成为首版前置，适用关系见 [QUESTIONS](QUESTIONS.md)。
+用户围绕已有项目提交目标，由同一 Run 保存任务、递归交接和成果。Astrocyte 与 Attention Mirror 分别抽为独立项目；认知、资料与执行的最新归属以及 run/wait/export 合同见 §21.5。历史资料流程和旧 S3 章节保留对应产品语义，其存在不代表 SWA 必须编译或启动另两个产品。当前实现与实际验证范围见 [STATUS](../STATUS.md)，用户决定见 [QUESTIONS](QUESTIONS.md)。
 
 本规格定义新平台的业务规则、接口和开发任务。`docs/SPEC.md` 是开发规格正文；Word 是同版阅读件。修改规格时先改 Markdown，再生成阅读件。
 
@@ -29,7 +29,7 @@
 
 ### 实施方式
 
-已有产品由一个 Go 主程序维护业务状态，一个 TypeScript 前端提供三模块界面。判断、Agent 和索引组件通过端口接入，保持现有模块化单体结构。首版 CLI 按 §21.1 新增独立 `swa` 入口和抽取的 Node 执行后台，复用 Workspace App 准入；实际安装、运行及功能验收由首版任务登记。
+当前 SWA 由 `swa-server` 维护 Workspace/Swarm 业务状态，TypeScript 前端提供项目、角色、Run 与 Worker 界面；`swa` CLI 和原生 Node 执行后台共用 Workspace App 准入。Astrocyte、Attention Mirror 各有独立进程、数据库和前端，当前边界见 §21.5，旧混合模块与研究设计按 [LEGACY](LEGACY.md) 保留。实际安装、运行及功能验收由当前任务登记。
 
 已确认的产品约束见第 01 节；工程默认值可以通过短 ADR 调整。涉及自动执行权、资料外发、目标或产品范围的变化，先提交用户决定。
 
@@ -1166,7 +1166,7 @@ structured launch admission增加disabledOpenCodeTools，与disabledPiTools各�
 
 | ADR | 决策 | 改动边界 |
 |---|---|---|
-| D01 | Go 模块化单体 + TS 前端 | 拆服务前先出现真实部署需求 |
+| D01 | 各产品使用 Go 模块化后端 + TS 前端 | 用户已要求三产品独立，按 §21.5 拆源码与部署入口 |
 | D02 | 三个业务上下文 + 共享判断端口 | 不再新增任务真相源或中央 LLM 控制面 |
 | D03 | Domain/App/Adapters/Composition 依赖，保持现有包边界 | 新抽象对应当前用例，不为规则整理重构既有模块 |
 | D04 | SQLite 业务状态，索引可重建 | 数据库实现变化不修改领域规则 |
@@ -1188,6 +1188,31 @@ structured launch admission增加disabledOpenCodeTools，与disabledPiTools各�
 ### 21.4 短 ADR 模板
 
 问题 → 选定做法 → 影响哪些契约 → 需要迁移的数据 → 回退方法。只有跨模块契约、持久化、权限或部署形态变化需要 ADR；普通函数实现不新增决策文档。
+
+### 21.5 独立产品与完整任务交付
+
+本节依据 2026-10-23 用户要求，覆盖历史章节中把三产品默认组合构建的安排。Astrocyte 拥有认知事件、注意力动力学、知识、经验、MCP 和 sleep；Attention Mirror 拥有资料导入、沉淀、品味、机会；SWA 拥有开发空间、项目权限、角色、会话及任务执行。每个产品具有独立源码、依赖、入口和数据目录，不依赖另一个 checkout 的本地 replace、软链接或运行中进程。必要集成显式配置，未配置时给出不可用原因。原用户数据库和历史迁移保全，不自动执行跨产品迁移。
+
+Workspace 独占开发空间存储责任，沿用 `attention_project_spaces` 原表、ID、版本和完整资料引用。旧同库资料消费者通过显式 adapter 委派空间写入，原事务仍使用同连接；拆为独立产品后不能宣称跨数据库原子提交。
+
+| 对象 | 保存的业务事实 |
+| --- | --- |
+| Role | 职责、默认 Agent/模型、技能及长期知识引用；有项目范围、版本和归档状态 |
+| Conversation | 当前讨论及追加要求；追加讨论不隐式调用模型 |
+| Task | 目标、依赖、验收条件和结果；固定角色版本及来源 |
+| Worker | 实际 Dispatch、进程与原生会话身份、输入和释放状态 |
+
+`run.submit` 接原 project/workdir/spec_file/input_file/agent/model/name/request_id，可选 role_id+revision 和 conversation_id。Go 在原权限下组合 controller.open、task.create、worker.start；外部稳定 UUID 为首阶段身份，后两阶段确定派生，持久化完整 spec/input/context/selection。恢复只读取并验证原请求回执，unknown 不自动重发或生成新身份。`initial_workers` 省略为 1，显式值须在 1 至 max_workers 以内；它防止已批准的初始并发尚未启动就收尾，实际动态后代仍全部纳入观察。
+
+CLI `run` 默认等待整个递归 Run；`wait` 用精确 controller/run_id/root task_id 重连，只观察现有工作。`--strict` 将任一递归子任务失败计为失败，非严格模式仍展示完整失败列表。退出码沿既有 2—7，新增 8 超时、9 需要用户回答、130 取消等待；取消等待不自动停止 Worker。`export` 读取同 Run 的完整记录、原生成果和产物索引，CLI 写入明确的新输出目录，GUI 下载实际数据。GUI 与 CLI 共用 `swa.run-view.v1`，显示后代、依赖、Dispatch、问题、阻塞、失败和成果。
+
+work 委派执行，consult 必须由实际工具策略禁止外部操作，notify 仅保存单向邮件且不新建 Task/Worker。交接保存原始来源、父任务、接收者、完成条件和 reply。notify 的 `delivery:stored` 只表示记录已保存；通知和完成邮件使用原 `audit_only` 合同，不进入会自动向模型投递的邮箱。reply=poll 由调用者观察；reply=resume 由原生完成消费者把真实子成果通过原邮件和经过当前权限检查的 worker.send 输入路径递交父会话。内部 `handoff` 引用 source_task_id/source_dispatch_id/parent_task_id/parent_dispatch_id/mail_id；后台核原记录、当前项目权限和原会话，外部请求不能提供该证明。邮件已保存、实际接受输入、父 Agent 继续输出分别记录。
+
+Run 自动收尾复用原 journal 完成通知、Task/Dispatch、完整成果 reader 和原 worker.stop/release，不新增调度器或第二任务状态库。所有实际后代、待答问题、未知输入和所属资源均须闭合；执行终态标记 `acceptance:unreviewed`，不代替验收条件审查。
+
+Agent 能力分别标记 declaration/configuration/probe/session/result 证据层级；安装、配置、可启动、实际控制和执行成功分别展示。图片、工具和模型切换分别声明，界面按实际可用操作开放。追加输入仅有原生接受证据才为 sent，明确无效果拒绝才为 not_sent，其余为 unknown；unknown 不自动重发。恢复区别 resumed/rebuilt/failed/unknown，保留真实模型、provider、非秘密账号来源及原会话。模型目录优先使用当前真实会话支持的账号目录；静态配置标为 unverified，不能回退其他账号后声称同来源。
+
+本轮验收使用 N=4、N=6 的真实公开任务，并分别报告平台、Agent/模型、原生输入与输出、停止隔离和最终资源释放。实现及局部测试不替代安装后实际验收；具体计划与剩余限制见[当前任务](../tasks/swa-evolution-20261023.md)。
 
 <!-- PAGEBREAK -->
 

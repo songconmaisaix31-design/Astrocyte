@@ -2,8 +2,12 @@ package swastore
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -13,13 +17,67 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
-	legacy "github.com/songconmaisaix31-design/Astrocyte/migrations"
 	migrations "github.com/songconmaisaix31-design/Astrocyte/migrations/swa"
 )
 
+type legacyFixture struct {
+	SourceRevision       string `json:"source_revision"`
+	SourcePath           string `json:"source_path"`
+	SourceLocator        string `json:"source_locator"`
+	ContentSHA256        string `json:"content_sha256"`
+	DatabaseSHA256       string `json:"database_sha256"`
+	MaterialID           string `json:"material_id"`
+	SpaceID              string `json:"space_id"`
+	SpaceVersion         int    `json:"space_version"`
+	CallerID             string `json:"caller_id"`
+	ReferenceRequestID   string `json:"reference_request_id"`
+	ReceiptCount         int    `json:"receipt_count"`
+	OriginalReopenReplay bool   `json:"original_reopen_replay"`
+}
+
+func readLegacyFixture(t *testing.T) (legacyFixture, []byte) {
+	t.Helper()
+	root := filepath.Join("testdata", "legacy", "fixture")
+	metadata, err := os.ReadFile(filepath.Join(root, "source.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var original legacyFixture
+	if err := json.Unmarshal(metadata, &original); err != nil {
+		t.Fatal(err)
+	}
+	if original.SourceRevision != "644bbe8701ae1b1c30b54f18621c28e03dbf6082" || original.SourcePath != "LICENSE" || !original.OriginalReopenReplay {
+		t.Fatal("actual legacy source and original replay provenance are missing")
+	}
+	database, err := os.ReadFile(filepath.Join(root, "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(database)
+	if hex.EncodeToString(sum[:]) != original.DatabaseSHA256 {
+		t.Fatal("actual closed legacy database differs from its recorded source")
+	}
+	content, err := os.ReadFile(filepath.Join(root, "objects", original.ContentSHA256))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum = sha256.Sum256(content)
+	if hex.EncodeToString(sum[:]) != original.ContentSHA256 {
+		t.Fatal("actual legacy public source object changed")
+	}
+	return original, database
+}
+
 func openStore(t *testing.T, full bool) *DB {
 	t.Helper()
-	db, err := Open(filepath.Join(t.TempDir(), "state.sqlite"))
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	if full {
+		_, original := readLegacyFixture(t)
+		if err := os.WriteFile(path, original, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	db, err := Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,11 +86,10 @@ func openStore(t *testing.T, full bool) *DB {
 			t.Error(err)
 		}
 	})
-	source := migrations.FS
 	if full {
-		source = legacy.FS
+		return db
 	}
-	if err := db.RunMigrations(context.Background(), source); err != nil {
+	if err := db.RunMigrations(context.Background(), migrations.FS); err != nil {
 		t.Fatal(err)
 	}
 	return db

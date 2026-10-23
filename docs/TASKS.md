@@ -4,19 +4,17 @@
 
 ## 当前顺序
 
-本轮新增已确认范围为：人类按同项目当前权限独立向CLI Agent任务追加`worker.send`，Windows x64与Linux双平台，以及大部分Agent适配；真实模型测试预算不设费用上限。跨创建者start、原生工具、私有资料、原request/未知效果及资源准入不据此放宽。01按[Agent矩阵](integration/openmausbot/02-agent-matrix.md)列全部45个TUI来源和7个结构化引擎，02优先接通已有真实原生adapter及Linux所属控制，03/04消费已审合同，05准备两平台实际候选，06按可访问环境核验。当前仅Linux可访问，Windows主机/安装/链路未验保持NOT_RUN；不重复询问已确认x64或模型预算。
+当前执行[产品拆分与完整任务交付](../tasks/swa-evolution-20261023.md)，用户已确认 Astrocyte、Attention Mirror 分别建立独立仓库，SWA 只保留必要集成；本轮真实并发目标为 N=4、N=6。既有 Windows x64/Linux、StepFun、不限模型预算及人类按当前项目权限独立追加输入继续适用。
 
-本次用户要求执行上传的[六张任务卡](../tasks/swa-task-cards-20261022.md)，从main `6445149`与PR #5 `6778a66f`的准确本地集成开始。顺序为01共享合同→02运行时/03 CLI→05 CLI候选→06 CLI真实验收；04现有React工作台与共享服务随后进入05组合候选及06跨入口验收，GUI不阻塞CLI候选。当前合同和逐文件归属见[整合入口](integration/openmausbot/00-context.md)。最终验收默认N=3、可配置；旧至少两Worker要求及历史报告保留原验收范围，当前N=3不得由旧结果替代。旧机授权与运行状态不移植到本云机。
+1. [产品拆分](../tasks/swa-product-separation-20261023.md)：保全原件，建立两个独立项目；Workspace 负责空间唯一存储，SWA 专用后端与前端移除隐含认知/资料依赖。
+2. [完整任务入口](../tasks/swa-run-cli-20261023.md)：run/wait/export、同 Run GUI、稳定请求恢复、递归 strict 和分离退出码。
+3. [能力状态](../tasks/swa-agent-capabilities-20261023.md)与[角色/交接](../tasks/swa-collaboration-model-20261023.md)：使用原生状态、实际邮件和效果前权限，确认父任务真正继续及完整资源释放。
+4. [N4/N6 验收](../tasks/swa-concurrency-20261023.md)：在准确同候选安装执行真实重叠、指定停止、同会话继续、成果和清理。各平台、Agent 及模型分别保留真实结果。
+5. [独立审查](../tasks/swa-evolution-review-20261023.md)、普通提交/推送及交付文档。完整构建前先完成失败的最小复现、根因与局部验证。
 
-Linux已验CLI候选的安装/服务基础与后继每Worker完整回收D分别记录；02/05继续D实现与真实内核测试，Codex专题提供固定版本工具政策与真实来源，06按已独立审查的N驱动计划实施。缺少当前授权、原生完整来源或ToolsOff时在模型输入前保留NOT_RUN。“大部分Agent”的7个结构化/45个TUI验收分母已询问、尚待答，不影响共同基础继续推进，准确通过范围以STATUS为准。
+当前只连接 Linux；Windows 原生 CI 构建/安装/服务结果和真实模型验收分别记录。旧双 Worker 和[六卡 N=3](../tasks/swa-task-cards-20261022.md)保留原适用范围，不代验本轮。Agent [实际适配矩阵](integration/openmausbot/02-agent-matrix.md)继续维护已安装、可启动、可控制及实际成功的区别，缺少账号或能力不填写通过。
 
-用户最新确认首版目标为抽取 Orca CLI 对应执行能力，交付从原有 Agent 或终端调用的可控 Swarm CLI。准确396e的完整无界面方案及测试计划已独立接受，接口按SPEC §21.1、写域及验收按首版任务，同一Worker正在实现；实际依赖准备及原服务窗口由STATUS维护。下方原 M2—M6 保留后续规划，MCP 与完整 S3 不自动成为该首版前置。现有权限及未验范围按 QUESTIONS/STATUS 保持。
-
-用户进一步明确首版须发现本机注册的 Agent 并通过 Swarm CLI 调用这些 Agent，使用 REA 逆向抽取 Orca CLI 能力并减少必要运行依赖。独立发现/稳定选择、原生输入/模式及控制端恢复计划已分别独立接受并按SPEC §21.1.1—§21.1.3定稿，原Worker持续实现及返修；准确源码逐项交原Reviewer核查。真实账号/工具、完整依赖闭包、独立安装及同候选双Worker验收尚未通过，当前原S及本机Orca保持各自运行。
-
-既有[首版 CLI 任务](../tasks/swa-cli-v1-20261020.md)保留固定抽取、Orca 无界面执行与控制端身份/CLI规则、多Worker、失败资源和安装的原计划与验证；本次整合按上述六卡接续，最终使用同一安装候选完成默认N=3的真实任务、指定停止和成果检查。用户要求不妨碍本机Orca CLI并集成产品，继续使用产品自带且隔离运行的后台；实际身份、profile/配置/数据/端点及进程隔离须验证。
-
-后续整合任务包含 MCP、网页重构、完整旧 S3 和全部历史分支清理；旧 S3 保留独立验收记录。下方 M2—M6 是总体整合索引，不自动覆盖最新首版范围。
+既有[首版 CLI](../tasks/swa-cli-v1-20261020.md)的原生所属、账号隔离、未知结果及 ToolsOff 规则继续适用。下方旧 S3、M2—M6 与科研任务保留其范围和独立证据；产品的当前已验结果只由 STATUS 维护。
 
 0. [SWA 主线整理](../tasks/swa-mainline-20261020.md)：M0 规则及文档整合已独立接受，产品历史及有效文档已普通快进进入默认 main。当前优先[首版 CLI](../tasks/swa-cli-v1-20261020.md)；M1 未补丁原命令本次通过、历史崩溃未复现，已停止补丁实施并恢复原服务。原 [M2 建议](../tasks/swa-m2-public-contracts-20261020.md)及 M2—M6 保留后续规划，原 S3 未决项保持。
 
