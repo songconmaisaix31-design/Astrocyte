@@ -8,6 +8,8 @@
 
 当前工作归属：`n4_392_failure`负责已审b30bc4f8统一修正与局部验证，`n4_392_review`独立审查；`remaining_delivery_audit`已开始fa62e2ee原生提问/继续方案的互斥源码实现，preamble四共享源先由N4 owner完成并审查再释放。`environment_access_check`的Windows ff33最小run40021139196已获原06实际独审通过，接续准备D17服务观察计划，未执行新服务CI。Root独占Git提交/tag/推送、STATUS/HANDOFF和实际服务操作。新增四根可恢复副本调查与唯一check-only已独审，工具 `.verification/cloud-setup/space-392-20261023-12/remove-reviewed-copies.py` SHA1123dfd4，仅Root收到用户明确新增授权后才能执行一次 `--remove-reviewed-four`；当前尚未批准、operation-01未创建。之前获准的四根已删除，不能混淆两批。所有正式安装、原归档、任务数据、凭据与失败证据保持保全。下面S0177及更早段落是历史，不作为当前安装或活动进程状态。
 
+N4 driver 六源已完成独审，最后 `run-installed.mjs` SHA 为 `02f6ecd8e0b19644865d7a3ed8016ff77f0ba281d3102189444c11e73994728d`。Root 追加核查修正了 completed 回执清除效果未知的问题：只认原命令明确终态，query-only 仍 UNKNOWN；两组真实历史负例与原外层成功例离线验证通过。记录见 STATUS 和 `resolver-r2-review.md`，不能复用第一版 resolver 接受或把局部结果写成新 N4 成功。四 preamble 源已释放给 question owner，最终共同 strict 尚未运行；问答 Go 分段仅静态审查接受。Windows c76 服务观察计划已独审，原 owner 在诊断树实施四路径，Root 尚未触发后继 CI。OpenCode owner 只准备独立 ignored 初始化工具计划，不能并发写问答公共源或调用真实 credential/model。
+
 当前负责人及互斥写域：
 
 - separation：Attention Mirror 独立仓、显式提取器配置与资料适配器测试，当前已独立审查接受；任务 `swa-product-separation-20261023.md`。

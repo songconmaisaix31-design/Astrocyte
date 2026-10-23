@@ -11,6 +11,7 @@ import { providerTimelineKeyPart, spelledProviderTimelineItemKey } from './sourc
 import { agentSessionSendBodyFingerprint } from './source/third_party/orca-v1.4.230/src/shared/structured-agent-session-send-mutation'
 import { SendBodyStructure } from './source/third_party/orca-v1.4.230/src/shared/rpc-contract/structured-agent-session-message-params'
 import { isSwaLinuxProcessAbsent, readSwaLinuxProcess, readSwaLinuxProcessIncarnation, requireSwaLinuxAncestor, requireSwaLinuxIncarnation, swaLinuxProcessIncarnationSchema } from './source/third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
+export { getPendingWorkerStartRecovery } from './source/third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 
 const need: (value: unknown) => asserts value = value => { if (!value) throw new Error('pi_observer_unavailable') }
 async function readInput(maximum: number) {
@@ -87,30 +88,9 @@ export function fingerprintPiBody(sessionId: string, value: unknown) {
   const { from: _sender, ...payload } = value as Record<string, unknown>
   return agentSessionSendBodyFingerprint(sessionId, SendBodyStructure.parse(payload))
 }
-async function main() {
-  const [mode, pidText, extra] = process.argv.slice(2)
-  need(extra === undefined)
-  if (mode === 'incarnation') {
-    need(/^[1-9][0-9]*$/.test(pidText ?? ''))
-    const pid = Number(pidText)
-    need(Number.isSafeInteger(pid))
-    process.stdout.write(JSON.stringify(observeIncarnation(pid)) + '\n')
-    return
-  }
-  need(pidText === undefined)
-  if (mode === 'runtime-custodian') {
-    const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(16 * 1024)))
-    process.stdout.write(JSON.stringify(observeRuntimeCustodian(parsed)) + '\n')
-    return
-  }
-  if (mode === 'decode-pi-record') {
-    const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(1024 * 1024)))
-    process.stdout.write(JSON.stringify(decodePiRecord(parsed)) + '\n')
-    return
-  }
+export function validatePiSource(mode: 'validate-pi-trace' | 'validate-pi-native', bytes: Buffer) {
   need(mode === 'validate-pi-trace' || mode === 'validate-pi-native')
-  const bytes = await readInput(12 * 1024 * 1024)
-  need(bytes.length > 0 && bytes.at(-1) === 10)
+  need(Buffer.isBuffer(bytes) && bytes.length > 0 && bytes.length <= 12 * 1024 * 1024 && bytes.at(-1) === 10)
   const api = protocol()
   let count = 0
   let header: ReturnType<typeof api.strictPiNativeHeaderSchema.parse> | undefined
@@ -137,7 +117,31 @@ async function main() {
   }, () => { throw new Error('pi_observer_invalid_jsonl') }, { maxLineBytes: 8 * 1024 * 1024 })
   framer.feed(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
   need(!framer.takeTail() && count > 0)
-  process.stdout.write(JSON.stringify({ record_count: count, ...(header ? { header } : {}) }) + '\n')
+  return { record_count: count, ...(header ? { header } : {}) }
+}
+async function main() {
+  const [mode, pidText, extra] = process.argv.slice(2)
+  need(extra === undefined)
+  if (mode === 'incarnation') {
+    need(/^[1-9][0-9]*$/.test(pidText ?? ''))
+    const pid = Number(pidText)
+    need(Number.isSafeInteger(pid))
+    process.stdout.write(JSON.stringify(observeIncarnation(pid)) + '\n')
+    return
+  }
+  need(pidText === undefined)
+  if (mode === 'runtime-custodian') {
+    const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(16 * 1024)))
+    process.stdout.write(JSON.stringify(observeRuntimeCustodian(parsed)) + '\n')
+    return
+  }
+  if (mode === 'decode-pi-record') {
+    const parsed: unknown = protocol().parseStrictPiJson(new TextDecoder('utf-8', { fatal: true }).decode(await readInput(1024 * 1024)))
+    process.stdout.write(JSON.stringify(decodePiRecord(parsed)) + '\n')
+    return
+  }
+  need(mode === 'validate-pi-trace' || mode === 'validate-pi-native')
+  process.stdout.write(JSON.stringify(validatePiSource(mode, await readInput(12 * 1024 * 1024))) + '\n')
 }
 
 if (require.main === module) void main().catch(() => {

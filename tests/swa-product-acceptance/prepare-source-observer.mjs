@@ -25,6 +25,7 @@ const snapshotPaths = [
   'third_party/orca-v1.4.230/config/tsconfig.node.json',
 ]
 if (pi) snapshotPaths.push('third_party/orca-v1.4.230/src/main/pi/rpc-protocol.ts', 'scripts/build-swa-runtime.mjs',
+  'third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt.ts',
   'third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts',
   'third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts')
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')

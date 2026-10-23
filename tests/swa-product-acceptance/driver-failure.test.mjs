@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { getCallSites } from 'node:util'
 import { driverFailure } from './driver-failure.mjs'
+import { validateLinuxFinalCustody } from './codex-event-view.mjs'
+import { validatePiEventView } from './pi-event-view.mjs'
 
 function actualFailure(body) {
   try { body() } catch (error) { return error }
@@ -36,6 +38,22 @@ test('真实文件读取错误只保留有限错误码，不暴露路径或正�
   assert.equal(result.label, null)
   assert.equal(JSON.stringify(result).includes('does-not-exist'), false)
   assert.equal(result.location_status, 'observed')
+})
+
+test('原驱动的实际来源验证错误保留固定 helper 位置', () => {
+  for (const [file, run] of [
+    ['codex-event-view.mjs', () => validateLinuxFinalCustody(undefined, undefined)],
+    ['pi-event-view.mjs', () => validatePiEventView([], undefined)],
+  ]) {
+    const error = actualFailure(run)
+    const result = driverFailure(error, new URL('./run-installed.mjs', import.meta.url))
+    assert.equal(result.type, 'AssertionError')
+    assert.equal(result.code, 'ERR_ASSERTION')
+    assert.equal(result.locations[0].file, file)
+    assert.ok(result.locations.every(location => location.file === file))
+    assert.equal(JSON.stringify(result).includes('file:'), false)
+    assert.equal(driverFailure(error, new URL('../run-installed.mjs', import.meta.url)).location_status, 'unavailable')
+  }
 })
 
 test('已格式化的真实断言仍可定位，外部 formatter 保持原样', () => {

@@ -38,6 +38,7 @@ def main():
     if profile == "stepfun-pi-n3":
         allowed.extend([
             "third_party/orca-v1.4.230/src/main/pi/rpc-protocol.ts",
+            "third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt.ts",
             "scripts/build-swa-runtime.mjs",
             "third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts",
             "third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts",

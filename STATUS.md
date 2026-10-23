@@ -10,6 +10,10 @@ Root 与独立 reviewer 已逐字审阅四段真实最终助手文本和公开�
 
 Windows 父退出场景 `96b2af702e5b4d985b1c0b23ded2ae8e5b8da8d9` / run40018400000 已独审为 FAIL：P自然退出，C同一身份仍存活，原/旧父prior/已知子prior的正反对照通过；首个退出采样仍见C，第二次native与CIM未到达。G估算的30秒截止不证明C已退出，具体退出原因未知。后继三路径修正 `ff33f6b9bcdd4b37eb330b61db49bd14d5476fb9` 保原90秒总界，增加一次最多5秒的完整原帧观察，未知立即失败，首次消失后仍执行原两native与CIM。源码、局部静态和实际 run40021139196/job120645694135 均已独审通过：父正常退出0/双EOF，同一子进程的三组prior比较符合预期；等待第一个样本仍见C，第二个样本在原截止后266.2407ms首次为空，随后独立两次native均为空/unknown0、间隔262.424ms，CIM退出0且all_exited。完整ABC及等待原件均上传，未下载artifact；安全原件与summary在 `.verification/cloud-setup/windows-known-owned-ff33f6b9-actual/`，summary SHA256 `96f9babd0fdc5368ec835457b310abf1782a6bbf14336e7d6d962934b67feb0d`。无强制清理，C退出码非父不可观测、kernel_tree_exit_proven=false。该最小普通进程场景不代替Controller/服务/正式安装验证，也不解释旧96b2具体退出原因或补证D17历史prior。
 
+S392 后继 N4 驱动的六份源码与局部结果已独立接受，当前 `run-installed.mjs` SHA256 为 `02f6ecd8e0b19644865d7a3ed8016ff77f0ba281d3102189444c11e73994728d`。同一严格解析函数用于 CLI 和活动观察，真实已创建任务先核额度，最新活动检查点直接进入停止；释放过渡重新取得原绑定的完整关闭轨迹，最终证据通过后才标记释放。失败时先收齐原已发操作，只有全部原资源释放且没有未知效果请求才尝试一次 Controller 关闭。局部发现的 HTTP 原命令额外 project_id 比较错误已修复；Root 追加审查发现 completed 回执仍可包含 outcome_unknown/stop_unknown，现仅原命令自身已知终态能清除未知。pi04/pi06 两组真实负例离线回放均保留 UNKNOWN 并阻止关闭，S392 原外层成功回执仍可确认完成；5项诊断规则、四原轨迹及配额映射回放、语法与差异检查通过。准确记录为 `.verification/cloud-setup/n4-392cb0c9-failure/implementation-local.md` 与 `resolver-r2-review.md`，后者替代前版 resolver 接受范围。真实新 N4、活动停止、首次生产 preamble、失败关闭及 N6 仍未运行。
+
+ToolsOff preamble 四共享源的局部修复已独审后交给原生问答负责人扩展 questions-only；最终共同类型检查待问答闭环完成。问答 Go 消费者已获静态源码审查，保留能力错误退出4、内部 ask 的原 send 字段约束及人类独立授权；尚未编译或实际问答。Windows 服务观察计划 `c76ba7304ce51410eb24294e38190a4e3b9fedce7b64370a9394b1e3ca7821e7` 已独审，四个诊断路径正在实施；没有新服务 CI。OpenCode 仅提前准备独立来源初始化工具，产品共享源仍等待问答批次完成。新增四个副本删除仍未获准，当前约687MB可用；未启动下一完整构建。
+
 ## 当前实现与验证
 
 | 范围 | 已取得的结果 | 剩余验收 |

@@ -79,12 +79,13 @@ let source, inputs, spec, jsonlParser, foldJournal, observer, capabilityRevision
 const sources = new Map(), witnesses = new Map(), stopped = new Set()
 const sessionOwners = new Map()
 const stopRequests = new Map(), releaseRequests = new Map()
+const issuedWork = []
 const approvedFiles = new Map()
 const codexViews = new Map()
 const piViews = new Map()
 let piLaunch, piSourceHome, piSourceRoot, piExecutable
 let piProtocol
-let submittedRun, runningRun, runArguments, runProcess, leadCompletion
+let submittedRun, runningRun, runArguments, runProcess, leadCompletion, controllerCloseRequest
 const roleDefinitions = [
   { name: '公开来源分析', responsibilities: '核对固定stats四原文的模块、Mean API、来源事实、复杂度与实现选择条件。' },
   { name: 'Median设计审阅', responsibilities: '审阅Median设计条件、奇偶长度、输入顺序保持与现有API兼容。' },
@@ -205,6 +206,14 @@ async function verifyObserverSources() {
   }
 }
 async function observeSource(mode, input) {
+  if (piLinux) {
+    assert.ok(observer?.module && piProtocol, 'same_revision_pi_observer_not_loaded')
+    if (mode === 'incarnation') return object(observer.module.observeIncarnation(input))
+    if (mode === 'decode-pi-record') return object(observer.module.decodePiRecord(piProtocol.parseStrictPiJson(input)))
+    if (mode === 'runtime-custodian') return object(observer.module.observeRuntimeCustodian(piProtocol.parseStrictPiJson(input.toString('utf8'))))
+    assert.ok(['validate-pi-trace', 'validate-pi-native'].includes(mode), 'pi_observer_mode_unreviewed')
+    return object(observer.module.validatePiSource(mode, Buffer.isBuffer(input) ? input : Buffer.from(input)))
+  }
   await verifyObserverSources()
   const node = join(candidate, 'node/node')
   const args = mode === 'incarnation' ? [observer.manifest.observer.path, mode, String(input)] : [observer.manifest.observer.path, mode]
@@ -797,15 +806,14 @@ async function verifyAutomaticRelease(worker, owner) {
   assert.equal(resource.ownership_state, 'released')
   for (const key of ['id', 'origin_dispatch_id', 'owner_dispatch_id', 'terminal_handle', 'process_incarnation']) assert.equal(resource[key], owner.resource[key], 'automatic_release_changed_original_resource')
   worker.automatic_release = { request_id: request, receipt, resource }
-  stopped.add(worker.dispatch_id)
 }
-async function events(workerSource, observed) {
+async function events(workerSource, observed, originalOwner) {
   assert.equal(workerSource.availability, 'observed')
   assert.equal(workerSource.provider, values.agent)
   const worker = report.started_workers.find(item => item.source?.native_session_id === workerSource.native_session_id)
   assert.ok(worker, 'source_has_no_original_dispatch')
-  observed ??= await queryWorker(worker.dispatch_id)
-  let owner = sessionOwners.get(workerSource.native_session_id)
+  let owner = sessionOwners.get(workerSource.native_session_id) ?? originalOwner
+  observed ??= piLinux && owner ? { source: sources.get(workerSource.native_session_id).source } : await queryWorker(worker.dispatch_id)
   let binding = owner?.binding
   if (!owner) ({ binding, observed } = await originalStartBinding(worker, observed))
   const latest = object(observed.source)
@@ -821,6 +829,9 @@ async function events(workerSource, observed) {
   }
   workerSource = latest
   const beforeRecord = await sessionRecord(workerSource)
+  const startedAt = performance.now()
+  worker.last_observation = { phase: 'owner_before', request_id: worker.request_id, dispatch_id: worker.dispatch_id,
+    before_lease: beforeRecord.lease.claimStatus, source_version: workerSource.provider_events_source?.version }
   if (!owner) {
     assert.equal(beforeRecord.lease.claimStatus, 'live', 'first_owner_observation_must_be_live')
     const process = object(beforeRecord.lease.ownerProcess)
@@ -838,16 +849,38 @@ async function events(workerSource, observed) {
       owner.incarnation = observed.incarnation
     }
   }
-  await verifySessionOwner(beforeRecord, workerSource, owner, worker)
+  // A released lease requires the final source and complete trace, obtained below.
+  // Checking the cached live custody here loses the release transition.
+  if (!linuxStructured || beforeRecord.lease.claimStatus === 'live') await verifySessionOwner(beforeRecord, workerSource, owner, worker)
   assert.ok(Number.isSafeInteger(workerSource.process.pid) && (linuxStructured || workerSource.process.creation_time_ms > 0))
   const path = await ordinary(workerSource.provider_events, false)
   assert.ok(within(dataRoot, path), 'provider_source_outside_private_root')
-  let rows, observation
+  let rows, observation, finalRecord
   if (linuxStructured) {
     const { readProviderTraceObservation } = requireRuntime('./task-result.cjs')
-    const snapshot = await readProviderTraceObservation({ path, maximum: 12 * 1024 * 1024, requirePrivatePath: async path => { await piSourceMetadata(path, false) } })
+    let snapshot = await readProviderTraceObservation({ path, maximum: 12 * 1024 * 1024, requirePrivatePath: async path => { await piSourceMetadata(path, false) } })
+    let afterRecord = await sessionRecord(workerSource)
+    if (beforeRecord.lease.claimStatus === 'released' || afterRecord.lease.claimStatus === 'released' || snapshot.rows.at(-1)?.event === 'custody_closed') {
+      const originalPrefix = snapshot.bytes
+      const closedSource = object((await queryWorker(worker.dispatch_id)).source)
+      assert.deepEqual(identity(closedSource), identity(workerSource), 'closed_source_changed_original_binding')
+      workerSource = closedSource
+      snapshot = await readProviderTraceObservation({ path, maximum: 12 * 1024 * 1024, requirePrivatePath: async path => { await piSourceMetadata(path, false) } })
+      assert.ok(snapshot.bytes.length >= originalPrefix.length && snapshot.bytes.subarray(0, originalPrefix.length).equals(originalPrefix), 'released_provider_prefix_changed')
+      assert.equal(snapshot.rows.at(-1)?.event, 'custody_closed', 'released_provider_has_no_final_custody')
+      assert.deepEqual(workerSource.custody, snapshot.rows.at(-1).detail, 'released_source_final_custody_differs')
+      for (const deadline = Date.now() + 30_000;;) {
+        afterRecord = await sessionRecord(workerSource)
+        if (afterRecord.lease.claimStatus === 'released') break
+        assert.equal(afterRecord.lease.claimStatus, 'live', 'unreviewed_session_owner_transition')
+        assert.ok(Date.now() < deadline, 'closed_provider_lease_not_released')
+        await delay(100)
+      }
+    }
     const { bytes } = snapshot
     observation = snapshot.observation
+    Object.assign(worker.last_observation, { phase: 'trace', source_version: snapshot.source.version, prefix_bytes: bytes.length,
+      last_sequence: snapshot.rows.at(-1)?.sequence, last_event: snapshot.rows.at(-1)?.event, after_lease: afterRecord.lease.claimStatus })
     assert.equal(snapshot.source.path, workerSource.provider_events_source.path)
     assert.equal(snapshot.source.version.split(':').slice(0, 3).join(':'), workerSource.provider_events_source.version.split(':').slice(0, 3).join(':'))
     assert.ok(observation.byte_length >= workerSource.provider_events_observation.byte_length, 'provider_observation_regressed')
@@ -864,15 +897,19 @@ async function events(workerSource, observed) {
       assert.equal(observation.incomplete_tail_bytes, 0, 'closed_provider_has_incomplete_tail')
       const current = await stat(path, { bigint: true })
       assert.equal(`${current.dev}:${current.ino}:${current.birthtimeNs}:${current.mtimeNs}:${current.size}`, snapshot.source.version, 'closed_provider_source_changed')
-      const closedSource = object((await queryWorker(worker.dispatch_id)).source)
-      assert.deepEqual(identity(closedSource), identity(workerSource), 'closed_source_changed_original_binding')
-      assert.deepEqual(closedSource.custody, rows.at(-1).detail)
-      workerSource = closedSource
+      assert.deepEqual(workerSource.custody, rows.at(-1).detail)
     }
-    const afterRecord = await sessionRecord(workerSource)
-    await verifySessionOwner(afterRecord, workerSource, owner, worker)
+    // The synchronous strict parser can span release; re-read the lease after it.
+    const parsedRecord = await sessionRecord(workerSource)
+    if (afterRecord.lease.claimStatus === 'live' && parsedRecord.lease.claimStatus === 'released') {
+      // Keep the exact read prefix as a witness before the bounded final-source read.
+      witnesses.set(path, { signature, bytes, source_version: snapshot.source.version, observation })
+      return events(workerSource, await queryWorker(worker.dispatch_id), owner)
+    }
+    assert.deepEqual(parsedRecord, afterRecord, 'session_owner_changed_during_strict_parse')
     if (beforeRecord.lease.claimStatus === afterRecord.lease.claimStatus) assert.deepEqual(afterRecord, beforeRecord, 'session_owner_changed_during_event_read')
     else assert.ok(beforeRecord.lease.claimStatus === 'live' && afterRecord.lease.claimStatus === 'released', 'unreviewed_session_owner_transition')
+    finalRecord = afterRecord
     witnesses.set(path, { signature, bytes, source_version: snapshot.source.version, observation })
   } else {
     const handle = await open(path, 'r')
@@ -943,6 +980,12 @@ async function events(workerSource, observed) {
     assert.ok(row.native_cli?.pid > 0 && row.native_cli.creationTimeMs > 0 && row.native_cli.pid !== row.process.pid)
     assert.equal(row.projection, values.agent === 'pi' ? 'actual_native_cli_lifecycle_and_delta_fields' : 'actual_native_acp_lifecycle_and_delta_fields')
   }
+  if (linuxStructured) {
+    worker.last_observation.phase = 'owner_after'
+    await verifySessionOwner(finalRecord, workerSource, owner, worker)
+    if (worker.automatic_release && finalRecord.lease.claimStatus === 'released') stopped.add(worker.dispatch_id)
+  }
+  Object.assign(worker.last_observation, { phase: 'complete', elapsed_ms: performance.now() - startedAt })
   if (!sessionOwners.has(workerSource.native_session_id)) check('worker.runtime_identity', { dispatch_id: worker.dispatch_id, session_id: workerSource.native_session_id, service_runtime_epoch: runtimeId, process_runtime_incarnation: owner.process.runtime, original_fence: owner.binding.runtime_fence })
   sessionOwners.set(workerSource.native_session_id, owner)
   sources.set(workerSource.native_session_id, { source: workerSource, rows, ...(observation ? { observation } : {}) })
@@ -1061,10 +1104,11 @@ async function proveWindowsTree(workerSource, checkpoint) {
   }
   return proofs[0]
 }
-async function stopWorker(worker, active = false) {
+async function stopWorker(worker, active = false, observedEvents) {
   assert.ok(!stopRequests.has(worker.dispatch_id) && !releaseRequests.has(worker.dispatch_id), 'preserve_original_stop_or_release_request')
   const args = ['worker', 'stop', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
-  const priorEvents = linuxStructured ? await events(worker.source) : null
+  const priorEvents = linuxStructured ? observedEvents ?? await events(worker.source) : null
+  if (observedEvents) assert.equal(sources.get(worker.source.native_session_id)?.rows, observedEvents, 'active_stop_observation_is_not_current')
   if (linuxStructured && active) assert.equal(ends(priorEvents).length, 0, 'turn_ended_before_active_stop')
   if (!piLinux) stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
   let checkpoint
@@ -1437,9 +1481,13 @@ async function verifyCodexJournalInputs(worker, original, bindings) {
   }
 }
 
-async function verifyQuota() {
+async function verifyQuotaRejection() {
   const extra = await cli(['worker', 'start', '--controller', controller, '--task', rootTask, '--name', 'extra-quota-check', '--agent', values.agent, '--model', values.model, '--input-file', inputs[0].input_file, '--request-id', randomUUID()], 5)
   assert.equal(extra.error.code, 'resource_limit')
+  report.quota = { extra, refused_at: new Date().toISOString() }
+}
+async function verifyQuota() {
+  if (!report.quota) await verifyQuotaRejection()
   const fleet = native(await cli(['worker', 'list', '--controller', controller, '--task', rootTask]))
   assert.equal(fleet.page.hasMore, false)
   assert.equal(fleet.page.total, workers)
@@ -1449,7 +1497,78 @@ async function verifyQuota() {
     assert.equal(inventory.length, workers + 1, 'quota_refusal_created_extra_task')
     assert.deepEqual(inventory.filter(task => task.id !== rootTask).map(task => task.id).sort(), report.started_workers.map(worker => worker.task_id).sort())
   } else assert.equal(inventory.filter(task => task.parent_id === rootTask).length, workers, 'quota_refusal_created_extra_child_task')
-  report.quota = { extra, fleet, inventory }
+  Object.assign(report.quota, { fleet, inventory })
+}
+
+function createdQuotaInventory(commands) {
+  const caller = report.run_early_submission.inventory.requests[0].caller_fingerprint
+  const originalCaller = report.run_early_submission.worker.receipt.invocation.caller
+  const db = new DatabaseSync(database, { readOnly: true })
+  try {
+    db.exec('BEGIN')
+    const root = db.prepare(`SELECT id,run_id,parent_id,status,json_extract(spec,'$.project_id') AS project_id,
+      json_extract(spec,'$.spec.max_workers') AS max_workers FROM tasks WHERE id=?`).get(rootTask)
+    assert.ok(root && root.run_id === runId && root.parent_id === null)
+    assert.equal(root.project_id, values['project-id']); assert.equal(root.max_workers, workers)
+    assert.ok(!['completed', 'failed', 'cancelled'].includes(root.status), 'quota_root_already_terminal')
+    const completion = db.prepare(`SELECT COUNT(*) AS count FROM mutation_receipts WHERE caller_fingerprint=? AND method='swa.controllerDeliver'
+      AND state='pending' AND json_valid(receipt)=1 AND json_extract(receipt,'$.run_id')=?
+      AND json_extract(receipt,'$.root_task_id')=? AND json_extract(receipt,'$.action')='task.complete'`).get(caller, runId, rootTask)
+    assert.equal(completion.count, 0, 'quota_root_completion_pending')
+    assert.equal(db.prepare('SELECT coordinator_handle FROM runs WHERE id=?').get(runId)?.coordinator_handle, controller)
+    const tasks = db.prepare(`SELECT t.id,t.parent_id,t.run_id,t.status,t.created_at,d.id AS dispatch_id,d.run_id AS dispatch_run_id,
+      w.runtime_epoch FROM tasks t LEFT JOIN dispatch_contexts d ON d.task_id=t.id
+      LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id WHERE t.run_id=?`).all(runId)
+    assert.ok(tasks.length <= workers + 1, 'quota_unexpected_created_tasks')
+    assert.equal(new Set(tasks.map(task => task.id)).size, tasks.length, 'quota_ambiguous_task_dispatch')
+    const byId = new Map(tasks.map(task => [task.id, task])), accepted = []
+    for (const command of commands) {
+      const rows = db.prepare(`SELECT caller_fingerprint,request_id,method,state,receipt FROM mutation_receipts WHERE request_id IN (?,?)`).all(command.request_id, command.request_id + '/native')
+      assert.ok(rows.length <= 2, 'quota_original_requests_ambiguous')
+      for (const row of rows) assert.equal(row.caller_fingerprint, caller, 'quota_original_caller_changed')
+      const parent = rows.find(row => row.request_id === command.request_id), child = rows.find(row => row.request_id === command.request_id + '/native')
+      if (!parent || !child || !parent.receipt || !child.receipt) return null
+      assert.equal(parent.method, 'swa.controllerDeliver'); assert.equal(child.method, 'orchestration.workerStart')
+      assert.ok(['pending', 'completed'].includes(parent.state) && ['pending', 'completed'].includes(child.state), 'quota_original_start_state_unknown')
+      const receipt = object(JSON.parse(parent.receipt)), invocation = object(receipt.invocation), scope = object(invocation.scope)
+      assert.equal(receipt.action, 'worker.start'); assert.equal(receipt.child_request, child.request_id)
+      for (const [key, value] of Object.entries({ project_id: values['project-id'], controller, run_id: runId, root_task_id: rootTask })) {
+        assert.equal(receipt[key], value); assert.equal(scope[key], value)
+      }
+      assert.equal(scope.authority_domain, caller)
+      assert.deepEqual(invocation.caller, originalCaller)
+      assert.deepEqual(invocation.command, command)
+      const nativeReceipt = object(JSON.parse(child.receipt))
+      const dispatchId = child.state === 'pending' ? observer.module.getPendingWorkerStartRecovery(child.method, child.receipt)?.dispatchId : nativeReceipt.dispatchId
+      if (child.state === 'completed') { assert.equal(nativeReceipt.state, 'ready'); assert.equal(nativeReceipt.runId, runId) }
+      if (!dispatchId) return null
+      if (parent.state === 'completed') {
+        assert.equal(child.state, 'completed')
+        assert.equal(receipt.native?.state, 'ready')
+        assert.equal(receipt.native.dispatchId, dispatchId)
+        assert.equal(receipt.native.taskId, nativeReceipt.taskId)
+      }
+      const matches = tasks.filter(task => task.dispatch_id === dispatchId)
+      assert.ok(matches.length <= 1, 'quota_original_dispatch_ambiguous')
+      if (!matches.length) return null
+      const task = matches[0]
+      assert.equal(task.id, (child.state === 'pending' ? nativeReceipt.accepted : nativeReceipt).taskId)
+      assert.equal(task.parent_id, command.parent_task_id ?? rootTask)
+      assert.equal(task.dispatch_run_id, runId); assert.equal(task.runtime_epoch, runtimeId)
+      const seen = new Set()
+      for (let current = task; current.id !== rootTask; current = byId.get(current.parent_id)) {
+        assert.ok(current.parent_id && byId.has(current.parent_id) && !seen.has(current.id), 'quota_task_outside_original_root')
+        seen.add(current.id)
+      }
+      accepted.push({ request_id: command.request_id, child_request: child.request_id, dispatch_id: dispatchId, task_id: task.id,
+        task_created_at: task.created_at, parent_state: parent.state, child_state: child.state })
+    }
+    assert.equal(tasks.length, workers + 1)
+    assert.equal(new Set(accepted.map(item => item.task_id)).size, workers)
+    assert.equal(new Set(accepted.map(item => item.dispatch_id)).size, workers)
+    db.exec('COMMIT')
+    return { root_status: root.status, caller_fingerprint: caller, observed_at: new Date().toISOString(), accepted }
+  } finally { db.close() }
 }
 
 function completionMail(child, parent) {
@@ -1710,6 +1829,8 @@ async function run() {
       assert.equal(typeof observer.module.observeRuntimeCustodian, 'function')
       assert.equal(typeof observer.module.matchesPiJournalItem, 'function')
       assert.equal(typeof observer.module.fingerprintPiBody, 'function')
+      assert.equal(typeof observer.module.validatePiSource, 'function')
+      assert.equal(typeof observer.module.getPendingWorkerStartRecovery, 'function')
       await verifyObserverSources()
     }
     check('same_revision_read_only_observer', JSON.parse(prepared))
@@ -1834,7 +1955,8 @@ async function run() {
   const pendingStarts = runFlow
     ? [leadCompletion.then(outcome => { if (outcome.error) throw outcome.error; return outcome.worker }), ...startCommands.map(command => publicCommand(command))]
     : startArgs.map(args => cli(args))
-  const allStarts = await Promise.allSettled(pendingStarts.map((pending, slot) => pending.then(reply => {
+  let startsFinished = false, startsFailed = false, quotaReady = false, quotaError
+  const startsObservation = Promise.allSettled(pendingStarts.map((pending, slot) => pending.then(reply => {
     if (!runFlow) return reply
     if (slot === 0) workerSlots[0].start_receipt = reply
     else {
@@ -1849,8 +1971,29 @@ async function run() {
       worker.source = object(observed.source)
       return events(worker.source, observed)
     })()]).then(([result]) => result)
+    issuedWork.push(firstObservations[slot])
     return reply
-  })))
+  }))).then(results => { startsFinished = true; startsFailed = results.some(item => item.status === 'rejected'); return results })
+  issuedWork.push(startsObservation)
+  // Capacity is decided from the actual created tasks, before model readiness.
+  // A real resource_limit response must already exist before an active stop.
+  const quotaObservation = runFlow ? (async () => {
+    const leadCommand = report.run_early_submission.worker.receipt.invocation.command
+    for (const deadline = Date.now() + 180_000;;) {
+      assert.ok(!(startsFinished && startsFailed), 'quota_original_start_failed')
+      const inventory = createdQuotaInventory([leadCommand, ...startCommands])
+      if (inventory) {
+        report.quota_created_inventory = inventory
+        await verifyQuotaRejection()
+        quotaReady = true
+        return
+      }
+      assert.ok(Date.now() < deadline, 'quota_original_tasks_not_created')
+      await delay(50)
+    }
+  })().then(() => ({ status: 'fulfilled' }), error => { quotaError = error; return { status: 'rejected', reason: error } }) : Promise.resolve({ status: 'fulfilled' })
+  issuedWork.push(quotaObservation)
+  const allStarts = await startsObservation
   const firstSettled = await Promise.all(firstObservations)
   const startsSettled = runFlow ? allStarts.slice(1) : allStarts
   if (!runFlow) for (let index = 0; index < startsSettled.length; index++) {
@@ -1872,7 +2015,6 @@ async function run() {
   if (!runFlow) for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
-  const firstLists = runFlow ? firstSettled.map(item => item.value) : null
   if (piLinux) {
     if (!runFlow) await workerEventLists()
     assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
@@ -1881,10 +2023,10 @@ async function run() {
     assert.equal(new Set([...piViews.values()].map(view => view.nativeCLI.pid)).size, workers)
     assert.equal(new Set([...piViews.values()].map(view => view.ready.acquisition_generation)).size, workers)
   }
-  let quotaError
-  const quota = runFlow ? verifyQuota().catch(error => { quotaError = error; throw error }) : Promise.resolve()
+  const target = report.started_workers[runFlow ? 1 : 0], survivors = report.started_workers.filter(worker => worker !== target)
+  let stoppedAt
   const overlapObservation = (async () => {
-    let lists = firstLists
+    let lists
     for (const deadline = Date.now() + 180_000; Date.now() < deadline;) {
       if (quotaError) throw quotaError
       lists ??= await workerEventLists()
@@ -1897,21 +2039,26 @@ async function run() {
       if (lists.every(rows => starts(rows).length === 1) && deltas.every(rows => rows.length >= 2)) {
         if (piLinux) for (const worker of report.started_workers) assert.ok(piViews.get(worker.source.native_session_id).active, 'pi_overlap_has_no_active_cycle')
         const from = Math.max(...deltas.map(rows => rows[0].monotonic_ms)), to = Math.min(...deltas.map(rows => rows.at(-1).monotonic_ms))
-        if (from < to) return { from_monotonic_ms: from, to_monotonic_ms: to, evidence: deltas.map(rows => ({ first: rows[0], last: rows.at(-1) })) }
+        if (from < to && (!runFlow || quotaReady)) {
+          report.overlap = { from_monotonic_ms: from, to_monotonic_ms: to, evidence: deltas.map(rows => ({ first: rows[0], last: rows.at(-1) })) }
+          if (!linuxStructured) assert.equal(ends(await events(target.source)).length, 0)
+          stoppedAt = Date.now()
+          await stopWorker(target, true, linuxStructured ? lists[report.started_workers.indexOf(target)] : undefined)
+          return report.overlap
+        }
       }
       await delay(250)
       lists = null
     }
     assert.fail('no_common_actual_native_delta_interval')
   })()
-  const quotaAndOverlap = await Promise.allSettled([quota, overlapObservation])
+  issuedWork.push(overlapObservation)
+  const quotaAndOverlap = await Promise.allSettled([quotaObservation, overlapObservation])
   const failedGate = quotaAndOverlap.find(item => item.status === 'rejected')
   if (failedGate) throw failedGate.reason
+  if (quotaError) throw quotaError
   report.overlap = quotaAndOverlap[1].value
-  const target = report.started_workers[runFlow ? 1 : 0], survivors = report.started_workers.filter(worker => worker !== target)
-  if (!linuxStructured) assert.equal(ends(await events(target.source)).length, 0)
-  const stoppedAt = Date.now()
-  await stopWorker(target, true)
+  if (runFlow) await verifyQuota()
   for (const worker of survivors) {
     assert.deepEqual(identity((await queryWorker(worker.dispatch_id)).source), identity(worker.source))
     const rows = await events(worker.source)
@@ -2118,7 +2265,10 @@ async function run() {
   if (!runFlow) await cli(['task', 'complete', '--controller', controller, '--task', rootTask, '--result-file', checkedFile, '--request-id', randomUUID()])
   const tasks = native(await cli(['task', 'show', '--controller', controller, '--task', rootTask]))
   assert.equal(tasks.tasks.find(task => task.id === rootTask)?.status, 'completed')
-  await cli(['controller', 'close', '--controller', controller, '--request-id', randomUUID()])
+  controllerCloseRequest = randomUUID()
+  report.controller_close = { request_id: controllerCloseRequest, state: 'issued' }
+  report.controller_close.reply = await cli(['controller', 'close', '--controller', controller, '--request-id', controllerCloseRequest])
+  report.controller_close.state = 'completed-response-observed'
   if (linuxStructured) await verifyRuntimeCustodian()
   report.business_review = review
   report.status = 'EXECUTED_ASSERTIONS_COMPLETED'
@@ -2136,12 +2286,16 @@ try {
   report.reason = error instanceof NotRun ? error.message : 'actual_check_failed_preserve_original_evidence'
   report.failure = driverFailure(error, import.meta.url)
   process.exitCode = error instanceof NotRun ? 3 : 1
+  // First settle all already-issued work, including observations registered by
+  // start responses that arrive during this drain. Nothing is re-submitted.
+  for (let count = 0; count < issuedWork.length;) {
+    const batch = issuedWork.slice(count)
+    count += batch.length
+    await Promise.allSettled(batch)
+  }
   for (const command of report.commands) if (command.mutation && !['not-submitted', 'completed-response-observed', 'completed-run-failure-observed', 'refused-response-observed'].includes(command.state) && !report.unknown_requests.some(request => request.request_id === command.request_id)) report.unknown_requests.push({ request_id: command.request_id, args: command.args, original_command: command.ordinal })
   // 修改结果未知时只查询原请求，不复发原修改或替换Worker。
-  if (swa && token && output) for (const request of [...report.unknown_requests]) {
-    try { await cli(['request', 'show', ...(controller ? ['--controller', controller] : ['--project', values['project-id']]), '--request-id', request.request_id]) }
-    catch { report.checks.push({ name: 'original_request_query', status: 'UNKNOWN', request_id: request.request_id }) }
-  }
+  if (swa && token && output) await resolveOriginalRequests()
   for (const worker of report.started_workers) if (!stopped.has(worker.dispatch_id)) {
     const pending = releaseRequests.get(worker.dispatch_id) ?? stopRequests.get(worker.dispatch_id)
     if (pending) {
@@ -2160,6 +2314,25 @@ try {
     }
     catch { report.checks.push({ name: 'owned_worker_cleanup', status: 'UNKNOWN', dispatch_id: worker.dispatch_id }) }
   }
+  if (swa && token && output) await resolveOriginalRequests()
+  if (controller && !controllerCloseRequest && report.unknown_requests.length === 0 && report.started_workers.every(worker => stopped.has(worker.dispatch_id))) {
+    try {
+      const db = new DatabaseSync(database, { readOnly: true })
+      try {
+        const resources = db.prepare(`SELECT r.owner_dispatch_id,r.release_state,r.ownership_state FROM worker_terminal_resources r
+          JOIN dispatch_contexts d ON d.id=r.owner_dispatch_id WHERE d.run_id=?`).all(runId)
+        assert.equal(resources.length, report.started_workers.length, 'cleanup_has_unobserved_worker_resources')
+        for (const resource of resources) {
+          assert.ok(stopped.has(resource.owner_dispatch_id), 'cleanup_worker_exit_unproven')
+          assert.equal(resource.release_state, 'released'); assert.equal(resource.ownership_state, 'released')
+        }
+      } finally { db.close() }
+      controllerCloseRequest = randomUUID()
+      report.controller_close = { request_id: controllerCloseRequest, state: 'issued_after_proven_worker_cleanup' }
+      report.controller_close.reply = await cli(['controller', 'close', '--controller', controller, '--request-id', controllerCloseRequest])
+      report.controller_close.state = 'completed-response-observed'
+    } catch { report.checks.push({ name: 'owned_controller_cleanup', status: 'UNKNOWN', request_id: controllerCloseRequest ?? null }) }
+  }
 } finally {
   if (runProcess && runProcess.exitCode === null && runProcess.signalCode === null) {
     // 只终止本次CLI观察者；产品Worker退出仍由原资源证据判断。
@@ -2167,7 +2340,47 @@ try {
     await Promise.race([runningRun, delay(5000)])
     report.run_observer_cleanup = { pid: runProcess.pid, exit_code: runProcess.exitCode, signal: runProcess.signalCode, worker_exit_proven_by_cli: false }
   }
+  if (report.unknown_requests.length && swa && token && output) await resolveOriginalRequests()
+  if (!completed && observer) {
+    try { await verifyObserverSources(); check('same_revision_observer_final_sources', 'unchanged_after_failure_cleanup') }
+    catch {
+      report.status = 'FAIL'
+      process.exitCode = 1
+      report.checks.push({ name: 'same_revision_observer_final_sources', status: 'FAIL' })
+    }
+  }
   report.completed_at = new Date().toISOString()
   if (output) await save(completed ? 'driver-completed.json' : 'driver-incomplete.json', report)
   process.stdout.write(JSON.stringify({ status: report.status, reason: report.reason, evidence: output ?? null, acceptance: report.acceptance }) + '\n')
+}
+
+async function resolveOriginalRequests() {
+  const unresolved = [], terminal = ['not-submitted', 'completed-response-observed', 'completed-run-failure-observed', 'refused-response-observed']
+  report.request_resolution_history ??= []
+  for (const request of report.unknown_requests) {
+    const commands = request.args[0] === 'public-command' ? report.collaboration_commands : report.commands
+    const original = commands?.find(command => command.ordinal === request.original_command)
+    let state = original?.state ?? 'unknown', observation
+    if (!terminal.includes(state)) {
+      try {
+        const shown = object((await cli(['request', 'show', ...(controller ? ['--controller', controller] : ['--project', values['project-id']]), '--request-id', request.request_id])).result)
+        assert.equal(shown.requestId, request.request_id)
+        // A completed durable row may still contain outcome_unknown/stop_unknown.
+        // Only the original command's known terminal outcome clears this list.
+        const status = value => ['absent', 'pending', 'completed', 'failed', 'rejected', 'unknown', 'ready', 'stopped', 'released', 'already_released',
+          'outcome_unknown', 'start_unknown', 'stop_unknown', 'release_unknown', 'delivery_unknown', 'operation_unknown', 'unreconciled',
+          'journaled', 'queued', 'accepted', 'handed-to-terminal', 'answered', 'sent', 'not_sent', 'stored'].includes(value) ? value : null
+        const children = Array.isArray(shown.children) ? shown.children : []
+        observation = { state: status(shown.state), receipt_state: status(shown.receipt?.state), native_state: status(shown.receipt?.native?.state),
+          current_input_state: status(shown.current_input?.state), children_count: children.length,
+          children: children.slice(0, 16).map(child => ({ state: status(child?.state), receipt_state: status(child?.receipt?.state), native_state: status(child?.receipt?.native?.state) })),
+          effect: 'UNCONFIRMED_BY_ORIGINAL_COMMAND' }
+        state = 'unknown'
+      } catch { state = 'unknown' }
+    }
+    report.request_resolution_history.push({ ...request, original_command_state: original?.state ?? null, current_state: state,
+      ...(observation ? { observation } : {}), observed_at: new Date().toISOString() })
+    if (!terminal.includes(state)) unresolved.push(request)
+  }
+  report.unknown_requests = unresolved
 }
