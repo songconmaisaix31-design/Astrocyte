@@ -35,7 +35,7 @@ S0177新N4四Worker均成功结算，原轨迹存在约2.61秒共同输出；首
 
 可恢复副本清理记录均在STATUS。最近实际移除Saba package及旧I6190/I74aa三根，净增2989182976字节并获独立接受。后继准确四根（Saba candidate、S0177 package、Iaba、I4c）的恢复核验/check-only已接受，但删除被自动审批在进程创建前拒绝，等待用户明确确认准确路径；四根仍在、实际释放0，不重试或换入口。所有tar/备份/数据/认证/证据及当前I0177保留。检查会重建Go缓存，下一正式构建各阶段必须重新过实际空间门，不据旧剩余量推定可用。
 
-Windows D10原FAIL/unknown649与D11的FAIL/unknown5保留。D11 SDK7项、TTY/pipe各三次ready及自然EOF、真实Controller打开和关闭通过；只读取证证明原5项全部OpenProcess87且创建时间UNKNOWN，不能猜角色或原因。D12诊断DLL编译失败，原日志未保具体MSVC首错；D13实际取得psutil头三项C2371。局部include适配及D14单组件编译已独立接受，准确DLL SHA和限制见STATUS。D15来源a11a2126的ABI两源/local已独审，唯一tag已推送，run39990878968/job120541997009执行中；仅必要单组件编译→原self→真实rootchild/正常EOF/native/CIM后停。Windows owner收集原结果并交原Reviewer，不自动重试或开启SDK/Go/A/B/Controller/服务/model，不升级D11未知。Root串行决定新CI。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
+Windows D10原FAIL/unknown649与D11的FAIL/unknown5保留；D14编译和D15实际self/rootchild/自然退出已独审接受。D16来源ff2d46c1/run39992592663/job120547846573已最终FAIL：SDK7、Nt self/rootchild、TTY/pipe及原Controller打开/关闭通过，serve退出0，但完整关闭存在74条未知观察，最终fixture退出6。两次native剩余0/CIM已退出不能覆盖未知；74类别与身份尚未读取，不猜归属或人数。一次官方artifact下载Forbidden，Windows owner仅准备固定同次原件的只读取证计划；Root仍唯一commit/tag/CI，不重构建或修改关闭门。开发组合不等于主线同源Windows交付，必要生产推广与正式安装关闭仍待完成；无模型授权环境变更，不升级历史未知。Linux时序修复725b02de已独审提交，新模型仍未执行；capabilities正在独占已审能力投影/Worker界面补充，尚未整合构建。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 

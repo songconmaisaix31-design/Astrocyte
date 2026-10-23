@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。Windows D13 的三项 C2371 类型冲突已局部修正，D14 实际单组件编译通过；Nt 自检、真实进程 fixture 和服务未执行，D11 的5项关闭未知保留。N4完整业务验收和N6均未通过。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `0177b951` 的完整构建、安装、装内 D12（12通过）及实际组合服务检查已独立接受。新 N4 四 Worker 均成功结算，原轨迹显示约2.61秒共同输出区间；驱动在首次来源核验期间失败且未保留具体断言，正式重叠、停止隔离、业务审阅与 GUI 未完成，整轮保持 FAIL。准确两个余留资源已正常结束，原完整树 UNKNOWN 保留。托管者身份修复已提交并通过独立源码与局部验收，后继时序改动尚待实际模型验证。Windows D14 单组件编译和 D15 实际 Nt 自检、父子进程正常退出检查通过；完整服务关闭未通过，D11 的5项关闭未知保留。N4完整业务验收和N6均未通过。
 
 ## 当前实现与验证
 
@@ -207,7 +207,11 @@ Windows D13来源 `180cc160bc1e0e880bd285e1cbc2a6a0ac423adf`，run `39984563188`
 
 Windows D14仅在C++编译单元包含完整vendor头时隔离三项typedef别名，完整vendor/许可证/结构布局/查询算法未改。真实原三源的patch应用、差分与保护检查及独立源码审查通过；来源 `65dcc569829416e08e46dfb1b6a4db58fe4150a0` 的run `39987175762` / job `120529268596` 于16:33:31Z实际单组件编译成功，DLL SHA `631604830e2608ab895b5da683ca3f4433f8b0a6409a37b37b50f74545e25221`。结果及完整安全annotation独立核验接受；旧7项原生及S0均跳过。该轮编译后停止，Go、SDK、Nt self、rootchild、Controller、服务和模型均未运行，不将编译成功扩大为ABI或完整退出通过。后继准备最小真实self/rootchild验证；原artifact未包含DLL，不能宣称已取回该binary供复用。
 
-Windows 后继 ABI 入口 `a11a2126383b7f603aa3af1ecb206624ba75c06d` 的两个来源文件与局部验证已独立接受；原 fixture 成功状态实际为 `CONTROL_COMPLETE`，消费者同步修正并保留全部正常退出条件。首次局部语法检查发现投影函数变量重名，限制作用域后复验通过；原 self/default/compile-only 逻辑、10项 workflow 条件、PowerShell 解析及8个保护文件检查通过。唯一标签 `ci/swa-windows-a11a2126-controller-open-control-15` 已推送，实际结果待取得；范围为必要单组件编译、自身进程及真实父子进程检查，服务和模型不在本轮范围。
+Windows ABI 入口 `a11a2126383b7f603aa3af1ecb206624ba75c06d` 的两个来源文件与局部验证已独立接受；原 fixture 成功状态实际为 `CONTROL_COMPLETE`，消费者同步修正并保留全部正常退出条件。首次局部语法检查发现投影函数变量重名，限制作用域后复验通过；原 self/default/compile-only 逻辑、10项 workflow 条件、PowerShell 解析及8个保护文件检查通过。D15 的 run `39990878968` / job `120541997009` 于16:59:47Z实际成功，原件 `.verification/cloud-setup/windows-controller-open-actual-a11a2126-15/` 已独立接受。同次 DLL SHA `07cb0713f67876493048492c386ba0f0d0f7cf0ca6c9d35a5f9a0ee9b8662a52`；Nt version2/status0/self身份匹配，真实父子进程两次活动身份观察通过并正常EOF/Wait0，两次原生退出观察为空且间隔252ms，CIM退出0且两次确认已退出，间隔299.0563ms。`kernel_tree_exit_proven=false`、cleanup字段 `NOT_RECORDED` 保持原值。Go、SDK、应用、A/B、Controller、服务及模型均未运行；此普通fixture结果不升级D11完整关闭未知，也不代替主线同来源Windows交付。后继已审计划仅恢复原D11开发诊断关闭路径，尚未执行。
+
+Windows D16 原关闭路径来源 `ff2d46c12a7e80c00d49d3d15f2b9c2b3d08c6e7`，run `39992592663` / job `120547846573` 于17:14:17Z最终失败，同次完整安全投影及实际结果已独立核验。SDK7项、Nt self/rootchild、TTY/pipe各三次回复与自然EOF、原Controller打开/关闭回执和项目目录权限均通过，producer为PASS。服务自身退出0，但 `ownership_closure_incomplete=true` 且未知观察计数74，最终fixture退出6；两次原生剩余0和CIM确认已退出不能覆盖该未知。74条记录的类别与归属尚未取得，不推断为74个不同进程，也不据数量变化判定原因。统一包装器的 `preflight ERR_ASSERTION` 标签不能解释为启动前失败。原件 `.verification/cloud-setup/windows-controller-open-actual-ff2d46c1-16/`，artifact `12517849309` / 311187字节 / SHA `622e6db48d53a6bf97a099b67209bbc046b56da13989c31397fda5ef85f80b3d`。一次官方下载返回Forbidden，未重试；后继仅准备读取同次保留原件，未重启构建或放宽关闭判据，模型调用0。
+
+观察时序修复 `725b02deb6ba72eb71d933d3bb34d04604e778ec` 已提交并推送，准确driver SHA `c3c772e70ca183b356e85a11000c16683669aeb71dc25b54aac6ba07f911ec40` 及局部结果独立接受。固定槽位的启动完成即观察，复用同轮完整回包并在pending时重新读取；已发送启动、观察和唯一配额检查全部收齐，完整配额成功后以最新活动检查点停止，通知移到停止之后。语法、原5项边界规则及8份真实Worker回包/4份请求的39项关系核对通过，25份原件摘要未变。真实pending交错与新短窗口停止仍未运行，原N4失败不变。
 
 后继空间计划已逐文件核对四个可恢复副本，`space-0177-20261023-11/check-01/result.json` 为 `CHECKED_WITHOUT_REMOVAL`，实际未删除。自动审批在创建删除进程前拒绝，理由为用户尚未明确授权这四个准确目录；四根仍在、实际释放0，已向用户请求准确范围确认，未重试或换入口。原安装、归档、备份、任务数据、凭据和失败证据保留；非依赖工作继续。
 
