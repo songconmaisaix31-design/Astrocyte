@@ -181,7 +181,8 @@ async function observeContinuity(processes, output, known, unknown, record) {
     await new Promise((resolveSend, reject) => parent.send({ type: 'spawn-continuity-child' }, error => error ? reject(error) : resolveSend()))
     const [child] = await bounded(childReady, 10_000, 'Continuity child was not reported')
     assert.equal(child.type, 'continuity-child-ready'); assert.equal(child.lifetime_ms, 30_000); assert.ok(validPID(child.pid))
-    childDeadline = performance.now() + child.lifetime_ms
+    record.child_ready_observed = { observed_at_ms: Date.now(), monotonic_ms: performance.now() }
+    childDeadline = record.child_ready_observed.monotonic_ms + child.lifetime_ms
     record.stage = 'snapshot-b'
     const rowsB = await snapshot('b'), currentController = unique(rowsB, controller.pid), currentParent = unique(rowsB, parent.pid)
     const childRow = unique(rowsB, child.pid)
@@ -229,6 +230,61 @@ async function observeContinuity(processes, output, known, unknown, record) {
     assert.ok(!known.has(controller.pid + ':' + controller.creationTimeMs))
     record.stage = 'child-timer-exit'
     await delay(Math.max(0, childDeadline - performance.now()))
+    const waitDeadline = childDeadline + 5000
+    const wait = { schema_version: 1, source_revision: values['source-revision'], helper_sha256: digest(await readFile(helper)),
+      closure_sha256: digest(await readFile(join(dirname(helper), 'process-incarnation-closure.mjs'))),
+      controller: identity(controller), parent: identity(parentRow), child: identity(childRow), prior_b: priorB,
+      child_ready_observed: record.child_ready_observed, child_deadline_ms: childDeadline, wait_deadline_ms: waitDeadline,
+      budget_ms: 5000, interval_ms: 250, maximum_samples: 21, status: 'WAITING', stop_reason: null,
+      retention_incomplete: false, unretained_sample_count: 0, first_zero_index: null, samples: [] }
+    const waitPath = join(output, 'continuity-exit-wait.json')
+    let waitCreated = false
+    const saveWait = async () => {
+      const bytes = Buffer.from(JSON.stringify(wait, null, 2) + '\n')
+      assert.ok(bytes.length <= 2 * 1024 * 1024, 'Exit wait evidence exceeds its bound')
+      await writeFile(waitPath, bytes, { flag: waitCreated ? 'w' : 'wx' })
+      waitCreated = true
+    }
+    try {
+      await saveWait()
+      for (let index = 0; index < 21; index++) {
+        const remainingBudget = waitDeadline - performance.now()
+        if (remainingBudget <= 0) { wait.stop_reason = 'DEADLINE'; throw new Error('Natural exit observation deadline reached') }
+        let actual
+        try { actual = await bounded(query(), Math.min(5000, remainingBudget), 'Natural exit query deadline reached') }
+        catch (error) { wait.stop_reason = error?.message === 'Natural exit query deadline reached' ? 'QUERY_TIMEOUT' : 'QUERY_FAILED'; throw error }
+        const rows = actual.rows, closure = collectOwnedIncarnations(rows, anchor, priorB)
+        const remaining = [parentRow, childRow].filter(old => rows.some(row => row.pid === old.pid && (!validCreation(row.creationTimeMs) || row.creationTimeMs === old.creationTimeMs)))
+        const sample = { index, query_window: actual.query_window, rows, remaining: remaining.map(identity), closure }
+        wait.samples.push(sample)
+        if (Buffer.byteLength(JSON.stringify(wait, null, 2) + '\n') > 2 * 1024 * 1024 - 1024) {
+          wait.samples.pop(); wait.retention_incomplete = true; wait.unretained_sample_count++
+          wait.stop_reason = 'EVIDENCE_LIMIT'
+          throw new Error('Complete exit wait callback exceeds the retained evidence bound')
+        }
+        await saveWait()
+        nativeComplete(rows)
+        assert.equal(unique(rows, controller.pid).creationTimeMs, controller.creationTimeMs)
+        assert.equal(closure.rootVerified, true); assert.equal(closure.unknownRows.length, 0)
+        if (actual.query_window.end.monotonic_ms > waitDeadline || performance.now() > waitDeadline) {
+          wait.stop_reason = 'DEADLINE'; throw new Error('Natural exit callback exceeded its deadline')
+        }
+        if (remaining.length === 0) {
+          wait.first_zero_index = index; wait.status = 'ABSENCE_OBSERVED'; wait.stop_reason = 'FIRST_ZERO'
+          break
+        }
+        if (index === 20) { wait.stop_reason = 'SAMPLE_LIMIT'; throw new Error('Natural exit sample limit reached') }
+        await delay(Math.min(250, Math.max(0, waitDeadline - performance.now())))
+      }
+      assert.equal(wait.status, 'ABSENCE_OBSERVED')
+    } catch (error) {
+      wait.status = 'FAIL'; wait.stop_reason ??= 'VALIDATION_FAILED'
+      throw error
+    } finally {
+      await saveWait()
+      record.exit_wait_file = { file_name: 'continuity-exit-wait.json', sha256: digest(await readFile(waitPath)),
+        status: wait.status, sample_count: wait.samples.length, retention_incomplete: wait.retention_incomplete }
+    }
     record.native_exit_observations = []
     record.child_exit_code = 'NOT_OBSERVABLE_FROM_NONPARENT'
     for (let index = 0; index < 2; index++) {

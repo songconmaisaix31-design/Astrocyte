@@ -184,6 +184,7 @@ jobs:
             .verification/swa-ci/windows-controller-open/continuity-snapshot-a.json
             .verification/swa-ci/windows-controller-open/continuity-snapshot-b.json
             .verification/swa-ci/windows-controller-open/continuity-snapshot-c.json
+            .verification/swa-ci/windows-controller-open/continuity-exit-wait.json
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7

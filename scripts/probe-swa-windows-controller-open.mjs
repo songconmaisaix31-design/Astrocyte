@@ -517,6 +517,109 @@ try {
         retentionFailure ??= error
       }
     }
+    const waitFileName = 'continuity-exit-wait.json', waitPath = join(snapshotOutput, waitFileName)
+    result.continuity_exit_wait = { file_name: waitFileName, status: 'NOT_CAPTURED' }
+    try {
+      let before
+      try { before = await lstat(waitPath) } catch (error) { if (error.code !== 'ENOENT') throw error }
+      if (before) {
+        assert.ok(before.isFile() && !before.isSymbolicLink() && before.nlink === 1 && before.size <= 2 * 1024 * 1024)
+        assert.equal((await realpath(waitPath)).toLowerCase(), resolve(waitPath).toLowerCase())
+        const bytes = await readFile(waitPath), after = await lstat(waitPath)
+        for (const key of ['dev', 'ino', 'size', 'mtimeMs', 'ctimeMs', 'nlink']) assert.equal(after[key], before[key])
+        assert.equal(bytes.length, before.size)
+        const wait = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+        const keys = (value, names) => {
+          assert.ok(value && typeof value === 'object' && !Array.isArray(value))
+          assert.deepEqual(Object.keys(value).sort(), [...names].sort())
+        }
+        const uint = value => Number.isSafeInteger(value) && value >= 0 && value <= 0xffffffff
+        const birth = value => Number.isSafeInteger(value) && value > 0
+        const finite = value => typeof value === 'number' && Number.isFinite(value) && value >= 0
+        const identity = (value, withParent = false) => {
+          keys(value, ['pid', 'creationTimeMs', ...(withParent ? ['ppid'] : [])])
+          assert.ok(uint(value.pid) && value.pid > 0 && birth(value.creationTimeMs))
+          if (withParent) assert.ok(uint(value.ppid))
+        }
+        const instant = value => { keys(value, ['observed_at_ms', 'monotonic_ms']); assert.ok(birth(value.observed_at_ms) && finite(value.monotonic_ms)) }
+        const nativeRow = value => {
+          keys(value, ['pid', 'ppid', 'name', 'creationTimeDiagnosticVersion', 'creationTimeProvider', 'creationTimeNtStatus', 'creationTimeSnapshotComplete', ...(Object.hasOwn(value, 'creationTimeMs') ? ['creationTimeMs'] : [])])
+          assert.ok(uint(value.pid) && value.pid > 0 && uint(value.ppid))
+          assert.ok(typeof value.name === 'string' && value.name.length <= 260 && /^[\p{L}\p{N}_. ()-]*$/u.test(value.name))
+          if (Object.hasOwn(value, 'creationTimeMs')) assert.ok(birth(value.creationTimeMs))
+          assert.equal(value.creationTimeDiagnosticVersion, 2); assert.equal(value.creationTimeProvider, 'NtQuerySystemInformation')
+          assert.ok(uint(value.creationTimeNtStatus)); assert.equal(typeof value.creationTimeSnapshotComplete, 'boolean')
+        }
+        keys(wait, ['schema_version', 'source_revision', 'helper_sha256', 'closure_sha256', 'controller', 'parent', 'child', 'prior_b',
+          'child_ready_observed', 'child_deadline_ms', 'wait_deadline_ms', 'budget_ms', 'interval_ms', 'maximum_samples',
+          'status', 'stop_reason', 'retention_incomplete', 'unretained_sample_count', 'first_zero_index', 'samples'])
+        assert.equal(wait.schema_version, 1); assert.equal(wait.source_revision, goRevision)
+        assert.equal(wait.helper_sha256, (await digest(controlScript)).sha256)
+        assert.equal(wait.closure_sha256, (await digest(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))).sha256)
+        for (const value of [wait.controller, wait.parent, wait.child]) identity(value, true)
+        assert.ok(Array.isArray(wait.prior_b)); for (const value of wait.prior_b) identity(value)
+        instant(wait.child_ready_observed)
+        assert.equal(wait.child_deadline_ms, wait.child_ready_observed.monotonic_ms + 30_000)
+        assert.equal(wait.wait_deadline_ms, wait.child_deadline_ms + 5000)
+        assert.equal(wait.budget_ms, 5000); assert.equal(wait.interval_ms, 250); assert.equal(wait.maximum_samples, 21)
+        assert.ok(['WAITING', 'ABSENCE_OBSERVED', 'FAIL'].includes(wait.status))
+        assert.ok(wait.stop_reason === null || ['FIRST_ZERO', 'DEADLINE', 'QUERY_TIMEOUT', 'QUERY_FAILED', 'SAMPLE_LIMIT', 'EVIDENCE_LIMIT', 'VALIDATION_FAILED'].includes(wait.stop_reason))
+        assert.equal(typeof wait.retention_incomplete, 'boolean'); assert.ok(uint(wait.unretained_sample_count))
+        assert.ok(Array.isArray(wait.samples) && wait.samples.length <= 21)
+        const unknownReasons = ['invalid_native_process_row', 'current_root_identity_unverified', 'root_in_descendant_branch',
+          'parent_incarnation_unverified', 'process_identity_not_unique', 'creation_time_unavailable', 'parent_incarnation_changed']
+        for (const [index, sample] of wait.samples.entries()) {
+          keys(sample, ['index', 'query_window', 'rows', 'remaining', 'closure']); assert.equal(sample.index, index)
+          keys(sample.query_window, ['start', 'end']); instant(sample.query_window.start); instant(sample.query_window.end)
+          assert.ok(sample.query_window.start.monotonic_ms <= sample.query_window.end.monotonic_ms)
+          assert.ok(Array.isArray(sample.rows)); for (const row of sample.rows) nativeRow(row)
+          assert.ok(Array.isArray(sample.remaining) && sample.remaining.length <= 2)
+          for (const row of sample.remaining) { identity(row, true); assert.ok([wait.parent, wait.child].some(old => JSON.stringify(old) === JSON.stringify(row))) }
+          const closure = sample.closure
+          keys(closure, ['rootVerified', 'ownedRows', 'excludedEdges', 'unknownRows'])
+          assert.equal(typeof closure.rootVerified, 'boolean')
+          for (const name of ['ownedRows', 'excludedEdges', 'unknownRows']) assert.ok(Array.isArray(closure[name]))
+          for (const row of closure.ownedRows) nativeRow(row)
+          for (const edge of closure.excludedEdges) {
+            const anchorKey = edge.reason === 'different-root-incarnation' ? 'anchor' : 'parent'
+            keys(edge, ['reason', 'actual', anchorKey]); assert.ok(['different-root-incarnation', 'predates-root', 'predates-parent'].includes(edge.reason))
+            nativeRow(edge.actual); identity(edge[anchorKey])
+          }
+          for (const entry of closure.unknownRows) {
+            keys(entry, ['reason', 'actual', ...(Object.hasOwn(entry, 'source_anchor') ? ['source_anchor'] : [])])
+            assert.ok(unknownReasons.includes(entry.reason)); nativeRow(entry.actual)
+            if (Object.hasOwn(entry, 'source_anchor')) {
+              keys(entry.source_anchor, ['kind', 'pid', 'creation_time_ms']); assert.equal(entry.source_anchor.kind, 'additional')
+              assert.ok(uint(entry.source_anchor.pid) && entry.source_anchor.pid > 0 && birth(entry.source_anchor.creation_time_ms))
+            }
+          }
+        }
+        assert.ok(wait.first_zero_index === null || Number.isSafeInteger(wait.first_zero_index) && wait.first_zero_index >= 0 && wait.first_zero_index < wait.samples.length)
+        const firstZero = wait.first_zero_index === null ? null : wait.samples[wait.first_zero_index]
+        if (firstZero) assert.equal(firstZero.remaining.length, 0)
+        const lastNonzero = wait.samples.findLast(sample => sample.remaining.length > 0)
+        const projectSample = sample => sample ? { index: sample.index, query_window: sample.query_window, remaining_count: sample.remaining.length,
+          remaining: sample.remaining, root_verified: sample.closure.rootVerified, unknown_count: sample.closure.unknownRows.length } : null
+        const sha256 = hash(bytes), destination = join(evidence, waitFileName)
+        await writeFile(destination, bytes, { flag: 'wx' }); assert.equal((await digest(destination)).sha256, sha256)
+        result.continuity_exit_wait = { file_name: waitFileName, status: 'SAVED', sha256, byte_count: bytes.length,
+          source_revision: wait.source_revision, helper_sha256: wait.helper_sha256, closure_sha256: wait.closure_sha256,
+          wait_status: wait.status, stop_reason: wait.stop_reason, retention_incomplete: wait.retention_incomplete,
+          unretained_sample_count: wait.unretained_sample_count, sample_count: wait.samples.length, budget_ms: wait.budget_ms,
+          child_ready_observed: wait.child_ready_observed, child_deadline_ms: wait.child_deadline_ms, wait_deadline_ms: wait.wait_deadline_ms,
+          first_query: wait.samples[0]?.query_window ?? null, last_query: wait.samples.at(-1)?.query_window ?? null,
+          first_zero: projectSample(firstZero), last_nonzero: projectSample(lastNonzero) }
+        if (wait.status === 'ABSENCE_OBSERVED') {
+          assert.equal(wait.retention_incomplete, false); assert.equal(wait.unretained_sample_count, 0)
+          assert.equal(wait.stop_reason, 'FIRST_ZERO'); assert.ok(firstZero)
+          assert.equal(firstZero.index, wait.samples.length - 1); assert.equal(firstZero.closure.rootVerified, true)
+          assert.equal(firstZero.closure.unknownRows.length, 0); assert.ok(firstZero.query_window.end.monotonic_ms <= wait.wait_deadline_ms)
+        }
+      }
+    } catch (error) {
+      if (result.continuity_exit_wait.status !== 'SAVED') result.continuity_exit_wait = { file_name: waitFileName, status: 'FAILED', error_kind: kind(error) }
+      retentionFailure ??= error
+    }
     if (retentionFailure) throw retentionFailure
   }
   const snapshotReportPath = join(snapshotOutput, 'result.json'), snapshotReportInfo = await lstat(snapshotReportPath)
@@ -605,6 +708,10 @@ try {
   assert.equal(snapshotReport.model_calls, 0); assert.equal(snapshotReport.service_started, false); assert.equal(snapshotReport.account_session_started, false)
   assert.deepEqual(snapshotReport.cases.map(row => row.name), ['live-root-child', 'normal-eof', 'prior-owned-continuity'])
   assert.equal(continuityReport.status, 'PASS'); assert.equal(continuityReport.forced_cleanup, false)
+  assert.equal(result.continuity_exit_wait.status, 'SAVED'); assert.equal(result.continuity_exit_wait.wait_status, 'ABSENCE_OBSERVED')
+  assert.equal(result.continuity_exit_wait.retention_incomplete, false); assert.equal(result.continuity_exit_wait.unretained_sample_count, 0)
+  assert.equal(continuityReport.exit_wait_file.sha256, result.continuity_exit_wait.sha256)
+  assert.equal(continuityReport.exit_wait_file.sample_count, result.continuity_exit_wait.sample_count)
   assert.deepEqual(result.continuity_frames.map(row => row.status), ['SAVED', 'SAVED', 'SAVED'])
   result.diagnostic_process_tree.root_child_control = { status: snapshotReport.status, report_sha256: hash(snapshotReportBytes),
     live_observation_count: snapshotReport.cases[0].observations.length,
@@ -916,6 +1023,12 @@ try {
       assert.ok(Buffer.byteLength(actual) <= 3500, 'Continuity annotation exceeds its bound; full result retained')
       process.stdout.write('::warning title=' + title + '::' + actual.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
     }
+  }
+  if (result.continuity_exit_wait) {
+    const text = JSON.stringify({ observation_revision: result.observation_revision, ...result.continuity_exit_wait,
+      final_native_confirmations: continuity?.native_exit_observations ?? 'NOT_RUN', cim: rootChildCases.find(row => row.name === 'normal-eof')?.cim_process_exit ?? 'NOT_RUN' })
+    assert.ok(Buffer.byteLength(text) <= 3500, 'Exit wait annotation exceeds its bound; complete file retained')
+    process.stdout.write('::warning title=Windows continuity exit wait::' + text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
   }
   if (result.unknown_process_observation_projection) {
     const diagnosticProjection = structuredClone(result.unknown_process_observation_projection)
