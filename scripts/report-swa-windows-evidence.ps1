@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 if (-not [IO.Path]::IsPathFullyQualified($EvidenceRoot)) { throw 'An absolute downloaded evidence directory is required' }
 if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
     $d10Phase = 'input-file'
-    $d10Input = [ordered]@{ actual_length_bytes = 'UNKNOWN'; file_is_ordinary = 'UNKNOWN'; file_is_reparse = 'UNKNOWN'; original_limit_bytes = 1048576; source_matches = 'UNKNOWN' }
+    $d10Input = [ordered]@{ actual_length_bytes = 'UNKNOWN'; file_is_ordinary = 'UNKNOWN'; file_is_reparse = 'UNKNOWN'; original_limit_bytes = 2097152; source_matches = 'UNKNOWN' }
     try {
     if ($ControllerOpenSection -cnotin @('Short', 'Closure')) { throw 'The fixed D10 section is required' }
     $file = Get-Item -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Force
@@ -18,7 +18,7 @@ if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
     $d10Input.file_is_ordinary = $file -is [IO.FileInfo]
     $d10Input.file_is_reparse = ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0
     if ($file -is [IO.FileInfo] -and $file.Length -ge 0 -and $file.Length -le 9007199254740991) { $d10Input.actual_length_bytes = $file.Length }
-    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $file.Length -gt 1048576) { throw 'The saved D10 result must be a bounded ordinary file' }
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $file.Length -gt 2097152) { throw 'The saved D10 result must be a bounded ordinary file' }
     $d10Phase = 'parse-result'
     $saved = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
     $d10Phase = 'source-binding'
