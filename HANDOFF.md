@@ -4,6 +4,10 @@
 
 用户已确定 Astrocyte 和 Attention Mirror 分别成为独立仓库。两仓已有独立构建与实际本地入口，准确提交和验证范围见 STATUS。SWA 保留 Workspace/Swarm/原生执行及必要显式集成；旧混合源码按准确保存点移出，来源、许可、研究数据与公开测试输入保全。真实用户数据库不自动搬迁。最终同提交安装和真实 N4/N6 仍须完成。
 
+当前正式安装已推进到 S392 `392cb0c9459f0b88440f14b366be2435f48816c5` / `/workspace/swa-linux-installs/swa-linux-combined-392cb0c9-n46-08`；完整check/race/build/install/D12和Root服务检查已独审。新N4仍FAIL，四Worker自然结束并释放不等于成果验收通过。当前诊断与业务补审见STATUS首部及 `.verification/cloud-setup/n4-392cb0c9-failure/`；驱动live→released旧快照、活动观察过晚和ToolsOff preamble要求不可用工具须一起处理，不能只修首断言后完整重建。原owner已结束、准确daemon/helper也经原认证正常EOF/idle结束；Root没有持有活动服务，原全树UNKNOWN不变，旧请求不得重放。
+
+当前工作归属：`n4_392_failure`负责已审b30bc4f8统一修正与局部验证，`n4_392_review`独立审查；`remaining_delivery_audit`已开始fa62e2ee原生提问/继续方案的互斥源码实现，preamble四共享源先由N4 owner完成并审查再释放。`environment_access_check`的Windows ff33最小run40021139196已获原06实际独审通过，接续准备D17服务观察计划，未执行新服务CI。Root独占Git提交/tag/推送、STATUS/HANDOFF和实际服务操作。新增四根可恢复副本调查与唯一check-only已独审，工具 `.verification/cloud-setup/space-392-20261023-12/remove-reviewed-copies.py` SHA1123dfd4，仅Root收到用户明确新增授权后才能执行一次 `--remove-reviewed-four`；当前尚未批准、operation-01未创建。之前获准的四根已删除，不能混淆两批。所有正式安装、原归档、任务数据、凭据与失败证据保持保全。下面S0177及更早段落是历史，不作为当前安装或活动进程状态。
+
 当前负责人及互斥写域：
 
 - separation：Attention Mirror 独立仓、显式提取器配置与资料适配器测试，当前已独立审查接受；任务 `swa-product-separation-20261023.md`。
