@@ -19,7 +19,7 @@
 
 默认检查、拆分清理及此前Linux安装均已通过；长报文、工作树参数、Pi选择/结构化模式、执行文件探测、输入绑定和停止关闭路径的修复及各轮原失败保留在STATUS与对应任务。旧请求不重放，已结束服务不复用，正式安装不改作开发副本。每次失败先向用户交代最小复现、根因证据及局部结果，再启动下一次完整构建。
 
-pi09已通过实际单Worker输出、活动停止、完整退出、资源与租约释放及Controller关闭。当前正式来源 `aba208d2e57a5921ffd6c10ea73d48822700d723` 的Linux完整构建、严格安装、装内D12（12通过）和组合服务正常退出均已独立接受，正式安装位于 `/workspace/swa-linux-installs/swa-linux-combined-aba208d2-n46-06`。旧正式来源和失败仍保存于STATUS及对应任务；不复用旧Run或请求。
+pi09已通过实际单Worker输出、活动停止、完整退出、资源与租约释放及Controller关闭。当前正式来源 `0177b95140dc28e8c4f3a25a7e9c49f62e841504` 的Linux完整构建、严格安装、装内D12（12通过）和组合服务正常退出均已独立接受，正式安装位于 `/workspace/swa-linux-installs/swa-linux-combined-0177b951-n46-07`。旧正式来源和失败仍保存于STATUS及对应任务；不复用旧Run或请求。
 
 S74aa新N4原件位于 `/workspace/swa-pi-n4-packet-74aa5aa8-20261023-01/` 及对应owned目录。前三Worker ready/input_accepted，第四个consult孙任务已创建但父请求因helper串行处理在120秒外层超时；默认wait另外把正常执行pending误判unknown并过早退出6。随后Grant撤销引起的403是尾部后果。原执行FAIL、正常EOF后serve6/observer1及完整树UNKNOWN均保留。两个余留daemon531361/helper532517已通过原认证接口正常EOF及shutdownIfIdle结束，双pidfd两次退出间隔50.130200ms，补充结果已独立接受；不改数据库资源/租约或原全树UNKNOWN。工具首次模块加载失败及同安装NODE_PATH局部修正均保留。不得重放旧请求或改写原租约。
 
@@ -29,11 +29,13 @@ S6190新N4四Worker均ready/input_accepted、默认wait在真实pending期间持
 
 Saba新N4四个原生启动均完成；通知完整4200字节输入已实际保存且未增Task/Worker。首错是活动trace在增长时被完整文件版本门拒绝，另有投影快照变化；三个成功Pi最终消息中的reasoning项被旧reader误要求assistant。第四Worker原生网络403早于撤Grant，原路径已停止释放，不改判成功。原driver FAIL、owner退出1/serve6/observer1、全树UNKNOWN保留。准确daemon589283/helper589954已经原认证正常EOF/idle结束，双pidfd退出50.110446ms，helper缺席/daemon僵尸；原数据库未改，补证已独立接受。
 
-活动观察改为同FD完整前缀、身份固定和有限只读重采，完整结果继续全版本检查；Pi最终块按原type/index严格对应reasoning或assistant；完整成果预算为单源12MiB、结果96MiB、完整响应128MiB，普通响应16MiB。两组各4项规则、实际四trace和六成功close回归、Go三包及架构通过。首次strict仅类型收窄错误，取得明确traceAgent沿原条件调用后r2退出0。全批局部与源码已获独立限定接受，固定新S后按n46-07计划构建安装、D12与Root服务检查，再以新packet进行N4；N4完整通过后才N6。
+活动观察改为同FD完整前缀、身份固定和有限只读重采，完整结果继续全版本检查；Pi最终块按原type/index严格对应reasoning或assistant；完整成果预算为单源12MiB、结果96MiB、完整响应128MiB，普通响应16MiB。两组各4项规则、实际四trace和六成功close回归、Go三包及架构通过；首次strict类型收窄错误修正后r2退出0。该批S0177源码及n46-07正式构建、安装、D12和Root服务检查均已独立接受。
+
+S0177新N4四Worker均成功结算，原轨迹存在约2.61秒共同输出；首次来源核验时driver失败，旧catch未保留具体断言，精确历史首错UNKNOWN。四次release晚于首catch，不得归因初次观察时资源已经released。已用原件复现确定拒绝条件：custody.owner是runtime609743，driver却比较daemon609757；生产来源与独立ready/live-proof均证明两者不同。纯PiEventView及strict observer范围检查通过，先前测试未覆盖该外部比较。n46负责人正计划修复Linux共用托管者身份来源，保留独立服务归属门；停止隔离、业务审阅和GUI未完成，N6未运行。原owner退出1/serve6/observer1、全树UNKNOWN不变；准确daemon609757/helper610275已原认证正常EOF/idle结束，双pidfd50.112896ms、helper缺席/daemon僵尸，补证已独立接受。原packet/owned/数据库均保留，详见STATUS。安全失败位置记录35d45a5c九源及两版Node各4项、Go authorizer/依赖检查已独审接受，尚未用于新模型；后继authorizer需重新编译并记录新来源。GUI报告流式读取工具源码01895af及7项局部检查已独审通过，实际浏览器仍未运行。
 
 可恢复副本清理记录均在STATUS。最近仅移除Saba package及旧I6190/I74aa三根，实际净增2989182976字节并获独立接受；当前Iaba、I4c、Saba candidate、所有tar/备份/数据/认证/证据保留。检查会重建Go缓存，下一正式构建各阶段必须重新过实际空间门，不据旧剩余量推定可用。
 
-Windows D10原FAIL/unknown649与D11的FAIL/unknown5保留。D11 SDK7项、TTY/pipe各三次ready及自然EOF、真实Controller打开和关闭通过；只读取证证明原5项全部OpenProcess87且创建时间UNKNOWN，不能猜角色或原因。后继D12使用单次Nt进程快照，四源与本地检查已接受，准确来源fab0ecf6/run39976158483/job120491171495实际仍FAIL：SDK7通过，诊断DLL编译命令1063退出1，具体MSVC错误尚未取得；Nt self/rootchild/A/B及服务均未运行。Windows owner只取原产物与最小失败证据，未授权下一CI。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
+Windows D10原FAIL/unknown649与D11的FAIL/unknown5保留。D11 SDK7项、TTY/pipe各三次ready及自然EOF、真实Controller打开和关闭通过；只读取证证明原5项全部OpenProcess87且创建时间UNKNOWN，不能猜角色或原因。D12诊断DLL编译失败，原日志未保具体MSVC首错；后继D13只重现单组件编译并取得完整安全投影。来源180cc160/run39984563188/job120520264671最终FAIL，psutil完整头三项_SYSTEM_*在C++中C2371重复定义，实际与独审详见STATUS。Windows owner独占原工作树，只按已审计划修正include适配及执行局部检查；Root串行决定下一唯一compile-only调用。Nt self/rootchild/A/B、服务和模型尚未运行，不升级D11未知。[草稿PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)保持草稿。
 
 自动完成仅表示执行结束，验收状态仍为 `unreviewed`。父任务恢复须证明原生输入被实际接受、父 Agent 继续产生输出；持久邮件已排队不代替实际恢复。N6 保留 lead、停止另一 Worker，并通过真实孙任务成果触发父任务继续。所有子任务、未决输入和完整资源释放均纳入最终 Run 状态。
 
