@@ -53,19 +53,34 @@ async function execute(action: string, requestId: string, invocation?: Invocatio
 
 async function main() {
   const lines = createInterface({ input: process.stdin, output: process.stdout, terminal: process.stdin.isTTY, crlfDelay: Infinity })
+  const pending = new Set<Promise<void>>()
+  let failure: unknown
+  const failed = (error: unknown) => { failure ??= error; lines.close() }
+  process.stdout.on('error', failed)
   try {
     for await (const line of lines) {
+      if (failure) break
       const command = helperInput.parse(JSON.parse(line))
-      try {
-        const result = await execute(command.action, command.request_id, command.invocation)
-        process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, result }) + '\n')
-      } catch (error) {
-        process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, error: nativeError(error) }) + '\n')
-      }
+      const operation = (async () => {
+        let outcome: { result: unknown } | { error: ReturnType<typeof nativeError> }
+        try { outcome = { result: await execute(command.action, command.request_id, command.invocation) } }
+        catch (error) { outcome = { error: nativeError(error) } }
+        await new Promise<void>((resolve, reject) => {
+          process.stdout.write(JSON.stringify({ type: 'swa_controller_reply', request_id: command.request_id, controller, pid: process.pid, ...outcome }) + '\n', error => error ? reject(error) : resolve())
+        })
+      })()
+      pending.add(operation)
+      void operation.then(() => { pending.delete(operation) }, error => { pending.delete(operation); failed(error) })
     }
+  } catch (error) {
+    failed(error)
   } finally {
+    // EOF 或输入失败只停止接收；原 RPC 与回执写入全部结算后才结束 helper。
+    await Promise.allSettled(pending)
     lines.close()
     process.stdin.destroy()
+    process.stdout.off('error', failed)
   }
+  if (failure) throw failure
 }
 main().catch(error => { process.stderr.write(JSON.stringify(nativeError(error)) + '\n'); process.exitCode = 1 })

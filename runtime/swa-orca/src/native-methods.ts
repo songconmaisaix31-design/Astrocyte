@@ -32,7 +32,7 @@ import { approvedWorkerLimit, assertCompletionInventory, assertWorkerCapacity, a
 import { readRunView, readRunTaskTree, isTaskDescendant } from './run-view'
 import { collaborationRead, writeCollaborationRecords, resolveCollaborationReferences, assertCurrentCollaborationAssignment } from './collaboration-records'
 import { requestRunSettlement, validateHandoffInput } from './run-settlement'
-import { OrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
+import { getOrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
 import { ORCHESTRATION_RUN_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/runs/runs'
 import { ORCHESTRATION_MESSAGE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/messaging/message-methods'
 import { ORCHESTRATION_WORKER_CONTROL_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-control'
@@ -92,7 +92,7 @@ export async function deliverRunHandoff(runtime: OrcaRuntimeService, invocation:
   const method = buildRegistry(SWA_METHODS).get('swa.controllerDeliver')
   if (!method || isStreamingMethod(method)) return fail('evidence_missing', 'The original native input handler is unavailable')
   const id = invocation.command.request_id
-  return new OrchestrationMutationExecutor(runtime).run({ id, authToken: '', method: method.name, orchestrationRequestId: id }, { invocation }, mutation => {
+  return getOrchestrationMutationExecutor(runtime).run({ id, authToken: '', method: method.name, orchestrationRequestId: id }, { invocation }, mutation => {
     if (!mutation) return fail('request_mismatch', 'The original native handoff mutation identity is unavailable')
     return method.handler(method.params?.parse({ invocation }), { runtime, authenticatedCallerFingerprint: authority(runtime), orchestrationMutation: mutation.identity, recordMutationReceipt: mutation.recordReceipt, markMutationEffectPossible: mutation.markEffectPossible })
   }, authority(runtime))
@@ -258,11 +258,12 @@ export const SWA_METHODS = [
     if (!command.controller || !command.run_id || !command.task_id || !['run.show', 'run.export'].includes(command.action)) return fail('invalid_argument', 'An exact Run, root task and controller are required')
     const { scope, owner } = controllerScope(runtime, invocation.project.id, command.controller, { history: true })
     if (scope.run_id !== command.run_id || scope.root_task_id !== command.task_id) return fail('scope_denied', 'The Run observation differs from its original project association')
-    const runView = readRunView(runtime.getOrchestrationDb(), scope)
+    const execution = { executor: getOrchestrationMutationExecutor(runtime), runtimeEpoch: runtime.getRuntimeId() }
+    const runView = readRunView(runtime.getOrchestrationDb(), scope, execution)
     if (command.action === 'run.show') return { scope, native: { run_view: runView } }
     const summary = await observeTask(runtime, { ...invocation, command: { ...command, action: 'task.result' } }, scope)
     const result = await completeTaskResult(runtime, scope, owner.worktree_id, summary)
-    const after = readRunView(runtime.getOrchestrationDb(), scope)
+    const after = readRunView(runtime.getOrchestrationDb(), scope, execution)
     if (!isDeepStrictEqual({ ...runView, observed_at: null }, { ...after, observed_at: null })) return fail('operation_unknown', 'The Run changed while collecting its complete export')
     return { scope, output_dir: command.output_dir, native: { run_view: after, result } }
   } }),

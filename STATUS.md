@@ -1,19 +1,19 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 安装来源 `7ff3a7d7` 的完整构建、安装及装内 D12 已通过，但 N4 停在 Worker 启动。后继修复已通过局部检查与独立源码审查；使用 `3e87f6b5` 的开发单 Worker pi09 已取得真实模型输出、运行中停止、资源和租约释放、Controller关闭及完整服务树退出，整轮PASS，实际结果已获独立审查接受。该开发组合不代替同提交正式安装或N4/N6。Windows 权限 SDK 及真实 Controller.open/close 曾在 D3 通过，完整关闭仍未通过；D5至D7诊断准备错误已完成相应局部调查和修正，D8因提交缺触发标记全跳过，源码相同的D9正在执行最小诊断。正在刷新正式构建的磁盘预算，完整构建尚未重试，N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。Astrocyte、Attention Mirror 已按用户决定拆为独立本地仓库，SWA 保留必要集成；实际并发目标为 N=4、N=6。分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。正式 Linux 来源 `74aa5aa8` 的完整构建、安装、装内 D12 和实际组合服务检查已通过并获独立审查接受。其新 N4 已完成前三 Worker 的启动及输入接收，第四个请求因同 helper 串行执行而在外层超时；默认等待另将正常执行的 pending 请求判成 unknown。原 N4 为 FAIL，正常关闭后的完整服务树为 UNKNOWN；两个准确余留进程已通过原认证接口正常结束，补充退出证据已独立接受。[并发与 Run 观察修复](tasks/swa-controller-concurrent-run-20261023.md)正在局部验证，尚未启动下一次完整构建或模型轮。Windows D10 的真实 TTY 三次识别及自然 EOF 通过，pipe 被全局祖先排除边断言拒绝，完整关闭仍 UNKNOWN；正在准备只读提取同一保留产物和最小 checker 修正。N6 未运行。
 
 ## 当前实现与验证
 
 | 范围 | 已取得的结果 | 剩余验收 |
 | --- | --- | --- |
-| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S7ff Linux 完整安装与 D12 通过；pi09开发单Worker完整退出通过 | 当前源码同提交正式安装及N4/N6完整验收 |
+| Workspace 与 SWA 服务 | 唯一空间存储责任、原表/ID/资料引用/同连接事务保留；独立 swa-server、swahttp/swastore/projectfiles 闭包通过；真实 SQLite/HTTP、原生产服务生成的公开旧库兼容、开发进程生命周期及 Windows 交编通过；S74aa Linux 完整安装、D12及实际服务退出通过；pi09开发单Worker完整退出通过 | 并发修复后的正式安装及N4/N6完整验收 |
 | Astrocyte | 独立本地仓库 `/workspace/astrocyte`，`426723b5525ec36b1e0c93dd4b6d9eb6e42287f1`；认知 MCP/sleep、快照/只读 HTTP、GUI 和显式单文件事件导入均已独立审查。Go 测试、Linux 构建、真实 MCP→快照→七 API→浏览器 DOM/原库不变/正常退出通过；真实 Git→实际导入二进制→SQLite 幂等与冲突回滚通过；Windows x64 交编通过 | 自动来源和外部完成证据仍为显式集成边界；Windows 原生运行未验 |
 | Attention Mirror | 独立仓库 `/workspace/attention-mirror`，`58bb6e4454e03db135cabe6de2dec8dfc481aee6`；独立资料服务/GUI、显式提取器配置、资产根限制及原适配器测试已独立审查。真实公开原件导入/重放/人工沉淀/Taste/撤回保全、Go 检查、前端 67 项规则、DOM 9 项规则、实际安装启动通过；Windows 交编通过 | 公开 ACL URL 实测因 DNS 解析失败；模型、PDF/媒体、OpenViking 当前空间权限集成与 Windows 原生仍未验 |
 | run/wait/export | CLI 与 GUI 接同一 Run；稳定请求 ID、递归 strict、分离退出码、完整导出已实现；CLI 局部测试、Web 类型检查/ESLint、观察规则 9 项、真实无原生运行时 DOM 2 项通过 | 完整真实 Run、断线恢复、实际递归失败和模型结果 |
 | Go 组合提交 | 原 controller/task/worker 三阶段、输入完整内容绑定、已完成任务关联恢复；真实文件同大小同时间变更拒绝测试通过 | 本轮安装中的原生幂等恢复 |
 | 能力与角色 | 实际观察层级、送达/恢复状态、角色/讨论界面已接入；能力、角色和实际 SQLite CRUD/CAS 规则通过，源码接受 | 实际模型及账号归属、父任务恢复 |
 | 原生 Run 生命周期 | 原 Task/Dispatch、journal、成果和原资源释放路径已实现并获独立源码接受；完成邮件仅经明确 worker.send 恢复，notify 只存记录，成果保持 unreviewed。严格 TS 与实际 SQLite 规则检查通过 | 实际子成果唤醒父任务、完整资源回收、最终递归聚合 |
-| N4/N6 | 同 Run/角色复用/实际孙任务/父恢复/停止隔离/自动释放驱动已审查；S7ff 安装已完成真实 Controller/根任务创建，Worker 启动被上游工作树参数规则拒绝，原请求保留 UNKNOWN | 修复并局部验证后继续 N4/N6；并发、停止隔离、继续输出与完整业务结算未通过 |
+| N4/N6 | 同 Run/角色复用/实际孙任务/父恢复/停止隔离/自动释放驱动已审查；S74aa 正式安装取得前三 Worker 的ready/input_accepted，第四个孙任务已创建但父请求超时保留 pending；进行中请求被误判 unknown 的独立原因已确认 | 并发与观察修复后继续全新 N4/N6；并发、停止隔离、继续输出与完整业务结算未通过 |
 
 旧混合 Go/SQL 与配套资源已按独立审查清单移出，公开 testdata 和研究数据保留；完整保存点与归档见 [LEGACY](docs/LEGACY.md)。清理后的 `pnpm check`、`pnpm check:race`、`pnpm build` 与实际默认启动检查均退出0，同产物页面/JS/CSS、独立 SQLite、健康/会话/项目及正常退出通过。Go 依赖清理后双平台含测试图、17包架构、空 tidy 差分与模块校验通过。
 
@@ -113,7 +113,25 @@ Windows D7 `9916901651f1fa32b45441d949d822b63c4d117e` 的 run `39943240934` / jo
 
 pi09 使用 `3e87f6b58be028f14d1389658daa50caeffd3be4` 与全新请求，原件为 `/workspace/swa-worker-pi-09-etvSsd/evidence/`。`result.json` SHA `8225857edbbdc5464e9894cd3bc13be3488d8cf0701e762bdd9d6291606c07f7`、`preparation.json` SHA `4978e13d0b67877908023aa43287df01a0fa3ecdd1bbc4b33f68a0dd78b2a3f0`。启动请求 `887b9d28-454f-4793-b83f-59df7217b1c2`、Dispatch `ctx_f7d25d6f76b7` 的实际模式为structured；完整输入绑定、原生会话全文和真实delta通过，停止前活动检查点为sequence75。停止请求 `23e1b9be-ca12-4276-b3b8-c4fb483d008a` 退出0，完整非强制关闭证据为sequence330，准确root已缺席、确认已送达、两次无子进程观察相隔50.456915ms。释放请求 `c88c4c75-48dc-4b0e-871c-50265ebfc6d0` 退出0，资源和租约释放检查通过；Controller关闭、Grant撤销、dispatcher关闭、serve/observer退出0与完整服务树双空均通过。整轮退出0，stderr550字节保留，未宣称为空。覆盖仅为I4c基底加当前源码的开发单Worker；原I4c/I7ff、旧失败与UNKNOWN记录不变，N4/N6仍待正式安装验证。
 
-Windows D7对应修正只在诊断脚本选择首个真实Python Application，并将原buildPython验证后的路径设为NODE_GYP_FORCE_PYTHON。官方PowerShell在两个实际程序上的对照重现旧拼接路径ENOENT，修后原helper成功识别Python3.12.14；Parser、源码和局部结果已独立接受。D8 `cbb64317883e3d4d3cd8028827b76b5aebb5e492` 的run `39945109716` 全部作业Skipped，原因是提交消息缺少工作流要求的marker，未执行SDK或服务。后继空提交 `bac45127512e31f4423e1accf94c98650201fd44` 与D8源码树完全相同；真实工作流条件的局部检查确认仅目标诊断启用。唯一D9 tag触发run `39945504447` / job `120387056901`，正在运行；其余六项原生作业及同来源S0均跳过，无模型授权扩大。
+Windows D7对应修正只在诊断脚本选择首个真实Python Application，并将原buildPython验证后的路径设为NODE_GYP_FORCE_PYTHON。官方PowerShell在两个实际程序上的对照重现旧拼接路径ENOENT，修后原helper成功识别Python3.12.14；Parser、源码和局部结果已独立接受。D8 `cbb64317883e3d4d3cd8028827b76b5aebb5e492` 的run `39945109716` 全部作业Skipped，原因是提交消息缺少工作流要求的marker，未执行SDK或服务。后继空提交 `bac45127512e31f4423e1accf94c98650201fd44` 与D8源码树完全相同；真实工作流条件的局部检查确认仅目标诊断启用。唯一D9 tag触发run `39945504447` / job `120387056901`，最终结果见下；其余六项原生作业及同来源S0均跳过，无模型授权扩大。
+
+## S74aa 正式安装与实际 N4
+
+正式来源 `74aa5aa84bb64cccade786973a8d0c7b402b67fc` 的 build、archive、extract、严格 install 和装内 D12 均退出0；D12为12通过、0失败、0跳过。安装根为 `/workspace/swa-linux-installs/swa-linux-combined-74aa5aa8-n46-04`，原件为 `.verification/swa-linux/evidence/74aa5aa84bb64cccade786973a8d0c7b402b67fc-combined-n46-04/`。归档295659912字节，SHA `1b4071f4bb1eb3c35bef767c3ae4c6072fe7afdbb4111f877b6de8cd2bfeba2c`。真实组合服务检查退出0，health、HTML/JS/CSS实际字节与MIME、正常serve退出及外部完整进程树双空通过，间隔57.578593ms；结果为 `/workspace/swa-cli-smoke-74aa5aa8-combined-1792757218126/smoke-evidence/result.json`，SHA `db4e4bec1153457a06b3ea057552d61eb168828c95ba8c8df6ef76ca686f6318`。旧顶层status仍为NOT_RUN，实际通过仅限service/static_assets/process_tree三个字段；没有模型调用。正式安装及该实际范围均已独立接受。
+
+新 N4 沿原 Pi1.0.1、StepFun step-3.5-flash、ToolsOff及公开四文件项目执行。前置verify首次被沙箱读取原活进程 `/proc/<pid>/exe` 的EACCES拒绝；strace及同PID身份核确认后，同包、同服务在必要权限下verify退出0，未重启或重放请求。后续执行退出1。原Run `run_e111d292c918`、根Task `task_c4d7d4fefde0`、外层请求 `f1b731b5-00dd-493a-948e-c7a3d37c3a8a` 的提交已completed，前三Worker取得ready/input_accepted。第四个consult孙任务请求 `8e770d0d-4864-4bab-ada0-47c3bfbd07bc` 的父回执仍pending/helper-input，实际Dispatch `ctx_4f26f31ba6ef`、Task `task_edabccdb919f`、终端及资源均已创建。三个同时追加请求被helper的逐行await串行执行，各调用的120秒计时却从发送前开始，第四个因此在外层超时。驱动随后撤销Grant，尾部403才令native子请求completed/failed；尾部hostFault不能解释此前的超时。默认wait另于12:21:11把当时仍在执行的pending判成unknown并退出6，早于第四个native请求开始。这两条原因及局部修复边界见[并发修复任务](tasks/swa-controller-concurrent-run-20261023.md)。
+
+原件为 `/workspace/swa-pi-n4-packet-74aa5aa8-20261023-01/` 及 `/workspace/swa-pi-owned-74aa5aa8-n4-20261023-01/`。driver-incomplete SHA `ae96aba5ef5ec8588a9d551c71e6f6670cdd929380d2873d04f84e87d1ad9d34`，记录FAIL；20条CLI记录中没有stop/release请求，三个清理结果UNKNOWN均发生于发送前。原Grant撤销已确认。正常stdin EOF后serve退出6、observer退出1、完整树UNKNOWN，owner-result SHA `1b207276065f581717600068a2552c06f9189e614d9d018b0ab7edd10716109c`。当时只读库存确认原13个已观察身份中仅daemon531361和helper532517仍活，其余11个已缺席；这不能证明未观察的后代或修改原业务/租约状态。N4完整并发、业务审阅、GUI及N6均未通过。
+
+准确两资源的补充收尾已获独立接受。工具首次加载因独立目录无法解析正式外部包 `@orca/windows-security` 退出1，未进入认证或发送EOF；只为原命令补 `NODE_PATH` 到同一正式安装的 `runtime/node_modules`，精确resolve及实际require局部通过。后继原工具执行退出0、stderr为空，原认证接口发送一次正常CtrlD、sessions清空、shutdownIfIdle接受。daemon531361/start10282578与helper532517/start10309165的原双pidfd连续两次确认退出，间隔50.130200ms；helper缺席，daemon的/proc路径仍在，不写为absent。结果 `.verification/controller-taskcreate-diagnosis-20261023/n4-74aa5aa8-cleanup-01/result.json` SHA `167b91d09d7ca2c4c3333cedb49e81f307a002934343d635c68d671f0b4295b5`。四资源仍owned/not_requested、第四父仍pending/helper-input，原driver和owner文件hash不变；仅补证这两个资源，不改原业务FAIL或全树UNKNOWN。
+
+## Windows D9/D10 实际结果
+
+D9 `bac45127512e31f4423e1accf94c98650201fd44` / run `39945504447` 最终FAIL。SDK和诊断DLL构建通过，首个104字节TTY输入在原25秒内无已核回复，强制收尾，Controller阶段未开始。原结果没有保留82字节raw和ready事件，保持NOT_CAPTURED。退出根进程的一次OpenProcess返回87、创建时间未知；该错误不足以证明原身份或完整退出，unknown1及永久关闭阻断保留。
+
+GitHub连接恢复后，D10 `1b8828d6add9eaab6ed59f445c2ee2c11c4f6511` / run `39952528075` / job `120410242910` 最终FAIL。SDK7项通过，诊断DLL构建通过；TTY取得三次真实ready，同进程自然EOF退出0、未强制终止。pipe首个回复已通过请求/Controller/ready/helper身份检查，但被checker额外要求全局excludedEdges为空拒绝；reply_count0只表示没有完成全部检查，不能解释成没有回复。原pure函数明确将创建时间不可能的PPID边排除并停止该支遍历，checker的全局空断言与此契约不一致。原关闭仍unknown649、latch=true、CIM退出6/all_exited=false；两次native剩余0不覆盖这些未知。B未启动，无Worker或模型调用。
+
+D10完整结果已上传artifact `12500479586`（310595字节）；官方本地下载一次403后停止。公开第二条诊断未发布，原raw/query窗口及649项未知的细节仍待只读提取，不能视为缺失或回填D9。实际安全原件在 `.verification/cloud-setup/windows-controller-open-actual-1b8828d6-10/`，限定结果已独立接受。后继计划仅用只读CI取同一artifact，移除checker全局excludedEdges空断言并保留准确root/child/unknown/首末身份门，公开错误只保首行；尚未重跑SDK、服务或完整构建。
 
 ## 保留的安装基线
 
@@ -133,6 +151,6 @@ Windows D7对应修正只在诊断脚本选择首个真实Python Application，�
 
 正式科研实验的原证据根与权威锁尚未恢复，本轮未运行依赖这些原件的实验；既有科研与用户数据保全。
 
-下一步完成正式构建空间核查，固定新提交构建并独立安装，继续N4/N6、同Run GUI；并行定位Windows短控制中止及完整关闭的未知进程观察。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建。正式发布、远端新仓库创建和main合并尚未执行。云环境配置草稿revision 9已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
+下一步验证helper并发与Run进行中观察修复；局部结果获独立接受后再固定新来源、构建安装并继续全新N4/N6与同Run GUI。并行只读提取Windows D10保留产物及修正checker局部门。每项失败先报告最小复现、根因证据及局部结果，再启动后继完整构建。正式发布、远端新仓库创建和main合并尚未执行。云环境配置草稿revision 9已保存并读回确认，安装选择器与启动说明已同步；仍需在环境设置保存并发布才生效。草稿仓库成员仍只有SWA，两份没有远端的独立本地仓库在新任务中的恢复尚未验证。
 
 历史阶段原件保留在[准确旧状态](https://github.com/songconmaisaix31-design/swarm-anything/blob/11619d72f08c163f159a4f4befe270806b1b67ea/STATUS.md)，其过期服务、请求和待答说明不作为当前执行条件。

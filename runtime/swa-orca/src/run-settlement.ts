@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util'
 import { z } from 'zod'
 import type { OrcaRuntimeService } from '../../../third_party/orca-v1.4.230/src/main/runtime/orca-runtime'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
-import { OrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
+import { getOrchestrationMutationExecutor, type OrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
 import { ORCHESTRATION_WORKER_RELEASE_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-release'
 import { ORCHESTRATION_WORKER_STOP_METHODS } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/methods/orchestration/worker/worker-stop'
 import { getStructuredAgentSessionHost } from '../../../third_party/orca-v1.4.230/src/main/native-chat/agent-session-wire/structured-agent-session-registry'
@@ -65,7 +65,7 @@ export function validateHandoffInput(runtime: OrcaRuntimeService, invocation: In
 export function installRunSettlement(runtime: OrcaRuntimeService, collect: Collector, deliver: HandoffDeliver, ownerAlive: () => boolean) {
   const host = getStructuredAgentSessionHost()
   if (!host || triggers.has(runtime)) throw new Error('The Run lifecycle consumer requires one actual structured host')
-  const db = runtime.getOrchestrationDb(), executor = new OrchestrationMutationExecutor(runtime), guards = new Map<string, () => void>()
+  const db = runtime.getOrchestrationDb(), executor = getOrchestrationMutationExecutor(runtime), guards = new Map<string, () => void>()
   cleanupGuards.set(runtime, guards)
   let closed = false, queue = Promise.resolve()
   const active = new Set<string>(), changed = new Set<string>()

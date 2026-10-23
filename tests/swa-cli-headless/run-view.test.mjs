@@ -1,18 +1,35 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, symlink } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
-const { buildSync } = createRequire(join(root, 'runtime/swa-orca/package.json'))('esbuild')
+const requireRuntime = createRequire(join(root, 'runtime/swa-orca/package.json'))
+const { build, stop } = requireRuntime('esbuild')
 await mkdir(join(root, '.verification/run-view'), { recursive: true })
 const directory = await mkdtemp(join(root, '.verification/run-view/case-'))
 const bundle = join(directory, 'native-run-view.cjs')
-const built = buildSync({ stdin: { contents: "export { OrchestrationDb } from './third_party/orca-v1.4.230/src/main/runtime/orchestration/db'; export { readRunView } from './runtime/swa-orca/src/run-view'", resolveDir: root }, platform: 'node', format: 'cjs', bundle: true, write: false, nodePaths: [join(root, 'runtime/swa-orca/node_modules')] })
-await writeFile(bundle, built.outputFiles[0].contents)
-const { OrchestrationDb, readRunView } = createRequire(bundle)(bundle)
+const dependencies = await realpath(join(root, 'runtime/swa-orca/node_modules'))
+await symlink(dependencies, join(directory, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir')
+assert.equal(await realpath(join(directory, 'node_modules')), dependencies)
+try {
+  await build({ stdin: { contents: [
+    "export { OrchestrationDb } from './third_party/orca-v1.4.230/src/main/runtime/orchestration/db';",
+    "export { OrcaRuntimeService } from './third_party/orca-v1.4.230/src/main/runtime/orca-runtime';",
+    "export { OrchestrationError } from './third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error';",
+    "export { getOrchestrationMutationExecutor, OrchestrationMutationExecutor } from './third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor';",
+    "export { readRunView } from './runtime/swa-orca/src/run-view'"
+  ].join('\n'), resolveDir: root }, platform: 'node', target: 'node24', format: 'cjs', bundle: true, outfile: bundle, conditions: ['orca-source'],
+    external: ['electron', 'node-pty', '@parcel/watcher', 'fsevents', '@orca/windows-security', '@orca/windows-registry', '@vscode/windows-process-tree', '@anthropic-ai/claude-agent-sdk'],
+    banner: { js: 'var __swaModuleUrl = require("node:url").pathToFileURL(__filename).href;' }, define: { 'import.meta.url': '__swaModuleUrl', 'process.env.NODE_ENV': '"production"' }, logOverride: { 'empty-import-meta': 'error' },
+    plugins: [{ name: 'original-native-externals', setup(builder) { builder.onResolve({ filter: /\.node$/ }, args => ({ path: args.path, external: true })) } },
+      { name: 'original-jsonc-esm', setup(builder) { builder.onResolve({ filter: /^jsonc-parser$/ }, () => ({ path: join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib/esm/main.js') })) } }],
+    nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], logLevel: 'error' })
+} finally { stop() }
+const { OrchestrationDb, OrcaRuntimeService, OrchestrationError, getOrchestrationMutationExecutor, OrchestrationMutationExecutor, readRunView } = createRequire(bundle)(bundle)
 
 function createCase(name, maximum = 120) {
   const path = join(directory, `${name}.sqlite`)
@@ -72,6 +89,61 @@ test('unknown worker and missing resource custody never become completed', () =>
     assert.equal(view.complete, false)
     assert.ok(view.blockers.some(row => row.reason === 'start_unknown'))
     assert.ok(view.blockers.some(row => row.reason === 'resource_inventory_unavailable'))
+  } finally { value.db.close() }
+})
+
+test('the real executor distinguishes active storage mutations from retained unknown receipts', async () => {
+  const value = createCase('executing-storage'), runtime = new OrcaRuntimeService()
+  runtime.setOrchestrationDb(value.db)
+  const executor = getOrchestrationMutationExecutor(runtime), request = randomUUID()
+  const childRequest = `${request}/native`, parameters = { project_id: value.scope.project_id }
+  const parentRequest = { id: request, authToken: '', method: 'swa.controllerDeliver', orchestrationRequestId: request }
+  const execution = { executor, runtimeEpoch: runtime.getRuntimeId() }
+  let attempts = 0
+  // 仅原 executor 与数据库存储转换；不创建原生会话、资源、RPC 服务或模型。
+  const store = async parent => {
+    attempts++
+    value.db.checkpointPendingMutationReceipt({ ...parent.identity, receipt: JSON.stringify({ ...value.scope, action: 'worker.start', child_request: childRequest }) })
+    assert.equal(readRunView(value.db, value.scope, execution).status, 'active')
+    const task = child(value)
+    try { return await executor.run({ id: childRequest, authToken: '', method: 'orchestration.workerStart', orchestrationRequestId: childRequest }, { taskId: task.id }, mutation => {
+      const created = value.db.createStartingWorkerDispatch({ taskId: task.id, startOptions: {}, creator: { kind: 'system' }, maxDepth: 4, runtimeEpoch: execution.runtimeEpoch, mutationReceipt: mutation.identity })
+      assert.equal(getOrchestrationMutationExecutor(runtime), executor)
+      assert.equal(executor.isExecuting(parent.identity), true)
+      assert.equal(executor.isExecuting(mutation.identity), true)
+      for (const field of ['callerFingerprint', 'requestId', 'method', 'payloadHash']) assert.equal(executor.isExecuting({ ...mutation.identity, [field]: randomUUID() }), false)
+      const view = readRunView(value.db, value.scope, execution)
+      assert.equal(view.status, 'active')
+      assert.equal(view.complete, false)
+      assert.ok(view.blockers.some(row => row.reason === `original_request_in_progress:${childRequest}`))
+      assert.ok(view.blockers.some(row => row.reason === 'worker_resources_being_created'))
+      assert.equal(readRunView(value.db, value.scope, { ...execution, runtimeEpoch: randomUUID() }).status, 'unknown')
+      assert.equal(readRunView(value.db, value.scope, { ...execution, executor: new OrchestrationMutationExecutor(runtime) }).status, 'unknown')
+      assert.equal(value.db.getWorkerTerminalResourceByOwner(created.dispatch.id), undefined)
+      throw new OrchestrationError('operation_unknown', 'Storage-only operation deliberately left pending')
+    }) } catch (error) {
+      assert.equal(executor.isExecuting(parent.identity), true)
+      assert.equal(readRunView(value.db, value.scope, execution).status, 'unknown')
+      throw error
+    }
+  }
+  try {
+    const first = executor.run(parentRequest, parameters, store)
+    const joined = executor.run(parentRequest, parameters, store)
+    await Promise.all([assert.rejects(first, { code: 'operation_unknown' }), assert.rejects(joined, { code: 'operation_unknown' })])
+    assert.equal(attempts, 1)
+    assert.equal(value.db.db.prepare('SELECT COUNT(*) count FROM tasks WHERE run_id=?').get(value.scope.run_id).count, 2)
+    const receipt = value.db.getMutationReceipt(value.db.getOrCreateLocalMutationCallerFingerprint(), request)
+    assert.equal(receipt.state, 'pending')
+    assert.equal(executor.isExecuting({ callerFingerprint: receipt.caller_fingerprint, requestId: request, method: receipt.method, payloadHash: receipt.payload_hash }), false)
+    const view = readRunView(value.db, value.scope, execution)
+    assert.equal(view.status, 'unknown')
+    assert.equal(view.complete, false)
+    assert.ok(view.blockers.some(row => row.reason === `original_request_pending:${request}`))
+    assert.ok(view.blockers.some(row => row.reason === 'resource_inventory_unavailable'))
+    await assert.rejects(executor.run(parentRequest, parameters, store), { code: 'operation_unknown' })
+    await assert.rejects(executor.run(parentRequest, { project_id: randomUUID() }, store), { code: 'request_mismatch' })
+    assert.equal(attempts, 1)
   } finally { value.db.close() }
 })
 

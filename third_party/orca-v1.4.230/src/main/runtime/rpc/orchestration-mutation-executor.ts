@@ -48,6 +48,11 @@ export class OrchestrationMutationExecutor {
 
   constructor(private readonly runtime: OrcaRuntimeService) {}
 
+  isExecuting(identity: DurableMutationInvocation['identity']): boolean {
+    const active = this.inFlight.get(`${identity.callerFingerprint}:${identity.requestId}`)
+    return active?.method === identity.method && active.payloadHash === identity.payloadHash
+  }
+
   async run(
     request: RpcRequest,
     params: unknown,

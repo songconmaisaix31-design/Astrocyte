@@ -1,9 +1,14 @@
 import { z } from 'zod'
 import type { OrchestrationDb } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/db'
 import { OrchestrationError } from '../../../third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error'
+import type { OrchestrationMutationExecutor } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-executor'
+import { getPendingWorkerStartRecovery } from '../../../third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt'
 import { approvedWorkerLimit } from './task-budget'
 
 type RunScope = { project_id: string; controller: string; run_id: string; root_task_id: string }
+type RunExecution = { executor: OrchestrationMutationExecutor; runtimeEpoch: string }
+const mutationSchema = z.object({ caller_fingerprint: z.string(), request_id: z.string(), method: z.string(), payload_hash: z.string(), receipt: z.string() })
+const mutationIdentity = (row: z.infer<typeof mutationSchema>) => ({ callerFingerprint: row.caller_fingerprint, requestId: row.request_id, method: row.method, payloadHash: row.payload_hash })
 const taskSchema = z.object({
   id: z.string(), run_id: z.string(), parent_id: z.string().nullable(),
   task_title: z.string().nullable(), status: z.enum(['pending', 'ready', 'dispatched', 'completed', 'failed', 'blocked']),
@@ -13,7 +18,7 @@ const dispatchSchema = z.object({
   id: z.string(), task_id: z.string(), status: z.enum(['pending', 'dispatched', 'completed', 'failed', 'circuit_broken']),
   creator_dispatch_id: z.string().nullable(), assignee_orca_session_id: z.string().nullable(),
   worker_state: z.enum(['starting', 'ready', 'start_unknown', 'failed', 'succeeded', 'stopping', 'stop_unknown', 'stopped', 'abandoned']).nullable(),
-  release_state: z.string().nullable()
+  release_state: z.string().nullable(), runtime_epoch: z.string().nullable()
 })
 const terminalTask = (status: string) => status === 'completed' || status === 'failed'
 const terminalDispatch = (status: string) => ['completed', 'failed', 'circuit_broken'].includes(status)
@@ -97,24 +102,25 @@ export function readRunTaskTree(db: OrchestrationDb, scope: RunScope) {
   return { run, root, tasks }
 }
 
-export function readRunView(db: OrchestrationDb, scope: RunScope): RunView {
+export function readRunView(db: OrchestrationDb, scope: RunScope, execution?: RunExecution): RunView {
   if (db.db.isTransaction) throw new OrchestrationError('operation_in_progress', 'A Run view requires its own consistent read transaction')
   db.db.exec('BEGIN')
   try {
     const { root, tasks } = readRunTaskTree(db, scope)
     const ids = new Set(tasks.map(task => task.id))
     const dispatchBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,
-      COALESCE(SUM(LENGTH(CAST(d.id || d.task_id || d.status || COALESCE(d.creator_dispatch_id,'') || COALESCE(d.assignee_orca_session_id,'') || COALESCE(w.state,'') || COALESCE(r.release_state,'') AS BLOB))),0) AS bytes
+      COALESCE(SUM(LENGTH(CAST(d.id || d.task_id || d.status || COALESCE(d.creator_dispatch_id,'') || COALESCE(d.assignee_orca_session_id,'') || COALESCE(w.state,'') || COALESCE(w.runtime_epoch,'') || COALESCE(r.release_state,'') AS BLOB))),0) AS bytes
       FROM dispatch_contexts d LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id
       LEFT JOIN worker_terminal_resources r ON r.owner_dispatch_id=d.id WHERE d.run_id=?`).get(scope.run_id))
     if (dispatchBound.count > 100_000 || dispatchBound.bytes > 12 * 1024 * 1024) fail('The complete native Dispatch inventory exceeds its read bound')
     const dispatches = z.array(dispatchSchema).parse(db.db.prepare(`SELECT d.id,d.task_id,d.status,d.creator_dispatch_id,d.assignee_orca_session_id,
-      w.state AS worker_state,r.release_state FROM dispatch_contexts d
+      w.state AS worker_state,w.runtime_epoch,r.release_state FROM dispatch_contexts d
       LEFT JOIN worker_dispatches w ON w.dispatch_id=d.id
       LEFT JOIN worker_terminal_resources r ON r.owner_dispatch_id=d.id
       WHERE d.run_id=? ORDER BY d.created_at,d.id`).all(scope.run_id))
     if (dispatches.length > 100_000 || new Set(dispatches.map(row => row.id)).size !== dispatches.length || dispatches.some(row => !ids.has(row.task_id))) fail('The complete native Dispatch inventory differs from its task tree')
     const dispatchIds = new Set(dispatches.map(row => row.id))
+    const dispatchById = new Map(dispatches.map(row => [row.id, row]))
     if (dispatches.some(row => row.creator_dispatch_id !== null && !dispatchIds.has(row.creator_dispatch_id))) fail('A native Dispatch creator is outside this Run')
     const questionBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,
       COALESCE(SUM(LENGTH(CAST(q.message_id || q.dispatch_id || COALESCE(d.task_id,'') || COALESCE(m.body,'') AS BLOB))),0) AS bytes
@@ -127,9 +133,35 @@ export function readRunView(db: OrchestrationDb, scope: RunScope): RunView {
     if (questions.some(row => !ids.has(row.task_id) || !dispatchIds.has(row.dispatch_id))) fail('A pending native question belongs to another task tree')
     const pendingWhere = `FROM mutation_receipts WHERE state='pending' AND json_valid(receipt)=1 AND
       (json_extract(receipt,'$.run_id')=? OR json_extract(receipt,'$.scope.run_id')=? OR json_extract(receipt,'$.invocation.scope.run_id')=?)`
-    const pendingBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,COALESCE(SUM(LENGTH(CAST(request_id AS BLOB))),0) AS bytes ${pendingWhere}`).get(scope.run_id, scope.run_id, scope.run_id))
+    const pendingBound = z.object({ count: z.number().int(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) AS count,COALESCE(SUM(LENGTH(CAST(caller_fingerprint||request_id||method||payload_hash||receipt AS BLOB))),0) AS bytes ${pendingWhere}`).get(scope.run_id, scope.run_id, scope.run_id))
     if (pendingBound.count > 100_000 || pendingBound.bytes > 12 * 1024 * 1024) fail('The complete native request inventory exceeds its read bound')
-    const pending = z.array(z.object({ request_id: z.string() })).parse(db.db.prepare(`SELECT request_id ${pendingWhere} ORDER BY request_id`).all(scope.run_id, scope.run_id, scope.run_id))
+    const pending = z.array(mutationSchema).parse(db.db.prepare(`SELECT caller_fingerprint,request_id,method,payload_hash,receipt ${pendingWhere} ORDER BY request_id`).all(scope.run_id, scope.run_id, scope.run_id))
+    const active = new Set(pending.filter(row => execution?.executor.isExecuting(mutationIdentity(row))))
+    const starting = new Set<string>(), children: z.infer<typeof mutationSchema>[] = []
+    let pendingBytes = pendingBound.bytes
+    for (const parent of pending) {
+      if (parent.method !== 'swa.controllerDeliver') continue
+      const source = z.object({ action: z.string(), project_id: z.string(), controller: z.string(), run_id: z.string(), root_task_id: z.string(), child_request: z.string() }).parse(JSON.parse(parent.receipt))
+      if (source.project_id !== scope.project_id || source.controller !== scope.controller || source.run_id !== scope.run_id || source.root_task_id !== scope.root_task_id || source.child_request !== `${parent.request_id}/native`) fail('The original pending delivery left this Run scope')
+      if (source.action !== 'worker.start') continue
+      const bound = z.object({ method: z.string(), state: z.string(), bytes: z.number() }).optional().parse(db.db.prepare(`SELECT method,state,LENGTH(CAST(caller_fingerprint||request_id||method||payload_hash||COALESCE(receipt,'') AS BLOB)) bytes
+        FROM mutation_receipts WHERE caller_fingerprint=? AND request_id=?`).get(parent.caller_fingerprint, source.child_request))
+      if (!bound) continue
+      if (bound.method !== 'orchestration.workerStart') fail('The original Worker child request has another method')
+      if (bound.state !== 'pending') continue
+      pendingBytes += bound.bytes
+      if (pending.length + children.length + 1 > 100_000 || pendingBytes > 12 * 1024 * 1024) fail('The complete native request inventory exceeds its read bound')
+      const child = mutationSchema.parse(db.getMutationReceipt(parent.caller_fingerprint, source.child_request))
+      children.push(child)
+      if (!execution?.executor.isExecuting(mutationIdentity(child))) continue
+      active.add(child)
+      const accepted = z.object({ accepted: z.object({ taskId: z.string(), dispatchId: z.string() }) }).parse(JSON.parse(child.receipt)).accepted
+      const recovery = getPendingWorkerStartRecovery(child.method, child.receipt)
+      const dispatch = recovery && dispatchById.get(recovery.dispatchId)
+      if (!dispatch || accepted.dispatchId !== dispatch.id || accepted.taskId !== dispatch.task_id || !isTaskDescendant(db, scope.run_id, scope.root_task_id, dispatch.task_id)) fail('The executing Worker receipt left its original task tree')
+      if (active.has(parent) && dispatch.worker_state === 'starting' && dispatch.runtime_epoch === execution.runtimeEpoch) starting.add(dispatch.id)
+    }
+    pending.push(...children)
     const mailWhere = `FROM messages WHERE run_id=? AND (type='handoff' OR (delivery_contract='audit_only' AND json_valid(payload)=1 AND json_extract(payload,'$.schema')='swa.run-lifecycle-observation.v1'))`
     const mailBound = z.object({ count: z.number(), bytes: z.number() }).parse(db.db.prepare(`SELECT COUNT(*) count,COALESCE(SUM(LENGTH(CAST(id||from_handle||to_handle||body||COALESCE(payload,'') AS BLOB))),0) bytes ${mailWhere}`).get(scope.run_id))
     if (mailBound.count > 100_000 || mailBound.bytes > 12 * 1024 * 1024) fail('The complete native handoff mailbox exceeds its read bound')
@@ -144,12 +176,12 @@ export function readRunView(db: OrchestrationDb, scope: RunScope): RunView {
       const waiting = task.dependencies.filter(id => taskById.get(id)?.status !== 'completed')
       if (waiting.length && !terminalTask(task.status)) blockers.push({ kind: 'dependency', task_id: task.id, dispatch_id: null, reason: `waiting_for:${waiting.join(',')}` })
     }
-    let unknown = pending.length > 0
+    let unknown = pending.some(row => !active.has(row))
     for (const row of mail.filter(row => row.type !== 'handoff' && !row.read)) {
       unknown = true
       blockers.push({ kind: 'lifecycle', task_id: root.id, dispatch_id: null, reason: row.body })
     }
-    for (const request of pending) blockers.push({ kind: 'request', task_id: null, dispatch_id: null, reason: `original_request_pending:${request.request_id}` })
+    for (const request of pending) blockers.push({ kind: 'request', task_id: null, dispatch_id: null, reason: `${active.has(request) ? 'original_request_in_progress' : 'original_request_pending'}:${request.request_id}` })
     for (const dispatch of dispatches) {
       if (['failed', 'circuit_broken'].includes(dispatch.status)) failures.push({ task_id: dispatch.task_id, dispatch_id: dispatch.id, reason: 'native_dispatch_failed' })
       if (dispatch.worker_state === 'start_unknown' || dispatch.worker_state === 'stop_unknown') {
@@ -157,8 +189,8 @@ export function readRunView(db: OrchestrationDb, scope: RunScope): RunView {
         blockers.push({ kind: 'worker', task_id: dispatch.task_id, dispatch_id: dispatch.id, reason: dispatch.worker_state })
       }
       if (dispatch.worker_state !== null && dispatch.release_state === null) {
-        unknown = true
-        blockers.push({ kind: 'resource', task_id: dispatch.task_id, dispatch_id: dispatch.id, reason: 'resource_inventory_unavailable' })
+        if (!starting.has(dispatch.id)) unknown = true
+        blockers.push({ kind: 'resource', task_id: dispatch.task_id, dispatch_id: dispatch.id, reason: starting.has(dispatch.id) ? 'worker_resources_being_created' : 'resource_inventory_unavailable' })
       } else if (dispatch.worker_state !== null && dispatch.release_state !== 'released') {
         blockers.push({ kind: 'resource', task_id: dispatch.task_id, dispatch_id: dispatch.id, reason: 'worker_resources_not_released' })
       }
@@ -170,7 +202,7 @@ export function readRunView(db: OrchestrationDb, scope: RunScope): RunView {
     const complete = tasks.length > 1 && tasks.every(task => terminalTask(task.status)) && dispatches.every(dispatch => terminalDispatch(dispatch.status)) && blockers.length === 0
     const status: RunView['status'] = unknown ? 'unknown' : questions.length ? 'waiting_input'
       : complete ? root.status === 'failed' ? 'failed' : 'completed'
-      : tasks.some(task => task.status === 'dispatched') || dispatches.some(dispatch => ['starting', 'ready', 'stopping'].includes(dispatch.worker_state ?? '')) ? 'active' : 'blocked'
+      : active.size > 0 || tasks.some(task => task.status === 'dispatched') || dispatches.some(dispatch => ['starting', 'ready', 'stopping'].includes(dispatch.worker_state ?? '')) ? 'active' : 'blocked'
     const view: RunView = {
       schema: 'swa.run-view.v1', controller: scope.controller, run_id: scope.run_id, root_task_id: scope.root_task_id,
       status, root: { id: root.id, status: root.status, result: root.result }, tasks,
