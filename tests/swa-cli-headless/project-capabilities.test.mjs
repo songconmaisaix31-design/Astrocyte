@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, realpath, rename, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, rename, symlink, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,7 +15,7 @@ function compile(name, entry) {
   buildSync({ entryPoints: [join(root, entry)], outfile: output, tsconfig: join(root, 'runtime/swa-orca/tsconfig.json'), bundle: true, platform: 'node', format: 'cjs', target: 'node24', external: ['*.node'], nodePaths: [join(root, 'runtime/swa-orca/node_modules'), join(root, 'node_modules')], alias: { 'jsonc-parser': join(dirname(requireRuntime.resolve('jsonc-parser/package.json')), 'lib', 'esm', 'main.js') }, logLevel: 'silent' })
   return createRequire(output)(output)
 }
-const { readDiscoveryProjectRoot, assertDiscoverySnapshot } = compile('discovery', 'runtime/swa-orca/src/agent-discovery.ts')
+const { readDiscoveryProjectRoot, assertDiscoverySnapshot, observeAgentStage } = compile('discovery', 'runtime/swa-orca/src/agent-discovery.ts')
 const { readAgentSettings } = compile('settings', 'runtime/swa-orca/src/agent-settings.ts')
 
 // 仅真实普通目录/配置原文和快照规则；不启动 registry、账号、Agent、RPC 或模型。
@@ -70,4 +70,33 @@ test('actual settings source and directory changes invalidate an observed discov
     if (originalProfile === undefined) delete process.env.SWA_AGENT_PROFILE
     else process.env.SWA_AGENT_PROFILE = originalProfile
   }
+})
+
+test('actual local read failures become safe discovery observations while selection throws the original error', async () => {
+  const malformed = join(directory, 'public-malformed-settings.json')
+  const ordinary = join(directory, 'public-valid-settings.json')
+  await writeFile(malformed, '{ public-invalid-json', { flag: 'wx' })
+  await writeFile(ordinary, JSON.stringify({ model: 'public-local-rule' }), { flag: 'wx' })
+  let originalError
+  const read = async () => {
+    try { return JSON.parse(await readFile(malformed, 'utf8')) }
+    catch (error) { originalError = error; throw error }
+  }
+  const rejected = await observeAgentStage('discovery', 'configuration', read)
+  assert.equal(rejected.failure.status, 'unavailable')
+  assert.equal(rejected.failure.source, 'native-configuration-invalid')
+  assert.equal(rejected.value, undefined)
+  assert.doesNotMatch(JSON.stringify(rejected), /public-invalid-json|public-malformed-settings|\.verification/)
+  await assert.rejects(observeAgentStage('selection', 'configuration', read), error => error === originalError && error instanceof SyntaxError)
+  const missing = await observeAgentStage('discovery', 'installation', () => realpath(join(directory, 'not-created')))
+  assert.equal(missing.failure.source, 'native-installation-missing')
+  assert.equal(missing.failure.status, 'unavailable')
+  await assert.rejects(observeAgentStage('selection', 'installation', () => realpath(join(directory, 'not-created'))), { code: 'ENOENT' })
+  // 真实文件错误之后仍可读取另一普通配置；没有启动或替代 Agent registry。
+  const next = await observeAgentStage('discovery', 'configuration', async () => JSON.parse(await readFile(ordinary, 'utf8')))
+  assert.deepEqual(next, { value: { model: 'public-local-rule' } })
+  const directoryRead = await observeAgentStage('discovery', 'configuration', () => readFile(directory, 'utf8'))
+  assert.equal(directoryRead.failure.status, 'unknown')
+  assert.equal(directoryRead.failure.source, 'native-configuration-unverified')
+  assert.doesNotMatch(JSON.stringify(directoryRead), /EISDIR|\.verification/)
 })

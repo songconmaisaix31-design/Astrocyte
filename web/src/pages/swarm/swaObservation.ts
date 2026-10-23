@@ -56,6 +56,47 @@ function readObservation(value: unknown): SwaObservation {
   return { status: observation.status as SwaObservation['status'], reason: text(observation.reason, 'observation.reason'), source: text(observation.source, 'observation.source'), ...(basis ? { basis: basis as NonNullable<SwaObservation['basis']> } : {}) };
 }
 
+function choice<T extends string>(value: unknown, values: readonly T[], field: string): T {
+  if (typeof value !== 'string' || !values.includes(value as T)) throw new Error(`执行服务的 ${field} 无法核对，保持未知`);
+  return value as T;
+}
+
+/** 同一个 worker.show 的只读投影；业务完成状态不能代替实际执行证据。 */
+export function readSwaExecution(reply: SwaEnvelope, projectID: string, controller: string, runID: string, dispatchID: string) {
+  const result = object(reply.result), scope = object(result.scope), native = object(result.native), dispatch = object(native.dispatch);
+  if (scope.project_id !== projectID || scope.controller !== controller || scope.run_id !== runID || dispatch.runId !== runID || dispatch.id !== dispatchID) throw new Error('Worker 执行观察不属于当前项目、Run 或 Dispatch');
+  if (native.execution === undefined) return null;
+  const execution = object(native.execution), selected = object(execution.selection), source = object(native.source);
+  const original = object(source.selection), account = object(object(original.native_launch).account);
+  if (source.availability !== 'observed' || selected.agent !== original.agent_id || selected.adapter !== original.adapter || selected.version !== original.version || selected.execution_mode !== original.execution_mode || selected.model !== original.model || selected.provider !== original.provider || selected.account_source !== account.kind) throw new Error('Worker 实际选择与原生来源不一致');
+  const selection = {
+    agent: text(selected.agent, 'selection.agent'), adapter: text(selected.adapter, 'selection.adapter'), version: text(selected.version, 'selection.version'),
+    model: text(selected.model, 'selection.model'), provider: text(selected.provider, 'selection.provider'), accountSource: text(selected.account_source, 'selection.account_source'),
+    executionMode: choice(selected.execution_mode, ['structured'], 'selection.execution_mode'),
+  };
+  const input = object(execution.delivery), restored = object(execution.resume), catalog = object(execution.model_catalog);
+  const delivery = {
+    state: choice(input.state, ['sent', 'not_sent', 'unknown'], 'delivery.state'), phase: choice(input.phase, ['journaled', 'queued', 'accepted', 'rejected', 'unknown'], 'delivery.phase'),
+    requestID: input.request_id === undefined ? null : text(input.request_id, 'delivery.request_id'), operationID: input.operation_id === undefined ? null : text(input.operation_id, 'delivery.operation_id'), source: text(input.source, 'delivery.source'),
+  };
+  if (delivery.state === 'sent' && (delivery.phase !== 'accepted' || !delivery.requestID || !delivery.operationID) || delivery.state === 'not_sent' && (delivery.phase !== 'rejected' || !delivery.requestID)) throw new Error('输入送达状态缺少原请求依据，保持未知');
+  const resume = {
+    state: choice(restored.state, ['not_requested', 'resumed', 'rebuilt', 'failed', 'unknown'], 'resume.state'), source: text(restored.source, 'resume.source'),
+    sessionID: restored.session_id === undefined ? null : text(restored.session_id, 'resume.session_id'),
+  };
+  if (resume.sessionID !== null && (resume.sessionID !== source.native_session_id || !/^[a-zA-Z0-9_-]+$/.test(resume.sessionID))) throw new Error('恢复观察的原生会话身份不一致');
+  if (!Array.isArray(catalog.models)) throw new Error('模型目录缺少实际来源列表');
+  const models = catalog.models.map(value => { const model = object(value); return { id: text(model.id, 'model.id'), label: text(model.label, 'model.label') }; });
+  if (new Set(models.map(model => model.id)).size !== models.length) throw new Error('模型目录含重复身份');
+  const observedAt = catalog.observed_at === undefined ? null : text(catalog.observed_at, 'model_catalog.observed_at');
+  if (observedAt && !Number.isFinite(Date.parse(observedAt))) throw new Error('模型目录的观察时间不可解析');
+  return {
+    selection, delivery, resume,
+    launch: readObservation(execution.launch), control: readObservation(execution.control), result: readObservation(execution.result), authenticated: readObservation(execution.authenticated),
+    catalog: { origin: choice(catalog.origin, ['live-session', 'probe', 'configured', 'unknown'], 'model_catalog.origin'), availability: choice(catalog.availability, ['verified', 'unverified'], 'model_catalog.availability'), models, observedAt },
+  };
+}
+
 export function readSwaCapabilityDetails(reply: SwaEnvelope) {
   const result = object(reply.result);
   if (result.schema !== 'swa.capabilities.v1' || !Array.isArray(result.agents)) throw new Error('服务未返回已知 Agent 能力合同');

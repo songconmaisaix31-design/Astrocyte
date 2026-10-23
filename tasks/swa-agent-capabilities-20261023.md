@@ -118,3 +118,42 @@ run_cli 的真实无 runtime 浏览器 DOM R2 两项通过、退出 0（session 
 上述纯规则与静态检查没有启动服务、数据库、Agent 或模型。真实角色持久化/CAS/未知请求恢复和同 Run 复用仍按 Root 集成验证；能力与角色GUI源已获独立 Reviewer 06 限定接受，实际 execution 消费者另由backend负责人提交最终审查，不能将这些结果写成完整产品验收。
 
 R9：06在实际worker.show消费者发现原输入请求pending时复用了完整成果的严格读取，导致无法显示当前Worker及delivery未知状态。backend在仅观察入口允许原请求pending，完整task.result仍要求当前原输入结算；本负责人为执行投影添加 `native_input_request_pending` 分支，只接受原 request_id、R/native、Dispatch与Agent一致的元数据。delivery保unknown/phase unknown，无operation/binding推测，即使传入较早complete结果也保result/authenticated未知。纯规则新增错Agent/Dispatch/子请求拒绝及不升级旧结果，`.verification/openmausbot-capabilities-20261023/observations-r4.log` 7PASS/exit0。execution-observation SHA `2e58f0432502ea5b0c1e63da75f3e27993f9b7b81f3f2d2a1e533766269a56b4`，测试SHA `b6164a55b85789cb73ca8063df20a252ca594a345c87779b3d39dc0a51ba070c`；backend负责真实原inventory/receipt身份与当前fence消费者，06正在合审。
+
+## 能力与实际执行展示补充计划（2026-10-23，基线 2c0fa0f0）
+
+当前 CLI 的 run/wait/strict/退出码/export、GUI 同 Run 查询、原请求去重、递归 work/consult/notify 与角色/讨论持久化已有实现。原 N4 已观察四个 Pi Worker、真实孙任务及自动释放，但整轮验收失败；正式并发、计划停止隔离、父任务继续汇总、GUI 同 Run 与 N6 仍按 STATUS 保留未验范围。角色 SQLite/CAS 和界面规则检查已通过，角色关联真实 Run 的浏览器操作未完成。图片和运行中模型切换当前明确 unavailable；讨论追加只存记录，不自动发送给 Worker。CLI wait 重连同一 Run 不等于原生 Agent 会话恢复。
+
+当前缺少的产品行为为：原生恢复明确失败未投影为已有 failed 状态；Worker 详情只有原始 JSON；一个 Agent 的配置/探测异常会中止整个发现列表。这三项须补代码，不能由 N4/N6 通过代替。注册、安装探测、配置、启动/控制和真实成功分别报告；配置存在不代表已登录，账号来源只显示已保存的安全类型，不显示账号配置路径、密钥或人员身份。
+
+适配范围依据 [45 模板与 7 结构化引擎矩阵](../docs/integration/openmausbot/02-agent-matrix.md)：45 个 TUI 模板为上游发现/启动描述；SWA 枚举 7 个结构化注册。Pi、Codex、Claude、OpenCode 已有 SWA 受控账号/版本/ToolsOff/成果政策，其中本轮当前 Linux 真模型成功证据为 Pi/StepFun；Codex、Claude 无本轮匹配账号实测，OpenCode 旧原生实测不能升级为当前产品整轮成功。Grok、OMP 尚缺 SWA 的账号隔离、ToolsOff 和完整成果政策；Antigravity 另有当前 Windows ACP 无 pin、transcriptImport 缺失等原生限制。其余 38 模板没有本轮 SWA 结构化执行入口。“大部分”的分母仍待用户回答，不能用 4/7 作为目标已兑现的判据。
+
+### 最小实现与准确写域
+
+1. `runtime/swa-orca/src/execution-observation.ts`：复用原 `currentInput.submission.rejection` 和原生 `readWholeAgentSessionFailureFact`。只有既有同 request/child request、operation、Dispatch、agent、session、fence、provider chain 核验全部成立，原 journal 明确 rejected/null provider item，且完整 typed fact 明确为原会话 restartFailed + 原生 operation_invalid、details 仅 ownerVerdict exited 的既有恢复拒绝形状时，投影 resume.failed；保留安全固定 source。宽泛错误正文、普通执行失败、首次 startFailed、所有权未知/reconciling、未识别或不完整 refusal 均不能据此升级；不确定的 restartFailed 保持 unknown，原来源无法观察仍沿原拒绝/unknown，不放宽消费者的 fence 检查。
+2. `runtime/swa-orca/src/agent-discovery.ts`：只在列表发现时逐 Agent 隔离安装探测和配置读取的局部失败，按固定类别显示缺失、不可读取、配置不可解析或观察未知；不返回原异常正文、配置内容或私有路径。项目/设置/注册快照末核继续整体失败。`selectAgent` 的原错误立即抛出，启动准入不使用容错结果或其他来源。没有 SWA 受控合同的注册明确显示产品启动/控制不可用，原适配器声明单独保留。
+3. `web/src/pages/swarm/swaObservation.ts`、`swaObservation.test.ts`、新增 `SwaExecutionDetails.tsx`、`SwaWorkspace.tsx`：读取已有 `worker.show.result.native.execution`，核对 scope 的项目/controller/run 与 native.dispatch.id/runId、当前 Dispatch 后以中文显示实际 Agent/model/provider、账号来源与认证证据、送达/请求身份、恢复/session、启动/控制/结果与模型目录来源。缺少字段和 unknown 清楚显示未验证，保留原件详情。使用现有观察权限及请求生命周期；不新增写命令、不重发未知输入、不开放图片/工具/切模。`worker.show` 未给完整成功结果时，认证和成果仍为 unknown，不能从业务 completed 推断成功。
+4. 直接测试文件为 `tests/swa-cli-headless/agent-observations.test.mjs`、`project-capabilities.test.mjs`；记录仅写本任务。Root 协调 `SwaWorkspace.tsx` 独占写域。公共合同、vendor、task-result/native-methods、共享 STATUS/HANDOFF/SPEC、当前 driver 和模型配置均不在写域；若发现必须更改合同或消费者，先提交准确增量范围。
+
+### 局部验证与停止条件
+
+- 原生 typed fact 与纯投影测试核明确拒绝、普通执行失败、首次启动、未知/额外拒绝字段、同 R/operation/fence/session/provider 不匹配；使用真实类型解析器，纯规则输入不称为实际恢复。当前无真实恢复失败原件时，该原生动态分支保持未验。
+- 发现局部检查用真实临时目录及文件读取验证配置损坏、缺失与固定安全原因；测试同一实际局部错误在发现模式转为 observation、在选择模式原样抛出。原项目目录/设置快照检查继续执行，不用假 Agent/CLI/API 或替代凭据。
+- Web 现有纯 DTO 解码用例增加同项目/Controller/Dispatch 和未知状态保护；实际 React 组件静态渲染检查中文事实和未知标签，明确只是组件呈现，不冒充真实 HTTP/模型。跑受影响 Node 测试、现有 Vitest 文件、指定 ESLint、Web tsc 与 runtime strict 一次；未修改程序不重复验证。
+- 本批不启动服务或模型、不运行 N4/N6、不执行完整构建。发生失败先报告最小复现、原诊断与局部修复验证。Root 后续以新准确产品来源安排必要真实集成；不能复用旧候选模型成功宣称本批新源已验。
+
+### 本补充批实施与局部结果
+
+Root 已确认上述九路径独占，06 已独立接受计划。现已完成三项改动：原 journal 的完整拒绝事实按唯一明确恢复拒绝形状投影 failed；发现中的局部安装/配置异常返回固定安全类别，选择路径直接抛出原异常；Worker 页面按同项目/Controller/Run/Dispatch 与原选择来源显示实际选择、认证/结果证据、送达、恢复和模型目录。没有 SWA 受控合同的 Grok/OMP/Antigravity 明确显示产品操作不可用，保留原注册与适配器特性声明。原始详情继续可读，原请求恢复/锁和实际启动的权限门均保留。
+
+在 `.verification/cloud-setup/activate.sh` 的实际 Node 24.16.0 下，本批首轮局部检查全部退出 0；日志目录 `.verification/agent-observation-followup-20261023/`：
+
+- `node --test tests/swa-cli-headless/agent-observations.test.mjs tests/swa-cli-headless/project-capabilities.test.mjs`：12 PASS、0 skipped；`node-r1.log`，实际 session 17898 完成 chunk c38848。范围为真实生产定义/typed fact 规则九项与实际目录/文件读取三项，无 registry、CLI 或模型替身。
+- `pnpm --dir web exec vitest run src/pages/swarm/swaObservation.test.ts`：13 PASS；`web-vitest-r1.log`，session 61435 完成 chunk 023060。新增同范围/选择/会话/送达来源拒绝和实际 React 静态文字呈现；明确没有真实 HTTP 或浏览器执行。
+- `pnpm --dir web exec tsc -b --pretty false`：`web-tsc-r1.log`，session 67729 完成 chunk 39726b；`pnpm run typecheck:swa`：`runtime-strict-r1.log`，session 40466 完成 chunk 01711d；二者实际退出 0。
+- 四个改动 Web 文件的指定 ESLint：`web-eslint-r1.log`，session 95442 完成 chunk 749a8c，实际退出 0；本批路径 `git diff --check` 退出 0。
+
+本批没有失败重跑、服务/模型启动或完整构建。真实原生恢复拒绝、登录/模型访问、全部 Agent 发现整合、浏览器同 Run 交互与新的产品候选验收仍未由本局部结果证明；原 N4/N6 和 Windows 结果继续按 STATUS。需要回答的 Run 会显示问题和独立退出码，当前公共入口没有直接回答原生问题的写动作，Root 已明确本批不新增该合同。
+
+Root 界面审读要求把内部标识移入详情，已落实：主区域使用可读中文账号来源与阶段/依据，adapter class、原账号 kind、原请求/operation/session、原 reason 和 native source 放在折叠详情，完整原件入口保留。原 React 用例增加主区域不包含这些内部标识的检查。仅对本次呈现变化执行 `web-vitest-r2.log`（13 PASS）、两个变更 Web 文件的 `web-eslint-r2.log` 与 Web `web-tsc-r2.log`；串行 session 45400 完成 chunk 35b2eb，三步全部退出 0。运行时未再改动，复用 R1 已通过结果。
+
+06 末审发现 UI 原选择比较缺少 execution_mode。最小复现为 selected.execution_mode=structured、source.selection.execution_mode 缺失或 terminal，其他字段相同；旧 parser 仅验证 selected 为 structured，原纯 DTO 参数也缺原 source 的该字段。现同选择判断补双方 mode 相等，原参数补实际字段，原选择拒绝用例补两种情况。仅复验现有 Web Vitest（`web-vitest-r3.log`，13 PASS）、受影响 parser/test 的 ESLint 与 Web tsc（`web-eslint-r3.log`、`web-tsc-r3.log`）；串行 session 21832 完成 chunk 1656ea，三步实际退出 0。backend 与原 strict 结果保持，未进行完整构建或模型调用。

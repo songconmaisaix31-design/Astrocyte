@@ -3,6 +3,7 @@ import type { StructuredAgentDefinition } from '../../../third_party/orca-v1.4.2
 import type { AgentSessionModelCatalogResult } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-wire'
 import { parseAgentJournalItemKey } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-journal-item-key'
 import { isAgentSessionProviderHandleLink } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle'
+import { readWholeAgentSessionFailureFact } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-failure'
 import { agentSelectionSchema, declaredAgentFeaturesSchema, executionObservationSchema, modelCatalogObservationSchema, observationSchema, structuredInputBindingSchema } from './contracts'
 
 export type AgentObservation = z.infer<typeof observationSchema>
@@ -59,6 +60,7 @@ export function executionObservation(sourceValue: unknown, options: { dispatchId
   z.string().min(1).parse(options.dispatchId)
   if (!isAgentSessionProviderHandleLink(link) || link.handle.agent !== selected.agent_id || link.mintedAtFence !== source.fence) throw new Error('The execution observation does not match its original provider identity')
   const delivery: ExecutionObservation['delivery'] = { state: 'unknown', phase: 'unknown', source: 'native_input_unobserved' }
+  let restart: 'failed' | 'unknown' | undefined
   if (options.currentInput !== undefined) {
     const rejection = rejectionSchema.safeParse(options.currentInput)
     const pending = pendingInputSchema.safeParse(options.currentInput)
@@ -86,12 +88,21 @@ export function executionObservation(sourceValue: unknown, options: { dispatchId
         delivery.state = 'sent'
       } else if (input.state === 'rejected' && submission?.dispatchState === 'rejected' && submission.providerItemId === null) {
         delivery.state = 'not_sent'
+        if (submission.rejection !== undefined) {
+          const fact = readWholeAgentSessionFailureFact(submission.rejection)
+          if (!fact) restart = 'unknown'
+          else if (fact.kind === 'restartFailed') {
+            const refusal = fact.refusal
+            // 只解释原生明确结束的恢复拒绝；其他 reason 或所有权状态继续未知。
+            restart = refusal?.code === 'agent_session_operation_invalid' && refusal.details?.ownerVerdict === 'exited' && Object.keys(refusal.details).length === 1 ? 'failed' : 'unknown'
+          }
+        }
       }
     }
   }
   const resume: ExecutionObservation['resume'] = {
-    state: link.origin === 'resumed' ? 'resumed' : link.origin === 'created' ? link.replaces ? 'rebuilt' : 'not_requested' : 'unknown',
-    source: link.replaces ? 'native_provider_handle_replaced_context' : 'native_provider_handle_chain', session_id: source.native_session_id
+    state: restart ?? (link.origin === 'resumed' ? 'resumed' : link.origin === 'created' ? link.replaces ? 'rebuilt' : 'not_requested' : 'unknown'),
+    source: restart === 'failed' ? 'native_journal_restart_refused' : restart === 'unknown' ? 'native_journal_restart_unconfirmed' : link.replaces ? 'native_provider_handle_replaced_context' : 'native_provider_handle_chain', session_id: source.native_session_id
   }
   const completed = delivery.source !== 'native_input_request_pending' && z.looseObject({ availability: z.literal('complete'), persistence: z.literal('observed'), final: z.looseObject({ text: z.string().trim().min(1) }) }).safeParse(options.nativeResult).success
   const launch = agentObservation('available', 'The original Worker has a verified native session and provider identity', 'native_worker_source', 'session')

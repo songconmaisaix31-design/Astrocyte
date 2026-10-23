@@ -8,6 +8,7 @@ import { SectionCard } from '../../components/SectionCard';
 import { readSwaFleet, readSwaAgents, readSwaTranscript, recoverSwaRequest, observationJSON, swaStartRequestBlock, canRequestSwaStart, type PendingSwaRequest } from './swaObservation';
 import { SwaAgentCapabilities, SwaRunWorkspace } from './SwaRunWorkspace';
 import { SwaRoles, type SelectedSwaRole } from './SwaRolesPanel';
+import { SwaExecutionDetails } from './SwaExecutionDetails';
 import { inspectSwaRunSubmission } from './swaRunView';
 import styles from './SwaWorkspace.module.css';
 
@@ -81,14 +82,14 @@ function TaskWorkspace({ project, controller, taskID, capabilities, startDisable
       <p className={styles.note}>本页 {data.workers.length} / 服务返回总数 {data.total} 个 Worker。{data.hasMore ? '清单不完整：还有未加载的 Worker，请使用 CLI 核查完整范围。' : '服务返回的本次清单已完整。'} 未提供协作依赖，不生成连接线。</p>
       <div className={styles.columns}>
         <ul className={styles.workers} aria-label="实际 Worker">{data.workers.map(worker => <li key={worker.dispatchID}><button className={styles.worker} aria-pressed={worker.dispatchID === selected?.dispatchID} type="button" disabled={fleet.stale || fleet.loading} onClick={() => setDispatchID(worker.dispatchID)}><strong>{worker.dispatchID}</strong><small>Task · {worker.taskID}</small><span>业务 · {worker.dispatchStatus}</span><span>Worker · {worker.workerState}</span><span>资源 · {worker.terminalState ?? '未观察，保持未知'}</span></button></li>)}</ul>
-        {selected && !fleet.stale ? <WorkerWorkspace key={selected.dispatchID} project={project} controller={controller} dispatchID={selected.dispatchID} onChanged={fleet.retry} /> : <p className={styles.note}>{data.workers.length ? '选择 Worker 查看原生输出与可用操作。' : '服务本次没有返回 Worker。'}</p>}
+        {selected && !fleet.stale ? <WorkerWorkspace key={selected.dispatchID} project={project} controller={controller} runID={data.runID} dispatchID={selected.dispatchID} onChanged={fleet.retry} /> : <p className={styles.note}>{data.workers.length ? '选择 Worker 查看原生输出与可用操作。' : '服务本次没有返回 Worker。'}</p>}
       </div>
     </>}</QueryState>
     <details><summary>完整成果原件查询</summary><p className={styles.note}>服务核查全部实际来源、大小与目录批准后返回完整成果原件。此处显示查询回执；使用上方完整任务下载，或使用 CLI 将原件写入本机新目录。</p><form className={styles.form} onSubmit={event => { event.preventDefault(); void exportCommand.run({ action: 'task.result', controller, task_id: taskID, output_dir: outputDir.trim() }); }}><label>服务端新的绝对输出目录<input required value={outputDir} onChange={event => setOutputDir(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={fleet.loading || fleet.stale || !fleet.data || exportCommand.pending || !outputDir.trim()}>查询完整成果原件</button></form><OperationState command={exportCommand} controller={controller} /></details>
   </div>;
 }
 
-function WorkerWorkspace({ project, controller, dispatchID, onChanged }: { project: Project; controller: string; dispatchID: string; onChanged: () => void }) {
+function WorkerWorkspace({ project, controller, runID, dispatchID, onChanged }: { project: Project; controller: string; runID: string; dispatchID: string; onChanged: () => void }) {
   const detail = useReadApi(signal => swaApi.command(project.id, { action: 'worker.show', controller, dispatch_id: dispatchID }, signal), { key: dispatchID });
   const [cursor, setCursor] = useState(''), [readCursor, setReadCursor] = useState<string | null>(null);
   const transcript = useReadApi(signal => swaApi.command(project.id, { action: 'worker.read', controller, dispatch_id: dispatchID, source: 'transcript', limit: 100, ...(readCursor ? { cursor: readCursor } : {}) }, signal), { key: `${dispatchID}:${readCursor}`, enabled: readCursor !== null });
@@ -99,7 +100,7 @@ function WorkerWorkspace({ project, controller, dispatchID, onChanged }: { proje
   const stopBlocked = stop.pending || !!stop.unresolved || !detail.data || detail.stale || detail.loading;
   return <section className={styles.detail} aria-label={`Worker ${dispatchID}`}>
     <h3>当前 Worker</h3><code className={styles.identity}>{dispatchID}</code>
-    <QueryState state={detail}>{reply => <details><summary>原生身份、业务状态和资源观察</summary><pre className={styles.output}>{observationJSON(reply.result)}</pre></details>}</QueryState>
+    <QueryState state={detail}>{reply => <><SwaExecutionDetails reply={reply} projectID={project.id} controller={controller} runID={runID} dispatchID={dispatchID} /><details><summary>原生身份、业务状态和资源观察原件</summary><pre className={styles.output}>{observationJSON(reply.result)}</pre></details></>}</QueryState>
     <form className={styles.form} onSubmit={event => { event.preventDefault(); setReadCursor(cursor.trim()); transcript.retry(); }}><label>继续读取游标（空值从头）<input value={cursor} onChange={event => setCursor(event.target.value)} /></label><button className="ac-button secondary compact" type="submit" disabled={detail.loading || detail.stale || !detail.data || transcript.loading}>读取实际会话</button></form>
     {readCursor !== null && <QueryState state={transcript}>{reply => <Transcript reply={reply} />}</QueryState>}
     <form className={styles.form} onSubmit={event => { event.preventDefault(); void command.run({ action: 'worker.send', controller, dispatch_id: dispatchID, input_file: inputFile.trim() }, () => { detail.retry(); onChanged(); }); }}><label>追加输入的已批准服务端 UTF-8 文件<input required value={inputFile} onChange={event => setInputFile(event.target.value)} /></label><button className="ac-button compact" type="submit" disabled={blocked || !inputFile.trim() || !project.settings.allow_agent_control || !project.settings.allowed_actions?.includes('send')}>提交此 Worker 的输入</button></form>

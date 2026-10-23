@@ -36,6 +36,20 @@ const available = (reason: string, source: string, basis: NonNullable<Observatio
 const object = z.record(z.string(), z.unknown())
 const text = (value: unknown): string | undefined => typeof value === 'string' && value.trim() ? value : undefined
 
+/** 只允许发现清单保留单项观察失败；实际选择继续抛出原异常。 */
+export async function observeAgentStage<T>(mode: 'discovery' | 'selection', stage: 'installation' | 'configuration', inspect: () => Promise<T>): Promise<{ value: T; failure?: never } | { value?: never; failure: Observation }> {
+  try { return { value: await inspect() } }
+  catch (error) {
+    if (mode === 'selection') throw error
+    const code = error instanceof Error && 'code' in error ? error.code : undefined
+    const basis = stage === 'installation' ? 'probe' : 'configuration'
+    if (code === 'ENOENT') return { failure: observation('unavailable', '所选原生来源不存在', `native-${stage}-missing`, basis) }
+    if (code === 'EACCES' || code === 'EPERM') return { failure: observation('unavailable', '所选原生来源不可读取', `native-${stage}-unreadable`, basis) }
+    if (stage === 'configuration' && (error instanceof SyntaxError || error instanceof z.ZodError)) return { failure: observation('unavailable', '所选原生配置格式无法解析', 'native-configuration-invalid', basis) }
+    return { failure: unknown('该 Agent 的原生来源观察未完成，保持未知', `native-${stage}-unverified`, basis) }
+  }
+}
+
 async function optionalConfiguration(file: string, format: 'json' | 'toml' | 'jsonc' = 'json') {
   let contents: string
   let sourceVersion: string
@@ -195,46 +209,54 @@ async function inspectAgents(runtime: OrcaRuntimeService, requirements?: Capabil
   if (!host) throw new Error('The actual product structured Agent registry is unavailable')
   const disabled = new Set<string>(snapshot.launch.disabledTuiAgents)
   const agents = []
-  const details = new Map<string, { selection: AgentSelection | undefined; configuration: Awaited<ReturnType<typeof configuration>> }>()
+  const details = new Map<string, { selection: AgentSelection | undefined; configuration: Awaited<ReturnType<typeof configuration>> | undefined }>()
   for (const { definition, adapter } of host.deps.agents.registrations()) {
     const id = definition.agent
     if (onlyAgent !== undefined && id !== onlyAgent) continue
     const adapterName = adapter.constructor.name
     const registered = available('The real native adapter passed StructuredAgentRegistry validation', `StructuredAgentRegistry:${adapterName}`, 'declaration')
     const enabled = observation(disabled.has(id) ? 'unavailable' : 'available', disabled.has(id) ? 'Disabled in the selected native settings' : 'Enabled in the selected native settings', 'native-settings', 'configuration')
-    let installed: Observation & { executable?: string; version?: string } = unknown('No absolute native command has been resolved', 'native-command-resolution', 'probe')
-    let executable: string | undefined, version: string | undefined
-    if (isTuiAgent(id)) {
-      const spec = ACP_LAUNCH_SPECS.find(item => item.agent === id)
-      const env = discoveryEnvironment()
-      const sourceEnv: Record<string, string> = { ...env, HOME: snapshot.home, USERPROFILE: snapshot.home }
-      if (process.env.SWA_DISCOVERY_APPDATA) sourceEnv.APPDATA = process.env.SWA_DISCOVERY_APPDATA
-      if (process.env.SWA_DISCOVERY_LOCALAPPDATA) sourceEnv.LOCALAPPDATA = process.env.SWA_DISCOVERY_LOCALAPPDATA
-      const overlay = snapshot.settings.agentDefaultEnv?.[id]
-      const pathEnv = [overlay?.PATH ?? overlay?.Path ?? env.PATH ?? env.Path, ...(spec?.installDirectories({ env: sourceEnv, homePath: snapshot.home }) ?? [])].filter(Boolean).join(delimiter)
-      const command = resolveStructuredAgentCommand(id, spec?.ignoreAgentCommandSetting ? {} : { agentCmdOverrides: snapshot.launch.agentCmdOverrides }, { pathEnv, homePath: snapshot.home }, { command: spec?.command ?? id })
-      if (isAbsolute(command)) {
-        executable = await realpath(command)
-        if (id === 'opencode' && extname(executable).toLowerCase() === '.cmd') executable = await realpath(join(dirname(executable), 'node_modules/@opencode/cli/bin/opencode.exe'))
-        if (id === 'pi') {
-          try { version = await readFixedPiVersion(executable, env) }
-          catch { version = undefined }
-        } else {
-          const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
-          version = result.version ?? undefined
-        }
-        installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe', 'probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe', 'probe')
-      } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution', 'probe')
-    }
-    const config = await configuration(id, snapshot, requestedModel, projectRoot)
-    const proven = !!(config.model && config.provider && config.account)
-    const configured = { ...(proven ? available('Native configuration and the explicit selection supply model, provider and an account source', 'native-configuration', 'configuration') : unknown('The observed native defaults do not supply every model, provider and account field', 'native-configuration', 'configuration')), model: config.model, provider: config.provider, account_source: config.account }
+    const mode = projectId === undefined ? 'discovery' : 'selection'
+    const installation = await observeAgentStage(mode, 'installation', async () => {
+      let installed: Observation & { executable?: string; version?: string } = unknown('No absolute native command has been resolved', 'native-command-resolution', 'probe')
+      let executable: string | undefined, version: string | undefined
+      if (isTuiAgent(id)) {
+        const spec = ACP_LAUNCH_SPECS.find(item => item.agent === id)
+        const env = discoveryEnvironment()
+        const sourceEnv: Record<string, string> = { ...env, HOME: snapshot.home, USERPROFILE: snapshot.home }
+        if (process.env.SWA_DISCOVERY_APPDATA) sourceEnv.APPDATA = process.env.SWA_DISCOVERY_APPDATA
+        if (process.env.SWA_DISCOVERY_LOCALAPPDATA) sourceEnv.LOCALAPPDATA = process.env.SWA_DISCOVERY_LOCALAPPDATA
+        const overlay = snapshot.settings.agentDefaultEnv?.[id]
+        const pathEnv = [overlay?.PATH ?? overlay?.Path ?? env.PATH ?? env.Path, ...(spec?.installDirectories({ env: sourceEnv, homePath: snapshot.home }) ?? [])].filter(Boolean).join(delimiter)
+        const command = resolveStructuredAgentCommand(id, spec?.ignoreAgentCommandSetting ? {} : { agentCmdOverrides: snapshot.launch.agentCmdOverrides }, { pathEnv, homePath: snapshot.home }, { command: spec?.command ?? id })
+        if (isAbsolute(command)) {
+          executable = await realpath(command)
+          if (id === 'opencode' && extname(executable).toLowerCase() === '.cmd') executable = await realpath(join(dirname(executable), 'node_modules/@opencode/cli/bin/opencode.exe'))
+          if (id === 'pi') version = await readFixedPiVersion(executable, env)
+          else {
+            const result = await readAgentCliVersion({ program: executable, cwd: process.env.SWA_DATA_DIR!, env })
+            version = result.version ?? undefined
+          }
+          installed = version ? { ...available('The selected native executable returned its real CLI version', 'native-version-probe', 'probe'), executable, version } : unknown('The selected native executable did not prove its CLI version', 'native-version-probe', 'probe')
+        } else installed = observation('unavailable', 'Native command resolution found no installed executable', 'native-command-resolution', 'probe')
+      }
+      return { installed, executable, version }
+    })
+    const installed = installation.failure ?? installation.value.installed
+    const executable = installation.value?.executable, version = installation.value?.version
+    const configurationResult = await observeAgentStage(mode, 'configuration', () => configuration(id, snapshot, requestedModel, projectRoot))
+    const config = configurationResult.value
+    const proven = !!(config?.model && config.provider && config.account)
+    const configured = { ...(configurationResult.failure ?? (proven ? available('Native configuration and the explicit selection supply model, provider and an account source', 'native-configuration', 'configuration') : unknown('The observed native defaults do not supply every model, provider and account field', 'native-configuration', 'configuration'))), model: config?.model, provider: config?.provider, account_source: config?.account }
     const declared = available('The real adapter implements this structured operation; no live handshake is claimed', `adapter-declaration:${adapterName}`, 'declaration')
+    const supported = id === 'pi' || id === 'opencode' || id === 'codex' || id === 'claude'
+    const unsupported = observation('unavailable', '原生适配器已注册；SWA 尚无该 Agent 的受控账号、关闭工具及完整成果合同', 'swa-native-policy-unsupported', 'declaration')
+    const operation = supported ? declared : unsupported
     const features = describeAgentFeatures(definition)
-    const control = { start: declared, send: declared, read: unknown('No live session or complete transcript was observed', 'native-session', 'session'), stop: declared, resume: unknown('No native recovery handshake was observed', 'native-session', 'session'), tools: unknown('The selected Agent tool policy requires its own verified native contract', 'native-policy', 'session'), images: features.images, model_switch: features.model_switch }
-    agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: unknown('No actual Agent handshake was performed', 'native-session', 'session'), authenticated: unknown('A configured account source does not prove authentication or model access', 'native-authentication-unobserved', 'session'), declared_features: features.declared_features, model_catalog: modelCatalogObservation(config), control, ...(requirements ? { requirements } : {}) })
+    const control = { start: operation, send: operation, read: unknown('No live session or complete transcript was observed', 'native-session', 'session'), stop: operation, resume: unknown('No native recovery handshake was observed', 'native-session', 'session'), tools: supported ? unknown('The selected Agent tool policy requires its own verified native contract', 'native-policy', 'session') : unsupported, images: features.images, model_switch: features.model_switch }
+    agents.push({ id, adapter: adapterName, execution_mode: 'structured' as const, registered, enabled, installed, configured, launchable: supported ? unknown('No actual Agent handshake was performed', 'native-session', 'session') : unsupported, authenticated: unknown('A configured account source does not prove authentication or model access', 'native-authentication-unobserved', 'session'), declared_features: features.declared_features, model_catalog: modelCatalogObservation({ model: config?.model, provider: config?.provider }), control, ...(requirements ? { requirements } : {}) })
     let selection: AgentSelection | undefined
-    if (projectId && enabled.status === 'available' && executable && version && proven) {
+    if (projectId && enabled.status === 'available' && executable && version && proven && config) {
       if (id !== 'pi' && id !== 'opencode' && id !== 'codex' && id !== 'claude' || !('sourceHome' in config) || !config.sourceHome || !config.model) throw new OrchestrationError('unsupported_capability', 'The selected native Agent account and disabled-tool policy have no reviewed contract')
       if (snapshot.settings.agentDefaultArgs?.[id]?.trim()) throw new OrchestrationError('unsupported_capability', 'The selected native Agent extra arguments have not been approved')
       const native = id === 'pi'

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import type { SwaEnvelope } from '../../api/swa';
 import type { components } from '../../api/schema';
-import { readSwaFleet, readSwaAgents, recoverSwaRequest, canRequestSwaStart, swaStartRequestBlock, type PendingSwaRequest } from './swaObservation';
+import { readSwaFleet, readSwaAgents, readSwaExecution, recoverSwaRequest, canRequestSwaStart, swaStartRequestBlock, type PendingSwaRequest } from './swaObservation';
+import { SwaExecutionDetails } from './SwaExecutionDetails';
 
 // 以下为解析器的明确参数输入，不表示存在原生执行、模型返回或安装验收结果。
 const projectID = 'parser-project-input', controller = 'parser-controller-input', taskID = 'parser-task-input';
@@ -121,5 +124,87 @@ describe('SWA 启动表单的明确参数规则，不表示原生发现或启动
     for (const status of ['ready', ['available'], null]) expect(() => parse([{ ...parameter, registered: { ...agent.registered, status } }])).toThrow('观察状态');
     expect(() => parse([{ ...parameter, requirements: { settings_revision: '3' } }])).toThrow('权限版本');
     expect(() => parse([{ ...parameter, control: { start: agent.start, read: agent.read } }])).toThrow('原生对象');
+  });
+});
+
+const runID = 'parser-run-input', dispatchID = 'parser-dispatch-input';
+function executionParameter() {
+  const selection = { agent: 'codex', adapter: 'CodexStructuredSessionAdapter', version: '0.163.0', execution_mode: 'structured', provider: 'openai', model: 'gpt-5.5', account_source: 'codex-native-api-key' };
+  return { ok: true, result: {
+    scope: { project_id: projectID, controller, run_id: runID },
+    native: {
+      dispatch: { id: dispatchID, runId: runID, status: 'completed' },
+      source: { availability: 'observed', native_session_id: 'parser-native-session', selection: { agent_id: selection.agent, adapter: selection.adapter, version: selection.version, execution_mode: selection.execution_mode, provider: selection.provider, model: selection.model, native_launch: { account: { kind: selection.account_source } } } },
+      execution: {
+        selection, launch: observationInput('available'), control: observationInput('unknown'), result: observationInput('unknown'), authenticated: observationInput('unknown'),
+        delivery: { state: 'unknown', phase: 'unknown', source: 'native_input_request_pending', request_id: requestID },
+        resume: { state: 'not_requested', source: 'native_provider_handle_chain', session_id: 'parser-native-session' },
+        model_catalog: { origin: 'configured', availability: 'unverified', models: [{ id: selection.model, label: selection.model }] },
+      },
+    },
+  } } satisfies SwaEnvelope;
+}
+const readExecution = (reply: SwaEnvelope) => readSwaExecution(reply, projectID, controller, runID, dispatchID);
+const renderExecution = (reply: SwaEnvelope) => renderToStaticMarkup(createElement(SwaExecutionDetails, { reply, projectID, controller, runID, dispatchID }));
+
+describe('实际执行 DTO 与 React 静态呈现，不表示真实 HTTP 或模型验收', () => {
+  it('同项目、Controller、Run 与 Dispatch 一起核对，缺执行来源保留未知', () => {
+    const parameter = executionParameter();
+    expect(readExecution(parameter)?.selection.model).toBe('gpt-5.5');
+    for (const changed of [{ project_id: 'other-project' }, { controller: 'other-controller' }, { run_id: 'other-run' }]) {
+      expect(() => readExecution({ ...parameter, result: { ...parameter.result, scope: { ...parameter.result.scope, ...changed } } })).toThrow('当前项目');
+    }
+    for (const changed of [{ id: 'other-dispatch' }, { runId: 'other-run' }]) {
+      expect(() => readExecution({ ...parameter, result: { ...parameter.result, native: { ...parameter.result.native, dispatch: { ...parameter.result.native.dispatch, ...changed } } } })).toThrow('当前项目');
+    }
+    const missing = { ...parameter, result: { ...parameter.result, native: { ...parameter.result.native, execution: undefined } } };
+    expect(readExecution(missing)).toBeNull();
+    expect(renderExecution(missing)).toContain('状态保持未知');
+  });
+
+  it('原生选择、会话和送达依据缺失时不会显示成功', () => {
+    const different = executionParameter();
+    different.result.native.source.selection.model = 'other-model';
+    expect(() => readExecution(different)).toThrow('实际选择');
+    expect(renderExecution(different)).toContain('实际执行状态保持未知');
+    for (const execution_mode of ['terminal', undefined]) {
+      const parameter = executionParameter(), native = parameter.result.native;
+      const changed = { ...parameter, result: { ...parameter.result, native: { ...native, source: { ...native.source, selection: { ...native.source.selection, execution_mode } } } } };
+      expect(() => readExecution(changed)).toThrow('实际选择');
+      expect(renderExecution(changed)).toContain('实际执行状态保持未知');
+    }
+    const session = executionParameter();
+    session.result.native.execution.resume.session_id = 'other-session';
+    expect(() => readExecution(session)).toThrow('会话身份');
+    const input = executionParameter();
+    input.result.native.execution.delivery.state = 'sent';
+    expect(() => readExecution(input)).toThrow('原请求依据');
+    input.result.native.execution.delivery.state = 'future-state';
+    expect(() => readExecution(input)).toThrow('delivery.state');
+  });
+
+  it('业务 completed 与配置目录都不能在呈现时升级登录、结果或未知输入', () => {
+    const parameter = executionParameter();
+    const observed = readExecution(parameter);
+    expect(observed?.authenticated.status).toBe('unknown');
+    expect(observed?.result.status).toBe('unknown');
+    expect(observed?.catalog.availability).toBe('unverified');
+    const html = renderExecution(parameter);
+    for (const expected of ['实际执行选择', 'gpt-5.5', 'codex-native-api-key', '登录与模型访问证据', '尚未验证', '送达情况未知；不能自动重发', '目录尚未验证', requestID]) expect(html).toContain(expected);
+    const main = html.slice(0, html.indexOf('<details'));
+    expect(main).toContain('Codex 独立 API 密钥来源');
+    for (const internal of ['codex-native-api-key', 'CodexStructuredSessionAdapter', 'native_input_request_pending', requestID]) expect(main).not.toContain(internal);
+    expect(html).not.toContain('已送达原生 Agent');
+    expect(html).not.toContain('<button');
+  });
+
+  it('五种恢复语义分别显示，并保留原生来源标签', () => {
+    for (const [state, label] of Object.entries({ not_requested: '未观察到恢复', resumed: '恢复原会话', rebuilt: '上下文发生替换', failed: '恢复已明确失败', unknown: '恢复结果未知' })) {
+      const parameter = executionParameter();
+      parameter.result.native.execution.resume.state = state;
+      const html = renderExecution(parameter);
+      expect(html).toContain(label);
+      expect(html).toContain('native_provider_handle_chain');
+    }
   });
 });

@@ -156,6 +156,49 @@ test('resume and safe selection projection preserve the original identity and om
   assert.throws(() => executionObservation(source, { dispatchId: 'rule-dispatch' }), /original provider identity/)
 })
 
+test('resume failure requires the whole original rejected restart fact and exact input identity', () => {
+  // 原生 typed fact 的纯规则输入；没有运行原生恢复或复用 vendor 的 mock。
+  const fact = { kind: 'restartFailed', detail: { text: 'private diagnostic must not appear', audience: 'person' }, refusal: { code: 'agent_session_operation_invalid', details: { ownerVerdict: 'exited' } } }
+  const input = ruleInput('rejected')
+  input.submission.rejection = fact
+  const result = executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: input })
+  assert.equal(result.delivery.state, 'not_sent')
+  assert.equal(result.resume.state, 'failed')
+  assert.equal(result.resume.source, 'native_journal_restart_refused')
+  assert.doesNotMatch(JSON.stringify(result), /private diagnostic/)
+  for (const rejection of [
+    { kind: 'restartFailed' },
+    { ...fact, refusal: { code: 'execution_owner_reconciling' } },
+    { ...fact, refusal: { code: 'agent_session_operation_invalid', details: { ownerVerdict: 'unverifiable' } } },
+    { ...fact, refusal: { code: 'agent_session_operation_invalid', details: { ownerVerdict: 'exited', reason: 'turnActive' } } },
+    { ...fact, refusal: { code: 'agent_session_operation_invalid', details: { ownerVerdict: 'exited', futureField: true } } },
+    { ...fact, futureField: true },
+  ]) {
+    const changed = structuredClone(input)
+    changed.submission.rejection = rejection
+    assert.equal(executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: changed }).resume.state, 'unknown')
+  }
+  for (const kind of ['startFailed', 'providerRejected', 'notSignedIn']) {
+    const changed = structuredClone(input)
+    changed.submission.rejection = { kind }
+    assert.equal(executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: changed }).resume.state, 'not_requested')
+  }
+  for (const change of [
+    { request_id: 'another-request' }, { native_request_id: 'another-request/native' },
+    { operation_id: 'another-operation' }, { dispatch_id: 'another-dispatch' },
+    { agent: 'claude' }, { session_id: 'another-session' },
+  ]) assert.throws(() => executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: { ...input, ...change } }), /original request/)
+  const changedFence = structuredClone(input)
+  changedFence.binding.runtime_fence++
+  assert.throws(() => executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: changedFence }), /original request/)
+  const changedProvider = ruleSource()
+  changedProvider.provider_link.handle.agent = 'claude'
+  assert.throws(() => executionObservation(changedProvider, { dispatchId: 'rule-dispatch', currentInput: input }), /original provider identity/)
+  const unsettled = ruleInput('queued')
+  unsettled.submission.rejection = fact
+  assert.equal(executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: unsettled }).resume.state, 'not_requested')
+})
+
 test('pure pre-input rejection requires the original Dispatch and native child request', () => {
   const rejection = { request_id: 'rule-request', native_request_id: 'rule-request/native', dispatch_id: 'rule-dispatch', agent: 'codex', state: 'rejected', effects_applied: false, source: { kind: 'native_pre_input_admission', child_request: 'rule-request/native' } }
   assert.equal(executionObservation(ruleSource(), { dispatchId: 'rule-dispatch', currentInput: rejection }).delivery.state, 'not_sent')
