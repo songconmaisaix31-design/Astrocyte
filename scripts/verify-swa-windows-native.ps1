@@ -55,7 +55,7 @@ function Invoke-Logged([string]$Name, [string]$Program, [string[]]$Arguments) {
 try {
     if ((& $node --version).Trim() -cne 'v24.16.0' -or (& $node $PnpmCli --version).Trim() -cne '11.27.0') { throw 'The development Node or pnpm version differs' }
     if ((& $go version).Trim() -cne 'go version go1.27.2 windows/amd64') { throw 'The Go version differs' }
-    Invoke-Logged 'frozen-install' $node @($PnpmCli, '--filter', 'astrocyte', '--filter', '@astrocyte/web', '--filter', '@swa/orca-runtime', '--filter', '@orca/process-host', 'install', '--frozen-lockfile')
+    Invoke-Logged 'frozen-install' $node @($PnpmCli, '--filter', '{.}', '--filter', '{./web}', '--filter', '@swa/orca-runtime', '--filter', '@orca/process-host', 'install', '--frozen-lockfile')
     Invoke-Logged 'go-download' $go @('mod', 'download')
     Invoke-Logged 'go-verify' $go @('mod', 'verify')
     $env:SWA_CI_PHASE = 'msvc-toolchain'
