@@ -33,6 +33,8 @@ import {
 import { parseWorkspaceKey } from '../../../shared/workspace-scope'
 import type { AgentSessionAccountHome } from '../../../shared/agent-session-account-home'
 import type { StructuredAgentId } from '../../../shared/agent-session-provider-handle'
+import type { StructuredAgentCommandSettings } from '../../native-chat/structured-agent-command-resolution'
+import { admitStructuredAgentCreateCommandSettings } from '../structured-agent-launch-composition'
 
 export abstract class OrcaRuntimeWithGetStructuredAgentSessionCreateSupport extends OrcaRuntimeWithGetWorktreePs {
   protected abstract restoreStructuredAgentSessionTabsOnce(
@@ -45,13 +47,15 @@ export abstract class OrcaRuntimeWithGetStructuredAgentSessionCreateSupport exte
 
   async getStructuredAgentSessionCreateSupport(
     worktreeSelector: string,
-    agent: StructuredAgentId
+    agent: StructuredAgentId,
+    commandSettings?: StructuredAgentCommandSettings
   ): Promise<{ supported: boolean; reason?: 'agent' | 'remote' | 'wsl' }> {
     return resolveHostStructuredAgentCreateSupport({
       agent,
       worktreeSelector,
       location: await this.resolveStructuredAgentSessionLocation(worktreeSelector),
-      runtime: this
+      runtime: this,
+      commandSettings
     })
   }
 
@@ -222,7 +226,8 @@ export abstract class OrcaRuntimeWithGetStructuredAgentSessionCreateSupport exte
       }
     }) => AgentSessionAccountHome | Promise<AgentSessionAccountHome>
   ): Promise<AgentSessionAttachParams> {
-    const support = await this.getStructuredAgentSessionCreateSupport(input.worktree, input.agent)
+    const commandSettings = await admitStructuredAgentCreateCommandSettings(input.envelope.sessionId, input.agent)
+    const support = await this.getStructuredAgentSessionCreateSupport(input.worktree, input.agent, commandSettings)
     // Adopting a conversation reads the agent's own transcript, so only an agent registered with an
     // importer adopts.
     const transcriptImport = structuredAgentRuntimeMetadata(input.agent)?.transcriptImport

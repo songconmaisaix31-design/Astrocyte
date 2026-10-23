@@ -1,6 +1,6 @@
 # 当前状态
 
-当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 已越过参数校验，但因实际终端模式与准入的结构化模式不符，在输入派发阶段失败；尚未取得模型输出。Windows 原生 CI 的失败已确定在 controller-open，内部错误通过局部复现继续定位。N6 未运行。
+当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)。用户已确认 Astrocyte、Attention Mirror 拆为两个独立项目/仓库，SWA 只保留必要集成；本轮实际并发目标为 N=4、N=6。开发分支 `integration/swa-task-cards`。当前 Linux 安装来源为 `7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f`，完整构建、安装及装内 D12 已通过。实际 N4 完成 Controller 和根任务创建后，在 Worker 启动请求失败并保留 pending/UNKNOWN。后继开发单 Worker 的模式设置和效果前检查已修复；最新 pi-02 因原生支持探测执行裸 `pi` 时 ENOENT，降级到 terminal 后被检查拒绝，实际 Dispatch/Worker 均为零，尚未取得模型输出。Windows 原生 CI 的失败已确定在 controller-open，内部错误通过局部复现继续定位。N6 未运行。
 
 ## 当前实现与验证
 
@@ -51,9 +51,15 @@ S7ff Linux 组合构建、归档、解包及独立严格安装均退出0，安�
 
 随后以 `0bf2c3e534adb02e8a5f5789e586cbd9e6b18274` 重编独立开发副本的 host/helper，运行一次真实单 Worker 检查，原件为 `/workspace/swa-worker-pi-01-Vg8TlX/evidence/`。Controller 和根任务创建通过；Worker 原请求 `cb57657e-89a6-4e67-88f9-c5eff888951e` 及 `/native` 都 completed，但 CLI 退出4，业务回执为 failed/dispatch_input/agent_not_in_foreground。实际新建 Task、Dispatch 和终端；准入选择为 structured/ToolsOff，实际 mode 为 terminal/user_default。源码确认私有 runtime 未覆盖上游 `experimentalNativeChat=false`，因此没有进入结构化启动准入。该次仅记录一次启动命令尝试，没有模型 delta 证据；原服务退出6、观察器退出1，业务 FAIL 和完整树 UNKNOWN 保留。Grant 撤销确认，I4c/I7ff 原安装关键文件不变。
 
-本次补充收尾经原认证 daemon 接口向准确 Agent shell、Controller helper 分别发送一次 EOF，两个 session 清空后 shutdownIfIdle 返回 ACCEPTED。两组原 pidfd 观察分别确认 daemon/helper 和 daemon/shell 已退出，两次观察间隔均超过50ms；helper 和 shell 已缺席，daemon 仅剩 PID1 未回收的 zombie，执行退出0、未发 OS 信号。原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-01-cleanup-01/result.json`；仅证明这三个准确资源，原失败和数据库未释放状态未改写。后继[执行模式修复](tasks/swa-worker-structured-mode-20261023.md)启用私有结构化设置，并在首条 Dispatch 创建前核当前权限、实际模式及原请求；4项直接规则、strict 和架构检查已通过，准确源码和局部结果已获独立审查接受，新的单 Worker 实测待运行。
+本次补充收尾经原认证 daemon 接口向准确 Agent shell、Controller helper 分别发送一次 EOF，两个 session 清空后 shutdownIfIdle 返回 ACCEPTED。两组原 pidfd 观察分别确认 daemon/helper 和 daemon/shell 已退出，两次观察间隔均超过50ms；helper 和 shell 已缺席，daemon 仅剩 PID1 未回收的 zombie，执行退出0、未发 OS 信号。原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-01-cleanup-01/result.json`；仅证明这三个准确资源，原失败和数据库未释放状态未改写。后继[执行模式修复](tasks/swa-worker-structured-mode-20261023.md)启用私有结构化设置，并在首条 Dispatch 创建前核当前权限、实际模式及原请求；4项直接规则、strict 和架构检查已通过，准确源码和局部结果已获独立审查接受，提交 `381c9159b2ac58ca32b2062dfbde9a0c6b6844db` 已推送。
+
+pi-02 使用该提交重编开发 host/helper，原件为 `/workspace/swa-worker-pi-02-ZP6Rmz/evidence/`。Controller 和根任务创建通过；Worker 原请求 `20360144-5b05-4c37-b98d-7323b063d0e5` 的 CLI 退出6，实际模式检查拒绝 terminal，原请求保持 pending/helper-input，`/native` 子行缺席。只读数据库确认唯一 ready 根任务、0 Dispatch/Worker/resource 和5条回执。实际私有配置已为 `experimentalNativeChat=true`、`nativeChatProviders={}`；服务原日志记录 `pi --version` 的 `spawn pi ENOENT`，随后 installed-agent 检查拒绝，说明启动支持探测未使用发现时选中的绝对命令。没有结构化成功或模型 delta 证据；Grant 撤销和 dispatcher 关闭确认，原 serve 退出6、observer 退出1、完整树 UNKNOWN 保留。补充正常 EOF 经准确原会话结束 helper390568，session 清空后 shutdownIfIdle 返回 ACCEPTED；daemon390500/helper390568 的原 pidfd 连续两次观察退出，间隔50.181318ms，helper 已缺席，daemon 仅余 PID1 zombie。该收尾退出0、没有 OS 信号，只证明两个准确资源；原件为 `.verification/controller-taskcreate-diagnosis-20261023/worker-pi-02-cleanup-01/result.json`。命令来源修复与无模型局部验证继续进行，尚未重试完整构建。
 
 相同 S7ff 的 Windows run `39912010769` / full job `120276917189` 已最终 FAILURE：前六项 setup 成功，driver 在 `service-smoke` 报 `The actual service/Job shutdown check failed or remains unknown`。原 evidence artifact `12483830115` 已上传；本机通过正常 `gh` 下载及读取日志时，对象存储返回403。后继只读取证 run `39916407634` 成功：原 producer 停在 `controller-open`，cli10 退出6、双流 EOF，没有超时，未进入 task.create；内部错误因原 artifact 未收集该 CLI 内容仍为 UNKNOWN。Grant 撤销及 HTTP dispatcher 关闭确认，原 serve/helper 退出6、未决 mutation 和两项未知进程观察保留。原生退出观察两次剩余为0，CIM的已知身份退出观察通过，仍不能替代完整服务关闭证明。正在准备无需完整构建的 Windows 最小复现；该只读取证的其他 native job 和 S0 均 Skipped。
+
+[命令来源修复](tasks/swa-worker-launch-probe-20261023.md)已贯通 Worker 模式选择和 session intent 的两次支持探测。无模型复现的首轮在探测前因工具误要求所有 Agent 默认环境为空而停止；收窄为核 Pi 配置后，实际 login-shell 捕获证明 host PATH 不含 Pi，裸命令 ENOENT/不支持，同一环境使用原批准绝对命令则真实返回官方版本1.0.1/支持，退出0。修后原4项模式规则通过，runtime strict 退出0；原件为 `.verification/worker-launch-probe-20261023/`。源码与局部结果已获独立审查接受，实际修后单 Worker 尚未运行。
+
+Windows 最小复现已由独立源码审查接受并通过局部装配、语法和触发条件检查。观察提交 `f589b2b7e49c8ab3a8ac22e663c96a8c2f38dbb0` 的唯一 tag 触发 run `39924868969` / job `120318666615`，当前准备环境；只组合保留1d原生组件和固定7ff生产源码，先做三次短消息，再做一次 controller-open，不创建任务或 Worker。其他六个原生 job 和相同提交的 S0 run `39924868978` 均 Skipped。该任务不代表完整候选或 Windows 动态验证已通过。
 
 ## 保留的安装基线
 

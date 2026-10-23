@@ -20,6 +20,7 @@ import {
 } from '../../../agent-launch/agent-launch-mode'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { OrcaRuntimeService } from '../../orca-runtime'
+import type { StructuredAgentCommandSettings } from '../../../native-chat/structured-agent-command-resolution'
 
 export type WorkerStartMode = AgentLaunchMode
 export type WorkerStartModeReason = AgentLaunchModeReason
@@ -63,9 +64,10 @@ export async function resolveWorkerStartModeOnHost(
   runtime: Pick<OrcaRuntimeService, 'getStructuredAgentSessionCreateSupport'>,
   mode: WorkerStartModeReceipt,
   worktreeId: string | undefined,
-  agent: TuiAgent | undefined
+  agent: TuiAgent | undefined,
+  commandSettings?: StructuredAgentCommandSettings
 ): Promise<WorkerStartModeReceipt> {
-  return resolveAgentLaunchModeOnHost(runtime, mode, worktreeId, agent, WORKER_START_VOCABULARY)
+  return resolveAgentLaunchModeOnHost(runtime, mode, worktreeId, agent, WORKER_START_VOCABULARY, commandSettings)
 }
 
 export function downgradeWorkerStartModeForHost(

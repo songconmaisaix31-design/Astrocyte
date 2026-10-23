@@ -36,7 +36,7 @@ import { requireWorkerAuthority, type WorkerEffect } from './worker-topology'
 import { prepareLocalWorkerStart } from './worker-start-validation'
 import { deliverAndSettleWorkerStartReadiness } from './worker-start-readiness-settlement'
 import type { WorkerStartMutation } from './worker-start-mutation'
-import { admitStructuredWorkerStart } from '../../../../structured-agent-launch-composition'
+import { admitStructuredWorkerCommandSettings, admitStructuredWorkerStart } from '../../../../structured-agent-launch-composition'
 
 export async function startLocalWorker(args: {
   params: WorkerStartInput
@@ -124,7 +124,15 @@ export async function startLocalWorker(args: {
       resolvedWorktreeId: resolvedWorktree?.id
     })
   }
-  const hostMode = resolveWorkerStartModeOnHost(runtime, args.mode, resolvedWorktree?.id, agent)
+  const launchAdmission = {
+    mutation: orchestrationMutation,
+    controller: params.from,
+    runId: run.id,
+    worktreeId: resolvedWorktree?.id,
+    agent
+  }
+  const commandSettings = await admitStructuredWorkerCommandSettings(launchAdmission)
+  const hostMode = resolveWorkerStartModeOnHost(runtime, args.mode, resolvedWorktree?.id, agent, commandSettings)
   let mode = chatWorkerMode(await hostMode, chat)
 
   const startOptions = {
@@ -146,11 +154,7 @@ export async function startLocalWorker(args: {
       : 'existing_worktree'
   }
   const finalAdmission = await admitStructuredWorkerStart({
-    mutation: orchestrationMutation,
-    controller: params.from,
-    runId: run.id,
-    worktreeId: resolvedWorktree?.id,
-    agent,
+    ...launchAdmission,
     mode: mode.mode
   })
   finalAdmission?.()

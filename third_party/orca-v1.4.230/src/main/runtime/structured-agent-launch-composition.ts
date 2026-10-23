@@ -28,14 +28,15 @@ import type { AgentLaunchMode } from '../../shared/agent-launch-intent'
 
 export type StructuredAgentInputAdmission = { sessionId: string; agent: string; clientMessageId: string; fence: number; body: AgentJournalMessageItem }
 
-export type StructuredWorkerStartAdmission = {
+export type StructuredWorkerLaunchAdmission = {
   mutation?: { callerFingerprint: string; requestId: string; method: string; payloadHash: string }
   controller: string
   runId: string
   worktreeId: string | undefined
   agent: string | undefined
-  mode: AgentLaunchMode
 }
+
+export type StructuredWorkerStartAdmission = StructuredWorkerLaunchAdmission & { mode: AgentLaunchMode }
 
 export type StructuredAgentLaunchAdmission = {
   commandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
@@ -50,6 +51,8 @@ export type StructuredAgentLaunchAdmission = {
   reserveInput?(input: StructuredAgentInputAdmission): Promise<void>
   beforeInput?(input: StructuredAgentInputAdmission): Promise<void | (() => void)>
   beforeWorkerStart?(input: StructuredWorkerStartAdmission): Promise<void | (() => void)>
+  workerCommandSettings?(input: StructuredWorkerLaunchAdmission): Promise<StructuredAgentCommandSettings>
+  createCommandSettings?(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings>
 }
 
 let launchAdmission: StructuredAgentLaunchAdmission | null = null
@@ -80,6 +83,14 @@ export function admitStructuredAgentInput(input: StructuredAgentInputAdmission):
 
 export function admitStructuredWorkerStart(input: StructuredWorkerStartAdmission): Promise<void | (() => void)> {
   return launchAdmission?.beforeWorkerStart ? launchAdmission.beforeWorkerStart(input) : Promise.resolve()
+}
+
+export function admitStructuredWorkerCommandSettings(input: StructuredWorkerLaunchAdmission): Promise<StructuredAgentCommandSettings | undefined> {
+  return launchAdmission?.workerCommandSettings ? launchAdmission.workerCommandSettings(input) : Promise.resolve(undefined)
+}
+
+export function admitStructuredAgentCreateCommandSettings(sessionId: string, agent: string): Promise<StructuredAgentCommandSettings | undefined> {
+  return launchAdmission?.createCommandSettings ? launchAdmission.createCommandSettings(sessionId, agent) : Promise.resolve(undefined)
 }
 
 /** Where a launch's shared inputs come from. */

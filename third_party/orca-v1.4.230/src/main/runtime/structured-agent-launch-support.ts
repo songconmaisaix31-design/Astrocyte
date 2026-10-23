@@ -39,7 +39,8 @@ type LaunchSupportRuntime = {
 export async function structuredAgentSupportsLaunch(
   agent: string,
   worktreeSelector: string,
-  runtime: LaunchSupportRuntime
+  runtime: LaunchSupportRuntime,
+  commandSettings?: StructuredAgentCommandSettings
 ): Promise<boolean> {
   const check = structuredAgentRuntimeMetadata(agent)?.launchCheck
   if (!check) {
@@ -59,7 +60,7 @@ export async function structuredAgentSupportsLaunch(
       async () =>
         check.resolveLaunch(
           await resolveHostStructuredAgentLaunchEnvironment(agent, settings),
-          settings
+          commandSettings ?? settings
         ),
       refreshHostAgentBaseEnvironmentAfterMiss,
       { env: ({ env }) => env, cwd }
@@ -115,13 +116,14 @@ export async function resolveHostStructuredAgentCreateSupport(input: {
   worktreeSelector: string
   location: AgentSessionExecutionLocation
   runtime: LaunchSupportRuntime
+  commandSettings?: StructuredAgentCommandSettings
 }): Promise<StructuredAgentSessionCreateSupport> {
   const { agent, location } = input
   const supportsLocation =
     structuredAgentRuntimeMetadata(agent)?.supportsLocation(location) ?? false
   const supportsLaunch =
     supportsLocation &&
-    (await structuredAgentSupportsLaunch(agent, input.worktreeSelector, input.runtime))
+    (await structuredAgentSupportsLaunch(agent, input.worktreeSelector, input.runtime, input.commandSettings))
   const support = resolveStructuredAgentSessionCreateSupport({
     location,
     adapterSupportsCreate: supportsLaunch

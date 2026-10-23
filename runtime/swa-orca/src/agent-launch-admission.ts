@@ -14,7 +14,7 @@ import { readAgentSettings } from './agent-settings'
 import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, sameNativeLaunchPolicy } from './native-pi-policy'
 import { createNativeWorkerDirectory, materializePrivatePiSessionAccount, privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
 import { assertDeliveryGrantCurrent, createDeliveryAdmission } from './delivery-admission'
-import type { StructuredAgentInputAdmission, StructuredWorkerStartAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
+import type { StructuredAgentInputAdmission, StructuredWorkerLaunchAdmission, StructuredWorkerStartAdmission } from '../../../third_party/orca-v1.4.230/src/main/runtime/structured-agent-launch-composition'
 import { installWorkerInputApproval } from './worker-input'
 import { assertNativeOpenCodeCurrent, inspectNativeOpenCodePolicy } from './native-opencode-policy'
 import { materializePrivateOpenCodeAccount, privateOpenCodeEnvironment, readPrivateOpenCodeBinding } from './private-opencode-account'
@@ -40,21 +40,32 @@ export function requireStructuredWorkerMode(mode: StructuredWorkerStartAdmission
 export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: { ownerCapability: Buffer; ownerAlive(): boolean }) {
   const admitCurrentApproval = createDeliveryAdmission(owner.ownerCapability, owner.ownerAlive)
   const releaseInputApproval = installWorkerInputApproval(admitCurrentApproval)
+  function inspectWorkerLaunch(input: StructuredWorkerLaunchAdmission) {
+    const mutation = input.mutation
+    if (!owner.ownerAlive() || !mutation || mutation.method !== 'orchestration.workerStart' || !mutation.requestId.endsWith('/native')) throw new OrchestrationError('scope_denied', 'The original owned Worker start identity is unavailable', { effectsApplied: false })
+    const requestId = z.uuid().parse(mutation.requestId.slice(0, -'/native'.length))
+    const db = runtime.getOrchestrationDb(), fingerprint = db.getOrCreateLocalMutationCallerFingerprint()
+    const row = db.getMutationReceipt(fingerprint, requestId)
+    if (mutation.callerFingerprint !== fingerprint || row?.method !== 'swa.controllerDeliver' || row.state !== 'pending' || !row.receipt || db.getMutationReceipt(fingerprint, mutation.requestId)) throw new OrchestrationError('request_mismatch', 'The original fresh Worker start reservation changed', { effectsApplied: false })
+    const receipt = nativeObject(JSON.parse(row.receipt)), invocation = invocationSchema.parse(receipt.invocation), selection = agentSelectionSchema.parse(receipt.selection)
+    const command = invocation.command, { scope, owner: controller } = controllerScope(runtime, invocation.project.id, input.controller)
+    const expected = { from: input.controller, run: scope.run_id, parent: command.parent_task_id ?? scope.root_task_id, worktree: 'current', taskTitle: command.name, agent: selection.agent_id, model: selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) }
+    if (command.action !== 'worker.start' || command.request_id !== requestId || command.controller !== input.controller || command.agent !== selection.agent_id || command.model !== selection.model || receipt.action !== command.action || receipt.child_request !== mutation.requestId || receipt.project_id !== invocation.project.id || receipt.controller !== input.controller || receipt.run_id !== scope.run_id || receipt.root_task_id !== scope.root_task_id || !isDeepStrictEqual(invocation.scope, scope) || !isDeepStrictEqual(invocation.selection, selection) || input.agent !== selection.agent_id || input.runId !== scope.run_id || input.worktreeId !== controller.worktree_id || mutation.payloadHash !== hashCanonical({ method: mutation.method, params: replayStableCallerParams(runtime, expected, undefined, mutation.method) })) throw new OrchestrationError('request_mismatch', 'The actual Worker source or request differs from its approved selection', { effectsApplied: false })
+    assertDeliveryGrantCurrent(invocation)
+    return { invocation, selection, receipt: row.receipt, scope, controller }
+  }
+  async function workerCommandSettings(input: StructuredWorkerLaunchAdmission) {
+    const original = inspectWorkerLaunch(input)
+    await admitCurrentApproval(original.invocation)
+    if (!isDeepStrictEqual(inspectWorkerLaunch(input), original)) throw new OrchestrationError('request_mismatch', 'The Worker reservation changed before its installed CLI probe', { effectsApplied: false })
+    return { agentCmdOverrides: { [original.selection.agent_id]: `"${original.selection.executable}"` } }
+  }
   async function beforeWorkerStart(input: StructuredWorkerStartAdmission) {
     const inspect = () => {
       requireStructuredWorkerMode(input.mode)
-      const mutation = input.mutation
-      if (!owner.ownerAlive() || !mutation || mutation.method !== 'orchestration.workerStart' || !mutation.requestId.endsWith('/native')) throw new OrchestrationError('scope_denied', 'The original owned Worker start identity is unavailable', { effectsApplied: false })
-      const requestId = z.uuid().parse(mutation.requestId.slice(0, -'/native'.length))
-      const db = runtime.getOrchestrationDb(), fingerprint = db.getOrCreateLocalMutationCallerFingerprint()
-      const row = db.getMutationReceipt(fingerprint, requestId)
-      if (mutation.callerFingerprint !== fingerprint || row?.method !== 'swa.controllerDeliver' || row.state !== 'pending' || !row.receipt || db.getMutationReceipt(fingerprint, mutation.requestId)) throw new OrchestrationError('request_mismatch', 'The original fresh Worker start reservation changed', { effectsApplied: false })
-      const receipt = nativeObject(JSON.parse(row.receipt)), invocation = invocationSchema.parse(receipt.invocation), selection = agentSelectionSchema.parse(receipt.selection)
-      const command = invocation.command, { scope, owner: controller } = controllerScope(runtime, invocation.project.id, input.controller)
-      const expected = { from: input.controller, run: scope.run_id, parent: command.parent_task_id ?? scope.root_task_id, worktree: 'current', taskTitle: command.name, agent: selection.agent_id, model: selection.model, timeoutMs: 90_000, spec: workerTaskSpec(invocation) }
-      if (command.action !== 'worker.start' || command.request_id !== requestId || command.controller !== input.controller || command.agent !== selection.agent_id || command.model !== selection.model || receipt.action !== command.action || receipt.child_request !== mutation.requestId || receipt.project_id !== invocation.project.id || receipt.controller !== input.controller || receipt.run_id !== scope.run_id || receipt.root_task_id !== scope.root_task_id || !isDeepStrictEqual(invocation.scope, scope) || !isDeepStrictEqual(invocation.selection, selection) || selection.execution_mode !== input.mode || input.agent !== selection.agent_id || input.runId !== scope.run_id || input.worktreeId !== controller.worktree_id || mutation.payloadHash !== hashCanonical({ method: mutation.method, params: replayStableCallerParams(runtime, expected, undefined, mutation.method) })) throw new OrchestrationError('request_mismatch', 'The actual Worker mode, source or request differs from its approved selection', { effectsApplied: false })
-      assertDeliveryGrantCurrent(invocation)
-      return { invocation, receipt: row.receipt, scope, controller }
+      const current = inspectWorkerLaunch(input)
+      if (current.selection.execution_mode !== input.mode) throw new OrchestrationError('request_mismatch', 'The actual Worker mode differs from its approved selection', { effectsApplied: false })
+      return current
     }
     const original = inspect()
     await admitCurrentApproval(original.invocation)
@@ -274,6 +285,11 @@ export function installAgentLaunchAdmission(runtime: OrcaRuntimeService, owner: 
   }
   const releaseLaunchAdmission = installStructuredAgentLaunchAdmission({
     beforeWorkerStart,
+    workerCommandSettings,
+    createCommandSettings: async (sessionId, agent) => {
+      const { original } = await originalSelection(sessionId, agent, false)
+      return { agentCmdOverrides: { [agent]: `"${original.executable}"` } }
+    },
     commandSettings: async (sessionId, agent) => {
       const { original } = await originalSelection(sessionId, agent)
       return { agentCmdOverrides: { [agent]: `"${original.executable}"` } }

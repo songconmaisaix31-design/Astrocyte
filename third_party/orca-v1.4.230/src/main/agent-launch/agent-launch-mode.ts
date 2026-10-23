@@ -34,6 +34,7 @@ import {
 import type { TuiAgent } from '../../shared/tui-agent'
 import type { WorkspaceLaunchKind } from '../../shared/workspace-launch-kind'
 import type { OrcaRuntimeService } from '../runtime/orca-runtime'
+import type { StructuredAgentCommandSettings } from '../native-chat/structured-agent-command-resolution'
 
 // The receipt is part of the launch contract, so it is declared with the rest of it; re-exported
 // here because this module is where the decision that fills it lives.
@@ -193,14 +194,15 @@ export async function resolveAgentLaunchModeOnHost(
   receipt: AgentLaunchModeReceipt,
   worktreeId: string | undefined,
   agent: TuiAgent | undefined,
-  vocabulary: AgentLaunchModeVocabulary = DEFAULT_LAUNCH_VOCABULARY
+  vocabulary: AgentLaunchModeVocabulary = DEFAULT_LAUNCH_VOCABULARY,
+  commandSettings?: StructuredAgentCommandSettings
 ): Promise<AgentLaunchModeReceipt> {
   if (receipt.mode !== 'structured' || !worktreeId) {
     return receipt
   }
   return downgradeAgentLaunchModeForHost(
     receipt,
-    await readStructuredCreateSupport(runtime, worktreeId, agent),
+    await readStructuredCreateSupport(runtime, worktreeId, agent, commandSettings),
     vocabulary
   )
 }
@@ -209,13 +211,14 @@ export async function resolveAgentLaunchModeOnHost(
 async function readStructuredCreateSupport(
   runtime: Pick<OrcaRuntimeService, 'getStructuredAgentSessionCreateSupport'>,
   worktreeId: string,
-  agent: TuiAgent | undefined
+  agent: TuiAgent | undefined,
+  commandSettings?: StructuredAgentCommandSettings
 ): Promise<{ supported: boolean; reason?: 'agent' | 'remote' | 'wsl' } | null> {
   if (!agent || !REGISTERED_STRUCTURED_AGENTS.includes(agent)) {
     return { supported: false, reason: 'agent' }
   }
   try {
-    return await runtime.getStructuredAgentSessionCreateSupport(`id:${worktreeId}`, agent)
+    return await runtime.getStructuredAgentSessionCreateSupport(`id:${worktreeId}`, agent, commandSettings)
   } catch {
     return null
   }
