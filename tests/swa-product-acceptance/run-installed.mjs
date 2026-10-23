@@ -288,10 +288,11 @@ async function publicCommand(command) {
     assert.equal(await readFile(await ordinary(command[flag], false), 'utf8'), approvedFiles.get(command[flag]))
   }
   const commands = report.collaboration_commands ??= []
-  const entry = { ordinal: commands.length + 1, command, state: 'intent-only' }
+  const entry = { ordinal: commands.length + 1, command, state: 'intent-only', prepared_at: new Date().toISOString() }
   commands.push(entry)
   await save(`collaboration-${entry.ordinal}.command.json`, entry)
   entry.state = 'pending'
+  entry.started_at = new Date().toISOString()
   const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 150_000)
   try {
     const response = await fetch(`${values.endpoint}/api/v1/local-projects/${encodeURIComponent(values['project-id'])}/orca/commands`, {
@@ -318,7 +319,7 @@ async function publicCommand(command) {
     entry.state = 'unknown-or-refused'
     if (command.request_id) report.unknown_requests.push({ request_id: command.request_id, args: ['public-command', command.action], original_command: entry.ordinal })
     throw error
-  } finally { clearTimeout(timer) }
+  } finally { entry.ended_at = new Date().toISOString(); clearTimeout(timer) }
 }
 
 async function prepareCollaboration() {
@@ -612,14 +613,20 @@ function verifyExecution(value, source, complete = false) {
   }
   return execution
 }
-async function originalStartBinding(worker, workerSource) {
+async function originalStartBinding(worker, observed) {
+  const originalSource = object(observed.source)
   let request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
+  const inputWasPending = request.current_input?.state !== 'accepted'
   if (piLinux) for (const deadline = Date.now() + 30_000; request.current_input?.state !== 'accepted' && Date.now() < deadline;) {
     assert.ok(!['unknown', 'failed'].includes(request.current_input?.state), 'pi_original_input_unresolved')
     await delay(100)
     request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
   }
   assert.equal(request.state, 'completed', 'original_start_not_completed')
+  // 输入在查询之间才被接受时，重新取得完整来源；不修改较早的 delivery 状态。
+  if ((piLinux && inputWasPending) || (runFlow && object(observed.execution).delivery.state !== 'sent')) observed = await queryWorker(worker.dispatch_id)
+  const workerSource = object(observed.source)
+  assert.deepEqual(identity(workerSource), identity(originalSource), 'original_input_source_changed_during_acceptance')
   const binding = object(object(request.receipt).swa_input_binding)
   const input = object(request.current_input)
   assert.equal(input.state, 'accepted', 'original_start_input_not_accepted')
@@ -635,7 +642,7 @@ async function originalStartBinding(worker, workerSource) {
   assert.equal(binding.runtime_fence, workerSource.fence)
   assert.equal(input.operation_id, binding.operation_id)
   if (runFlow) {
-    const execution = object((await queryWorker(worker.dispatch_id)).execution)
+    const execution = object(observed.execution)
     assert.equal(execution.delivery.state, 'sent')
     assert.equal(execution.delivery.request_id, worker.request_id)
     assert.equal(execution.delivery.operation_id, binding.operation_id)
@@ -660,7 +667,7 @@ async function originalStartBinding(worker, workerSource) {
     for (const source of [selection.native_launch.account.auth_source, selection.native_launch.account.models_source]) assert.equal((await piSourceMetadata(source.path, false)).version, source.version, 'pi_original_source_version_changed')
     assert.ok(selection.configuration_version.includes(`;${piMetadata.get(join(piSourceHome, 'settings.json')).version};${piMetadata.get(join(piSourceHome, 'auth.json')).version};`), 'pi_actual_configuration_version_changed')
   }
-  return binding
+  return { binding, observed }
 }
 async function sessionRecord(workerSource) {
   const path = await ordinary(workerSource.journal_database, false)
@@ -792,12 +799,16 @@ async function verifyAutomaticRelease(worker, owner) {
   worker.automatic_release = { request_id: request, receipt, resource }
   stopped.add(worker.dispatch_id)
 }
-async function events(workerSource) {
+async function events(workerSource, observed) {
   assert.equal(workerSource.availability, 'observed')
   assert.equal(workerSource.provider, values.agent)
   const worker = report.started_workers.find(item => item.source?.native_session_id === workerSource.native_session_id)
   assert.ok(worker, 'source_has_no_original_dispatch')
-  const latest = object((await queryWorker(worker.dispatch_id)).source)
+  observed ??= await queryWorker(worker.dispatch_id)
+  let owner = sessionOwners.get(workerSource.native_session_id)
+  let binding = owner?.binding
+  if (!owner) ({ binding, observed } = await originalStartBinding(worker, observed))
+  const latest = object(observed.source)
   assert.deepEqual(identity(latest), identity(workerSource), 'source_changed_its_original_binding')
   if (linuxStructured) {
     const observed = object(latest.provider_events_observation)
@@ -809,8 +820,6 @@ async function events(workerSource) {
     assert.ok(observed.byte_length + observed.incomplete_tail_bytes <= 12 * 1024 * 1024)
   }
   workerSource = latest
-  let owner = sessionOwners.get(workerSource.native_session_id)
-  const binding = owner?.binding ?? await originalStartBinding(worker, workerSource)
   const beforeRecord = await sessionRecord(workerSource)
   if (!owner) {
     assert.equal(beforeRecord.lease.claimStatus, 'live', 'first_owner_observation_must_be_live')
@@ -939,6 +948,12 @@ async function events(workerSource) {
   sources.set(workerSource.native_session_id, { source: workerSource, rows, ...(observation ? { observation } : {}) })
   return rows
 }
+async function workerEventLists() {
+  const observed = await Promise.allSettled(report.started_workers.map(worker => events(worker.source)))
+  const failed = observed.find(item => item.status === 'rejected')
+  if (failed) throw failed.reason
+  return observed.map(item => item.value)
+}
 const isDelta = row => row.protocol === 'pi-jsonl-rpc' ? isPiDelta(row) : row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
   ? row.event === 'session/update' && row.detail?.kind === 'known' && ['agent_message_chunk', 'agent_thought_chunk'].includes(row.detail.notification?.update?.sessionUpdate) && row.detail.notification.update.content?.type === 'text' && !!row.detail.notification.update.content.text
   : row.record?.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && !!row.record.assistantMessageEvent.delta
@@ -1050,6 +1065,7 @@ async function stopWorker(worker, active = false) {
   assert.ok(!stopRequests.has(worker.dispatch_id) && !releaseRequests.has(worker.dispatch_id), 'preserve_original_stop_or_release_request')
   const args = ['worker', 'stop', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
   const priorEvents = linuxStructured ? await events(worker.source) : null
+  if (linuxStructured && active) assert.equal(ends(priorEvents).length, 0, 'turn_ended_before_active_stop')
   if (!piLinux) stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
   let checkpoint
   if (linuxStructured) {
@@ -1783,7 +1799,12 @@ async function run() {
     Object.assign(report, { controller, run_id: runId, root_task_id: rootTask })
     await settledReplay(createArgs, created)
   } else await prepareCollaboration()
-  const startArgs = [], startFiles = [], startCommands = []
+  const startArgs = [], startFiles = [], startCommands = [], workerSlots = [], firstObservations = []
+  const registerWorker = (slot, worker) => {
+    assert.equal(workerSlots[slot], undefined, 'worker_slot_already_registered')
+    workerSlots[slot] = worker
+    report.started_workers = workerSlots.filter(Boolean)
+  }
   const beforeStarts = linuxStructured ? null : await stat(values['service-log'], { bigint: true })
   const sourceCheckpoint = beforeStarts ? { identity: `${beforeStarts.dev}:${beforeStarts.ino}:${beforeStarts.birthtimeNs}`, size: beforeStarts.size.toString() } : null
   for (const [index, input] of inputs.entries()) {
@@ -1801,7 +1822,7 @@ async function run() {
   report.model_execution = 'REQUESTED_THROUGH_PRODUCT'
   if (runFlow) {
     assert.equal(spec.initial_workers, workers)
-    report.started_workers.push(await submitRun(startFiles[0]))
+    registerWorker(0, await submitRun(startFiles[0]))
     for (let index = 1; index < workers; index++) {
       const role = actualRoles[[0, 1, 2, 3, 0, 3][index]]
       startCommands.push({ action: 'worker.start', controller, task_id: rootTask, parent_task_id: index === 3 ? report.started_workers[0].task_id : rootTask,
@@ -1810,28 +1831,93 @@ async function run() {
         name: inputs[index].name, agent: values.agent, model: values.model, input_file: startFiles[index], request_id: randomUUID() })
     }
   }
-  const allStarts = await Promise.allSettled(runFlow
+  const pendingStarts = runFlow
     ? [leadCompletion.then(outcome => { if (outcome.error) throw outcome.error; return outcome.worker }), ...startCommands.map(command => publicCommand(command))]
-    : startArgs.map(args => cli(args)))
-  if (runFlow && allStarts[0].status === 'fulfilled') report.started_workers[0].start_receipt = allStarts[0].value
+    : startArgs.map(args => cli(args))
+  const allStarts = await Promise.allSettled(pendingStarts.map((pending, slot) => pending.then(reply => {
+    if (!runFlow) return reply
+    if (slot === 0) workerSlots[0].start_receipt = reply
+    else {
+      assert.equal(reply.run_id, runId)
+      assert.ok(reply.dispatch_id && reply.task_id && reply.task_id !== rootTask)
+      registerWorker(slot, { dispatch_id: reply.dispatch_id, task_id: reply.task_id, request_id: startCommands[slot - 1].request_id, name: inputs[slot].name,
+        start: reply, start_command: startCommands[slot - 1], source_checkpoint: sourceCheckpoint, actual_input_file: startFiles[slot] })
+    }
+    // 先登记真实启动，再立即捕获独立观察；启动或观察失败均须收齐其他已发操作。
+    firstObservations[slot] = Promise.allSettled([(async () => {
+      const worker = workerSlots[slot], observed = await queryWorker(worker.dispatch_id)
+      worker.source = object(observed.source)
+      return events(worker.source, observed)
+    })()]).then(([result]) => result)
+    return reply
+  })))
+  const firstSettled = await Promise.all(firstObservations)
   const startsSettled = runFlow ? allStarts.slice(1) : allStarts
-  for (let index = 0; index < startsSettled.length; index++) {
+  if (!runFlow) for (let index = 0; index < startsSettled.length; index++) {
     const item = startsSettled[index]
     if (item.status === 'fulfilled') {
       const reply = item.value
       assert.equal(reply.run_id, runId)
       assert.ok(reply.dispatch_id && reply.task_id && reply.task_id !== rootTask)
-      const slot = runFlow ? index + 1 : index
-      report.started_workers.push({ dispatch_id: reply.dispatch_id, task_id: reply.task_id, request_id: runFlow ? startCommands[index].request_id : requestId(startArgs[index]), name: inputs[slot].name,
-        start: reply, ...(runFlow ? { start_command: startCommands[index] } : {}), source_checkpoint: sourceCheckpoint, actual_input_file: startFiles[slot] })
+      registerWorker(index, { dispatch_id: reply.dispatch_id, task_id: reply.task_id, request_id: requestId(startArgs[index]), name: inputs[index].name,
+        start: reply, source_checkpoint: sourceCheckpoint, actual_input_file: startFiles[index] })
     }
   }
-  assert.ok(allStarts.every(item => item.status === 'fulfilled'), 'some_worker_starts_refused_or_unknown_preserve_all_requests')
+  const failedStart = allStarts.find(item => item.status === 'rejected')
+  if (failedStart) throw failedStart.reason
+  const failedObservation = firstSettled.find(item => item?.status === 'rejected')
+  if (failedObservation) throw failedObservation.reason
   assert.equal(new Set(report.started_workers.map(worker => worker.dispatch_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.task_id)).size, workers)
-  for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
+  if (!runFlow) for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
+  const firstLists = runFlow ? firstSettled.map(item => item.value) : null
+  if (piLinux) {
+    if (!runFlow) await workerEventLists()
+    assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_id)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_file)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.nativeCLI.pid)).size, workers)
+    assert.equal(new Set([...piViews.values()].map(view => view.ready.acquisition_generation)).size, workers)
+  }
+  let quotaError
+  const quota = runFlow ? verifyQuota().catch(error => { quotaError = error; throw error }) : Promise.resolve()
+  const overlapObservation = (async () => {
+    let lists = firstLists
+    for (const deadline = Date.now() + 180_000; Date.now() < deadline;) {
+      if (quotaError) throw quotaError
+      lists ??= await workerEventLists()
+      assert.ok(lists.every(rows => (runFlow ? starts(rows).length <= 1 : starts(rows).length === 1) && ends(rows).length === 0), 'turn_ended_before_all_worker_overlap')
+      if (piLinux) for (const worker of report.started_workers) {
+        const cycle = piViews.get(worker.source.native_session_id).active
+        assert.ok((runFlow && !cycle) || (cycle && !cycle.end && !cycle.settled), 'pi_run_ended_before_all_worker_overlap')
+      }
+      const deltas = lists.map(rows => rows.filter(isDelta))
+      if (lists.every(rows => starts(rows).length === 1) && deltas.every(rows => rows.length >= 2)) {
+        if (piLinux) for (const worker of report.started_workers) assert.ok(piViews.get(worker.source.native_session_id).active, 'pi_overlap_has_no_active_cycle')
+        const from = Math.max(...deltas.map(rows => rows[0].monotonic_ms)), to = Math.min(...deltas.map(rows => rows.at(-1).monotonic_ms))
+        if (from < to) return { from_monotonic_ms: from, to_monotonic_ms: to, evidence: deltas.map(rows => ({ first: rows[0], last: rows.at(-1) })) }
+      }
+      await delay(250)
+      lists = null
+    }
+    assert.fail('no_common_actual_native_delta_interval')
+  })()
+  const quotaAndOverlap = await Promise.allSettled([quota, overlapObservation])
+  const failedGate = quotaAndOverlap.find(item => item.status === 'rejected')
+  if (failedGate) throw failedGate.reason
+  report.overlap = quotaAndOverlap[1].value
+  const target = report.started_workers[runFlow ? 1 : 0], survivors = report.started_workers.filter(worker => worker !== target)
+  if (!linuxStructured) assert.equal(ends(await events(target.source)).length, 0)
+  const stoppedAt = Date.now()
+  await stopWorker(target, true)
+  for (const worker of survivors) {
+    assert.deepEqual(identity((await queryWorker(worker.dispatch_id)).source), identity(worker.source))
+    const rows = await events(worker.source)
+    if (!piLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
+  }
+  let follow, followup, input, continuation
   if (runFlow) {
     const notificationText = approvedFiles.get(inputs[3].input_file)
     const current = await publicCommand({ action: 'handoff.notify', controller, task_id: rootTask, dispatch_id: report.started_workers[3].dispatch_id,
@@ -1842,44 +1928,6 @@ async function run() {
     assert.equal(native(current).new_worker, false)
     assert.equal(native(current).message.body, notificationText)
     report.notification = current
-  }
-  if (piLinux) {
-    await Promise.all(report.started_workers.map(worker => events(worker.source)))
-    assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
-    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_id)).size, workers)
-    assert.equal(new Set([...piViews.values()].map(view => view.ready.session_file)).size, workers)
-    assert.equal(new Set([...piViews.values()].map(view => view.nativeCLI.pid)).size, workers)
-    assert.equal(new Set([...piViews.values()].map(view => view.ready.acquisition_generation)).size, workers)
-  }
-  let overlap
-  for (const deadline = Date.now() + 180_000; Date.now() < deadline;) {
-    const lists = await Promise.all(report.started_workers.map(worker => events(worker.source)))
-    assert.ok(lists.every(rows => starts(rows).length === 1 && ends(rows).length === 0), 'turn_ended_before_all_worker_overlap')
-    if (piLinux) for (const worker of report.started_workers) {
-      const cycle = piViews.get(worker.source.native_session_id).active
-      assert.ok(cycle && !cycle.end && !cycle.settled, 'pi_run_ended_before_all_worker_overlap')
-    }
-    const deltas = lists.map(rows => rows.filter(isDelta))
-    if (deltas.every(rows => rows.length >= 2)) {
-      const from = Math.max(...deltas.map(rows => rows[0].monotonic_ms)), to = Math.min(...deltas.map(rows => rows.at(-1).monotonic_ms))
-      if (from < to) { overlap = { from_monotonic_ms: from, to_monotonic_ms: to, evidence: deltas.map(rows => ({ first: rows[0], last: rows.at(-1) })) }; break }
-    }
-    await delay(250)
-  }
-  assert.ok(overlap, 'no_common_actual_native_delta_interval')
-  report.overlap = overlap
-  if (runFlow) await verifyQuota()
-  const target = report.started_workers[runFlow ? 1 : 0], survivors = report.started_workers.filter(worker => worker !== target)
-  assert.equal(ends(await events(target.source)).length, 0)
-  const stoppedAt = Date.now()
-  await stopWorker(target, true)
-  for (const worker of survivors) {
-    assert.deepEqual(identity((await queryWorker(worker.dispatch_id)).source), identity(worker.source))
-    const rows = await events(worker.source)
-    if (!piLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
-  }
-  let follow, followup, input, continuation
-  if (runFlow) {
     continuation = await continueLead(prepared)
     follow = continuation.follow; followup = continuation.followup; input = continuation.input
     await finishRun(target, continuation)
