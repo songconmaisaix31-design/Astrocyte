@@ -285,7 +285,21 @@ if ($source -ceq 'c7ab4a7479182f29f990cd649accac193514d169') {
     Write-Output 'The original artifact has no owner/protection observation; the failed compound assertion remains unresolved.'
     return
 }
-if ($source -cne '82e1b09503486c14a9dececb5e3673827894c120' -or $result.failed_stage -cne 'build') { throw 'This is not the expected original failed build artifact' }
+if ($source -ceq '50d099ddf9787a283573a477fb5f29017aef6c89') {
+    if ($result.source_revision -cne $source -or $result.failed_stage -cne 'build' -or $result.platform -cne 'win32-x64' -or $result.edition -cne 'combined' -or ($result.model_calls -isnot [int] -and $result.model_calls -isnot [long]) -or $result.model_calls -ne 0) { throw 'The retained N46 artifact does not match the original combined build failure' }
+    $exits = [ordered]@{}
+    foreach ($stage in @('frozen-install', 'go-download', 'go-verify')) {
+        $code = (Get-Content -LiteralPath (Join-Path $EvidenceRoot ('logs/' + $stage + '.exit.txt')) -Raw).Trim()
+        if ($code -cne '0') { throw 'An original preceding build operation did not succeed' }
+        $exits[$stage] = [int]$code
+    }
+    $buildExit = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'logs/build.exit.txt') -Raw).Trim()
+    if ($buildExit -cne '1') { throw 'The retained original build exit differs' }
+    $observation = [ordered]@{ diagnostic_only = $true; prior_run = '39900064207'; source_revision = $source; original_status = 'FAIL'; failed_stage = 'build'; platform = $result.platform; edition = $result.edition; recorded_preceding_exits = $exits; recorded_build_exit = [int]$buildExit; complete_candidate_acceptance = 'FAIL'; model_calls = $result.model_calls }
+    $facts = ($observation | ConvertTo-Json -Depth 6 -Compress).Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+    Write-Host ('::warning title=Retained Windows N46 build failure facts::' + $facts)
+} elseif ($source -cne '82e1b09503486c14a9dececb5e3673827894c120' -or $result.failed_stage -cne 'build') { throw 'This is not the expected original failed build artifact' }
+$priorBuildRun = if ($source -ceq '50d099ddf9787a283573a477fb5f29017aef6c89') { '39900064207' } else { '39769388709' }
 $buildLog = Join-Path $EvidenceRoot 'logs/build.log'
 if (-not (Test-Path -LiteralPath $buildLog -PathType Leaf)) { throw 'The original build log is missing' }
 $selected = @(Get-Content -LiteralPath $buildLog | Where-Object { $_ -match '(?i)(\berror\b|\bfatal\b|ERR_[A-Z_]+|\bMSB[0-9]+\b|\bLNK[0-9]+\b|\.go:[0-9]+:|scripts[\\/]build-swa-(?:package|native)\.mjs:[0-9]+:[0-9]+)' } | Select-Object -Last 100)
@@ -302,7 +316,7 @@ foreach ($line in $selected) {
     if ($sanitized.Length -gt 500) { $sanitized = $sanitized.Substring(0, 500) + ' [line truncated]' }
     $safe.Add($sanitized)
 }
-$message = 'Prior run39769388709; source=' + $source + '; phase=build; filtered original errors:' + "`n" + ($safe -join "`n")
+$message = 'Prior run' + $priorBuildRun + '; source=' + $source + '; phase=build; filtered original errors:' + "`n" + ($safe -join "`n")
 if (-not $safe.Count) { $message += '[no whitelisted error line found; root cause remains unknown]' }
 if ($message.Length -gt 8000) { $message = $message.Substring(0, 8000) + ' [original artifact retained]' }
 $escaped = $message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
