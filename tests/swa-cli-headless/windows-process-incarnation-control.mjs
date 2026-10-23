@@ -84,6 +84,194 @@ async function fixtureRoot() {
   }
 }
 
+async function continuityChild() {
+  const lifetime = delay(30_000)
+  await send({ type: 'continuity-child-ready', pid: process.pid, lifetime_ms: 30_000 })
+  await lifetime
+  if (process.connected) process.disconnect()
+}
+
+async function continuityParent() {
+  const spawnRequest = once(process, 'message')
+  await send({ type: 'continuity-parent-ready', pid: process.pid })
+  const [request] = await bounded(spawnRequest, 10_000, 'Continuity child start was not requested')
+  assert.deepEqual(request, { type: 'spawn-continuity-child' })
+  const child = fork(helper, ['--fixture-role', 'continuity-child'], { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc'] })
+  try {
+    const [ready] = await bounded(once(child, 'message'), 10_000, 'Continuity child readiness was not observed')
+    assert.deepEqual(ready, { type: 'continuity-child-ready', pid: child.pid, lifetime_ms: 30_000 })
+    const finishRequest = once(process, 'message')
+    await send(ready)
+    const [finish] = await bounded(finishRequest, 10_000, 'Continuity parent exit was not requested')
+    assert.deepEqual(finish, { type: 'finish-continuity-parent' })
+  } finally {
+    // 子进程只由启动时的 timer 自然结束；父进程释放引用后自行退出。
+    if (child.connected) {
+      const disconnected = once(child, 'disconnect')
+      child.disconnect()
+      await bounded(disconnected, 3000, 'Continuity child IPC did not disconnect')
+    }
+    child.unref()
+    if (process.connected) process.disconnect()
+  }
+}
+
+async function observeContinuity(processes, output, known, unknown, record) {
+  let parent, parentExit, parentClosed = false, childIdentity, childDeadline, completed = false
+  record.status = 'RUNNING'
+  record.stage = 'parent-ready'
+  record.snapshots = []
+  record.forced_cleanup = false
+  const unique = (rows, pid) => {
+    const matches = rows.filter(row => row.pid === pid)
+    assert.equal(matches.length, 1)
+    assert.ok(validPID(pid) && validCreation(matches[0].creationTimeMs))
+    return matches[0]
+  }
+  const query = async () => {
+    const start = { observed_at_ms: Date.now(), monotonic_ms: performance.now() }
+    const rows = await processes()
+    const end = { observed_at_ms: Date.now(), monotonic_ms: performance.now() }
+    return { schema_version: 1, query_window: { start, end }, rows }
+  }
+  const nativeComplete = rows => {
+    assert.ok(rows.length > 0)
+    for (const row of rows) {
+      assert.equal(row.creationTimeDiagnosticVersion, 2)
+      assert.equal(row.creationTimeProvider, 'NtQuerySystemInformation')
+      assert.equal(row.creationTimeSnapshotComplete, true)
+      assert.equal(row.creationTimeNtStatus, 0)
+      assert.equal(Object.hasOwn(row, 'commandLine'), false)
+    }
+  }
+  const snapshot = async label => {
+    const actual = await query()
+    const bytes = Buffer.from(JSON.stringify({ ...actual, label }, null, 2) + '\n')
+    const fileName = 'continuity-snapshot-' + label + '.json'
+    await writeFile(join(output, fileName), bytes, { flag: 'wx' })
+    record.snapshots.push({ label, file_name: fileName, sha256: digest(bytes), byte_count: bytes.length,
+      actual_row_count: actual.rows.length, query_window: actual.query_window, native_query: {
+        provider: actual.rows[0]?.creationTimeProvider ?? 'UNKNOWN', version: actual.rows[0]?.creationTimeDiagnosticVersion ?? 'UNKNOWN',
+        ntstatus: actual.rows[0]?.creationTimeNtStatus ?? 'UNKNOWN', snapshot_complete: actual.rows[0]?.creationTimeSnapshotComplete ?? 'UNKNOWN'
+      } })
+    nativeComplete(actual.rows)
+    return actual.rows
+  }
+  const freezeOwned = closure => Object.freeze(closure.ownedRows.map(({ pid, creationTimeMs }) => Object.freeze({ pid, creationTimeMs })))
+  const owns = (closure, row) => closure.ownedRows.includes(row)
+  try {
+    parent = fork(helper, ['--fixture-role', 'continuity-parent'], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] })
+    parentExit = settle(parent)
+    parent.once('close', () => { parentClosed = true; record.parent_close_observed = { observed_at_ms: Date.now(), monotonic_ms: performance.now() } })
+    const stdout = countStream(parent.stdout), stderr = countStream(parent.stderr)
+    const [ready] = await bounded(once(parent, 'message'), 10_000, 'Continuity parent readiness was not observed')
+    assert.deepEqual(ready, { type: 'continuity-parent-ready', pid: parent.pid })
+    record.stage = 'snapshot-a'
+    const rowsA = await snapshot('a'), controller = unique(rowsA, process.pid), parentRow = unique(rowsA, parent.pid)
+    assert.equal(parentRow.ppid, controller.pid)
+    assert.equal(incarnationOrder(controller.creationTimeMs, parentRow.creationTimeMs), 'ordered')
+    const anchor = { pid: controller.pid, creationTimeMs: controller.creationTimeMs }
+    record.controller = identity(controller); record.parent = identity(parentRow)
+    const strictA = collectOwnedIncarnations(rowsA, anchor)
+    assert.equal(strictA.rootVerified, true); assert.equal(strictA.unknownRows.length, 0); assert.ok(owns(strictA, parentRow))
+    const priorA = freezeOwned(strictA)
+    record.prior_a = priorA
+    const childReady = once(parent, 'message')
+    record.child_requested = true
+    await new Promise((resolveSend, reject) => parent.send({ type: 'spawn-continuity-child' }, error => error ? reject(error) : resolveSend()))
+    const [child] = await bounded(childReady, 10_000, 'Continuity child was not reported')
+    assert.equal(child.type, 'continuity-child-ready'); assert.equal(child.lifetime_ms, 30_000); assert.ok(validPID(child.pid))
+    childDeadline = performance.now() + child.lifetime_ms
+    record.stage = 'snapshot-b'
+    const rowsB = await snapshot('b'), currentController = unique(rowsB, controller.pid), currentParent = unique(rowsB, parent.pid)
+    const childRow = unique(rowsB, child.pid)
+    assert.equal(currentController.creationTimeMs, controller.creationTimeMs)
+    assert.equal(currentParent.creationTimeMs, parentRow.creationTimeMs)
+    assert.equal(currentParent.ppid, controller.pid); assert.equal(childRow.ppid, parent.pid)
+    assert.equal(incarnationOrder(parentRow.creationTimeMs, childRow.creationTimeMs), 'ordered')
+    childIdentity = { pid: childRow.pid, creationTimeMs: childRow.creationTimeMs }
+    record.child = identity(childRow)
+    const strictB = collectOwnedIncarnations(rowsB, anchor)
+    assert.equal(strictB.rootVerified, true); assert.equal(strictB.unknownRows.length, 0); assert.ok(owns(strictB, childRow))
+    const priorB = freezeOwned(strictB)
+    record.prior_b = priorB
+    assert.ok(!priorA.some(row => row.pid === childIdentity.pid && row.creationTimeMs === childIdentity.creationTimeMs))
+    record.stage = 'parent-exit'
+    await new Promise((resolveSend, reject) => parent.send({ type: 'finish-continuity-parent' }, error => error ? reject(error) : resolveSend()))
+    record.parent_exit = await bounded(parentExit, 10_000, 'Continuity parent did not naturally exit')
+    record.parent_stdout_eof = stdout.eof; record.parent_stderr_eof = stderr.eof
+    assert.deepEqual(record.parent_exit, { exit: 0, signal: null, spawn_failed: false })
+    assert.ok(stdout.eof && stderr.eof && !stdout.failed && !stderr.failed && !stdout.exceeded && !stderr.exceeded)
+    record.stage = 'snapshot-c'
+    const rowsC = await snapshot('c'), survivor = unique(rowsC, child.pid)
+    assert.equal(rowsC.filter(row => row.pid === parent.pid).length, 0)
+    assert.equal(unique(rowsC, controller.pid).creationTimeMs, controller.creationTimeMs)
+    assert.equal(survivor.creationTimeMs, childRow.creationTimeMs); assert.equal(survivor.ppid, parent.pid)
+    record.stage = 'prior-comparison'
+    const original = collectOwnedIncarnations(rowsC, anchor)
+    const withoutChild = collectOwnedIncarnations(rowsC, anchor, priorA), withChild = collectOwnedIncarnations(rowsC, anchor, priorB)
+    record.comparison = { original_owned_child: owns(original, survivor), prior_a_owned_child: owns(withoutChild, survivor),
+      prior_b_owned_child: owns(withChild, survivor), original_root_verified: original.rootVerified,
+      prior_a_root_verified: withoutChild.rootVerified, prior_b_root_verified: withChild.rootVerified,
+      original_unknown_count: original.unknownRows.length, prior_a_unknown_count: withoutChild.unknownRows.length,
+      prior_b_unknown_count: withChild.unknownRows.length, expected_unknown: withoutChild.unknownRows.map(entry => ({
+        reason: entry.reason, actual: identity(entry.actual), source_anchor: entry.source_anchor })) }
+    assert.equal(original.rootVerified, true); assert.equal(withoutChild.rootVerified, true); assert.equal(withChild.rootVerified, true)
+    assert.equal(owns(original, survivor), false); assert.equal(owns(withoutChild, survivor), false); assert.ok(owns(withChild, survivor))
+    assert.equal(original.unknownRows.length, 0); assert.equal(withChild.unknownRows.length, 0)
+    assert.ok(withoutChild.unknownRows.length > 0)
+    for (const entry of withoutChild.unknownRows) {
+      assert.equal(entry.actual, survivor); assert.equal(entry.reason, 'parent_incarnation_unverified')
+      assert.deepEqual(entry.source_anchor, { kind: 'additional', pid: parentRow.pid, creation_time_ms: parentRow.creationTimeMs })
+    }
+    unknown.push(...withoutChild.unknownRows.map(entry => entry.actual))
+    for (const row of [parentRow, childRow]) known.set(row.pid + ':' + row.creationTimeMs, row)
+    assert.ok(!known.has(controller.pid + ':' + controller.creationTimeMs))
+    record.stage = 'child-timer-exit'
+    await delay(Math.max(0, childDeadline - performance.now()))
+    record.native_exit_observations = []
+    record.child_exit_code = 'NOT_OBSERVABLE_FROM_NONPARENT'
+    for (let index = 0; index < 2; index++) {
+      const actual = await query(), rows = actual.rows
+      nativeComplete(rows)
+      const remaining = [parentRow, childRow].filter(old => rows.some(row => row.pid === old.pid && (!validCreation(row.creationTimeMs) || row.creationTimeMs === old.creationTimeMs)))
+      const closure = collectOwnedIncarnations(rows, anchor, priorB)
+      record.native_exit_observations.push({ query_window: actual.query_window, actual_row_count: rows.length,
+        remaining_count: remaining.length, remaining: remaining.map(identity), root_verified: closure.rootVerified, unknown_count: closure.unknownRows.length })
+      assert.equal(unique(rows, controller.pid).creationTimeMs, controller.creationTimeMs)
+      assert.equal(remaining.length, 0); assert.equal(closure.rootVerified, true); assert.equal(closure.unknownRows.length, 0)
+      if (index === 0) await delay(250)
+    }
+    record.status = 'PASS'; record.stage = 'complete'; completed = true
+  } catch (error) {
+    record.status = 'FAIL'
+    record.error_kind = /^[A-Za-z][A-Za-z0-9_.]{0,63}$/.test(error?.code ?? error?.name ?? '') ? error.code ?? error.name : 'UNKNOWN'
+    throw error
+  } finally {
+    if (parent && !parentClosed) {
+      record.cleanup_attempted = true
+      if (parent.connected) parent.disconnect()
+      try { await bounded(parentExit, 5000, 'Continuity parent cleanup remains unknown') } catch {
+        record.forced_cleanup = true
+        parent.kill()
+        try { await bounded(parentExit, 2000, 'Continuity parent cleanup did not settle') } catch { record.cleanup_unknown = true }
+      }
+    }
+    if (!completed && record.child_requested && !childDeadline) record.cleanup_unknown = true
+    if (!completed && childDeadline) {
+      // 失败也只等原 timer；无原始出生身份时不按 PID 猜测或发送信号。
+      await delay(Math.max(0, childDeadline - performance.now()))
+      if (!childIdentity) record.cleanup_unknown = true
+      else try {
+        const rows = await processes()
+        nativeComplete(rows)
+        record.failure_child_remaining = rows.some(row => row.pid === childIdentity.pid && (!validCreation(row.creationTimeMs) || row.creationTimeMs === childIdentity.creationTimeMs))
+        if (record.failure_child_remaining) record.cleanup_unknown = true
+      } catch { record.cleanup_unknown = true }
+    }
+  }
+}
+
 async function control() {
   assert.equal(process.platform, 'win32')
   assert.equal(process.arch, 'x64')
@@ -174,6 +362,11 @@ async function control() {
       assert.equal(closure.unknownRows.length, 0)
       if (index === 0) await delay(250)
     }
+    phase = 'prior-owned-continuity'
+    const continuity = { name: phase }
+    result.cases.push(continuity)
+    await observeContinuity(processes, output, known, unknown, continuity)
+    phase = 'normal-eof'
     const request = join(output, 'cim-request.json'), cimOutput = join(output, 'cim-exit-observations.json')
     await writeFile(request, JSON.stringify({ schema_version: 1, known: [...known.values()], unknown }, null, 2) + '\n', { flag: 'wx' })
     assert.ok(process.env.ProgramFiles && isAbsolute(process.env.ProgramFiles))
@@ -238,6 +431,10 @@ if (values['fixture-role'] === 'child') {
   try { await fixtureChild() } catch { process.stderr.write('Fixture child failed\n'); process.exitCode = 6 }
 } else if (values['fixture-role'] === 'root') {
   try { await fixtureRoot() } catch { process.stderr.write('Fixture root failed\n'); process.exitCode = 6 }
+} else if (values['fixture-role'] === 'continuity-child') {
+  try { await continuityChild() } catch { process.stderr.write('Continuity child failed\n'); process.exitCode = 6 }
+} else if (values['fixture-role'] === 'continuity-parent') {
+  try { await continuityParent() } catch { if (process.connected) process.disconnect(); process.stderr.write('Continuity parent failed\n'); process.exitCode = 6 }
 } else {
   assert.equal(values['fixture-role'], undefined)
   await control()

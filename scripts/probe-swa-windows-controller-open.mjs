@@ -462,8 +462,9 @@ try {
   if (!nativeAbiOnly) result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
-  for (const name of nativeAbiOnly ? ['process-incarnation-closure.mjs'] : ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs', 'process-incarnation-closure.mjs']) {
+  for (const name of nativeAbiOnly ? ['process-incarnation-closure.mjs', 'windows-process-incarnation-control.mjs'] : ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs', 'process-incarnation-closure.mjs', 'windows-process-incarnation-control.mjs']) {
     const destination = join(source, 'tests/swa-cli-headless', name), observation = join(checkout, 'tests/swa-cli-headless', name)
+    assert.ok((await readFile(observation)).equals(await fixed('tests/swa-cli-headless/' + name, goRevision)))
     const originalSha = (await digest(destination)).sha256, actualSha = (await digest(observation)).sha256
     await copyFile(observation, destination)
     assert.equal((await digest(destination)).sha256, actualSha)
@@ -479,35 +480,80 @@ try {
   const snapshotData = join(work, 'native-process-control-data'), snapshotOutput = join(privateOutput, 'native-process-control')
   await mkdir(snapshotData)
   const controlScript = join(source, 'tests/swa-cli-headless/windows-process-incarnation-control.mjs')
-  assert.ok((await readFile(controlScript)).equals(await fixed('tests/swa-cli-headless/windows-process-incarnation-control.mjs')))
+  assert.ok((await readFile(controlScript)).equals(await fixed('tests/swa-cli-headless/windows-process-incarnation-control.mjs', goRevision)))
   if (nativeAbiOnly) result.root_child_control = 'UNKNOWN'
   result.native_snapshot.root_child_control = 'UNKNOWN'
-  const snapshotCommand = await command(actualNode, [controlScript, '--source-root', source, '--runtime-root', developmentRuntime,
-    '--data-root', snapshotData, '--output-dir', snapshotOutput, '--source-revision', goRevision], source, 90_000, {}, true)
+  let snapshotCommand
+  try {
+    snapshotCommand = await command(actualNode, [controlScript, '--source-root', source, '--runtime-root', developmentRuntime,
+      '--data-root', snapshotData, '--output-dir', snapshotOutput, '--source-revision', goRevision], source, 90_000, {}, true)
+  } finally {
+    // 完整实际帧先保全；fixture失败或未写完结果时也不丢掉已经取得的帧。
+    result.continuity_frames = []
+    let retentionFailure
+    for (const label of ['a', 'b', 'c']) {
+      const fileName = 'continuity-snapshot-' + label + '.json', path = join(snapshotOutput, fileName)
+      try {
+        let before
+        try { before = await lstat(path) } catch (error) {
+          if (error.code !== 'ENOENT') throw error
+          result.continuity_frames.push({ label, file_name: fileName, status: 'NOT_CAPTURED' })
+          continue
+        }
+        assert.ok(before.isFile() && !before.isSymbolicLink() && before.nlink === 1 && before.size <= 8 * 1024 * 1024)
+        assert.equal((await realpath(path)).toLowerCase(), resolve(path).toLowerCase())
+        const bytes = await readFile(path), after = await lstat(path)
+        for (const key of ['dev', 'ino', 'size', 'mtimeMs', 'ctimeMs', 'nlink']) assert.equal(after[key], before[key])
+        assert.equal(bytes.length, before.size)
+        const frame = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+        assert.equal(frame.schema_version, 1); assert.equal(frame.label, label); assert.ok(Array.isArray(frame.rows))
+        for (const row of frame.rows) if (row && typeof row === 'object') assert.equal(Object.hasOwn(row, 'commandLine'), false)
+        const sha256 = hash(bytes), destination = join(evidence, fileName)
+        await writeFile(destination, bytes, { flag: 'wx' })
+        assert.equal((await digest(destination)).sha256, sha256)
+        result.continuity_frames.push({ label, file_name: fileName, status: 'SAVED', sha256, byte_count: bytes.length, actual_row_count: frame.rows.length })
+      } catch (error) {
+        result.continuity_frames.push({ label, file_name: fileName, status: 'FAILED', error_kind: kind(error) })
+        retentionFailure ??= error
+      }
+    }
+    if (retentionFailure) throw retentionFailure
+  }
   const snapshotReportPath = join(snapshotOutput, 'result.json'), snapshotReportInfo = await lstat(snapshotReportPath)
   assert.ok(snapshotReportInfo.isFile() && !snapshotReportInfo.isSymbolicLink() && snapshotReportInfo.nlink === 1 && snapshotReportInfo.size <= 1024 * 1024)
   assert.equal((await realpath(snapshotReportPath)).toLowerCase(), resolve(snapshotReportPath).toLowerCase())
   const snapshotReportBytes = await readFile(snapshotReportPath)
   const snapshotReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(snapshotReportBytes))
   assert.equal(snapshotReport.schema_version, 1); assert.equal(snapshotReport.source_revision, goRevision)
+  const continuityReport = snapshotReport.cases?.find(row => row.name === 'prior-owned-continuity')
+  for (const frame of result.continuity_frames.filter(row => row.status === 'SAVED')) {
+    const declaration = continuityReport?.snapshots?.find(row => row.label === frame.label)
+    assert.ok(declaration)
+    for (const key of ['file_name', 'sha256', 'byte_count', 'actual_row_count']) assert.equal(frame[key], declaration[key])
+  }
   {
   const number = value => Number.isSafeInteger(value) && value >= 0 ? value : 'UNKNOWN'
+  const finite = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 'UNKNOWN'
   const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+  const sha256 = value => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value) ? value : 'UNKNOWN'
   const identity = row => ({ pid: number(row?.pid), ppid: number(row?.ppid), creationTimeMs: number(row?.creationTimeMs) })
+  const instant = row => ({ observed_at_ms: number(row?.observed_at_ms), monotonic_ms: finite(row?.monotonic_ms) })
+  const queryWindow = row => ({ start: instant(row?.start), end: instant(row?.end) })
   const actualExit = row => row === undefined ? 'UNKNOWN' : { exit: row?.exit === null ? null : number(row?.exit),
     signal: row?.signal === null ? null : /^SIG[A-Z0-9]{1,16}$/.test(row?.signal ?? '') ? row.signal : 'UNKNOWN', spawn_failed: boolean(row?.spawn_failed) }
   const observations = (rows, convert) => Array.isArray(rows) ? { count: rows.length, truncated: rows.length > 2, rows: rows.slice(0, 2).map(convert) } : 'UNKNOWN'
   const identities = rows => Array.isArray(rows) ? { count: rows.length, truncated: rows.length > 8, rows: rows.slice(0, 8).map(identity) } : 'UNKNOWN'
   result.root_child_fixture = { exit: snapshotCommand.exit,
     status: ['CONTROL_COMPLETE', 'FAIL', 'NOT_RUN'].includes(snapshotReport.status) ? snapshotReport.status : 'UNKNOWN',
-    failed_phase: snapshotReport.failed_phase === undefined ? null : ['native-preflight', 'live-root-child', 'normal-eof'].includes(snapshotReport.failed_phase) ? snapshotReport.failed_phase : 'UNKNOWN',
+    failed_phase: snapshotReport.failed_phase === undefined ? null : ['native-preflight', 'live-root-child', 'normal-eof', 'prior-owned-continuity'].includes(snapshotReport.failed_phase) ? snapshotReport.failed_phase : 'UNKNOWN',
+    helper_sha256: sha256(snapshotReport.helper_sha256),
     probe_exit: number(snapshotReport.probe_exit), control_complete: boolean(snapshotReport.control_complete),
     cleanup_attempted: Object.hasOwn(snapshotReport, 'cleanup_attempted') ? boolean(snapshotReport.cleanup_attempted) : 'NOT_RECORDED',
     cleanup_unknown: Object.hasOwn(snapshotReport, 'cleanup_unknown') ? boolean(snapshotReport.cleanup_unknown) : 'NOT_RECORDED',
     kernel_tree_exit_proven: boolean(snapshotReport.kernel_tree_exit_proven), case_count: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.length : 'UNKNOWN',
-    cases_truncated: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.length > 2 : 'UNKNOWN',
-    cases: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.slice(0, 2).map(row => ({
-      name: ['live-root-child', 'normal-eof'].includes(row?.name) ? row.name : 'UNKNOWN',
+    cases_truncated: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.length > 3 : 'UNKNOWN',
+    cases: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.slice(0, 3).map(row => ({
+      name: ['live-root-child', 'normal-eof', 'prior-owned-continuity'].includes(row?.name) ? row.name : 'UNKNOWN',
       ...(row?.name === 'live-root-child' ? { observations: observations(row.observations, sample => ({ observed_at_ms: number(sample?.observed_at_ms), actual_row_count: number(sample?.actual_row_count),
         root_verified: boolean(sample?.root_verified), owned_count: number(sample?.owned_count), owned: identities(sample?.owned),
         excluded_edge_count: number(sample?.excluded_edge_count), unknown_count: number(sample?.unknown_count) })) } : {}),
@@ -521,21 +567,54 @@ try {
           complete_result_count: number(sample?.complete_result_count), invalid_pid_record_count: number(sample?.invalid_pid_record_count),
           required_identity_fields_complete: boolean(sample?.required_identity_fields_complete), known_identities_exited: boolean(sample?.known_identities_exited),
           unknown_pids_absent: boolean(sample?.unknown_pids_absent), monotonic_ms: typeof sample?.monotonic_ms === 'number' && Number.isFinite(sample.monotonic_ms) && sample.monotonic_ms >= 0 ? sample.monotonic_ms : 'UNKNOWN',
-          actual_match_count: number(sample?.actual_match_count) })) } : {}) })) : 'UNKNOWN' }
+          actual_match_count: number(sample?.actual_match_count) })) } : {}),
+      ...(row?.name === 'prior-owned-continuity' ? {
+        status: ['RUNNING', 'PASS', 'FAIL'].includes(row.status) ? row.status : 'UNKNOWN',
+        stage: ['parent-ready', 'snapshot-a', 'snapshot-b', 'parent-exit', 'snapshot-c', 'prior-comparison', 'child-timer-exit', 'complete'].includes(row.stage) ? row.stage : 'UNKNOWN',
+        error_kind: row.error_kind === undefined ? null : typeof row.error_kind === 'string' && /^[A-Za-z][A-Za-z0-9_.]{0,63}$/.test(row.error_kind) ? row.error_kind : 'UNKNOWN',
+        controller: identity(row.controller), parent: identity(row.parent), child: identity(row.child),
+        prior_a: identities(row.prior_a), prior_b: identities(row.prior_b),
+        parent_exit: actualExit(row.parent_exit), parent_close_observed: instant(row.parent_close_observed),
+        parent_stdout_eof: boolean(row.parent_stdout_eof), parent_stderr_eof: boolean(row.parent_stderr_eof),
+        child_exit_code: row.child_exit_code === 'NOT_OBSERVABLE_FROM_NONPARENT' ? row.child_exit_code : 'UNKNOWN',
+        forced_cleanup: boolean(row.forced_cleanup), cleanup_unknown: row.cleanup_unknown === undefined ? 'NOT_RECORDED' : boolean(row.cleanup_unknown),
+        snapshots: Array.isArray(row.snapshots) ? { count: row.snapshots.length, truncated: row.snapshots.length > 3,
+          rows: row.snapshots.slice(0, 3).map(sample => ({ label: ['a', 'b', 'c'].includes(sample?.label) ? sample.label : 'UNKNOWN',
+            sha256: sha256(sample?.sha256), byte_count: number(sample?.byte_count), actual_row_count: number(sample?.actual_row_count), query_window: queryWindow(sample?.query_window),
+            native_query: { provider: sample?.native_query?.provider === 'NtQuerySystemInformation' ? sample.native_query.provider : 'UNKNOWN',
+              version: number(sample?.native_query?.version), ntstatus: number(sample?.native_query?.ntstatus), snapshot_complete: boolean(sample?.native_query?.snapshot_complete) } })) } : 'UNKNOWN',
+        comparison: { original_owned_child: boolean(row.comparison?.original_owned_child), prior_a_owned_child: boolean(row.comparison?.prior_a_owned_child),
+          prior_b_owned_child: boolean(row.comparison?.prior_b_owned_child), original_root_verified: boolean(row.comparison?.original_root_verified),
+          prior_a_root_verified: boolean(row.comparison?.prior_a_root_verified), prior_b_root_verified: boolean(row.comparison?.prior_b_root_verified),
+          original_unknown_count: number(row.comparison?.original_unknown_count), prior_a_unknown_count: number(row.comparison?.prior_a_unknown_count), prior_b_unknown_count: number(row.comparison?.prior_b_unknown_count),
+          expected_unknown: Array.isArray(row.comparison?.expected_unknown) ? { count: row.comparison.expected_unknown.length, truncated: row.comparison.expected_unknown.length > 8,
+            rows: row.comparison.expected_unknown.slice(0, 8).map(entry => ({ reason: entry?.reason === 'parent_incarnation_unverified' ? entry.reason : 'UNKNOWN',
+              actual: identity(entry?.actual), source_anchor: { kind: entry?.source_anchor?.kind === 'additional' ? 'additional' : 'UNKNOWN',
+                pid: number(entry?.source_anchor?.pid), creation_time_ms: number(entry?.source_anchor?.creation_time_ms) } })) } : 'UNKNOWN' },
+        native_exit_observations: observations(row.native_exit_observations, sample => ({ query_window: queryWindow(sample?.query_window), actual_row_count: number(sample?.actual_row_count),
+          remaining_count: number(sample?.remaining_count), remaining: identities(sample?.remaining), root_verified: boolean(sample?.root_verified), unknown_count: number(sample?.unknown_count) }))
+      } : {}) })) : 'UNKNOWN' }
   if (nativeAbiOnly) result.root_child_control = result.root_child_fixture.status
   result.native_snapshot.root_child_control = result.root_child_fixture.status
   }
   assert.equal(snapshotCommand.exit, 0)
   assert.equal(snapshotReport.status, 'CONTROL_COMPLETE'); assert.equal(snapshotReport.control_complete, true); assert.equal(snapshotReport.probe_exit, 0)
   assert.equal(snapshotReport.native_component.addon_sha256, result.diagnostic_process_tree.binary_sha256)
+  assert.equal(snapshotReport.helper_sha256, (await digest(controlScript)).sha256)
   assert.equal(snapshotReport.closure_sha256, (await digest(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))).sha256)
   assert.equal(snapshotReport.model_calls, 0); assert.equal(snapshotReport.service_started, false); assert.equal(snapshotReport.account_session_started, false)
-  assert.deepEqual(snapshotReport.cases.map(row => row.name), ['live-root-child', 'normal-eof'])
+  assert.deepEqual(snapshotReport.cases.map(row => row.name), ['live-root-child', 'normal-eof', 'prior-owned-continuity'])
+  assert.equal(continuityReport.status, 'PASS'); assert.equal(continuityReport.forced_cleanup, false)
+  assert.deepEqual(result.continuity_frames.map(row => row.status), ['SAVED', 'SAVED', 'SAVED'])
   result.diagnostic_process_tree.root_child_control = { status: snapshotReport.status, report_sha256: hash(snapshotReportBytes),
     live_observation_count: snapshotReport.cases[0].observations.length,
     native_exit_remaining: snapshotReport.cases[1].native_exit_observations.map(row => row.remaining_count),
     cim_exit: snapshotReport.cases[1].cim_process_exit.exit, cim_all_exited: snapshotReport.cases[1].cim_report.all_exited }
   result.native_snapshot.root_child_control = snapshotReport.status
+  for (const observer of result.observer_sources) {
+    assert.equal((await digest(join(source, 'tests/swa-cli-headless', observer.name))).sha256, observer.observation_sha256)
+    assert.equal((await digest(join(checkout, 'tests/swa-cli-headless', observer.name))).sha256, observer.observation_sha256)
+  }
   await sourceInputGuards()
   if (nativeAbiOnly) {
     result.root_child_control = snapshotReport.status
@@ -814,6 +893,30 @@ try {
   assert.ok(Buffer.byteLength(text) <= 3500, 'Public diagnostic metadata exceeds its total bound')
   const escaped = text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')
   process.stdout.write('::warning title=Windows Controller open development control::' + escaped + '\n')
+  const continuity = rootChildCases.find(row => row.name === 'prior-owned-continuity')
+  if (continuity || result.continuity_frames) {
+    const continuityAnnotations = [
+      ['Windows process continuity', { observation_revision: result.observation_revision, fixture_status: rootChild?.status ?? 'UNKNOWN',
+        status: continuity?.status ?? 'NOT_RUN', stage: continuity?.stage ?? 'NOT_RUN', error_kind: continuity?.error_kind ?? null,
+        controller: continuity?.controller ?? 'UNKNOWN', parent: continuity?.parent ?? 'UNKNOWN', child: continuity?.child ?? 'UNKNOWN',
+        parent_exit: continuity?.parent_exit ?? 'UNKNOWN', parent_close_observed: continuity?.parent_close_observed ?? 'UNKNOWN',
+        parent_stdout_eof: continuity?.parent_stdout_eof ?? 'UNKNOWN', parent_stderr_eof: continuity?.parent_stderr_eof ?? 'UNKNOWN',
+        child_exit_code: continuity?.child_exit_code ?? 'UNKNOWN', forced_cleanup: continuity?.forced_cleanup ?? 'UNKNOWN',
+        cleanup_unknown: continuity?.cleanup_unknown ?? 'UNKNOWN', native_exit_observations: continuity?.native_exit_observations ?? 'UNKNOWN',
+        kernel_tree_exit_proven: rootChild?.kernel_tree_exit_proven ?? 'UNKNOWN' }],
+      ['Windows continuity prior identities', { prior_a: continuity?.prior_a ?? 'NOT_CAPTURED', prior_b: continuity?.prior_b ?? 'NOT_CAPTURED',
+        comparison: continuity?.comparison ?? 'NOT_RUN', history_does_not_prove_d17_prior_ownership: true }],
+      ['Windows continuity callback frames', { observation_revision: result.observation_revision,
+        helper_sha256: rootChild?.helper_sha256 ?? 'UNKNOWN', closure_sha256: result.observer_sources?.find(row => row.name === 'process-incarnation-closure.mjs')?.observation_sha256 ?? 'UNKNOWN',
+        native_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT', native_snapshot: result.native_snapshot ?? 'NOT_RUN',
+        files: result.continuity_frames ?? 'NOT_CAPTURED', snapshots: continuity?.snapshots ?? 'NOT_CAPTURED' }]
+    ]
+    for (const [title, value] of continuityAnnotations) {
+      const actual = JSON.stringify(value)
+      assert.ok(Buffer.byteLength(actual) <= 3500, 'Continuity annotation exceeds its bound; full result retained')
+      process.stdout.write('::warning title=' + title + '::' + actual.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
+    }
+  }
   if (result.unknown_process_observation_projection) {
     const diagnosticProjection = structuredClone(result.unknown_process_observation_projection)
     while (Buffer.byteLength(JSON.stringify(diagnosticProjection)) > 3500 && diagnosticProjection.short_transport?.trace?.length > 2) {
