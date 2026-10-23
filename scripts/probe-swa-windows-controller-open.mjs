@@ -381,7 +381,7 @@ try {
     assert.ok((await lstat(transportPath)).size <= 2 * 1024 * 1024)
     const transport = JSON.parse(await readFile(transportPath, 'utf8'))
     assert.equal(transport.schema, 'swa.controller-input-check.v1')
-    result.control.short_error = transport.error ? { kind: kind(transport.error), message: publicText(transport.error.message) } : null
+    result.control.short_error = transport.error ? { kind: kind(transport.error), message: publicText(typeof transport.error.message === 'string' ? transport.error.message.split(/[\r\n]/u, 1)[0] : undefined) } : null
     const integer = value => Number.isSafeInteger(value) ? value : 'UNKNOWN'
     const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
     const tag = value => value === null ? null : typeof value === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value) ? value : 'UNKNOWN'

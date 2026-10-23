@@ -2,11 +2,203 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$EvidenceRoot,
-    [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$ExpectedRevision
+    [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{40}$')][string]$ExpectedRevision,
+    [ValidateSet('Short', 'Closure')][string]$ControllerOpenSection
 )
 
 $ErrorActionPreference = 'Stop'
 if (-not [IO.Path]::IsPathFullyQualified($EvidenceRoot)) { throw 'An absolute downloaded evidence directory is required' }
+if ($ExpectedRevision -ceq '1b8828d6add9eaab6ed59f445c2ee2c11c4f6511') {
+    if ($ControllerOpenSection -cnotin @('Short', 'Closure')) { throw 'The fixed D10 section is required' }
+    $file = Get-Item -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Force
+    if ($file -isnot [IO.FileInfo] -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 -or $file.Length -gt 1048576) { throw 'The saved D10 result must be a bounded ordinary file' }
+    $saved = Get-Content -LiteralPath $file.FullName -Raw | ConvertFrom-Json
+    $expected = @{
+        schema = 'swa.windows-controller-open-development.v1'; status = 'FAIL'; phase = 'short-identify-then-controller-open'
+        scope = 'development_composition_not_candidate'; observation_revision = $ExpectedRevision; go_source_revision = $ExpectedRevision
+        source_revision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'; runtime_source_revision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'
+        input_revision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'; native_input_revision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'; task_create = 'NOT_RUN'
+    }
+    foreach ($name in $expected.Keys) { if ($saved.$name -cne $expected[$name]) { throw ('The fixed D10 source or result differs: ' + $name) } }
+    if (($saved.model_calls -isnot [int] -and $saved.model_calls -isnot [long]) -or ($saved.worker_calls -isnot [int] -and $saved.worker_calls -isnot [long]) -or $saved.model_calls -cne 0 -or $saved.worker_calls -cne 0) { throw 'The fixed D10 no-model scope differs' }
+    function Get-D10Value($Object, [string]$Field, [string]$Type, [bool]$Nullable = $false, [string[]]$Allowed = @()) {
+        if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
+        $value = $Object.$Field
+        if ($null -eq $value) { if ($Nullable) { return $null }; return 'UNKNOWN' }
+        if ($Type -ceq 'Boolean') { if ($value -is [bool]) { return $value }; return 'UNKNOWN' }
+        if ($Type -ceq 'Tag') { if ($value -is [string] -and $value -cmatch '^[A-Za-z][A-Za-z0-9_.-]{0,63}$') { return $value }; return 'UNKNOWN' }
+        if ($Type -ceq 'Enum') { if ($value -is [string] -and $Allowed -ccontains $value) { return $value }; return 'UNKNOWN' }
+        if ($value -isnot [int] -and $value -isnot [long] -and $value -isnot [double] -and $value -isnot [decimal]) { return 'UNKNOWN' }
+        if (-not [double]::IsFinite([double]$value) -or [math]::Abs([double]$value) -gt 9007199254740991) { return 'UNKNOWN' }
+        if ($Type -ceq 'Number') { return $value }
+        if ([math]::Floor([double]$value) -ne $value) { return 'UNKNOWN' }
+        if ($Type -ceq 'Integer') { return $value }
+        if ($value -lt 0 -or ($Type -ceq 'PID' -and $value -gt [uint32]::MaxValue)) { return 'UNKNOWN' }
+        return $value
+    }
+    function Get-D10Event($Event) {
+        if ($null -eq $Event) { return $null }
+        if ($Event -isnot [pscustomobject]) { return 'UNKNOWN' }
+        $out = [ordered]@{}
+        $out.lane = Get-D10Value $Event lane Enum $false @('tty', 'pipe')
+        $out.stage = Get-D10Value $Event stage Enum $false @('create', 'spawn_identity', 'native_inputs', 'write', 'reply', 'identity', 'eof', 'absence', 'cleanup', 'exit')
+        $out.boundary = Get-D10Value $Event boundary Enum $false @('start', 'complete', 'observed')
+        foreach ($field in @('packet_index', 'packet_bytes')) { $out[$field] = Get-D10Value $Event $field Count $true }
+        $out.observed_at_ms = Get-D10Value $Event observed_at_ms Count
+        foreach ($field in @('monotonic_ms', 'elapsed_ms', 'deadline_remaining_ms')) { $out[$field] = Get-D10Value $Event $field Number }
+        return $out
+    }
+    function Get-D10Window($Window) {
+        if ($Window -isnot [pscustomobject]) { return 'UNKNOWN' }
+        $out = [ordered]@{}
+        foreach ($field in @('start_at_ms', 'end_at_ms')) { $out[$field] = Get-D10Value $Window $field Count }
+        foreach ($field in @('start_monotonic_ms', 'end_monotonic_ms')) { $out[$field] = Get-D10Value $Window $field Number }
+        foreach ($field in @('root_exit_observed_before_query', 'root_exit_observed_after_query', 'root_close_observed_before_query', 'root_close_observed_after_query')) { $out[$field] = Get-D10Value $Window $field Boolean }
+        return $out
+    }
+    function Get-D10OptionalEvent($Object, [string]$Field) {
+        if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
+        return (Get-D10Event $Object.$Field)
+    }
+    function Get-D10ProcessEvent($Object, [string]$Field) {
+        if ($null -eq $Object -or $Object.PSObject.Properties.Name -notcontains $Field) { return 'UNKNOWN' }
+        $event = $Object.$Field
+        if ($null -eq $event) { return $null }
+        return [ordered]@{ exit = Get-D10Value $event exit Integer $true; signal = Get-D10Value $event signal Tag $true
+            observed_at_ms = Get-D10Value $event observed_at_ms Count; monotonic_ms = Get-D10Value $event monotonic_ms Number }
+    }
+    function Write-D10Observation([string]$Title, $Observation) {
+        $text = $Observation | ConvertTo-Json -Depth 12 -Compress
+        if ([Text.Encoding]::UTF8.GetByteCount($text) -gt 3500) { throw 'The typed retained D10 observation exceeds its fixed bound' }
+        Write-Host ('::warning title=' + $Title + '::' + $text.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A'))
+    }
+    $identity = [ordered]@{ diagnostic_only = $true; original_run = '39952528075'; artifact_id = '12500479586'; original_revision = $ExpectedRevision
+        section = $ControllerOpenSection; original_status = 'FAIL'; complete_service_acceptance = 'FAIL'; model_calls = 0; worker_calls = 0 }
+    $short = $saved.short_transport_diagnostic
+    if ($ControllerOpenSection -ceq 'Short') {
+        $lanes = [ordered]@{}
+        foreach ($name in @('tty', 'pipe')) {
+            $lane = $short.lanes.$name
+            if ($null -eq $lane) { $lanes[$name] = if ($null -ne $short.lanes -and $short.lanes.PSObject.Properties.Name -contains $name) { $null } else { 'UNKNOWN' }; continue }
+            $row = [ordered]@{ status = Get-D10Value $lane status Enum $false @('PASS', 'FAIL'); natural_eof = Get-D10Value $lane natural_eof Boolean
+                forced_cleanup = Get-D10Value $lane forced_cleanup Boolean; reply_count = Get-D10Value $lane reply_count Count
+                raw_output_bytes = if ($lane.raw_output_bytes -ceq 'NOT_RECORDED') { 'NOT_RECORDED' } else { Get-D10Value $lane raw_output_bytes Count }; failure_phase = Get-D10OptionalEvent $lane failure_phase
+                exit = if ($null -ne $lane.exit) { [ordered]@{ code = Get-D10Value $lane.exit code Integer $true; signal = Get-D10Value $lane.exit signal Tag $true } } elseif ($lane.PSObject.Properties.Name -contains 'exit') { $null } else { 'UNKNOWN' }
+                framing = if ($lane.framing -ceq 'NOT_RECORDED') { 'NOT_RECORDED' } else { [ordered]@{ valid_reply_records = Get-D10Value $lane.framing valid_reply_records Count; schema_rejected_records = Get-D10Value $lane.framing schema_rejected_records Count } }
+                framer_rejections = 'NOT_RECORDED' }
+            if ($lane.framer_rejections -is [array]) {
+                if ($lane.framer_rejections.Count -gt 3) { throw 'The saved D10 framer count exceeds its source bound' }
+                $row.framer_rejections = @($lane.framer_rejections | ForEach-Object { [ordered]@{ kind = Get-D10Value $_ kind Enum $false @('invalid-json', 'line-too-long', 'UNKNOWN'); count = Get-D10Value $_ count Count } })
+            }
+            $lanes[$name] = $row
+        }
+        $raw = [ordered]@{ status = 'UNKNOWN' }
+        $summary = $saved.control.transport
+        if ($summary.coverage -ceq 'explicit_short_identify_only' -and $summary.long_input -ceq 'NOT_RUN' -and $summary.rpc_mutations -ceq 'NOT_RUN' -and $summary.model_execution -ceq 'NOT_RUN') {
+            $raw.status = Get-D10Value $short.raw status Enum $false @('OBSERVED', 'NOT_CAPTURED', 'UNKNOWN')
+            if ($raw.status -ceq 'OBSERVED') {
+                if ($short.raw.source -cne 'explicit_short_identify_only' -or $short.raw.head -isnot [string] -or $short.raw.tail -isnot [string]) { throw 'The saved D10 raw fragment source differs' }
+                $bytes = [Text.Encoding]::UTF8.GetByteCount($short.raw.head) + [Text.Encoding]::UTF8.GetByteCount($short.raw.tail)
+                if ($bytes -gt 512 -or $short.raw.fragment_limit_bytes -cne 512 -or $short.raw.fragment_bytes -cne $bytes) { throw 'The saved D10 raw fragments exceed their source bound' }
+                $raw.source = 'explicit_short_identify_only'
+                foreach ($field in @('original_bytes', 'projected_bytes', 'fragment_limit_bytes', 'fragment_bytes')) { $raw[$field] = Get-D10Value $short.raw $field Count }
+                $raw.head = $short.raw.head; $raw.tail = $short.raw.tail; $raw.truncated = Get-D10Value $short.raw truncated Boolean
+            }
+        }
+        Write-D10Observation 'Retained D10 short transport' ([ordered]@{ identity = $identity; status = Get-D10Value $short status Enum $false @('PASS', 'FAIL')
+            cleanup_unknown = Get-D10Value $short cleanup_unknown Boolean; lanes = $lanes; raw_status = $raw.status; last_event = Get-D10OptionalEvent $short last_event
+            trace_total = Get-D10Value $short trace_total Count; trace_truncated = Get-D10Value $short trace_truncated Boolean
+            ready_event_total = if ($short.ready_event_total -ceq 'NOT_RECORDED') { 'NOT_RECORDED' } else { Get-D10Value $short ready_event_total Count }
+            ready_events_status = if ($short.ready_events -is [array]) { 'OBSERVED' } elseif ($short.ready_events -ceq 'NOT_RECORDED') { 'NOT_RECORDED' } else { 'UNKNOWN' }
+            ready_events_truncated = Get-D10Value $short ready_events_truncated Boolean })
+        Write-D10Observation 'Retained D10 short raw fragment' ([ordered]@{ original_revision = $ExpectedRevision; raw = $raw })
+        if ($short.ready_events -is [array]) {
+            if ($short.ready_events.Count -gt 32) { throw 'The saved D10 ready events exceed their source bound' }
+            for ($offset = 0; $offset -lt $short.ready_events.Count; $offset += 8) {
+                $rows = @()
+                foreach ($event in $short.ready_events[$offset..([math]::Min($offset + 7, $short.ready_events.Count - 1))]) {
+                    $row = [ordered]@{ event = Get-D10Value $event event Enum $false @('startup-command-delivery', 'startup-command-stage-failed', 'shell-ready-timeout', 'shell-ready-wrapper-replaced')
+                        observed_at_ms = Get-D10Value $event observed_at_ms Count; monotonic_ms = Get-D10Value $event monotonic_ms Number }
+                    if ($row.event -ceq 'startup-command-delivery') {
+                        foreach ($field in @('written', 'has_command', 'via_shell_args', 'queued_by_shell_ready_barrier')) { $row[$field] = Get-D10Value $event $field Boolean }
+                        $row.command_length = Get-D10Value $event command_length Count
+                    } elseif ($row.event -ceq 'shell-ready-timeout') { $row.timeout_ms = Get-D10Value $event timeout_ms Count }
+                    elseif ($row.event -ceq 'startup-command-stage-failed') { $row.reason = Get-D10Value $event reason Tag }
+                    $rows += $row
+                }
+                Write-D10Observation 'Retained D10 ready events' ([ordered]@{ original_revision = $ExpectedRevision; offset = $offset; retained_count = $short.ready_events.Count
+                    total_count = Get-D10Value $short ready_event_total Count; source_truncated = Get-D10Value $short ready_events_truncated Boolean; events = $rows })
+            }
+        }
+        return
+    }
+    $unknown = $saved.unknown_process_observation_projection
+    $reasons = @('invalid_native_process_row', 'current_root_identity_unverified', 'root_in_descendant_branch', 'parent_incarnation_unverified', 'process_identity_not_unique', 'creation_time_unavailable', 'parent_incarnation_changed', 'UNKNOWN')
+    $reasonCounts = 'UNKNOWN'; $queryCounts = 'UNKNOWN'
+    if ($unknown.reason_counts -is [array]) {
+        if ($unknown.reason_counts.Count -gt 8) { throw 'The saved D10 reason count exceeds its source bound' }
+        $reasonCounts = @($unknown.reason_counts | ForEach-Object { [ordered]@{ reason = Get-D10Value $_ reason Enum $false $reasons; count = Get-D10Value $_ count Count } })
+    }
+    function Get-D10Query($Query) {
+        if ($Query -isnot [pscustomobject]) { return 'UNKNOWN' }
+        return [ordered]@{ version = Get-D10Value $Query version Count; api_stage = Get-D10Value $Query api_stage Enum $false @('not_requested', 'OpenProcess', 'GetProcessTimes', 'invalid_filetime', 'complete')
+            win32_error = Get-D10Value $Query win32_error Count; close_error = Get-D10Value $Query close_error Count }
+    }
+    if ($unknown.native_query_counts -is [array]) {
+        if ($unknown.native_query_counts.Count -gt 8) { throw 'The saved D10 query count exceeds its source bound' }
+        $queryCounts = @($unknown.native_query_counts | ForEach-Object { [ordered]@{ query = Get-D10Query $_.query; count = Get-D10Value $_ count Count } })
+    }
+    $remaining = 'UNKNOWN'
+    if ($saved.service.native_remaining -is [array]) {
+        if ($saved.service.native_remaining.Count -gt 2) { throw 'The saved D10 native exit observation count differs' }
+        $remaining = @($saved.service.native_remaining | ForEach-Object { Get-D10Value ([pscustomobject]@{ count = $_ }) count Count })
+    }
+    Write-D10Observation 'Retained D10 closure counts' ([ordered]@{ identity = $identity; original_fixture_exit = Get-D10Value $saved fixture_exit Integer
+        ownership_closure_incomplete = Get-D10Value $unknown ownership_closure_incomplete Boolean
+        serve_root = [ordered]@{ pid = Get-D10Value $unknown.serve_root pid PID; creation_time_ms = Get-D10Value $unknown.serve_root creation_time_ms Count }
+        root_process_events = [ordered]@{ exit = Get-D10ProcessEvent $unknown.root_process_events exit; close = Get-D10ProcessEvent $unknown.root_process_events close }
+        latch_inputs = [ordered]@{ root_creation_time_readable = Get-D10Value $unknown.latch_inputs root_creation_time_readable Boolean
+            controller_input_ownership_incomplete = Get-D10Value $unknown.latch_inputs controller_input_ownership_incomplete Boolean
+            producer_ownership_incomplete = Get-D10Value $unknown.latch_inputs producer_ownership_incomplete Boolean
+            readiness_check_error = if ($null -ne $unknown.latch_inputs.readiness_check_error) { [ordered]@{ name = Get-D10Value $unknown.latch_inputs.readiness_check_error name Tag $true; code = Get-D10Value $unknown.latch_inputs.readiness_check_error code Tag $true } } elseif ($null -ne $unknown.latch_inputs -and $unknown.latch_inputs.PSObject.Properties.Name -contains 'readiness_check_error') { $null } else { 'UNKNOWN' } }
+        unknown_item_count = Get-D10Value $unknown unknown_item_count Count; reason_counts = $reasonCounts
+        native_query_type_count = Get-D10Value $unknown native_query_type_count Count; native_query_counts_truncated = Get-D10Value $unknown native_query_counts_truncated Boolean
+        identity_group_count = Get-D10Value $unknown identity_group_count Count; samples_truncated = Get-D10Value $unknown samples_truncated Boolean
+        identity_history_is_not_a_single_snapshot_chain = Get-D10Value $unknown identity_history_is_not_a_single_snapshot_chain Boolean
+        saved_projection_utf8_bytes = if ($null -ne $unknown) { [Text.Encoding]::UTF8.GetByteCount(($unknown | ConvertTo-Json -Depth 16 -Compress)) } else { 'UNKNOWN' }; original_annotation_bound = 3500
+        service = [ordered]@{ exit = Get-D10Value $saved.service exit Integer $true; signal = Get-D10Value $saved.service signal Tag $true
+            unknown_process_observation_count = Get-D10Value $saved.service unknown_process_observation_count Count; native_remaining = $remaining
+            cim_exit = Get-D10Value $saved.service cim_exit Integer $true; cim_all_exited = Get-D10Value $saved.service cim_all_exited Boolean } })
+    Write-D10Observation 'Retained D10 native query counts' ([ordered]@{ original_revision = $ExpectedRevision
+        total_type_count = Get-D10Value $unknown native_query_type_count Count; source_truncated = Get-D10Value $unknown native_query_counts_truncated Boolean; counts = $queryCounts })
+    if ($unknown.samples -is [array]) {
+        if ($unknown.samples.Count -gt 8) { throw 'The saved D10 samples exceed their source bound' }
+        for ($index = 0; $index -lt $unknown.samples.Count; $index++) {
+            $sample = $unknown.samples[$index]
+            $row = [ordered]@{ original_revision = $ExpectedRevision; index = $index; retained_count = $unknown.samples.Count
+                total_group_count = Get-D10Value $unknown identity_group_count Count; source_truncated = Get-D10Value $unknown samples_truncated Boolean
+                reason = Get-D10Value $sample reason Enum $false $reasons; pid = Get-D10Value $sample pid PID; ppid = Get-D10Value $sample ppid PID
+                creation_time_ms = Get-D10Value $sample creation_time_ms Count; count = Get-D10Value $sample count Count
+                source_anchor = [ordered]@{ kind = Get-D10Value $sample.source_anchor kind Enum $false @('serve', 'additional'); pid = Get-D10Value $sample.source_anchor pid PID; creation_time_ms = Get-D10Value $sample.source_anchor creation_time_ms Count }
+                diagnostic_query = Get-D10Query $sample.diagnostic_query
+                actual_role_history = Get-D10Value $sample actual_role_history Enum $false @('tty_root', 'tty_helper', 'pipe_helper', 'short_checker', 'UNKNOWN')
+                source_anchor_role_history = Get-D10Value $sample source_anchor_role_history Enum $false @('tty_root', 'tty_helper', 'pipe_helper', 'short_checker', 'UNKNOWN')
+                first_query_window = Get-D10Window $sample.first_query_window; last_query_window = Get-D10Window $sample.last_query_window
+                matches_recorded_identity_history = Get-D10Value $sample matches_recorded_identity_history Boolean
+                recorded_parent_identity_count = Get-D10Value $sample recorded_parent_identity_count Count
+                recorded_parent_identities_truncated = Get-D10Value $sample recorded_parent_identities_truncated Boolean; recorded_parent_identities_history = 'UNKNOWN'
+                identity_history_is_not_a_single_snapshot_chain = $true }
+            foreach ($field in @('first_observed_at_ms', 'last_observed_at_ms', 'first_sample_sequence', 'last_sample_sequence')) { $row[$field] = Get-D10Value $sample $field Count }
+            if ($sample.recorded_parent_identities_history -is [array]) {
+                if ($sample.recorded_parent_identities_history.Count -gt 2) { throw 'The saved D10 parent history exceeds its source bound' }
+                $row.recorded_parent_identities_history = @($sample.recorded_parent_identities_history | ForEach-Object { [ordered]@{ pid = Get-D10Value $_ pid PID; creation_time_ms = Get-D10Value $_ creation_time_ms Count } })
+            }
+            Write-D10Observation 'Retained D10 closure identity group' $row
+        }
+    }
+    return
+}
+if ($PSBoundParameters.ContainsKey('ControllerOpenSection')) { throw 'The section parameter belongs only to the fixed D10 artifact' }
 $source = (Get-Content -LiteralPath (Join-Path $EvidenceRoot 'SOURCE') -Raw).Trim()
 if ($source -cne $ExpectedRevision) { throw 'The prior artifact source revision differs' }
 $result = Get-Content -LiteralPath (Join-Path $EvidenceRoot 'result.json') -Raw | ConvertFrom-Json
