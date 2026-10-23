@@ -12,6 +12,7 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/projectfiles"
 	"golang.org/x/sys/windows"
 )
 
@@ -118,8 +119,12 @@ func TestWindowsPrivateDataDirectory(t *testing.T) {
 	t.Run("fresh_nested_and_existing_private", func(t *testing.T) {
 		first, target := filepath.Join(base, "fresh"), filepath.Join(base, "fresh", "data")
 		actual, err := call(target)
-		if err != nil || !sameServicePath(actual, target) {
+		if err != nil {
 			t.Fatal("真实多级私有目录创建失败")
+		}
+		canonical, err := projectfiles.CanonicalRoot(target)
+		if err != nil || !sameServicePath(actual, canonical) {
+			t.Fatal("真实多级私有目录未返回目标的规范路径")
 		}
 		assertTestPrivateDirectory(t, first, user.User.Sid)
 		assertTestPrivateDirectory(t, target, user.User.Sid)
@@ -207,6 +212,9 @@ func TestWindowsPrivateDataDirectory(t *testing.T) {
 		if err != nil || attributes&windows.FILE_ATTRIBUTE_REPARSE_POINT == 0 {
 			t.Fatal("实际创建结果不是 reparse 目录")
 		}
+		if err := os.Mkdir(filepath.Join(target, "nested"), 0o700); err != nil {
+			t.Fatal("真实 junction 祖先控制目录创建失败")
+		}
 		before := observeTestDirectory(t, target)
 		for _, path := range []string{link, filepath.Join(link, "new-data")} {
 			if _, err := call(path); err == nil {
@@ -215,6 +223,14 @@ func TestWindowsPrivateDataDirectory(t *testing.T) {
 		}
 		if _, err := os.Stat(filepath.Join(target, "new-data")); !errors.Is(err, os.ErrNotExist) {
 			t.Fatal("reparse 拒绝后创建了实际目标")
+		}
+		for _, relative := range []string{"new-export", filepath.Join("nested", "new-export")} {
+			if _, err := prepareRunExport(filepath.Join(link, relative)); err == nil {
+				t.Fatal("真实 junction 父目录或祖先的导出路径被接受")
+			}
+			if _, err := os.Stat(filepath.Join(target, relative)); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("junction 拒绝后创建了实际导出目标")
+			}
 		}
 		if !reflect.DeepEqual(before, observeTestDirectory(t, target)) {
 			t.Fatal("reparse 拒绝修改了真实目标")

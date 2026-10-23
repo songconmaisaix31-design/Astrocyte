@@ -378,7 +378,11 @@ func prepareRunExport(path string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("导出父目录不可用: %w", err)
 	}
-	if parent != filepath.Dir(path) && (runtime.GOOS != "windows" || !strings.EqualFold(parent, filepath.Dir(path))) {
+	if runtime.GOOS == "windows" {
+		if err := requirePlainDataPath(filepath.Dir(path)); err != nil {
+			return "", errors.New("导出父路径不能经过符号链接或重解析点")
+		}
+	} else if parent != filepath.Dir(path) {
 		return "", errors.New("导出父路径不能经过符号链接或重解析点")
 	}
 	if _, err := os.Lstat(path); err == nil {

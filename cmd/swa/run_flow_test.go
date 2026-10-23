@@ -77,7 +77,12 @@ func TestRunExportPreflightUsesRealFilesystem(t *testing.T) {
 		t.Logf("当前环境不允许创建实际符号链接：%v", err)
 		return
 	}
-	if _, err := prepareRunExport(filepath.Join(link, "output")); err == nil {
-		t.Fatal("符号链接父路径被接受")
+	for _, relative := range []string{"output", filepath.Join("new-export", "output")} {
+		if _, err := prepareRunExport(filepath.Join(link, relative)); err == nil {
+			t.Fatal("符号链接父目录或祖先被接受")
+		}
+		if _, err := os.Lstat(filepath.Join(parent, relative)); !os.IsNotExist(err) {
+			t.Fatal("符号链接拒绝后创建了实际导出目标")
+		}
 	}
 }
