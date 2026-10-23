@@ -67,6 +67,42 @@ function publicText(value) {
   return text.replace(/[\x00-\x1f\x7f]/g, ' ').slice(0, 500)
 }
 const kind = error => typeof error?.code === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(error.code) ? error.code : error instanceof Error ? error.name : 'UNKNOWN'
+const diagnosticErrorNames = ['Error', 'AssertionError', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'SystemError', 'UNKNOWN']
+const diagnosticErrorCodes = ['ERR_ASSERTION', 'ERR_INVALID_ARG_TYPE', 'ERR_INVALID_ARG_VALUE', 'ERR_SWA_CONTROLLER_INPUT', 'ENOENT', 'EACCES', 'EPERM', 'EEXIST', 'ENOSPC', 'EMFILE', 'EIO', 'ETIMEDOUT', 'EPIPE', 'ECONNRESET', 'ECONNREFUSED', 'ABORT_ERR', 'UNKNOWN']
+const diagnosticSignals = ['SIGTERM', 'SIGKILL', 'SIGINT', 'SIGABRT', 'SIGHUP', 'SIGPIPE', 'UNKNOWN']
+const diagnosticCommandPhases = ['preflight', 'original-package-extraction', 'frozen-source-tools', 'native-runtime-copy', 'partial-application-build', 'windows-private-data-sdk-control', 'partial-go-build', 'diagnostic-process-tree-component', 'native-process-snapshot-self', 'native-process-snapshot-control', 'short-identify-then-controller-open', 'complete']
+const diagnosticFailurePhases = {
+  observer: ['spawn-record', 'query-freeze', 'native-query', 'collect-primary', 'collect-additional', 'record-query', 'write-unknown', 'write-latest', 'readiness-envelope', 'start-readiness-work', 'stdin-eof', 'loop-wait', 'await-readiness-work', 'save-service-streams', 'require-service-settled', 'native-exit-query', 'cim-request', 'cim-spawn', 'cim-wait', 'cim-read', 'exit-verdict', 'save-final-record', 'service-assertions'],
+  readiness: ['ready-service', 'job-members', 'ready-record', 'controller-input'],
+  'controller-input': ['prepare-output', 'import-producer', 'transport-spawn', 'transport-identity', 'transport-wait', 'transport-report', 'transport-validate', 'transport-receipts', 'producer-call'],
+  'producer-command': ['identity', 'wait-close'], producer: ['public-clone', 'human-project-permission', 'controller-open', 'task-create', 'controller-observe-close', 'complete']
+}
+const diagnosticError = error => ({ name: typeof error?.name === 'string' && diagnosticErrorNames.includes(error.name) ? error.name : 'UNKNOWN',
+  code: error?.code === undefined || error?.code === null ? null : typeof error.code === 'string' && diagnosticErrorCodes.includes(error.code) ? error.code : 'UNKNOWN' })
+function serviceFirstFailureProjection() {
+  const compact = value => {
+    if (!value || value === 'NOT_CAPTURED') return 'NOT_CAPTURED'
+    const { frames, status } = value.locations
+    const facts = value.component === 'producer-command' ? {
+      command_name: value.facts.command_name, command_sequence: value.facts.command_sequence, identity: value.facts.identity,
+      exit_known: value.facts.exit !== null, exit_code: value.facts.exit?.exit ?? null, timed_out: value.facts.timed_out,
+      stdout_eof: value.facts.stdout_eof, stderr_eof: value.facts.stderr_eof, stream_failure: value.facts.stream_failure, cleanup_attempted: value.facts.cleanup_attempted
+    } : value.facts
+    const projected = { component: value.component, phase: value.phase, at: value.at, error: value.error, facts,
+      locations: { status, count: ['NOT_RECORDED', 'BOUND_EXCEEDED'].includes(status) ? null : frames.length, shown_count: frames.length ? 1 : 0,
+        truncated: frames.length > 1, first: frames[0] ?? null } }
+    assert.ok(Buffer.byteLength(JSON.stringify(projected)) <= 1024, 'Safe failure projection exceeds its bound; full files retained')
+    return projected
+  }
+  const nonzero = result.first_nonzero_command ?? 'NOT_CAPTURED', outer = result.safe_outer_error ?? 'NOT_CAPTURED'
+  assert.ok(Buffer.byteLength(JSON.stringify(nonzero)) <= 512 && Buffer.byteLength(JSON.stringify(outer)) <= 128)
+  const envelope = { observation_revision: result.observation_revision, status: result.status, failure_records_match: result.service_evidence?.failure_records_match ?? 'NOT_CAPTURED', first_failure: null, observer_abort: null, first_nonzero_command: null, outer_error: null }
+  assert.ok(Buffer.byteLength(JSON.stringify(envelope)) <= 512)
+  const projection = { ...envelope, first_failure: compact(result.service_evidence?.first_failure), observer_abort: compact(result.service_evidence?.observer_abort), first_nonzero_command: nonzero, outer_error: outer }
+  const text = JSON.stringify(projection)
+  assert.ok(Buffer.byteLength(text) <= 3500, 'First failure annotation exceeds its bound; full files retained')
+  return text
+}
 function utf8Fragment(text, limit, fromEnd = false) {
   let result = '', bytes = 0
   for (const character of fromEnd ? [...text].reverse() : text) {
@@ -79,6 +115,7 @@ function utf8Fragment(text, limit, fromEnd = false) {
 }
 async function command(executable, args, cwd, cap = 120_000, extra = {}, allowNonzero = false) {
   const name = 'command-' + String(++sequence).padStart(2, '0'), out = [], err = []
+  const diagnosticPhaseAtStart = serviceObservationOnly ? diagnosticCommandPhases.includes(result.phase) ? result.phase : 'UNKNOWN' : null
   let outBytes = 0, errBytes = 0, outEOF = false, errEOF = false, streamFailure = false, identity = null, exit, timeout = false
   const child = spawn(executable, args, { cwd, env: { ...env, ...extra }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
   const closed = new Promise(done => {
@@ -109,6 +146,11 @@ async function command(executable, args, cwd, cap = 120_000, extra = {}, allowNo
   const row = { name, exit: exit ?? 'UNKNOWN', timed_out: timeout, stdout_bytes: outBytes, stderr_bytes: errBytes, stdout_eof: outEOF, stderr_eof: errEOF,
     stream_failure: streamFailure, identity_captured: !!identity, cleanup_attempted: cleanupAttempted, kernel_tree_exit: 'NOT_CLAIMED' }
   result.commands.push(row)
+  if (serviceObservationOnly && (!exit || timeout || exit.exit !== 0)) result.first_nonzero_command ??= {
+    name, phase: diagnosticPhaseAtStart, exit: exit ? { exit: Number.isSafeInteger(exit.exit) ? exit.exit : null,
+      signal: exit.signal === null ? null : diagnosticSignals.includes(exit.signal) ? exit.signal : 'UNKNOWN',
+      spawn_error: exit.spawn_error === null ? null : diagnosticErrorCodes.includes(exit.spawn_error) ? exit.spawn_error : 'UNKNOWN' } : 'UNKNOWN',
+    timed_out: timeout, stdout_bytes: outBytes, stderr_bytes: errBytes, stdout_eof: outEOF, stderr_eof: errEOF, stream_failure: streamFailure, cleanup_attempted: cleanupAttempted }
   await writeFile(join(privateOutput, name + '.stdout'), Buffer.concat(out), { flag: 'wx' })
   await writeFile(join(privateOutput, name + '.stderr'), Buffer.concat(err), { flag: 'wx' })
   if (!exit || timeout || exit.exit !== 0 && !allowNonzero) {
@@ -252,6 +294,44 @@ async function retainServiceEvidence(directory) {
   const sourceHashes = { observer: result.observer_sources.find(row => row.name === 'serve-lifecycle.mjs').observation_sha256,
     producer: result.observer_sources.find(row => row.name === 'controller-taskcreate-check.mjs').observation_sha256,
     closure: result.observer_sources.find(row => row.name === 'process-incarnation-closure.mjs').observation_sha256, native: result.diagnostic_process_tree.binary_sha256 }
+  const locationHashes = { observer: sourceHashes.observer, producer: sourceHashes.producer, closure: sourceHashes.closure,
+    transport: result.observer_sources.find(row => row.name === 'controller-input-check.mjs').observation_sha256 }
+  const failureRecord = value => {
+    if (value === null) return
+    keys(value, ['component', 'phase', 'at', 'error', 'facts', 'locations']); assert.ok(Buffer.byteLength(JSON.stringify(value)) <= 4096)
+    assert.ok(typeof value.component === 'string' && Object.hasOwn(diagnosticFailurePhases, value.component) && diagnosticFailurePhases[value.component].includes(value.phase)); instant(value.at)
+    keys(value.error, ['name', 'code']); assert.ok(diagnosticErrorNames.includes(value.error.name)); assert.ok(value.error.code === null || diagnosticErrorCodes.includes(value.error.code))
+    const facts = value.facts, nullableIdentity = actual => { if (actual !== null) identity(actual) }
+    const index = actual => assert.ok(actual === null || uint(actual))
+    if (value.component === 'observer') {
+      keys(facts, ['query_sequence', 'root', 'scope_index', 'check_index', 'closed', 'acted', 'readiness_started', 'readiness_complete', 'closure_incomplete', 'root_exit_seen', 'root_close_seen'])
+      assert.ok(uint(facts.query_sequence)); nullableIdentity(facts.root); index(facts.scope_index); index(facts.check_index)
+      for (const key of ['closed', 'acted', 'readiness_started', 'readiness_complete', 'closure_incomplete', 'root_exit_seen', 'root_close_seen']) bool(facts[key])
+    } else if (value.component === 'readiness') {
+      keys(facts, ['readiness_started', 'readiness_complete', 'controller_input_recorded']); for (const actual of Object.values(facts)) bool(actual)
+    } else if (value.component === 'controller-input') {
+      keys(facts, ['transport_identity', 'transport_spawned', 'transport_closed', 'producer_recorded']); nullableIdentity(facts.transport_identity)
+      for (const key of ['transport_spawned', 'transport_closed', 'producer_recorded']) bool(facts[key])
+    } else if (value.component === 'producer-command') {
+      keys(facts, ['command_name', 'command_sequence', 'identity', 'exit', 'timed_out', 'stdout_eof', 'stderr_eof', 'stream_failure', 'cleanup_attempted'])
+      assert.ok(typeof facts.command_name === 'string' && /^(?:git|cli)-[0-9]{2,8}$/.test(facts.command_name)); assert.ok(birth(facts.command_sequence)); assert.equal(Number(facts.command_name.split('-')[1]), facts.command_sequence)
+      nullableIdentity(facts.identity)
+      if (facts.exit !== null) {
+        keys(facts.exit, ['exit', 'signal', 'spawn_error']); assert.ok(facts.exit.exit === null || Number.isSafeInteger(facts.exit.exit))
+        assert.ok(facts.exit.signal === null || diagnosticSignals.includes(facts.exit.signal)); assert.ok(facts.exit.spawn_error === null || diagnosticErrorCodes.includes(facts.exit.spawn_error))
+      }
+      for (const key of ['timed_out', 'stdout_eof', 'stderr_eof', 'stream_failure', 'cleanup_attempted']) bool(facts[key])
+    } else {
+      keys(facts, ['operation', 'request_id_assigned', 'grant_created', 'controller_recorded']); assert.ok(['main', 'grant-revoke', 'dispatcher-close'].includes(facts.operation))
+      for (const key of ['request_id_assigned', 'grant_created', 'controller_recorded']) bool(facts[key])
+    }
+    keys(value.locations, ['status', 'frames']); assert.ok(['CAPTURED', 'NOT_RECORDED', 'BOUND_EXCEEDED', 'NO_ALLOWED_FRAME'].includes(value.locations.status))
+    list(value.locations.frames, 8, frame => {
+      keys(frame, ['file', 'source_sha256', 'line', 'column']); assert.ok(typeof frame.file === 'string' && Object.hasOwn(locationHashes, frame.file)); assert.equal(frame.source_sha256, locationHashes[frame.file])
+      assert.ok([frame.line, frame.column].every(actual => birth(actual) && actual <= 1000000))
+    })
+    assert.equal(value.locations.status === 'CAPTURED', value.locations.frames.length > 0)
+  }
   const documents = {}, files = []
   for (const [name, maximum] of [['service-query-evidence.json', 8 * 1024 * 1024], ['service-process-lifecycle.json', 2 * 1024 * 1024]]) {
     const path = join(directory, name)
@@ -264,10 +344,12 @@ async function retainServiceEvidence(directory) {
       for (const key of ['dev', 'ino', 'size', 'mtimeMs', 'ctimeMs', 'nlink']) assert.equal(after[key], before[key])
       assert.equal(bytes.length, before.size)
       const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), query = name === 'service-query-evidence.json'
-      keys(value, ['schema_version', 'source_revision', 'sources', 'status', 'evidence_incomplete', 'error_kind', ...(query ? ['query_count', 'ownership_closure_incomplete', 'first_sample', 'first_unknown_sample', 'last_sample'] : ['events'])])
-      assert.equal(value.schema_version, 1); assert.equal(value.source_revision, result.observation_revision); assert.deepEqual(value.sources, sourceHashes)
+      keys(value, ['schema_version', 'source_revision', 'sources', 'status', 'evidence_incomplete', 'error_kind', 'first_failure', 'observer_abort', ...(query ? ['query_count', 'ownership_closure_incomplete', 'first_sample', 'first_unknown_sample', 'last_sample'] : ['events'])])
+      assert.equal(value.schema_version, 2); assert.equal(value.source_revision, result.observation_revision); assert.deepEqual(value.sources, sourceHashes)
       assert.ok(['OBSERVING', 'COMPLETE', 'INCOMPLETE'].includes(value.status)); bool(value.evidence_incomplete)
-      assert.ok(value.error_kind === null || ['EVIDENCE_WRITE_OR_LIMIT', 'LIFECYCLE_INCOMPLETE', 'SOURCE_INCOMPLETE', 'PRIOR_SOURCE_INCOMPLETE', 'SCOPE_SOURCE_INCOMPLETE', 'NATIVE_BATCH_INCOMPLETE', 'QUERY_EVIDENCE_INCOMPLETE', 'OWNED_SCOPE_MISSING', 'QUERY_FAILED', 'OBSERVER_ABORTED'].includes(value.error_kind))
+      assert.ok(value.error_kind === null || ['EVIDENCE_WRITE_OR_LIMIT', 'LIFECYCLE_INCOMPLETE', 'SOURCE_INCOMPLETE', 'PRIOR_SOURCE_INCOMPLETE', 'SCOPE_SOURCE_INCOMPLETE', 'NATIVE_BATCH_INCOMPLETE', 'QUERY_EVIDENCE_INCOMPLETE', 'OWNED_SCOPE_MISSING', 'QUERY_FAILED', 'OBSERVER_ABORTED', 'FAILURE_RECORD_INCOMPLETE'].includes(value.error_kind))
+      failureRecord(value.first_failure); failureRecord(value.observer_abort)
+      if (value.observer_abort) { assert.equal(value.observer_abort.component, 'observer'); assert.ok(value.first_failure && value.first_failure.at.monotonic_ms <= value.observer_abort.at.monotonic_ms) }
       if (query) {
         assert.ok(uint(value.query_count)); bool(value.ownership_closure_incomplete)
         for (const item of [value.first_sample, value.first_unknown_sample, value.last_sample]) { sample(item); if (item) assert.ok(item.sequence <= value.query_count) }
@@ -287,8 +369,11 @@ async function retainServiceEvidence(directory) {
   const query = documents['service-query-evidence.json'], lifecycle = documents['service-process-lifecycle.json']
   let complete = !!query && !!lifecycle && [query, lifecycle].every(value => value.status === 'COMPLETE' && !value.evidence_incomplete)
   let binding = 'NOT_CHECKED'
+  let failuresMatch = false
   if (query && lifecycle) {
     try {
+      assert.deepEqual(query.first_failure, lifecycle.first_failure); assert.deepEqual(query.observer_abort, lifecycle.observer_abort)
+      failuresMatch = true
       lifecycle.events.forEach((row, index) => { assert.equal(row.sequence, index + 1); if (index) assert.ok(row.at.monotonic_ms >= lifecycle.events[index - 1].at.monotonic_ms) })
       for (const sample of [query.first_sample, query.first_unknown_sample, query.last_sample].filter(Boolean)) {
         for (const origin of [...sample.before.prior_sources, ...sample.scopes.map(row => row.source)]) {
@@ -307,6 +392,7 @@ async function retainServiceEvidence(directory) {
     root_verified: sample.scopes[0].result.rootVerified, unknown_count: sample.scopes.reduce((count, row) => count + row.result.unknownRows.length, 0) }
   const first = query?.first_unknown_sample, unknown = first?.scopes.flatMap((scope, index) => scope.result.unknownRows.map(row => ({ ...row, source_anchor: row.source_anchor ?? { kind: index === 0 ? 'serve' : 'additional', pid: scope.anchor.pid, creation_time_ms: scope.anchor.creationTimeMs } })))[0]
   result.service_evidence = { complete, binding, sources: sourceHashes, files, query_count: query?.query_count ?? 'NOT_RECORDED',
+    failure_records_match: failuresMatch, first_failure: failuresMatch ? query.first_failure ?? 'NOT_CAPTURED' : 'NOT_CAPTURED', observer_abort: failuresMatch ? query.observer_abort ?? 'NOT_CAPTURED' : 'NOT_CAPTURED',
     ownership_closure_incomplete: query?.ownership_closure_incomplete ?? 'NOT_RECORDED', evidence_incomplete: query?.evidence_incomplete ?? 'NOT_RECORDED', error_kind: query ? query.error_kind : 'NOT_CAPTURED',
     first_sample: describe(query?.first_sample), first_unknown_sample: describe(first), last_sample: describe(query?.last_sample),
     lifecycle_event_count: lifecycle?.events.length ?? 'NOT_RECORDED', lifecycle_incomplete: lifecycle?.evidence_incomplete ?? 'NOT_RECORDED',
@@ -315,6 +401,7 @@ async function retainServiceEvidence(directory) {
       prior_exact_match: first.priors.some(row => row.pid === unknown.actual.pid && row.creationTimeMs === unknown.actual.creationTimeMs),
       pid_match_count: first.rows.filter(row => row.pid === unknown.actual.pid).length, parent_match_count: first.rows.filter(row => row.pid === unknown.actual.ppid).length,
       anchor_match_count: first.rows.filter(row => row.pid === unknown.source_anchor.pid).length } : null }
+  if (result.service_evidence.first_failure !== 'NOT_CAPTURED') result.first_failure ??= { basis: 'CAPTURED_EXCEPTION', record: result.service_evidence.first_failure }
 }
 try {
   const goRevision = (await git(['rev-parse', 'HEAD'])).toString().trim()
@@ -1094,11 +1181,14 @@ try {
   result.phase = 'complete'; result.status = 'PASS'
 } catch (error) {
   failure = error
+  if (serviceObservationOnly) result.safe_outer_error = diagnosticError(error)
   result.error = { kind: kind(error), message: publicText(error?.message) }
   await writeFile(join(privateOutput, 'failure.txt'), String(error?.stack ?? error), { flag: 'wx' })
 } finally {
   await stopBuild()
+  if (serviceObservationOnly) result.first_failure ??= result.first_nonzero_command ? { basis: 'NONZERO_COMMAND', command: result.first_nonzero_command } : 'NOT_CAPTURED'
   await save('result.json', result)
+  const firstFailureText = serviceObservationOnly ? serviceFirstFailureProjection() : null
   if (serviceObservationOnly && result.service_evidence) {
     const retained = result.service_evidence
     const annotations = [
@@ -1111,8 +1201,11 @@ try {
         lifecycle_event_count: retained.lifecycle_event_count, lifecycle_incomplete: retained.lifecycle_incomplete, source_kind_counts: retained.source_kind_counts,
         task_create: 'NOT_RUN', model_calls: 0, worker_calls: 0 }]
     ].map(([title, value]) => ({ title, text: JSON.stringify(value) }))
+    annotations.push({ title: 'Windows service first failure', text: firstFailureText })
     for (const row of annotations) assert.ok(Buffer.byteLength(row.text) <= 3500, 'Service evidence annotation exceeds its bound; full files retained')
     for (const row of annotations) process.stdout.write('::warning title=' + row.title + '::' + row.text.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
+  } else if (serviceObservationOnly) {
+    process.stdout.write('::warning title=Windows service first failure::' + firstFailureText.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A') + '\n')
   }
   const rootChild = result.root_child_fixture
   const rootChildCases = Array.isArray(rootChild?.cases) ? rootChild.cases : []

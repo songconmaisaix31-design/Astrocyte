@@ -50,9 +50,9 @@ async function retainQueryEvidence(directory) {
     ['observer', import.meta.filename], ['producer', join(dirname(import.meta.filename), 'controller-taskcreate-check.mjs')],
     ['closure', join(dirname(import.meta.filename), 'process-incarnation-closure.mjs')], ['native', join(nativeRoot, 'build/Release/windows_process_tree.node')]
   ].map(async ([name, path]) => [name, digest(await readFile(path))])))
-  const query = { schema_version: 1, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null,
+  const query = { schema_version: 2, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null, first_failure: null, observer_abort: null,
     query_count: 0, ownership_closure_incomplete: false, first_sample: null, first_unknown_sample: null, last_sample: null }
-  const lifecycle = { schema_version: 1, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null, events: [] }
+  const lifecycle = { schema_version: 2, source_revision: source, sources, status: 'OBSERVING', evidence_incomplete: false, error_kind: null, first_failure: null, observer_abort: null, events: [] }
   const origins = new Map()
   const kinds = ['serve_native_identity', 'callback_owned', 'named_job_member', 'transport_native_identity', 'transport_receipt_identity', 'producer_command_native_identity', 'controller_receipt_native_identity']
   const roles = ['serve', 'runtime', 'server', 'daemon', 'callback', 'transport', 'tty_root', 'tty_helper', 'pipe_helper', 'producer_command', 'controller_process', 'controller_helper']
@@ -69,6 +69,74 @@ async function retainQueryEvidence(directory) {
       renameSync(temporary, join(directory, fileName))
     }
     catch { fail('EVIDENCE_WRITE_OR_LIMIT') }
+  }
+  const failurePhases = {
+    observer: ['spawn-record', 'query-freeze', 'native-query', 'collect-primary', 'collect-additional', 'record-query', 'write-unknown', 'write-latest', 'readiness-envelope', 'start-readiness-work', 'stdin-eof', 'loop-wait', 'await-readiness-work', 'save-service-streams', 'require-service-settled', 'native-exit-query', 'cim-request', 'cim-spawn', 'cim-wait', 'cim-read', 'exit-verdict', 'save-final-record', 'service-assertions'],
+    readiness: ['ready-service', 'job-members', 'ready-record', 'controller-input'],
+    'controller-input': ['prepare-output', 'import-producer', 'transport-spawn', 'transport-identity', 'transport-wait', 'transport-report', 'transport-validate', 'transport-receipts', 'producer-call'],
+    'producer-command': ['identity', 'wait-close'],
+    producer: ['public-clone', 'human-project-permission', 'controller-open', 'task-create', 'controller-observe-close', 'complete']
+  }
+  const errorNames = ['Error', 'AssertionError', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'SystemError', 'UNKNOWN']
+  const errorCodes = ['ERR_ASSERTION', 'ERR_INVALID_ARG_TYPE', 'ERR_INVALID_ARG_VALUE', 'ERR_SWA_CONTROLLER_INPUT', 'ENOENT', 'EACCES', 'EPERM', 'EEXIST', 'ENOSPC', 'EMFILE', 'EIO', 'ETIMEDOUT', 'EPIPE', 'ECONNRESET', 'ECONNREFUSED', 'ABORT_ERR', 'UNKNOWN']
+  const allowedLocations = new Map()
+  for (const [file, name] of [['observer', 'serve-lifecycle.mjs'], ['producer', 'controller-taskcreate-check.mjs'], ['transport', 'controller-input-check.mjs'], ['closure', 'process-incarnation-closure.mjs']]) {
+    const path = join(dirname(import.meta.filename), name), source_sha256 = digest(await readFile(path))
+    for (const location of [path, pathToFileURL(path).href]) allowedLocations.set(location, { file, source_sha256 })
+  }
+  const failureLocations = error => {
+    const stack = error?.stack
+    if (typeof stack !== 'string') return { status: 'NOT_RECORDED', frames: [] }
+    if (Buffer.byteLength(stack) > 64 * 1024) return { status: 'BOUND_EXCEEDED', frames: [] }
+    const frames = []
+    for (const line of stack.split(/\r?\n/).slice(1)) {
+      const match = line.match(/(?:^\s*at (?:async )?|\()((?:file:\/\/\/|[A-Za-z]:[\\/]|\/)[^\r\n]*):(\d+):(\d+)\)?$/)
+      const known = match && allowedLocations.get(match[1])
+      if (!known) continue
+      const lineNumber = Number(match[2]), column = Number(match[3])
+      if (![lineNumber, column].every(value => Number.isSafeInteger(value) && value > 0 && value <= 1000000) || frames.length === 8) return { status: 'BOUND_EXCEEDED', frames: [] }
+      frames.push({ ...known, line: lineNumber, column })
+    }
+    return { status: frames.length ? 'CAPTURED' : 'NO_ALLOWED_FRAME', frames }
+  }
+  const diagnosticFailure = (error, component, phase, facts, observerAbort = false) => {
+    try {
+      if (query.first_failure && !observerAbort) return
+      assert.ok(Object.hasOwn(failurePhases, component) && failurePhases[component].includes(phase))
+      const bool = value => { assert.equal(typeof value, 'boolean'); return value }
+      const count = value => { assert.ok(Number.isSafeInteger(value) && value >= 0); return value }
+      const nullableIdentity = value => value === null ? null : identity(value)
+      const nullableIndex = value => value === null ? null : count(value)
+      let actual
+      if (component === 'observer') actual = {
+        query_sequence: count(facts.query_sequence), root: nullableIdentity(facts.root), scope_index: nullableIndex(facts.scope_index), check_index: nullableIndex(facts.check_index),
+        closed: bool(facts.closed), acted: bool(facts.acted), readiness_started: bool(facts.readiness_started), readiness_complete: bool(facts.readiness_complete),
+        closure_incomplete: bool(facts.closure_incomplete), root_exit_seen: bool(facts.root_exit_seen), root_close_seen: bool(facts.root_close_seen)
+      }
+      else if (component === 'readiness') actual = { readiness_started: bool(facts.readiness_started), readiness_complete: bool(facts.readiness_complete), controller_input_recorded: bool(facts.controller_input_recorded) }
+      else if (component === 'controller-input') actual = { transport_identity: nullableIdentity(facts.transport_identity), transport_spawned: bool(facts.transport_spawned), transport_closed: bool(facts.transport_closed), producer_recorded: bool(facts.producer_recorded) }
+      else if (component === 'producer-command') {
+        assert.ok(typeof facts.command_name === 'string' && /^(?:git|cli)-[0-9]{2,8}$/.test(facts.command_name))
+        assert.ok(count(facts.command_sequence) > 0 && Number(facts.command_name.split('-')[1]) === facts.command_sequence)
+        let exit = null
+        if (facts.exit !== null) {
+          assert.ok(facts.exit.exit === null || Number.isSafeInteger(facts.exit.exit))
+          exit = { exit: facts.exit.exit, signal: facts.exit.signal === null ? null : ['SIGTERM', 'SIGKILL', 'SIGINT', 'SIGABRT', 'SIGHUP', 'SIGPIPE'].includes(facts.exit.signal) ? facts.exit.signal : 'UNKNOWN',
+            spawn_error: facts.exit.spawn_error === null ? null : errorCodes.includes(facts.exit.spawn_error) ? facts.exit.spawn_error : 'UNKNOWN' }
+        }
+        actual = { command_name: facts.command_name, command_sequence: facts.command_sequence, identity: nullableIdentity(facts.identity), exit,
+          timed_out: bool(facts.timed_out), stdout_eof: bool(facts.stdout_eof), stderr_eof: bool(facts.stderr_eof), stream_failure: bool(facts.stream_failure), cleanup_attempted: bool(facts.cleanup_attempted) }
+      } else {
+        assert.ok(['main', 'grant-revoke', 'dispatcher-close'].includes(facts.operation))
+        actual = { operation: facts.operation, request_id_assigned: bool(facts.request_id_assigned), grant_created: bool(facts.grant_created), controller_recorded: bool(facts.controller_recorded) }
+      }
+      const record = { component, phase, at: instant(), error: { name: typeof error?.name === 'string' && errorNames.includes(error.name) ? error.name : 'UNKNOWN',
+        code: error?.code === undefined || error?.code === null ? null : typeof error.code === 'string' && errorCodes.includes(error.code) ? error.code : 'UNKNOWN' }, facts: actual, locations: failureLocations(error) }
+      assert.ok(Buffer.byteLength(JSON.stringify(record)) <= 4096)
+      query.first_failure ??= record; lifecycle.first_failure ??= record
+      if (observerAbort) query.observer_abort = lifecycle.observer_abort = record
+      save('service-query-evidence.json', query, 8 * 1024 * 1024); save('service-process-lifecycle.json', lifecycle, 2 * 1024 * 1024)
+    } catch { fail('FAILURE_RECORD_INCOMPLETE') }
   }
   const sourceInfo = value => {
     assert.ok(value && kinds.includes(value.kind) && roles.includes(value.role))
@@ -160,24 +228,29 @@ async function retainQueryEvidence(directory) {
     return { evidence_incomplete: query.evidence_incomplete, error_kind: query.error_kind, query_count: query.query_count, event_count: lifecycle.events.length }
   }
   save('service-query-evidence.json', query, 8 * 1024 * 1024); save('service-process-lifecycle.json', lifecycle, 2 * 1024 * 1024)
-  return { event, confirmed, before, scope, sample, owned, finish, aborted: () => fail('OBSERVER_ABORTED'), unavailable: () => { fail('QUERY_FAILED'); save('service-query-evidence.json', query, 8 * 1024 * 1024) } }
+  return { event, confirmed, before, scope, sample, owned, finish, diagnosticFailure,
+    aborted: (error, phase, facts) => { diagnosticFailure(error, 'observer', phase, facts, true); fail('OBSERVER_ABORTED') },
+    unavailable: () => { fail('QUERY_FAILED'); save('service-query-evidence.json', query, 8 * 1024 * 1024) } }
 }
 
-async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity, processEvent) {
+async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity, processEvent, diagnosticFailure) {
   const observation = { status: 'FAIL', ownership_incomplete: false, producer: null, transport: null, transport_process: null, transport_actual_spawned: false }
   let control, controlClosed = false, controlExit, failure
   const output = [], errors = []
   let outputBytes = 0, errorBytes = 0, outputEOF = false, errorEOF = false, streamFailure = false
   const outputParent = join(directory, 'controller-input')
+  let inputPhase = 'prepare-output'
   await mkdir(outputParent)
   try {
+    inputPhase = 'import-producer'
     const { runControllerTaskCreateCheck } = await import('./controller-taskcreate-check.mjs')
-    const produce = () => runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
+    const produce = () => { inputPhase = 'producer-call'; return runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
       publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
-      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, onProcessEvent: processEvent, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) })
+      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, onProcessEvent: processEvent, onDiagnosticFailure: diagnosticFailure, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) }) }
     let producer
     if (!values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     const transportOutput = join(outputParent, 'transport')
+    inputPhase = 'transport-spawn'
     control = spawn(process.execPath, [join(sourceRoot, 'tests/swa-cli-headless/controller-input-check.mjs'), '--install-root', candidate,
       ...(values['controller-open-only'] ? ['--short-only'] : ['--invocation-file', producer.invocationFile]), '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     observation.transport_actual_spawned = Number.isSafeInteger(control.pid) && control.pid > 0
@@ -193,19 +266,23 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     control.stdout.on('end', () => { outputEOF = true; transportEvent('stdout-end') })
     control.stderr.on('end', () => { errorEOF = true; transportEvent('stderr-end') })
     for (const stream of [control.stdout, control.stderr]) stream.on('error', () => { streamFailure = true })
+    inputPhase = 'transport-identity'
     assert.ok(Number.isSafeInteger(control.pid) && control.pid > 0)
     const created = native.getProcessCreationTime(control.pid)
     assert.ok(Number.isSafeInteger(created) && created > 0, 'Actual transport process identity is unavailable')
     observation.transport_process = { pid: control.pid, creationTimeMs: created }
     observeIdentity(observation.transport_process, { kind: 'transport_native_identity', role: 'transport' })
+    inputPhase = 'transport-wait'
     const transportDeadline = Math.min(deadline, Date.now() + 120_000)
     while (!controlClosed && Date.now() < transportDeadline) await setTimeout(25)
     assert.equal(controlClosed, true, 'Installed helper transport completion remains unknown')
     await closed
     observation.transport_exit = controlExit
+    inputPhase = 'transport-report'
     const reportPath = join(transportOutput, 'report.json')
     assert.ok((await lstat(reportPath)).isFile() && (await lstat(reportPath)).size <= 2 * 1024 * 1024)
     const transportReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(reportPath)))
+    inputPhase = 'transport-validate'
     const summary = transportReport.summary
     assert.equal(summary?.schema, 'swa.controller-input-check.v1')
     assert.ok(['PASS', 'FAIL'].includes(summary.status)); assert.equal(summary.platform, 'win32')
@@ -227,6 +304,7 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
       Object.assign(safeTransport, { coverage: summary.coverage, long_input: summary.long_input })
     }
     observation.transport = safeTransport
+    inputPhase = 'transport-receipts'
     // 这些身份由原 checker 在进程仍可读时取得，不在退出后用裸 PID 补取创建时间。
     for (const identity of [transportReport.tty?.root, transportReport.tty?.helper, transportReport.pipe?.helper]) {
       assert.ok(identity && Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
@@ -247,6 +325,8 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     if (values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     observation.status = 'PASS'
   } catch (error) {
+    diagnosticFailure?.(error, 'controller-input', inputPhase, { transport_identity: observation.transport_process, transport_spawned: observation.transport_actual_spawned,
+      transport_closed: controlClosed, producer_recorded: observation.producer !== null })
     failure = error
     if (error.observation) observation.producer = error.observation
     observation.ownership_incomplete ||= observation.producer?.ownership_incomplete === true || observation.transport_actual_spawned && !observation.transport_process
@@ -447,6 +527,10 @@ for (const mode of selectedModes) {
   let settled = null, exitEvent = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
   let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0, sampleSequence = 0
+  let failurePhase = 'spawn-record', failureQuery = 0, failureScope = null, failureCheck = null
+  const failureFacts = () => ({ query_sequence: failureQuery, root: Number.isSafeInteger(rootCreationTimeMs) && rootCreationTimeMs > 0 ? { pid: child.pid, creationTimeMs: rootCreationTimeMs } : null,
+    scope_index: failureScope, check_index: failureCheck, closed, acted, readiness_started: readinessStarted, readiness_complete: readinessComplete,
+    closure_incomplete: closureIncomplete, root_exit_seen: exitEvent !== null, root_close_seen: settled !== null })
   try {
   const exited = new Promise(resolve => {
     child.once('error', error => { serveEvent('spawn-error', { spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }); spawnError = error })
@@ -469,18 +553,22 @@ for (const mode of selectedModes) {
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
   const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
   while (!closed && Date.now() < deadline) {
+    failurePhase = 'query-freeze'; failureQuery = sampleSequence + 1; failureScope = null; failureCheck = null
     // 在原生查询发出前冻结已证明 owned 的身份，不接纳查询在途或后继结果。
     const knownOwnedBeforeQuery = Object.freeze([...observed.values()].map(({ pid, creationTimeMs }) => Object.freeze({ pid, creationTimeMs })))
     const beforeQueryEvidence = capture?.before(knownOwnedBeforeQuery, [...additionalRoots.values()])
     const queryStart = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     let rows
-    try { rows = await processes() } catch (error) { capture?.unavailable(); throw error }
+    failurePhase = 'native-query'
+    try { rows = await processes() } catch (error) { capture?.diagnosticFailure(error, 'observer', failurePhase, failureFacts()); capture?.unavailable(); throw error }
     const queryEnd = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
+    failurePhase = 'collect-primary'; failureScope = 0
     const { rootVerified, ownedRows, excludedEdges, unknownRows } = collectOwnedIncarnations(rows, { pid: child.pid, creationTimeMs: rootCreationTimeMs }, knownOwnedBeforeQuery)
     const scopes = capture ? [capture.scope({ pid: child.pid, creationTimeMs: rootCreationTimeMs }, { rootVerified, ownedRows, excludedEdges, unknownRows }, knownOwnedBeforeQuery, { start: queryStart, end: queryEnd })] : []
     const annotatedUnknown = unknownRows.map(entry => ({ ...entry, source_anchor: entry.source_anchor ?? { kind: 'serve', pid: child.pid, creation_time_ms: rootCreationTimeMs } }))
     for (const anchor of additionalRoots.values()) {
+      failurePhase = 'collect-additional'; failureScope++
       const extra = collectOwnedIncarnations(rows, anchor, knownOwnedBeforeQuery)
       if (capture) scopes.push(capture.scope(anchor, extra, beforeQueryEvidence?.additional_roots ?? [], { start: queryStart, end: queryEnd }))
       for (const row of extra.ownedRows) if (!ownedRows.some(value => value.pid === row.pid && value.creationTimeMs === row.creationTimeMs)) ownedRows.push(row)
@@ -492,38 +580,48 @@ for (const mode of selectedModes) {
     // cannot prove that unobserved descendants have also exited.
     closureIncomplete ||= unknownRows.length > 0
     for (const row of ownedRows) observed.set(row.pid + ':' + row.creationTimeMs, row)
+    failurePhase = 'record-query'; failureScope = null
     capture?.owned(ownedRows, scopes, sampleSequenceNumber)
     capture?.sample({ sequence: sampleSequenceNumber, query_window: { start: queryStart, end: queryEnd }, root: { pid: child.pid, creationTimeMs: rootCreationTimeMs },
       priors: knownOwnedBeforeQuery, before: beforeQueryEvidence, rows, scopes, ownership_closure_incomplete: closureIncomplete })
     if (unknownRows.length) {
+      failurePhase = 'write-unknown'
       for (const entry of annotatedUnknown) unknown.push({ observed_at_ms: sampleObservedAt, sample_sequence: sampleSequenceNumber, query_window: { start: queryStart, end: queryEnd }, ...entry })
       await writeFile(join(directory, 'unknown-process-observations.json'), JSON.stringify(unknown, null, 2) + '\n')
     }
+    failurePhase = 'write-latest'
     await writeFile(join(directory, 'latest-actual-observation.json'), JSON.stringify({ mode, pid: child.pid, creation_time_ms: rootCreationTimeMs, events, current_owned_processes: ownedRows, excluded_parent_edges: excludedEdges, ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), observed_at_ms: Date.now() }, null, 2) + '\n')
+    failurePhase = 'readiness-envelope'
     const currentStdout = Buffer.concat(stdout).toString('utf8')
     if (!readiness && currentStdout.includes('\n')) {
       readiness = JSON.parse(currentStdout)
       events.push({ type: 'actual-stdout-envelope', ok: readiness.ok, observed_at_ms: Date.now() })
     }
     if (!readinessStarted && mode === 'readiness-eof' && readiness?.ok) {
+      failurePhase = 'start-readiness-work'
       readinessStarted = true
+      let readinessPhase = 'ready-service'
       readinessWork = (async () => { try {
         const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs, deadline)
+        readinessPhase = 'job-members'
         for (const member of observation.members) {
           observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
             ppid: member.parent_pid, name: member.name, role: member.role, actual_named_job_membership: true })
           capture?.confirmed({ pid: member.pid, creationTimeMs: member.creation_time_ms }, { kind: 'named_job_member', role: member.role })
         }
+        readinessPhase = 'ready-record'
         await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
         if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
+        readinessPhase = 'controller-input'
         if (controllerCheck) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, (identity, sourceInfo) => {
           assert.ok(Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
           const key = identity.pid + ':' + identity.creationTimeMs
           observed.set(key, identity)
           additionalRoots.set(key, identity)
           capture?.confirmed(identity, sourceInfo)
-        }, capture?.event)
+        }, capture?.event, capture?.diagnosticFailure)
       } catch (error) {
+        capture?.diagnosticFailure(error, 'readiness', readinessPhase, { readiness_started: readinessStarted, readiness_complete: readinessComplete, controller_input_recorded: controllerInput !== null })
         readinessFailure = error
         if (controllerCheck && error.observation) controllerInput = error.observation
         if (controllerCheck && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
@@ -533,6 +631,7 @@ for (const mode of selectedModes) {
       if (!controllerCheck) await readinessWork
     }
     if (!acted && mode === 'readiness-eof' && readinessComplete) {
+      failurePhase = 'stdin-eof'
       serveEvent('stdin-end-request')
       child.stdin.end(); acted = true
       events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
@@ -545,12 +644,16 @@ for (const mode of selectedModes) {
       acted = true
       events.push({ type: mode === 'startup-eof' ? 'actual-owned-stdin-closed' : 'actual-owned-stdout-read-end-closed', observed_at_ms: Date.now() })
     }
+    failurePhase = 'loop-wait'
     if (!closed) await setTimeout(20)
   }
+  failurePhase = 'await-readiness-work'
   if (readinessWork) await readinessWork
   capture?.finish(closureIncomplete)
+  failurePhase = 'save-service-streams'
   await writeFile(join(directory, 'stdout.json'), Buffer.concat(stdout), { flag: 'wx' })
   await writeFile(join(directory, 'stderr.log'), Buffer.concat(stderr), { flag: 'wx' })
+  failurePhase = 'require-service-settled'
   if (!closed) {
     await writeFile(join(directory, 'unsettled.json'), JSON.stringify({ pid: child.pid, observed: [...observed.values()], events }, null, 2) + '\n', { flag: 'wx' })
     throw new Error('Actual owned serve remains unsettled; preserve its recorded identity')
@@ -558,13 +661,16 @@ for (const mode of selectedModes) {
   await exited
   const observations = []
   for (let check = 0; check < 2; check++) {
+    failurePhase = 'native-exit-query'; failureCheck = check
     const rows = await processes()
     const remaining = [...observed.values()].filter(old => rows.some(row => row.pid === old.pid && (!(row.creationTimeMs > 0) || row.creationTimeMs === old.creationTimeMs)))
     observations.push({ observed_at_ms: Date.now(), remaining })
     if (check === 0) await setTimeout(250)
   }
   const cimRequest = join(directory, 'cim-request.json'), cimOutput = join(directory, 'cim-exit-observations.json')
+  failurePhase = 'cim-request'; failureCheck = null
   await writeFile(cimRequest, JSON.stringify({ schema_version: 1, known: [...observed.values()], unknown: unknown.map(entry => entry.actual) }, null, 2) + '\n', { flag: 'wx' })
+  failurePhase = 'cim-spawn'
   const cim = spawn(powershell, ['-NoProfile', '-File', join(sourceRoot, 'tests/swa-cli-headless/observe-process-exits.ps1'), '-RequestFile', cimRequest, '-OutputFile', cimOutput], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
   const cimStdout = [], cimStderr = []
   cim.stdout.on('data', chunk => cimStdout.push(chunk))
@@ -575,6 +681,7 @@ for (const mode of selectedModes) {
     cim.once('close', (exit, signal) => { cimSettled = true; resolve({ pid: cim.pid, exit, signal }) })
   })
   const cimDeadline = Date.now() + 15_000
+  failurePhase = 'cim-wait'
   while (!cimSettled && Date.now() < cimDeadline) await setTimeout(50)
   const cimTimedOut = !cimSettled
   const cimTermination = cimTimedOut ? { attempted_at: new Date().toISOString(), actual_created_pid: cim.pid, signal_sent: cim.kill() } : null
@@ -586,16 +693,19 @@ for (const mode of selectedModes) {
   await writeFile(join(directory, 'cim.stderr.log'), Buffer.concat(cimStderr), { flag: 'wx' })
   await writeFile(join(directory, 'cim-process-exit.json'), JSON.stringify(cimExit, null, 2) + '\n', { flag: 'wx' })
   let cimReport = null, cimError = null
+  failurePhase = 'cim-read'
   if ((await readdir(directory)).includes('cim-exit-observations.json')) {
     try { cimReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(cimOutput))) }
     catch (error) { cimError = String(error) }
   }
+  failurePhase = 'exit-verdict'
   const completeCIM = !cimTimedOut && cimExit.exit === 0 && cimExit.signal === null && cimError === null && cimReport?.schema_version === 1 && cimReport.query_failure === null && cimReport.all_exited === true && Array.isArray(cimReport.observations) && cimReport.observations.length === 2 && cimReport.observations.every(row => row.query_succeeded === true && row.complete_result_count > 0 && row.required_identity_fields_complete === true && row.known_identities_exited === true && row.unknown_pids_absent === true) && cimReport.observations[1].monotonic_ms - cimReport.observations[0].monotonic_ms >= 50
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
   const record = { mode, edition, pid: child.pid, ...settled, service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled }, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   if (capture) record.query_evidence = capture.finish(closureIncomplete)
+  failurePhase = 'save-final-record'
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
   if (!identitiesExited) {
     records.push(record)
@@ -611,6 +721,7 @@ for (const mode of selectedModes) {
     process.exitCode = 1
     break
   }
+  failurePhase = 'service-assertions'
   if (spawnError) throw spawnError
   assert.equal(settled.signal, null)
   assert.equal(acted, true)
@@ -635,8 +746,9 @@ for (const mode of selectedModes) {
   }
   record.status = startupHit ? 'OBSERVED' : 'INCONCLUSIVE'
   records.push(record)
+  failurePhase = 'save-final-record'
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
-  } catch (error) { capture?.aborted(); throw error } finally { capture?.finish(closureIncomplete) }
+  } catch (error) { capture?.aborted(error, failurePhase, failureFacts()); throw error } finally { capture?.finish(closureIncomplete) }
 }
 await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: controllerCheck ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6

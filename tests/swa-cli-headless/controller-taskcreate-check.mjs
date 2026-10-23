@@ -14,7 +14,7 @@ const safeKind = error => typeof error?.code === 'string' && /^[A-Z][A-Z0-9_]{0,
 const samePath = (actual, expected) => assert.equal(actual.toLowerCase(), expected.toLowerCase())
 
 // 只在本次已就绪的真实服务中创建公开任务，不启动 Worker 或模型。
-export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity, onProcessEvent, stopAfter }) {
+export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRoot, publicParent, outputDir, sourceRevision, deadline, onProcessIdentity, onProcessEvent, onDiagnosticFailure, stopAfter }) {
   assert.equal(process.platform, 'win32')
   assert.equal(process.arch, 'x64')
   assert.equal(process.versions.node, '24.21.0')
@@ -44,6 +44,9 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
   const persist = (name, value) => writeFile(join(privateOutput, name), json(value), { flag: 'wx' })
   const remaining = cap => { const value = Math.min(cap, deadline - Date.now()); assert.ok(value > 0, 'Controller check deadline expired'); return value }
   let sequence = 0, cookie = '', csrf = '', token = '', project, caller, controller, grantAttempted = false, grantCreated = false, humanUnknown = false, primary, invocationFile
+  const diagnosticFailure = (error, component, phase, facts) => { try { onDiagnosticFailure?.(error, component, phase, facts) } catch { /* 诊断回调不得替换原始异常。 */ } }
+  const producerFailure = (error, operation) => diagnosticFailure(error, 'producer', report.phase, {
+    operation, request_id_assigned: !!report.open_request_id, grant_created: grantCreated, controller_recorded: !!controller })
 
   async function bounded(promise, cap, reason) {
     let timer
@@ -77,11 +80,15 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     child.stderr.on('end', () => { errEOF = true; event('stderr-end') })
     for (const stream of [child.stdout, child.stderr]) stream.on('error', () => { streamFailure = true })
     let exit, timedOut = false, cleanupAttempted = false
+    let commandPhase = 'identity'
     try {
       if (child.pid) identity = recordIdentity(child.pid, undefined, commandSource)
+      commandPhase = 'wait-close'
       exit = await bounded(closed, cap, 'Actual CLI or Git completion remains unknown')
     } catch (error) {
       timedOut = true
+      diagnosticFailure(error, 'producer-command', commandPhase, { command_name: name, command_sequence: commandSource.command_sequence,
+        identity: identity ?? null, exit: exit ?? null, timed_out: timedOut, stdout_eof: outEOF, stderr_eof: errEOF, stream_failure: streamFailure, cleanup_attempted: cleanupAttempted })
       // 只关闭本次仍保持原创建时间的 child；这不是自然退出证明。
       if (identity && native.getProcessCreationTime(identity.pid) === identity.creationTimeMs) { event('cleanup-request'); cleanupAttempted = child.kill() }
       try { exit = await Promise.race([closed, new Promise(resolve => setTimeout(() => resolve(null), 5000))]) } catch { /* 原结果仍为 UNKNOWN。 */ }
@@ -345,6 +352,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
     report.task_create_completed = true; report.sqlite_original_request_unchanged = true
     }
   } catch (error) {
+    producerFailure(error, 'main')
     primary = error
     report.error = { phase: report.phase, kind: safeKind(error) }
     if (stopAfter === 'controller-open') await readOriginalOpen()
@@ -355,7 +363,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
         const revoked = await human('POST', `/api/v1/local-projects/${project.id}/grants/revoke`, { agent_id: caller }, 200)
         assert.ok(revoked.grant.revoked_at)
         report.cleanup.grant_revoked = true
-      } catch (error) { primary ??= error; report.cleanup.grant_revoked = 'UNKNOWN' }
+      } catch (error) { if (primary == null) producerFailure(error, 'grant-revoke'); primary ??= error; report.cleanup.grant_revoked = 'UNKNOWN' }
     } else report.cleanup.grant_revoked = grantAttempted ? 'UNKNOWN' : 'NOT_CREATED'
     report.cleanup.controller_closed ??= report.open_request_id ? 'UNKNOWN' : 'NOT_CREATED'
     cookie = ''; csrf = ''; token = ''
@@ -365,7 +373,7 @@ export async function runControllerTaskCreateCheck({ candidate, endpoint, dataRo
       finally { clearTimeout(timer) }
       report.cleanup.dispatcher_closed = true
     }
-    catch (error) { primary ??= error; report.cleanup.dispatcher_closed = 'UNKNOWN' }
+    catch (error) { if (primary == null) producerFailure(error, 'dispatcher-close'); primary ??= error; report.cleanup.dispatcher_closed = 'UNKNOWN' }
     report.status = primary ? 'FAIL' : 'PASS'
     report.phase = primary ? report.phase : 'complete'
     await writeFile(join(outputDir, 'result.json'), json(report), { flag: 'wx' })
