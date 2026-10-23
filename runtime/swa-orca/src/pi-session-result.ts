@@ -62,6 +62,16 @@ export function readPiJournalInputTurn(journal: Pick<JournalReducerState, 'items
   return turn
 }
 
+/** 原Pi内容块索引与channel共同绑定journal角色；两种文本不能互换。 */
+export function readPiFinalBlock(content: readonly { type: string }[], providerItem: string) {
+  const matches = content.flatMap((block, index) => {
+    const role = block.type === 'text' ? 'assistant' as const : block.type === 'thinking' ? 'reasoning' as const : null
+    return role && providerItem.endsWith(`:${index}:${role}`) ? [{ index, role }] : []
+  })
+  if (matches.length !== 1) fail('final_journal_text_changed')
+  return matches[0]!
+}
+
 /** 真正native原件、原R回执和已发布journal交叉消费；没有来源时不补造会话。 */
 export async function readNativePiSessionSource(input: NativePiSessionSourceInput) {
   const cap = Math.min(maximum, input.maximum)
@@ -198,14 +208,14 @@ export async function readNativePiSessionSource(input: NativePiSessionSourceInpu
         return actual?.provider === 'legacy' && actual.agent === 'pi' && actual.sessionId === input.bindings[0]!.session_id && spelledProviderTimelineItemKey(actual.recordId) === providerTimelineKeyPart(close.value.providerItem!)
       }))
       if (!itemIds.size) fail('final_projection_missing')
+      const expected = readPiFinalBlock(finalMessage.message.content, close.value.providerItem!)
+      const block = finalMessage.message.content[expected.index]!
+      const expectedText = block.type === 'text' ? block.text : block.thinking
       for (const itemId of itemIds) {
         const item = input.journal.items.get(input.journal.aliases.get(itemId) ?? itemId)
-        if (!item || !isRootAgentJournalItem(item) || item.body.kind !== 'message' || item.body.role !== 'assistant' || input.journal.itemFences.get(item.itemId) !== input.fence || item.turnScope?.kind !== 'turn' || item.turnScope.turnItemId !== latest.turnItemId) fail('final_journal_identity_changed')
-        const blocks = finalMessage.message.content
-        const matching = blocks.filter((block, index) => close.value.providerItem!.endsWith(`:${index}:${block.type === 'text' ? 'assistant' : 'reasoning'}`))
-        const expectedText = matching.map(block => block.type === 'text' ? block.text : block.thinking).join('')
+        if (!item || !isRootAgentJournalItem(item) || item.body.kind !== 'message' || item.body.role !== expected.role || input.journal.itemFences.get(item.itemId) !== input.fence || item.turnScope?.kind !== 'turn' || item.turnScope.turnItemId !== latest.turnItemId) fail('final_journal_identity_changed')
         const actualText = item.body.blocks.flatMap(block => block.type === 'text' ? [block.text] : []).join('')
-        if (matching.length !== 1 || actualText !== expectedText) fail('final_journal_text_changed')
+        if (actualText !== expectedText) fail('final_journal_text_changed')
         const turn = input.journal.items.get(item.turnScope.turnItemId)
         if (!turn || turn.body.kind !== 'turn' || turn.body.state !== 'completed' || turn.body.outcome !== 'success') complete = false
       }

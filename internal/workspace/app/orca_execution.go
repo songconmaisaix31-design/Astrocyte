@@ -19,6 +19,14 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
+// 完整成果需要承载多Worker原件，其余动作保留较小的响应界。
+func OrcaResponseByteLimit(action string) int64 {
+	if action == "task.result" || action == "run.export" {
+		return 128 * 1024 * 1024
+	}
+	return 16 * 1024 * 1024
+}
+
 // OrcaCommand 只包含产品允许的动作；身份和原生调用参数由宿主补充。
 type OrcaCommand struct {
 	Action             string                      `json:"action"`

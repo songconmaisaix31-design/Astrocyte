@@ -28,7 +28,7 @@
 | `authorize-installed/main.go` | fixedProfile 拒 workers!=3；driverArgs 硬传字符串3；旧公开项目路径固定 | 保留原 Codex/N3 范围，增加固定 Pi N4/N6 profile、独立公开 case 与各自准确 N；传包中已校验 N |
 | `public-case-definition.mjs` | 三种提示循环分配，N4/N6会重复职责 | 准备六项有区别的公开审阅职责；N4使用前四项，N6使用六项 |
 | 主 driver 的并发判断 | Promise.allSettled 发起；全部有原生 start、未结束、至少两条真实 delta，公共区间 from<to | 保留所有判断；不能用进程数、排队、两两重叠代替全 N 重叠 |
-| 完整结果/观察 | 完整页、原 Task/Dispatch/资源数量、12MiB 成果及 trace 上界等强门已存在 | 先保持；若真实输入触界，明确失败并先调查，不过滤记录或改称完整 |
+| 完整结果/观察 | 完整页及原 Task/Dispatch/资源数量保持；单源12MiB、完整多Worker结果96MiB、导出响应128MiB | 原四份trace已超过旧总界，按[容量任务](swa-result-capacity-20261023.md)区分单源与汇总；超界明确拒绝，不过滤记录或改称完整；N6峰值仍待实际验证 |
 
 Pi 实际目标保持 `pi@1.0.1`、`stepfun/step-3.5-flash`、`openai-completions`、`https://api.stepfun.com/v1`；原 policy 的源码 pin、真实 handler、私有 per-session HOME、同安装 protocol/observer、原始 RPC 与完整 journal 检查不变。此前目录 GET200、无认证 TLS 对照和无模型 RPC只证明各自范围，生成、N4、N6仍未执行。Linux 固定系统 CA1 及原 bootstrap 精确转发保留，不能关闭证书验证。
 

@@ -284,8 +284,9 @@ func (c *runClient) call(ctx context.Context, command workspaceapp.OrcaCommand, 
 		return empty, &runCallFailure{code: code, message: "HTTP 结果未确认；保留原请求和 Run 身份", action: "inspect_original_request", exit: exit, temporary: observe && transient}
 	}
 	defer response.Body.Close()
-	data, err := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024+1))
-	if err != nil || len(data) > 16*1024*1024 {
+	responseLimit := workspaceapp.OrcaResponseByteLimit(command.Action)
+	data, err := io.ReadAll(io.LimitReader(response.Body, responseLimit+1))
+	if err != nil || int64(len(data)) > responseLimit {
 		return empty, &runCallFailure{code: "delivery_unknown", message: "HTTP 响应不完整或超过声明上限", action: "inspect_original_run", exit: 6, temporary: observe && err != nil}
 	}
 	reply, err := output.response(data, response.StatusCode)

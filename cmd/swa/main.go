@@ -181,12 +181,13 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 			_, _ = fmt.Fprintf(stderr, "HTTP trace=%q status=%d\n", trace, response.StatusCode)
 		}
 	}
-	data, err := io.ReadAll(io.LimitReader(response.Body, 16*1024*1024+1))
+	responseLimit := workspaceapp.OrcaResponseByteLimit(command.Action)
+	data, err := io.ReadAll(io.LimitReader(response.Body, responseLimit+1))
 	if ctx.Err() != nil && err != nil {
 		traceDiagnostic()
 		return output.failure("delivery_unknown", "当前 CLI 等待已取消；后台效果按原请求查询", "inspect_original_request", 130)
 	}
-	if err != nil || len(data) > 16*1024*1024 {
+	if err != nil || int64(len(data)) > responseLimit {
 		traceDiagnostic()
 		return output.failure("delivery_unknown", "HTTP 响应不完整或超过声明上限", "inspect_original_request", 6)
 	}

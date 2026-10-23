@@ -244,7 +244,11 @@ func (r *Runtime) call(ctx context.Context, request bridgeRequest, mutation bool
 	cmd.WaitDelay = 5 * time.Second
 	configureHiddenProcess(cmd)
 	var stdout, stderr boundedBuffer
-	stdout.maximum, stderr.maximum = 16*1024*1024, 256*1024
+	responseAction := ""
+	if request.Operation == "execute" && request.Invocation != nil {
+		responseAction = request.Invocation.Command.Action
+	}
+	stdout.maximum, stderr.maximum = int(app.OrcaResponseByteLimit(responseAction)), 256*1024
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	if err := cmd.Start(); err != nil {
 		return reply, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "the installed native RuntimeClient could not start", RequiredAction: "inspect_product_installation"}

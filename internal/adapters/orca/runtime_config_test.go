@@ -1,12 +1,45 @@
 package orca
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
+
+func TestRuntimeResponseBoundsKeepOrdinaryCallsSmall(t *testing.T) {
+	// 这里只测试传输字节，不模拟提供者协议或成功回执。
+	payload := bytes.Repeat([]byte("x"), 20*1024*1024)
+	for _, action := range []string{"task.result", "run.export", "worker.read", "run.show", "controller.open", ""} {
+		t.Run(action, func(t *testing.T) {
+			limit := app.OrcaResponseByteLimit(action)
+			output := boundedBuffer{maximum: int(limit)}
+			n, err := output.Write(payload)
+			if action != "task.result" && action != "run.export" {
+				if limit != 16*1024*1024 || err == nil || n != 0 || output.Len() != 0 {
+					t.Fatal("普通响应超过原16MiB时没有完整拒绝")
+				}
+				return
+			}
+			if limit != 128*1024*1024 || err != nil || n != len(payload) || !bytes.Equal(output.Bytes(), payload) {
+				t.Fatal("完整成果响应不能保留超过旧界的实际字节")
+			}
+			chunk := make([]byte, 64*1024)
+			for output.Len() < int(limit) {
+				if _, err := output.Write(chunk); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if n, err := output.Write([]byte{0}); err == nil || n != 0 || output.Len() != int(limit) {
+				t.Fatal("完整成果响应超过上限时没有保留完整拒绝语义")
+			}
+		})
+	}
+}
 
 func codexSourceConfig(t *testing.T) Config {
 	t.Helper()

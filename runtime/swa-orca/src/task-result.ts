@@ -33,7 +33,9 @@ import { assertNativePiSnapshotCurrent, inspectNativePiPolicy, nativeConfigurati
 import { privatePiEnvironment, verifyPrivatePiSessionAccount } from './private-pi-account'
 import { validatePiExport } from './pi-session-policy'
 import { readNativePiSessionSource as readNativePiBoundSessionSource } from './pi-session-result'
-export { readPiJournalInputTurn } from './pi-session-result'
+import { readProviderTraceObservation } from './provider-trace-observation'
+export { readProviderTraceObservation } from './provider-trace-observation'
+export { readPiJournalInputTurn, readPiFinalBlock } from './pi-session-result'
 import { codexProtectedRoots } from './agent-discovery'
 import { readAgentSettings } from './agent-settings'
 import { swaLinuxProcessIncarnationSchema } from '../../../third_party/orca-v1.4.230/src/main/daemon/swa-linux-process-identity'
@@ -51,7 +53,8 @@ import { validateClaudeExport } from './claude-session-policy'
 import { claudeProviderHandleLeafUuid } from '../../../third_party/orca-v1.4.230/src/shared/agent-session-provider-handle-encoding'
 import { isRootClaudeFrame } from '../../../third_party/orca-v1.4.230/src/main/claude/claude-turn-opening'
 
-const maximum = 12 * 1024 * 1024
+export const resultObservationLimits = Object.freeze({ source_bytes: 12 * 1024 * 1024, result_bytes: 96 * 1024 * 1024, response_bytes: 128 * 1024 * 1024 })
+const maximum = resultObservationLimits.source_bytes
 const sourceWitnesses = new Map<string, { path: string; identity: string; nativeSession: string; bytes: Buffer }>()
 const headerSchema = z.looseObject({ type: z.literal('session'), version: z.literal(3), id: z.uuid(), timestamp: z.iso.datetime(), cwd: z.string().min(1), parentSession: z.string().optional() })
 const textContent = z.looseObject({ type: z.literal('text'), text: z.string(), textSignature: z.string().optional() })
@@ -134,27 +137,33 @@ const traceRowSchema = z.discriminatedUnion('protocol', [
   z.strictObject({ ...traceIdentity, protocol: z.literal('pi-jsonl-rpc'), projection: z.literal('actual_native_rpc_frames'), event: z.enum(['custody', 'policy_ready', 'write_intent', 'write_settled', 'stop_intent', 'native_record', 'projection_published', 'failure', 'custody_closed']) })
 ])
 
-async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean; requirePrivatePath(path: string): void }) {
+async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; path: string; record: AgentSessionRecord; binding: z.infer<typeof structuredInputBindingSchema> | null; nativeId: string; runtimeId: string; maximum: number; requireClosed: boolean; observation?: true; requirePrivatePath(path: string): void }) {
   const { record, binding } = input
   const head = agentSessionProviderHandleChainHead(record.providerHandleChain)
   if (!binding || binding.agent !== input.agent || record.provider !== input.agent || binding.session_id !== record.sessionId || binding.dispatch_id === '' || !head || head.mintedAtFence !== binding.runtime_fence || head.handle.nativeId !== input.nativeId || head.origin !== 'created' || head.forkedFromKey) return fail('The original native owner fence or provider handle is unavailable')
   input.requirePrivatePath(input.path)
-  const source = await nativeConfigurationSource(input.path)
-  const handle = await open(input.path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
+  const observed = input.observation ? await readProviderTraceObservation(input) : undefined
+  const source = observed?.source ?? await nativeConfigurationSource(input.path)
   let content: string
-  try {
-    const before = await handle.stat({ bigint: true })
-    if (before.size < 1n || before.size > BigInt(Math.max(0, input.maximum))) return fail('The full provider event source exceeds the remaining result bound')
-    const buffer = Buffer.alloc(Number(before.size) + 1)
-    let count = 0
-    while (count < buffer.length) { const value = await handle.read(buffer, count, buffer.length - count, count); if (!value.bytesRead) break; count += value.bytesRead }
-    const after = await handle.stat({ bigint: true })
-    const version = (info: typeof before) => `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
-    if (count !== Number(before.size) || version(before) !== source.version || version(after) !== source.version || buffer[count - 1] !== 10) return fail('The complete provider event source changed or has an incomplete frame')
-    content = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, count))
-  } finally { await handle.close() }
   const rows: z.infer<typeof traceRowSchema>[] = []
-  for await (const item of Readable.from([Buffer.from(content)]).pipe(parser.asStream())) { if (rows.length >= 100_000) return fail('The complete provider event inventory exceeds its bound'); rows.push(traceRowSchema.parse(item.value)) }
+  if (observed) {
+    content = new TextDecoder('utf-8', { fatal: true }).decode(observed.bytes)
+    rows.push(...observed.rows.map(row => traceRowSchema.parse(row)))
+  } else {
+    const handle = await open(input.path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0))
+    try {
+      const before = await handle.stat({ bigint: true })
+      if (before.size < 1n || before.size > BigInt(Math.max(0, input.maximum))) return fail('The full provider event source exceeds the remaining result bound')
+      const buffer = Buffer.alloc(Number(before.size) + 1)
+      let count = 0
+      while (count < buffer.length) { const value = await handle.read(buffer, count, buffer.length - count, count); if (!value.bytesRead) break; count += value.bytesRead }
+      const after = await handle.stat({ bigint: true })
+      const version = (info: typeof before) => `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`
+      if (count !== Number(before.size) || version(before) !== source.version || version(after) !== source.version || buffer[count - 1] !== 10) return fail('The complete provider event source changed or has an incomplete frame')
+      content = new TextDecoder('utf-8', { fatal: true }).decode(buffer.subarray(0, count))
+    } finally { await handle.close() }
+    for await (const item of Readable.from([Buffer.from(content)]).pipe(parser.asStream())) { if (rows.length >= 100_000) return fail('The complete provider event inventory exceeds its bound'); rows.push(traceRowSchema.parse(item.value)) }
+  }
   const first = rows[0]
   if (!first || first.event !== 'custody') return fail('The original native custody observation is missing')
   for (const [index, row] of rows.entries()) {
@@ -176,6 +185,7 @@ async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; pa
     if (actualThread.id !== input.nativeId || typeof actualThread.path !== 'string' || !isAbsolute(actualThread.path)) return fail('The actual native Codex thread or rollout changed')
   }
   const closed = rows.at(-1)?.event === 'custody_closed' ? nativeObject(rows.at(-1)!.detail) : null
+  if (closed && observed && observed.observation.incomplete_tail_bytes !== 0) return fail('The closed native provider source has an incomplete trailing frame')
   if ('platform' in first.process) {
     const observed = nativeObject(first.detail)
     if (!isDeepStrictEqual(observed.root, Object.fromEntries(Object.entries(first.process).filter(([key]) => key !== 'runtime_id'))) || observed.custodyAdmitted !== true || !isDeepStrictEqual(observed.nativeCLI, first.native_cli)) return fail('The Linux native source differs from its actual custody')
@@ -205,8 +215,8 @@ async function readStructuredTrace(input: { agent: 'codex' | 'claude' | 'pi'; pa
   } else if (record.lease.claimStatus !== 'live' || !owner || owner.pid !== first.process.pid || owner.runtime !== first.process.runtime_id || record.lease.runtimeFence !== binding.runtime_fence || 'creation_time_ms' in first.process && owner.processStartTimeMs !== first.process.creation_time_ms) return fail('The live native source differs from its current exact owner')
   if (input.requireClosed && !closed) return fail('The complete native result requires its actual full-tree closure')
   const verify = async () => { input.requirePrivatePath(input.path); if (!isDeepStrictEqual(source, await nativeConfigurationSource(input.path))) return fail('The provider event source changed before export') }
-  await verify()
-  return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, source, rows, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : input.agent === 'claude' ? 'claude-sdk-events-ndjson' : 'pi-native-rpc-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
+  if (!observed || closed) await verify()
+  return { process: first.process, fence: binding.runtime_fence, custody: closed ?? first.detail, thread: actualThread, source, rows, observation: observed?.observation, value: { format: input.agent === 'codex' ? 'codex-provider-events-ndjson' : input.agent === 'claude' ? 'claude-sdk-events-ndjson' : 'pi-native-rpc-events-ndjson', path: input.path, source_version: source.version, record_count: rows.length, content }, verify }
 }
 
 const inputReceiptRow = z.object({ ledger_sequence: z.number().int().positive(), request_id: z.string(), state: z.enum(['pending', 'completed']), payload_hash: z.string(), receipt: z.string(), child_caller: z.string().nullable(), child_method: z.string().nullable(), child_state: z.string().nullable(), child_payload_hash: z.string().nullable(), child_receipt: z.string().nullable() })
@@ -522,7 +532,30 @@ export async function readNativePiSessionSource(path: string, sessionRoot: strin
   } finally { await file.close() }
 }
 
+class WorkerObservationChanged extends Error {}
+
 export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, dispatchId: string) {
+  let original: string | undefined
+  const bind = (identity: unknown) => {
+    const value = JSON.stringify(identity)
+    if (original !== undefined && original !== value) return fail('The observed Worker changed its original source identity')
+    original = value
+  }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const value = await observeWorkerSourceSnapshot(runtime, scope, workspaceId, dispatchId, bind)
+      if (original !== undefined && value.availability !== 'observed') return fail('The original Worker source disappeared during observation')
+      return value
+    }
+    catch (error) {
+      if (!(error instanceof WorkerObservationChanged)) throw error
+      if (attempt === 2) return fail('The Worker observation did not stabilize after three read-only snapshots')
+    }
+  }
+  return fail('The Worker observation is unavailable')
+}
+
+async function observeWorkerSourceSnapshot(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, dispatchId: string, bind: (identity: unknown) => void) {
   const db = runtime.getOrchestrationDb(), dispatch = db.getDispatchContextById(dispatchId)
   const task = dispatch && db.getTask(dispatch.task_id), resource = db.getWorkerTerminalResourceByOwner(dispatchId)
   const nativeWorker = db.getWorkerDispatch(dispatchId)
@@ -543,6 +576,10 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
   await exactPrivatePath(root, workerRoot)
   const ownerProcess = record.lease.ownerProcess
   const original = originalWorkerSelection(runtime, scope, dispatchId, record), selection = original.selection
+  const traceAgent = record.provider === 'codex' || record.provider === 'claude' ? record.provider : record.provider === 'pi' && selection.native_launch.account.kind === 'pi-native-api-key-per-session' ? 'pi' : null
+  bind({ scope, workspaceId, dispatchId, taskId: task.id, sessionId, provider: record.provider, location: record.location, account: record.accountHome,
+    options: record.options, head, selection, runtimeEpoch: nativeWorker.runtime_epoch,
+    resource: { id: resource.id, origin: resource.origin_dispatch_id, owner: resource.owner_dispatch_id, terminal: resource.terminal_handle, incarnation: resource.process_incarnation } })
   const signature = sourceSignature(record), inventory = original.binding ? readStructuredInputInventory(db, scope, dispatchId, { allowPending: true }) : null
   if (inventory) {
     const completed = inventory.rows.filter(row => row.state === 'completed')
@@ -552,13 +589,16 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
     const currentInput = inventory ? await currentInputObservation(runtime, scope, inventory, { dispatchId, selection }) : undefined
     const catalog = host.deps.modelCatalog && agentDrivesSession(host.deps.agents, record) ? await host.deps.modelCatalog.read({ agent: record.provider, sessionId, inSessionWorkspace: true, savedOnly: true }) : undefined
     const current = host.deps.store.getRecord(sessionId)
-    if (!current || sourceSignature(current) !== signature || inventory && readStructuredInputInventory(db, scope, dispatchId, { allowPending: true }).signature !== inventory.signature || !isDeepStrictEqual(db.getWorkerDispatch(dispatchId), nativeWorker) || !isDeepStrictEqual(db.getWorkerTerminalResourceByOwner(dispatchId), resource)) return fail('The observed Worker source changed before capability projection')
+    if (!current || sourceSignature(current) !== signature || inventory && readStructuredInputInventory(db, scope, dispatchId, { allowPending: true }).signature !== inventory.signature || !isDeepStrictEqual(db.getWorkerDispatch(dispatchId), nativeWorker) || !isDeepStrictEqual(db.getWorkerTerminalResourceByOwner(dispatchId), resource)) {
+      if (!traceAgent) return fail('The observed Worker source changed before capability projection')
+      throw new WorkerObservationChanged()
+    }
     return { ...source, execution: executionObservation(source, { dispatchId, currentInput, modelCatalog: catalog }) }
   }
-  if (record.provider === 'codex' || record.provider === 'claude' || record.provider === 'pi' && selection.native_launch.account.kind === 'pi-native-api-key-per-session') {
+  if (traceAgent) {
     if (original.binding?.dispatch_id !== dispatchId) return fail('The native source belongs to another Dispatch')
-    const trace = await readStructuredTrace({ agent: record.provider, path: join(workerRoot, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum, requireClosed: resource.release_state === 'released', requirePrivatePath: path => record.provider === 'claude' ? requireNativeClaudePath(path, { directory: false, private: true }) : requireNativeCodexPrivatePath(path, false) })
-    return project({ availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: trace.fence, runtime_epoch: nativeWorker.runtime_epoch, claim_status: record.lease.claimStatus, selection, process: trace.process, custody: trace.custody, provider_link: head, journal_database: journal, provider_events: trace.source.path, provider_events_source: trace.source, worker_state: nativeWorker.state, release_state: resource.release_state })
+    const trace = await readStructuredTrace({ agent: traceAgent, path: join(workerRoot, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum, observation: true, requireClosed: resource.release_state === 'released', requirePrivatePath: path => record.provider === 'claude' ? requireNativeClaudePath(path, { directory: false, private: true }) : requireNativeCodexPrivatePath(path, false) })
+    return project({ availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: trace.fence, runtime_epoch: nativeWorker.runtime_epoch, claim_status: record.lease.claimStatus, selection, process: trace.process, custody: trace.custody, provider_link: head, journal_database: journal, provider_events: trace.source.path, provider_events_source: trace.source, provider_events_observation: trace.observation, worker_state: nativeWorker.state, release_state: resource.release_state })
   }
   return project({ availability: 'observed', native_session_id: sessionId, provider: record.provider, fence: record.lease.runtimeFence, claim_status: record.lease.claimStatus,
     selection,
@@ -567,6 +607,7 @@ export async function observeWorkerSource(runtime: OrcaRuntimeService, scope: Sc
 }
 
 export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Scope, workspaceId: string, metadata: unknown, dispatchId?: string) {
+  const maximum = resultObservationLimits.result_bytes
   const summary = nativeObject(metadata)
   const workers = z.array(z.looseObject({ worker: z.looseObject({ dispatchId: z.string(), taskId: z.string(), runId: z.string() }), observation: z.unknown() })).parse(summary.workers)
   const selectedWorkers = dispatchId === undefined ? workers : workers.filter(row => row.worker.dispatchId === dispatchId)
@@ -628,7 +669,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       const snapshot = await inspectNativeCodexPolicy({ executable: selection.executable, version: selection.version, sourceHome: account.source_home, projectId: scope.project_id, privateRoot: account.private_root, catalogPath: account.catalog_source.path, env: process.env, protectedRoots: codexProtectedRoots(await readAgentSettings(), cwd) })
       if (!isDeepStrictEqual(snapshot.policy, selection.native_launch)) return fail('The original Codex account source changed before export')
       const privateSource = await verifyPrivateCodexAccount(snapshot, sessionId)
-      providerEvents = await readStructuredTrace({ agent: 'codex', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
+      providerEvents = await readStructuredTrace({ agent: 'codex', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: Math.min(resultObservationLimits.source_bytes, maximum - used), requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
       used += Buffer.byteLength(JSON.stringify(providerEvents.value))
       const path = z.string().min(1).parse(providerEvents.thread?.path)
       const validateExport = (text: string) => validateCodexExport(snapshot, text)
@@ -655,7 +696,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       if (!isDeepStrictEqual(nativeSnapshot.policy, selection.native_launch)) return fail('The original Claude account source changed before export')
       await verifyPrivateClaudeAccount(nativeSnapshot, sessionId)
       const configRoot = join(account.private_root, sessionId, 'config')
-      const trace = await readStructuredTrace({ agent: 'claude', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeClaudePath(path, { directory: false, private: true }) })
+      const trace = await readStructuredTrace({ agent: 'claude', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: Math.min(resultObservationLimits.source_bytes, maximum - used), requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeClaudePath(path, { directory: false, private: true }) })
       providerEvents = trace
       used += Buffer.byteLength(JSON.stringify(trace.value))
       collectClaude = async state => {
@@ -689,7 +730,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       await verifyPrivatePiSessionAccount(snapshot, sessionId)
       const home = join(account.private_root, sessionId)
       const privateSources = await Promise.all(['auth.json', 'settings.json', ...(snapshot.models === null ? [] : ['models.json'])].map(name => nativeConfigurationSource(join(home, name))))
-      const trace = await readStructuredTrace({ agent: 'pi', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: maximum - used, requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
+      const trace = await readStructuredTrace({ agent: 'pi', path: join(data, 'workers', sessionId, 'provider-events.ndjson'), record, binding: original.binding, nativeId: head.handle.nativeId, runtimeId: z.string().min(1).parse(nativeWorker.runtime_epoch), maximum: Math.min(resultObservationLimits.source_bytes, maximum - used), requireClosed: resource.release_state === 'released', requirePrivatePath: path => requireNativeCodexPrivatePath(path, false) })
       const ready = trace.rows.find(row => row.event === 'policy_ready')
       const expectedSources = [...snapshot.sources.pinnedFiles, ...privateSources.filter(source => basename(source.path) !== 'settings.json')]
       if (!ready || !isDeepStrictEqual(nativeObject(ready.detail).sources, expectedSources)) return fail('The native Pi execution or private account source differs from its original observation')
@@ -698,7 +739,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       const environment = privatePiEnvironment(home, Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined)))
       collectPi = async state => {
         const source = await nativeConfigurationSource(head.handle.nativeId)
-        const native = await readNativePiBoundSessionSource({ path: head.handle.nativeId, privateRoot: home, cwd, provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, source, stopped: nativeWorker.state === 'stopped', maximum: maximum - used, traceRows: trace.rows, bindings, journal: state, fence: trace.fence, validateExport: text => validatePiExport(snapshot, text, environment) })
+        const native = await readNativePiBoundSessionSource({ path: head.handle.nativeId, privateRoot: home, cwd, provider: account.provider, modelId: account.model_target.model_id, api: account.model_target.api, baseUrl: account.model_target.base_url, source, stopped: nativeWorker.state === 'stopped', maximum: Math.min(resultObservationLimits.source_bytes, maximum - used), traceRows: trace.rows, bindings, journal: state, fence: trace.fence, validateExport: text => validatePiExport(snapshot, text, environment) })
         nativeChecks.push(native.verify, trace.verify, async () => { assertNativePiSnapshotCurrent(snapshot); await verifyPrivatePiSessionAccount(snapshot, sessionId) })
         finalNativeChecks.push(() => {
           assertNativePiSnapshotCurrent(snapshot)
@@ -724,9 +765,9 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
       nativeSession = await readNativePiSessionSource(head.handle.nativeId, sessionRoot, cwd, sessionId, nativeWorker.state === 'stopped', selection)
     }
     const { journal, rows, snapshot } = await readPrivateJournal(data, host.deps.journalDatabase.stateDirectory, journalDB => {
-      const bound = z.object({ count: z.number(), bytes: z.number().nullable(), max_seq: z.number().nullable() }).parse(journalDB.prepare('SELECT COUNT(*) AS count, SUM(LENGTH(row_json)) AS bytes, MAX(seq) AS max_seq FROM journal_rows WHERE session_id=? AND epoch=?').get(sessionId, readJournalSessionEpoch(journalDB, sessionId)))
+      const bound = z.object({ count: z.number(), bytes: z.number().nullable(), max_seq: z.number().nullable() }).parse(journalDB.prepare('SELECT COUNT(*) AS count, SUM(LENGTH(CAST(row_json AS BLOB))) AS bytes, MAX(seq) AS max_seq FROM journal_rows WHERE session_id=? AND epoch=?').get(sessionId, readJournalSessionEpoch(journalDB, sessionId)))
       used += (nativeSession === undefined ? 0 : Buffer.byteLength(JSON.stringify(nativeSession))) + (bound.bytes ?? 0)
-      if (used > maximum || bound.count <= 0 || bound.count > 100_000) return fail('The required journal is missing or exceeds the declared result bound')
+      if (used > maximum || (bound.bytes ?? 0) > resultObservationLimits.source_bytes || bound.count <= 0 || bound.count > 100_000) return fail('The required journal is missing or exceeds the declared result bound')
       const journal = replayJournal(journalDB, sessionId)
       if (!journal || journal.damage || journal.newer || journal.state.lastSequence !== bound.max_seq) return fail('The actual native journal is damaged, incomplete or has a newer schema')
       const rows = [...iterateJournalEpochRows(journalDB, sessionId, journal.state.epoch)]
@@ -780,7 +821,7 @@ export async function completeTaskResult(runtime: OrcaRuntimeService, scope: Sco
   if (readRootResultInventory(db, scope, workers.map(row => row.worker)).signature !== rootInventory.signature) return fail('The complete root Worker inventory changed before the result was returned')
   const result = { ...summary, workers: outputs, source: 'native_journal_and_native_cli_session', collected_at: new Date().toISOString() }
   const serialized = JSON.stringify(result)
-  if (Buffer.byteLength(serialized) > maximum) return fail('The full result exceeds the declared 12 MiB export bound; no partial export is returned')
+  if (Buffer.byteLength(serialized) > maximum) return fail('The full result exceeds the declared 96 MiB export bound; no partial export is returned')
   for (const validate of exportChecks) validate(serialized)
   return result
 }
