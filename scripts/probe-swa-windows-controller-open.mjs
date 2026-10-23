@@ -13,8 +13,10 @@ async function main() {
 // 只组合固定原包中的 Node/native 与原失败源码；不产生正式候选。
 const sourceRevision = '7ff3a7d7d7e029c2fc9e2ae1fb6b81da8e0d4f8f'
 const priorRevision = '1d3006fe0df0cb04b7f0de1e4563264bd0bfd9da'
-const { values } = parseArgs({ options: { ...Object.fromEntries(['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli'].map(name => [name, { type: 'string' }])), 'native-compile-only': { type: 'boolean', default: false } }, strict: true, allowPositionals: false })
-const nativeCompileOnly = values['native-compile-only']
+const { values } = parseArgs({ options: { ...Object.fromEntries(['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli'].map(name => [name, { type: 'string' }])),
+  'native-compile-only': { type: 'boolean', default: false }, 'native-abi-only': { type: 'boolean', default: false } }, strict: true, allowPositionals: false })
+const nativeCompileOnly = values['native-compile-only'], nativeAbiOnly = values['native-abi-only'], nativeOnly = nativeCompileOnly || nativeAbiOnly
+assert.ok(!(nativeCompileOnly && nativeAbiOnly), 'Native compile-only and ABI-only modes are mutually exclusive')
 assert.equal(process.platform, 'win32'); assert.equal(process.arch, 'x64')
 for (const name of ['artifact-root', 'work-root', 'evidence-root', 'pnpm-cli']) assert.ok(values[name] && isAbsolute(values[name]))
 const checkout = await realpath(fileURLToPath(new URL('../', import.meta.url)))
@@ -39,9 +41,9 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 const digest = async path => ({ path: await realpath(path), sha256: hash(await readFile(path)) })
 const result = { schema: 'swa.windows-controller-open-development.v1', status: 'FAIL', phase: 'preflight',
   source_revision: sourceRevision, input_revision: priorRevision, observation_revision: process.env.GITHUB_SHA ?? 'UNKNOWN',
-  runtime_source_revision: nativeCompileOnly ? priorRevision : sourceRevision, native_input_revision: priorRevision, go_source_revision: nativeCompileOnly ? 'NOT_RUN' : 'UNKNOWN',
-  scope: nativeCompileOnly ? 'development_native_compile_only_not_candidate' : 'development_composition_not_candidate',
-  ...(nativeCompileOnly ? { native_compile_only: true, application_entries: 'COPIED_NOT_EXECUTED', go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
+  runtime_source_revision: nativeOnly ? priorRevision : sourceRevision, native_input_revision: priorRevision, go_source_revision: nativeOnly ? 'NOT_RUN' : 'UNKNOWN',
+  scope: nativeCompileOnly ? 'development_native_compile_only_not_candidate' : nativeAbiOnly ? 'development_native_abi_only_not_candidate' : 'development_composition_not_candidate',
+  ...(nativeOnly ? { native_compile_only: nativeCompileOnly, native_abi_only: nativeAbiOnly, application_entries: 'COPIED_NOT_EXECUTED', go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
     native_self: 'NOT_RUN', root_child_control: 'NOT_RUN', controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
   model_calls: 0, worker_calls: 0, task_create: 'NOT_RUN', commands: [], private_raw_uploaded: false }
 const env = {}
@@ -191,7 +193,7 @@ try {
   const approvedGo = ['cmd/swa/serve.go', 'cmd/swa/process_linux.go', 'cmd/swa/process_other.go', 'cmd/swa/process_windows.go', 'cmd/swa/data_directory_windows_test.go'].sort()
   assert.deepEqual(changedGo, approvedGo, 'Development Go source differs beyond the accepted private-data repair')
   assert.equal((await git(['status', '--porcelain', '--untracked-files=no', '--', ...goScope])).toString().trim(), '')
-  if (!nativeCompileOnly) result.go_source_revision = goRevision
+  if (!nativeOnly) result.go_source_revision = goRevision
   result.go_source_inputs = await Promise.all(approvedGo.map(async path => {
     const bytes = await readFile(join(checkout, path))
     assert.ok(bytes.equals(await fixed(path, goRevision)), 'Development Go input differs from its observation commit')
@@ -251,15 +253,15 @@ try {
   }
   for (const name of ['runtime/swa-orca', 'third_party/orca-v1.4.230/native/windows-security', 'third_party/orca-v1.4.230/native/windows-registry', 'third_party/orca-v1.4.230/src/packages/process-host']) assert.deepEqual(priorLock.importers[name], targetLock.importers[name])
   assert.deepEqual(priorLock.patchedDependencies, targetLock.patchedDependencies)
-  result.phase = nativeCompileOnly ? 'native-runtime-copy' : 'partial-application-build'
+  result.phase = nativeOnly ? 'native-runtime-copy' : 'partial-application-build'
   const development = join(work, 'development-7ff3a7d7')
   await mkdir(development)
   const entries = ['host.cjs', 'client.cjs', 'controller-helper.cjs', 'daemon-entry.js']
   for (const name of ['node', 'runtime', 'third-party-licenses']) await cp(join(original, name), join(development, name), { recursive: true, force: false, errorOnExist: true,
-    filter: path => nativeCompileOnly || !entries.some(entry => path === join(original, 'runtime', entry) || path === join(original, 'runtime', entry + '.metafile.json')) })
+    filter: path => nativeOnly || !entries.some(entry => path === join(original, 'runtime', entry) || path === join(original, 'runtime', entry + '.metafile.json')) })
   const actualNode = join(development, 'node/node.exe')
   result.source_inputs = []
-  if (!nativeCompileOnly) {
+  if (!nativeOnly) {
   await writeFile(join(development, 'VERSION'), goRevision + '\n', { flag: 'wx' })
   for (const [name, text] of [['PLATFORM', 'win32-x64'], ['EDITION', 'cli']]) await writeFile(join(development, name), text + '\n', { flag: 'wx' })
   const builderPath = join(source, 'scripts/build-swa-runtime.mjs'), builderText = await readFile(builderPath, 'utf8')
@@ -432,6 +434,8 @@ try {
     result.phase = 'native-process-tree-compile-complete'; result.status = 'PASS'
     return
   }
+  result.phase = 'native-process-snapshot-self'
+  if (nativeAbiOnly) result.native_self = 'UNKNOWN'
   native = requireDevelopment('@vscode/windows-process-tree')
   const diagnosticRows = await new Promise((resolveRows, reject) => {
     const timer = setTimeout(() => reject(new Error('Diagnostic native callback did not settle')), 15_000)
@@ -454,10 +458,11 @@ try {
   result.diagnostic_process_tree.actual_callback_version = 2
   result.native_snapshot = { provider: diagnosticSelf[0].creationTimeProvider, version: 2, ntstatus: diagnosticSelf[0].creationTimeNtStatus,
     self_identity_matches: true, root_child_control: 'NOT_RUN' }
-  result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
+  if (nativeAbiOnly) result.native_self = 'PASS'
+  if (!nativeAbiOnly) result.development_entries = await Promise.all(['swa.exe', 'server.exe', 'VERSION', 'node/node.exe', ...entries.map(name => 'runtime/' + name)].map(async name => ({ name, sha256: (await digest(join(development, name))).sha256 })))
   // 观察脚本明确来自 observation revision，工具与所有产品输入仍解析自固定7ff目录。
   result.observer_sources = []
-  for (const name of ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs', 'process-incarnation-closure.mjs']) {
+  for (const name of nativeAbiOnly ? ['process-incarnation-closure.mjs'] : ['controller-input-check.mjs', 'controller-taskcreate-check.mjs', 'serve-lifecycle.mjs', 'process-incarnation-closure.mjs']) {
     const destination = join(source, 'tests/swa-cli-headless', name), observation = join(checkout, 'tests/swa-cli-headless', name)
     const originalSha = (await digest(destination)).sha256, actualSha = (await digest(observation)).sha256
     await copyFile(observation, destination)
@@ -465,7 +470,7 @@ try {
     result.observer_sources.push({ name, original_7ff_sha256: originalSha, observation_sha256: actualSha })
   }
   const requireObserver = createRequire(join(source, 'runtime/swa-orca/package.json'))
-  result.observer_tool_resolution = await Promise.all(['esbuild', 'typescript'].map(async name => {
+  if (!nativeAbiOnly) result.observer_tool_resolution = await Promise.all(['esbuild', 'typescript'].map(async name => {
     const path = await realpath(requireObserver.resolve(name))
     assert.ok(contains(source, path), 'Observer build dependency escaped the frozen source installation')
     return { name, path: relative(source, path).replaceAll('\\', '/') }
@@ -475,13 +480,53 @@ try {
   await mkdir(snapshotData)
   const controlScript = join(source, 'tests/swa-cli-headless/windows-process-incarnation-control.mjs')
   assert.ok((await readFile(controlScript)).equals(await fixed('tests/swa-cli-headless/windows-process-incarnation-control.mjs')))
-  await command(actualNode, [controlScript, '--source-root', source, '--runtime-root', developmentRuntime,
-    '--data-root', snapshotData, '--output-dir', snapshotOutput, '--source-revision', goRevision], source, 90_000)
-  const snapshotReportBytes = await readFile(join(snapshotOutput, 'result.json'))
-  assert.ok(snapshotReportBytes.length <= 1024 * 1024)
+  if (nativeAbiOnly) result.root_child_control = 'UNKNOWN'
+  result.native_snapshot.root_child_control = 'UNKNOWN'
+  const snapshotCommand = await command(actualNode, [controlScript, '--source-root', source, '--runtime-root', developmentRuntime,
+    '--data-root', snapshotData, '--output-dir', snapshotOutput, '--source-revision', goRevision], source, 90_000, {}, true)
+  const snapshotReportPath = join(snapshotOutput, 'result.json'), snapshotReportInfo = await lstat(snapshotReportPath)
+  assert.ok(snapshotReportInfo.isFile() && !snapshotReportInfo.isSymbolicLink() && snapshotReportInfo.nlink === 1 && snapshotReportInfo.size <= 1024 * 1024)
+  assert.equal((await realpath(snapshotReportPath)).toLowerCase(), resolve(snapshotReportPath).toLowerCase())
+  const snapshotReportBytes = await readFile(snapshotReportPath)
   const snapshotReport = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(snapshotReportBytes))
   assert.equal(snapshotReport.schema_version, 1); assert.equal(snapshotReport.source_revision, goRevision)
-  assert.equal(snapshotReport.status, 'PASS'); assert.equal(snapshotReport.control_complete, true); assert.equal(snapshotReport.probe_exit, 0)
+  {
+  const number = value => Number.isSafeInteger(value) && value >= 0 ? value : 'UNKNOWN'
+  const boolean = value => typeof value === 'boolean' ? value : 'UNKNOWN'
+  const identity = row => ({ pid: number(row?.pid), ppid: number(row?.ppid), creationTimeMs: number(row?.creationTimeMs) })
+  const actualExit = row => row === undefined ? 'UNKNOWN' : { exit: row?.exit === null ? null : number(row?.exit),
+    signal: row?.signal === null ? null : /^SIG[A-Z0-9]{1,16}$/.test(row?.signal ?? '') ? row.signal : 'UNKNOWN', spawn_failed: boolean(row?.spawn_failed) }
+  const observations = (rows, convert) => Array.isArray(rows) ? { count: rows.length, truncated: rows.length > 2, rows: rows.slice(0, 2).map(convert) } : 'UNKNOWN'
+  const identities = rows => Array.isArray(rows) ? { count: rows.length, truncated: rows.length > 8, rows: rows.slice(0, 8).map(identity) } : 'UNKNOWN'
+  result.root_child_fixture = { exit: snapshotCommand.exit,
+    status: ['CONTROL_COMPLETE', 'FAIL', 'NOT_RUN'].includes(snapshotReport.status) ? snapshotReport.status : 'UNKNOWN',
+    failed_phase: snapshotReport.failed_phase === undefined ? null : ['native-preflight', 'live-root-child', 'normal-eof'].includes(snapshotReport.failed_phase) ? snapshotReport.failed_phase : 'UNKNOWN',
+    probe_exit: number(snapshotReport.probe_exit), control_complete: boolean(snapshotReport.control_complete),
+    cleanup_attempted: Object.hasOwn(snapshotReport, 'cleanup_attempted') ? boolean(snapshotReport.cleanup_attempted) : 'NOT_RECORDED',
+    cleanup_unknown: Object.hasOwn(snapshotReport, 'cleanup_unknown') ? boolean(snapshotReport.cleanup_unknown) : 'NOT_RECORDED',
+    kernel_tree_exit_proven: boolean(snapshotReport.kernel_tree_exit_proven), case_count: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.length : 'UNKNOWN',
+    cases_truncated: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.length > 2 : 'UNKNOWN',
+    cases: Array.isArray(snapshotReport.cases) ? snapshotReport.cases.slice(0, 2).map(row => ({
+      name: ['live-root-child', 'normal-eof'].includes(row?.name) ? row.name : 'UNKNOWN',
+      ...(row?.name === 'live-root-child' ? { observations: observations(row.observations, sample => ({ observed_at_ms: number(sample?.observed_at_ms), actual_row_count: number(sample?.actual_row_count),
+        root_verified: boolean(sample?.root_verified), owned_count: number(sample?.owned_count), owned: identities(sample?.owned),
+        excluded_edge_count: number(sample?.excluded_edge_count), unknown_count: number(sample?.unknown_count) })) } : {}),
+      ...(row?.name === 'normal-eof' ? { root_exit: actualExit(row.root_exit), child_wait: actualExit(row.child_wait?.actual_exit),
+        root_stdout_eof: boolean(row.root_stdout_eof), root_stderr_eof: boolean(row.root_stderr_eof), root_stdin_failed: boolean(row.root_stdin_failed),
+        native_exit_observations: observations(row.native_exit_observations, sample => ({ observed_at_ms: number(sample?.observed_at_ms), actual_row_count: number(sample?.actual_row_count),
+          remaining_count: number(sample?.remaining_count), remaining: identities(sample?.remaining), root_rows_count: number(sample?.root_rows_count),
+          root_verified: boolean(sample?.root_verified), owned_count: number(sample?.owned_count), unknown_count: number(sample?.unknown_count) })),
+        cim_process_exit: actualExit(row.cim_process_exit), cim_all_exited: boolean(row.cim_report?.all_exited),
+        cim_observations: observations(row.cim_report?.observations, sample => ({ query_succeeded: boolean(sample?.query_succeeded),
+          complete_result_count: number(sample?.complete_result_count), invalid_pid_record_count: number(sample?.invalid_pid_record_count),
+          required_identity_fields_complete: boolean(sample?.required_identity_fields_complete), known_identities_exited: boolean(sample?.known_identities_exited),
+          unknown_pids_absent: boolean(sample?.unknown_pids_absent), monotonic_ms: typeof sample?.monotonic_ms === 'number' && Number.isFinite(sample.monotonic_ms) && sample.monotonic_ms >= 0 ? sample.monotonic_ms : 'UNKNOWN',
+          actual_match_count: number(sample?.actual_match_count) })) } : {}) })) : 'UNKNOWN' }
+  if (nativeAbiOnly) result.root_child_control = result.root_child_fixture.status
+  result.native_snapshot.root_child_control = result.root_child_fixture.status
+  }
+  assert.equal(snapshotCommand.exit, 0)
+  assert.equal(snapshotReport.status, 'CONTROL_COMPLETE'); assert.equal(snapshotReport.control_complete, true); assert.equal(snapshotReport.probe_exit, 0)
   assert.equal(snapshotReport.native_component.addon_sha256, result.diagnostic_process_tree.binary_sha256)
   assert.equal(snapshotReport.closure_sha256, (await digest(join(source, 'tests/swa-cli-headless/process-incarnation-closure.mjs'))).sha256)
   assert.equal(snapshotReport.model_calls, 0); assert.equal(snapshotReport.service_started, false); assert.equal(snapshotReport.account_session_started, false)
@@ -492,6 +537,14 @@ try {
     cim_exit: snapshotReport.cases[1].cim_process_exit.exit, cim_all_exited: snapshotReport.cases[1].cim_report.all_exited }
   result.native_snapshot.root_child_control = snapshotReport.status
   await sourceInputGuards()
+  if (nativeAbiOnly) {
+    result.root_child_control = snapshotReport.status
+    await originalInputGuards()
+    for (const item of originalNative) assert.equal((await digest(join(development, item.path))).sha256,
+      item.path === result.diagnostic_process_tree.binary_path ? result.diagnostic_process_tree.binary_sha256 : item.sha256)
+    result.phase = 'native-process-tree-abi-control-complete'; result.status = 'PASS'
+    return
+  }
   const dataParent = join(work, 'data')
   await mkdir(dataParent)
   result.phase = 'short-identify-then-controller-open'
@@ -707,12 +760,27 @@ try {
 } finally {
   await stopBuild()
   await save('result.json', result)
+  const rootChild = result.root_child_fixture
+  const rootChildCases = Array.isArray(rootChild?.cases) ? rootChild.cases : []
+  const liveRootChild = rootChildCases.find(row => row.name === 'live-root-child'), exitedRootChild = rootChildCases.find(row => row.name === 'normal-eof')
+  const caseValues = (row, field, key) => Array.isArray(row?.[field]?.rows) ? row[field].rows.map(sample => sample[key]) : 'UNKNOWN'
   const projection = { status: result.status, phase: result.phase, scope: result.scope, source_revision: sourceRevision, input_revision: priorRevision,
     observation_revision: result.observation_revision, go_source_revision: result.go_source_revision, runtime_source_revision: result.runtime_source_revision, native_input_revision: priorRevision,
-    ...(nativeCompileOnly ? { native_compile_only: true, application_entries: result.application_entries, go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
-      native_self: 'NOT_RUN', root_child_control: 'NOT_RUN', controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
+    ...(nativeOnly ? { native_compile_only: nativeCompileOnly, native_abi_only: nativeAbiOnly, application_entries: result.application_entries, go_build: 'NOT_RUN', windows_sdk: 'NOT_RUN',
+      native_self: result.native_self, root_child_control: result.root_child_control, controller: 'NOT_RUN', service_execution: 'NOT_RUN' } : {}),
     native_input_scope: 'baseline_except_diagnostic_process_tree', diagnostic_process_tree_sha256: result.diagnostic_process_tree?.binary_sha256 ?? 'NOT_BUILT',
     native_snapshot: result.native_snapshot ?? 'NOT_RUN',
+    ...(rootChild ? { root_child_fixture: { exit: rootChild.exit, status: rootChild.status,
+      failed_phase: rootChild.failed_phase, probe_exit: rootChild.probe_exit,
+      cleanup_attempted: rootChild.cleanup_attempted, cleanup_unknown: rootChild.cleanup_unknown,
+      kernel_tree_exit_proven: rootChild.kernel_tree_exit_proven,
+      live_root_verified: caseValues(liveRootChild, 'observations', 'root_verified'), live_unknown_counts: caseValues(liveRootChild, 'observations', 'unknown_count'),
+      root_exit: exitedRootChild?.root_exit ?? 'UNKNOWN', child_wait: exitedRootChild?.child_wait ?? 'UNKNOWN',
+      native_exit_remaining: caseValues(exitedRootChild, 'native_exit_observations', 'remaining_count'),
+      native_exit_unknown_counts: caseValues(exitedRootChild, 'native_exit_observations', 'unknown_count'),
+      native_exit_observed_at_ms: caseValues(exitedRootChild, 'native_exit_observations', 'observed_at_ms'),
+      cim_exit: exitedRootChild?.cim_process_exit ?? 'UNKNOWN', cim_all_exited: exitedRootChild?.cim_all_exited ?? 'UNKNOWN',
+      cim_monotonic_ms: caseValues(exitedRootChild, 'cim_observations', 'monotonic_ms') } } : {}),
     windows_private_data_sdk: result.windows_private_data_sdk ? { exit: result.windows_private_data_sdk.exit,
       pass_count: result.windows_private_data_sdk.cases.filter(row => row.action === 'pass').length,
       not_run: result.windows_private_data_sdk.cases.filter(row => row.action === 'skip').map(row => row.test.split('/')[1]),
