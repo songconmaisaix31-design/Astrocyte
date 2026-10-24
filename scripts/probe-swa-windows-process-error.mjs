@@ -13,6 +13,7 @@ const sourceRevision = '5c25b1ce6cf044eb2bcea0c9bf7142a8f1e84850'
 const productRevision = 'b464e70ba95967eb1ecc216f5f3d25407f1ecc66'
 const retainedArchiveHash = '42909a812d9c9c08b363d803e8de0ef1db85d6a1c71a5b83e0730a4da4e51f46'
 const approvedChanges = {
+  'src/process.cc': ['2b811966e5ac75c706ae0bd541e57d32b2e5d4b3941a93dd466dc37ae20cd758', '1cff62d07da8ed52a471e8ffe136f08006c10f57c768f8c0202a5f04d663ad87'],
   'src/process_worker.cc': ['b418168745b8950bc5841cbabebdc314e7d3e27c1dad79ecfe051b9aa33c617f', '02adc3e67300a23e0f87ab63d55c9680e44bf86e3b846427e2475e9be6fcf9cc'],
   'lib/index.js': ['b615a3788e37bd6484cf66b0a231d8083c09b3c95fb2f5fc22efa2e3de3b61dd', 'a601d37ded7090f1314ff30e5841cc2cf2a3e6104cffb6d30ca0c8f940c5bc4c'],
   'lib/index.ts': ['589e64c4d518acbe38f13401423a3dac4c77b49773adb5886a30f7e35bb17b53', '9383d5d83afeccc86145aae71302a2fd1d6dcce3505900b32d4c8ab4ff51e5bd'],
@@ -645,13 +646,13 @@ async function main() {
     assert.deepEqual(await tree(copiedAddon, true), addonFiles)
     const patch = join(checkout, 'tests/swa-cli-headless/windows-process-error-diagnostic.patch')
     result.diagnostic_patch_sha256 = sha(await stable(patch))
-    assert.equal(result.diagnostic_patch_sha256, '658074a08f16d983f2aac160384d0159b8738d7000670e58eae0b1ef6a8db504')
+    assert.equal(result.diagnostic_patch_sha256, '51a889eac823559dc25316ca3296a4e944d2e13ae383bf5e4b71be66652ca02c')
     await command('git', ['-c', 'core.autocrlf=false', 'apply', '--ignore-space-change', '--check', patch], diagnosticPackage, 30_000)
     await command('git', ['-c', 'core.autocrlf=false', 'apply', '--ignore-space-change', patch], diagnosticPackage, 30_000)
     const diagnosticFiles = await tree(diagnosticPackage, true)
     assert.deepEqual(diagnosticFiles.map(row => row.name), originalFiles.map(row => row.name))
     const changed = diagnosticFiles.filter((row, index) => row.sha256 !== originalFiles[index].sha256).map(row => row.name).sort()
-    assert.deepEqual(changed, ['lib/index.js', 'lib/index.ts', 'src/process_worker.cc', 'typings/windows-process-tree.d.ts'].sort())
+    assert.deepEqual(changed, ['lib/index.js', 'lib/index.ts', 'src/process_worker.cc', 'typings/windows-process-tree.d.ts', 'src/process.cc'].sort())
     for (const [name, hashes] of Object.entries(approvedChanges)) assert.equal(diagnosticFiles.find(row => row.name === name)?.sha256, hashes[1])
     result.inputs = { source: sourcePins, original_package: originalFiles, diagnostic_package: diagnosticFiles, node_addon_api: addonFiles }
     const sourceGuard = async () => {

@@ -182,3 +182,21 @@ diff --git a/typings/windows-process-tree.d.ts b/typings/windows-process-tree.d.
    export function getAllProcesses(callback: (processList: IProcessInfo[]) => void, flags?: ProcessDataFlag): void;
  
    namespace getAllProcesses {
+diff --git a/src/process.cc b/src/process.cc
+--- a/src/process.cc
++++ b/src/process.cc
+@@ -61,8 +61,12 @@
+     status = query(SystemProcessInformation, storage.data(),
+                    static_cast<ULONG>(capacity), &returned);
+     if (status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_TOO_SMALL) {
+-      const size_t required = returned > capacity ? returned : capacity * 2;
+-      if (required > limit) SnapshotFailure("buffer-limit", "NTSTATUS", static_cast<ULONG>(status));
++      if (returned > limit || capacity >= limit)
++        SnapshotFailure("buffer-limit", "NTSTATUS", static_cast<ULONG>(status));
++      const size_t geometric = capacity > limit / 2 ? limit : capacity * 2;
++      const size_t required = returned > geometric ? returned : geometric;
++      if (attempt == 3)
++        SnapshotFailure("buffer-attempts", "NTSTATUS", static_cast<ULONG>(status));
+       storage.resize((required + sizeof(ULONGLONG) - 1) / sizeof(ULONGLONG));
+       continue;
+     }
