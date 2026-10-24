@@ -305,7 +305,7 @@ export class PiRpcTurns {
   }
 
   private refreshUsage(): void {
-    if (this.closing) return
+    if (this.closing || this.stopped) return
     void this.deps
       .request('get_session_stats')
       .then((value) => {

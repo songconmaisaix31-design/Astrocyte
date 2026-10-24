@@ -1,12 +1,14 @@
 # 接续说明
 
-最新执行接续（2026-10-24，北京时间）：用户已明确授权原四目录删除/空间检查并要求全量构建。Root唯一operation-01实际0，结果44179eea，四根全部删除、实际净释放3426631680字节、保护首末通过；当前IB464、所有归档/数据/凭据/失败证据保留。原B464仍为最新已验证安装。A/B/C验收工具源码已独审，55cd helper实际编译0保原来源；本次计划linux-full-n46-10-plan.md和参数化装内脚本已获审，Root提交当前文档后冻结新S，实际新helper/fullbuild/archive/extract/install/D12/service，并可并行同S Windows正式无模型构建。Windows模型Secret未配置、交互连接仍未答，不阻止正式无模型构建。原失败及UNKNOWN不覆盖，准确范围与结果查STATUS首部。
+最新执行接续（2026-10-24，北京时间）：授权四目录已唯一删除，净释放3426631680字节、保护通过。准确S5c25b1ce6cf044eb2bcea0c9bf7142a8f1e84850/n46-10的Linux完整build/archive/extract/strict install/D12/service全部0且独立接受，D12为12通过0跳过；最新安装I5c25保留，旧IB464及全部归档/数据/凭据/失败证据保留。Windows同S正式run40070533928失败在第201次native-query，底层原因未捕获，唯一artifact下载403后停止；既有诊断树正按已审940a8185单DLL计划做源码/轻量局部，未重完整构建。准确范围查STATUS首部。
+
+最新真实Pi N4 run_802c1fd00495为FAIL：四路实际输出重叠120.732464ms，槽2活动stop返回stop_unknown；Grant已撤销，正常owner EOF后serve6/observer1、完整树UNKNOWN。P/O为swa-pi-n4-packet-5c25b1ce-n46-10和swa-pi-owned-5c25b1ce-n4-n46-10，原请求不复用，GUI/N6未运行。linux_stop_diagnosis的单行停止后统计守卫7ed319aa、严格TypeScript0和源码末审已接受；cleanup已先完成同5c25的56生产输入构建及局部。Root唯一inspect/actual均0并获独审，准确daemon801324/helper801756正常EOF/idle后双pidfd连续退出50.124394ms；result69e94dfd只确认这两资源已退出，daemon尚有/proc，原负数据库状态及全树UNKNOWN保留。Root后继提交产品修复和状态，新的完整构建仍需实际容量与准确来源准备；space-next-5c25-20261024-15仅在调查可恢复副本，没有新增删除授权。原seq463具体分支未定案，静态检查不证明真实N4行为有效；每失败先最小边界、根因证据和局部结果，再下一完整构建。
 
 先读 [STATUS](STATUS.md)、[本轮任务](tasks/swa-evolution-20261023.md)和 [AGENTS](AGENTS.md)。当前工作目录 `/workspace/swarm-anything`，分支 `integration/swa-task-cards`；用户要求持续完成产品拆分、完整 Run 入口、能力状态、角色/交接与真实 N>3 测试。
 
 用户已确定 Astrocyte 和 Attention Mirror 分别成为独立仓库。两仓已有独立构建与实际本地入口，准确提交和验证范围见 STATUS。SWA 保留 Workspace/Swarm/原生执行及必要显式集成；旧混合源码按准确保存点移出，来源、许可、研究数据与公开测试输入保全。真实用户数据库不自动搬迁。最终同提交安装和真实 N4/N6 仍须完成。
 
-当前保留正式安装为 `/workspace/swa-linux-installs/swa-linux-combined-b464e70b-n46-09`；B464原N4 packet/owner只作为失败证据保留，后继不得复用旧请求。工具组合 `.verification/cloud-setup/pi-owned-producer-b464e70b-09/` 已包含原owner5d56、EINTR proof二进制403f；该proof是已审外部工具，不能称同S产品二进制。B464 helper为0fa7e1ba并有准确同S sibling consumer。新提交后重新按实际GoBuildInfo/来源门准备helper和安装，原B464组合仅保留。新N4独立验证后才能进入N6、问答和OpenCode原执行计划。历史S392四份业务FAIL及旧全树UNKNOWN保持，准确daemon/helper后续正常回收不改写历史结论。
+当前最新正式安装为 `/workspace/swa-linux-installs/swa-linux-combined-5c25b1ce-n46-10`；新5c25及旧B464原N4 packet/owner均作为失败证据保留，后继不得复用旧请求。工具组合 `.verification/cloud-setup/pi-owned-producer-5c25b1ce-10/` 包含owner fdc191af、原Go b3fba893和EINTR proof二进制403fe2e4；proof属于已审外部工具，不称同S产品二进制。5c25 helper为acb8ce7b并有同S consumer e89cc96d，prepare/verify/execute已实际运行，完整结果见当前ignored接续文件。后继源码提交须重新固定S/helper/安装。新N4完整独立接受后才能进入N6、问答和OpenCode；历史S392业务FAIL及完整树UNKNOWN不由后继准确两资源收尾覆盖。Windows模型Secret仍未配置、交互连接未接入，模型N4/N6保持未运行。
 
 当前源码归属已收口：A/B准确源和局部结果查STATUS；C owner为fdc191af、组包24531b20、GUI9ac71337，完整SHA和接受范围见 `windows-n46-host-c-source-r2/report.md`，summary为dd52880f、full.diff为5adc5245。原Windows和跨入口reviewer均已接受准确末版，Root已独立核三源及报告。三项Node语法0，原业务保护通过；GUI共享失败收尾有必要改动。真正服务close起35秒，GUI沿原120秒；迟到JSON不单独证明总成功，须核原界内保存、固定stdout和真实退出。没有运行新Windows目标、SDK、浏览器、服务或模型。Root独占Git/PR/CI、状态及实际执行；B464正式证据不重复下载。
 
