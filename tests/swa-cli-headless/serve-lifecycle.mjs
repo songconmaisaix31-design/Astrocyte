@@ -3,16 +3,61 @@ import { execFileSync, spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
 import { renameSync, writeFileSync } from 'node:fs'
-import { lstat, mkdir, readFile, readdir, realpath, writeFile } from 'node:fs/promises'
+import * as filesystem from 'node:fs/promises'
 import { dirname, extname, isAbsolute, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { setTimeout } from 'node:timers/promises'
+import { setTimeout as delay } from 'node:timers/promises'
 import { collectOwnedIncarnations } from './process-incarnation-closure.mjs'
 
-const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false }, 'controller-open-only': { type: 'boolean', default: false }, 'retain-query-evidence': { type: 'boolean', default: false } }, allowPositionals: false })
-assert.ok(!(values['controller-input-check'] && values['controller-open-only']), 'Controller diagnostic modes are mutually exclusive')
-const controllerCheck = values['controller-input-check'] || values['controller-open-only']
+const { values } = parseArgs({ options: { ...Object.fromEntries(['candidate', 'evidence', 'data-parent', 'protected-roots', 'port', 'mode', 'source-revision', 'edition', 'parent-deadline-ms'].map(name => [name, { type: 'string' }])), 'controller-input-check': { type: 'boolean', default: false }, 'retain-query-evidence': { type: 'boolean', default: false } }, allowPositionals: false })
+assert.match(values['parent-deadline-ms'] ?? '', /^[0-9]{13}$/)
+let effectiveDeadline = Number(values['parent-deadline-ms'])
+assert.ok(effectiveDeadline > Date.now() && effectiveDeadline - Date.now() <= 660_000)
+let monotonicDeadline = performance.now() + effectiveDeadline - Date.now()
+const remaining = (deadline = effectiveDeadline) => Math.min(deadline - Date.now(), effectiveDeadline - Date.now(), monotonicDeadline - performance.now())
+const timeoutError = () => Object.assign(new Error('The original diagnostic deadline was reached'), { code: 'ETIMEDOUT' })
+const deadlineWaiters = new Set()
+let exitTimer
+function armExit() {
+  globalThis.clearTimeout(exitTimer)
+  exitTimer = globalThis.setTimeout(() => process.exit(1), Math.max(1, remaining()))
+  exitTimer.unref()
+}
+function tightenDeadline(deadline) {
+  effectiveDeadline = Math.min(effectiveDeadline, deadline)
+  monotonicDeadline = Math.min(monotonicDeadline, performance.now() + effectiveDeadline - Date.now())
+  for (const arm of deadlineWaiters) arm()
+  armExit()
+}
+armExit()
+// 已启动 I/O 不可取消；只有原剩余界内完成的结果可继续业务。
+function bounded(operation, deadline = effectiveDeadline) {
+  if (remaining(deadline) <= 0) return Promise.reject(timeoutError())
+  return new Promise((resolve, reject) => {
+    let timer, done = false
+    const finish = (error, value) => {
+      if (done) return
+      done = true; globalThis.clearTimeout(timer); deadlineWaiters.delete(arm)
+      if (error) reject(error)
+      else if (remaining(deadline) <= 0) reject(timeoutError())
+      else resolve(value)
+    }
+    const arm = () => {
+      globalThis.clearTimeout(timer)
+      timer = globalThis.setTimeout(() => finish(timeoutError()), Math.max(1, remaining(deadline)))
+    }
+    deadlineWaiters.add(arm); arm()
+    Promise.resolve().then(() => { if (remaining(deadline) <= 0) throw timeoutError(); return operation() }).then(value => finish(null, value), error => finish(error))
+  })
+}
+const lstat = (...args) => bounded(() => filesystem.lstat(...args))
+const mkdir = (...args) => bounded(() => filesystem.mkdir(...args))
+const readFile = (...args) => bounded(() => filesystem.readFile(...args))
+const readdir = (...args) => bounded(() => filesystem.readdir(...args))
+const realpath = (...args) => bounded(() => filesystem.realpath(...args))
+const writeFile = (...args) => bounded(() => filesystem.writeFile(...args))
+const setTimeout = milliseconds => bounded(() => delay(Math.min(milliseconds, Math.max(1, remaining()))))
 const edition = values.edition ?? 'cli'
 assert.ok(['cli', 'combined'].includes(edition), 'Unknown candidate edition')
 for (const key of ['candidate', 'evidence', 'data-parent']) assert.ok(values[key] && isAbsolute(values[key]))
@@ -27,20 +72,66 @@ if (values['source-revision'] !== undefined) {
   assert.match(values['source-revision'], /^[0-9a-f]{40}$/)
   assert.equal(source, values['source-revision'])
 }
-assert.equal(execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true }).trim(), source)
+assert.equal(execFileSync(join(candidate, 'swa.exe'), ['--version'], { encoding: 'utf8', windowsHide: true, timeout: Math.max(1, Math.floor(remaining())) }).trim(), source)
 const requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
 const native = requireRuntime('@vscode/windows-process-tree')
 const security = requireRuntime('@orca/windows-security')
 const sourceRoot = await realpath(join(dirname(import.meta.filename), '..', '..'))
 assert.ok(process.env.ProgramFiles && isAbsolute(process.env.ProgramFiles))
 const powershell = await realpath(join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe'))
-const processes = () => new Promise((resolve, reject) => native.getAllProcesses(rows => rows ? resolve(rows) : reject(new Error('Actual process identities unavailable')), 4))
+const nativeErrors = new WeakMap()
+let nativeRequestSequence = 0, nativeFailure = null, onNativeFailure = null
+const instant = () => ({ observed_at_ms: Date.now(), monotonic_ms: performance.now() })
+const nativePhases = {
+  Win32: ['load-system-module', 'resolve-api', 'image-conversion'],
+  NTSTATUS: ['buffer-limit', 'query', 'buffer-attempts'],
+  InvalidBuffer: ['returned-length', 'buffer-address', 'record-header', 'process-id', 'image-length', 'image-address', 'image-limit', 'record-offset', 'empty-snapshot']
+}
+async function processes(context) {
+  if (nativeFailure) throw nativeFailure
+  const frozen = Object.freeze({ ...context, facts: Object.freeze(structuredClone(context.facts)) })
+  const request = { caller: frozen.caller, request_sequence: ++nativeRequestSequence, sample_sequence: frozen.sample_sequence,
+    check_index: frozen.check_index, start: instant(), end: null, callback_kind: 'NOT_CAPTURED', diagnostic_status: 'NOT_CAPTURED', native_error: null }
+  let captured
+  try {
+    captured = await bounded(() => new Promise(resolve => {
+      native.getAllProcesses((rows, diagnostic) => { resolve({ rows, diagnostic, end: instant() }) }, 4)
+    }), Math.min(effectiveDeadline, Date.now() + 5000))
+    request.end = captured.end
+    request.callback_kind = Array.isArray(captured.rows) ? 'ARRAY' : captured.rows === undefined ? 'UNDEFINED' : captured.rows === null ? 'NULL' : 'NON_ARRAY'
+    if (captured.diagnostic !== undefined) {
+      request.diagnostic_status = 'INVALID'
+      const value = captured.diagnostic
+      assert.ok(value && typeof value === 'object' && !Array.isArray(value))
+      assert.deepEqual(Object.keys(value).sort(), ['code', 'kind', 'phase'])
+      assert.ok(Object.hasOwn(nativePhases, value.kind) && nativePhases[value.kind].includes(value.phase))
+      assert.ok(Number.isSafeInteger(value.code) && value.code >= 0 && value.code <= 0xffffffff)
+      assert.ok(Buffer.byteLength(`NativeProcessSnapshotError phase=${value.phase}; kind=${value.kind}; code=${value.code}`) <= 128)
+      request.native_error = { phase: value.phase, kind: value.kind, code: value.code }
+      request.diagnostic_status = 'CAPTURED'
+    }
+    assert.ok(Array.isArray(captured.rows), 'Actual process identities unavailable')
+    assert.equal(request.diagnostic_status, 'NOT_CAPTURED', 'A successful native batch carried an error')
+    // 在途成功不能越过其它 caller 已记录的首错继续业务。
+    if (nativeFailure) throw nativeFailure
+    return captured.rows
+  } catch (cause) {
+    if (nativeFailure) throw nativeFailure
+    request.end ??= instant()
+    const error = Object.assign(new Error('Actual native query failed; bounded callback facts retained'), { code: cause?.code === 'ETIMEDOUT' ? 'ETIMEDOUT' : 'UNKNOWN' })
+    nativeErrors.set(error, { query: Object.freeze(request), context: frozen })
+    nativeFailure = error
+    tightenDeadline(Date.now() + 35_000)
+    onNativeFailure?.(error)
+    throw error
+  }
+}
 const records = []
 const modes = ['immediate-eof', 'startup-eof', 'readiness-eof', 'startup-stdout-close']
 assert.ok(values.mode === undefined || modes.includes(values.mode))
 const selectedModes = values.mode === undefined ? modes : [values.mode]
-if (controllerCheck) assert.equal(values.mode, 'readiness-eof', 'Controller checking requires the explicit readiness-eof mode')
-if (values['retain-query-evidence']) assert.ok(values['controller-open-only'] && values.mode === 'readiness-eof')
+if (values['controller-input-check']) assert.equal(values.mode, 'readiness-eof', 'Controller input checking requires the explicit readiness-eof mode')
+if (values['retain-query-evidence']) assert.ok(values['controller-input-check'] && values.mode === 'readiness-eof')
 
 // 仅记录这次观察器实际取得的输入和事件；不改变原所有权集合或退出门。
 async function retainQueryEvidence(directory) {
@@ -63,10 +154,13 @@ async function retainQueryEvidence(directory) {
   const fail = kind => { query.evidence_incomplete = lifecycle.evidence_incomplete = true; query.error_kind ??= kind; lifecycle.error_kind ??= kind }
   const save = (fileName, value, maximum) => {
     try {
+      if (remaining() <= 0) throw timeoutError()
       const bytes = Buffer.from(JSON.stringify(value, null, 2) + '\n'); assert.ok(bytes.length <= maximum)
       const temporary = join(directory, fileName + '.pending')
       writeFileSync(temporary, bytes)
+      if (remaining() <= 0) throw timeoutError()
       renameSync(temporary, join(directory, fileName))
+      if (remaining() <= 0) throw timeoutError()
     }
     catch { fail('EVIDENCE_WRITE_OR_LIMIT') }
   }
@@ -79,29 +173,34 @@ async function retainQueryEvidence(directory) {
   }
   const errorNames = ['Error', 'AssertionError', 'TypeError', 'RangeError', 'ReferenceError', 'SyntaxError', 'SystemError', 'UNKNOWN']
   const errorCodes = ['ERR_ASSERTION', 'ERR_INVALID_ARG_TYPE', 'ERR_INVALID_ARG_VALUE', 'ERR_SWA_CONTROLLER_INPUT', 'ENOENT', 'EACCES', 'EPERM', 'EEXIST', 'ENOSPC', 'EMFILE', 'EIO', 'ETIMEDOUT', 'EPIPE', 'ECONNRESET', 'ECONNREFUSED', 'ABORT_ERR', 'UNKNOWN']
+  const requireSource = createRequire(join(sourceRoot, 'package.json'))
+  const errorStackParser = requireSource(join(sourceRoot, 'node_modules/error-stack-parser'))
   const allowedLocations = new Map()
   for (const [file, name] of [['observer', 'serve-lifecycle.mjs'], ['producer', 'controller-taskcreate-check.mjs'], ['transport', 'controller-input-check.mjs'], ['closure', 'process-incarnation-closure.mjs']]) {
     const path = join(dirname(import.meta.filename), name), source_sha256 = digest(await readFile(path))
     for (const location of [path, pathToFileURL(path).href]) allowedLocations.set(location, { file, source_sha256 })
   }
   const failureLocations = error => {
-    const stack = error?.stack
-    if (typeof stack !== 'string') return { status: 'NOT_RECORDED', frames: [] }
-    if (Buffer.byteLength(stack) > 64 * 1024) return { status: 'BOUND_EXCEEDED', frames: [] }
-    const frames = []
-    for (const line of stack.split(/\r?\n/).slice(1)) {
-      const match = line.match(/(?:^\s*at (?:async )?|\()((?:file:\/\/\/|[A-Za-z]:[\\/]|\/)[^\r\n]*):(\d+):(\d+)\)?$/)
-      const known = match && allowedLocations.get(match[1])
-      if (!known) continue
-      const lineNumber = Number(match[2]), column = Number(match[3])
-      if (![lineNumber, column].every(value => Number.isSafeInteger(value) && value > 0 && value <= 1000000) || frames.length === 8) return { status: 'BOUND_EXCEEDED', frames: [] }
-      frames.push({ ...known, line: lineNumber, column })
-    }
-    return { status: frames.length ? 'CAPTURED' : 'NO_ALLOWED_FRAME', frames }
+    try {
+      const stack = error?.stack
+      if (typeof stack !== 'string') return { status: 'NOT_RECORDED', frames: [] }
+      if (Buffer.byteLength(stack) > 64 * 1024) return { status: 'BOUND_EXCEEDED', frames: [] }
+      const frames = []
+      for (const frame of errorStackParser.parse({ stack })) {
+        const known = allowedLocations.get(frame.fileName)
+        if (!known) continue
+        const lineNumber = frame.lineNumber, column = frame.columnNumber
+        if (![lineNumber, column].every(value => Number.isSafeInteger(value) && value > 0 && value <= 1000000) || frames.length === 8) return { status: 'BOUND_EXCEEDED', frames: [] }
+        frames.push({ ...known, line: lineNumber, column })
+      }
+      return { status: frames.length ? 'CAPTURED' : 'NO_ALLOWED_FRAME', frames }
+    } catch { return { status: 'NOT_RECORDED', frames: [] } }
   }
   const diagnosticFailure = (error, component, phase, facts, observerAbort = false) => {
     try {
       if (query.first_failure && !observerAbort) return
+      const nativeRecord = nativeErrors.get(error)
+      if (nativeRecord && !observerAbort) ({ component, phase, facts } = nativeRecord.context)
       assert.ok(Object.hasOwn(failurePhases, component) && failurePhases[component].includes(phase))
       const bool = value => { assert.equal(typeof value, 'boolean'); return value }
       const count = value => { assert.ok(Number.isSafeInteger(value) && value >= 0); return value }
@@ -131,7 +230,7 @@ async function retainQueryEvidence(directory) {
         actual = { operation: facts.operation, request_id_assigned: bool(facts.request_id_assigned), grant_created: bool(facts.grant_created), controller_recorded: bool(facts.controller_recorded) }
       }
       const record = { component, phase, at: instant(), error: { name: typeof error?.name === 'string' && errorNames.includes(error.name) ? error.name : 'UNKNOWN',
-        code: error?.code === undefined || error?.code === null ? null : typeof error.code === 'string' && errorCodes.includes(error.code) ? error.code : 'UNKNOWN' }, facts: actual, locations: failureLocations(error) }
+        code: error?.code === undefined || error?.code === null ? null : typeof error.code === 'string' && errorCodes.includes(error.code) ? error.code : 'UNKNOWN' }, facts: actual, locations: failureLocations(error), native_query: nativeRecord?.query ?? null }
       assert.ok(Buffer.byteLength(JSON.stringify(record)) <= 4096)
       query.first_failure ??= record; lifecycle.first_failure ??= record
       if (observerAbort) query.observer_abort = lifecycle.observer_abort = record
@@ -233,7 +332,7 @@ async function retainQueryEvidence(directory) {
     unavailable: () => { fail('QUERY_FAILED'); save('service-query-evidence.json', query, 8 * 1024 * 1024) } }
 }
 
-async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity, processEvent, diagnosticFailure) {
+async function observeControllerInput(endpoint, data, directory, deadline, observeIdentity, processEvent, diagnosticFailure, producerWork) {
   const observation = { status: 'FAIL', ownership_incomplete: false, producer: null, transport: null, transport_process: null, transport_actual_spawned: false }
   let control, controlClosed = false, controlExit, failure
   const output = [], errors = []
@@ -243,16 +342,24 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
   await mkdir(outputParent)
   try {
     inputPhase = 'import-producer'
-    const { runControllerTaskCreateCheck } = await import('./controller-taskcreate-check.mjs')
-    const produce = () => { inputPhase = 'producer-call'; return runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
-      publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
-      sourceRevision: source, deadline, onProcessIdentity: observeIdentity, onProcessEvent: processEvent, onDiagnosticFailure: diagnosticFailure, ...(values['controller-open-only'] ? { stopAfter: 'controller-open' } : {}) }) }
-    let producer
-    if (!values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
+    const { runControllerTaskCreateCheck } = await bounded(() => import('./controller-taskcreate-check.mjs'))
+    inputPhase = 'producer-call'
+    if (nativeFailure) throw nativeFailure
+    const producer = await bounded(() => {
+      if (nativeFailure) throw nativeFailure
+      producerWork.promise = runControllerTaskCreateCheck({ candidate, endpoint, dataRoot: data,
+        publicParent: join(dataParent, 'controller-input-public'), outputDir: join(outputParent, 'producer'),
+        sourceRevision: source, deadline, onProcessIdentity: observeIdentity, onProcessEvent: processEvent, onDiagnosticFailure: diagnosticFailure })
+      // 只由原 promise 的真实 resolve/reject 标记结束；包装超时不改变此事实。
+      producerWork.promise.then(() => { producerWork.settled = true }, () => { producerWork.settled = true })
+      return producerWork.promise
+    }, deadline)
+    observation.producer = producer.result
+    if (nativeFailure) throw nativeFailure
     const transportOutput = join(outputParent, 'transport')
     inputPhase = 'transport-spawn'
     control = spawn(process.execPath, [join(sourceRoot, 'tests/swa-cli-headless/controller-input-check.mjs'), '--install-root', candidate,
-      ...(values['controller-open-only'] ? ['--short-only'] : ['--invocation-file', producer.invocationFile]), '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+      '--invocation-file', producer.invocationFile, '--output-dir', transportOutput], { cwd: candidate, env: { ...process.env }, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     observation.transport_actual_spawned = Number.isSafeInteger(control.pid) && control.pid > 0
     const transportEvent = (kind, details = {}) => processEvent?.({ kind, source: { kind: 'transport_native_identity', role: 'transport' }, pid: control.pid ?? null, identity: observation.transport_process, ...details })
     transportEvent('spawn')
@@ -299,10 +406,6 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     }
     assert.equal(summary.rpc_mutations, 'NOT_RUN'); assert.equal(summary.model_execution, 'NOT_RUN'); assert.equal(summary.kernel_job_empty, 'NOT_CLAIMED')
     Object.assign(safeTransport, { rpc_mutations: 'NOT_RUN', model_execution: 'NOT_RUN', kernel_job_empty: 'NOT_CLAIMED' })
-    if (values['controller-open-only']) {
-      assert.equal(summary.coverage, 'explicit_short_identify_only'); assert.equal(summary.long_input, 'NOT_RUN')
-      Object.assign(safeTransport, { coverage: summary.coverage, long_input: summary.long_input })
-    }
     observation.transport = safeTransport
     inputPhase = 'transport-receipts'
     // 这些身份由原 checker 在进程仍可读时取得，不在退出后用裸 PID 补取创建时间。
@@ -317,12 +420,8 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
     for (const kind of ['tty', 'pipe']) {
       const row = safeTransport[kind]
       assert.equal(row.status, 'PASS'); assert.equal(row.natural_eof, true); assert.equal(row.forced_cleanup, false)
-      assert.equal(row.reply_count, 3)
-      if (values['controller-open-only']) assert.equal(row.long_bytes, null)
-      else assert.ok(row.long_bytes > 4095)
-      assert.equal(row.exit_code, 0)
+      assert.equal(row.reply_count, 3); assert.ok(row.long_bytes > 4095); assert.equal(row.exit_code, 0)
     }
-    if (values['controller-open-only']) { producer = await produce(); observation.producer = producer.result }
     observation.status = 'PASS'
   } catch (error) {
     diagnosticFailure?.(error, 'controller-input', inputPhase, { transport_identity: observation.transport_process, transport_spawned: observation.transport_actual_spawned,
@@ -339,7 +438,7 @@ async function observeControllerInput(endpoint, data, directory, deadline, obser
         processEvent?.({ kind: 'cleanup-request', source: { kind: 'transport_native_identity', role: 'transport' }, pid: identity.pid, identity })
         cleanupAttempted = control.kill()
       }
-      const cleanupDeadline = Date.now() + 5000
+      const cleanupDeadline = Math.min(effectiveDeadline, Date.now() + 5000)
       while (!controlClosed && Date.now() < cleanupDeadline) await setTimeout(25)
       observation.transport_cleanup = { attempted: cleanupAttempted, exit: controlClosed ? controlExit : 'UNKNOWN', normal_exit_proven: false }
       if (!controlClosed) { control.stdout.destroy(); control.stderr.destroy(); control.unref() }
@@ -361,8 +460,8 @@ async function webAssetInventory(installation) {
   const root = await realpath(join(installation, 'web'))
   const manifestFile = join(root, '.vite', 'manifest.json')
   assert.ok((await lstat(manifestFile)).size <= 1024 * 1024, 'Web manifest exceeds its read bound')
-  const { checkWebAssets } = await import(pathToFileURL(join(installation, 'scripts', 'swa-package-config.mjs')).href)
-  const closure = await checkWebAssets(root)
+  const { checkWebAssets } = await bounded(() => import(pathToFileURL(join(installation, 'scripts', 'swa-package-config.mjs')).href))
+  const closure = await bounded(() => checkWebAssets(root))
   const manifest = JSON.parse(await readFile(manifestFile, 'utf8'))
   const references = new Set(['index.html'])
   for (const entry of Object.values(manifest)) {
@@ -393,12 +492,12 @@ async function observeWebAssets(endpoint, deadline, output) {
   async function request(path, maximum) {
     const remaining = deadline - Date.now()
     assert.ok(remaining > 0, 'Web HTTP check reached the original service deadline')
-    const response = await fetch(new URL(path, endpoint + '/'), { redirect: 'manual', signal: AbortSignal.timeout(Math.min(5000, remaining)) })
+    const response = await bounded(() => fetch(new URL(path, endpoint + '/'), { redirect: 'manual', signal: AbortSignal.timeout(Math.min(5000, remaining)) }), deadline)
     const chunks = [], reader = response.body?.getReader()
     let size = 0, complete = false
     try {
       if (reader) for (;;) {
-        const part = await reader.read()
+        const part = await bounded(() => reader.read(), deadline)
         if (part.done) break
         size += part.value.byteLength
         assert.ok(size <= maximum, 'Web HTTP response exceeds its actual installed file bound')
@@ -407,7 +506,7 @@ async function observeWebAssets(endpoint, deadline, output) {
       complete = true
     } finally {
       if (reader) {
-        if (!complete) await reader.cancel()
+        if (!complete) await bounded(() => reader.cancel(), deadline)
         reader.releaseLock()
       }
     }
@@ -442,7 +541,7 @@ async function observeWebAssets(endpoint, deadline, output) {
   }
 }
 
-async function observeReadyService(ready, child, data, created, deadline) {
+async function observeReadyService(ready, child, data, created, deadline, nativeContext) {
   const actualData = await realpath(data), endpoint = `http://127.0.0.1:${Number(values.port)}`
   const samePath = (actual, expected) => {
     assert.equal(typeof actual, 'string')
@@ -456,9 +555,9 @@ async function observeReadyService(ready, child, data, created, deadline) {
   assert.equal(ready.http, endpoint)
   const remaining = deadline - Date.now()
   assert.ok(remaining > 0, 'Health check reached the original service deadline')
-  const response = await fetch(endpoint + '/api/v1/health', { redirect: 'error', signal: AbortSignal.timeout(Math.min(5000, remaining)) })
+  const response = await bounded(() => fetch(endpoint + '/api/v1/health', { redirect: 'error', signal: AbortSignal.timeout(Math.min(5000, remaining)) }), deadline)
   assert.equal(response.status, 200)
-  const health = await response.json()
+  const health = await bounded(() => response.json(), deadline)
   assert.deepEqual(health, { schema_version: 1, status: 'ok', service: 'astrocyte' })
   const metadata = JSON.parse(await readFile(join(actualData, 'orca-runtime.json'), 'utf8'))
   assert.equal(metadata.runtimeId, ready.readiness.runtimeId)
@@ -484,7 +583,7 @@ async function observeReadyService(ready, child, data, created, deadline) {
     { role: 'daemon', pid: job.daemon_pid, created: job.daemon_created_at_ms, name: 'node.exe' }
   ]
   assert.equal(new Set(expected.map(member => member.pid)).size, expected.length)
-  const rows = await processes(), user = security.currentUserSid(), members = []
+  const rows = await processes(nativeContext), user = security.currentUserSid(), members = []
   for (const member of expected) {
     assert.ok(Number.isSafeInteger(member.pid) && member.pid > 0)
     const actual = security.readServiceJobMember(job.name, member.pid)
@@ -518,32 +617,48 @@ for (const mode of selectedModes) {
   const capture = values['retain-query-evidence'] ? await retainQueryEvidence(directory) : null
   const child = spawn(join(candidate, 'swa.exe'), ['serve', '--data-dir', join(dataParent, mode), '--port', values.port, '--protected-roots', values['protected-roots'], '--json', ...(edition === 'combined' ? ['--web-dir', join(candidate, 'web')] : [])], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env } })
   capture?.event({ kind: 'spawn', source: { kind: 'serve_native_identity', role: 'serve' }, pid: child.pid ?? null })
-  const stdout = [], stderr = [], observed = new Map(), events = [], unknown = [], additionalRoots = new Map()
+  const stdout = [], stderr = [], observed = new Map(), events = [], unknown = [], additionalRoots = new Map(), observations = []
   const rootCreationTimeMs = native.getProcessCreationTime(child.pid)
   observed.set(child.pid + ':' + rootCreationTimeMs, { pid: child.pid, creationTimeMs: rootCreationTimeMs, launched_executable: join(candidate, 'swa.exe'), parent_pid: process.pid })
   capture?.confirmed({ pid: child.pid, creationTimeMs: rootCreationTimeMs }, { kind: 'serve_native_identity', role: 'serve' })
   const serveEvent = (kind, details = {}) => capture?.event({ kind, source: { kind: 'serve_native_identity', role: 'serve' }, pid: child.pid ?? null,
     identity: Number.isSafeInteger(rootCreationTimeMs) && rootCreationTimeMs > 0 ? { pid: child.pid, creationTimeMs: rootCreationTimeMs } : null, ...details })
   let settled = null, exitEvent = null, spawnError = null, streamError = null, closed = false, acted = false, readiness = null, readinessFailure = null
+  let stdoutEOF = false, stderrEOF = false, failureResultWritten = false, stdoutBytes = 0, stderrBytes = 0, streamBoundExceeded = false
   let readinessStarted = false, readinessComplete = false, readinessWork, controllerInput = null
+  const producerWork = { promise: null, settled: false }
   let closureIncomplete = !Number.isSafeInteger(rootCreationTimeMs) || rootCreationTimeMs <= 0, sampleSequence = 0
   let failurePhase = 'spawn-record', failureQuery = 0, failureScope = null, failureCheck = null
   const failureFacts = () => ({ query_sequence: failureQuery, root: Number.isSafeInteger(rootCreationTimeMs) && rootCreationTimeMs > 0 ? { pid: child.pid, creationTimeMs: rootCreationTimeMs } : null,
     scope_index: failureScope, check_index: failureCheck, closed, acted, readiness_started: readinessStarted, readiness_complete: readinessComplete,
     closure_incomplete: closureIncomplete, root_exit_seen: exitEvent !== null, root_close_seen: settled !== null })
-  try {
   const exited = new Promise(resolve => {
     child.once('error', error => { serveEvent('spawn-error', { spawn_error: typeof error.code === 'string' ? error.code : 'UNKNOWN' }); spawnError = error })
     child.once('exit', (exit, signal) => { exitEvent = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; serveEvent('exit', { exit, signal }) })
     child.once('close', (exit, signal) => { closed = true; settled = { exit, signal, observed_at_ms: Date.now(), monotonic_ms: performance.now() }; serveEvent('close', { exit, signal }); resolve(settled) })
   })
-  child.stdout.on('end', () => serveEvent('stdout-end'))
-  child.stderr.on('end', () => serveEvent('stderr-end'))
+  child.stdout.on('end', () => { stdoutEOF = true; serveEvent('stdout-end') })
+  child.stderr.on('end', () => { stderrEOF = true; serveEvent('stderr-end') })
   child.stdin.on('finish', () => serveEvent('stdin-finish'))
-  child.stdout.on('data', chunk => { stdout.push(chunk); assert.ok(Buffer.concat(stdout).length < 16 * 1024 * 1024) })
+  child.stdout.on('data', chunk => { stdoutBytes += chunk.length; if (stdoutBytes < 16 * 1024 * 1024) stdout.push(chunk); else streamBoundExceeded = true })
   child.stdout.on('error', error => { streamError = error.message })
-  child.stderr.on('data', chunk => { stderr.push(chunk); assert.ok(Buffer.concat(stderr).length < 16 * 1024 * 1024) })
+  child.stderr.on('data', chunk => { stderrBytes += chunk.length; if (stderrBytes < 16 * 1024 * 1024) stderr.push(chunk); else streamBoundExceeded = true })
   child.stdin.on('error', error => { events.push({ type: 'stdin-error', code: error.code, observed_at_ms: Date.now() }) })
+  child.stderr.on('error', error => { streamError = error.code ?? 'UNKNOWN' })
+  const requestFailureEOF = () => {
+    if (!child.stdin.writableEnded && !child.stdin.destroyed) {
+      serveEvent('stdin-end-request')
+      child.stdin.end(); acted = true
+      events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
+    }
+  }
+  onNativeFailure = error => {
+    const entry = nativeErrors.get(error)
+    capture?.diagnosticFailure(error, entry.context.component, entry.context.phase, entry.context.facts)
+    capture?.unavailable()
+    try { requestFailureEOF() } catch { events.push({ type: 'stdin-end-request-failed', observed_at_ms: Date.now() }) }
+  }
+  try {
   events.push({ type: 'actual-spawn', pid: child.pid, creation_time_ms: rootCreationTimeMs, observed_at_ms: Date.now() })
   if (mode === 'immediate-eof') {
     child.stdin.end()
@@ -551,8 +666,10 @@ for (const mode of selectedModes) {
     events.push({ type: 'actual-owned-stdin-closed', observed_at_ms: Date.now() })
   }
   await writeFile(join(directory, 'actual-spawn.json'), JSON.stringify({ candidate, pid: child.pid, creation_time_ms: rootCreationTimeMs, mode, events }, null, 2) + '\n', { flag: 'wx' })
-  const deadline = Date.now() + (controllerCheck ? 600_000 : 150_000)
+  const deadline = Math.min(effectiveDeadline, Date.now() + (values['controller-input-check'] ? 600_000 : 150_000))
   while (!closed && Date.now() < deadline) {
+    if (nativeFailure) throw nativeFailure
+    assert.equal(streamBoundExceeded, false, 'Actual service stream exceeds its original bound')
     failurePhase = 'query-freeze'; failureQuery = sampleSequence + 1; failureScope = null; failureCheck = null
     // 在原生查询发出前冻结已证明 owned 的身份，不接纳查询在途或后继结果。
     const knownOwnedBeforeQuery = Object.freeze([...observed.values()].map(({ pid, creationTimeMs }) => Object.freeze({ pid, creationTimeMs })))
@@ -560,7 +677,8 @@ for (const mode of selectedModes) {
     const queryStart = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     let rows
     failurePhase = 'native-query'
-    try { rows = await processes() } catch (error) { capture?.diagnosticFailure(error, 'observer', failurePhase, failureFacts()); capture?.unavailable(); throw error }
+    try { rows = await processes({ caller: 'LOOP', sample_sequence: failureQuery, check_index: null,
+      component: 'observer', phase: 'native-query', facts: failureFacts() }) } catch (error) { capture?.diagnosticFailure(error, 'observer', failurePhase, failureFacts()); capture?.unavailable(); throw error }
     const queryEnd = { observed_at_ms: Date.now(), monotonic_ms: performance.now(), root_exit_event: exitEvent, root_close_event: settled }
     const sampleSequenceNumber = ++sampleSequence, sampleObservedAt = Date.now()
     failurePhase = 'collect-primary'; failureScope = 0
@@ -602,7 +720,10 @@ for (const mode of selectedModes) {
       readinessStarted = true
       let readinessPhase = 'ready-service'
       readinessWork = (async () => { try {
-        const observation = await observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs, deadline)
+        const observation = await bounded(() => observeReadyService(readiness, child, join(dataParent, mode), rootCreationTimeMs, deadline,
+          { caller: 'READY_SERVICE', sample_sequence: sampleSequenceNumber, check_index: null, component: 'readiness', phase: 'ready-service',
+            facts: { readiness_started: readinessStarted, readiness_complete: readinessComplete, controller_input_recorded: controllerInput !== null } }), deadline)
+        if (nativeFailure) throw nativeFailure
         readinessPhase = 'job-members'
         for (const member of observation.members) {
           observed.set(member.pid + ':' + member.creation_time_ms, { pid: member.pid, creationTimeMs: member.creation_time_ms,
@@ -612,23 +733,24 @@ for (const mode of selectedModes) {
         readinessPhase = 'ready-record'
         await writeFile(join(directory, 'ready-service-observation.json'), JSON.stringify(observation, null, 2) + '\n', { flag: 'wx' })
         if (edition === 'combined') await observeWebAssets(`http://127.0.0.1:${Number(values.port)}`, deadline, join(directory, 'web-http-observation.json'))
+        if (nativeFailure) throw nativeFailure
         readinessPhase = 'controller-input'
-        if (controllerCheck) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, (identity, sourceInfo) => {
+        if (values['controller-input-check']) controllerInput = await observeControllerInput(`http://127.0.0.1:${Number(values.port)}`, join(dataParent, mode), directory, deadline, (identity, sourceInfo) => {
           assert.ok(Number.isSafeInteger(identity.pid) && identity.pid > 0 && Number.isSafeInteger(identity.creationTimeMs) && identity.creationTimeMs > 0)
           const key = identity.pid + ':' + identity.creationTimeMs
           observed.set(key, identity)
           additionalRoots.set(key, identity)
           capture?.confirmed(identity, sourceInfo)
-        }, capture?.event, capture?.diagnosticFailure)
+        }, capture?.event, capture?.diagnosticFailure, producerWork)
       } catch (error) {
         capture?.diagnosticFailure(error, 'readiness', readinessPhase, { readiness_started: readinessStarted, readiness_complete: readinessComplete, controller_input_recorded: controllerInput !== null })
         readinessFailure = error
-        if (controllerCheck && error.observation) controllerInput = error.observation
-        if (controllerCheck && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
+        if (values['controller-input-check'] && error.observation) controllerInput = error.observation
+        if (values['controller-input-check'] && (controllerInput?.ownership_incomplete || controllerInput?.producer?.ownership_incomplete)) closureIncomplete = true
       } finally {
         readinessComplete = true
       } })()
-      if (!controllerCheck) await readinessWork
+      if (!values['controller-input-check']) await bounded(() => readinessWork, deadline)
     }
     if (!acted && mode === 'readiness-eof' && readinessComplete) {
       failurePhase = 'stdin-eof'
@@ -648,9 +770,12 @@ for (const mode of selectedModes) {
     if (!closed) await setTimeout(20)
   }
   failurePhase = 'await-readiness-work'
-  if (readinessWork) await readinessWork
+  if (nativeFailure) throw nativeFailure
+  if (readinessWork) await bounded(() => readinessWork, deadline)
+  if (nativeFailure) throw nativeFailure
   capture?.finish(closureIncomplete)
   failurePhase = 'save-service-streams'
+  assert.equal(streamBoundExceeded, false, 'Actual service stream exceeds its original bound')
   await writeFile(join(directory, 'stdout.json'), Buffer.concat(stdout), { flag: 'wx' })
   await writeFile(join(directory, 'stderr.log'), Buffer.concat(stderr), { flag: 'wx' })
   failurePhase = 'require-service-settled'
@@ -658,11 +783,11 @@ for (const mode of selectedModes) {
     await writeFile(join(directory, 'unsettled.json'), JSON.stringify({ pid: child.pid, observed: [...observed.values()], events }, null, 2) + '\n', { flag: 'wx' })
     throw new Error('Actual owned serve remains unsettled; preserve its recorded identity')
   }
-  await exited
-  const observations = []
+  await bounded(() => exited)
   for (let check = 0; check < 2; check++) {
     failurePhase = 'native-exit-query'; failureCheck = check
-    const rows = await processes()
+    const rows = await processes({ caller: 'EXIT_CHECK', sample_sequence: null, check_index: check,
+      component: 'observer', phase: 'native-exit-query', facts: failureFacts() })
     const remaining = [...observed.values()].filter(old => rows.some(row => row.pid === old.pid && (!(row.creationTimeMs > 0) || row.creationTimeMs === old.creationTimeMs)))
     observations.push({ observed_at_ms: Date.now(), remaining })
     if (check === 0) await setTimeout(250)
@@ -680,12 +805,12 @@ for (const mode of selectedModes) {
     cim.once('error', error => { cimSettled = true; resolve({ pid: cim.pid, spawn_error: String(error), exit: null, signal: null }) })
     cim.once('close', (exit, signal) => { cimSettled = true; resolve({ pid: cim.pid, exit, signal }) })
   })
-  const cimDeadline = Date.now() + 15_000
+  const cimDeadline = Math.min(effectiveDeadline, Date.now() + 15_000)
   failurePhase = 'cim-wait'
   while (!cimSettled && Date.now() < cimDeadline) await setTimeout(50)
   const cimTimedOut = !cimSettled
   const cimTermination = cimTimedOut ? { attempted_at: new Date().toISOString(), actual_created_pid: cim.pid, signal_sent: cim.kill() } : null
-  const cimCleanupDeadline = Date.now() + 5_000
+  const cimCleanupDeadline = Math.min(effectiveDeadline, Date.now() + 5_000)
   while (!cimSettled && Date.now() < cimCleanupDeadline) await setTimeout(50)
   const cimExit = { ...(cimSettled ? await cimClosed : { pid: cim.pid, exit: null, signal: null, completion_unknown: true }), query_timed_out: cimTimedOut, query_deadline_ms: 15_000, actual_helper_termination: cimTermination }
   if (!cimSettled) { cim.stdout.destroy(); cim.stderr.destroy(); cim.unref() }
@@ -703,7 +828,7 @@ for (const mode of selectedModes) {
   const identitiesExited = !closureIncomplete && observations.every(row => row.remaining.length === 0) && completeCIM
   const actualErrorText = Buffer.concat(stderr).toString('utf8')
   const startupHit = !mode.startsWith('startup-') || events.some(event => event.type === 'actual-owned-node-observed' && event.no_published_readiness)
-  const record = { mode, edition, pid: child.pid, ...settled, service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled }, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(controllerCheck ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
+  const record = { mode, edition, pid: child.pid, ...settled, service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled }, events, actual_spawn_error: spawnError?.message ?? null, actual_stream_error: streamError, readiness_check_error: readinessFailure ? { name: readinessFailure instanceof Error ? readinessFailure.name : 'UnknownError', code: typeof readinessFailure?.code === 'string' ? readinessFailure.code : null } : null, ...(values['controller-input-check'] ? { controller_input_check: controllerInput } : {}), ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()], unknown_process_observations: unknown, exit_observations: observations, actual_cim_process_exit: cimExit, actual_cim_report: cimReport, actual_cim_error: cimError, status: !identitiesExited ? 'UNKNOWN' : startupHit ? 'AWAITING_ASSERTIONS' : 'INCONCLUSIVE' }
   if (capture) record.query_evidence = capture.finish(closureIncomplete)
   failurePhase = 'save-final-record'
   await writeFile(join(directory, 'actual-observation.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
@@ -748,7 +873,46 @@ for (const mode of selectedModes) {
   records.push(record)
   failurePhase = 'save-final-record'
   await writeFile(join(directory, 'result.json'), JSON.stringify(records.at(-1), null, 2) + '\n', { flag: 'wx' })
-  } catch (error) { capture?.aborted(error, failurePhase, failureFacts()); throw error } finally { capture?.finish(closureIncomplete) }
+  } catch (error) {
+    const primary = nativeFailure ?? error
+    capture?.aborted(primary, failurePhase, failureFacts())
+    process.exitCode = 1
+    const secondary = []
+    const preserve = async (stage, operation) => {
+      try { await operation() } catch { secondary.push(stage) }
+    }
+    if (nativeFailure) {
+      // 首错时已收紧同一个截止；等待结束后留出原剩余预算保存 UNKNOWN。
+      await preserve('STDIN_EOF', async () => requestFailureEOF())
+      const waitDeadline = effectiveDeadline - 1000
+      await preserve('FAILURE_WAIT', () => bounded(() => Promise.allSettled([exited, readinessWork ?? Promise.resolve(), producerWork.promise ?? Promise.resolve()]), waitDeadline))
+    }
+    const record = { mode, edition, pid: child.pid, exit: settled?.exit ?? null, signal: settled?.signal ?? null,
+      status: 'UNKNOWN', ownership_closure_incomplete: closureIncomplete, observed_processes: [...observed.values()],
+      unknown_process_observations: unknown, exit_observations: observations, controller_input_check: controllerInput,
+      actual_cim_process_exit: null, actual_cim_report: null, actual_cim_error: null,
+      service_process_observations: { pid: child.pid, creation_time_ms: rootCreationTimeMs, exit_event: exitEvent, close_event: settled },
+      failure_cleanup: { stdin_end_requested: acted, service_exit_observed: exitEvent !== null, service_close_observed: settled !== null,
+        stdout_eof: stdoutEOF, stderr_eof: stderrEOF, readiness_wrapper_settled: readinessComplete,
+        producer_settled: producerWork.promise === null ? 'NOT_STARTED' : producerWork.settled ? true : 'UNKNOWN', kernel_tree_exit_proven: false, secondary },
+      events }
+    await preserve('FAILURE_RESULT_SAVE', async () => {
+      await writeFile(join(directory, 'result.json'), JSON.stringify(record, null, 2) + '\n', { flag: 'wx' })
+      failureResultWritten = true
+    })
+    capture?.finish(closureIncomplete)
+    // producer 原 promise 未完成时不继续其业务，也不把本观察器退出冒充服务树退出。
+    if (nativeFailure && (!closed || !readinessComplete && readinessWork || producerWork.promise !== null && !producerWork.settled)) {
+      child.stdin.destroy(); child.stdout.destroy(); child.stderr.destroy(); child.unref()
+      if (remaining() > 0) process.exit(1)
+    }
+    throw primary
+  } finally {
+    capture?.finish(closureIncomplete)
+    onNativeFailure = null
+    if (failureResultWritten) process.exitCode = 1
+  }
 }
-await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: controllerCheck ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
+await writeFile(join(evidence, 'result.json'), JSON.stringify({ candidate, source_revision: source, edition, selected_modes: selectedModes, unselected_modes: modes.filter(mode => !selectedModes.includes(mode)), records, model_calls: 0, human_session_created: records.some(row => row.controller_input_check?.producer?.human_session_created), project_status_check: 'NOT_RUN', controller_check: values['controller-input-check'] ? records.some(row => row.controller_input_check?.status === 'PASS') ? 'PASS' : 'FAIL' : 'NOT_RUN', remainingCases: selectedModes.filter(mode => !records.some(row => row.mode === mode && row.status === 'OBSERVED')) }, null, 2) + '\n', { flag: 'wx' })
 if (records.some(row => row.status !== 'OBSERVED') && !process.exitCode) process.exitCode = 6
+globalThis.clearTimeout(exitTimer)

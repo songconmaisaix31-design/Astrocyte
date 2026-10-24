@@ -10,6 +10,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const sourceRevision = '5c25b1ce6cf044eb2bcea0c9bf7142a8f1e84850'
+const productRevision = 'b464e70ba95967eb1ecc216f5f3d25407f1ecc66'
+const retainedArchiveHash = '42909a812d9c9c08b363d803e8de0ef1db85d6a1c71a5b83e0730a4da4e51f46'
 const approvedChanges = {
   'src/process_worker.cc': ['b418168745b8950bc5841cbabebdc314e7d3e27c1dad79ecfe051b9aa33c617f', '02adc3e67300a23e0f87ab63d55c9680e44bf86e3b846427e2475e9be6fcf9cc'],
   'lib/index.js': ['b615a3788e37bd6484cf66b0a231d8083c09b3c95fb2f5fc22efa2e3de3b61dd', 'a601d37ded7090f1314ff30e5841cc2cf2a3e6104cffb6d30ca0c8f940c5bc4c'],
@@ -18,7 +20,10 @@ const approvedChanges = {
 }
 const checkout = resolve(fileURLToPath(new URL('../', import.meta.url)))
 const { values } = parseArgs({ options: { 'pnpm-cli': { type: 'string' }, 'query-only': { type: 'boolean', default: false },
-  'parent-budget-ms': { type: 'string' } }, strict: true, allowPositionals: false })
+  'parent-budget-ms': { type: 'string' }, 'service-only': { type: 'boolean', default: false }, 'artifact-root': { type: 'string' } }, strict: true, allowPositionals: false })
+const serviceOnly = values['service-only']
+assert.ok(!(serviceOnly && values['query-only']))
+if (!serviceOnly) assert.equal(values['artifact-root'], undefined)
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 const pairs = { Win32: ['load-system-module', 'resolve-api', 'image-conversion'],
   NTSTATUS: ['buffer-limit', 'query', 'buffer-attempts'], InvalidBuffer: ['returned-length', 'buffer-address', 'record-header',
@@ -267,7 +272,7 @@ async function main() {
     result.commands.push(receipt)
     const bytes = options.capture && output.stdout_bytes <= 64 * 1024 ? Buffer.concat(captured) : null
     if (!options.allowFailure && (output.exit !== 0 || !output.close_observed || output.timed_out || !output.stdout_eof || !output.stderr_eof || output.stream_failure || output.spawn_error || !output.output_complete)) throw fail('COMMAND_FAILED')
-    return { receipt, bytes }
+    return { receipt, bytes, started: !!child && positive(child.pid) }
   }
   const git = async args => {
     const value = await command('git', ['-c', 'core.autocrlf=false', ...args], checkout, 30_000, { capture: true })
@@ -283,6 +288,258 @@ async function main() {
       else { const bytes = await stable(path, 2 * 1024 * 1024, copied); files.push({ name, sha256: sha(bytes), bytes: bytes.length }) }
     }
     return files.sort((a, b) => a.name.localeCompare(b.name))
+  }
+  let serviceMessages = []
+  async function serviceWindow({ node, powershell, binary, diagnosticPackage, sourceGuard }) {
+    const compositionDeadline = performance.now() + 240_000
+    const runService = await within(compositionDeadline, async () => {
+    result.product_revision = productRevision
+    result.scope = 'retained_b464_development_service_not_candidate'
+    const artifact = resolve(values['artifact-root'] ?? '')
+    assert.equal(artifact.toLowerCase(), join(temporary, 'swa-b464-retained').toLowerCase())
+    await ordinary(artifact, true)
+    const metadata = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await stable(join(artifact, 'private/artifact-metadata.json'), 4096, true)))
+    keys(metadata, ['id', 'name', 'size_in_bytes', 'digest', 'expired', 'workflow_run'])
+    keys(metadata.workflow_run, ['id', 'head_sha'])
+    assert.equal(metadata.id, 12542236014)
+    assert.equal(metadata.name, 'swa-windows-combined-' + productRevision)
+    assert.equal(metadata.size_in_bytes, 310804282)
+    assert.equal(metadata.digest, 'sha256:3579aec40c304d64255a9469eb6c69cb72112f8a5a6f43c30f9636d3e7b1c4d0')
+    assert.equal(metadata.expired, false); assert.equal(metadata.workflow_run.id, 40047585581)
+    assert.equal(metadata.workflow_run.head_sha, productRevision)
+    const base = 'swa-windows-combined-' + productRevision, archive = join(artifact, base + '.zip')
+    assert.deepEqual((await readdir(artifact)).sort(), ['private', base + '.zip', base + '.zip.sha256'].sort())
+    assert.equal(sha(await stable(archive, 512 * 1024 * 1024, true)), retainedArchiveHash)
+    assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(await stable(archive + '.sha256', 1024, true)).trim(), retainedArchiveHash + '  ' + base + '.zip')
+    result.retained_product = { metadata, archive_sha256: retainedArchiveHash, version: productRevision, installation: 'NOT_RUN' }
+    result.phase = 'retained-product-extraction'
+    const extracted = join(work, 'retained-product'), manifestPath = join(privateRoot, 'retained-entries.json')
+    const extractScript = join(privateRoot, 'extract-retained.ps1')
+    // 复用正式包的 .NET 提取器，先完整核实际条目和空间，再允许一次独占写入。
+    const extractText = [
+      'param([string]$Archive,[string]$Target,[string]$Manifest,[string]$RootName)',
+      "$ErrorActionPreference='Stop'",
+      'try {',
+      'if (Test-Path -LiteralPath $Target) { throw "Target exists" }',
+      '$zip=[IO.Compression.ZipFile]::OpenRead($Archive)',
+      'try {',
+      'if ($zip.Entries.Count -gt 65536 -or $zip.Entries.Count -lt 1) { throw "Entry bound" }',
+      '$names=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)',
+      '$files=[Collections.Generic.List[object]]::new(); [long]$total=0; [long]$maximum=0',
+      'foreach($entry in $zip.Entries) {',
+      '$name=$entry.FullName; $parts=$name.Split("/")',
+      'if (-not $name.StartsWith($RootName+"/",[StringComparison]::Ordinal) -or $name.Contains("\\") -or $name.Contains(":") -or [IO.Path]::IsPathRooted($name) -or $parts -contains ".." -or $parts -contains "." -or -not $names.Add($name.TrimEnd("/"))) { throw "Entry path" }',
+      '$isDir=$name.EndsWith("/"); $relative=$name.Substring($RootName.Length+1)',
+      'if ($name.Contains("//") -or (-not $relative -and -not $isDir)) { throw "Empty entry" }',
+      '[long]$attributes=$entry.ExternalAttributes; $unix=($attributes -shr 16) -band 61440',
+      'if (($attributes -band 1024) -ne 0 -or ($unix -notin @(0,32768,16384)) -or ($isDir -and $unix -eq 32768) -or (-not $isDir -and $unix -eq 16384)) { throw "Entry type" }',
+      'if ($entry.Length -lt 0 -or $entry.CompressedLength -lt 0 -or $entry.Length -gt 268435456 -or ($isDir -and $entry.Length -ne 0)) { throw "Entry size" }',
+      '$targetPath=[IO.Path]::GetFullPath([IO.Path]::Combine($Target,$name))',
+      '$prefix=[IO.Path]::GetFullPath($Target).TrimEnd("\\")+"\\"',
+      'if (-not $targetPath.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)) { throw "Entry escape" }',
+      '$total += $entry.Length; if ($total -gt 2147483648) { throw "Expanded bound" }; $maximum=[Math]::Max($maximum,$entry.Length)',
+      'if (-not $isDir) { $files.Add([ordered]@{name=$relative;bytes=[long]$entry.Length}) }',
+      '}',
+      '$entryCount=$zip.Entries.Count',
+      '} finally { $zip.Dispose() }',
+      '$free=[IO.DriveInfo]::new([IO.Path]::GetPathRoot($Target)).AvailableFreeSpace',
+      '$needed=2*$total+(Get-Item -LiteralPath $Archive).Length+1073741824',
+      'if ($free -lt $needed) { throw "Space bound" }',
+      '[IO.Compression.ZipFile]::ExtractToDirectory($Archive,$Target,$false)',
+      '$report=[ordered]@{schema_version=1;entry_count=$entryCount;expanded_bytes=$total;maximum_file_bytes=$maximum;free_before=$free;needed_before=$needed;files=@($files)}',
+      '$bytes=[Text.UTF8Encoding]::new($false).GetBytes(($report|ConvertTo-Json -Depth 5 -Compress))',
+      'if ($bytes.Length -gt 33554432) { throw "Manifest bound" }',
+      '$stream=[IO.File]::Open($Manifest,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)',
+      'try {$stream.Write($bytes,0,$bytes.Length);$stream.Flush($true)} finally {$stream.Dispose()}',
+      '} catch {[Console]::Error.WriteLine("retained-product-extraction-failed");exit 1}'
+    ].join('\n')
+    remaining(compositionDeadline)
+    await writeFile(extractScript, extractText, { flag: 'wx' })
+    await command(powershell, ['-NoProfile', '-NonInteractive', '-File', extractScript, '-Archive', archive, '-Target', extracted, '-Manifest', manifestPath, '-RootName', base], work, 120_000,
+      { deadline: Math.min(compositionDeadline, performance.now() + 120_000) })
+    remaining(compositionDeadline)
+    const manifest = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await stable(manifestPath, 32 * 1024 * 1024, true)))
+    keys(manifest, ['schema_version', 'entry_count', 'expanded_bytes', 'maximum_file_bytes', 'free_before', 'needed_before', 'files'])
+    assert.equal(manifest.schema_version, 1)
+    for (const key of ['entry_count', 'expanded_bytes', 'maximum_file_bytes', 'free_before', 'needed_before']) assert.ok(positive(manifest[key]))
+    assert.ok(manifest.entry_count <= 65536 && manifest.expanded_bytes <= 2 * 1024 ** 3 && manifest.maximum_file_bytes <= 256 * 1024 ** 2)
+    assert.ok(manifest.free_before >= manifest.needed_before && Array.isArray(manifest.files) && manifest.files.length <= manifest.entry_count)
+    const expected = new Map(), folded = new Set()
+    for (const entry of manifest.files) {
+      keys(entry, ['name', 'bytes'])
+      assert.ok(typeof entry.name === 'string' && entry.name && !entry.name.includes('\\') && !entry.name.includes(':'))
+      assert.ok(!isAbsolute(entry.name) && entry.name.split('/').every(part => part && part !== '.' && part !== '..'))
+      assert.ok(Number.isSafeInteger(entry.bytes) && entry.bytes >= 0 && entry.bytes <= 256 * 1024 ** 2)
+      assert.ok(!folded.has(entry.name.toLowerCase())); folded.add(entry.name.toLowerCase()); expected.set(entry.name, entry.bytes)
+    }
+    assert.equal([...expected.values()].reduce((sum, value) => sum + value, 0), manifest.expanded_bytes)
+    const original = join(extracted, base), development = join(work, 'service-development'), replacementSizes = new Map()
+    assert.deepEqual(await readdir(extracted), [base])
+    async function productTree(root, prefix = '', changed = false) {
+      const files = []
+      await ordinary(root, true)
+      for (const entry of await readdir(root, { withFileTypes: true })) {
+        const name = prefix + entry.name, path = join(root, entry.name)
+        assert.ok(!entry.isSymbolicLink())
+        if (entry.isDirectory()) files.push(...await productTree(path, name + '/', changed))
+        else {
+          assert.ok(expected.has(name)); const bytes = await stable(path, 256 * 1024 ** 2, true)
+          assert.equal(bytes.length, changed && replacementSizes.has(name) ? replacementSizes.get(name) : expected.get(name))
+          files.push({ name, bytes: bytes.length, sha256: sha(bytes) })
+        }
+      }
+      return files.sort((a, b) => a.name.localeCompare(b.name))
+    }
+    const originalFiles = await productTree(original)
+    assert.equal(originalFiles.length, expected.size)
+    const spaceScript = join(privateRoot, 'retained-space.ps1')
+    remaining(compositionDeadline)
+    await writeFile(spaceScript, 'param([string]$Root)\n$ErrorActionPreference="Stop"\n[Console]::Write([IO.DriveInfo]::new([IO.Path]::GetPathRoot($Root)).AvailableFreeSpace)\n', { flag: 'wx' })
+    const space = await command(powershell, ['-NoProfile', '-NonInteractive', '-File', spaceScript, '-Root', work], work, 30_000,
+      { capture: true, deadline: Math.min(compositionDeadline, performance.now() + 30_000) })
+    const free = Number(space.bytes?.toString().trim())
+    assert.ok(Number.isSafeInteger(free) && free >= 2 * manifest.expanded_bytes + (await lstat(archive)).size + 1024 ** 3)
+    remaining(compositionDeadline)
+    await cp(original, development, { recursive: true, force: false, errorOnExist: true })
+    assert.deepEqual(await productTree(development), originalFiles)
+    result.retained_product.extraction = { entry_count: manifest.entry_count, file_count: originalFiles.length, expanded_bytes: manifest.expanded_bytes,
+      maximum_file_bytes: manifest.maximum_file_bytes, free_before: manifest.free_before, free_before_copy: free,
+      files_sha256: sha(Buffer.from(JSON.stringify(originalFiles))), product_inputs_unchanged: false }
+    for (const [name, value] of [['VERSION', productRevision], ['PLATFORM', 'win32-x64'], ['EDITION', 'combined']]) {
+      assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(await stable(join(development, name), 1024, true)).trim(), value)
+    }
+    const serviceNode = join(development, 'node/node.exe')
+    assert.equal(sha(await stable(serviceNode, 128 * 1024 ** 2, true)), sha(await stable(node, 128 * 1024 ** 2)))
+    const requireDevelopment = createRequire(join(development, 'runtime/package.json'))
+    const servicePackage = await realpath(dirname(requireDevelopment.resolve('@vscode/windows-process-tree/package.json')))
+    assert.ok(contains(join(development, 'runtime'), servicePackage))
+    const packageJSON = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await stable(join(servicePackage, 'package.json'), 65536, true)))
+    assert.equal(packageJSON.version, '0.8.0'); assert.equal(packageJSON.main, 'lib/index.js')
+    const serviceJS = join(servicePackage, 'lib/index.js'), serviceBinary = join(servicePackage, 'build/Release/windows_process_tree.node')
+    assert.equal(sha(await stable(serviceJS, 65536, true)), approvedChanges['lib/index.js'][0])
+    assert.equal(sha(await stable(serviceBinary, 16 * 1024 ** 2, true)), '8b2d203527225d12e67920484aca4a07be35c8675b477e6a6fe84f2b608b389f')
+    remaining(compositionDeadline)
+    await copyFile(join(diagnosticPackage, 'lib/index.js'), serviceJS)
+    remaining(compositionDeadline)
+    await copyFile(binary, serviceBinary)
+    const changedFiles = new Map([
+      [relative(development, serviceJS).replaceAll('\\', '/'), approvedChanges['lib/index.js'][1]],
+      [relative(development, serviceBinary).replaceAll('\\', '/'), result.native_sha256]
+    ])
+    replacementSizes.set(relative(development, serviceJS).replaceAll('\\', '/'), (await lstat(serviceJS)).size)
+    replacementSizes.set(relative(development, serviceBinary).replaceAll('\\', '/'), (await lstat(serviceBinary)).size)
+    const guardProduct = async () => {
+      assert.equal(sha(await stable(archive, 512 * 1024 ** 2, true)), retainedArchiveHash)
+      assert.deepEqual(await productTree(original), originalFiles)
+      const copied = await productTree(development, '', true)
+      assert.equal(copied.length, originalFiles.length)
+      for (let index = 0; index < copied.length; index++) {
+        assert.equal(copied[index].name, originalFiles[index].name)
+        assert.equal(copied[index].sha256, changedFiles.get(copied[index].name) ?? originalFiles[index].sha256)
+      }
+    }
+    // 只替换两个观察消费者；实际产品 VERSION 仍为 B464。
+    const observerNames = ['serve-lifecycle.mjs', 'windows-service-evidence-summary.mjs']
+    const consumerNames = [...observerNames, 'controller-taskcreate-check.mjs', 'controller-input-check.mjs', 'process-incarnation-closure.mjs', 'observe-process-exits.ps1']
+    for (const name of consumerNames) {
+      remaining(compositionDeadline)
+      assert.equal((await git(['diff', '--name-only', productRevision, sourceRevision, '--', 'tests/swa-cli-headless/' + name])).toString().trim(), '')
+    }
+    for (const name of observerNames) {
+      remaining(compositionDeadline)
+      await copyFile(join(checkout, 'tests/swa-cli-headless', name), join(source, 'tests/swa-cli-headless', name))
+    }
+    const consumerPins = await Promise.all(consumerNames.map(async name => ({ name, sha256: sha(await stable(join(source, 'tests/swa-cli-headless', name), 256 * 1024, true)) })))
+    result.service_consumer_sources = consumerPins
+    const guardConsumers = async () => {
+      for (const pin of consumerPins) assert.equal(sha(await stable(join(source, 'tests/swa-cli-headless', pin.name), 256 * 1024, true)), pin.sha256)
+      for (const name of observerNames) assert.equal(sha(await stable(join(checkout, 'tests/swa-cli-headless', name), 256 * 1024)), consumerPins.find(pin => pin.name === name).sha256)
+    }
+    await guardProduct(); await guardConsumers(); await sourceGuard()
+    const serviceEvidence = join(source, '.verification/swa-ci/windows'), smoke = join(serviceEvidence, 'smoke')
+    remaining(compositionDeadline)
+    await mkdir(serviceEvidence, { recursive: true }); await ordinary(serviceEvidence, true)
+    remaining(compositionDeadline)
+    const dataParent = join(work, 'service-data'); await mkdir(dataParent)
+    const exitPath = join(serviceEvidence, 'service-observer-exit.json'), summaryPath = join(serviceEvidence, 'service-evidence-summary.json')
+    const serviceCase = join(smoke, 'readiness-eof')
+    remaining(compositionDeadline)
+    return async () => {
+    result.phase = 'retained-service-observation'
+    result.service_started = 'NOT_CAPTURED'
+    // 这一个父截止同时覆盖服务、摘要和最终安全原件，不把前置准备计为服务耗时。
+    finalDeadline = performance.now() + 660_000
+    const wallDeadline = String(Date.now() + Math.floor(remaining(finalDeadline)))
+    let serviceError
+    try {
+      const observed = await command(serviceNode, ['--max-old-space-size=1024', join(source, 'tests/swa-cli-headless/serve-lifecycle.mjs'),
+        '--candidate', development, '--source-revision', productRevision, '--edition', 'combined', '--evidence', smoke,
+        '--data-parent', dataParent, '--protected-roots', checkout + ';' + (env.ProgramFiles ?? env.PROGRAMFILES), '--port', '18793',
+        '--mode', 'readiness-eof', '--controller-input-check', '--retain-query-evidence', '--parent-deadline-ms', wallDeadline], source, 660_000,
+        { deadline: finalDeadline, allowFailure: true })
+      result.service_process = observed.receipt
+      const row = observed.receipt
+      const exit = { schema_version: 1, source_revision: productRevision, phase: 'service-observer', started: observed.started,
+        exit: row.exit, timed_out: row.timed_out, stdout_bytes: row.stdout_bytes, stderr_bytes: row.stderr_bytes,
+        stdout_eof: row.stdout_eof, stderr_eof: row.stderr_eof, outer_error: row.stream_failure || row.spawn_error || !row.close_observed ? 'UNKNOWN' : null }
+      await within(finalDeadline, () => writeFile(exitPath, JSON.stringify(exit) + '\n', { flag: 'wx' }))
+    } catch (error) { serviceError = error }
+    try {
+      const summarized = await command(serviceNode, [join(source, 'tests/swa-cli-headless/windows-service-evidence-summary.mjs'),
+        '--source-root', source, '--install-root', development, '--evidence', serviceCase, '--source-revision', productRevision,
+        '--observer-exit-file', exitPath, '--output', summaryPath, '--parent-deadline-ms', wallDeadline], source, 30_000,
+        { deadline: Math.min(finalDeadline, performance.now() + 30_000), capture: true, allowFailure: true })
+      result.summary_process = summarized.receipt
+      const bytes = await within(finalDeadline, () => stable(summaryPath, 65536, true))
+      const summary = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+      keys(summary, ['schema_version', 'source_revision', 'status', 'first_failure', 'service_evidence', 'native_failure'])
+      assert.equal(summary.schema_version, 1); assert.equal(summary.source_revision, productRevision)
+      assert.ok(['PASS', 'FAIL'].includes(summary.status))
+      assert.ok(summarized.bytes)
+      assert.deepEqual(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(summarized.bytes)), summary)
+      for (const value of [summary.first_failure, summary.service_evidence, summary.native_failure]) assert.ok(value && typeof value === 'object' && !Array.isArray(value))
+      assert.ok(Buffer.byteLength(JSON.stringify(summary.native_failure)) <= 1800)
+      serviceMessages = [summary.service_evidence, summary.first_failure, summary.native_failure].map(value => JSON.stringify(value))
+      assert.ok(serviceMessages.every(value => Buffer.byteLength(value) <= 3500))
+      result.service_summary = { status: summary.status, sha256: sha(bytes), native_failure: summary.native_failure }
+      // 摘要已完整验证原安全文件；只复制固定两原件，原始日志始终不公开。
+      for (const [name, maximum] of [['service-query-evidence.json', 8 * 1024 ** 2], ['service-process-lifecycle.json', 2 * 1024 ** 2]]) {
+        const originalBytes = await within(finalDeadline, () => stable(join(serviceCase, name), maximum, true))
+        assert.ok(Array.isArray(summary.service_evidence.files))
+        const matching = summary.service_evidence.files.filter(file => file.file_name === name)
+        assert.equal(matching.length, 1)
+        keys(matching[0], ['file_name', 'status', 'sha256', 'byte_count'])
+        assert.equal(matching[0].status, 'SAVED')
+        assert.equal(matching[0].sha256, sha(originalBytes))
+        assert.equal(matching[0].byte_count, originalBytes.length)
+        const document = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(originalBytes))
+        assert.equal(document.source_revision, productRevision)
+        assert.equal(document.sources.observer, consumerPins.find(pin => pin.name === 'serve-lifecycle.mjs').sha256)
+        assert.equal(document.sources.native, result.native_sha256)
+        if (name === 'service-process-lifecycle.json' && document.events.some(event =>
+          event.kind === 'spawn' && event.source.kind === 'serve_native_identity' && event.source.role === 'serve' && positive(event.pid))) {
+          result.service_started = true
+        }
+        await within(finalDeadline, () => writeFile(join(evidence, name), originalBytes, { flag: 'wx' }))
+        assert.ok(originalBytes.equals(await within(finalDeadline, () => stable(join(evidence, name), maximum, true))))
+      }
+      await within(finalDeadline, () => writeFile(join(evidence, 'service-summary.json'), bytes, { flag: 'wx' }))
+      assert.ok(bytes.equals(await within(finalDeadline, () => stable(join(evidence, 'service-summary.json'), 65536, true))))
+      const row = result.service_process, summaryRow = summarized.receipt
+      if (summary.status !== 'PASS' || result.service_started !== true || !row || row.exit !== 0 || row.timed_out || !row.close_observed ||
+          !row.stdout_eof || !row.stderr_eof || row.stream_failure || row.spawn_error || !row.output_complete ||
+          summaryRow.exit !== 0 || summaryRow.timed_out || !summaryRow.close_observed || !summaryRow.stdout_eof || !summaryRow.stderr_eof ||
+          summaryRow.stream_failure || summaryRow.spawn_error || !summaryRow.output_complete) serviceError ??= fail('COMMAND_FAILED')
+    } catch (error) { serviceError ??= error }
+    try {
+      await within(finalDeadline, async () => { await guardProduct(); await guardConsumers(); await sourceGuard() })
+      result.retained_product.extraction.product_inputs_unchanged = true
+    } catch (error) { serviceError ??= error }
+    if (serviceError) throw serviceError
+    result.status = 'NOT_REPRODUCED'; result.phase = 'complete'
+    }
+    })
+    await runService()
   }
   try {
     assert.match(result.observation_revision, /^[0-9a-f]{40}$/)
@@ -361,6 +618,9 @@ async function main() {
     const binary = join(diagnosticPackage, 'build/Release/windows_process_tree.node')
     result.native_sha256 = sha(await stable(binary, 16 * 1024 * 1024, true))
     await sourceGuard(); await save('SOURCE', sourceRevision + '\n'); await save('preparation.json', preparation)
+    if (serviceOnly) {
+      await serviceWindow({ node, powershell, binary, diagnosticPackage, sourceGuard })
+    } else {
     result.phase = 'bounded-native-query'
     // 同一个截止涵盖真实子进程、双流、后核与最终证据；准备阶段有独立前置 timeout。
     finalDeadline = performance.now() + 30_000
@@ -380,15 +640,23 @@ async function main() {
       if (actual.exit !== 0 || !actual.close_observed || actual.timed_out || !actual.stdout_eof || !actual.stderr_eof || actual.stream_failure || actual.spawn_error || !actual.output_complete || result.query === 'NOT_CAPTURED' || result.query.status !== 'NOT_REPRODUCED') throw fail('COMMAND_FAILED')
       result.status = 'NOT_REPRODUCED'; result.phase = 'complete'
     })
+    }
   } catch (error) { primary = error; result.status = 'FAIL'; result.error_kind = safeCode(error)
     result.secondary_error_kinds = Array.isArray(error?.diagnosticSecondaryCodes) && error.diagnosticSecondaryCodes.includes('FILE_CLOSE_FAILED') ? ['FILE_CLOSE_FAILED'] : [] }
   const emit = async deadline => {
     const projected = { schema_version: 1, source_revision: sourceRevision, observation_revision: result.observation_revision,
       status: result.status, phase: result.phase, error_kind: result.error_kind, secondary_error_kinds: result.secondary_error_kinds, native_sha256: result.native_sha256 ?? 'NOT_CAPTURED',
       query: result.query, query_process: result.query_process, kernel_tree_exit_proven: false, model_calls: 0, service_started: false }
-    const messages = [JSON.stringify(projected), JSON.stringify({ schema_version: 1, source_revision: sourceRevision,
+    const component = { schema_version: 1, source_revision: sourceRevision,
       diagnostic_patch_sha256: result.diagnostic_patch_sha256 ?? 'NOT_CAPTURED', native_components_built: result.native_sha256 ? 1 : 'UNKNOWN',
-      other_native_components_built: false, result_sha256: sha(Buffer.from(JSON.stringify(result, null, 2) + '\n')) })]
+      other_native_components_built: false, result_sha256: sha(Buffer.from(JSON.stringify(result, null, 2) + '\n')) }
+    const messages = serviceOnly ? [...serviceMessages, JSON.stringify({ ...component, product_revision: productRevision,
+      observation_revision: result.observation_revision, scope: 'retained_b464_development_service_not_candidate',
+      status: result.status, phase: result.phase, error_kind: result.error_kind, secondary_error_kinds: result.secondary_error_kinds,
+      native_sha256: result.native_sha256 ?? 'NOT_CAPTURED', service_process: result.service_process ?? 'NOT_CAPTURED',
+      summary_process: result.summary_process ?? 'NOT_CAPTURED', model_calls: 0, worker_calls: 0, service_started: result.service_started,
+      kernel_tree_exit_proven: false })] : [JSON.stringify(projected), JSON.stringify(component)]
+    assert.ok(messages.length <= (serviceOnly ? 4 : 2))
     assert.ok(messages.every(value => Buffer.byteLength(value) <= 3500))
     await save('result.json', result, deadline)
     for (const message of messages) {

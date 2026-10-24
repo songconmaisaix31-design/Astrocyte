@@ -179,16 +179,63 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - name: Verify the exact retained B464 product metadata
+        uses: actions/github-script@v7
+        with:
+          retries: 0
+          script: |
+            const assert = require('node:assert/strict');
+            const fs = require('node:fs');
+            const path = require('node:path');
+            try {
+              const repository = { owner: context.repo.owner, repo: context.repo.repo };
+              const { data: artifact } = await github.rest.actions.getArtifact({ ...repository, artifact_id: 12542236014 });
+              const { data: run } = await github.rest.actions.getWorkflowRun({ ...repository, run_id: 40047585581 });
+              const { data: job } = await github.request('GET /repos/{owner}/{repo}/actions/jobs/{job_id}', { ...repository, job_id: 120732737576 });
+              assert.equal(artifact.id, 12542236014);
+              assert.equal(artifact.name, 'swa-windows-combined-b464e70ba95967eb1ecc216f5f3d25407f1ecc66');
+              assert.equal(artifact.size_in_bytes, 310804282);
+              assert.equal(artifact.digest, 'sha256:3579aec40c304d64255a9469eb6c69cb72112f8a5a6f43c30f9636d3e7b1c4d0');
+              assert.equal(artifact.expired, false);
+              assert.equal(artifact.workflow_run.id, 40047585581);
+              assert.equal(artifact.workflow_run.head_sha, 'b464e70ba95967eb1ecc216f5f3d25407f1ecc66');
+              assert.equal(artifact.workflow_run.repository_id, 1410836101);
+              assert.equal(artifact.workflow_run.head_repository_id, 1410836101);
+              assert.equal(run.id, 40047585581); assert.equal(run.head_sha, artifact.workflow_run.head_sha);
+              assert.equal(run.event, 'workflow_dispatch'); assert.equal(run.run_attempt, 1);
+              assert.equal(run.status, 'completed'); assert.equal(run.conclusion, 'success');
+              assert.equal(job.id, 120732737576); assert.equal(job.run_id, run.id); assert.equal(job.head_sha, run.head_sha);
+              assert.equal(job.run_attempt, 1); assert.equal(job.name, 'windows-native-candidate');
+              assert.equal(job.status, 'completed'); assert.equal(job.conclusion, 'success');
+              assert.equal(job.steps.filter(step => step.name === 'Build, archive, install and exercise the actual candidate' && step.conclusion === 'success').length, 1);
+              assert.equal(job.steps.filter(step => step.name === 'Run actions/upload-artifact@v4' && step.conclusion === 'success').length, 2);
+              const root = path.join(process.env.RUNNER_TEMP, 'swa-b464-retained');
+              fs.mkdirSync(root);
+              fs.mkdirSync(path.join(root, 'private'));
+              const metadata = { id: artifact.id, name: artifact.name, size_in_bytes: artifact.size_in_bytes, digest: artifact.digest,
+                expired: artifact.expired, workflow_run: { id: artifact.workflow_run.id, head_sha: artifact.workflow_run.head_sha } };
+              fs.writeFileSync(path.join(root, 'private', 'artifact-metadata.json'), JSON.stringify(metadata, null, 2) + '\n', { flag: 'wx' });
+              core.notice('Fixed B464 product artifact metadata verified; the API digest is retained separately from the inner archive checksum');
+            } catch {
+              core.setFailed('Fixed B464 product metadata validation failed; no alternative artifact will be selected');
+            }
+      - uses: actions/download-artifact@v4
+        id: download_b464_service
+        with:
+          github-token: ${{ github.token }}
+          run-id: 40047585581
+          name: swa-windows-combined-b464e70ba95967eb1ecc216f5f3d25407f1ecc66
+          path: ${{ runner.temp }}/swa-b464-retained
       - name: Prepare only the pinned package manager
         shell: pwsh
         run: |
           npm install --prefix (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm') --no-audit --no-fund --ignore-scripts pnpm@11.27.0
           if ($LASTEXITCODE -ne 0) { throw 'Pinned pnpm installation failed' }
-      - name: Observe only the native process query error boundary
+      - name: Observe the retained B464 service native error boundary
         shell: pwsh
         run: |
-          node ./scripts/probe-swa-windows-process-error.mjs --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs')
-          if ($LASTEXITCODE -ne 0) { throw 'The Windows native query diagnostic failed; bounded evidence retained' }
+          node ./scripts/probe-swa-windows-process-error.mjs --service-only --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-b464-retained') --pnpm-cli (Join-Path $env:RUNNER_TEMP 'swa-controller-open-pnpm/node_modules/pnpm/bin/pnpm.cjs')
+          if ($LASTEXITCODE -ne 0) { throw 'The Windows service native error diagnostic failed; bounded evidence retained' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -197,6 +244,9 @@ jobs:
             .verification/swa-ci/windows-native-error/SOURCE
             .verification/swa-ci/windows-native-error/preparation.json
             .verification/swa-ci/windows-native-error/result.json
+            .verification/swa-ci/windows-native-error/service-query-evidence.json
+            .verification/swa-ci/windows-native-error/service-process-lifecycle.json
+            .verification/swa-ci/windows-native-error/service-summary.json
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
