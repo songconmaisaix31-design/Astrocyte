@@ -1,5 +1,16 @@
 # 用户决定与待定项
 
+## 新一轮 Linux 构建空间（2026-10-24，北京时间，待答）
+
+上一轮已获批四目录已删除并用于5c25/n46-10完整构建。后继Pi停止守卫和Windows容量修复需要新的Linux安装；最新可用624173056字节，不足3836955728字节的构建空间门。已向用户请求下列新增四目录的删除授权，尚未收到答复，当前未删除：
+
+1. `/workspace/swarm-anything/dist/swa-linux-combined-5c25b1ce-n46-10`
+2. `/workspace/swa-linux-packages/swa-linux-combined-5c25b1ce-n46-10`
+3. `/workspace/swa-linux-installs/swa-linux-combined-b464e70b-n46-09`
+4. `/workspace/swa-linux-installs/swa-linux-combined-6890522e-01`
+
+四目录均已逐文件与保留归档核对，预计独占释放3430932480字节；当前I5c25、全部归档、任务数据、凭据、备份、编译输出及失败证据保留。准确范围与只读check-only在 `.verification/cloud-setup/space-next-5c25-20261024-15/`，操作工具SHA为 `f4934b3da346d060d212c96670d06a21735b5a6c737f11282175a74d18171738`。这四个路径不属于下节原授权，不把原“这4个目录”解释成新增删除许可。收到明确答复后，实际删除前仍由原工具重新核对来源、引用与保护范围。
+
 ## 四个旧副本清理与全量构建（2026-10-24，北京时间，已确认）
 
 用户明确“开始全量构建，我已授权这4个目录的删除和空间检查”。授权对应此前列明的四根：`/workspace/swarm-anything/dist/swa-linux-combined-b464e70b-n46-09`、`/workspace/swa-linux-packages/swa-linux-combined-b464e70b-n46-09`、`/workspace/swa-linux-installs/swa-linux-combined-392cb0c9-n46-08`、`/workspace/swa-linux-installs/swa-linux-combined-11717767-codex-01`。这些删除已由Root唯一执行完成，实际结果见STATUS及space-next-b464-20261024-14/operation-01；当前IB464、归档、数据、凭据、备份与失败证据保留，不扩大到其他目录。
