@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto'
 import { constants } from 'node:fs'
 import { lstat, mkdir, open, readFile, realpath, stat, writeFile } from 'node:fs/promises'
 import { builtinModules, createRequire, isBuiltin } from 'node:module'
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, toNamespacedPath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
@@ -17,6 +17,8 @@ const questions = values.profile === 'stepfun-pi-questions'
 const openCode = values.profile === 'stepfun-opencode'
 const initializeOpenCode = values.profile === 'opencode-initialize-only'
 const pureProtocol = pi || initializeOpenCode
+const windows = process.platform === 'win32'
+const samePath = (left, right) => windows ? left.toLowerCase() === right.toLowerCase() : left === right
 if (initializeOpenCode) assert.ok(['linux', 'win32'].includes(process.platform) && process.arch === 'x64', 'initializer_platform_unreviewed')
 process.umask(0o077)
 const prototype = dirname(fileURLToPath(import.meta.url))
@@ -82,7 +84,7 @@ const inside = (root, path) => {
 }
 async function ordinary(path, directory = false) {
   const canonical = await realpath(path)
-  assert.equal(canonical, resolve(path), 'observer_redirected_path')
+  assert.ok(samePath(canonical, resolve(path)), 'observer_redirected_path')
   for (let current = canonical; ; current = dirname(current)) {
     const value = await lstat(current)
     assert.ok(!value.isSymbolicLink(), 'observer_link_path')
@@ -128,16 +130,57 @@ const repository = await ordinary(values['source-repository'], true)
 await ordinary(dirname(values.output), true)
 const output = resolve(values.output)
 assert.ok(!inside(candidate, output) && !inside(output, candidate), 'observer_output_overlaps_installation')
-const installedNode = join(candidate, initializeOpenCode && process.platform === 'win32' ? 'node/node.exe' : 'node/node')
-const installedCli = join(candidate, initializeOpenCode && process.platform === 'win32' ? 'swa.exe' : 'swa')
-assert.equal(await realpath(process.execPath), await ordinary(installedNode), 'observer_requires_actual_installed_node')
+const installedNode = join(candidate, windows ? 'node/node.exe' : 'node/node')
+const installedCli = join(candidate, windows ? 'swa.exe' : 'swa')
+assert.ok(samePath(await realpath(process.execPath), await ordinary(installedNode)), 'observer_requires_actual_installed_node')
 const installedRevision = (await readFile(await ordinary(join(candidate, 'VERSION')), 'utf8')).trim()
 assert.match(installedRevision, /^[0-9a-f]{40}$/)
 const commandOptions = { cwd: repository, env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', GIT_PAGER: 'cat' }, timeout: 30_000, maxBuffer: 64 * 1024 * 1024 }
 const sourceRevision = execFileSync('git', ['rev-parse', '--verify', `${installedRevision}^{commit}`], commandOptions).toString('ascii').trim()
 assert.equal(sourceRevision, installedRevision, 'observer_installed_commit_missing')
-if (!pi) assert.equal(execFileSync(installedCli, ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
+if (!pi || windows) assert.equal(execFileSync(installedCli, ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
 const requireInstalled = createRequire(join(candidate, 'runtime/package.json'))
+const preparationDependencies = []
+let security, extractionRuntime
+if (windows) {
+  assert.equal(process.arch, 'x64', 'observer_windows_architecture_unreviewed')
+  const securityEntry = await ordinary(requireInstalled.resolve('@orca/windows-security'))
+  const securityRoot = await ordinary(join(candidate, 'runtime/node_modules/@orca/windows-security'), true)
+  assert.ok(inside(securityRoot, securityEntry), 'observer_security_outside_installation')
+  const securityAddon = await ordinary(join(securityRoot, 'build/Release/orca_windows_security.node'))
+  preparationDependencies.push(await version(securityEntry), await version(securityAddon))
+  security = requireInstalled(securityEntry)
+  const observed = JSON.parse(execFileSync('python', ['-I', '-c', 'import json, sys; print(json.dumps({"executable": sys.executable, "version": list(sys.version_info[:3])}))'], { timeout: 10_000, maxBuffer: 4096, encoding: 'utf8', windowsHide: true }))
+  assert.deepEqual(Object.keys(observed).sort(), ['executable', 'version'])
+  assert.ok(isAbsolute(observed.executable) && Array.isArray(observed.version) && observed.version.length === 3 && observed.version.every(Number.isSafeInteger))
+  assert.deepEqual(observed.version.slice(0, 2), [3, 13], 'observer_windows_python_unreviewed')
+  extractionRuntime = { executable: await ordinary(observed.executable), version: observed.version }
+}
+function privateWindowsPath(path, directory) {
+  const user = security.currentUserSid(), acl = security.getDaclAces(toNamespacedPath(path)), trustees = new Set([user, 'S-1-5-18'])
+  assert.ok(acl?.protected && acl.ownerSid === user && acl.aces.length === trustees.size, 'observer_private_acl_changed')
+  for (const ace of acl.aces) assert.ok(ace.type === 0 && ace.flags === (directory ? 3 : 0) && ace.mask === 0x1f01ff && trustees.delete(ace.sid), 'observer_private_acl_changed')
+  assert.equal(trustees.size, 0, 'observer_private_acl_changed')
+}
+async function outputDirectory(path, recursive = false) {
+  if (!windows) return mkdir(path, { recursive, mode: 0o700 })
+  assert.ok(inside(output, path), 'observer_output_directory_outside_root')
+  if (recursive && !samePath(path, output)) await outputDirectory(dirname(path), true)
+  await ordinary(dirname(path), true)
+  const created = security.createPrivateDirectory(toNamespacedPath(path))
+  assert.ok(recursive || created, 'observer_output_directory_already_exists')
+  await ordinary(path, true)
+  privateWindowsPath(path, true)
+}
+async function outputFile(path, value) {
+  if (!windows) return writeFile(path, value, { flag: 'wx', mode: 0o600 })
+  assert.ok(inside(output, path), 'observer_output_file_outside_root')
+  await ordinary(dirname(path), true)
+  const user = security.currentUserSid()
+  security.createFileWithDacl(toNamespacedPath(path), `O:${user}D:P${[...new Set([user, 'S-1-5-18'])].map(sid => `(A;;FA;;;${sid})`).join('')}`, Buffer.isBuffer(value) ? value : Buffer.from(value))
+  await ordinary(path)
+  privateWindowsPath(path, false)
+}
 const bundlePath = join(output, 'observer.cjs')
 const installedExternals = new Map()
 const dynamicDependencies = []
@@ -160,12 +203,12 @@ if (initializeOpenCode) {
 const journalModule = await version(await ordinary(requireInstalled.resolve('./journal-open.cjs')))
 const protocolModule = pureProtocol ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs')), true) : undefined
 const protocolMetafile = pureProtocol ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs.metafile.json')), true) : undefined
-if (pi) assert.equal(execFileSync(join(candidate, 'swa'), ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
-await mkdir(output, { mode: 0o700 })
+if (pi && !windows) assert.equal(execFileSync(installedCli, ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
+await outputDirectory(output)
 const archive = execFileSync('git', ['archive', '--format=zip', installedRevision, '--', ...snapshotPaths], commandOptions)
 const archivePath = join(output, 'source.zip')
-await writeFile(archivePath, archive, { flag: 'wx', mode: 0o600 })
-const extraction = execFileSync('python3', ['-I', join(prototype, 'extract-observer-source.py'), archivePath, repository, installedRevision, join(output, 'source'), ...(pi || openCode || initializeOpenCode ? ['--profile', values.profile] : [])], { timeout: 60_000, maxBuffer: 4 * 1024 * 1024, encoding: 'utf8' })
+await outputFile(archivePath, archive)
+const extraction = execFileSync(windows ? extractionRuntime.executable : 'python3', ['-I', join(prototype, 'extract-observer-source.py'), archivePath, repository, installedRevision, join(output, 'source'), ...(pi || openCode || initializeOpenCode ? ['--profile', values.profile] : [])], { timeout: 60_000, maxBuffer: 4 * 1024 * 1024, encoding: 'utf8', windowsHide: true })
 const archiveProof = JSON.parse(extraction)
 assert.equal(archiveProof.revision, installedRevision)
 const entryPath = join(output, 'entry.ts')
@@ -173,8 +216,8 @@ const entryName = initializeOpenCode ? 'opencode-initialization-entry.ts' : open
 const prototypeEntry = await version(join(prototype, entryName))
 const entryBytes = await readFile(prototypeEntry.path)
 assert.equal(sha(entryBytes), prototypeEntry.sha256, 'observer_entry_source_changed')
-if (openCode || initializeOpenCode) assert.ok(execFileSync('git', ['show', `${installedRevision}:tests/swa-product-acceptance/${entryName}`], commandOptions).equals(entryBytes), 'observer_entry_differs_from_installed_revision')
-await writeFile(entryPath, Buffer.concat([entryBytes, Buffer.from(questionExports, 'utf8')]), { flag: 'wx', mode: 0o600 })
+if (openCode || initializeOpenCode || windows) assert.ok(execFileSync('git', ['show', `${installedRevision}:tests/swa-product-acceptance/${entryName}`], commandOptions).equals(entryBytes), 'observer_entry_differs_from_installed_revision')
+await outputFile(entryPath, Buffer.concat([entryBytes, Buffer.from(questionExports, 'utf8')]))
 // 编译器单独记录；初始化的 JSONC 构建输入另按固定声明核验并复制到公开快照。
 const requireCompiler = createRequire(new URL('../../runtime/swa-orca/package.json', import.meta.url))
 const esbuildPath = await ordinary(requireCompiler.resolve('esbuild'))
@@ -272,8 +315,8 @@ if (pureProtocol) {
         assert.equal(sha(bytes), original.sha256, 'initializer_inline_source_changed')
         assert.deepEqual(await version(original.path), original, 'initializer_inline_source_changed')
         const copyPath = join(destination, name)
-        await mkdir(dirname(copyPath), { recursive: true, mode: 0o700 })
-        await writeFile(copyPath, bytes, { flag: 'wx', mode: 0o600 })
+        await outputDirectory(dirname(copyPath), true)
+        await outputFile(copyPath, bytes)
         const copy = await version(copyPath)
         assert.equal(copy.sha256, original.sha256, 'initializer_inline_copy_changed')
         files.push({ name, original, copy })
@@ -367,7 +410,7 @@ try { build = await esbuild.build({
     })
     plugin.onResolve({ filter: /^[^./]/ }, async args => {
       if (builtins.has(args.path) || initializeOpenCode && isBuiltin(args.path)) return { path: args.path, external: true }
-      if (initializeOpenCode && isAbsolute(args.path)) return undefined
+      if ((initializeOpenCode || windows) && isAbsolute(args.path)) return undefined
       if (initializeOpenCode && (args.path === '@orca/process-host' || args.path.startsWith('@orca/process-host/'))) {
         const subpath = args.path === '@orca/process-host' ? '.' : '.' + args.path.slice('@orca/process-host'.length)
         const entry = processHostExports[subpath]?.['orca-source']
@@ -436,13 +479,15 @@ if (initializeOpenCode) {
 }
 assert.deepEqual(await version(journalModule.path), journalModule, 'observer_journal_module_changed')
 if (pureProtocol) for (const source of [protocolModule, protocolMetafile]) assert.deepEqual(await version(source.path, true), source, 'observer_protocol_artifact_changed')
-await writeFile(bundlePath, build.outputFiles[0].contents, { flag: 'wx', mode: 0o600 })
+for (const expected of preparationDependencies) assert.deepEqual(await version(expected.path), expected, 'observer_preparation_dependency_changed')
+await outputFile(bundlePath, build.outputFiles[0].contents)
 const manifest = {
   scope: initializeOpenCode ? 'controlled-opencode-initialization-client-preparation' : 'read-only-source-observer-preparation', product_or_model_execution: 'NOT_RUN',
   installed_revision: installedRevision, archive_sha256: sha(archive), archive_proof: archiveProof,
   compiler: { version: esbuild.version, module: await version(esbuildPath) },
   journal_module: journalModule, inputs: [...seenInputs.values()], metafile: build.metafile,
   observer: await version(bundlePath),
+  ...(windows ? { preparation_dependencies: preparationDependencies, extraction_runtime: extractionRuntime } : {}),
   ...(questions ? { entry_source: prototypeEntry, entry_exports: questionExports, question_contract_sources: questionContractSources.map(path => {
     const source = archiveProof.entries.find(entry => entry.path === path)
     assert.ok(source, 'observer_question_contract_git_source_missing')
@@ -454,5 +499,5 @@ const manifest = {
   ...(initializeOpenCode ? { profile: values.profile, entry_source: prototypeEntry, process_host_package: processHostPackage,
     runtime_environment: initializationEnvironment, installed_external_entries: [...installedExternals.values()], dynamic_dependencies: dynamicDependencies, build_dependencies: [jsoncDependency, smolDependency] } : {}),
 }
-await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+await outputFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
 process.stdout.write(JSON.stringify({ status: 'PREPARED_ONLY', installed_revision: installedRevision, source_entries: archiveProof.files, bundled_inputs: seenInputs.size, observer_sha256: manifest.observer.sha256, model_execution: 'NOT_RUN' }) + '\n')

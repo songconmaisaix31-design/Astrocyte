@@ -1,7 +1,7 @@
 // 只消费本轮实际 Pi 原件；完整 DTO/重复键由同安装纯 protocol 入口先行核验。
 import assert from 'node:assert/strict'
 import { closeSync, constants, fstatSync, lstatSync, openSync, readSync, realpathSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { dirname, isAbsolute, join, resolve, toNamespacedPath } from 'node:path'
 import { validateLinuxFinalCustody } from './codex-event-view.mjs'
 
 const object = value => {
@@ -33,12 +33,97 @@ export const isPiDelta = row => row.protocol === 'pi-jsonl-rpc' && row.event ===
 export const piStarts = rows => rows.filter(row => frameOf(row)?.type === 'agent_start')
 export const piEnds = rows => rows.filter(row => frameOf(row)?.type === 'agent_settled')
 export const isLinuxPiTarget = (platform, agent, model, workers) => platform === 'linux' && agent === 'pi' && model === 'stepfun/step-3.5-flash' && [3, 4, 6].includes(workers)
+export const isControlledPiTarget = (platform, agent, model, workers) => isLinuxPiTarget(platform, agent, model, workers) || platform === 'win32' && agent === 'pi' && model === 'stepfun/step-3.5-flash' && [4, 6].includes(workers)
+
+export function requireWindowsPrivatePath(path, directory, security) {
+  assert.equal(process.platform, 'win32')
+  const user = security.currentUserSid(), acl = object(security.getDaclAces(toNamespacedPath(path)))
+  const trustees = new Set([user, 'S-1-5-18'])
+  assert.equal(acl.ownerSid, user); assert.equal(acl.protected, true)
+  assert.equal(acl.aces.length, trustees.size)
+  for (const ace of acl.aces) {
+    assert.equal(ace.type, 0); assert.equal(ace.flags, directory ? 3 : 0); assert.equal(ace.mask, 0x1f01ff)
+    assert.equal(trustees.delete(ace.sid), true)
+  }
+  assert.equal(trustees.size, 0)
+}
+
+const windowsIdentity = value => {
+  object(value)
+  assert.ok(Number.isSafeInteger(value.pid) && value.pid > 0 && Number.isSafeInteger(value.creationTimeMs) && value.creationTimeMs > 0, 'windows_process_identity_missing')
+  return { pid: value.pid, creationTimeMs: value.creationTimeMs }
+}
+const identityKey = value => `${value.pid}:${value.creationTimeMs}`
+export function validateWindowsInitialCustody(custody, processIdentity, nativeCLI, owner) {
+  keys(processIdentity, ['pid', 'creation_time_ms', 'runtime_id'])
+  assert.ok(typeof processIdentity.runtime_id === 'string' && processIdentity.runtime_id)
+  const root = windowsIdentity({ pid: processIdentity.pid, creationTimeMs: processIdentity.creation_time_ms })
+  keys(custody, ['ownerPid', 'rootPid', 'rootCreationTimeMs', 'assigned', 'rootExited', 'limitFlags', 'members', 'nativeCLI'])
+  assert.equal(custody.ownerPid, windowsIdentity(owner).pid)
+  assert.equal(custody.rootPid, root.pid); assert.equal(custody.rootCreationTimeMs, root.creationTimeMs)
+  assert.equal(custody.assigned, true); assert.equal(custody.rootExited, false)
+  assert.ok(Number.isSafeInteger(custody.limitFlags) && custody.limitFlags >= 0)
+  assert.deepEqual(custody.nativeCLI, nativeCLI)
+  assert.ok(Array.isArray(custody.members) && custody.members.length > 0 && custody.members.length <= 100_000)
+  const members = custody.members.map(value => { keys(value, ['pid', 'creationTimeMs']); return windowsIdentity(value) })
+  assert.equal(new Set(members.map(value => value.pid)).size, members.length, 'windows_initial_member_duplicate')
+  for (const expected of [root, windowsIdentity(nativeCLI)]) assert.ok(members.some(value => identityKey(value) === identityKey(expected)), 'windows_initial_member_missing')
+  return custody
+}
+
+export function validateWindowsFinalCustody(value, { custody, nativeCLI, knownIdentities = [] }) {
+  keys(value, ['platform', 'root', 'nativeCLI', 'observations', 'independentIdentityObservations', 'forced'])
+  assert.equal(value.platform, 'win32'); assert.equal(typeof value.forced, 'boolean')
+  keys(value.root, ['pid', 'creationTimeMs'])
+  assert.deepEqual(windowsIdentity(value.root), { pid: custody.rootPid, creationTimeMs: custody.rootCreationTimeMs })
+  assert.deepEqual(value.nativeCLI, nativeCLI)
+  assert.equal(value.observations.length, 2); assert.equal(value.independentIdentityObservations.length, 2)
+  let previous = -1
+  for (const sample of value.observations) {
+    keys(sample, ['elapsedMs', 'observation'])
+    assert.ok(Number.isFinite(sample.elapsedMs) && sample.elapsedMs > previous); previous = sample.elapsedMs
+    const row = object(sample.observation)
+    keys(row, ['ownerPid', 'rootPid', 'rootCreationTimeMs', 'assigned', 'rootExited', 'limitFlags', 'members', 'nativeCLI'])
+    for (const field of ['ownerPid', 'rootPid', 'rootCreationTimeMs', 'limitFlags']) assert.equal(row[field], custody[field])
+    assert.equal(row.assigned, true); assert.equal(row.rootExited, true); assert.deepEqual(row.members, [])
+    assert.deepEqual(row.nativeCLI, nativeCLI)
+  }
+  const known = [...custody.members, value.root, nativeCLI, ...knownIdentities].map(value => identityKey(windowsIdentity(value)))
+  let expectedKeys
+  previous = -1
+  for (const sample of value.independentIdentityObservations) {
+    keys(sample, ['elapsedMs', 'identities'])
+    assert.ok(Number.isFinite(sample.elapsedMs) && sample.elapsedMs > previous); previous = sample.elapsedMs
+    assert.ok(Array.isArray(sample.identities) && sample.identities.length > 0 && sample.identities.length <= 100_000)
+    const currentKeys = sample.identities.map(item => {
+      keys(item, ['expected', 'observed']); keys(item.expected, ['pid', 'creationTimeMs'])
+      const expected = windowsIdentity(item.expected)
+      if (item.observed !== null) {
+        const observed = windowsIdentity(item.observed)
+        assert.equal(observed.pid, expected.pid); assert.notEqual(observed.creationTimeMs, expected.creationTimeMs, 'windows_original_process_still_alive')
+      }
+      return identityKey(expected)
+    }).sort()
+    assert.equal(new Set(currentKeys).size, currentKeys.length, 'windows_final_identity_duplicate')
+    for (const key of known) assert.ok(currentKeys.includes(key), 'windows_final_known_identity_missing')
+    if (expectedKeys) assert.deepEqual(currentKeys, expectedKeys, 'windows_final_identity_inventory_changed')
+    else expectedKeys = currentKeys
+  }
+  return value
+}
+
+export function validateStructuredFinalCustody(value, view) {
+  return value?.platform === 'win32'
+    ? validateWindowsFinalCustody(value, { ...view, knownIdentities: view.server ? [view.server] : [] })
+    : validateLinuxFinalCustody(value, view)
+}
 
 // 真实 owned-launch consumer；先有界读取并核同 FD/路径，再交同安装的成熟严格 JSON parser。
-export function readPiPrivateJson(path, maxBytes, parse) {
+export function readPiPrivateJson(path, maxBytes, parse, security) {
   assert.ok(isAbsolute(path) && Number.isSafeInteger(maxBytes) && maxBytes > 0 && maxBytes <= 1024 * 1024, 'pi_private_json_arguments')
   assert.equal(typeof parse, 'function')
-  assert.equal(realpathSync(path), resolve(path), 'pi_private_json_redirected')
+  const actual = realpathSync(path), expected = resolve(path)
+  assert.equal(process.platform === 'win32' ? actual.toLowerCase() : actual, process.platform === 'win32' ? expected.toLowerCase() : expected, 'pi_private_json_redirected')
   for (let current = dirname(path); ; current = dirname(current)) {
     const info = lstatSync(current, { bigint: true })
     assert.ok(info.isDirectory() && !info.isSymbolicLink(), 'pi_private_json_ancestor')
@@ -46,7 +131,9 @@ export function readPiPrivateJson(path, maxBytes, parse) {
   }
   const source = info => ({ path, version: `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.mtimeNs}:${info.size}`, identity: `${info.dev}:${info.ino}:${info.birthtimeNs}:${info.uid}:${info.mode}:${info.nlink}` })
   const check = info => {
-    assert.ok(info.isFile() && !info.isSymbolicLink() && info.uid === BigInt(process.getuid()) && (info.mode & 0o7777n) === 0o600n && info.nlink === 1n, 'pi_private_json_metadata')
+    assert.ok(info.isFile() && !info.isSymbolicLink() && info.nlink === 1n, 'pi_private_json_metadata')
+    if (process.platform === 'win32') requireWindowsPrivatePath(path, false, security)
+    else assert.ok(info.uid === BigInt(process.getuid()) && (info.mode & 0o7777n) === 0o600n, 'pi_private_json_metadata')
     assert.ok(info.size > 0n && info.size <= BigInt(maxBytes), 'pi_private_json_bound')
     return source(info)
   }
@@ -107,14 +194,16 @@ export function validatePiEventView(rows, expected) {
   const first = object(rows[0])
   assert.equal(first.event, 'custody')
   const custody = object(first.detail), nativeCLI = object(custody.nativeCLI)
-  assert.equal(custody.platform, 'linux')
-  assert.equal(custody.custodyAdmitted, true)
-  uuid(custody.custody_id)
-  assert.deepEqual(incarnation(custody.root), incarnation(expected.process))
-  assert.deepEqual({ ...custody.root, runtime_id: expected.process.runtime_id }, expected.process)
-  assert.equal(custody.nativeState?.state, 'created')
-  assert.deepEqual(nativeCLI, { ...custody.nativeState.identity, ...custody.nativeState.launch })
-  assert.deepEqual(incarnation(nativeCLI), incarnation(custody.nativeState.identity))
+  if (expected.process.platform === 'linux') {
+    assert.equal(custody.platform, 'linux')
+    assert.equal(custody.custodyAdmitted, true)
+    uuid(custody.custody_id)
+    assert.deepEqual(incarnation(custody.root), incarnation(expected.process))
+    assert.deepEqual({ ...custody.root, runtime_id: expected.process.runtime_id }, expected.process)
+    assert.equal(custody.nativeState?.state, 'created')
+    assert.deepEqual(nativeCLI, { ...custody.nativeState.identity, ...custody.nativeState.launch })
+    assert.deepEqual(incarnation(nativeCLI), incarnation(custody.nativeState.identity))
+  } else validateWindowsInitialCustody(custody, expected.process, nativeCLI, expected.owner)
   assert.notEqual(nativeCLI.pid, expected.process.pid)
   assert.equal(nativeCLI.kind, 'node-script')
   assert.equal(nativeCLI.entry, expected.executable)
@@ -312,9 +401,9 @@ export function validatePiEventView(rows, expected) {
       assert.equal(index, rows.length - 1)
       assert.ok(ready && (!pendingPrompt || pendingPrompt.echo))
       for (const write of writes.values()) assert.ok(write.settled && write.reply)
-      const final = validateLinuxFinalCustody(detail, { custody, nativeCLI })
+      const final = validateStructuredFinalCustody(detail, { custody, nativeCLI })
       if (active) {
-        assert.equal(final.observation.fullTreeProof.forced, false, 'pi_normal_stop_was_forced')
+        assert.equal(final.platform === 'win32' ? final.forced : final.observation.fullTreeProof.forced, false, 'pi_normal_stop_was_forced')
         const abort = stoppedPiCycle(active, stopIntent, writes)
         assert.ok(abort.reply.sequence < row.sequence, 'pi_closed_before_abort_reply')
         // 这是实际进程树关闭观察，不能生成缺失的 get_state idle 记录。
@@ -348,8 +437,8 @@ export function originalPiTreeProof(rows, view, checkpoint, activeStop) {
   assert.equal(row.event, 'custody_closed')
   assert.ok(row.sequence > checkpoint.sequence)
   assert.ok(view.stopIntent && view.stopIntent.sequence > checkpoint.sequence && view.stopIntent.sequence < row.sequence)
-  const final = validateLinuxFinalCustody(row.detail, view)
-  assert.equal(final.observation.fullTreeProof.forced, false, 'pi_normal_stop_was_forced')
+  const final = validateStructuredFinalCustody(row.detail, view)
+  assert.equal(final.platform === 'win32' ? final.forced : final.observation.fullTreeProof.forced, false, 'pi_normal_stop_was_forced')
   // 本 N3 活动停止已经观察过真实 delta，不能由 not-created 分支替代实际 native 身份。
   if (activeStop) {
     assert.ok(checkpoint.running && typeof checkpoint.cid === 'string', 'pi_checkpoint_was_not_running')
@@ -358,8 +447,11 @@ export function originalPiTreeProof(rows, view, checkpoint, activeStop) {
     assert.ok(cycle && cycle.start.sequence <= checkpoint.sequence)
     const abort = stoppedPiCycle(cycle, view.stopIntent, view.writes)
     assert.ok(cycle.idle || cycle.closed === row && cycle.closed.sequence > abort.reply.sequence, 'pi_stop_has_no_idle_or_closed_observation')
-    assert.equal(final.observation.fullTreeProof.native_cli.state, 'created')
-    assert.deepEqual(final.observation.fullTreeProof.native_cli.identity, view.custody.nativeState.identity)
+    if (final.platform === 'win32') assert.deepEqual(final.nativeCLI, view.nativeCLI)
+    else {
+      assert.equal(final.observation.fullTreeProof.native_cli.state, 'created')
+      assert.deepEqual(final.observation.fullTreeProof.native_cli.identity, view.custody.nativeState.identity)
+    }
     assert.ok(rows.some(item => isPiDelta(item) && item.sequence <= checkpoint.sequence))
   }
   return { row, final, original_stop_request: checkpoint.request_id, observed_after_sequence: checkpoint.sequence, stop_intent: view.stopIntent }

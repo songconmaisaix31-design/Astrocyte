@@ -1,14 +1,32 @@
-"""只物化已核原 Git blob 的普通归档条目，不执行项目代码。"""
+# 只物化已核原 Git blob 的普通归档条目，不执行项目代码。
 
 import hashlib
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import stat
 import subprocess
 import sys
 import zipfile
+
+
+def ordinary_windows(path, directory):
+    if os.name != "nt":
+        return
+    if not path.is_absolute() or os.path.normcase(str(path.resolve(strict=True))) != os.path.normcase(os.path.abspath(path)):
+        raise ValueError("source_windows_redirected_path")
+    current = path
+    while True:
+        info = current.lstat()
+        if info.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+            raise ValueError("source_windows_reparse_path")
+        expected_directory = directory if current == path else True
+        if not (stat.S_ISDIR(info.st_mode) if expected_directory else stat.S_ISREG(info.st_mode)):
+            raise ValueError("source_windows_not_ordinary")
+        if current.parent == current:
+            break
+        current = current.parent
 
 
 def main():
@@ -24,6 +42,9 @@ def main():
     target = Path(target_name)
     if not repository.is_absolute() or not target.is_absolute():
         raise ValueError("source_absolute_paths_required")
+    ordinary_windows(repository, True)
+    ordinary_windows(Path(archive_name), False)
+    ordinary_windows(target.parent, True)
     if target.exists() or target.is_symlink():
         raise ValueError("source_target_already_exists")
     allowed = [
@@ -125,6 +146,8 @@ def main():
             normalized = PurePosixPath(name)
             if "\\" in name or normalized.is_absolute() or any(part in ("", ".", "..") for part in name.rstrip("/").split("/")):
                 raise ValueError("source_archive_path_invalid")
+            if os.name == "nt" and (PureWindowsPath(name).drive or os.path.isreserved(name)):
+                raise ValueError("source_archive_windows_path_invalid")
             mode = item.external_attr >> 16
             kind = stat.S_IFMT(mode)
             if item.is_dir():
@@ -149,13 +172,17 @@ def main():
     if verified.keys() != expected.keys():
         raise ValueError("source_archive_inventory_incomplete")
     target.mkdir(mode=0o700)
+    ordinary_windows(target, True)
     summaries = []
     for name, data in verified.items():
         destination = target / name
         destination.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        ordinary_windows(destination.parent, True)
         with destination.open("xb") as stream:
             stream.write(data)
-        destination.chmod(0o600)
+        if os.name != "nt":
+            destination.chmod(0o600)
+        ordinary_windows(destination, False)
         summaries.append({"path": name, "blob": expected[name], "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
     print(json.dumps({"revision": revision, "files": len(summaries), "bytes": total, "entries": summaries}))
 

@@ -55,10 +55,12 @@ export function decodePiRecord(parsed: unknown) {
   }
 }
 export function observeIncarnation(pid: number) {
+  need(process.platform === 'linux')
   need(Number.isSafeInteger(pid) && pid > 0)
   return isSwaLinuxProcessAbsent(pid) ? { absent: true, pid } : { absent: false, incarnation: readSwaLinuxProcessIncarnation(pid) }
 }
 export function observeRuntimeCustodian(parsed: unknown) {
+  need(process.platform === 'linux')
   need(parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed))
   const value = parsed as Record<string, unknown>
   need(isDeepStrictEqual(Object.keys(value).sort(), ['daemon', 'node_executable', 'runtime_pid', 'serve', 'serve_executable']))

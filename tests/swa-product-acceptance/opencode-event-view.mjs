@@ -1,7 +1,7 @@
 // 只投影实际受控 ACP 轨迹；原生输入的 MAC 仍由装内成果读取器核验。
 import assert from 'node:assert/strict'
 import { isAbsolute, join } from 'node:path'
-import { validateLinuxFinalCustody } from './codex-event-view.mjs'
+import { validateStructuredFinalCustody, validateWindowsInitialCustody } from './pi-event-view.mjs'
 
 const object = value => { assert.ok(value && typeof value === 'object' && !Array.isArray(value), 'opencode_source_object_missing'); return value }
 const keys = (value, names) => assert.deepEqual(Object.keys(object(value)).sort(), [...names].sort(), 'opencode_source_unknown_fields')
@@ -46,12 +46,14 @@ export function validateOpenCodeEventView(rows, expected) {
   assert.ok(Array.isArray(rows) && rows.length > 0 && rows.length <= 100_000, 'opencode_trace_inventory_bound')
   assert.equal(rows[0].event, 'custody')
   const custody = object(rows[0].detail), nativeCLI = object(custody.nativeCLI)
-  assert.equal(custody.platform, 'linux'); assert.equal(custody.custodyAdmitted, true)
-  assert.deepEqual({ ...custody.root, runtime_id: expected.process.runtime_id }, expected.process)
-  assert.equal(custody.nativeState?.state, 'created')
-  assert.deepEqual(nativeCLI, { ...custody.nativeState.identity, ...custody.nativeState.launch })
+  if (expected.process.platform === 'linux') {
+    assert.equal(custody.platform, 'linux'); assert.equal(custody.custodyAdmitted, true)
+    assert.deepEqual({ ...custody.root, runtime_id: expected.process.runtime_id }, expected.process)
+    assert.equal(custody.nativeState?.state, 'created')
+    assert.deepEqual(nativeCLI, { ...custody.nativeState.identity, ...custody.nativeState.launch })
+  } else validateWindowsInitialCustody(custody, expected.process, nativeCLI, expected.owner)
   assert.equal(nativeCLI.kind, 'executable'); assert.equal(nativeCLI.program, expected.executable)
-  assert.notEqual(nativeCLI.pid, custody.root.pid)
+  assert.notEqual(nativeCLI.pid, expected.process.pid)
   const writes = new Map(), delivered = new Set(), requests = new Map(), cycles = [], projections = []
   let monotonic = -1, policySequence = 0, server, ready, active, finalRow, stdoutEnd, policyActive = false
   for (const [index, row] of rows.entries()) {
@@ -68,6 +70,11 @@ export function validateOpenCodeEventView(rows, expected) {
       const status = object(detail.row)
       assert.equal(status.type, 'swa_opencode_policy'); assert.equal(status.sequence, ++policySequence)
       assert.equal(status.root, expected.home); assert.equal(status.pid, detail.server.pid)
+      if (expected.process.platform !== 'linux') {
+        keys(detail.server, ['platform', 'pid', 'creationTimeMs'])
+        assert.equal(detail.server.platform, 'win32')
+        assert.ok(Number.isSafeInteger(detail.server.pid) && detail.server.pid > 0 && Number.isSafeInteger(detail.server.creationTimeMs) && detail.server.creationTimeMs > 0)
+      }
       if (server) assert.deepEqual(detail.server, server); else server = detail.server
       assert.equal(detail.identity_basis, status.state === 'inactive' ? 'previously_verified_identity' : 'live_process_observation')
       assert.ok(!['failed', 'rejected', 'retry_disabled'].includes(status.state), 'opencode_policy_failed')
@@ -142,18 +149,19 @@ export function validateOpenCodeEventView(rows, expected) {
     else assert.fail('opencode_trace_event_unreviewed')
   }
   const view = { custody, nativeCLI, ready, server, cycles, active, projections, finalRow, stdoutEnd, writes }
-  if (finalRow) validateLinuxFinalCustody(finalRow.detail, view)
+  if (finalRow) validateStructuredFinalCustody(finalRow.detail, view)
   return view
 }
 export function originalOpenCodeTreeProof(rows, view, checkpoint, active) {
   const row = rows.at(-1)
   assert.equal(row.event, 'custody_closed'); assert.ok(row.sequence > checkpoint.sequence)
-  const final = validateLinuxFinalCustody(row.detail, view)
+  const final = validateStructuredFinalCustody(row.detail, view)
+  assert.equal(final.platform === 'win32' ? final.forced : final.observation.fullTreeProof.forced, false, 'opencode_normal_stop_was_forced')
   if (active) {
     const cycle = view.cycles.find(value => value.cid === checkpoint.cid)
     assert.ok(cycle?.start && cycle.deltas.some(delta => delta.sequence <= checkpoint.sequence), 'opencode_stop_without_actual_active_output')
     assert.ok(!cycle.end || cycle.end.sequence > checkpoint.sequence, 'opencode_turn_ended_before_stop_checkpoint')
   }
   // 这是调用停止前的原轨迹位置，不把观察时间写成原生 stop_intent。
-  return { row, final, checkpoint, stop_checkpoint: { request_id: checkpoint.request_id, monotonic_ms: checkpoint.monotonic_ms }, source: 'original_provider_trace_and_full_linux_custody' }
+  return { row, final, checkpoint, stop_checkpoint: { request_id: checkpoint.request_id, monotonic_ms: checkpoint.monotonic_ms }, source: final.platform === 'win32' ? 'original_provider_trace_and_full_windows_job_custody' : 'original_provider_trace_and_full_linux_custody' }
 }
