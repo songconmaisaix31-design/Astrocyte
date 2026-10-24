@@ -14,7 +14,7 @@ overrides:
   '@earendil-works/pi-tui': 1.0.1
 
 patchedDependencies:
-  '@vscode/windows-process-tree@0.8.0': 5dc9e261356b22f41135f3940071e25f479658e7046d35132d650201cc6088c4
+  '@vscode/windows-process-tree@0.8.0': d3007864941a2e99412e8fcfd21925453fa756231f748136c81fda4864ede66d
   '@xterm/addon-serialize@0.15.0-beta.301': b35533fe252e7e45433150170348889f4e08a6c17f7017ac34ea694d831fec7f
   '@xterm/xterm@6.1.0-beta.304': 87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156
   node-pty@1.1.0: caa608258ef3f57b28596eb392d3737ff08decdd48813bd3d7bc76a7660a996c
@@ -89,7 +89,7 @@ importers:
         version: 3.2.1
       '@vscode/windows-process-tree':
         specifier: 0.8.0
-        version: 0.8.0(patch_hash=5dc9e261356b22f41135f3940071e25f479658e7046d35132d650201cc6088c4)
+        version: 0.8.0(patch_hash=d3007864941a2e99412e8fcfd21925453fa756231f748136c81fda4864ede66d)
       '@xterm/addon-serialize':
         specifier: 0.15.0-beta.301
         version: 0.15.0-beta.301(patch_hash=b35533fe252e7e45433150170348889f4e08a6c17f7017ac34ea694d831fec7f)(@xterm/xterm@6.1.0-beta.304(patch_hash=87de83f62154c0f2c31eb17d14b881e139f3368f8be1e9e2951bfeba16d86156))
@@ -4403,7 +4403,7 @@ snapshots:
 
   '@vitest/spy@5.0.5': {}
 
-  '@vscode/windows-process-tree@0.8.0(patch_hash=5dc9e261356b22f41135f3940071e25f479658e7046d35132d650201cc6088c4)':
+  '@vscode/windows-process-tree@0.8.0(patch_hash=d3007864941a2e99412e8fcfd21925453fa756231f748136c81fda4864ede66d)':
     dependencies:
       node-addon-api: 7.1.0
 

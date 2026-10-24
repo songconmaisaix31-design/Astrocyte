@@ -149,7 +149,7 @@ index 5253960..f146490 100644
 diff --git a/src/process.cc b/src/process.cc
 --- a/src/process.cc
 +++ b/src/process.cc
-@@ -3,15 +3,145 @@
+@@ -3,15 +3,149 @@
   *  Licensed under the MIT License. See License.txt in the project root for license information.
   *--------------------------------------------------------------------------------------------*/
  
@@ -211,8 +211,12 @@ diff --git a/src/process.cc b/src/process.cc
 +    status = query(SystemProcessInformation, storage.data(),
 +                   static_cast<ULONG>(capacity), &returned);
 +    if (status == STATUS_INFO_LENGTH_MISMATCH || status == STATUS_BUFFER_TOO_SMALL) {
-+      const size_t required = returned > capacity ? returned : capacity * 2;
-+      if (required > limit) SnapshotFailure("buffer-limit", "NTSTATUS", static_cast<ULONG>(status));
++      if (returned > limit || capacity >= limit)
++        SnapshotFailure("buffer-limit", "NTSTATUS", static_cast<ULONG>(status));
++      const size_t geometric = capacity > limit / 2 ? limit : capacity * 2;
++      const size_t required = returned > geometric ? returned : geometric;
++      if (attempt == 3)
++        SnapshotFailure("buffer-attempts", "NTSTATUS", static_cast<ULONG>(status));
 +      storage.resize((required + sizeof(ULONGLONG) - 1) / sizeof(ULONGLONG));
 +      continue;
 +    }
@@ -295,7 +299,7 @@ diff --git a/src/process.cc b/src/process.cc
    // Fetch the PID and PPIDs
    PROCESSENTRY32 process_entry = { 0 };
    DWORD parent_pid = 0;
-@@ -21,7 +151,8 @@
+@@ -21,7 +155,8 @@
    if (Process32First(snapshot_handle, &process_entry)) {
      do {
        if (process_entry.th32ProcessID != 0) {
@@ -305,7 +309,7 @@ diff --git a/src/process.cc b/src/process.cc
          pinfo.pid = process_entry.th32ProcessID;
          pinfo.ppid = process_entry.th32ParentProcessID;
  
-@@ -33,23 +164,51 @@
+@@ -33,23 +168,51 @@
            GetProcessCommandLine(pinfo);
          }
  
@@ -359,7 +363,7 @@ diff --git a/src/process.cc b/src/process.cc
  
    if (hProcess == NULL) {
      return;
-@@ -81,7 +240,8 @@
+@@ -81,7 +244,8 @@
    DWORD pid = cpu_info.pid;
    HANDLE hProcess;
  
