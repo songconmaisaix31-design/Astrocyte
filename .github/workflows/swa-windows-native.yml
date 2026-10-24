@@ -91,55 +91,73 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Verify the exact retained 101e service evidence metadata
+      - name: Verify the exact B464 formal evidence metadata
         uses: actions/github-script@v7
         with:
           script: |
             const assert = require('node:assert/strict');
             const repository = { owner: context.repo.owner, repo: context.repo.repo };
-            const { data: artifact } = await github.rest.actions.getArtifact({ ...repository, artifact_id: 12532883615 });
-            const { data: run } = await github.rest.actions.getWorkflowRun({ ...repository, run_id: 40027206964 });
-            const { data: job } = await github.request('GET /repos/{owner}/{repo}/actions/jobs/{job_id}', { ...repository, job_id: 120666286706 });
-            assert.equal(artifact.id, 12532883615);
-            assert.equal(artifact.name, 'swa-windows-controller-open-control-101e46815ef86de3bd73a2a1de7448ce68b908a6');
-            assert.equal(artifact.workflow_run.id, 40027206964);
-            assert.equal(artifact.workflow_run.head_sha, '101e46815ef86de3bd73a2a1de7448ce68b908a6');
+            const { data: artifact } = await github.rest.actions.getArtifact({ ...repository, artifact_id: 12541713122 });
+            const { data: run } = await github.rest.actions.getWorkflowRun({ ...repository, run_id: 40047585581 });
+            const { data: job } = await github.request('GET /repos/{owner}/{repo}/actions/jobs/{job_id}', { ...repository, job_id: 120732737576 });
+            assert.equal(artifact.id, 12541713122);
+            assert.equal(artifact.name, 'swa-windows-native-evidence-b464e70ba95967eb1ecc216f5f3d25407f1ecc66');
+            assert.equal(artifact.workflow_run.id, 40047585581);
+            assert.equal(artifact.workflow_run.head_sha, 'b464e70ba95967eb1ecc216f5f3d25407f1ecc66');
             assert.equal(artifact.workflow_run.repository_id, 1410836101);
             assert.equal(artifact.workflow_run.head_repository_id, 1410836101);
-            assert.equal(artifact.size_in_bytes, 319858);
-            assert.equal(artifact.digest, 'sha256:052d0db3afc02478b92b29fad50cae6c8c9685927380137c838b2234cc62c5da');
+            assert.equal(artifact.size_in_bytes, 65470);
+            assert.equal(artifact.digest, 'sha256:378761a5153e5f71bc3f0f3cf7db7da28babc4e95d7ff10d789983cf349cec17');
             assert.equal(artifact.expired, false);
-            assert.equal(run.id, 40027206964); assert.equal(run.head_sha, artifact.workflow_run.head_sha);
-            assert.equal(run.run_attempt, 1); assert.equal(run.status, 'completed'); assert.equal(run.conclusion, 'failure');
-            assert.equal(job.id, 120666286706); assert.equal(job.run_id, run.id); assert.equal(job.head_sha, run.head_sha);
-            assert.equal(job.run_attempt, 1); assert.equal(job.name, 'windows-controller-open-control');
-            assert.equal(job.status, 'completed'); assert.equal(job.conclusion, 'failure');
-            assert.equal(job.steps.filter(step => step.name === 'Observe the Controller service with complete query evidence' && step.conclusion === 'failure').length, 1);
-            assert.equal(job.steps.filter(step => step.name === 'Run actions/upload-artifact@v4' && step.conclusion === 'success').length, 1);
-            core.notice('Fixed 101e service evidence metadata verified; no product execution requested');
+            assert.equal(run.id, 40047585581); assert.equal(run.head_sha, artifact.workflow_run.head_sha); assert.equal(run.event, 'workflow_dispatch');
+            assert.equal(run.run_attempt, 1); assert.equal(run.status, 'completed'); assert.equal(run.conclusion, 'success');
+            assert.equal(job.id, 120732737576); assert.equal(job.run_id, run.id); assert.equal(job.head_sha, run.head_sha);
+            assert.equal(job.run_attempt, 1); assert.equal(job.name, 'windows-native-candidate');
+            assert.equal(job.status, 'completed'); assert.equal(job.conclusion, 'success');
+            assert.equal(job.steps.filter(step => step.name === 'Build, archive, install and exercise the actual candidate' && step.conclusion === 'success').length, 1);
+            assert.equal(job.steps.filter(step => step.name === 'Run actions/upload-artifact@v4' && step.conclusion === 'success').length, 2);
+            core.notice('Fixed B464 formal evidence metadata verified; no product execution requested');
       - uses: actions/download-artifact@v4
-        id: download_101e
+        id: download_b464
         with:
           github-token: ${{ github.token }}
-          run-id: 40027206964
-          name: swa-windows-controller-open-control-101e46815ef86de3bd73a2a1de7448ce68b908a6
-          path: ${{ runner.temp }}/swa-retained-service-query-101e
-      - name: Read only the saved 101e result and complete query lifecycle evidence
-        if: ${{ !cancelled() && steps.download_101e.outcome == 'success' }}
+          run-id: 40047585581
+          name: swa-windows-native-evidence-b464e70ba95967eb1ecc216f5f3d25407f1ecc66
+          path: ${{ runner.temp }}/swa-retained-formal-b464
+      - name: Read only the fixed formal packaging and ordinary process evidence
+        if: ${{ !cancelled() && steps.download_b464.outcome == 'success' }}
         shell: pwsh
         run: |
-          node ./scripts/report-swa-windows-service-query.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-retained-service-query-101e')
-          if ($LASTEXITCODE -ne 0) { throw 'The fixed service evidence reader failed; no service was executed' }
+          node ./scripts/report-swa-windows-formal-retained.mjs --artifact-root (Join-Path $env:RUNNER_TEMP 'swa-retained-formal-b464')
+          if ($LASTEXITCODE -ne 0) { throw 'The fixed formal evidence reader failed; no product was executed' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: swa-windows-service-query-retained-${{ github.sha }}
+          name: swa-windows-formal-retained-${{ github.sha }}
           path: |
-            .verification/swa-ci/windows-service-query-retained/summary.json
-            .verification/swa-ci/windows-service-query-retained/failure.json
-            .verification/swa-ci/windows-service-query-retained/original-result.json
-            .verification/swa-ci/windows-service-query-retained/service-query-evidence.json
-            .verification/swa-ci/windows-service-query-retained/service-process-lifecycle.json
+            .verification/swa-ci/windows-formal-retained/summary.json
+            .verification/swa-ci/windows-formal-retained/failure.json
+            .verification/swa-ci/windows-formal-retained/SOURCE
+            .verification/swa-ci/windows-formal-retained/result.json
+            .verification/swa-ci/windows-formal-retained/logs--frozen-install.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--go-download.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--go-verify.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--build.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--extracted-check.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--install.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--installed-check.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--process-incarnation.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--service-smoke.exit.txt
+            .verification/swa-ci/windows-formal-retained/logs--service-evidence-summary.exit.txt
+            .verification/swa-ci/windows-formal-retained/installed-check-safe.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--result.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--continuity-snapshot-a.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--continuity-snapshot-b.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--continuity-snapshot-c.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--continuity-exit-wait.json
+            .verification/swa-ci/windows-formal-retained/process-incarnation--cim-exit-observations.json
+            .verification/swa-ci/windows-formal-retained/service-observer-exit.json
+            .verification/swa-ci/windows-formal-retained/service-evidence-summary.json
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 7
