@@ -16,6 +16,7 @@ const pi = ['stepfun-pi-n3', 'stepfun-pi-questions'].includes(values.profile)
 const questions = values.profile === 'stepfun-pi-questions'
 const openCode = values.profile === 'stepfun-opencode'
 const initializeOpenCode = values.profile === 'opencode-initialize-only'
+const pureProtocol = pi || initializeOpenCode
 if (initializeOpenCode) assert.ok(['linux', 'win32'].includes(process.platform) && process.arch === 'x64', 'initializer_platform_unreviewed')
 process.umask(0o077)
 const prototype = dirname(fileURLToPath(import.meta.url))
@@ -40,6 +41,7 @@ if (openCode) snapshotPaths.push(
   'third_party/orca-v1.4.230/src/main/acp/acp-errors.ts',
   'third_party/orca-v1.4.230/src/main/acp/generated/acp-protocol.generated.ts')
 if (initializeOpenCode) snapshotPaths.push(
+  'scripts/build-swa-runtime.mjs', 'runtime/swa-orca/package.json',
   ...['native-opencode-policy.ts', 'private-opencode-account.ts', 'native-opencode-import.ts', 'native-pi-policy.ts',
     'native-codex-policy.ts', 'private-posix-security.ts', 'contracts.ts', 'task-budget.ts', 'pi-official-sources.json']
     .map(name => `runtime/swa-orca/src/${name}`),
@@ -156,8 +158,8 @@ if (initializeOpenCode) {
   initializationEnvironment = { platform: process.platform, architecture: process.arch, node_path: nodePath, node_options_absent: true, bundle_path: bundlePath }
 }
 const journalModule = await version(await ordinary(requireInstalled.resolve('./journal-open.cjs')))
-const protocolModule = pi ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs')), true) : undefined
-const protocolMetafile = pi ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs.metafile.json')), true) : undefined
+const protocolModule = pureProtocol ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs')), true) : undefined
+const protocolMetafile = pureProtocol ? await version(await ordinary(join(candidate, 'runtime/pi-protocol.cjs.metafile.json')), true) : undefined
 if (pi) assert.equal(execFileSync(join(candidate, 'swa'), ['--version'], { timeout: 5000, maxBuffer: 4096, encoding: 'utf8' }).trim(), installedRevision, 'observer_actual_cli_version_mismatch')
 await mkdir(output, { mode: 0o700 })
 const archive = execFileSync('git', ['archive', '--format=zip', installedRevision, '--', ...snapshotPaths], commandOptions)
@@ -173,13 +175,15 @@ const entryBytes = await readFile(prototypeEntry.path)
 assert.equal(sha(entryBytes), prototypeEntry.sha256, 'observer_entry_source_changed')
 if (openCode || initializeOpenCode) assert.ok(execFileSync('git', ['show', `${installedRevision}:tests/swa-product-acceptance/${entryName}`], commandOptions).equals(entryBytes), 'observer_entry_differs_from_installed_revision')
 await writeFile(entryPath, Buffer.concat([entryBytes, Buffer.from(questionExports, 'utf8')]), { flag: 'wx', mode: 0o600 })
-// 编译器单独记录为既有工具；产品源码与依赖只取本安装版本快照和安装原件。
+// 编译器单独记录；初始化的 JSONC 构建输入另按固定声明核验并复制到公开快照。
 const requireCompiler = createRequire(new URL('../../runtime/swa-orca/package.json', import.meta.url))
 const esbuildPath = await ordinary(requireCompiler.resolve('esbuild'))
 const esbuild = requireCompiler('esbuild')
 assert.equal(esbuild.version, '0.28.2', 'observer_compiler_version_unreviewed')
-let protocolMapping, typescriptModule
-if (pi) {
+let protocolMapping, typescriptModule, jsoncDependency, smolDependency, smolMetafile
+const jsoncCopies = new Set()
+const smolCopies = new Set()
+if (pureProtocol) {
   const ts = requireCompiler('typescript')
   typescriptModule = await version(await ordinary(requireCompiler.resolve('typescript')))
   const builderPath = 'scripts/build-swa-runtime.mjs'
@@ -208,13 +212,109 @@ if (pi) {
   const outputs = Object.values(meta.outputs)
   assert.equal(outputs.length, 1, 'observer_protocol_output_inventory')
   assert.equal(outputs[0].entryPoint.replaceAll('\\', '/').replace(/^.*\/third_party\//, 'third_party/'), protocolSource, 'observer_protocol_actual_entrypoint_changed')
-  assert.deepEqual(outputs[0].imports, [], 'observer_protocol_external_dependency_unreviewed')
+  // 问答参数只使用这个内建函数作结构比较；旧纯入口仍允许空 external。
+  const pureProtocolImports = outputs[0].imports.length === 0 ? [] : [{ path: 'node:util', kind: 'require-call', external: true }]
+  assert.deepEqual(outputs[0].imports, pureProtocolImports, 'observer_protocol_external_dependency_unreviewed')
   const inputs = Object.keys(meta.inputs).map(path => path.replaceAll('\\', '/'))
   assert.ok(inputs.some(path => path.endsWith(protocolSource)) && inputs.some(path => path.includes('/jsonc-parser/') && path.endsWith('/lib/esm/main.js')) && inputs.some(path => path.includes('/zod/')), 'observer_protocol_actual_inputs_missing')
   assert.ok(inputs.every(path => !/claude-agent-sdk|pi-coding-agent|pi-ai|native-pi-policy|pi-session-policy|process-host/.test(path)), 'observer_protocol_effectful_input_unreviewed')
-  if (questions) {
+  if (questions || initializeOpenCode) {
     const protocol = requireInstalled(protocolModule.path)
-    for (const name of ['strictPiQuestionRawSchema', 'strictPiQuestionNativeEntrySchema', 'strictPiQuestionResultSchema']) assert.equal(typeof protocol[name]?.safeParse, 'function', 'observer_installed_question_schema_missing')
+    for (const name of ['strictPiQuestionParamsSchema', 'strictPiQuestionResultSchema', ...(questions ? ['strictPiQuestionRawSchema', 'strictPiQuestionNativeEntrySchema'] : ['strictPiModelSchema'])]) assert.equal(typeof protocol[name]?.safeParse, 'function', 'observer_installed_question_schema_missing')
+    if (initializeOpenCode) assert.equal(typeof protocol.parseStrictPiJson, 'function', 'initializer_installed_pi_parser_missing')
+  }
+  if (initializeOpenCode) {
+    const jsoncMappings = []
+    const accountMappings = []
+    const jsoncVisit = node => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'entries') {
+        assert.ok(node.initializer && ts.isObjectLiteralExpression(node.initializer), 'initializer_account_mapping_unreviewed')
+        for (const property of node.initializer.properties) {
+          if (!ts.isPropertyAssignment(property) || !ts.isStringLiteral(property.name) || property.name.text !== 'private-opencode-account.cjs') continue
+          const call = property.initializer
+          assert.ok(ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'join' && call.arguments.length === 3 && ts.isIdentifier(call.arguments[0]) && call.arguments[0].text === 'runtime' && call.arguments.slice(1).every(argument => ts.isStringLiteral(argument)), 'initializer_account_mapping_unreviewed')
+          accountMappings.push(call.arguments.slice(1).map(argument => argument.text))
+        }
+      }
+      if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'onResolve' && node.arguments.length === 2) {
+        const options = node.arguments[0], callback = node.arguments[1]
+        const filter = ts.isObjectLiteralExpression(options) && options.properties.find(property => ts.isPropertyAssignment(property) && ts.isIdentifier(property.name) && property.name.text === 'filter')
+        if (filter && ts.isRegularExpressionLiteral(filter.initializer) && filter.initializer.text === '/^jsonc-parser$/') {
+          assert.ok(ts.isArrowFunction(callback) && ts.isParenthesizedExpression(callback.body) && ts.isObjectLiteralExpression(callback.body.expression), 'initializer_jsonc_builder_mapping_unreviewed')
+          const properties = callback.body.expression.properties
+          assert.ok(properties.length === 1 && ts.isPropertyAssignment(properties[0]) && ts.isIdentifier(properties[0].name) && properties[0].name.text === 'path', 'initializer_jsonc_builder_mapping_unreviewed')
+          const call = properties[0].initializer
+          assert.ok(ts.isCallExpression(call) && ts.isIdentifier(call.expression) && call.expression.text === 'join' && call.arguments.length === 4, 'initializer_jsonc_builder_mapping_unreviewed')
+          const directory = call.arguments[0]
+          assert.ok(ts.isCallExpression(directory) && ts.isIdentifier(directory.expression) && directory.expression.text === 'dirname' && directory.arguments.length === 1, 'initializer_jsonc_builder_mapping_unreviewed')
+          const entry = directory.arguments[0]
+          assert.ok(ts.isCallExpression(entry) && ts.isPropertyAccessExpression(entry.expression) && ts.isIdentifier(entry.expression.expression) && entry.expression.expression.text === 'requireRuntime' && entry.expression.name.text === 'resolve' && entry.arguments.length === 1 && ts.isStringLiteral(entry.arguments[0]), 'initializer_jsonc_builder_mapping_unreviewed')
+          assert.ok(call.arguments.slice(1).every(argument => ts.isStringLiteral(argument)), 'initializer_jsonc_builder_mapping_unreviewed')
+          jsoncMappings.push([entry.arguments[0].text, ...call.arguments.slice(1).map(argument => argument.text)])
+        }
+      }
+      ts.forEachChild(node, jsoncVisit)
+    }
+    jsoncVisit(builder)
+    assert.deepEqual(jsoncMappings, [['jsonc-parser/package.json', 'lib', 'esm', 'main.js']], 'initializer_jsonc_builder_mapping_changed')
+    assert.deepEqual(accountMappings, [['src', 'private-opencode-account.ts']], 'initializer_account_mapping_changed')
+    const declarationPath = 'runtime/swa-orca/package.json'
+    const declaration = archiveProof.entries.find(row => row.path === declarationPath)
+    assert.ok(declaration, 'initializer_jsonc_declaration_missing')
+    const runtimePackage = JSON.parse(await readFile(join(output, 'source', declarationPath), 'utf8'))
+    assert.equal(runtimePackage.devDependencies?.['jsonc-parser'], '3.3.1', 'initializer_jsonc_version_unreviewed')
+    assert.equal(runtimePackage.dependencies?.['jsonc-parser'], undefined, 'initializer_jsonc_must_be_build_dependency')
+    // 只供下面两个已声明的构建依赖复制准确公开文件，不作为通用包解析入口。
+    const copyInlineFiles = async (pkg, packageRoot, packageSource, names, entry, copies) => {
+      const destination = join(output, 'build-dependencies', pkg.name), files = []
+      for (const name of names) {
+        const original = await version(join(packageRoot, name)), bytes = await readFile(original.path)
+        assert.equal(sha(bytes), original.sha256, 'initializer_inline_source_changed')
+        assert.deepEqual(await version(original.path), original, 'initializer_inline_source_changed')
+        const copyPath = join(destination, name)
+        await mkdir(dirname(copyPath), { recursive: true, mode: 0o700 })
+        await writeFile(copyPath, bytes, { flag: 'wx', mode: 0o600 })
+        const copy = await version(copyPath)
+        assert.equal(copy.sha256, original.sha256, 'initializer_inline_copy_changed')
+        files.push({ name, original, copy })
+        if (name.endsWith('.js')) copies.add(copyPath)
+      }
+      assert.deepEqual(files[0].original, packageSource, 'initializer_inline_package_changed')
+      return { kind: 'explicit-build-time-inline-dependency', name: pkg.name, version: pkg.version, declaration, builder: protocolMapping.builder, source_root: packageRoot, entry: join(destination, entry), files }
+    }
+    const packagePath = await ordinary(await realpath(requireCompiler.resolve('jsonc-parser/package.json')))
+    const packageRoot = await ordinary(join(repository, 'node_modules/.pnpm/jsonc-parser@3.3.1/node_modules/jsonc-parser'), true)
+    assert.equal(packagePath, join(packageRoot, 'package.json'), 'initializer_jsonc_package_source_unreviewed')
+    const packageSource = await version(packagePath)
+    const packageBytes = await readFile(packagePath)
+    assert.equal(sha(packageBytes), packageSource.sha256, 'initializer_jsonc_package_changed')
+    const pkg = JSON.parse(packageBytes.toString('utf8'))
+    assert.equal(pkg.name, 'jsonc-parser'); assert.equal(pkg.version, '3.3.1'); assert.equal(pkg.module, './lib/esm/main.js')
+    jsoncDependency = await copyInlineFiles(pkg, packageRoot, packageSource, ['package.json', 'lib/esm/main.js', 'lib/esm/impl/edit.js', 'lib/esm/impl/format.js', 'lib/esm/impl/parser.js', 'lib/esm/impl/scanner.js', 'lib/esm/impl/string-intern.js'], 'lib/esm/main.js', jsoncCopies)
+    assert.equal(runtimePackage.devDependencies?.['smol-toml'], '1.9.1', 'initializer_smol_version_unreviewed')
+    assert.equal(runtimePackage.dependencies?.['smol-toml'], undefined, 'initializer_smol_must_be_build_dependency')
+    smolMetafile = await version(await ordinary(join(candidate, 'runtime/private-opencode-account.cjs.metafile.json')), true)
+    const smolMetaBytes = await boundedArtifact(smolMetafile.path)
+    assert.equal(sha(smolMetaBytes.bytes), smolMetafile.sha256, 'initializer_smol_metafile_changed')
+    const smolMeta = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(smolMetaBytes.bytes))
+    const accountOutputs = Object.values(smolMeta.outputs)
+    assert.equal(accountOutputs.length, 1, 'initializer_smol_output_inventory')
+    assert.equal(accountOutputs[0].entryPoint.replaceAll('\\', '/'), 'runtime/swa-orca/src/private-opencode-account.ts', 'initializer_smol_actual_entrypoint_changed')
+    const smolPrefix = 'node_modules/.pnpm/smol-toml@1.9.1/node_modules/smol-toml/'
+    const smolNames = ['dist/date.js', 'dist/error.js', 'dist/extract.js', 'dist/index.js', 'dist/parse.js', 'dist/primitive.js', 'dist/stringify.js', 'dist/struct.js', 'dist/util.js']
+    const smolInputs = new Map(Object.entries(smolMeta.inputs).map(([path, value]) => [path.replaceAll('\\', '/'), value]))
+    const capturePath = 'third_party/orca-v1.4.230/src/main/managed-data-accounts/credential-capture.ts'
+    const smolEdges = smolInputs.get(capturePath)?.imports.filter(row => row.original === 'smol-toml')
+    assert.ok(smolEdges?.length === 1 && smolEdges[0].kind === 'import-statement' && !smolEdges[0].external && smolEdges[0].path.replaceAll('\\', '/') === smolPrefix + 'dist/index.js', 'initializer_smol_actual_mapping_changed')
+    assert.deepEqual([...smolInputs.keys()].filter(path => path.startsWith(smolPrefix)).map(path => path.slice(smolPrefix.length)).sort(), smolNames, 'initializer_smol_actual_inputs_changed')
+    const smolRoot = await ordinary(join(repository, 'node_modules/.pnpm/smol-toml@1.9.1/node_modules/smol-toml'), true)
+    assert.equal(await ordinary(await realpath(requireCompiler.resolve('smol-toml'))), join(smolRoot, 'dist/index.cjs'), 'initializer_smol_package_source_unreviewed')
+    const smolPackage = await version(join(smolRoot, 'package.json')), smolBytes = await readFile(smolPackage.path)
+    assert.equal(sha(smolBytes), smolPackage.sha256, 'initializer_smol_package_changed')
+    const smol = JSON.parse(smolBytes.toString('utf8'))
+    assert.equal(smol.name, 'smol-toml'); assert.equal(smol.version, '1.9.1'); assert.equal(smol.exports?.import, './dist/index.js'); assert.equal(smol.exports?.require, './dist/index.cjs')
+    smolDependency = await copyInlineFiles(smol, smolRoot, smolPackage, ['package.json', ...smolNames], 'dist/index.js', smolCopies)
+    smolDependency.installed_selection = { metafile: smolMetafile, importer: capturePath, edge: smolEdges[0], inputs: smolNames }
   }
 }
 const builtins = new Set(builtinModules.flatMap(name => [name, `node:${name}`]))
@@ -222,6 +322,12 @@ const seenInputs = new Map()
 const processHostRoot = join(output, 'source/third_party/orca-v1.4.230/src/packages/process-host')
 const processHostPackage = initializeOpenCode ? await version(join(processHostRoot, 'package.json')) : undefined
 const processHostExports = initializeOpenCode ? JSON.parse(await readFile(processHostPackage.path, 'utf8')).exports : undefined
+const protocolSpecifier = '../../../third_party/orca-v1.4.230/src/main/pi/rpc-protocol'
+const protocolImporters = questions || initializeOpenCode ? ['contracts.ts', ...(initializeOpenCode ? ['native-pi-policy.ts'] : [])].map(name => join(output, 'source/runtime/swa-orca/src', name)) : []
+const protocolBindings = new Set()
+const jsoncImporter = join(output, 'source/runtime/swa-orca/src/native-opencode-policy.ts')
+const smolImporter = join(output, 'source/third_party/orca-v1.4.230/src/main/managed-data-accounts/credential-capture.ts')
+let jsoncBinding = false, smolBinding = false
 let build
 try { build = await esbuild.build({
   absWorkingDir: output, entryPoints: [entryPath], outfile: bundlePath, platform: 'node',
@@ -229,6 +335,36 @@ try { build = await esbuild.build({
   tsconfigRaw: { compilerOptions: { target: 'ES2022', module: 'CommonJS', esModuleInterop: true } },
   logLevel: 'silent',
   plugins: [{ name: 'installed-source-only', setup(plugin) {
+    plugin.onResolve({ filter: /.*/ }, async args => {
+      if (jsoncCopies.has(args.importer) || smolCopies.has(args.importer)) {
+        const copies = jsoncCopies.has(args.importer) ? jsoncCopies : smolCopies
+        assert.ok(args.namespace === 'file' && args.kind === 'import-statement' && args.path.startsWith('.'), 'initializer_inline_dependency_unreviewed')
+        const path = resolve(args.resolveDir, args.path + (copies === jsoncCopies ? '.js' : ''))
+        assert.ok(copies.has(path), 'initializer_inline_dependency_outside_snapshot')
+        return { path: await ordinary(path) }
+      }
+      if ((questions || initializeOpenCode) && args.path === protocolSpecifier) {
+        assert.ok(args.namespace === 'file' && args.kind === 'import-statement' && protocolImporters.includes(args.importer), 'observer_protocol_importer_unreviewed')
+        await ordinary(args.importer)
+        assert.equal(resolve(args.resolveDir, args.path + '.ts'), join(output, 'source', protocolMapping.source.path), 'observer_protocol_relative_target_changed')
+        protocolBindings.add(args.importer)
+        if (initializeOpenCode) installedExternals.set(protocolModule.path, protocolModule)
+        return { path: protocolModule.path, external: true }
+      }
+      if (initializeOpenCode && args.path === 'jsonc-parser') {
+        assert.ok(args.namespace === 'file' && args.kind === 'import-statement' && args.importer === jsoncImporter, 'initializer_jsonc_importer_unreviewed')
+        await ordinary(args.importer)
+        jsoncBinding = true
+        return { path: jsoncDependency.entry }
+      }
+      if (initializeOpenCode && args.path === 'smol-toml') {
+        assert.ok(args.namespace === 'file' && args.kind === 'import-statement' && args.importer === smolImporter, 'initializer_smol_importer_unreviewed')
+        await ordinary(args.importer)
+        smolBinding = true
+        return { path: smolDependency.entry }
+      }
+      return undefined
+    })
     plugin.onResolve({ filter: /^[^./]/ }, async args => {
       if (builtins.has(args.path) || initializeOpenCode && isBuiltin(args.path)) return { path: args.path, external: true }
       if (initializeOpenCode && isAbsolute(args.path)) return undefined
@@ -252,7 +388,7 @@ try { build = await esbuild.build({
     })
     plugin.onLoad({ filter: /.*/ }, async args => {
       const path = await ordinary(args.path)
-      assert.ok(path === entryPath || inside(join(output, 'source'), path) || inside(join(candidate, 'runtime/node_modules'), path), 'observer_compiler_input_outside_snapshot')
+      assert.ok(path === entryPath || inside(join(output, 'source'), path) || inside(join(candidate, 'runtime/node_modules'), path) || jsoncCopies.has(path) || smolCopies.has(path), 'observer_compiler_input_outside_snapshot')
       seenInputs.set(path, await version(path))
       return undefined
     })
@@ -261,13 +397,45 @@ try { build = await esbuild.build({
 assert.equal(build.outputFiles.length, 1, 'observer_unexpected_compiler_outputs')
 for (const path of Object.keys(build.metafile.inputs)) assert.ok(seenInputs.has(resolve(output, path)), 'observer_untracked_metafile_input')
 for (const [path, expected] of seenInputs) assert.deepEqual(await version(path), expected, 'observer_source_changed_during_build')
+let protocolImports
+if (questions || initializeOpenCode) {
+  assert.deepEqual([...protocolBindings].sort(), [...protocolImporters].sort(), 'observer_protocol_bindings_incomplete')
+  const metaInputs = new Map(Object.entries(build.metafile.inputs).map(([path, input]) => [resolve(output, path), input]))
+  for (const importer of protocolImporters) {
+    const edges = metaInputs.get(importer)?.imports.filter(row => resolve(output, row.path) === protocolModule.path)
+    assert.ok(edges?.length === 1 && edges[0].kind === 'import-statement' && edges[0].external === true, 'observer_protocol_input_edge_changed')
+  }
+  const outputs = Object.values(build.metafile.outputs)
+  assert.equal(outputs.length, 1, 'observer_output_inventory_changed')
+  protocolImports = outputs[0].imports.filter(row => resolve(output, row.path) === protocolModule.path)
+  assert.ok(protocolImports.length > 0 && protocolImports.every(row => row.kind === 'require-call' && row.external === true), 'observer_protocol_output_edge_changed')
+  assert.ok(!metaInputs.has(join(output, 'source', protocolMapping.source.path)), 'observer_protocol_recompiled')
+  if (questions) assert.ok([...metaInputs.keys()].every(path => !path.replaceAll('\\', '/').includes('/jsonc-parser/')), 'observer_question_jsonc_recompiled')
+  if (initializeOpenCode) {
+    assert.equal(jsoncBinding, true, 'initializer_jsonc_binding_missing')
+    const edges = metaInputs.get(jsoncImporter)?.imports.filter(row => resolve(output, row.path) === jsoncDependency.entry)
+    assert.ok(edges?.length === 1 && edges[0].kind === 'import-statement' && !edges[0].external, 'initializer_jsonc_input_edge_changed')
+    for (const path of jsoncCopies) assert.ok(metaInputs.has(path), 'initializer_jsonc_input_missing')
+    assert.ok(outputs[0].imports.every(row => row.path !== 'jsonc-parser' && !jsoncCopies.has(resolve(output, row.path))), 'initializer_jsonc_was_externalized')
+    assert.equal(smolBinding, true, 'initializer_smol_binding_missing')
+    const smolEdges = metaInputs.get(smolImporter)?.imports.filter(row => resolve(output, row.path) === smolDependency.entry)
+    assert.ok(smolEdges?.length === 1 && smolEdges[0].kind === 'import-statement' && !smolEdges[0].external, 'initializer_smol_input_edge_changed')
+    for (const path of smolCopies) assert.ok(metaInputs.has(path), 'initializer_smol_input_missing')
+    assert.ok(outputs[0].imports.every(row => row.path !== 'smol-toml' && !smolCopies.has(resolve(output, row.path))), 'initializer_smol_was_externalized')
+  }
+}
 if (initializeOpenCode) {
   assert.deepEqual(await version(processHostPackage.path), processHostPackage, 'initializer_process_host_package_changed')
   for (const expected of installedExternals.values()) assert.deepEqual(await version(expected.path), expected, 'initializer_external_changed')
   for (const { name: _name, ...expected } of dynamicDependencies) assert.deepEqual(await version(expected.path), expected, 'initializer_dynamic_dependency_changed')
+  for (const dependency of [jsoncDependency, smolDependency]) for (const { original, copy } of dependency.files) {
+    assert.deepEqual(await version(original.path), original, 'initializer_inline_source_changed')
+    assert.deepEqual(await version(copy.path), copy, 'initializer_inline_copy_changed')
+  }
+  assert.deepEqual(await version(smolMetafile.path, true), smolMetafile, 'initializer_smol_metafile_changed')
 }
 assert.deepEqual(await version(journalModule.path), journalModule, 'observer_journal_module_changed')
-if (pi) for (const source of [protocolModule, protocolMetafile]) assert.deepEqual(await version(source.path, true), source, 'observer_protocol_artifact_changed')
+if (pureProtocol) for (const source of [protocolModule, protocolMetafile]) assert.deepEqual(await version(source.path, true), source, 'observer_protocol_artifact_changed')
 await writeFile(bundlePath, build.outputFiles[0].contents, { flag: 'wx', mode: 0o600 })
 const manifest = {
   scope: initializeOpenCode ? 'controlled-opencode-initialization-client-preparation' : 'read-only-source-observer-preparation', product_or_model_execution: 'NOT_RUN',
@@ -280,10 +448,11 @@ const manifest = {
     assert.ok(source, 'observer_question_contract_git_source_missing')
     return source
   }) } : {}),
-  ...(pi ? { profile: values.profile, protocol_module: protocolModule, protocol_metafile: protocolMetafile, protocol_mapping: protocolMapping, typescript_module: typescriptModule } : {}),
+  ...(pureProtocol ? { profile: values.profile, protocol_module: protocolModule, protocol_metafile: protocolMetafile, protocol_mapping: protocolMapping, typescript_module: typescriptModule } : {}),
+  ...(protocolImports ? { protocol_bindings: { importers: [...protocolBindings], specifier: protocolSpecifier, target: protocolModule.path, output_imports: protocolImports } } : {}),
   ...(openCode ? { profile: values.profile, entry_source: prototypeEntry } : {}),
   ...(initializeOpenCode ? { profile: values.profile, entry_source: prototypeEntry, process_host_package: processHostPackage,
-    runtime_environment: initializationEnvironment, installed_external_entries: [...installedExternals.values()], dynamic_dependencies: dynamicDependencies } : {}),
+    runtime_environment: initializationEnvironment, installed_external_entries: [...installedExternals.values()], dynamic_dependencies: dynamicDependencies, build_dependencies: [jsoncDependency, smolDependency] } : {}),
 }
 await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
 process.stdout.write(JSON.stringify({ status: 'PREPARED_ONLY', installed_revision: installedRevision, source_entries: archiveProof.files, bundled_inputs: seenInputs.size, observer_sha256: manifest.observer.sha256, model_execution: 'NOT_RUN' }) + '\n')

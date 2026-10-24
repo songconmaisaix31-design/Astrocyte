@@ -151,7 +151,7 @@ assert.deepEqual(nativeMessages.map(row=>row.type),['agent-switched','model-swit
 const {correlation:_nonce,...actualStatus}=status
 assertNativeOpenCodeCurrent(snapshot)
 await verifyClient()
-const result={candidate,source_revision:revision,scope:'actual_native_ACP_root_exit_with_owned_private_server',initialization_source:'fixed_git_source_and_installed_dependencies_single_bundle',orca_dispatch_created:false,private_root:root,initialized,session_id:session.sessionId,native_session:nativeSession,native_messages:nativeMessages,actual_policy:actualStatus,other_stderr_line_count:otherStderrLines,job:observation,notifications,independent_exit_observations:independent,closed,import_result:importResult,actual_updates:updates,prompt_calls:0,observed_model_requests:observedModelRequests,unknown_to_known_close:'NOT_RUN_no_actual_unverifiable_close_observed'}
+const result={candidate,source_revision:revision,scope:'actual_native_ACP_root_exit_with_owned_private_server',initialization_source:'fixed_git_source_and_declared_dependencies_single_bundle',orca_dispatch_created:false,private_root:root,initialized,session_id:session.sessionId,native_session:nativeSession,native_messages:nativeMessages,actual_policy:actualStatus,other_stderr_line_count:otherStderrLines,job:observation,notifications,independent_exit_observations:independent,closed,import_result:importResult,actual_updates:updates,prompt_calls:0,observed_model_requests:observedModelRequests,unknown_to_known_close:'NOT_RUN_no_actual_unverifiable_close_observed'}
 const text=JSON.stringify(result,null,2)+'\n'
 if(text.includes(snapshot.key))throw new Error('Native source result contained credential material')
 await writeFile(values.output,text,{flag:'wx'})

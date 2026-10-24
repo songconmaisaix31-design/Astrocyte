@@ -59,6 +59,7 @@ def main():
             "third_party/orca-v1.4.230/src/main/acp/generated/acp-protocol.generated.ts",
         ])
     if profile == "opencode-initialize-only":
+        allowed.extend(["scripts/build-swa-runtime.mjs", "runtime/swa-orca/package.json"])
         allowed.extend("runtime/swa-orca/src/" + name for name in [
             "native-opencode-policy.ts", "private-opencode-account.ts", "native-opencode-import.ts", "native-pi-policy.ts",
             "native-codex-policy.ts", "private-posix-security.ts", "contracts.ts", "task-budget.ts", "pi-official-sources.json",
