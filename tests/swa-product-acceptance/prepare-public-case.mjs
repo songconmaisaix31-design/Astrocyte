@@ -3,7 +3,7 @@ import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
-import { publicCase, publicFiles as files, publicRevision as revision, publicSource as source } from './public-case-definition.mjs'
+import { openCodeSingleCase, publicCase, publicFiles as files, publicRevision as revision, publicSource as source } from './public-case-definition.mjs'
 
 const repository = await realpath(fileURLToPath(new URL('../../', import.meta.url)))
 let values, workers
@@ -11,14 +11,15 @@ try {
   const parsed = parseArgs({ options: { root: { type: 'string' }, workers: { type: 'string', default: '3' }, case: { type: 'string' } }, allowPositionals: false, tokens: true })
   values = parsed.values
   if (!values.root || !isAbsolute(values.root)) throw new Error('Select an explicit absolute --root that does not exist')
-  if (values.case !== undefined && values.case !== 'native-questions') throw new Error('Unknown public case')
+  if (values.case !== undefined && !['native-questions', 'opencode-single'].includes(values.case)) throw new Error('Unknown public case')
   if (values.case === 'native-questions' && (values.root !== '/workspace/swa-public-question-case-20261023' || parsed.tokens.some(token => token.kind === 'option' && token.name === 'workers'))) throw new Error('The native question case has one fixed root and fixed stage worker counts')
+  if (values.case === 'opencode-single' && (values.root !== '/workspace/swa-public-opencode-single-20261023' || parsed.tokens.some(token => token.kind === 'option' && token.name === 'workers'))) throw new Error('The OpenCode single case has one fixed root and one Worker')
   if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error('--workers must be within the current complete-inventory observation bound')
-  workers = Number(values.workers)
+  workers = values.case === 'opencode-single' ? 1 : Number(values.workers)
 } catch {
   process.stderr.write(values?.case === undefined
     ? 'Invalid arguments: use --root ABSOLUTE_NEW_DIRECTORY and optional --workers INTEGER_3_TO_100; this helper follows the current complete-inventory observation bound, not a product quota limit\n'
-    : 'Invalid arguments: use --case native-questions --root /workspace/swa-public-question-case-20261023 without --workers\n')
+    : 'Invalid arguments: use --case native-questions --root /workspace/swa-public-question-case-20261023 or --case opencode-single --root /workspace/swa-public-opencode-single-20261023, without --workers\n')
   process.exit(2)
 }
 
@@ -53,6 +54,7 @@ try {
   git(['clone', '--no-checkout', '--no-recurse-submodules', source, project])
   git(['-C', project, 'checkout', '--detach', revision])
   if (git(['-C', project, 'rev-parse', 'HEAD']).trim() !== revision || git(['-C', project, 'remote', 'get-url', 'origin']).trim() !== source) throw new Error('The actual public source identity differs from the fixed input')
+  if (values.case === 'opencode-single' && git(['-C', project, 'ls-tree', '-r', '--name-only', revision]).trimEnd() !== files.join('\n')) throw new Error('The OpenCode single case requires exactly the four fixed source files')
   const originals = []
   for (const path of files) {
     const actual = join(project, path)
@@ -94,7 +96,7 @@ try {
   const inputDirectory = join(project, '.verification', 'swa-product-input')
   await mkdir(inputDirectory, { recursive: true, mode: 0o700 })
   const write = (name, value) => writeFile(join(inputDirectory, name), value, { flag: 'wx', mode: 0o600 })
-  const prepared = publicCase(workers, originals)
+  const prepared = values.case === 'opencode-single' ? openCodeSingleCase(originals) : publicCase(workers, originals)
   const inputs = []
   for (const { name, file, body } of prepared.inputs) {
     await write(file, body)
@@ -104,7 +106,7 @@ try {
   await write('followup.txt', prepared.followup)
   await write('source.json', JSON.stringify({ project_root: project, source, revision, originals }, null, 2) + '\n')
   await write('inputs.json', JSON.stringify(inputs, null, 2) + '\n')
-  process.stdout.write(JSON.stringify({ project_root: project, source, revision, workers, input_directory: inputDirectory, spec_file: join(inputDirectory, 'task.json'), inputs_file: join(inputDirectory, 'inputs.json'), source_files_verified: files, model_calls: 0, product_execution: 'NOT_RUN', current_authorization: 'REQUIRED' }, null, 2) + '\n')
+  process.stdout.write(JSON.stringify({ project_root: project, source, revision, workers, ...(values.case === 'opencode-single' ? { case: 'opencode-single' } : {}), input_directory: inputDirectory, spec_file: join(inputDirectory, 'task.json'), inputs_file: join(inputDirectory, 'inputs.json'), source_files_verified: files, model_calls: 0, product_execution: 'NOT_RUN', current_authorization: 'REQUIRED' }, null, 2) + '\n')
   }
 } catch {
   process.stderr.write('Public case preparation failed; preserve the explicitly selected case directory and inspect Git access, source identity and actual paths. No project scripts or model calls were executed.\n')

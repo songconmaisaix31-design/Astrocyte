@@ -49,6 +49,9 @@ export type AcpAgentConnectionOptions = Omit<AcpSessionRuntimeOptions, 'peer'> &
   onExit?: (error: Error, context: { expected: boolean; exit: ProviderProcessExit }) => void
   /** Any stdout or stderr chunk from the child. */
   onOutput?: () => void
+  /** 独立初始化观察可截留 stderr；产品受控策略保持优先。 */
+  onStderrLine?: (line: string, cut: boolean) => boolean
+  stderrLineMaxChars?: number
   signIn?: AcpSignInWatch
 }
 
@@ -115,6 +118,8 @@ export class AcpAgentConnection extends AcpSessionRuntime {
       ...(options.onOutput ? { onOutput: options.onOutput } : {}),
       ...(launch.swaOpenCodePolicy
         ? { onStderrLine: (line: string, cut: boolean) => launch.swaOpenCodePolicy!.stderr(line, cut), stderrLineMaxChars: SIGN_IN_LINE_MAX_CHARS }
+        : options.onStderrLine
+        ? { onStderrLine: options.onStderrLine, stderrLineMaxChars: options.stderrLineMaxChars }
         : signIn
         ? {
             onStderrLine: (line: string, cut: boolean) => signInLine(line, 'stderr', cut),

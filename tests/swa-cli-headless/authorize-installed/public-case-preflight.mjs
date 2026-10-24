@@ -7,8 +7,8 @@ import { pathToFileURL } from 'node:url'
 
 const [definition, project, requestedWorkers = '3', selectedCase] = process.argv.slice(2)
 assert.ok(process.argv.length >= 4 && process.argv.length <= 6)
-assert.ok(selectedCase === undefined || selectedCase === 'native-questions')
-assert.ok(selectedCase === 'native-questions' ? requestedWorkers === '2' : ['3', '4', '6'].includes(requestedWorkers))
+assert.ok(selectedCase === undefined || ['native-questions', 'opencode-single'].includes(selectedCase))
+assert.ok(selectedCase === 'native-questions' ? requestedWorkers === '2' : selectedCase === 'opencode-single' ? requestedWorkers === '1' : ['3', '4', '6'].includes(requestedWorkers))
 const workers = Number(requestedWorkers)
 assert.ok(isAbsolute(definition) && isAbsolute(project))
 async function ordinary(path, directory = false) {
@@ -22,13 +22,17 @@ async function ordinary(path, directory = false) {
 }
 await ordinary(project, true)
 await ordinary(definition)
-const { publicCase, questionCase, publicFiles, publicRevision, publicSource } = await import(pathToFileURL(definition).href)
+const { openCodeSingleCase, publicCase, questionCase, publicFiles, publicRevision, publicSource } = await import(pathToFileURL(definition).href)
 assert.equal(publicSource, 'https://github.com/songconmaisaix31-design/astrocyte-s3-public-stats.git')
 assert.equal(publicRevision, 'da3bdddb085808863090a05f60cc1c64415039cf')
 assert.deepEqual(publicFiles, ['README.md', 'go.mod', 'stats.go', 'stats_test.go'])
 const git = args => execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', `core.hooksPath=${join(dirname(project), 'empty-hooks')}`, '-C', project, ...args], { encoding: 'utf8', timeout: 10_000, maxBuffer: 1024 * 1024 })
 assert.equal(git(['rev-parse', 'HEAD']).trim(), publicRevision)
 assert.equal(git(['remote', 'get-url', 'origin']).trim(), publicSource)
+if (selectedCase === 'opencode-single') {
+  assert.equal(project, '/workspace/swa-public-opencode-single-20261023/public-project')
+  assert.deepEqual(git(['ls-tree', '-r', '--name-only', publicRevision]).trimEnd().split('\n'), publicFiles)
+}
 const originals = []
 const hashes = {}
 const read = async path => {
@@ -62,7 +66,7 @@ if (selectedCase === 'native-questions') {
   assert.equal(await read(join(directory, prepared.answer.file)), prepared.answer.body)
 } else {
   const directory = join(project, '.verification/swa-product-input')
-  const prepared = publicCase(workers, originals)
+  const prepared = selectedCase === 'opencode-single' ? openCodeSingleCase(originals) : publicCase(workers, originals)
   assert.deepEqual(JSON.parse(await read(join(directory, 'task.json'))), prepared.spec)
   assert.deepEqual(JSON.parse(await read(join(directory, 'source.json'))), { project_root: project, source: publicSource, revision: publicRevision, originals })
   assert.deepEqual(JSON.parse(await read(join(directory, 'inputs.json'))), prepared.inputs.map(({ name, file }) => ({ name, input_file: join(directory, file) })))

@@ -28,13 +28,33 @@ cp tests/swa-cli-headless/authorize-installed/public-case-preflight.mjs "$TOOL_R
 
 Pi新增profile `stepfun-pi-n4`和`stepfun-pi-n6`，workers分别只能4、6；caller分别为`swa-stepfun-pi-n4-20261023`、`swa-stepfun-pi-n6-20261023`，项目/空间标题的N同步变为N4/N6。各自公开项目固定为`/workspace/swa-public-case-20261023-n4/public-project`、`/workspace/swa-public-case-20261023-n6/public-project`。Agent、model、来源字段和ToolsOff仍沿Pi表，不允许用其他N替换profile。N6在N4实际完整结算之后执行，不能同时抢用同一driver输入或owner。
 
+OpenCode采用三个独立profile，固定`agent=opencode`、版本`2.0.31`、`provider=stepfun`、`model=stepfun/step-3.5-flash`、`account_source=opencode-native-stepfun-api-key`，唯一来源字段为`opencode_api_key_home`。原生ToolsOff为disabled，提问能力必须为unavailable；不接受其他非空Agent来源字段或问答专用字段。
+
+| profile | workers | caller | 项目路径 |
+| --- | --- | --- | --- |
+| stepfun-opencode-single | 1 | swa-stepfun-opencode-single-20261023 | /workspace/swa-public-opencode-single-20261023/public-project |
+| stepfun-opencode-n4 | 4 | swa-stepfun-opencode-n4-20261023 | /workspace/swa-public-case-20261023-n4/public-project |
+| stepfun-opencode-n6 | 6 | swa-stepfun-opencode-n6-20261023 | /workspace/swa-public-case-20261023-n6/public-project |
+
+OpenCode项目名分别为`SWA StepFun OpenCode SINGLE/N4/N6 public stats`，空间名在对应项目名后加` 20261023`。API固定为`openai-completions`，初始请求目标为`https://api.stepfun.com/v1/chat/completions`。helper只检查来源目录元数据；原生账号内容仅由受控产品consumer读取，不进入包、环境、输出或散列。固定目标和静态available不证明登录、真实推理或原生ToolsOff已通过。
+
+单Worker公开准备使用`prepare-public-case.mjs --case opencode-single --root /workspace/swa-public-opencode-single-20261023`，不传`--workers`。它核固定revision恰有四原文件，独立`openCodeSingleCase(originals)`产生一个`worker-1.txt`、`max_workers=1`的规格及`followup.txt`，没有`initial_workers`或自动结算策略。正文仅含四原文和固定审阅要求；相同正文的R2/R3直接复用首输入，R4使用固定复核正文。consumer在发送前逐字复核全部输入。single经`controller open → task create → worker start`建立原会话，每次追加前核原Worker仍live/ready且尚未请求释放；完整成果、取消、未知和活动停止分开保存。该场景的并发、配额、其他Worker存活及Run自动交付均为NOT_RUN。
+
+OpenCode实际顺序由Root安排为同S无模型初始化、single、N4、N6，并遵守既定Pi真实基线先行条件；每阶段独立审查。N4/N6继续使用原`publicCase`及对应固定输入，经`run`入口验证自动结算与释放，不复用single的手动结算结论。当前helper实际窗口限定Linux x64；Windows需单独实际验证。
+
 问答profile固定`caller=swa-stepfun-pi-questions-20261023`、`agent=pi`、`model=stepfun/step-3.5-flash`、`workers=2`、Pi版本1.0.1和`pi_source_home`。项目路径为`/workspace/swa-public-question-case-20261023/public-project`，项目名`SWA StepFun Pi questions public stats`，空间名`SWA StepFun Pi questions public stats 20261023`，安装必须为combined。`workers=2`是阶段B最大并行数，三个固定阶段的初始Worker数分别为1、2、1；B的第二个Worker由驱动在lead真实提问后创建。公开准备使用`prepare-public-case.mjs --case native-questions --root /workspace/swa-public-question-case-20261023`，不传`--workers`。消费者核对四原文、`swa-question-input/case.json`、各阶段task/inputs、独立的`answer.txt`和source，保留答案首尾空白与换行，答案不进入启动输入。
 
 旧Codex/Pi N3包仍只接受既有公开项目`/workspace/swa-public-case-20261022/public-project`。各N profile核同公开revision四原文及固定task/input/followup；N4/N6使用六种区别明确的公开审阅职责中的前四/全部六项，显式initial_workers=N，经默认等待run创建lead后补同Run N−1；槽位4为lead的真实孙任务。两批均主动停非lead槽位2；N4只在lead首轮idle且孙任务仍运行时追加lead，N6用子成果原mail/callback产生lead第二轮，不另加手工模型轮。四个实际项目Role和Conversation、完整递归wait/export与自动release沿原回执/原生来源核对；提示职责不代替持久Role，stored通知不当provider送达。未知profile、错caller/agent/model/N/项目或另一profile的非空来源字段在HTTP之前拒绝。来源必须为显式、独立、当前用户0700普通目录；工具只检查其路径元数据，不读取auth、key、models或settings正文，不创建或修复来源。缺少来源、真实启动记录或服务身份时包保持INCOMPLETE，不能执行。Pi的API为openai-completions，endpoint为https://api.stepfun.com/v1，ToolsOff合同为pi-cli-1.0.1，新账户kind为pi-native-api-key-per-session；这项固定目标不表示账号、推理、原生ToolsOff或N已通过。
 
 原serve owner须在真实spawn时保存非秘密启动记录并提供原ready/proof与准确SHA/runtime。Codex记录严格为installation、source_revision、data_root、endpoint、serve_pid、codex_api_key_home六键；Pi记录最后一键为pi_source_home。工具不生成或补造记录。Linux Codex/Pi驱动均接收已核原ready的`--service-ready-record`和`--service-ready-sha256`；驱动绑定实际status/runtimeId、装内Node与原daemon→runtime→serve身份链，使用独立runtime托管者核Worker custody。daemon原身份与认证检查保留。Pi另接收已核记录的`--pi-launch-record`和`--pi-launch-sha256`，从中独立核对SOURCE。真实serve捕获来源的入口是PI_CODING_AGENT_DIR，由原owner负责；工具不启动serve或调整PATH。
 
+OpenCode记录固定名为`opencode-launch-record.json`，严格六键为`installation、source_revision、data_root、endpoint、serve_pid、opencode_api_key_home`，拒绝Pi/Codex启动键。helper向同一driver传入`--opencode-launch-record`、`--opencode-launch-sha256`及原`--service-ready-record/--service-ready-sha256`。原owner通过显式`SWA_OPENCODE_API_KEY_HOME`提供来源，并绑定官方`@opencode/cli-linux-x64@2.0.31`的实际bin；helper不创建来源或启动官方CLI。
+
+三个OpenCode profile的`prepare`复用原owner已创建的私有普通证据目录：`DataRoot`必须是同一runRoot下的`data`，`EvidenceRoot`必须是其同级`evidence`，三原件必须恰为该证据根中的`ready.json`、`live-proof.json`和`opencode-launch-record.json`。全部必要字段、原SHA和当前服务身份通过后，才独占新增helper记录；缺失或变化时拒绝，不创建另一目录，不复制或改写原件。`verify`和`execute-authorized`同样重新核对该布局与原服务身份。OpenCode不接受问答专用owner字段；原Codex/Pi非问答profile仍要求新建证据根。
+
 Codex/Pi共同固定driver-failure.mjs、codex-event-view.mjs、prepare-source-observer.mjs、source-observer-entry.ts、extract-observer-source.py和pi-event-view.mjs六个执行依赖；Pi再增加pi-source-observer-entry.ts。pi-event-view的私有FD读取器也被Codex用于ready文件，Codex仍使用已有JSON解析，不引入Pi protocol运行依赖。全部依赖逐安装VERSION的Git blob和实际SHA核对。缺少依赖的历史安装不能作为执行候选。源码测试、编译与help只能证明离线范围。
+
+OpenCode保留上述共同执行依赖，并固定`opencode-event-view.mjs`与`opencode-source-observer-entry.ts`；observer的公开profile为`stepfun-opencode`，single/N4/N6共用该只读入口。独立无模型初始化使用`opencode-initialize-only`准备分支及其独立entry，不作为模型driver的运行入口。所有实际ACP帧、用户消息关联、native SQLite成果和完整关闭均由各自真实消费者核验，不以Pi/Codex协议投影替代。
 
 问答profile使用`run-question-installed.mjs`与`question-case-definition.mjs`，另将定义直接引用的`public-case-definition.mjs`及`pi-question-event-view.mjs`加入上述依赖，按安装VERSION固定。包必须提供`owner_handoff_file`、`owner_handoff_sha256`、`question_gui_file`、`question_gui_sha256`；其他profile拒绝这些字段的非空值。GUI文件路径固定为`SourceRepository/.verification/cloud-setup/question-gui-installed.mjs`，SHA由Root审定后明确填写，工具不自动采纳该SHA，也不把ignored脚本当安装Git blob。
 

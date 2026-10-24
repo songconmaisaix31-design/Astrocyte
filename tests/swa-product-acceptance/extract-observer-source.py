@@ -14,7 +14,7 @@ import zipfile
 def main():
     arguments = sys.argv[1:]
     profile = None
-    if len(arguments) == 6 and arguments[-2] == "--profile" and arguments[-1] in ("stepfun-pi-n3", "stepfun-pi-questions"):
+    if len(arguments) == 6 and arguments[-2] == "--profile" and arguments[-1] in ("stepfun-pi-n3", "stepfun-pi-questions", "stepfun-opencode", "opencode-initialize-only"):
         profile = arguments[-1]
         arguments = arguments[:4]
     archive_name, repository_name, revision, target_name = arguments
@@ -48,6 +48,48 @@ def main():
             "runtime/swa-orca/src/contracts.ts",
             "runtime/swa-orca/src/task-budget.ts",
             "third_party/orca-v1.4.230/src/main/runtime/orchestration/orchestration-error.ts",
+        ])
+    if profile == "stepfun-opencode":
+        allowed.extend([
+            "third_party/orca-v1.4.230/src/main/runtime/rpc/orchestration-mutation-receipt.ts",
+            "third_party/orca-v1.4.230/src/main/native-chat/agent-session-timeline/provider-timeline-identity.ts",
+            "third_party/orca-v1.4.230/src/main/native-chat/agent-session-journal/journal-payload-bounds.ts",
+            "third_party/orca-v1.4.230/src/main/acp/acp-rpc-envelope.ts",
+            "third_party/orca-v1.4.230/src/main/acp/acp-errors.ts",
+            "third_party/orca-v1.4.230/src/main/acp/generated/acp-protocol.generated.ts",
+        ])
+    if profile == "opencode-initialize-only":
+        allowed.extend("runtime/swa-orca/src/" + name for name in [
+            "native-opencode-policy.ts", "private-opencode-account.ts", "native-opencode-import.ts", "native-pi-policy.ts",
+            "native-codex-policy.ts", "private-posix-security.ts", "contracts.ts", "task-budget.ts", "pi-official-sources.json",
+        ])
+        allowed.extend([
+            "third_party/orca-v1.4.230/src/packages/process-host/package.json",
+            "third_party/orca-v1.4.230/src/packages/process-host/src",
+        ])
+        allowed.extend("third_party/orca-v1.4.230/src/main/" + name for name in [
+            "acp/acp-session-runtime.ts", "acp/acp-errors.ts", "acp/acp-response-settlement.ts", "acp/acp-json-rpc-peer.ts",
+            "acp/acp-permission-requests.ts", "acp/acp-session-events.ts", "acp/acp-session-setup.ts", "acp/acp-incoming-requests.ts",
+            "acp/acp-peer-limits.ts", "acp/acp-oversized-lines.ts", "acp/acp-write-queue.ts", "acp/acp-stdio-error-boundary.ts",
+            "acp/acp-rpc-envelope.ts", "acp/generated/acp-protocol.generated.ts", "zod-schema-compilation.ts",
+            "provider-process/managed-provider-process.ts", "provider-process/swa-provider-process-tree.ts",
+            "provider-process/swa-linux-provider-process-tree.ts", "provider-process/provider-process-close.ts",
+            "provider-process/provider-process-supervisor.ts", "provider-process/provider-process-teardown.ts",
+            "provider-process/provider-executable-missing.ts", "provider-process/provider-spawn-failure-report.ts",
+            "provider-process/provider-process-exit-deadline.ts", "provider-process/provider-process-launch.ts",
+            "provider-process/provider-stdio-write-queue.ts", "provider-process/provider-stdio-error-boundary.ts",
+            "windows/windows-process-table.ts", "windows/windows-process-table-timeout-error.ts",
+            "windows/windows-process-table-cim-scan.ts", "windows/windows-command-line-recovery-health.ts",
+            "windows-process-tree-kill.ts", "windows-pty-root-identity.ts", "pty-descendant-exit-verification.ts",
+            "pty-descendant-termination.ts", "own-chromium-tree-kill-guard.ts", "orca-chromium-process-pids.ts",
+            "providers/windows-foreground-process-rows.ts", "crash-reporting/self-initiated-tree-kill-log.ts",
+            "crash-reporting/durable-crash-breadcrumb.ts", "crash-reporting/main-process-lifecycle-identity.ts",
+            "crash-reporting/crash-breadcrumb-store.ts", "observability/tracer.ts", "observability/redactor.ts",
+            "agent-hooks/windows-powershell-hook-launcher.ts", "pi/rpc-protocol.ts", "runtime/orchestration/orchestration-error.ts",
+            "opencode/opencode-structured-account-home.ts", "managed-data-accounts/service.ts",
+            "managed-data-accounts/credential-capture.ts", "managed-data-accounts/profile-removal.ts",
+            "host-tree-removal.ts", "asar-transparent-fs.ts", "opencode-usage/schema-helpers.ts",
+            "sqlite/sync-database.ts", "sqlite/node-sqlite-reader-api.ts", "sqlite/node-sqlite-statement.ts", "sqlite/sqlite-integer-reader.ts",
         ])
     git_environment = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_PAGER="cat")
     result = subprocess.run(

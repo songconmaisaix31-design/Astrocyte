@@ -34,24 +34,31 @@ export async function importPrivateOpenCodeCredential(input: {
   let streamFailure: Error | undefined, rejectStreams!: (error: Error) => void
   const streamErrors = new Promise<never>((_resolve, reject) => { rejectStreams = reject })
   void streamErrors.catch(() => undefined)
-  const managed: ManagedProviderProcess = spawnManagedProviderProcess({ command: input.node, args: [input.entry, JSON.stringify({ command: input.executable, args: ['auth', 'import', '--standalone'] })], cwd: input.cwd, env, envToDelete: Object.keys(process.env).filter(name => !(name in env)), swaJobIPC: true }, {
-    site: 'native-opencode-account-import', lifetime: 'one-shot', acceptClose: value => value.root === 'exited' && (value.tree === 'exited' || managed.processless), stderrLineMaxChars: 4096,
-    onStderrLine(line, cut) { if (!cut && line.trimEnd() === 'Imported 1 credential') imported++; else otherStderrLines++; return true }
-  })
-  const streamError = () => { streamFailure ??= new Error('native_opencode_import_stream_failed'); rejectStreams(streamFailure) }
-  managed.child.stdin.on('error', streamError)
-  managed.child.stdout.on('error', streamError)
-  managed.child.stderr.on('error', streamError)
-  managed.child.once('error', streamError)
-  managed.child.stdout.on('data', (chunk: Buffer) => { stdoutBytes += chunk.length })
-  managed.child.stdout.once('end', () => { stdoutEnded = true })
-  managed.child.stderr.once('end', () => { stderrEnded = true })
-  const streamsClosed = new Promise<void>(resolve => {
-    managed.child.once('close', () => resolve())
-  })
-  let timer: ReturnType<typeof setTimeout> | undefined
-  let closed
+  let managed: ManagedProviderProcess
   try {
+    managed = spawnManagedProviderProcess({ command: input.node, args: [input.entry, JSON.stringify({ command: input.executable, args: ['auth', 'import', '--standalone'] })], cwd: input.cwd, env, envToDelete: Object.keys(process.env).filter(name => !(name in env)), swaJobIPC: true }, {
+      site: 'native-opencode-account-import', lifetime: 'one-shot', acceptClose: value => value.root === 'exited' && (value.tree === 'exited' || managed.processless), stderrLineMaxChars: 4096,
+      onStderrLine(line, cut) { if (!cut && line.trimEnd() === 'Imported 1 credential') imported++; else otherStderrLines++; return true }
+    })
+  } catch (spawnError) {
+    try { tree.closeBeforeSpawnFailure() }
+    catch (cleanupError) { throw new AggregateError([spawnError, cleanupError], 'native_opencode_import_spawn_cleanup_unknown', { cause: spawnError }) }
+    throw spawnError
+  }
+  const streamError = () => { streamFailure ??= new Error('native_opencode_import_stream_failed'); rejectStreams(streamFailure) }
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let operationFailed = false, operationError: unknown
+  try {
+    managed.child.stdin.on('error', streamError)
+    managed.child.stdout.on('error', streamError)
+    managed.child.stderr.on('error', streamError)
+    managed.child.once('error', streamError)
+    managed.child.stdout.on('data', (chunk: Buffer) => { stdoutBytes += chunk.length })
+    managed.child.stdout.once('end', () => { stdoutEnded = true })
+    managed.child.stderr.once('end', () => { stderrEnded = true })
+    const streamsClosed = new Promise<void>(resolve => {
+      managed.child.once('close', () => resolve())
+    })
     tree.bind(managed.child, () => ({ observed: managed.rootExitObserved, processless: managed.processless }), true)
     input.observe({ managed, tree })
     await Promise.race([tree.ready(), streamErrors])
@@ -63,12 +70,18 @@ export async function importPrivateOpenCodeCredential(input: {
     const secretBody = body
     await Promise.race([streamErrors, new Promise<void>((resolve, reject) => managed.child.stdin.end(secretBody, (error?: Error | null) => { secretBody.fill(0); if (error) reject(new Error('native_opencode_import_stdin_failed')); else resolve() }))])
     await Promise.race([Promise.all([managed.exitPromise, streamsClosed]), streamErrors, new Promise<never>((_resolve, reject) => { timer = setTimeout(() => reject(new Error('native_opencode_import_exit_unknown')), 30_000) })])
-  } finally {
-    body.fill(0)
-    clearTimeout(timer)
+  } catch (error) { operationFailed = true; operationError = error }
+  body.fill(0)
+  clearTimeout(timer)
+  let closed
+  try {
     closed = await managed.close(tree)
     if (closed.root !== 'exited' || closed.tree !== 'exited' || tree.forcedReapAttempted || !tree.readFinalObservation()) throw new Error('native_opencode_import_cleanup_unknown')
+  } catch (cleanupError) {
+    if (operationFailed) throw new AggregateError([operationError, cleanupError], 'native_opencode_import_cleanup_unknown', { cause: operationError })
+    throw cleanupError
   }
+  if (operationFailed) throw operationError
   if (streamFailure || !stdoutEnded || !stderrEnded || managed.child.exitCode !== 0 || managed.child.signalCode !== null || imported !== 1 || stdoutBytes !== 0) throw new Error('native_opencode_import_failed')
   assertNativeOpenCodeCurrent(snapshot)
   const actual = readOpenCodeCredential(env.OPENCODE_DB, provider)

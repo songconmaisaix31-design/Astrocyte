@@ -35,3 +35,24 @@ export function publicCase(workers, originals) {
     followup: (workers > 3 ? '请在原lead会话继续，' : '请在原会话继续，') + '复核你的首次回答中各项来源与边界条件，纠正无法由固定原文证明的陈述；结合本会话已有真实消息形成完整说明。禁止调用工具，不读取其他资料，不声称执行了测试。\n' + context + '\n',
   }
 }
+
+export function openCodeSingleCase(originals) {
+  if (!Array.isArray(originals) || originals.length !== publicFiles.length || originals.some((original, index) => original.path !== publicFiles[index] || original.source_revision !== publicRevision || typeof original.text !== 'string' || !original.text)) throw new Error('The OpenCode single case requires the four fixed public originals in source order')
+  const context = JSON.stringify({ source: publicSource, revision: publicRevision, originals: originals.map(({ path, source_revision, text }) => ({ path, source_revision, text })) })
+  const instruction = '请审阅这四份固定公开原文，核对模块组织、现有 Mean API、实现与真实测试覆盖，并提出与现有 API 兼容的 Median 设计建议。覆盖奇偶长度、空输入、负数、重复值、输入顺序、NaN/Infinity 与有限大中间值溢出；逐项引用原文位置，区分现有事实、建议和未知。收到后续输入时在同一会话继续，保留各轮实际状态。禁止调用工具、读写文件或访问其他资料，不声称运行过测试。\n'
+  return {
+    inputs: [{ name: 'worker-1', file: 'worker-1.txt', body: instruction + context + '\n' }],
+    spec: {
+      goal: '在一个实际 Worker 的同一会话审阅固定公开 stats 项目，取得原文事实、Median 设计与边界条件分析；不修改程序。',
+      source_repo: publicSource, source_revision: publicRevision, max_workers: 1,
+      success_criteria: [
+        '一个实际产品 Worker 在原 Dispatch/session 中完成首轮审阅，并取得真实完整来源成果。',
+        '相同公开正文的追加分别保留原请求及原生消息身份；后轮成果对应本轮输入，取消或未知保持实际状态。',
+        '现有事实与设计建议分别表述并引用四份固定原文；无法证明的行为、未运行检查和停止状态明确保留。',
+        '计划停止发生于实际输出期间，完整资源退出经原来源证明；没有发生的分支保持未验，不宣称并发或其他 Worker 存活。',
+      ],
+      context: { references: [], files: publicFiles },
+    },
+    followup: '请在原会话继续，逐项复核此前回答中的来源位置、Median 设计条件与失败边界，纠正无法由四份固定原文证明的陈述，明确现有事实、建议和未运行检查。禁止调用工具、读写文件或访问其他资料，不声称执行了测试。\n' + context + '\n',
+  }
+}

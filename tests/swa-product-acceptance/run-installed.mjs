@@ -12,7 +12,7 @@ import { Readable } from 'node:stream'
 import { setTimeout as delay } from 'node:timers/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { publicCase, publicFiles, publicRevision, publicSource } from './public-case-definition.mjs'
+import { openCodeSingleCase, publicCase, publicFiles, publicRevision, publicSource } from './public-case-definition.mjs'
 import { codexEnds, codexStarts, isCodexDelta, originalLinuxTreeProof, validateCodexEventView, validateLinuxFinalCustody, validateLinuxServiceReady } from './codex-event-view.mjs'
 import { isLinuxPiTarget, isPiDelta, originalPiTreeProof, piEnds, piStarts, readPiPrivateJson, validatePiEventView, validatePiLaunchRecord, validatePiSelection } from './pi-event-view.mjs'
 
@@ -20,11 +20,12 @@ const help = `真实安装物多Worker验收；不会签发Grant、启动服务�
 使用同安装Node运行本文件，显式传入：
 --candidate ABS --data-root ABS --project ABS --project-id ID --endpoint LOOPBACK
 --agent ID --model ID --output ABS_NEW_DIRECTORY [--workers 3]
-Windows Pi/OpenCode另需--service-log ABS；Linux Codex/Pi另需--source-repository ABS。
+Windows Pi/OpenCode另需--service-log ABS；Linux Codex/Pi/OpenCode另需--source-repository ABS。
 Linux StepFun Pi仅workers=3、4、6，另需--pi-launch-record ABS --pi-launch-sha256 SHA256，取自本次serve owner原件。
-Linux Codex/Pi另需--service-ready-record ABS --service-ready-sha256 SHA256，绑定本次独立serve readiness。
+Linux StepFun OpenCode仅workers=1、4、6，另需--opencode-launch-record ABS --opencode-launch-sha256 SHA256及相同来源的ready原件。
+Linux Codex/Pi/OpenCode另需--service-ready-record ABS --service-ready-sha256 SHA256，绑定本次独立serve readiness。
 SWA_PROJECT_TOKEN仅通过受保护环境提供。来源、ToolsOff、当前Grant或完整资源证据缺失时不发送worker.start。
-支持Windows Pi/OpenCode、Linux Codex0.163.0与封闭StepFun Pi1.0.1来源；缺项目化静态配置仍在启动前NOT_RUN。
+支持Windows Pi/OpenCode、Linux Codex0.163.0及封闭StepFun Pi1.0.1/OpenCode2.0.31来源；缺项目化静态配置仍在启动前NOT_RUN。
 业务成果必须由真实Reviewer/Agent控制端审阅；驱动不会自动生成通过记录。
 退出：0=已执行断言与成果交接完成，1=失败，2=参数无效，3=未运行/前置不足；最终接受另由Reviewer决定。
 `
@@ -45,17 +46,20 @@ const within = (parent, child) => {
 }
 let values, workers
 try {
-  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers', 'pi-launch-record', 'pi-launch-sha256', 'service-ready-record', 'service-ready-sha256'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
+  values = parseArgs({ options: Object.fromEntries(['candidate', 'data-root', 'project', 'project-id', 'endpoint', 'agent', 'model', 'output', 'service-log', 'source-repository', 'workers', 'pi-launch-record', 'pi-launch-sha256', 'opencode-launch-record', 'opencode-launch-sha256', 'service-ready-record', 'service-ready-sha256'].map(key => [key, { type: 'string' }])), allowPositionals: false }).values
   values.workers ??= '3'
-  if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < 3 || Number(values.workers) > 100) throw new Error()
+  if (!/^[1-9]\d*$/.test(values.workers) || !Number.isSafeInteger(Number(values.workers)) || Number(values.workers) < (values.agent === 'opencode' && process.platform === 'linux' ? 1 : 3) || Number(values.workers) > 100) throw new Error()
   workers = Number(values.workers)
   for (const key of ['candidate', 'data-root', 'project', 'output']) if (!values[key] || !isAbsolute(values[key])) throw new Error()
   if (process.platform === 'win32' && (!values['service-log'] || !isAbsolute(values['service-log']))) throw new Error()
-  if (process.platform === 'linux' && ['codex', 'pi'].includes(values.agent) && (!values['source-repository'] || !isAbsolute(values['source-repository']))) throw new Error()
+  if (process.platform === 'linux' && ['codex', 'pi', 'opencode'].includes(values.agent) && (!values['source-repository'] || !isAbsolute(values['source-repository']))) throw new Error()
   if (process.platform === 'linux' && values.agent === 'pi') {
     if (!isLinuxPiTarget(process.platform, values.agent, values.model, workers) || !isAbsolute(values['pi-launch-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['pi-launch-sha256'] ?? '')) throw new Error()
   } else if (values['pi-launch-record'] !== undefined || values['pi-launch-sha256'] !== undefined) throw new Error()
-  if (process.platform === 'linux' && ['codex', 'pi'].includes(values.agent)) {
+  if (process.platform === 'linux' && values.agent === 'opencode') {
+    if (values.model !== 'stepfun/step-3.5-flash' || ![1, 4, 6].includes(workers) || !isAbsolute(values['opencode-launch-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['opencode-launch-sha256'] ?? '')) throw new Error()
+  } else if (values['opencode-launch-record'] !== undefined || values['opencode-launch-sha256'] !== undefined) throw new Error()
+  if (process.platform === 'linux' && ['codex', 'pi', 'opencode'].includes(values.agent)) {
     if (!isAbsolute(values['service-ready-record'] ?? '') || !/^[a-f0-9]{64}$/.test(values['service-ready-sha256'] ?? '')) throw new Error()
   } else if (values['service-ready-record'] !== undefined || values['service-ready-sha256'] !== undefined) throw new Error()
   for (const key of ['project-id', 'endpoint', 'agent', 'model']) if (!values[key]?.trim()) throw new Error()
@@ -69,8 +73,12 @@ try {
 
 process.umask(0o077)
 const piLinux = isLinuxPiTarget(process.platform, values.agent, values.model, workers)
-const runFlow = piLinux && workers > 3
-const linuxStructured = process.platform === 'linux' && (values.agent === 'codex' || piLinux)
+const openCodeLinux = process.platform === 'linux' && values.agent === 'opencode'
+const openCodeSingle = openCodeLinux && workers === 1
+const runFlow = (piLinux || openCodeLinux) && workers > 3
+const linuxStructured = process.platform === 'linux' && (values.agent === 'codex' || piLinux || openCodeLinux)
+// 旧 profile 不加载未列入其准确依赖清单的 OpenCode 消费者。
+const openCodeView = openCodeLinux ? await import('./opencode-event-view.mjs') : null
 const token = process.env.SWA_PROJECT_TOKEN
 const report = { status: 'NOT_RUN', workers, agent: values.agent, model: values.model, model_execution: 'NOT_RUN', acceptance: 'REQUIRES_INDEPENDENT_REVIEW', checks: [], commands: [], unknown_requests: [], provider_events: [], started_workers: [] }
 let output, candidate, dataRoot, project, inputDirectory, swa, runtimeId, controller, rootTask, runId, database, requireRuntime, processAPI, daemonOwner
@@ -83,6 +91,9 @@ const issuedWork = []
 const approvedFiles = new Map()
 const codexViews = new Map()
 const piViews = new Map()
+const openCodeViews = new Map()
+let openCodeLaunch, openCodeSourceHome, openCodeExecutable
+const structuredViews = openCodeLinux ? openCodeViews : piLinux ? piViews : codexViews
 let piLaunch, piSourceHome, piSourceRoot, piExecutable
 let piProtocol
 let submittedRun, runningRun, runArguments, runProcess, leadCompletion, controllerCloseRequest
@@ -154,6 +165,33 @@ async function verifyPiMetadata() {
   assert.equal(await realpath(`/proc/${piLaunch.value.serve_pid}/exe`), join(candidate, 'swa'))
   if (serviceReady) verifyServiceReadySource()
 }
+async function readOpenCodeOwnedLaunch(revision, daemon) {
+  const path = await ordinary(values['opencode-launch-record'], false)
+  const actual = readPiPrivateJson(path, 16 * 1024, JSON.parse)
+  assert.equal(createHash('sha256').update(actual.bytes).digest('hex'), values['opencode-launch-sha256'])
+  const value = openCodeView.validateOpenCodeLaunchRecord(actual.value, { installation: candidate, source_revision: revision, data_root: dataRoot, endpoint: values.endpoint })
+  assert.equal(value.serve_pid, daemon.swa_service_job.serve_pid)
+  assert.equal(path, join(dirname(dataRoot), 'evidence', 'opencode-launch-record.json'))
+  openCodeSourceHome = value.opencode_api_key_home
+  const source = await piSourceMetadata(openCodeSourceHome, true)
+  for (const root of [candidate, dataRoot, project, await ordinary(values['source-repository'], true)]) assert.ok(!within(root, openCodeSourceHome) && !within(openCodeSourceHome, root), 'opencode_source_overlaps_driver_input')
+  const serve = await observeSource('incarnation', value.serve_pid)
+  assert.equal(serve.absent, false)
+  assert.equal(serve.incarnation.boot_id, daemon.swa_service_job.boot_id)
+  assert.equal(serve.incarnation.start_ticks, daemon.swa_service_job.serve_start_ticks)
+  assert.equal(serve.incarnation.owner_uid, daemon.swa_service_job.owner_uid)
+  return { value, serve: serve.incarnation, source: actual.source, sourceRoot: source }
+}
+async function verifyOpenCodeMetadata() {
+  if (!openCodeLinux) return
+  assert.ok(openCodeLaunch)
+  assert.deepEqual(await piSourceMetadata(openCodeSourceHome, true), openCodeLaunch.sourceRoot)
+  const actual = readPiPrivateJson(openCodeLaunch.source.path, 16 * 1024, JSON.parse)
+  assert.deepEqual(actual.source, openCodeLaunch.source); assert.deepEqual(actual.value, openCodeLaunch.value)
+  assert.deepEqual(await observeSource('incarnation', openCodeLaunch.value.serve_pid), { absent: false, incarnation: openCodeLaunch.serve })
+  assert.equal(await realpath(`/proc/${openCodeLaunch.value.serve_pid}/exe`), join(candidate, 'swa'))
+  if (serviceReady) verifyServiceReadySource()
+}
 function readServiceReady() {
   const actual = readPiPrivateJson(values['service-ready-record'], 16 * 1024, piLinux ? piProtocol.parseStrictPiJson : JSON.parse)
   assert.equal(createHash('sha256').update(actual.bytes).digest('hex'), values['service-ready-sha256'], 'linux_service_ready_hash_changed')
@@ -171,7 +209,7 @@ async function verifyRuntimeCustodian() {
 }
 async function verifyPiDriverSources(revision) {
   const repository = await ordinary(values['source-repository'], true)
-  for (const name of ['run-installed.mjs', 'driver-failure.mjs', 'public-case-definition.mjs', 'codex-event-view.mjs', 'prepare-source-observer.mjs', 'source-observer-entry.ts', 'extract-observer-source.py', 'pi-event-view.mjs', 'pi-source-observer-entry.ts']) {
+  for (const name of ['run-installed.mjs', 'driver-failure.mjs', 'public-case-definition.mjs', 'codex-event-view.mjs', 'prepare-source-observer.mjs', 'source-observer-entry.ts', 'extract-observer-source.py', 'pi-event-view.mjs', ...(openCodeLinux ? ['opencode-event-view.mjs', 'opencode-source-observer-entry.ts'] : ['pi-source-observer-entry.ts'])]) {
     const relativePath = 'tests/swa-product-acceptance/' + name
     const path = await ordinary(fileURLToPath(new URL('./' + name, import.meta.url)), false)
     assert.equal(path, join(repository, relativePath), 'pi_driver_not_from_explicit_source_repository')
@@ -206,6 +244,14 @@ async function verifyObserverSources() {
   }
 }
 async function observeSource(mode, input) {
+  if (openCodeLinux) {
+    assert.ok(observer?.module, 'same_revision_opencode_observer_not_loaded')
+    if (mode === 'incarnation') return object(observer.module.observeIncarnation(input))
+    if (mode === 'decode-opencode-record') return object(observer.module.decodeOpenCodeRecord(JSON.parse(input)))
+    if (mode === 'runtime-custodian') return object(observer.module.observeRuntimeCustodian(JSON.parse(input.toString('utf8'))))
+    assert.equal(mode, 'validate-opencode-trace')
+    return object(observer.module.validateOpenCodeTrace(Buffer.isBuffer(input) ? input : Buffer.from(input)))
+  }
   if (piLinux) {
     assert.ok(observer?.module && piProtocol, 'same_revision_pi_observer_not_loaded')
     if (mode === 'incarnation') return object(observer.module.observeIncarnation(input))
@@ -626,14 +672,14 @@ async function originalStartBinding(worker, observed) {
   const originalSource = object(observed.source)
   let request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
   const inputWasPending = request.current_input?.state !== 'accepted'
-  if (piLinux) for (const deadline = Date.now() + 30_000; request.current_input?.state !== 'accepted' && Date.now() < deadline;) {
+  if (piLinux || openCodeLinux) for (const deadline = Date.now() + 30_000; request.current_input?.state !== 'accepted' && Date.now() < deadline;) {
     assert.ok(!['unknown', 'failed'].includes(request.current_input?.state), 'pi_original_input_unresolved')
     await delay(100)
     request = object((await cli(['request', 'show', '--controller', controller, '--request-id', worker.request_id])).result)
   }
   assert.equal(request.state, 'completed', 'original_start_not_completed')
   // 输入在查询之间才被接受时，重新取得完整来源；不修改较早的 delivery 状态。
-  if ((piLinux && inputWasPending) || (runFlow && object(observed.execution).delivery.state !== 'sent')) observed = await queryWorker(worker.dispatch_id)
+  if (((piLinux || openCodeLinux) && inputWasPending) || (runFlow && object(observed.execution).delivery.state !== 'sent')) observed = await queryWorker(worker.dispatch_id)
   const workerSource = object(observed.source)
   assert.deepEqual(identity(workerSource), identity(originalSource), 'original_input_source_changed_during_acceptance')
   const binding = object(object(request.receipt).swa_input_binding)
@@ -676,6 +722,12 @@ async function originalStartBinding(worker, observed) {
     for (const source of [selection.native_launch.account.auth_source, selection.native_launch.account.models_source]) assert.equal((await piSourceMetadata(source.path, false)).version, source.version, 'pi_original_source_version_changed')
     assert.ok(selection.configuration_version.includes(`;${piMetadata.get(join(piSourceHome, 'settings.json')).version};${piMetadata.get(join(piSourceHome, 'auth.json')).version};`), 'pi_actual_configuration_version_changed')
   }
+  if (openCodeLinux) {
+    await verifyOpenCodeMetadata()
+    const selection = object(request.receipt.selection)
+    assert.deepEqual(selection, workerSource.selection)
+    openCodeView.validateOpenCodeSelection(selection, { executable: openCodeExecutable, sourceHome: openCodeSourceHome, privateRoot: join(dataRoot, 'opencode', values['project-id']) })
+  }
   return { binding, observed }
 }
 async function sessionRecord(workerSource) {
@@ -685,19 +737,19 @@ async function sessionRecord(workerSource) {
   const journalSource = { path, identity: `${before.dev}:${before.ino}:${before.birthtimeNs}` }
   const journal = new DatabaseSync(path, { readOnly: true })
   try {
-    if (values.agent === 'codex' || piLinux) {
+    if (values.agent === 'codex' || piLinux || openCodeLinux) {
       const actual = journal.prepare(`SELECT session_id,
         CASE WHEN length(CAST(record_json AS BLOB)) BETWEEN 1 AND 1048576 THEN record_json ELSE NULL END AS record_json
         FROM agent_session_records WHERE session_id=?`).get(workerSource.native_session_id)
       assert.ok(actual && typeof actual.record_json === 'string', 'actual_session_record_missing_or_exceeds_bound')
       assert.equal(actual.session_id, workerSource.native_session_id)
-      const decoded = await observeSource(piLinux ? 'decode-pi-record' : 'decode-record', actual.record_json)
+      const decoded = await observeSource(openCodeLinux ? 'decode-opencode-record' : piLinux ? 'decode-pi-record' : 'decode-record', actual.record_json)
       assert.equal(decoded.schema_version, 2)
       assert.equal(decoded.session_id, actual.session_id)
       assert.equal(decoded.provider, values.agent)
       assert.equal(decoded.model, values.model)
       assert.equal(decoded.head.handle.agent, values.agent)
-      assert.equal(decoded.head.handle.transport, piLinux ? 'jsonl-rpc' : 'codex-app-server')
+      assert.equal(decoded.head.handle.transport, openCodeLinux ? 'acp' : piLinux ? 'jsonl-rpc' : 'codex-app-server')
       assert.equal(decoded.lease.runtimeKind, 'native')
       assert.equal(decoded.lease.sessionId, actual.session_id)
       assert.equal(decoded.lease.handoffStage, null)
@@ -706,7 +758,8 @@ async function sessionRecord(workerSource) {
       assert.equal(`${after.dev}:${after.ino}:${after.birthtimeNs}`, journalSource.identity, 'session_journal_replaced')
       if (piLinux) assert.deepEqual(decoded.account_home, { variable: 'PI_CODING_AGENT_DIR', path: join(dataRoot, 'pi-workers', values['project-id'], decoded.session_id) })
       if (piLinux) piRecords.set(decoded.session_id, { path, projection: decoded })
-      return { journal_source: journalSource, session_id: decoded.session_id, provider: decoded.provider, model: decoded.model, head: decoded.head, lease: decoded.lease, ...(piLinux ? { account_home: decoded.account_home, journal_epoch: journal.prepare('SELECT epoch FROM journal_sessions WHERE session_id=?').get(decoded.session_id)?.epoch } : {}) }
+      if (openCodeLinux) assert.deepEqual(decoded.account_home, { kind: 'opencode', locator: { kind: 'private', root: join(dataRoot, 'opencode', values['project-id'], decoded.session_id) } })
+      return { journal_source: journalSource, session_id: decoded.session_id, provider: decoded.provider, model: decoded.model, head: decoded.head, lease: decoded.lease, ...(piLinux || openCodeLinux ? { account_home: decoded.account_home, journal_epoch: journal.prepare('SELECT epoch FROM journal_sessions WHERE session_id=?').get(decoded.session_id)?.epoch } : {}) }
     }
     const row = journal.prepare(`SELECT session_id,
       json_extract(record_json, '$.schemaVersion') AS schema_version,
@@ -757,7 +810,7 @@ async function verifySessionOwner(record, workerSource, owner, worker) {
         assert.ok(worker.stop?.reply && stopRequests.get(worker.dispatch_id)?.request_id === worker.stop.request_id, 'released_owner_has_no_original_stop_response')
         assert.equal(native(worker.stop.reply).state, 'stopped')
       }
-      const final = validateLinuxFinalCustody(workerSource.custody, (piLinux ? piViews : codexViews).get(workerSource.native_session_id))
+      const final = validateLinuxFinalCustody(workerSource.custody, structuredViews.get(workerSource.native_session_id))
       assert.deepEqual(final.observation.root, owner.incarnation)
       assert.equal(final.observation.fullTreeProof.forced, false)
     } else {
@@ -892,6 +945,7 @@ async function events(workerSource, observed, originalOwner) {
     if (old) assert.ok(old.signature === signature && bytes.length >= old.bytes.length && bytes.subarray(0, old.bytes.length).equals(old.bytes), 'provider_prefix_changed')
     assert.equal(bytes.at(-1), 10, 'provider_observation_has_no_complete_record')
     if (piLinux) await observeSource('validate-pi-trace', bytes)
+    if (openCodeLinux) await observeSource('validate-opencode-trace', bytes)
     rows = snapshot.rows
     if (rows.at(-1)?.event === 'custody_closed') {
       assert.equal(observation.incomplete_tail_bytes, 0, 'closed_provider_has_incomplete_tail')
@@ -935,7 +989,7 @@ async function events(workerSource, observed, originalOwner) {
       witnesses.set(path, { signature, bytes })
     } finally { await handle.close() }
   }
-  if (values.agent === 'opencode') rows = rows.filter(row => row.session_id === workerSource.native_session_id && row.runtime_fence === workerSource.fence)
+  if (values.agent === 'opencode' && !openCodeLinux) rows = rows.filter(row => row.session_id === workerSource.native_session_id && row.runtime_fence === workerSource.fence)
   if (values.agent === 'codex') {
     assert.equal(workerSource.runtime_epoch, runtimeId)
     const view = validateCodexEventView(rows, { session: workerSource.native_session_id, fence: owner.binding.runtime_fence, runtimeEpoch: runtimeId, process: workerSource.process, executable: workerSource.selection.executable, nodeExecutable: join(candidate, 'node/node'), nativeId: owner.head.handle.nativeId, model: values.model })
@@ -952,6 +1006,16 @@ async function events(workerSource, observed, originalOwner) {
     let aggregate = Buffer.byteLength(JSON.stringify(rows))
     for (const [session, value] of sources) if (session !== workerSource.native_session_id) aggregate += Buffer.byteLength(JSON.stringify(value.rows))
     assert.ok(aggregate <= resultLimits.result_bytes, 'aggregate_actual_provider_sources_exceed_bound')
+  } else if (openCodeLinux) {
+    const view = openCodeView.validateOpenCodeEventView(rows, { session: workerSource.native_session_id, fence: owner.binding.runtime_fence, runtimeEpoch: runtimeId, process: workerSource.process, executable: openCodeExecutable, nativeId: owner.head.handle.nativeId, home: beforeRecord.account_home.locator.root, cwd: project })
+    const previous = openCodeViews.get(workerSource.native_session_id)
+    if (previous) { assert.deepEqual(view.custody, previous.custody); assert.deepEqual(view.nativeCLI, previous.nativeCLI); assert.deepEqual(view.ready, previous.ready) }
+    else {
+      assert.deepEqual(await observeSource('incarnation', view.nativeCLI.pid), { absent: false, incarnation: custodyIncarnation(view.nativeCLI) })
+      assert.deepEqual(view.custody.owner, runtimeCustodian)
+    }
+    if (view.finalRow) assert.deepEqual(workerSource.custody, view.finalRow.detail)
+    openCodeViews.set(workerSource.native_session_id, view)
   } else if (piLinux) {
     assert.equal(workerSource.runtime_epoch, runtimeId)
     const view = validatePiEventView(rows, { session: workerSource.native_session_id, fence: owner.binding.runtime_fence, runtimeEpoch: runtimeId, process: workerSource.process, executable: piExecutable, nodeExecutable: join(candidate, 'node/node'), sessionFile: owner.head.handle.nativeId, home: beforeRecord.account_home.path, journalEpoch: beforeRecord.journal_epoch })
@@ -997,11 +1061,12 @@ async function workerEventLists() {
   if (failed) throw failed.reason
   return observed.map(item => item.value)
 }
-const isDelta = row => row.protocol === 'pi-jsonl-rpc' ? isPiDelta(row) : row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
+const custodyIncarnation = row => ({ platform: 'linux', pid: row.pid, boot_id: row.boot_id, start_ticks: row.start_ticks, owner_uid: row.owner_uid })
+const isDelta = row => openCodeLinux ? openCodeView.isOpenCodeDelta(row) : row.protocol === 'pi-jsonl-rpc' ? isPiDelta(row) : row.protocol === 'codex-app-server' ? isCodexDelta(row) : row.protocol === 'acp'
   ? row.event === 'session/update' && row.detail?.kind === 'known' && ['agent_message_chunk', 'agent_thought_chunk'].includes(row.detail.notification?.update?.sessionUpdate) && row.detail.notification.update.content?.type === 'text' && !!row.detail.notification.update.content.text
   : row.record?.type === 'message_update' && ['text_delta', 'thinking_delta'].includes(row.record.assistantMessageEvent?.type) && typeof row.record.assistantMessageEvent.delta === 'string' && !!row.record.assistantMessageEvent.delta
-const starts = rows => piLinux ? piStarts(rows) : values.agent === 'codex' ? codexStarts(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
-const ends = rows => piLinux ? piEnds(rows) : values.agent === 'codex' ? codexEnds(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
+const starts = rows => openCodeLinux ? openCodeView.openCodeStarts(rows) : piLinux ? piStarts(rows) : values.agent === 'codex' ? codexStarts(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt' : row.record?.type === 'agent_start')
+const ends = rows => openCodeLinux ? openCodeView.openCodeEnds(rows) : piLinux ? piEnds(rows) : values.agent === 'codex' ? codexEnds(rows) : rows.filter(row => row.protocol === 'acp' ? row.event === 'session/prompt/response' : row.record?.type === 'agent_end')
 async function piReplayNativeInventory(view) {
   const path = view.ready.session_file
   const before = await piSourceMetadata(path, false)
@@ -1043,6 +1108,14 @@ async function settledReplay(args, original, submit, originalRequest = requestId
       counts.prompt_writes = rows.filter(row => row.event === 'write_intent' && row.detail.command === 'prompt')
       counts.user_echoes = rows.filter(row => row.event === 'native_record' && row.detail.frame.type === 'message_end' && row.detail.frame.message.role === 'user')
       counts.native = await piReplayNativeInventory(view)
+    }
+    if (openCodeLinux) {
+      const result = native(await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, 'replay-observation-' + randomUUID())]))
+      const worker = result.workers.find(worker => worker.source.native_session_id === actual.native_session_id)
+      assert.ok(worker && worker.native_session.format === 'opencode-sqlite-v2')
+      counts.prompt_writes = rows.filter(row => row.event === 'write_intent')
+      counts.user_echoes = rows.filter(row => row.event === 'input_delivered')
+      counts.native = { native_id: worker.native_session.native_id, message_ids: worker.native_session.messages.map(row => ({ id: row.id, seq: row.seq, type: row.type })), input_receipts: worker.native_session.input_receipts }
     }
     return counts
   }))
@@ -1109,7 +1182,7 @@ async function stopWorker(worker, active = false, observedEvents) {
   const args = ['worker', 'stop', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
   const priorEvents = linuxStructured ? observedEvents ?? await events(worker.source) : null
   if (observedEvents) assert.equal(sources.get(worker.source.native_session_id)?.rows, observedEvents, 'active_stop_observation_is_not_current')
-  if (linuxStructured && active) assert.equal(ends(priorEvents).length, 0, 'turn_ended_before_active_stop')
+  if (linuxStructured && active && !openCodeLinux) assert.equal(ends(priorEvents).length, 0, 'turn_ended_before_active_stop')
   if (!piLinux) stopRequests.set(worker.dispatch_id, { args, request_id: requestId(args) })
   let checkpoint
   if (linuxStructured) {
@@ -1118,6 +1191,14 @@ async function stopWorker(worker, active = false, observedEvents) {
       const cycle = piViews.get(worker.source.native_session_id).active
       assert.ok(cycle && !cycle.end && !cycle.settled, 'pi_active_stop_checkpoint_is_not_running')
       Object.assign(checkpoint, { cid: cycle.cid, running: true })
+    }
+    if (openCodeLinux) {
+      checkpoint.monotonic_ms = priorEvents.at(-1).monotonic_ms
+      if (active) {
+        const cycle = openCodeViews.get(worker.source.native_session_id).active
+        assert.ok(cycle?.start && cycle.deltas.length > 0 && !cycle.end, 'opencode_active_stop_checkpoint_missing')
+        checkpoint.cid = cycle.cid
+      }
     }
   }
   else {
@@ -1130,8 +1211,8 @@ async function stopWorker(worker, active = false, observedEvents) {
   worker.stop = { request_id: requestId(args), args, reply, proof: null, active_stop_requested: active }
   let proof
   if (linuxStructured) {
-    const rows = await events(worker.source), view = (piLinux ? piViews : codexViews).get(worker.source.native_session_id)
-    proof = piLinux ? originalPiTreeProof(rows, view, checkpoint, active) : originalLinuxTreeProof(rows, view, checkpoint)
+    const rows = await events(worker.source), view = structuredViews.get(worker.source.native_session_id)
+    proof = openCodeLinux ? openCodeView.originalOpenCodeTreeProof(rows, view, checkpoint, active) : piLinux ? originalPiTreeProof(rows, view, checkpoint, active) : originalLinuxTreeProof(rows, view, checkpoint)
     for (const expected of [view.custody.root, view.custody.nativeState.identity]) {
       const observed = await observeSource('incarnation', expected.pid)
       assert.ok(observed.absent || JSON.stringify(observed.incarnation) !== JSON.stringify(expected), 'original_stopped_process_identity_still_alive')
@@ -1167,8 +1248,8 @@ async function readTranscript(dispatch) {
 
 async function readCompleteNativeFile(value) {
   assert.ok(within(dataRoot, await ordinary(value.path, false)), 'native_rollout_outside_private_root')
-  if (piLinux) await piSourceMetadata(value.path, false)
-  const handle = await open(value.path, piLinux ? constants.O_RDONLY | constants.O_NOFOLLOW : 'r')
+  if (piLinux || openCodeLinux) await piSourceMetadata(value.path, false)
+  const handle = await open(value.path, piLinux || openCodeLinux ? constants.O_RDONLY | constants.O_NOFOLLOW : 'r')
   let bytes
   try {
     const before = await handle.stat({ bigint: true })
@@ -1603,7 +1684,7 @@ async function continueLead(prepared) {
     let window
     for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
       await events(follow.source); await events(child.source)
-      const leadView = piViews.get(follow.source.native_session_id), childView = piViews.get(child.source.native_session_id)
+      const leadView = structuredViews.get(follow.source.native_session_id), childView = structuredViews.get(child.source.native_session_id)
       if (leadView.cycles[0]?.idle && !childView.cycles[0]?.idle) {
         const record = await sessionRecord((await queryWorker(follow.dispatch_id)).source)
         assert.equal(record.lease.claimStatus, 'live', 'lead_released_before_mid_run_followup')
@@ -1620,7 +1701,7 @@ async function continueLead(prepared) {
     assert.equal(followup, prepared.followup)
     await appendConversation(followup)
     await events(child.source)
-    assert.ok(!piViews.get(child.source.native_session_id).cycles[0]?.idle, 'grandchild_completed_before_mid_run_send')
+    assert.ok(!structuredViews.get(child.source.native_session_id).cycles[0]?.idle, 'grandchild_completed_before_mid_run_send')
     assert.equal((await sessionRecord((await queryWorker(follow.dispatch_id)).source)).lease.claimStatus, 'live')
     sendRequest = randomUUID()
     sendArgs = ['worker', 'send', '--controller', controller, '--dispatch', follow.dispatch_id, '--input-file', followupFile, '--request-id', sendRequest]
@@ -1674,10 +1755,10 @@ async function continueLead(prepared) {
   assert.deepEqual(binding.body.blocks, [{ type: 'text', text: followup }])
   for (const deadline = Date.now() + 600_000; Date.now() < deadline;) {
     const rows = await events(follow.source)
-    if (ends(rows).length >= 2 && piViews.get(follow.source.native_session_id).cycles[1]?.idle) break
+    if (ends(rows).length >= 2 && structuredViews.get(follow.source.native_session_id).cycles[1]?.idle) break
     await delay(250)
   }
-  const rows = await events(follow.source), view = piViews.get(follow.source.native_session_id)
+  const rows = await events(follow.source), view = structuredViews.get(follow.source.native_session_id)
   assert.equal(starts(rows).length, 2); assert.equal(ends(rows).length, 2)
   assert.equal(view.cycles[1].cid, binding.operation_id)
   assert.ok(view.cycles[1].idle && view.cycles[1].deltas.length > 0, 'lead_second_turn_has_no_actual_continuation_output')
@@ -1741,6 +1822,170 @@ async function finishRun(target, continuation) {
   return view
 }
 
+async function openCodeRequestBinding(worker, request) {
+  const shown = object((await cli(['request', 'show', '--controller', controller, '--request-id', request])).result)
+  assert.equal(shown.state, 'completed', 'opencode_original_request_not_complete')
+  const input = object(shown.current_input), binding = object(input.binding)
+  assert.equal(input.state, 'accepted'); assert.equal(input.request_id, request)
+  assert.equal(binding.parent_request, request); assert.equal(binding.dispatch_id, worker.dispatch_id)
+  assert.equal(binding.session_id, worker.source.native_session_id); assert.equal(binding.runtime_fence, worker.source.fence)
+  assert.equal(binding.agent, 'opencode'); assert.equal(input.operation_id, binding.operation_id)
+  return binding
+}
+async function verifyOpenCodeResult(worker, original, bindings) {
+  assert.equal(worker.native_session.format, 'opencode-sqlite-v2')
+  assert.equal(worker.native_session.native_id, sessionOwners.get(original.source.native_session_id).head.handle.nativeId)
+  const view = openCodeViews.get(original.source.native_session_id)
+  assert.equal(worker.provider_events.format, 'opencode-acp-events-ndjson')
+  assert.equal(worker.provider_events.path, original.source.provider_events)
+  const bytes = await readCompleteNativeFile(worker.provider_events), witness = witnesses.get(original.source.provider_events)
+  assert.equal(worker.provider_events.source_version, witness.source_version)
+  assert.ok(bytes.equals(witness.bytes), 'opencode_export_trace_differs_from_actual_source')
+  const validated = await observeSource('validate-opencode-trace', bytes)
+  assert.equal(validated.record_count, worker.provider_events.record_count)
+  assert.equal(validated.record_count, sources.get(original.source.native_session_id).rows.length)
+  const fold = foldJournal({ sessionId: worker.journal.session_id, epoch: worker.journal.epoch })
+  const journal = new DatabaseSync(original.source.journal_database, { readOnly: true, allowExtension: false })
+  try {
+    for (const row of worker.journal.rows) {
+      const stored = journal.prepare('SELECT ts,row_json FROM journal_rows WHERE session_id=? AND epoch=? AND seq=?').get(worker.journal.session_id, row.epoch, row.seq)
+      assert.ok(stored && stored.ts === row.ts); assert.deepEqual(JSON.parse(stored.row_json), row.row)
+      assert.equal(fold.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
+    }
+  } finally { journal.close() }
+  const actual = fold.finish()
+  assert.equal(actual.damage, null); assert.equal(actual.newer, null)
+  assert.equal(actual.state.submissions.size, bindings.length)
+  const opened = []
+  const receipts = worker.native_session.input_receipts
+  assert.ok(Array.isArray(receipts)); assert.equal(receipts.length, bindings.length)
+  const delivered = view.cycles.filter(cycle => cycle.delivery)
+  assert.equal(delivered.length, bindings.length)
+  assert.equal(new Set(delivered.map(cycle => cycle.requestId)).size, bindings.length)
+  assert.equal(new Set(delivered.map(cycle => cycle.delivery.detail.message_id)).size, bindings.length)
+  for (const binding of bindings) {
+    const matching = receipts.filter(receipt => receipt.receipt.payload.binding.operation_id === binding.operation_id)
+    assert.equal(matching.length, 1)
+    const receipt = matching[0], cycle = delivered.find(cycle => cycle.cid === binding.operation_id)
+    assert.ok(cycle)
+    assert.deepEqual(receipt.receipt.payload.binding, binding)
+    assert.equal(receipt.receipt.payload.request_id, cycle.requestId)
+    assert.equal(receipt.message_id, cycle.delivery.detail.message_id); assert.equal(receipt.sequence, cycle.delivery.detail.seq)
+    const user = worker.native_session.messages.find(message => message.id === receipt.message_id)
+    assert.equal(user?.type, 'user'); assert.equal(user.seq, receipt.sequence)
+    assert.equal(user.data.text, binding.body.blocks.map(block => block.text).join('\n'))
+    const status = object((await cli(['request', 'show', '--controller', controller, '--request-id', binding.parent_request])).result.current_input)
+    assert.equal(status.state, 'accepted'); assert.deepEqual(status.binding, binding)
+    const submission = actual.state.submissions.get(binding.operation_id), journalReceipt = actual.state.receipts.get(binding.operation_id)
+    assert.deepEqual(submission, status.submission); assert.equal(submission?.dispatchState, 'accepted')
+    assert.equal(submission.fence, binding.runtime_fence); assert.equal(submission.clientMessageId, binding.operation_id)
+    assert.equal(submission.payloadFingerprint, observer.module.fingerprintOpenCodeBody(binding.session_id, binding.body))
+    assert.equal(journalReceipt?.clientMessageId, binding.operation_id); assert.equal(journalReceipt?.providerItemId, submission.providerItemId)
+    assert.equal(journalReceipt.cursor.epoch, worker.journal.epoch)
+    const item = actual.state.items.get(submission.providerItemId)
+    assert.equal(item?.body.kind, 'message'); assert.equal(item.body.role, 'user'); assert.equal(item.agentId, undefined)
+    assert.deepEqual(item.body.blocks, binding.body.blocks); assert.equal(actual.state.itemFences.get(item.itemId), binding.runtime_fence)
+    const turns = [...actual.state.items.values()].filter(value => !value.agentId && value.body.kind === 'turn' && value.body.userItemId === item.itemId && actual.state.itemFences.get(value.itemId) === binding.runtime_fence)
+    assert.equal(turns.length, 1, 'opencode_actual_journal_opener_missing')
+    opened.push({ operation_id: binding.operation_id, request_id: cycle.requestId, message_id: receipt.message_id, turn_item_id: turns[0].itemId, user_item_id: item.itemId })
+  }
+  if (worker.native_session.availability === 'complete') {
+    const latest = receipts.at(-1), assistant = worker.native_session.messages.find(row => row.id === worker.native_session.final.assistant_message_id)
+    assert.equal(worker.native_session.final.input_message_id, latest.message_id)
+    assert.ok(assistant?.type === 'assistant' && assistant.seq > latest.sequence)
+    assert.equal(worker.native_session.final.text, assistant.data.content.filter(block => block.type === 'text').map(block => block.text).join(''))
+    const opener = opened.find(row => row.message_id === latest.message_id), turn = actual.state.items.get(opener.turn_item_id)
+    assert.equal(turn.body.state, 'completed'); assert.equal(turn.body.outcome, 'success')
+    const finalMessages = [...actual.state.items.values()].filter(item => !item.agentId && item.body.kind === 'message' && item.body.role === 'assistant' && item.turnScope?.kind === 'turn' && item.turnScope.turnItemId === turn.itemId && item.body.blocks.filter(block => block.type === 'text').map(block => block.text).join('') === worker.native_session.final.text)
+    assert.equal(finalMessages.length, 1, 'opencode_final_journal_assistant_missing')
+  }
+  check('opencode.actual_bound_native_result', { session_id: original.source.native_session_id, native_id: worker.native_session.native_id, availability: worker.native_session.availability, input_ids: receipts.map(receipt => ({ operation_id: receipt.receipt.payload.binding.operation_id, request_id: receipt.receipt.payload.request_id, message_id: receipt.message_id, sequence: receipt.sequence })), journal_openers: opened, mac_verification: 'PERFORMED_BY_INSTALLED_PRODUCT_RESULT_READER' })
+}
+async function runOpenCodeSingle(prepared, startArgs) {
+  assert.equal(runFlow, false); assert.equal(report.started_workers.length, 1)
+  const worker = report.started_workers[0], bindings = []
+  const originalIdentity = identity(worker.source)
+  const live = async () => {
+    const observed = await queryWorker(worker.dispatch_id), value = object(observed.source)
+    assert.deepEqual(identity(value), originalIdentity)
+    assert.equal(value.claim_status, 'live'); assert.equal(value.worker_state, 'ready'); assert.equal(value.release_state, 'not_requested')
+    assert.deepEqual(value.process, worker.source.process); assert.deepEqual(value.provider_link, worker.source.provider_link)
+    assert.deepEqual(value.custody, worker.source.custody)
+    assert.equal(value.runtime_epoch, runtimeId)
+    await verifyOpenCodeMetadata(); await verifyRuntimeCustodian()
+    return observed
+  }
+  const waitCycle = async (ordinal, phase) => {
+    for (const deadline = Date.now() + 600_000;;) {
+      const rows = await events(worker.source), cycle = openCodeViews.get(worker.source.native_session_id).cycles[ordinal]
+      if (phase === 'complete' && cycle?.idle && cycle.delivery) return cycle
+      if (phase === 'active' && cycle?.deltas.length && !cycle.end) return { cycle, rows }
+      if (phase === 'active' && cycle?.end) return null
+      assert.ok(Date.now() < deadline, 'opencode_single_original_cycle_not_observed')
+      await delay(100)
+    }
+  }
+  const collect = async name => {
+    const result = await cli(['task', 'result', '--controller', controller, '--task', rootTask, '--output-dir', join(inputDirectory, name + '-' + randomUUID())])
+    const workers = native(result).workers
+    assert.equal(workers.length, 1); assert.equal(workers[0].worker.dispatchId, worker.dispatch_id)
+    await events(worker.source)
+    await verifyOpenCodeResult(workers[0], worker, bindings)
+    await save(name + '.json', result)
+    return { reply: result, worker: workers[0] }
+  }
+  const send = async file => {
+    await live()
+    const request = randomUUID(), args = ['worker', 'send', '--controller', controller, '--dispatch', worker.dispatch_id, '--input-file', file, '--request-id', request]
+    const pending = cli(args).then(reply => ({ reply }), error => ({ error }))
+    issuedWork.push(pending)
+    return { request, args, pending }
+  }
+  const accept = async sent => {
+    const outcome = await sent.pending
+    if (outcome.error) throw outcome.error
+    const binding = await openCodeRequestBinding(worker, sent.request)
+    bindings.push(binding)
+    return { ...sent, reply: outcome.reply, binding }
+  }
+  await waitCycle(0, 'complete')
+  bindings.push(await openCodeRequestBinding(worker, worker.request_id))
+  const first = await collect('single-first-complete')
+  assert.equal(first.worker.native_session.availability, 'complete')
+  await live()
+  const second = await send(worker.actual_input_file)
+  const activeSecond = await waitCycle(1, 'active')
+  assert.ok(activeSecond, 'opencode_same_body_steer_window_not_observed')
+  const third = await send(worker.actual_input_file)
+  const secondAccepted = await accept(second), thirdAccepted = await accept(third)
+  await waitCycle(2, 'complete')
+  assert.notEqual(secondAccepted.binding.operation_id, thirdAccepted.binding.operation_id)
+  const thirdResult = await collect('single-third-complete')
+  assert.equal(thirdResult.worker.native_session.availability, 'complete')
+  assert.equal(thirdResult.worker.native_session.input_receipts.at(-1).receipt.payload.binding.operation_id, thirdAccepted.binding.operation_id)
+  await settledReplay(thirdAccepted.args, thirdAccepted.reply)
+  await settledReplay(startArgs, worker.start)
+  const fourth = await send(join(inputDirectory, 'followup.txt'))
+  const fourthAccepted = await accept(fourth)
+  const activeFourth = await waitCycle(3, 'active')
+  if (activeFourth) await stopWorker(worker, true, activeFourth.rows)
+  else {
+    report.checks.push({ name: 'opencode_single_active_stop', status: 'NOT_RUN', reason: 'original_fourth_turn_completed_before_active_observation' })
+    await stopWorker(worker)
+  }
+  await events(worker.source)
+  const final = await collect('single-final-stopped')
+  await save('actual-result.json', thirdResult.reply)
+  const releaseArgs = ['worker', 'release', '--controller', controller, '--dispatch', worker.dispatch_id, '--request-id', randomUUID()]
+  releaseRequests.set(worker.dispatch_id, { args: releaseArgs, request_id: requestId(releaseArgs) })
+  const released = await cli(releaseArgs)
+  assert.equal(native(released).state, 'released')
+  await settledReplay(releaseArgs, released)
+  report.single = { first_complete: 'single-first-complete.json', latest_complete: 'single-third-complete.json', final_stopped: 'single-final-stopped.json', final_availability: final.worker.native_session.availability, second: secondAccepted.binding, third: thirdAccepted.binding, fourth: fourthAccepted.binding, active_stop: activeFourth ? 'OBSERVED' : 'NOT_RUN', concurrency: 'NOT_RUN', siblings: 'NOT_RUN', automatic_run_delivery: 'NOT_RUN', unknown_effect_fault: 'NOT_RUN' }
+  report.provider_events = [...sources.values()]
+  await finishBusinessReview()
+}
+
 async function run() {
   candidate = await ordinary(values.candidate, true)
   dataRoot = await ordinary(values['data-root'], true)
@@ -1761,7 +2006,7 @@ async function run() {
   assert.ok(['cli', 'combined'].includes(edition), 'unknown_candidate_edition')
   assert.match(revision, /^[0-9a-f]{40}$/)
   assert.equal(execFileSync(swa, ['--version'], { encoding: 'utf8', timeout: 30_000, windowsHide: true }).trim(), revision)
-  if (piLinux) await verifyPiDriverSources(revision)
+  if (piLinux || openCodeLinux) await verifyPiDriverSources(revision)
   Object.assign(report, { source_revision: revision, candidate, data_root: dataRoot, project, endpoint: values.endpoint, platform, edition })
   check('candidate.version', revision)
   inputDirectory = join(project, '.verification', 'swa-product-input')
@@ -1787,7 +2032,12 @@ async function run() {
   }
   assert.equal(source.originals.length, 4)
   assert.deepEqual(source.originals.map(original => original.path), publicFiles)
-  const prepared = publicCase(workers, source.originals)
+  const prepared = openCodeSingle ? openCodeSingleCase(source.originals) : publicCase(workers, source.originals)
+  if (openCodeSingle) {
+    assert.equal(project, '/workspace/swa-public-opencode-single-20261023/public-project')
+    assert.equal(Object.hasOwn(spec, 'execution_policy'), false)
+    assert.equal(Object.hasOwn(spec, 'initial_workers'), false)
+  }
   assert.deepEqual(spec, prepared.spec, 'public_task_spec_changed')
   assert.deepEqual(inputs, prepared.inputs.map(({ name, file }) => ({ name, input_file: join(inputDirectory, file) })), 'public_input_manifest_changed')
   for (const input of prepared.inputs) {
@@ -1802,7 +2052,7 @@ async function run() {
   approvedFiles.set(specFile, specText)
   check('public.originals', { revision: source.revision, max_workers: workers })
   if (!token) throw new NotRun('current_project_grant_token_not_supplied_no_human_bootstrap')
-  if (!(process.platform === 'win32' && ['pi', 'opencode'].includes(values.agent) || process.platform === 'linux' && values.agent === 'codex' && values.model === 'gpt-5.5' || piLinux)) throw new NotRun('selected_platform_and_agent_source_contract_not_implemented')
+  if (!(process.platform === 'win32' && ['pi', 'opencode'].includes(values.agent) || process.platform === 'linux' && values.agent === 'codex' && values.model === 'gpt-5.5' || piLinux || openCodeLinux)) throw new NotRun('selected_platform_and_agent_source_contract_not_implemented')
   requireRuntime = createRequire(join(candidate, 'runtime', 'package.json'))
   resultLimits = object(requireRuntime('./task-result.cjs').resultObservationLimits)
   for (const key of ['source_bytes', 'result_bytes', 'response_bytes']) assert.ok(Number.isSafeInteger(resultLimits[key]) && resultLimits[key] > 0)
@@ -1812,12 +2062,13 @@ async function run() {
     const processNode = await stat('/proc/self/exe', { bigint: true }), installedNode = await stat(node, { bigint: true })
     assert.equal(`${processNode.dev}:${processNode.ino}`, `${installedNode.dev}:${installedNode.ino}`, 'actual_running_node_inode_differs_from_installation')
     const toolEnvironment = { PATH: process.env.PATH ?? '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: output, TMPDIR: output }
-    const prepared = execFileSync(node, [fileURLToPath(new URL('./prepare-source-observer.mjs', import.meta.url)), '--candidate', candidate, '--source-repository', await ordinary(values['source-repository'], true), '--output', join(output, 'source-observer'), ...(piLinux ? ['--profile', 'stepfun-pi-n3'] : [])], { timeout: 90_000, maxBuffer: 4096, encoding: 'utf8', stdio: 'pipe', env: toolEnvironment })
+    const prepared = execFileSync(node, [fileURLToPath(new URL('./prepare-source-observer.mjs', import.meta.url)), '--candidate', candidate, '--source-repository', await ordinary(values['source-repository'], true), '--output', join(output, 'source-observer'), ...(openCodeLinux ? ['--profile', 'stepfun-opencode'] : piLinux ? ['--profile', 'stepfun-pi-n3'] : [])], { timeout: 90_000, maxBuffer: 4096, encoding: 'utf8', stdio: 'pipe', env: toolEnvironment })
     const root = join(output, 'source-observer'), manifestFile = await ordinary(join(root, 'manifest.json'), false)
     assert.ok((await stat(manifestFile)).size <= 4 * 1024 * 1024)
     observer = { root, home: join(root, 'observer-home'), manifest: JSON.parse(await readFile(manifestFile, 'utf8')) }
     assert.equal(observer.manifest.installed_revision, revision)
     if (piLinux) assert.equal(observer.manifest.profile, 'stepfun-pi-n3')
+    if (openCodeLinux) assert.equal(observer.manifest.profile, 'stepfun-opencode')
     await mkdir(observer.home, { mode: 0o700 })
     await verifyObserverSources()
     if (piLinux) {
@@ -1831,6 +2082,11 @@ async function run() {
       assert.equal(typeof observer.module.fingerprintPiBody, 'function')
       assert.equal(typeof observer.module.validatePiSource, 'function')
       assert.equal(typeof observer.module.getPendingWorkerStartRecovery, 'function')
+      await verifyObserverSources()
+    }
+    if (openCodeLinux) {
+      observer.module = createRequire(observer.manifest.observer.path)(observer.manifest.observer.path)
+      for (const name of ['decodeOpenCodeRecord', 'observeIncarnation', 'observeRuntimeCustodian', 'matchesOpenCodeJournalItem', 'fingerprintOpenCodeBody', 'validateOpenCodeTrace', 'getPendingWorkerStartRecovery']) assert.equal(typeof observer.module[name], 'function')
       await verifyObserverSources()
     }
     check('same_revision_read_only_observer', JSON.parse(prepared))
@@ -1850,6 +2106,7 @@ async function run() {
     assert.equal(daemonOwner.start_ticks, daemon.swa_service_job.daemon_start_ticks)
     assert.equal(daemonOwner.owner_uid, daemon.swa_service_job.owner_uid)
     if (piLinux) piLaunch = await readPiOwnedLaunch(revision, daemon)
+    if (openCodeLinux) openCodeLaunch = await readOpenCodeOwnedLaunch(revision, daemon)
   } else {
     const security = requireRuntime('@orca/windows-security')
     daemonOwner = security.readServiceJobMember(daemon.swa_service_job.name, daemon.pid)
@@ -1872,6 +2129,7 @@ async function run() {
       start_ticks: ownership.serve_start_ticks, owner_uid: ownership.owner_uid }
     assert.deepEqual(await observeSource('incarnation', serve.pid), { absent: false, incarnation: serve }, 'linux_owned_serve_changed')
     if (piLinux) assert.deepEqual(serve, piLaunch.serve)
+    if (openCodeLinux) assert.deepEqual(serve, openCodeLaunch.serve)
     serviceCustodianBinding = { runtime_pid: serviceReady.value.runtime_pid, serve, daemon: daemonOwner,
       node_executable: join(candidate, 'node/node'), serve_executable: join(candidate, 'swa') }
     runtimeCustodian = await observeSource('runtime-custodian', JSON.stringify(serviceCustodianBinding))
@@ -1908,6 +2166,16 @@ async function run() {
     await verifyPiMetadata()
     check('pi.independent_owned_source', { launch: piLaunch.source, source_home: piSourceHome, provider: 'stepfun', model: values.model, auth: 'NOT_READ_BY_DRIVER' })
   }
+  if (openCodeLinux) {
+    assert.equal(capabilities.agents.filter(row => row.id === 'opencode').length, 1)
+    assert.equal(agent.installed.version, '2.0.31'); assert.equal(agent.configured.provider, 'stepfun')
+    assert.equal(agent.configured.account_source, 'opencode-native-stepfun-api-key')
+    assert.equal(agent.control.questions.status, 'unavailable')
+    openCodeExecutable = await ordinary(agent.installed.executable, false)
+    assert.equal(openCodeExecutable, agent.installed.executable)
+    await verifyOpenCodeMetadata()
+    check('opencode.independent_owned_source', { launch: openCodeLaunch.source, source_home: openCodeSourceHome, provider: 'stepfun', model: values.model, auth: 'NOT_READ_BY_DRIVER' })
+  }
   Object.assign(report, { runtime_id: runtimeId, capabilities })
   if (!runFlow) {
     const opened = await cli(['controller', 'open', '--project', values['project-id'], '--workdir', project, '--request-id', randomUUID()])
@@ -1933,7 +2201,7 @@ async function run() {
     let body = await readFile(input.input_file, 'utf8')
     assert.equal(body, prepared.inputs[index].body, 'public_worker_body_changed_before_start')
     const publicCopy = '\n同一固定公开原文的复核副本，不增加事实：\n' + JSON.stringify(source.originals) + '\n'
-    while (Buffer.byteLength(body) <= 2 * 16 * 1024) body += publicCopy
+    while (!openCodeSingle && Buffer.byteLength(body) <= 2 * 16 * 1024) body += publicCopy
     const file = join(inputDirectory, input.name + '-chunked-' + randomUUID() + '.txt')
     await writeFile(file, body, { flag: 'wx', mode: 0o600 })
     approvedFiles.set(file, body)
@@ -2015,6 +2283,13 @@ async function run() {
   if (!runFlow) for (const worker of report.started_workers) worker.source = object((await queryWorker(worker.dispatch_id)).source)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.native_session_id)).size, workers)
   assert.equal(new Set(report.started_workers.map(worker => worker.source.process.pid)).size, workers)
+  if (openCodeLinux) {
+    await workerEventLists()
+    assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
+    assert.equal(new Set([...sessionOwners.values()].map(owner => owner.head.handle.nativeId)).size, workers)
+    assert.equal(new Set([...openCodeViews.values()].map(view => view.nativeCLI.pid)).size, workers)
+    if (openCodeSingle) return runOpenCodeSingle(prepared, startArgs[0])
+  }
   if (piLinux) {
     if (!runFlow) await workerEventLists()
     assert.equal(new Set([...sessionOwners.values()].map(owner => owner.binding.session_id)).size, workers)
@@ -2031,13 +2306,13 @@ async function run() {
       if (quotaError) throw quotaError
       lists ??= await workerEventLists()
       assert.ok(lists.every(rows => (runFlow ? starts(rows).length <= 1 : starts(rows).length === 1) && ends(rows).length === 0), 'turn_ended_before_all_worker_overlap')
-      if (piLinux) for (const worker of report.started_workers) {
-        const cycle = piViews.get(worker.source.native_session_id).active
+      if (piLinux || openCodeLinux) for (const worker of report.started_workers) {
+        const cycle = structuredViews.get(worker.source.native_session_id).active
         assert.ok((runFlow && !cycle) || (cycle && !cycle.end && !cycle.settled), 'pi_run_ended_before_all_worker_overlap')
       }
       const deltas = lists.map(rows => rows.filter(isDelta))
       if (lists.every(rows => starts(rows).length === 1) && deltas.every(rows => rows.length >= 2)) {
-        if (piLinux) for (const worker of report.started_workers) assert.ok(piViews.get(worker.source.native_session_id).active, 'pi_overlap_has_no_active_cycle')
+        if (piLinux || openCodeLinux) for (const worker of report.started_workers) assert.ok(structuredViews.get(worker.source.native_session_id).active, 'native_overlap_has_no_active_cycle')
         const from = Math.max(...deltas.map(rows => rows[0].monotonic_ms)), to = Math.min(...deltas.map(rows => rows.at(-1).monotonic_ms))
         if (from < to && (!runFlow || quotaReady)) {
           report.overlap = { from_monotonic_ms: from, to_monotonic_ms: to, evidence: deltas.map(rows => ({ first: rows[0], last: rows.at(-1) })) }
@@ -2062,7 +2337,7 @@ async function run() {
   for (const worker of survivors) {
     assert.deepEqual(identity((await queryWorker(worker.dispatch_id)).source), identity(worker.source))
     const rows = await events(worker.source)
-    if (!piLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
+    if (!piLinux && !openCodeLinux) assert.ok(rows.some(row => isDelta(row) && Date.parse(row.observed_at) > stoppedAt), 'survivor_has_no_actual_output_after_stop')
   }
   let follow, followup, input, continuation
   if (runFlow) {
@@ -2132,10 +2407,11 @@ async function run() {
   if (runFlow) {
     for (const worker of survivors) {
       await events(worker.source)
-      const view = piViews.get(worker.source.native_session_id), proof = target.stop.proof
-      assert.deepEqual(view.custody.owner, piViews.get(target.source.native_session_id).custody.owner)
+      const view = structuredViews.get(worker.source.native_session_id), proof = target.stop.proof
+      assert.deepEqual(view.custody.owner, structuredViews.get(target.source.native_session_id).custody.owner)
       assert.ok(view.cycles[0].idle)
-      assert.ok(sources.get(worker.source.native_session_id).rows.some(row => isPiDelta(row) && row.monotonic_ms > proof.stop_intent.monotonic_ms && row.monotonic_ms > proof.row.monotonic_ms), 'pi_survivor_has_no_same_daemon_monotonic_delta_after_full_stop')
+      const checkpoint = openCodeLinux ? proof.stop_checkpoint : proof.stop_intent
+      assert.ok(sources.get(worker.source.native_session_id).rows.some(row => isDelta(row) && row.monotonic_ms > checkpoint.monotonic_ms && row.monotonic_ms > proof.row.monotonic_ms), 'survivor_has_no_same_daemon_monotonic_delta_after_full_stop')
     }
   }
   for (const worker of report.started_workers) worker.transcript = await readTranscript(worker.dispatch_id)
@@ -2197,6 +2473,10 @@ async function run() {
       assert.equal(worker.provider_events.record_count, actualRows.length)
       await verifyPiJournalInputs(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding], piNative)
     }
+    if (openCodeLinux) {
+      await events(original.source)
+      await verifyOpenCodeResult(worker, original, original.dispatch_id === follow.dispatch_id ? [binding, input.swa_input_binding] : [binding])
+    }
     if (runFlow) {
       verifyExecution(worker.execution, worker.source, original !== target)
       assert.equal(worker.execution.delivery.state, 'sent')
@@ -2214,7 +2494,7 @@ async function run() {
   const stoppedOutput = result.workers.find(worker => worker.worker.dispatchId === target.dispatch_id)
   const mark = stoppedOutput.journal.rows.find(row => row.row.kind === 'tombstone' && row.row.stopEvent?.reason === 'evict' && row.row.stopEvent.at >= stoppedAt)
   assert.ok(mark, 'actual_active_stop_mark_missing')
-  if (!piLinux) for (const worker of survivors) assert.ok((await events(worker.source)).some(row => isDelta(row) && Date.parse(row.observed_at) > mark.row.stopEvent.at), 'survivor_has_no_actual_delta_after_native_stop_mark')
+  if (!piLinux && !openCodeLinux) for (const worker of survivors) assert.ok((await events(worker.source)).some(row => isDelta(row) && Date.parse(row.observed_at) > mark.row.stopEvent.at), 'survivor_has_no_actual_delta_after_native_stop_mark')
   const fold = foldJournal({ sessionId: stoppedOutput.journal.session_id, epoch: stoppedOutput.journal.epoch })
   for (const row of stoppedOutput.journal.rows.filter(row => row.seq < mark.seq)) assert.equal(fold.add({ seq: row.seq, ts: row.ts, rowJson: JSON.stringify(row.row) }), true)
   const prior = fold.finish()
@@ -2223,7 +2503,9 @@ async function run() {
   assert.ok([...prior.state.items.values()].some(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId && item.body.state === 'running'))
   const endedTurn = stoppedOutput.journal.snapshot.items.find(item => item.body.kind === 'turn' && item.body.turnId === mark.row.stopEvent.turnId)
   const stoppedEvents = await events(target.source)
-  const actualAbort = stoppedEvents.find(row => row.protocol === 'pi-jsonl-rpc'
+  const actualAbort = stoppedEvents.find(row => openCodeLinux
+    ? row.event === 'native_record' && row.sequence > target.stop.proof.checkpoint.sequence && row.detail.frame.id === openCodeViews.get(target.source.native_session_id).cycles.find(cycle => cycle.cid === target.stop.proof.checkpoint.cid)?.requestId && row.detail.frame.result?.stopReason === 'cancelled'
+    : row.protocol === 'pi-jsonl-rpc'
     ? row.event === 'native_record' && row.detail.frame.type === 'message_end' && row.detail.frame.message.role === 'assistant' && row.detail.frame.message.stopReason === 'aborted' && row.sequence > target.stop.proof.stop_intent.sequence
     : Date.parse(row.observed_at) >= mark.row.stopEvent.at && (row.protocol === 'codex-app-server' ? row.event === 'notification' && row.detail.method === 'turn/completed' && row.detail.frame.params.turn.status === 'interrupted' : row.protocol === 'acp' ? row.event === 'session/prompt/response' && row.detail.response.stopReason === 'cancelled' : row.record?.type === 'message_end' && row.record.message?.role === 'assistant' && row.record.message.stopReason === 'aborted'))
   if (piLinux) {
@@ -2247,6 +2529,10 @@ async function run() {
     await settledReplay(args, released)
   }
   }
+  await finishBusinessReview()
+}
+
+async function finishBusinessReview() {
   report.provider_events = [...sources.values()]
   await save('before-business-review.json', report)
   process.stdout.write(JSON.stringify({ state: 'ACTUAL_BUSINESS_REVIEW_REQUIRED', result: join(output, 'actual-result.json'), evidence: join(output, 'before-business-review.json'), input: '当前真实Reviewer/Agent读取成果后提供一行JSON：reviewed_result绝对路径、checked_result实际审阅说明；此输入不取得human身份。' }) + '\n')
@@ -2273,9 +2559,9 @@ async function run() {
   report.business_review = review
   report.status = 'EXECUTED_ASSERTIONS_COMPLETED'
   report.model_execution = 'ACTUAL_NATIVE_EVENTS_OBSERVED'
-  report.scenarios = { cli_multiworker: 'REQUIRES_INDEPENDENT_REVIEW', run_recursive_role_handoff: runFlow ? 'REQUIRES_INDEPENDENT_REVIEW_OF_SAME_RUN_ACTUAL_RESULTS' : 'NOT_RUN',
+  report.scenarios = { cli_multiworker: openCodeSingle ? 'NOT_RUN' : 'REQUIRES_INDEPENDENT_REVIEW', single_long_session: openCodeSingle ? 'REQUIRES_INDEPENDENT_REVIEW' : 'NOT_RUN', run_recursive_role_handoff: runFlow ? 'REQUIRES_INDEPENDENT_REVIEW_OF_SAME_RUN_ACTUAL_RESULTS' : 'NOT_RUN',
     parent_continuation: runFlow && workers === 6 ? 'REQUIRES_INDEPENDENT_REVIEW_OF_REAL_CHILD_MAIL_AND_LEAD_SECOND_TURN' : 'NOT_RUN',
-    input_chunk_observation: piLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_PI_CHUNKS' : 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
+    input_chunk_observation: openCodeLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_ACP_CHUNKS_AND_NATIVE_BINDINGS' : piLinux ? 'REQUIRES_INDEPENDENT_REVIEW_OF_ACTUAL_PI_CHUNKS' : 'NOT_RUN_WITHOUT_PER_CHUNK_NATIVE_OBSERVATION', lost_effect_fault: openCodeLinux ? 'NOT_RUN' : 'INCONCLUSIVE', expired_or_cross_project_permission: 'NOT_RUN', human_cross_creator: 'NOT_RUN', gui_consistency: 'NOT_RUN', service_shutdown: 'REQUIRES_ACTUAL_SERVICE_OWNER_EVIDENCE' }
   completed = true
 }
 

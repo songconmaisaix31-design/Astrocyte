@@ -38,6 +38,9 @@ const piProfile = "stepfun-pi-n3"
 const piN4Profile = "stepfun-pi-n4"
 const piN6Profile = "stepfun-pi-n6"
 const piQuestionsProfile = "stepfun-pi-questions"
+const openCodeSingleProfile = "stepfun-opencode-single"
+const openCodeN4Profile = "stepfun-opencode-n4"
+const openCodeN6Profile = "stepfun-opencode-n6"
 
 var stages = []string{"session", "space", "project", "observe-settings", "observe-grant", "observe-token", "execute-settings", "execute-grant", "execute-token", "revoke"}
 var actions = []string{"read_context", "observe", "start", "send", "stop"}
@@ -52,6 +55,7 @@ type executionPackage struct {
 	Endpoint           string            `json:"endpoint"`
 	CodexSourceHome    string            `json:"codex_api_key_home,omitempty"`
 	PiSourceHome       string            `json:"pi_source_home,omitempty"`
+	OpenCodeSourceHome string            `json:"opencode_api_key_home,omitempty"`
 	ProtectedRoots     []string          `json:"protected_roots"`
 	SourceRepository   string            `json:"source_repository"`
 	EvidenceRoot       string            `json:"evidence_root"`
@@ -93,6 +97,10 @@ type profileScope struct {
 	projectRoot                                                            string
 }
 
+func isOpenCodeProfile(profile string) bool {
+	return profile == openCodeSingleProfile || profile == openCodeN4Profile || profile == openCodeN6Profile
+}
+
 func fixedProfile(p executionPackage) (profileScope, error) {
 	if p.Profile != piQuestionsProfile && (p.OwnerHandoffFile != "" || p.OwnerHandoffSHA != "" || p.QuestionGUIFile != "" || p.QuestionGUISHA != "" || p.QuestionScenario != "" || p.BaselineFile != "" || p.BaselineSHA != "") {
 		return profileScope{}, fail("question_fields_require_question_profile")
@@ -120,11 +128,11 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 	}
 	switch p.Profile {
 	case "":
-		if p.PiSourceHome != "" {
+		if p.PiSourceHome != "" || p.OpenCodeSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
 	case piProfile, piN4Profile, piN6Profile, piQuestionsProfile:
-		if p.CodexSourceHome != "" {
+		if p.CodexSourceHome != "" || p.OpenCodeSourceHome != "" {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
 		if p.Profile == piN4Profile {
@@ -144,6 +152,24 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 			scope.project, scope.space = "SWA StepFun Pi questions public stats", "SWA StepFun Pi questions public stats 20261023"
 			scope.dependencies = append(scope.dependencies, "public-case-definition.mjs", "pi-question-event-view.mjs")
 		}
+	case openCodeSingleProfile, openCodeN4Profile, openCodeN6Profile:
+		if p.CodexSourceHome != "" || p.PiSourceHome != "" {
+			return profileScope{}, fail("source_does_not_match_profile")
+		}
+		label := "SINGLE"
+		scope.workers, scope.projectRoot = 1, "/workspace/swa-public-opencode-single-20261023/public-project"
+		if p.Profile == openCodeN4Profile {
+			label = "N4"
+			scope.workers, scope.projectRoot = 4, "/workspace/swa-public-case-20261023-n4/public-project"
+		} else if p.Profile == openCodeN6Profile {
+			label = "N6"
+			scope.workers, scope.projectRoot = 6, "/workspace/swa-public-case-20261023-n6/public-project"
+		}
+		scope.agent, scope.model, scope.caller = "opencode", "stepfun/step-3.5-flash", "swa-stepfun-opencode-"+strings.ToLower(label)+"-20261023"
+		scope.project, scope.space = "SWA StepFun OpenCode "+label+" public stats", "SWA StepFun OpenCode "+label+" public stats 20261023"
+		scope.version, scope.provider, scope.accountSource = "2.0.31", "stepfun", "opencode-native-stepfun-api-key"
+		scope.sourceName, scope.sourceHome = "opencode_api_key_home", p.OpenCodeSourceHome
+		scope.dependencies = append(scope.dependencies, "opencode-event-view.mjs", "opencode-source-observer-entry.ts")
 	default:
 		return profileScope{}, fail("reviewed_profile_required")
 	}
@@ -359,6 +385,11 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 	for _, root := range []string{p.Installation, p.SourceRepository, p.Project} {
 		if inside(root, p.EvidenceRoot) || inside(p.EvidenceRoot, root) {
 			return nil, fail("evidence_overlaps_input_root")
+		}
+	}
+	if isOpenCodeProfile(p.Profile) {
+		if err := openCodeOwnerLayout(*p); err != nil {
+			return nil, err
 		}
 	}
 	for _, name := range []string{"VERSION", "PLATFORM", "EDITION"} {
@@ -578,6 +609,8 @@ func checkPublic(p executionPackage) (json.RawMessage, error) {
 	args := []string{consumer, definitionPath(p), p.Project, strconv.Itoa(scope.workers)}
 	if p.Profile == piQuestionsProfile {
 		args = append(args, "native-questions")
+	} else if p.Profile == openCodeSingleProfile {
+		args = append(args, "opencode-single")
 	}
 	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
 	cmd.Env = childEnvironment(p.EvidenceRoot)
@@ -649,6 +682,10 @@ type piLaunchWire struct {
 	launchBase
 	PiSourceHome string `json:"pi_source_home"`
 }
+type openCodeLaunchWire struct {
+	launchBase
+	OpenCodeSourceHome string `json:"opencode_api_key_home"`
+}
 
 // 本轮只消费原 owner 已保存的非秘密交接，不生成或改写其来源记录。
 type questionOwnerHandoffWire struct {
@@ -708,7 +745,7 @@ func readWire(path string, value any, expectedSHA string) error {
 	}
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	switch value.(type) {
-	case *launchWire, *piLaunchWire, *questionOwnerHandoffWire:
+	case *launchWire, *piLaunchWire, *openCodeLaunchWire, *questionOwnerHandoffWire:
 		decoder.DisallowUnknownFields()
 	}
 	if err = decoder.Decode(value); err != nil || decoder.Decode(new(any)) != io.EOF {
@@ -716,6 +753,13 @@ func readWire(path string, value any, expectedSHA string) error {
 	}
 	return nil
 }
+func openCodeOwnerLayout(p executionPackage) error {
+	if filepath.Base(p.DataRoot) != "data" || p.EvidenceRoot != filepath.Join(filepath.Dir(p.DataRoot), "evidence") || p.ReadyFile != filepath.Join(p.EvidenceRoot, "ready.json") || p.ProofFile != filepath.Join(p.EvidenceRoot, "live-proof.json") || p.LaunchFile != filepath.Join(p.EvidenceRoot, "opencode-launch-record.json") {
+		return fail("fixed_opencode_owner_layout_required")
+	}
+	return plain(p.EvidenceRoot, true, true)
+}
+
 func serviceIdentity(p executionPackage) (string, error) {
 	scope, err := fixedProfile(p)
 	if err != nil || scope.sourceHome == "" {
@@ -729,6 +773,11 @@ func serviceIdentity(p executionPackage) (string, error) {
 	if p.ExpectedRuntimeID == "" || p.ReadySHA == "" || p.ProofSHA == "" || p.LaunchSHA == "" {
 		return "", fail("fixed_service_baseline_required")
 	}
+	if scope.agent == "opencode" {
+		if err := openCodeOwnerLayout(p); err != nil {
+			return "", err
+		}
+	}
 	if err := readWire(p.ReadyFile, &ready, p.ReadySHA); err != nil {
 		return "", err
 	}
@@ -741,6 +790,12 @@ func serviceIdentity(p executionPackage) (string, error) {
 			return "", err
 		}
 		launch, sourceHome = record.launchBase, record.PiSourceHome
+	} else if scope.agent == "opencode" {
+		var record openCodeLaunchWire
+		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
+			return "", err
+		}
+		launch, sourceHome = record.launchBase, record.OpenCodeSourceHome
 	} else {
 		var record launchWire
 		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
@@ -1112,6 +1167,8 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 	args = append(args, "--service-ready-record", p.ReadyFile, "--service-ready-sha256", p.ReadySHA)
 	if scope.agent == "pi" {
 		args = append(args, "--pi-launch-record", p.LaunchFile, "--pi-launch-sha256", p.LaunchSHA)
+	} else if scope.agent == "opencode" {
+		args = append(args, "--opencode-launch-record", p.LaunchFile, "--opencode-launch-sha256", p.LaunchSHA)
 	}
 	if p.Profile == piQuestionsProfile {
 		args = append(args, "--owner-handoff", p.OwnerHandoffFile, "--gui-driver", p.QuestionGUIFile, "--gui-sha256", p.QuestionGUISHA, "--question-scenario", p.QuestionScenario)
@@ -1349,11 +1406,12 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 					Source   string `json:"account_source"`
 				} `json:"configured"`
 				Control struct {
-					Start observation `json:"start"`
-					Send  observation `json:"send"`
-					Stop  observation `json:"stop"`
-					Read  observation `json:"read"`
-					Tools observation `json:"tools"`
+					Start     observation `json:"start"`
+					Send      observation `json:"send"`
+					Stop      observation `json:"stop"`
+					Read      observation `json:"read"`
+					Tools     observation `json:"tools"`
+					Questions observation `json:"questions"`
 				} `json:"control"`
 			} `json:"agents"`
 		} `json:"result"`
@@ -1367,18 +1425,24 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 		if agent.ID == scope.agent {
 			matches++
 			found = agent.Installed.Status == "available" && agent.Installed.Version == scope.version && agent.Configured.Status == "available" && agent.Configured.Model == scope.model && agent.Configured.Provider == scope.provider && agent.Configured.Source == scope.accountSource
-			if scope.agent == "pi" {
+			if scope.agent == "pi" || scope.agent == "opencode" {
 				found = found && agent.Registered.Status == "available" && agent.Enabled.Status == "available" && agent.Control.Start.Status == "available" && agent.Control.Send.Status == "available" && agent.Control.Stop.Status == "available" && plain(agent.Installed.Executable, false, false) == nil
 				for _, status := range []string{agent.Launchable.Status, agent.Control.Read.Status, agent.Control.Tools.Status} {
 					found = found && (status == "unknown" || status == "available")
 				}
-				report["pi_live_capabilities"] = map[string]string{"launchable": agent.Launchable.Status, "read": agent.Control.Read.Status, "tools": agent.Control.Tools.Status}
+				if scope.agent == "opencode" {
+					found = found && agent.Control.Questions.Status == "unavailable"
+				}
+				report[scope.agent+"_live_capabilities"] = map[string]string{"launchable": agent.Launchable.Status, "read": agent.Control.Read.Status, "tools": agent.Control.Tools.Status}
 			}
 		}
 	}
-	if !found || scope.agent == "pi" && matches != 1 {
+	if !found || (scope.agent == "pi" || scope.agent == "opencode") && matches != 1 {
 		if scope.agent == "pi" {
 			return report, fail("pi_source_not_observed_available")
+		}
+		if scope.agent == "opencode" {
+			return report, fail("opencode_source_not_observed_available")
 		}
 		return report, fail("codex_source_not_observed_available")
 	}
@@ -1411,7 +1475,7 @@ func execute(p executionPackage) (report map[string]any, returned error) {
 
 func run() int {
 	mode := flag.String("mode", "", "prepare, verify, or execute-authorized; execute requires prior user delegation for the scope and a current verified technical package")
-	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex), stepfun-pi-n3/n4/n6, or stepfun-pi-questions; prepare writes a separate .prepared.json")
+	packageFile := flag.String("package", "", "absolute private JSON package path; profile is empty (Codex), stepfun-pi-n3/n4/n6, stepfun-pi-questions, or stepfun-opencode-single/n4/n6; prepare writes a separate .prepared.json")
 	flag.Parse()
 	if flag.NArg() != 0 || (*mode != "prepare" && *mode != "verify" && *mode != "execute-authorized") {
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INVALID_ARGUMENTS", "http_calls": 0})
@@ -1428,7 +1492,7 @@ func run() int {
 		return 2
 	}
 	if *mode == "prepare" {
-		if p.Profile == piQuestionsProfile {
+		if p.Profile == piQuestionsProfile || isOpenCodeProfile(p.Profile) {
 			// 原 owner 已独占创建该根；仅明确同源且仍活动的服务可共享其证据目录。
 			if len(missing) == 0 {
 				_, err = serviceIdentity(p)
@@ -1460,6 +1524,10 @@ func run() int {
 		}
 	}
 	if *mode == "prepare" {
+		if isOpenCodeProfile(p.Profile) && len(missing) != 0 {
+			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INCOMPLETE_NO_AUTH", "missing": missing, "http_calls": 0, "model_calls": 0})
+			return 3
+		}
 		if err = persist(*packageFile+".prepared.json", p); err == nil {
 			err = persist(filepath.Join(p.EvidenceRoot, "public-input-proof.json"), public)
 		}

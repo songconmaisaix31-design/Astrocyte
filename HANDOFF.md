@@ -6,7 +6,7 @@
 
 当前正式安装已推进到 S392 `392cb0c9459f0b88440f14b366be2435f48816c5` / `/workspace/swa-linux-installs/swa-linux-combined-392cb0c9-n46-08`；完整check/race/build/install/D12和Root服务检查已独审。新N4仍FAIL，四Worker自然结束并释放不等于成果验收通过。当前诊断与业务补审见STATUS首部及 `.verification/cloud-setup/n4-392cb0c9-failure/`；驱动live→released旧快照、活动观察过晚和ToolsOff preamble要求不可用工具须一起处理，不能只修首断言后完整重建。原owner已结束、准确daemon/helper也经原认证正常EOF/idle结束；Root没有持有活动服务，原全树UNKNOWN不变，旧请求不得重放。
 
-当前工作归属：`n4_392_failure`与`n4_392_review`已完成驱动源码及局部验证；`remaining_delivery_audit`的原生提问/继续67源及后继11路径安装物问答验收驱动均已获原reviewer源码接受，驱动10个tracked文件已提交推送 `cf0fb73c532ad33b718a415dd0084adeff97cf7f`，ignored GUI单独固定SHA。`environment_access_check`与原06的Windows16生产源码及局部结果已最终接受并释放写域，最终清单为promotion-source-r4/a99e4371；Root按精确16域提交，保必要patch空行context的diff-check2例外，其他15为0。`opencode_stepfun_compatibility`与原reviewer的产品41源已静态接受并通过Root最终严格检查，03清单d80caee0冻结；原owner准备实际journal六例ignored工具并实施已审driver的15个非重叠路径，connection须待产品41提交后修改。Root独占Git提交/tag/推送、STATUS/HANDOFF和实际服务操作。新增四根可恢复副本调查与唯一check-only已独审，工具 `.verification/cloud-setup/space-392-20261023-12/remove-reviewed-copies.py` SHA1123dfd4，仅Root收到用户明确新增授权后才能执行一次 `--remove-reviewed-four`；当前尚未批准、operation-01未创建。之前获准的四根已删除，不能混淆两批。所有正式安装、原归档、任务数据、凭据与失败证据保持保全。下面S0177及更早段落是历史，不作为当前安装或活动进程状态。
+当前工作归属：N4驱动修复、原生提问/继续及问答安装验收驱动已完成原负责人的源码和局部检查；问答驱动提交cf0fb73c。Windows16源已获原06接受并提交325909f8，实际pnpm补丁消费23生成文件逐字匹配；必要patch上下文的五行空白例外保留原退出2。OpenCode产品41源提交d001987b，真实journal六例通过；后继driver及导入收尾共17源已获原reviewer最终接受，Root最终严格类型检查为0。原负责人均保持可接续，Root独占Git提交/tag/推送、STATUS/HANDOFF和实际服务操作。用户已明确批准新增四根，Root唯一执行工具1123dfd4的 `--remove-reviewed-four` 成功，operation-01结果2c0ab7b0、四根全部删除；当前可用约3.70GB，重新完整比较与保护首末检查通过，详细结果见STATUS。两批已获准清理均已完成，不再次执行工具。I392、原归档、任务数据、凭据与失败证据保持保全。下面阶段记录按发生时保留，当前源码与下一动作以本段和最新增量为准。
 
 N4 driver 六源已完成独审并提交推送为 `aba8cbd007d30342a665eddac8edeef846be63f7`，最后 `run-installed.mjs` SHA 为 `02f6ecd8e0b19644865d7a3ed8016ff77f0ba281d3102189444c11e73994728d`。Root追加核查修正了completed回执清除效果未知的问题：只认原命令明确终态，query-only仍UNKNOWN；两组真实历史负例与原外层成功例离线验证通过。记录见STATUS和`resolver-r2-review.md`，不能复用第一版resolver接受或把局部结果写成新N4成功。四preamble源已获原N4 reviewer限定接受，disabled/upstream四真实任务逐字保持。问答r2修复了跨Worker待答误报未知、首次await前原ask缺scope、释放后历史lease误拒，整批源码与5局部/8Pi/strict0/4真实历史及16反例结果已独审接受，清单SHA667aaa53。Go分段仍仅静态接受，实际模型问答、GUI、安装和Windows未验。共享产品写域已结束本轮问答修改，后继OpenCode按原bb3c8573计划串行接续。
 
@@ -18,7 +18,7 @@ OpenCode原初始化FAIL和历史WAL具体转变/原SQL未知均保留。恢复�
 
 当前负责人及互斥写域：
 
-最新增量：Windows16已提交推送325909f8，最终清单a99e4371。OpenCode产品41的源码、r3 strict0及真实journal六例6/6已获原reviewer限定接受，实际result27a6ec48、tool9b205026、manifestd80caee0；274生产输入及41源全匹配，原件journal-publication-01和journal-execution-01。Root本次精确提交41后释放connection端口供已审driver使用；后继必须重冻并检查driver全部16域。driver已准的非重叠15域正在实施，当前没有CLI/模型执行或新完整构建。
+最新增量（2026-10-24，北京时间）：OpenCode后继17源已冻结并独审接受，清单 `driver-source-sha256-02.txt` SHA e553ebbae672ac03c65b552fc7906508b2a735c5fc7c46ac15ff1b305814dad9，报告driver-source-review-02.md SHA114b9295。准确15个tracked和2个既有ignored工具，唯一追加产品路径为native-opencode-import.ts；它与connection的最终Root严格检查0/无诊断，原39产品及Windows16源均不变。helper来源/准备顺序、单bundle初始化状态、失败树证据、Windows直接脚本来源以及导入首副因已修复；原journal六例274输入不含新改的import，结果可复用。下一步Root提交并推送统一S后，按已核workflow_dispatch的build_candidate=true、probe_visual_studio=false执行Windows正式候选，核实际head_sha及唯一目标job；Linux先核最新空间和依赖，再做完整检查、helper编译及构建/新安装。新I准备后才运行准确S观察器/初始化bundle、无prompt初始化及single/N4/N6，不能用I392替代新S。当前无活动CLI/模型或新完整构建，旧失败与未知不改判。
 
 - separation：Attention Mirror 独立仓、显式提取器配置与资料适配器测试，当前已独立审查接受；任务 `swa-product-separation-20261023.md`。
 - capabilities：能力投影、角色/讨论 GUI、SWA 专用 Go server 与 HTTP/SQLite 闭包，已完成局部验证及依赖核对。
