@@ -1,5 +1,9 @@
 # 当前状态
 
+用户已明确授权原四目录删除及空间检查并要求开始全量构建。Root唯一执行冻结79cbb235工具，`space-next-b464-20261024-14/operation-01/result.json` SHA `44179eea67de7ed723777fe6da7384c1d9ef849e3ccfdc6314b020978f321f99` 实际0/COMPLETED，准确四根removed、remaining为空，重新完整恢复比较和保护首末检查通过。实际可用522358784→3948990464字节，净释放3426631680字节；当前IB464、全部归档、备份、数据、凭据、原产物和失败证据保留。原只读check-only及工具内历史预算保留，Root另加的3836955728门已按fresh实际通过。附加保护JSON按字节cmp因键顺序不同退出1，完整结构比较和54文件/安装身份核对一致；准确原因与局部结果见同目录root-readback.md，没有重跑删除。
+
+本次完整候选固定attempt为n46-10，执行计划 `.verification/cloud-setup/linux-full-n46-10-plan.md` 及继任装内脚本已获原reviewer限定接受。Root从文档提交后的干净S准备新同S helper，按实际容量执行完整build/archive/extract/strict install/D12/service，Windows同S使用原正式无模型workflow。原B464未变check/race和已审A/B/C局部结果按原来源限定复用，完整builder自身strict/原生/Web/Go/闭包检查实际执行。当前构建与安装结果另存新S独占目录，以下B464仍是最新已验证安装，不提前称新S通过。
+
 最新已验证安装来源（2026-10-24，北京时间）为 `b464e70ba95967eb1ecc216f5f3d25407f1ecc66`。Linux完整check、race、helper、build、archive、extract、strict install均退出0；装内D12为12通过、0失败、0跳过，服务、静态资产及完整观察进程退出检查通过。准确安装为 `/workspace/swa-linux-installs/swa-linux-combined-b464e70b-n46-09`，归档SHA256为 `befc3dd553ad52de3e036c9221614ef1ec81c5c06ec481c3a2844e608f05f9f1`。检查原件在 `.verification/cloud-setup/linux-candidate-b464e70b/`，安装原件在 `.verification/swa-linux/evidence/b464e70ba95967eb1ecc216f5f3d25407f1ecc66-combined-n46-09/`，均已获独立接受。S85fe依赖清单失败及最小复现保留；B464仅将漏同步的runtime @types/node清单值改为已锁定的24.19.2。
 
 当前任务是[产品拆分与完整任务交付](tasks/swa-evolution-20261023.md)，分支 `integration/swa-task-cards`，交付入口为[草稿 PR #6](https://github.com/songconmaisaix31-design/swarm-anything/pull/6)。Astrocyte、Attention Mirror 已拆为独立本地仓库，SWA 保留必要集成。后继驱动、ToolsOff提示、原生提问/继续和OpenCode接入均已进入B464安装；实际Linux/Windows N4与N6、问答、OpenCode模型及同Run GUI验收仍未完成。旧S392四份业务成果FAIL、旧N4完整树UNKNOWN及Windows历史未知均保留，不由新安装检查覆盖。
@@ -10,7 +14,7 @@ B464新N4在观察器准备阶段退出1，没有创建Worker或调用模型。�
 
 Windows B464正式run `40047585581` / job `120732737576` 成功，后继只读取证来源 `e4f384ea8e05c4cb48b85d8d71faa777fa62cecb` / run `40050709973` / job `120742518827` 也成功并获原reviewer接受。固定CI reader校验21份白名单原件，10阶段exit均0，installed_version准确B464，内部archive SHA256为 `42909a812d9c9c08b363d803e8de0ef1db85d6a1c71a5b83e0730a4da4e51f46`。普通进程三场景、自然EOF、已知子身份续踪、两次native与两次完整CIM退出观察通过；原TaskCreate/SQLite、TTY/pipe长输入、服务退出证据一致。安装checker记录psutil_license_verified=true，许可证原文字节未保留；本机未下载候选或独立重算候选ZIP，kernel_tree_exit_proven=false。两项阳性失败分支仍NOT_RUN，旧101e首错与D17先前身份记录缺口不补称通过。准确摘要 `.verification/cloud-setup/windows-formal-retained-e4f384ea-actual/summary.json` SHA256为 `168a98c12cb1247a883669c7f8533b27ef620e4593bc299d216b120049c5bfa6`。
 
-用户另行批准的 `dist/swa-linux-combined-0177b951-n46-07` 已通过准确工具abf0d112唯一删除，结果 `space-b464-20261024-13/operation-01/result.json` SHA256 `427ae0ce34697b8db606f4e6cca75e7e0969acb615844e53d4af345efef218cd`，实际释放413954048字节；保护首末一致。此前四副本清理记录如下。当前I B464、全部归档、任务数据、凭据、备份、编译输入输出和失败证据保留。下一四个旧副本的恢复调查、工具审查和Root唯一只读预检已通过，`space-next-b464-20261024-14/check-01/result.json` SHA `5aeeadae320bc6541387558e9e96a1aa09ff60fe6b21e572e40dc6496273ab73`，removed为空；准确四根预计释放3426807808字节，删除授权已请求但尚未获得。新的安装按实际阶段重新核容量；仅准备工具变化时可复用B464完整check/race，原报告来源不改写，新helper/build/install/D12/service仍须实际执行，范围见 `.verification/cloud-setup/next-installed-validation-after-b464.md`。
+用户此前批准的 `dist/swa-linux-combined-0177b951-n46-07` 已通过准确工具abf0d112唯一删除，结果 `space-b464-20261024-13/operation-01/result.json` SHA256 `427ae0ce34697b8db606f4e6cca75e7e0969acb615844e53d4af345efef218cd`，实际释放413954048字节。后继四根的只读check-only结果5aeeadae、预测3426807808字节保留；用户后续单独授权后的实际删除结果见当前状态首部，不将预测替代净值。当前IB464及保护范围继续保持，新安装各阶段重新核容量；准确检查复用与必要新执行范围见 `.verification/cloud-setup/next-installed-validation-after-b464.md`。
 
 准备工具修复已提交并推送为 `20f0070c9c7a21244ce6b28088ecf3ad4830fec7`。同提交Linux授权helper编译退出0，GoBuildInfo记录modified=false；准确二进制与配套consumer来源、权限已独立核验，报告为 `.verification/cloud-setup/linux-candidate-20f0070c/helper-01/report.md`。该helper未执行授权或模型，也没有20f新安装。
 
@@ -26,7 +30,7 @@ C静态审查修正了真实close与日志落盘时点混同、CIM及保存等�
 
 最终B464到当前tracked差分仅为验收工具及状态/决定文档；产品、依赖、发行构建器、Go产品包和Web未变。B464未受影响的check/race结果按原来源保留，新增适用A/B局部结果如上。准确55cd5c14569195ec440cdb32ca24ff55386ca567的Linux helper已按已审计划编译退出0并获独立结果接受，GoBuildInfo为该S、linux/amd64、modified=false；helper未执行。当前结果入口为 `.verification/cloud-setup/linux-helper-source-20261024-result.md`。实际首末可用空间533655552→410124288字节，峰值未测；后继文档提交不改写该二进制来源，也不因此重编译。新build/install/D12/service及真实模型仍必须执行。
 
-用户于2026-10-24（北京时间）明确确认Windows阶跃星辰GitHub Actions Secret“未配置”，原名称待答项已关闭；此前名称查询403保留为历史访问限制，未据403推断配置状态。Windows真实模型验收保持NOT_RUN，待实际受控来源齐备；A/B/C源码接入已接受，新的Windows原生运行及N4/N6仍未验。准确平台计划见 `.verification/cloud-setup/windows-n46-platform-adaptation-plan.md` 和 `windows-n46-owner-gui-plan.md`。已有Windows正式无模型检查不能代替真实Agent验收。Linux独立来源和原授权保持；新增四目录删除授权仍待答，此前获批目录已删除，不再次执行。
+用户于2026-10-24（北京时间）明确确认Windows阶跃星辰GitHub Actions Secret“未配置”，原名称待答项已关闭；此前名称查询403保留为历史访问限制。Windows真实模型验收保持NOT_RUN，待实际受控来源齐备；A/B/C源码接入已接受，新的Windows模型N4/N6仍未验。准确平台计划见 `.verification/cloud-setup/windows-n46-platform-adaptation-plan.md` 和 `windows-n46-owner-gui-plan.md`。正式无模型完整构建不依赖该Secret，可按本轮用户授权执行；其结果不能代替真实Agent验收。Linux独立来源和原授权保持，四目录授权已单独取得并实际完成，不再次删除。
 
 只读执行可行性检查确认，现有Windows CI同步等待PowerShell结束后才上传artifact，没有向运行中helper stdin写入审阅的入口。原driver写出真实成果后只等待stdin JSON，期限600秒；owner另持stdin，GUI还须连接原服务。架构x64和Secret本身不能补足这一交互条件。已请求连接可交互Windows环境或现成可访问SSH别名，未获答；不启动必然无法完成审阅的模型窗口，不以重跑或离线artifact代替原进程。此限制不阻止A/B源码和无模型准备。
 

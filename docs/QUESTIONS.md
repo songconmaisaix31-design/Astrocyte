@@ -1,10 +1,16 @@
 # 用户决定与待定项
 
+## 四个旧副本清理与全量构建（2026-10-24，北京时间，已确认）
+
+用户明确“开始全量构建，我已授权这4个目录的删除和空间检查”。授权对应此前列明的四根：`/workspace/swarm-anything/dist/swa-linux-combined-b464e70b-n46-09`、`/workspace/swa-linux-packages/swa-linux-combined-b464e70b-n46-09`、`/workspace/swa-linux-installs/swa-linux-combined-392cb0c9-n46-08`、`/workspace/swa-linux-installs/swa-linux-combined-11717767-codex-01`。这些删除已由Root唯一执行完成，实际结果见STATUS及space-next-b464-20261024-14/operation-01；当前IB464、归档、数据、凭据、备份与失败证据保留，不扩大到其他目录。
+
+在实际恢复比对、引用与容量检查通过后，从冻结的同一提交执行Linux与Windows完整候选构建及新安装的无模型检查。Windows真实模型仍受已确认Secret未配置和交互环境缺失约束；Linux原授权和后继N4/N6顺序保持。原未变check/race可按已审差分限定复用，但新产品包必须实际完整构建、安装和检查。每次失败先报告最小复现、根因证据与局部验证，再决定下一完整构建。
+
 ## Windows 阶跃星辰 Secret（2026-10-24，北京时间，已确认）
 
 用户对 Windows 真实阶跃星辰测试所需 GitHub Actions Secret 明确回复“未配置”。当前状态据用户答复记为未配置，关闭原Secret名称待答项；此前名称查询403只保留为历史访问限制，不作为判断配置状态的依据。Windows真实模型验收保持NOT_RUN，须待Windows实际受控来源和可交互审阅环境齐备后再启动。可交互Windows连接/已有SSH别名仍未答，已有Windows构建环境不等于该交互环境。
 
-Linux既有独立来源及StepFun验证授权保持；此答复不批准新增四个目录删除，也不改变公开固定项目、ToolsOff、预算或原请求规则。Linux完整构建仍需新增清理授权与实际空间门；不因Windows凭据未配置停止独立可做工作。
+Linux既有独立来源及StepFun验证授权保持，公开固定项目、ToolsOff、预算和原请求规则不变。四目录删除后来由用户单独明确授权，见本页最新决定；不由Secret答复推导该授权。Linux构建继续遵守实际空间门，不因Windows凭据未配置停止独立可做工作。
 
 ## 独立产品与完整任务交付（2026-10-23，已确认）
 
