@@ -17,16 +17,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/prometheus/procfs"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
-	"golang.org/x/sys/unix"
 )
 
 const caller = "swa-codex-n3-20261022"
@@ -80,6 +76,7 @@ type executionPackage struct {
 	HelperSHA          string            `json:"helper_binary_sha256,omitempty"`
 	NodeSHA            string            `json:"installed_node_sha256,omitempty"`
 	SWASHA             string            `json:"installed_swa_sha256,omitempty"`
+	HostConsumerSHA    string            `json:"windows_host_consumer_sha256,omitempty"`
 	Caller             string            `json:"caller"`
 	Agent              string            `json:"agent"`
 	Model              string            `json:"model"`
@@ -95,6 +92,10 @@ type profileScope struct {
 	dependencies                                                           []string
 	workers                                                                int
 	projectRoot                                                            string
+}
+
+type hostPathSet struct {
+	node, swa, server, platform, project string
 }
 
 func isOpenCodeProfile(profile string) bool {
@@ -124,7 +125,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		version: "0.163.0", provider: "openai", accountSource: "codex-native-api-key",
 		sourceName: "codex_api_key_home", sourceHome: p.CodexSourceHome,
 		dependencies: []string{"driver-failure.mjs", "codex-event-view.mjs", "prepare-source-observer.mjs", "source-observer-entry.ts", "extract-observer-source.py", "pi-event-view.mjs"},
-		workers:      3, projectRoot: publicRoot,
+		workers:      3,
 	}
 	switch p.Profile {
 	case "":
@@ -136,9 +137,9 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
 		if p.Profile == piN4Profile {
-			scope.workers, scope.projectRoot = 4, "/workspace/swa-public-case-20261023-n4/public-project"
+			scope.workers = 4
 		} else if p.Profile == piN6Profile {
-			scope.workers, scope.projectRoot = 6, "/workspace/swa-public-case-20261023-n6/public-project"
+			scope.workers = 6
 		}
 		count := strconv.Itoa(scope.workers)
 		scope.agent, scope.model, scope.caller = "pi", "stepfun/step-3.5-flash", "swa-stepfun-pi-n"+count+"-20261023"
@@ -147,7 +148,7 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 		scope.sourceName, scope.sourceHome = "pi_source_home", p.PiSourceHome
 		scope.dependencies = append(scope.dependencies, "pi-source-observer-entry.ts")
 		if p.Profile == piQuestionsProfile {
-			scope.workers, scope.projectRoot = 2, "/workspace/swa-public-question-case-20261023/public-project"
+			scope.workers = 2
 			scope.caller = "swa-stepfun-pi-questions-20261023"
 			scope.project, scope.space = "SWA StepFun Pi questions public stats", "SWA StepFun Pi questions public stats 20261023"
 			scope.dependencies = append(scope.dependencies, "public-case-definition.mjs", "pi-question-event-view.mjs")
@@ -157,13 +158,13 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 			return profileScope{}, fail("source_does_not_match_profile")
 		}
 		label := "SINGLE"
-		scope.workers, scope.projectRoot = 1, "/workspace/swa-public-opencode-single-20261023/public-project"
+		scope.workers = 1
 		if p.Profile == openCodeN4Profile {
 			label = "N4"
-			scope.workers, scope.projectRoot = 4, "/workspace/swa-public-case-20261023-n4/public-project"
+			scope.workers = 4
 		} else if p.Profile == openCodeN6Profile {
 			label = "N6"
-			scope.workers, scope.projectRoot = 6, "/workspace/swa-public-case-20261023-n6/public-project"
+			scope.workers = 6
 		}
 		scope.agent, scope.model, scope.caller = "opencode", "stepfun/step-3.5-flash", "swa-stepfun-opencode-"+strings.ToLower(label)+"-20261023"
 		scope.project, scope.space = "SWA StepFun OpenCode "+label+" public stats", "SWA StepFun OpenCode "+label+" public stats 20261023"
@@ -173,6 +174,11 @@ func fixedProfile(p executionPackage) (profileScope, error) {
 	default:
 		return profileScope{}, fail("reviewed_profile_required")
 	}
+	paths, err := hostPaths(p)
+	if err != nil {
+		return profileScope{}, err
+	}
+	scope.projectRoot = paths.project
 	if p.SchemaVersion != 1 || p.Caller != scope.caller || p.Agent != scope.agent || p.Model != scope.model || p.Workers != scope.workers || p.Project != scope.projectRoot {
 		return profileScope{}, fail("fixed_public_case_scope_required")
 	}
@@ -240,6 +246,9 @@ func plain(path string, directory, private bool) error {
 		return fail("ordinary_path_required")
 	}
 	for current := path; ; current = filepath.Dir(current) {
+		if err := checkHostPathComponent(current); err != nil {
+			return err
+		}
 		info, err := os.Lstat(current)
 		if err != nil || info.Mode()&os.ModeSymlink != 0 {
 			return fail("ordinary_path_required")
@@ -249,9 +258,8 @@ func plain(path string, directory, private bool) error {
 				return fail("ordinary_path_required")
 			}
 			if private {
-				owner, ok := info.Sys().(*syscall.Stat_t)
-				if !ok || owner.Uid != uint32(os.Getuid()) || info.Mode().Perm() != map[bool]os.FileMode{true: 0700, false: 0600}[directory] || info.Mode()&(os.ModeSetuid|os.ModeSetgid|os.ModeSticky) != 0 {
-					return fail("private_path_required")
+				if err := checkHostPrivatePath(path, directory); err != nil {
+					return err
 				}
 			}
 		} else if !info.IsDir() {
@@ -285,7 +293,7 @@ func persist(path string, value any) error {
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	file, err := createHostPrivateFile(path)
 	if err != nil {
 		return err
 	}
@@ -304,9 +312,6 @@ func checkedEndpoint(raw string) error {
 		return fail("explicit_loopback_origin_required")
 	}
 	return nil
-}
-func childEnvironment(home string) []string {
-	return []string{"PATH=/usr/bin:/bin", "LANG=C.UTF-8", "LC_ALL=C.UTF-8", "HOME=" + home, "TMPDIR=" + home, "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0"}
 }
 func driverPath(p executionPackage) string {
 	if p.Profile == piQuestionsProfile {
@@ -358,13 +363,17 @@ func gitSource(p executionPackage, relative, path string) error {
 }
 
 func offline(p *executionPackage, prepare bool) ([]string, error) {
-	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || runtime.Version() != requiredGo {
-		return nil, fail("reviewed_linux_go_required")
+	if err := checkHostRuntime(); err != nil {
+		return nil, err
 	}
 	if err := checkedEndpoint(p.Endpoint); err != nil {
 		return nil, err
 	}
 	scope, err := fixedProfile(*p)
+	if err != nil {
+		return nil, err
+	}
+	paths, err := hostPaths(*p)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +411,7 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 		return nil, fail("installation_version_mismatch")
 	}
 	platform, err := readBounded(filepath.Join(p.Installation, "PLATFORM"), 4096)
-	if err != nil || strings.TrimSpace(string(platform)) != "linux-x64-glibc" {
+	if err != nil || strings.TrimSpace(string(platform)) != paths.platform {
 		return nil, fail("installation_platform_mismatch")
 	}
 	edition, err := readBounded(filepath.Join(p.Installation, "EDITION"), 4096)
@@ -425,7 +434,7 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 		expected *string
 	}{
 		{driverPath(*p), &p.DriverSHA}, {definitionPath(*p), &p.DefinitionSHA}, {consumer, &p.ConsumerSHA}, {executable, &p.HelperSHA},
-		{filepath.Join(p.Installation, "node/node"), &p.NodeSHA}, {filepath.Join(p.Installation, "swa"), &p.SWASHA},
+		{paths.node, &p.NodeSHA}, {paths.swa, &p.SWASHA},
 	} {
 		if err := bindHash(entry.path, entry.expected, prepare); err != nil {
 			return nil, err
@@ -435,6 +444,9 @@ func offline(p *executionPackage, prepare bool) ([]string, error) {
 		return nil, err
 	}
 	if err := gitSource(*p, "tests/swa-product-acceptance/"+filepath.Base(driverPath(*p)), driverPath(*p)); err != nil {
+		return nil, err
+	}
+	if err := bindHostConsumer(p, prepare); err != nil {
 		return nil, err
 	}
 	dependencies := scope.dependencies
@@ -600,6 +612,10 @@ func checkPublic(p executionPackage) (json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
+	paths, err := hostPaths(p)
+	if err != nil {
+		return nil, err
+	}
 	consumer, err := consumerPath()
 	if err != nil {
 		return nil, err
@@ -612,7 +628,7 @@ func checkPublic(p executionPackage) (json.RawMessage, error) {
 	} else if p.Profile == openCodeSingleProfile {
 		args = append(args, "opencode-single")
 	}
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
+	cmd := exec.CommandContext(ctx, paths.node, args...)
 	cmd.Env = childEnvironment(p.EvidenceRoot)
 	stdout, err := runBounded(cmd, 64<<10, 64<<10)
 	if err != nil {
@@ -640,30 +656,6 @@ type readyWire struct {
 		Data      string `json:"dataRoot"`
 		Node      string `json:"node"`
 	} `json:"readiness"`
-}
-type proofWire struct {
-	Type    string `json:"type"`
-	Boot    string `json:"boot_id"`
-	RootPID int    `json:"root_pid"`
-	Members []struct {
-		PID   int    `json:"pid"`
-		Ticks uint64 `json:"start_ticks"`
-	} `json:"members"`
-}
-type daemonWire struct {
-	PID       int `json:"pid"`
-	Ownership struct {
-		Platform    string `json:"platform"`
-		Source      string `json:"source_revision"`
-		Install     string `json:"install_root"`
-		Data        string `json:"data_root"`
-		Boot        string `json:"boot_id"`
-		UID         string `json:"owner_uid"`
-		ServePID    int    `json:"serve_pid"`
-		ServeTicks  string `json:"serve_start_ticks"`
-		DaemonPID   int    `json:"daemon_pid"`
-		DaemonTicks string `json:"daemon_start_ticks"`
-	} `json:"swa_service_job"`
 }
 
 // This is only the original serve owner's non-secret spawn record, not a product wire.
@@ -758,151 +750,6 @@ func openCodeOwnerLayout(p executionPackage) error {
 		return fail("fixed_opencode_owner_layout_required")
 	}
 	return plain(p.EvidenceRoot, true, true)
-}
-
-func serviceIdentity(p executionPackage) (string, error) {
-	scope, err := fixedProfile(p)
-	if err != nil || scope.sourceHome == "" {
-		return "", fail("fixed_service_source_required")
-	}
-	var ready readyWire
-	var proof proofWire
-	var daemon daemonWire
-	var launch launchBase
-	var sourceHome string
-	if p.ExpectedRuntimeID == "" || p.ReadySHA == "" || p.ProofSHA == "" || p.LaunchSHA == "" {
-		return "", fail("fixed_service_baseline_required")
-	}
-	if scope.agent == "opencode" {
-		if err := openCodeOwnerLayout(p); err != nil {
-			return "", err
-		}
-	}
-	if err := readWire(p.ReadyFile, &ready, p.ReadySHA); err != nil {
-		return "", err
-	}
-	if err := readWire(p.ProofFile, &proof, p.ProofSHA); err != nil {
-		return "", err
-	}
-	if scope.agent == "pi" {
-		var record piLaunchWire
-		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
-			return "", err
-		}
-		launch, sourceHome = record.launchBase, record.PiSourceHome
-	} else if scope.agent == "opencode" {
-		var record openCodeLaunchWire
-		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
-			return "", err
-		}
-		launch, sourceHome = record.launchBase, record.OpenCodeSourceHome
-	} else {
-		var record launchWire
-		if err := readWire(p.LaunchFile, &record, p.LaunchSHA); err != nil {
-			return "", err
-		}
-		launch, sourceHome = record.launchBase, record.CodexSourceHome
-	}
-	if err := readWire(filepath.Join(p.DataRoot, "daemon/daemon-v49.pid"), &daemon, ""); err != nil {
-		return "", err
-	}
-	o := daemon.Ownership
-	if !ready.OK || ready.HTTP != p.Endpoint || ready.Data != p.DataRoot || ready.Install != p.Installation || ready.Readiness.Data != p.DataRoot || ready.Readiness.Node != filepath.Join(p.Installation, "node/node") || ready.Readiness.RuntimeID != p.ExpectedRuntimeID || proof.Type != "process_tree_observed" || o.Platform != "linux" || o.Source != p.Revision || o.Install != p.Installation || o.Data != p.DataRoot || o.Boot != proof.Boot || o.ServePID != proof.RootPID || o.DaemonPID != daemon.PID || o.UID != strconv.Itoa(os.Getuid()) || launch.Installation != p.Installation || launch.Revision != p.Revision || launch.DataRoot != p.DataRoot || launch.Endpoint != p.Endpoint || launch.ServePID != o.ServePID || sourceHome != scope.sourceHome {
-		return "", fail("actual_service_wire_mismatch")
-	}
-	if p.Profile == piQuestionsProfile {
-		owner, _, err := readQuestionOwnerHandoff(p)
-		if err != nil {
-			return "", err
-		}
-		if owner.ServePID != launch.ServePID {
-			return "", fail("question_owner_handoff_process_mismatch")
-		}
-	}
-	boot, err := readBounded("/proc/sys/kernel/random/boot_id", 4096)
-	if err != nil || strings.TrimSpace(string(boot)) != proof.Boot {
-		return "", fail("service_boot_mismatch")
-	}
-	var mount unix.Statfs_t
-	if unix.Statfs("/proc", &mount) != nil || mount.Type != unix.PROC_SUPER_MAGIC {
-		return "", fail("kernel_procfs_required")
-	}
-	fs, err := procfs.NewFS("/proc")
-	if err != nil {
-		return "", fail("kernel_procfs_required")
-	}
-	ticks := map[int]uint64{}
-	for _, member := range proof.Members {
-		if member.PID <= 0 || member.Ticks == 0 || ticks[member.PID] != 0 {
-			return "", fail("service_incarnation_incomplete")
-		}
-		ticks[member.PID] = member.Ticks
-	}
-	if strconv.FormatUint(ticks[o.ServePID], 10) != o.ServeTicks || strconv.FormatUint(ticks[daemon.PID], 10) != o.DaemonTicks {
-		return "", fail("service_incarnation_mismatch")
-	}
-	for pid, exe := range map[int]string{o.ServePID: filepath.Join(p.Installation, "swa"), ready.NodePID: filepath.Join(p.Installation, "node/node"), ready.ServerPID: filepath.Join(p.Installation, "server"), daemon.PID: filepath.Join(p.Installation, "node/node")} {
-		if ticks[pid] == 0 {
-			return "", fail("service_incarnation_incomplete")
-		}
-		process, err := fs.Proc(pid)
-		if err != nil {
-			return "", fail("service_process_unavailable")
-		}
-		before, err := process.Stat()
-		if err != nil || before.Starttime != ticks[pid] {
-			return "", fail("service_process_changed")
-		}
-		fd, err := unix.PidfdOpen(pid, 0)
-		if err != nil {
-			return "", fail("service_pidfd_unavailable")
-		}
-		checkErr := func() error {
-			after, err := process.Stat()
-			if err != nil || after.Starttime != before.Starttime {
-				return fail("service_process_changed")
-			}
-			status, err := process.NewStatus()
-			if err != nil || status.TGID != pid {
-				return fail("service_uid_unavailable")
-			}
-			for _, uid := range status.UIDs {
-				if uid != uint64(os.Getuid()) {
-					return fail("service_uid_mismatch")
-				}
-			}
-			info, err := os.Stat(filepath.Join("/proc", strconv.Itoa(pid)))
-			if err != nil {
-				return fail("service_uid_unavailable")
-			}
-			owner, ok := info.Sys().(*syscall.Stat_t)
-			if !ok || owner.Uid != uint32(os.Getuid()) {
-				return fail("service_uid_mismatch")
-			}
-			actual, err := process.Executable()
-			if err != nil || actual != exe {
-				return fail("service_executable_mismatch")
-			}
-			running, err := os.Stat(filepath.Join("/proc", strconv.Itoa(pid), "exe"))
-			if err != nil {
-				return fail("service_executable_unavailable")
-			}
-			installed, err := os.Stat(exe)
-			if err != nil || !os.SameFile(running, installed) {
-				return fail("service_executable_mismatch")
-			}
-			poll := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
-			if _, err := unix.Poll(poll, 0); err != nil || poll[0].Revents != 0 {
-				return fail("service_process_not_live")
-			}
-			return nil
-		}()
-		_ = unix.Close(fd)
-		if checkErr != nil {
-			return "", checkErr
-		}
-	}
-	return ready.Readiness.RuntimeID, nil
 }
 
 type humanClient struct {
@@ -1082,9 +929,13 @@ func (c *humanClient) token(stage string) (domain.AgentToken, error) {
 	return token, nil
 }
 func cliMetadata(p executionPackage, token, projectID, action string) (json.RawMessage, error) {
+	paths, err := hostPaths(p)
+	if err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "swa"), action, "--json")
+	cmd := exec.CommandContext(ctx, paths.swa, action, "--json")
 	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_ENDPOINT="+p.Endpoint, "SWA_PROJECT_ID="+projectID, "SWA_PROJECT_TOKEN="+token)
 	body, err := runBounded(cmd, 1<<20, 64<<10)
 	if err != nil || bytes.Contains(body, []byte(token)) {
@@ -1124,6 +975,10 @@ func runBounded(cmd *exec.Cmd, stdoutLimit, stderrLimit int) ([]byte, error) {
 }
 func runDriver(p executionPackage, projectID string, token domain.AgentToken) error {
 	scope, err := fixedProfile(p)
+	if err != nil {
+		return err
+	}
+	paths, err := hostPaths(p)
 	if err != nil {
 		return err
 	}
@@ -1176,7 +1031,7 @@ func runDriver(p executionPackage, projectID string, token domain.AgentToken) er
 			args = append(args, "--question-baseline-file", p.BaselineFile, "--question-baseline-sha256", p.BaselineSHA)
 		}
 	}
-	cmd := exec.CommandContext(ctx, filepath.Join(p.Installation, "node/node"), args...)
+	cmd := exec.CommandContext(ctx, paths.node, args...)
 	cmd.Env = append(childEnvironment(p.EvidenceRoot), "SWA_PROJECT_TOKEN="+token.Token)
 	cmd.Stdin = os.Stdin
 	stdout, err := cmd.StdoutPipe()
@@ -1504,7 +1359,7 @@ func run() int {
 				_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "INCOMPLETE_NO_AUTH", "missing": missing, "http_calls": 0, "model_calls": 0})
 				return 3
 			}
-		} else if err = os.Mkdir(p.EvidenceRoot, 0700); err != nil {
+		} else if err = createHostPrivateDirectory(p.EvidenceRoot); err != nil {
 			_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"status": "REFUSED_BEFORE_HTTP", "error": safeError(err), "http_calls": 0})
 			return 2
 		}

@@ -12,7 +12,15 @@ Windows B464正式run `40047585581` / job `120732737576` 成功，后继只读�
 
 用户另行批准的 `dist/swa-linux-combined-0177b951-n46-07` 已通过准确工具abf0d112唯一删除，结果 `space-b464-20261024-13/operation-01/result.json` SHA256 `427ae0ce34697b8db606f4e6cca75e7e0969acb615844e53d4af345efef218cd`，实际释放413954048字节；保护首末一致。此前四副本清理记录如下。当前I B464、全部归档、任务数据、凭据、备份、编译输入输出和失败证据保留。下一四个旧副本的恢复调查、工具审查和Root唯一只读预检已通过，`space-next-b464-20261024-14/check-01/result.json` SHA `5aeeadae320bc6541387558e9e96a1aa09ff60fe6b21e572e40dc6496273ab73`，removed为空；准确四根预计释放3426807808字节，删除授权已请求但尚未获得。新的安装按实际阶段重新核容量；仅准备工具变化时可复用B464完整check/race，原报告来源不改写，新helper/build/install/D12/service仍须实际执行，范围见 `.verification/cloud-setup/next-installed-validation-after-b464.md`。
 
-Windows模型凭据可用性尚未确认：当前集成查询仓库Secret名称返回403，不能据此认定未配置。现有Windows验收入口还需适配：N4/N6递归Run、轨迹字段、授权helper、owner和初始化/GUI消费者仍有Linux限定或旧Windows字段要求。只读审计与平台计划保存在 `.verification/cloud-setup/windows-n46-b464-readonly-audit.md` 和 `windows-n46-platform-adaptation-plan.md`；拟复用实际Windows ACL、Job及PID/birth原件，不修改产品调度或原请求语义，目前未实施。Windows正式无模型检查不能代替这些真实Agent验收。
+准备工具修复已提交并推送为 `20f0070c9c7a21244ce6b28088ecf3ad4830fec7`。同提交Linux授权helper编译退出0，GoBuildInfo记录modified=false；准确二进制与配套consumer来源、权限已独立核验，报告为 `.verification/cloud-setup/linux-candidate-20f0070c/helper-01/report.md`。该helper未执行授权或模型，也没有20f新安装。
+
+Windows平台接入A四源及局部结果已获原Windows和跨入口reviewer限定接受。helper保持Linux原身份/授权链，Windows用同安装Node、真实named Job与完整Nt当帧核验原runtime身份；四角色只是服务成员子集，不证明完整树退出。固定 `dataRoot/daemon/daemon-v49.pid` 按实际producer核准确继承ACL：root protected/目录flags3，daemon非protected/flags19，pid非protected/flags16，均仅当前用户与SYSTEM；其余私有文件保持原严格门。三个真实handle保持至Node后核，pid同ACL句柄有界读取及完整文件身份/SHA校验，明确不声称原子内容快照。现有测试引用的publicRoot原常量已恢复，测试未改。r3 Linux编译、三个既有profile/依赖/私有目录测试和Windows交叉编译均退出0，三stderr均为空；Node语法沿准确未变r2源复用。准确summary `.verification/cloud-setup/windows-n46-host-a-source-r3/summary.json` SHA `2ec8ebc13dfd5cd95943660da11660d44c081040c517b6010e789a94be5474ac`，完整diff SHA `904859fb2fb2cbc593584c829d32ab7cf2f394da0d050e9f138d9ea68a19ac80`，Root逐文件及报告核对一致。目标Windows ACL/Job/helper/服务/模型仍NOT_RUN。原工具入口错误、静态遗漏与r1/r2原件保留。
+
+r3实际占用增量94650368字节，超过80MiB预估，结束时仍有242675712字节；过程峰值未测。全部Go检查结束后，Root按此前批准的固定脚本5d06488b唯一清理准确GOCACHE，实际退出0，两个活动Go预检均为空；可用空间242581504→536530944字节，净增293949440字节。原件在 `.verification/cloud-setup/go-cache-clean-host-a-r3-20261024/`。modulecache、构建产物和所有原证据保留。Windows B直接消费者计划c3b0930b已获原reviewer接受并开始实施；后续owner/GUI仍仅计划，目标验证未运行。
+
+Windows模型凭据可用性尚未确认：当前集成查询仓库Secret名称返回403，不能据此认定未配置。N4/N6递归Run、轨迹字段、owner和初始化/GUI消费者的Windows适配尚未完成。只读审计与平台计划保存在 `.verification/cloud-setup/windows-n46-b464-readonly-audit.md` 和 `windows-n46-platform-adaptation-plan.md`；复用实际Windows ACL、Job及PID/birth原件，不修改产品调度或原请求语义。Windows正式无模型检查不能代替真实Agent验收。新增四目录删除授权及Windows Secret名称仍待答；此前获批目录已删除，不再次执行。
+
+只读执行可行性检查确认，现有Windows CI同步等待PowerShell结束后才上传artifact，没有向运行中helper stdin写入审阅的入口。原driver写出真实成果后只等待stdin JSON，期限600秒；owner另持stdin，GUI还须连接原服务。架构x64和Secret本身不能补足这一交互条件。已请求连接可交互Windows环境或现成可访问SSH别名，未获答；不启动必然无法完成审阅的模型窗口，不以重跑或离线artifact代替原进程。此限制不阻止A/B源码和无模型准备。
 
 以下保留各历史阶段的准确来源与当时结果；当前安装、剩余工作和授权以上述最新记录为准。
 
