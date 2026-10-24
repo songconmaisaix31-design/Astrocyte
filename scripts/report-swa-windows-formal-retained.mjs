@@ -5,21 +5,21 @@ import { dirname, isAbsolute, join, relative, resolve, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
-const original = { revision: 'b464e70ba95967eb1ecc216f5f3d25407f1ecc66', run: 40047585581, job: 120732737576,
-  attempt: 1, artifact: 12541713122, artifact_bytes: 65470,
-  artifact_digest: 'sha256:378761a5153e5f71bc3f0f3cf7db7da28babc4e95d7ff10d789983cf349cec17' }
+const original = { revision: 'd0c7dfee5d7412efd25d122fd2bb0afa0601e513', run: 40084306476, job: 120843980533,
+  attempt: 1, artifact: 12556746886, artifact_bytes: 63406,
+  artifact_digest: 'sha256:cc79c557e21c768bd1845e5b6eac4c88ba199ccd374499bf123ca318acc9837d' }
 const hashes = { fixture: '842060a11640491694dbb663057b71dd94bc58e24905acb006fdc61319a74ac4',
   closure: '144d16fe707b432e9cfc05aa800d0719430ea112fc23c8706a46f9664436475f',
-  native: '8b2d203527225d12e67920484aca4a07be35c8675b477e6a6fe84f2b608b389f',
+  native: 'c167174df8334af46563e40324809ffbbe5a0e28745995b4db0d20de66a6e21a',
   checker: '8a60c68130f77e94bc29367f56f07ff2368e01aab1e916a3b00a91b7c58e3a6d' }
 // 本轮已发布的完整安全投影固定在源码中，运行时不读本地 ignored 证据。
 const expectedService = {
-  "source_revision": "b464e70ba95967eb1ecc216f5f3d25407f1ecc66",
+  "source_revision": "d0c7dfee5d7412efd25d122fd2bb0afa0601e513",
   "status": "PASS",
   "observer": {
     "file_name": "service-observer-exit.json",
     "status": "SAVED",
-    "sha256": "838f0a596bf17fcac9db4236a4ef6b48bf80c591c74455a588fe23bebb8cda75",
+    "sha256": "57ffa968981e50cbb3d48726914eb3fc95bf371dc0e9bc31748c0859830c1de4",
     "byte_count": 298,
     "started": true,
     "exit": 0,
@@ -30,8 +30,8 @@ const expectedService = {
   "actual": {
     "file_name": "result.json",
     "status": "SAVED",
-    "sha256": "4b3b7c3636019ab6210b21e4d3bd30ad7c4670071c07bb2f64a62a48578bc998",
-    "byte_count": 42231,
+    "sha256": "e80847997f4d0977eeef08a73e2a9e1ee8191e20ef0527d780ee1c6ddeaab57f",
+    "byte_count": 42221,
     "edition": "combined",
     "service_status": "OBSERVED",
     "exit": 0,
@@ -41,11 +41,11 @@ const expectedService = {
     "unknown_count": 0,
     "native_exit": [
       {
-        "observed_at_ms": 1792803874159,
+        "observed_at_ms": 1792836538954,
         "remaining": 0
       },
       {
-        "observed_at_ms": 1792803874413,
+        "observed_at_ms": 1792836539221,
         "remaining": 0
       }
     ],
@@ -94,17 +94,17 @@ const expectedService = {
       "all_exited": true,
       "observations": [
         {
-          "monotonic_ms": 353.3871,
+          "monotonic_ms": 360.0337,
           "query_succeeded": true,
-          "complete_result_count": 140,
+          "complete_result_count": 139,
           "required_identity_fields_complete": true,
           "known_identities_exited": true,
           "unknown_pids_absent": true
         },
         {
-          "monotonic_ms": 936.9141,
+          "monotonic_ms": 943.8028,
           "query_succeeded": true,
-          "complete_result_count": 140,
+          "complete_result_count": 139,
           "required_identity_fields_complete": true,
           "known_identities_exited": true,
           "unknown_pids_absent": true
@@ -119,31 +119,31 @@ const expectedService = {
     "observer": "9863caae32d3015eb2773b7342a4be41d0b9858136f76153dd30913ff22ed323",
     "producer": "e1cba5dfdee30fd91232d38481475fef4b606a56166905d47ee20bc0b676ff34",
     "closure": "144d16fe707b432e9cfc05aa800d0719430ea112fc23c8706a46f9664436475f",
-    "native": "8b2d203527225d12e67920484aca4a07be35c8675b477e6a6fe84f2b608b389f"
+    "native": "c167174df8334af46563e40324809ffbbe5a0e28745995b4db0d20de66a6e21a"
   },
   "files": [
     {
       "file_name": "service-query-evidence.json",
       "status": "SAVED",
-      "sha256": "9cdf185e5d487a519ad3a30614d14ae01fa792a1ad5898ac96b2c15f115768fd",
-      "byte_count": 199537
+      "sha256": "3c1dfedd1639a12a056e4dcb88e21639dc302165f882c10f5f4f6338496a6d29",
+      "byte_count": 198935
     },
     {
       "file_name": "service-process-lifecycle.json",
       "status": "SAVED",
-      "sha256": "5e56ca2041aeea8a06ef15dfea7f94d2f957b5b6ef70a968f740df364f981ba7",
-      "byte_count": 128799
+      "sha256": "f855ce7ccb93287d024e2a67c6576a75cdcf60203e653209e5016969dab84a1b",
+      "byte_count": 128816
     }
   ],
-  "query_count": 710,
+  "query_count": 871,
   "ownership_closure_incomplete": false,
   "evidence_incomplete": false,
   "error_kind": null,
   "first_sample": {
     "sequence": 1,
-    "query_start_ms": 74.9606,
-    "query_end_ms": 77.5964,
-    "actual_row_count": 140,
+    "query_start_ms": 78.255,
+    "query_end_ms": 80.7104,
+    "actual_row_count": 139,
     "prior_count": 1,
     "used_scope_count": 1,
     "added_during_query_count": 0,
@@ -152,10 +152,10 @@ const expectedService = {
   },
   "first_unknown_sample": null,
   "last_sample": {
-    "sequence": 710,
-    "query_start_ms": 28046.2709,
-    "query_end_ms": 28048.0246,
-    "actual_row_count": 139,
+    "sequence": 871,
+    "query_start_ms": 33870.2375,
+    "query_end_ms": 33872.1565,
+    "actual_row_count": 138,
     "prior_count": 88,
     "used_scope_count": 25,
     "added_during_query_count": 0,
@@ -353,7 +353,7 @@ async function main() {
   assert.ok(values['artifact-root'] && isAbsolute(values['artifact-root'])); assert.ok(expectedService)
   const checkout = await realpath(fileURLToPath(new URL('../', import.meta.url)))
   const input = resolve(values['artifact-root']); await plainDirectory(input)
-  assert.equal(input.toLowerCase(), join(await realpath(process.env.RUNNER_TEMP), 'swa-retained-formal-b464').toLowerCase())
+  assert.equal(input.toLowerCase(), join(await realpath(process.env.RUNNER_TEMP), 'swa-retained-formal-d0c7dfee').toLowerCase())
   for (const path of [join(checkout, '.verification'), join(checkout, '.verification/swa-ci')]) {
     try { await mkdir(path) } catch (error) { if (error.code !== 'EEXIST') throw error }
     await plainDirectory(path)
@@ -457,7 +457,7 @@ async function main() {
   await copy(cim); await copy(fixture)
   state.phase = 'service-safe-originals'
   const observer = await read('service-observer-exit.json')
-  assert.equal(observer.bytes.length, 298); assert.equal(observer.sha256, '838f0a596bf17fcac9db4236a4ef6b48bf80c591c74455a588fe23bebb8cda75')
+  assert.equal(observer.bytes.length, 298); assert.equal(observer.sha256, '57ffa968981e50cbb3d48726914eb3fc95bf371dc0e9bc31748c0859830c1de4')
   keys(observer.value, ['schema_version', 'source_revision', 'phase', 'started', 'exit', 'timed_out', 'stdout_bytes', 'stderr_bytes', 'stdout_eof', 'stderr_eof', 'outer_error'])
   assert.equal(observer.value.schema_version, 1); assert.equal(observer.value.source_revision, original.revision); assert.equal(observer.value.phase, 'service-observer')
   for (const key of ['started', 'stdout_eof', 'stderr_eof']) assert.equal(observer.value[key], true)
