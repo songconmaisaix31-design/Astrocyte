@@ -1,0 +1,184 @@
+diff --git a/src/process_worker.cc b/src/process_worker.cc
+--- a/src/process_worker.cc
++++ b/src/process_worker.cc
+@@ -4,6 +4,7 @@
+  *--------------------------------------------------------------------------------------------*/
+ 
+ #include "process_worker.h"
++#include <regex>
+ 
+ GetProcessesWorker::GetProcessesWorker(
+     Napi::Function& callback,
+@@ -67,5 +68,31 @@
+     return;
+   }
+   Napi::HandleScope scope(Env());
++  Napi::Value diagnostic = Env().Undefined();
++  try {
++    const auto& message = error.Message();
++    if (message.size() <= 128) {
++      static const std::regex pattern(
++          R"(NativeProcessSnapshotError phase=(?:(load-system-module|resolve-api|image-conversion); kind=(Win32)|(buffer-limit|query|buffer-attempts); kind=(NTSTATUS)|(returned-length|buffer-address|record-header|process-id|image-length|image-address|image-limit|record-offset|empty-snapshot); kind=(InvalidBuffer)); code=(0|[1-9][0-9]{0,9}))");
++      std::smatch match;
++      if (std::regex_match(message, match, pattern)) {
++        const auto code = std::stoull(match[7].str());
++        if (code <= 0xffffffffULL) {
++          const size_t phase = match[1].matched ? 1 : match[3].matched ? 3 : 5;
++          Napi::Object fields = Napi::Object::New(Env());
++          fields.Set("phase", Napi::String::New(Env(), match[phase].str()));
++          fields.Set("kind", Napi::String::New(Env(), match[phase + 1].str()));
++          fields.Set("code", Napi::Number::New(Env(), static_cast<double>(code)));
++          diagnostic = fields;
++        }
++      }
++    }
++  } catch (...) {
++    // 诊断解析或构造失败仍保留原 undefined，不输出异常正文。
++  }
++  if (!diagnostic.IsUndefined()) {
++    Callback().Call({Env().Undefined(), diagnostic});
++    return;
++  }
+   Callback().Call({Env().Undefined()});
+ }
+diff --git a/lib/index.js b/lib/index.js
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -109,26 +109,33 @@
+ exports.filterProcessList = filterProcessList;
+ function getRawProcessList(callback, flags) {
+     const queue = globalRequestQueue;
+-    queue.push(callback);
++    queue.push({ callback, flags });
+     // Only make a new request if there is not currently a request in progress.
+     // This prevents too many requests from being made, there is also a crash that
+     // can occur when performing multiple calls to CreateToolhelp32Snapshot at
+     // once.
+     if (!requestInProgress) {
+         requestInProgress = true;
+-        native.getProcessList((processList) => {
++        native.getProcessList((processList, diagnostic) => {
+             // It is possible and valid for one callback to cause another to be added to the queue.
+             // To avoid orphaning those callbacks, we repeat the draining until the queue is empty.
+             // We use "queue.splice(0)" to atomically clear the queue, returning the batch to process.
+             // If any of those also made requests, we repeat until the callback chain completes.
+             //
+             // An alternative would be to splice the queue once and immediately reset requestInProgress
+             // before invoking callbacks: `CreateToolhelp32Snapshot` has safely completed at this point.
+             // However, that would circumvent the "too many requests" rate-limiting (?) concern above.
+             while (queue.length) {
+-                queue.splice(0).forEach(cb => cb(processList));
++                queue.splice(0).forEach(({ callback: cb, flags: requestedFlags }) => {
++                    if (flags === ProcessDataFlag.CreationTime && requestedFlags === ProcessDataFlag.CreationTime &&
++                        processList === undefined && diagnostic !== undefined) {
++                        cb(processList, diagnostic);
++                    } else {
++                        cb(processList);
++                    }
++                });
+             }
+             requestInProgress = false;
+         }, flags || 0);
+     }
+ }
+diff --git a/lib/index.ts b/lib/index.ts
+--- a/lib/index.ts
++++ b/lib/index.ts
+@@ -9,7 +9,7 @@
+ export const getProcessCreationTime: ((pid: number) => number | undefined) | undefined = native?.getProcessCreationTime;
+ /** The flag bits this compiled addon reports; undefined off win32. */
+ export const supportedProcessDataFlags: number | undefined = native?.supportedProcessDataFlags;
+-import { IProcessInfo, IProcessTreeNode, IProcessCpuInfo } from '@vscode/windows-process-tree';
++import { IProcessInfo, IProcessTreeNode, IProcessCpuInfo, IProcessSnapshotDiagnostic } from '@vscode/windows-process-tree';
+ 
+ export enum ProcessDataFlag {
+   None = 0,
+@@ -18,12 +18,12 @@
+   CreationTime = 4
+ }
+ 
+-type RequestCallback = (processList: IProcessInfo[]) => void;
++type RequestCallback = (processList: IProcessInfo[], diagnostic?: IProcessSnapshotDiagnostic) => void;
+ 
+ // requestInProgress is used for any function that uses CreateToolhelp32Snapshot, as multiple calls
+ // to this cannot be done at the same time.
+ let requestInProgress = false;
+-const globalRequestQueue: RequestCallback[] = [];
++const globalRequestQueue: { callback: RequestCallback; flags?: ProcessDataFlag }[] = [];
+ 
+ const MAX_FILTER_DEPTH = 10;
+ 
+@@ -130,30 +130,37 @@
+ function getRawProcessList(
+   callback: RequestCallback,
+   flags?: ProcessDataFlag
+ ): void {
+   const queue = globalRequestQueue;
+ 
+-  queue.push(callback);
++  queue.push({ callback, flags });
+ 
+   // Only make a new request if there is not currently a request in progress.
+   // This prevents too many requests from being made, there is also a crash that
+   // can occur when performing multiple calls to CreateToolhelp32Snapshot at
+   // once.
+   if (!requestInProgress) {
+     requestInProgress = true;
+-    native.getProcessList((processList: IProcessInfo[]) => {
++    native.getProcessList((processList: IProcessInfo[], diagnostic?: IProcessSnapshotDiagnostic) => {
+       // It is possible and valid for one callback to cause another to be added to the queue.
+       // To avoid orphaning those callbacks, we repeat the draining until the queue is empty.
+       // We use "queue.splice(0)" to atomically clear the queue, returning the batch to process.
+       // If any of those also made requests, we repeat until the callback chain completes.
+       //
+       // An alternative would be to splice the queue once and immediately reset requestInProgress
+       // before invoking callbacks: `CreateToolhelp32Snapshot` has safely completed at this point.
+       // However, that would circumvent the "too many requests" rate-limiting (?) concern above.
+       while (queue.length) {
+-        queue.splice(0).forEach(cb => cb(processList));
++        queue.splice(0).forEach(({ callback: cb, flags: requestedFlags }) => {
++          if (flags === ProcessDataFlag.CreationTime && requestedFlags === ProcessDataFlag.CreationTime &&
++              processList === undefined && diagnostic !== undefined) {
++            cb(processList, diagnostic);
++          } else {
++            cb(processList);
++          }
++        });
+       }
+       requestInProgress = false;
+     }, flags || 0);
+   }
+ }
+@@ -233,7 +240,9 @@
+  * @param callback The callback to use with the returned set of processes
+  * @param flags The flags for what process data should be included
+  */
+-export function getAllProcesses(callback: (processList: IProcessInfo[]) => void, flags?: ProcessDataFlag): void {
++export function getAllProcesses(callback: (processList: IProcessInfo[] | undefined, diagnostic?: IProcessSnapshotDiagnostic) => void, flags: ProcessDataFlag.CreationTime): void;
++export function getAllProcesses(callback: (processList: IProcessInfo[]) => void, flags?: ProcessDataFlag): void;
++export function getAllProcesses(callback: RequestCallback, flags?: ProcessDataFlag): void {
+   if (process.platform !== 'win32') {
+     throw new Error('getAllProcesses is only implemented on Windows');
+   }
+diff --git a/typings/windows-process-tree.d.ts b/typings/windows-process-tree.d.ts
+--- a/typings/windows-process-tree.d.ts
++++ b/typings/windows-process-tree.d.ts
+@@ -90,11 +90,18 @@
+     function __promisify__(processList: IProcessInfo[]): Promise<IProcessCpuInfo[]>;
+   }
+ 
++  export type IProcessSnapshotDiagnostic = { code: number } & (
++    { kind: 'Win32'; phase: 'load-system-module' | 'resolve-api' | 'image-conversion' } |
++    { kind: 'NTSTATUS'; phase: 'buffer-limit' | 'query' | 'buffer-attempts' } |
++    { kind: 'InvalidBuffer'; phase: 'returned-length' | 'buffer-address' | 'record-header' | 'process-id' | 'image-length' | 'image-address' | 'image-limit' | 'record-offset' | 'empty-snapshot' }
++  );
++
+   /**
+    * Returns a list of all processes on the system.
+    * @param callback - The callback to use with the returned list of processes.
+    * @param flags - The flags for what process data should be included.
+    */
++  export function getAllProcesses(callback: (processList: IProcessInfo[] | undefined, diagnostic?: IProcessSnapshotDiagnostic) => void, flags: ProcessDataFlag.CreationTime): void;
+   export function getAllProcesses(callback: (processList: IProcessInfo[]) => void, flags?: ProcessDataFlag): void;
+ 
+   namespace getAllProcesses {

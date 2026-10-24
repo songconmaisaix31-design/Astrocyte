@@ -5,7 +5,8 @@ param(
     [Parameter(Mandatory)][string]$Node,
     [Parameter(Mandatory)][string]$Work,
     [Parameter(Mandatory)][string]$OutputFile,
-    [string]$Python = 'python'
+    [string]$Python = 'python',
+    [switch]$NativeErrorOnly
 )
 $ErrorActionPreference = 'Stop'
 $phase = 'validate'
@@ -31,12 +32,22 @@ try {
     }
     $checkout = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
     $composition = [IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP 'swa-controller-open-development-7ff3a7d7'))
-    foreach ($pair in @(
+    $compositionInputs = @(
         @($SourceRoot, (Join-Path $composition 'source-7ff3a7d7')),
         @($Runtime, (Join-Path $composition 'development-7ff3a7d7/runtime')),
         @($Node, (Join-Path $composition 'development-7ff3a7d7/node/node.exe')),
         @($OutputFile, (Join-Path $composition 'private/diagnostic-native-preparation.json'))
-    )) {
+    )
+    if ($NativeErrorOnly) {
+        # 原生错误诊断只接受本轮固定组成；Node 由 setup-node 提供并通过原始 pin 校验。
+        $composition = [IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP 'swa-native-error-5c25'))
+        $compositionInputs = @(
+            @($SourceRoot, (Join-Path $composition 'source-5c25')),
+            @($Runtime, (Join-Path $composition 'development/runtime')),
+            @($OutputFile, (Join-Path $composition 'private/diagnostic-native-preparation.json'))
+        )
+    }
+    foreach ($pair in $compositionInputs) {
         if (-not [IO.Path]::GetFullPath($pair[0]).Equals([IO.Path]::GetFullPath($pair[1]), [StringComparison]::OrdinalIgnoreCase)) { throw 'The diagnostic source or output escaped the exclusive development composition' }
     }
     $buildRoot = Join-Path $checkout '.verification/swa-cli-headless-20261020/build'
@@ -48,6 +59,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'The fixed runtime pin is unavailable' }
     $pin = $pinJSON | ConvertFrom-Json
     if ($pin.version -cne '24.21.0' -or (Get-FileHash -LiteralPath $Node -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.asset.executableSha256) { throw 'The retained Node differs from the original pin' }
+    if ($NativeErrorOnly) {
+        $actualNodeVersion = & $Node --version
+        if ($LASTEXITCODE -ne 0 -or $actualNodeVersion -cne 'v24.21.0') { throw 'The actual diagnostic Node version differs from the original pin' }
+    }
     $Python = (Get-Command $Python -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
     $pythonJSON = & $Node --input-type=module -e 'import{pathToFileURL}from"node:url";const m=await import(pathToFileURL(process.argv[1]));console.log(JSON.stringify(await m.buildPython(process.argv[2])))' (Join-Path $SourceRoot 'scripts/swa-package-config.mjs') $Python
     if ($LASTEXITCODE -ne 0) { throw 'The original Python preflight failed' }
