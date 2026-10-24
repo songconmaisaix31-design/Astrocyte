@@ -310,7 +310,8 @@ async function main() {
     const base = 'swa-windows-combined-' + productRevision, archive = join(artifact, base + '.zip')
     assert.deepEqual((await readdir(artifact)).sort(), ['private', base + '.zip', base + '.zip.sha256'].sort())
     assert.equal(sha(await stable(archive, 512 * 1024 * 1024, true)), retainedArchiveHash)
-    assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(await stable(archive + '.sha256', 1024, true)).trim(), retainedArchiveHash + '  ' + base + '.zip')
+    const originalSidecar = await stable(archive + '.sha256', 1024, true)
+    assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(originalSidecar).trim(), retainedArchiveHash + '  ' + base + '.zip')
     result.retained_product = { metadata, archive_sha256: retainedArchiveHash, version: productRevision, installation: 'NOT_RUN' }
     result.phase = 'retained-product-extraction'
     const extracted = join(work, 'retained-product'), manifestPath = join(privateRoot, 'retained-entries.json')
@@ -373,67 +374,108 @@ async function main() {
       assert.ok(!folded.has(entry.name.toLowerCase())); folded.add(entry.name.toLowerCase()); expected.set(entry.name, entry.bytes)
     }
     assert.equal([...expected.values()].reduce((sum, value) => sum + value, 0), manifest.expanded_bytes)
-    const original = join(extracted, base), development = join(work, 'service-development'), replacementSizes = new Map()
+    const development = join(extracted, base), replacementSizes = new Map()
     assert.deepEqual(await readdir(extracted), [base])
-    async function productTree(root, prefix = '', changed = false) {
+    remaining(compositionDeadline)
+    async function productTree(root, deadline, prefix = '', changed = false) {
       const files = []
+      remaining(deadline)
       await ordinary(root, true)
-      for (const entry of await readdir(root, { withFileTypes: true })) {
+      remaining(deadline)
+      const entries = await readdir(root, { withFileTypes: true })
+      remaining(deadline)
+      for (const entry of entries) {
+        remaining(deadline)
         const name = prefix + entry.name, path = join(root, entry.name)
         assert.ok(!entry.isSymbolicLink())
-        if (entry.isDirectory()) files.push(...await productTree(path, name + '/', changed))
+        if (entry.isDirectory()) {
+          const nested = await productTree(path, deadline, name + '/', changed)
+          remaining(deadline)
+          files.push(...nested)
+        }
         else {
           assert.ok(expected.has(name)); const bytes = await stable(path, 256 * 1024 ** 2, true)
+          remaining(deadline)
           assert.equal(bytes.length, changed && replacementSizes.has(name) ? replacementSizes.get(name) : expected.get(name))
-          files.push({ name, bytes: bytes.length, sha256: sha(bytes) })
+          const item = { name, bytes: bytes.length, sha256: sha(bytes) }
+          remaining(deadline)
+          files.push(item)
         }
       }
-      return files.sort((a, b) => a.name.localeCompare(b.name))
+      files.sort((a, b) => a.name.localeCompare(b.name))
+      remaining(deadline)
+      return files
     }
-    const originalFiles = await productTree(original)
+    const originalFiles = await productTree(development, compositionDeadline)
     assert.equal(originalFiles.length, expected.size)
-    const spaceScript = join(privateRoot, 'retained-space.ps1')
+    const baselineHash = sha(Buffer.from(JSON.stringify(originalFiles)))
     remaining(compositionDeadline)
-    await writeFile(spaceScript, 'param([string]$Root)\n$ErrorActionPreference="Stop"\n[Console]::Write([IO.DriveInfo]::new([IO.Path]::GetPathRoot($Root)).AvailableFreeSpace)\n', { flag: 'wx' })
-    const space = await command(powershell, ['-NoProfile', '-NonInteractive', '-File', spaceScript, '-Root', work], work, 30_000,
-      { capture: true, deadline: Math.min(compositionDeadline, performance.now() + 30_000) })
-    const free = Number(space.bytes?.toString().trim())
-    assert.ok(Number.isSafeInteger(free) && free >= 2 * manifest.expanded_bytes + (await lstat(archive)).size + 1024 ** 3)
-    remaining(compositionDeadline)
-    await cp(original, development, { recursive: true, force: false, errorOnExist: true })
-    assert.deepEqual(await productTree(development), originalFiles)
     result.retained_product.extraction = { entry_count: manifest.entry_count, file_count: originalFiles.length, expanded_bytes: manifest.expanded_bytes,
-      maximum_file_bytes: manifest.maximum_file_bytes, free_before: manifest.free_before, free_before_copy: free,
-      files_sha256: sha(Buffer.from(JSON.stringify(originalFiles))), product_inputs_unchanged: false }
+      maximum_file_bytes: manifest.maximum_file_bytes, free_before: manifest.free_before,
+      files_sha256: baselineHash, product_inputs_unchanged: false }
     for (const [name, value] of [['VERSION', productRevision], ['PLATFORM', 'win32-x64'], ['EDITION', 'combined']]) {
+      remaining(compositionDeadline)
       assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(await stable(join(development, name), 1024, true)).trim(), value)
+      remaining(compositionDeadline)
     }
     const serviceNode = join(development, 'node/node.exe')
-    assert.equal(sha(await stable(serviceNode, 128 * 1024 ** 2, true)), sha(await stable(node, 128 * 1024 ** 2)))
+    const serviceNodeBytes = await stable(serviceNode, 128 * 1024 ** 2, true)
+    remaining(compositionDeadline)
+    const pinnedNodeBytes = await stable(node, 128 * 1024 ** 2)
+    remaining(compositionDeadline)
+    assert.equal(sha(serviceNodeBytes), sha(pinnedNodeBytes))
     const requireDevelopment = createRequire(join(development, 'runtime/package.json'))
     const servicePackage = await realpath(dirname(requireDevelopment.resolve('@vscode/windows-process-tree/package.json')))
+    remaining(compositionDeadline)
     assert.ok(contains(join(development, 'runtime'), servicePackage))
     const packageJSON = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await stable(join(servicePackage, 'package.json'), 65536, true)))
+    remaining(compositionDeadline)
     assert.equal(packageJSON.version, '0.8.0'); assert.equal(packageJSON.main, 'lib/index.js')
     const serviceJS = join(servicePackage, 'lib/index.js'), serviceBinary = join(servicePackage, 'build/Release/windows_process_tree.node')
     assert.equal(sha(await stable(serviceJS, 65536, true)), approvedChanges['lib/index.js'][0])
+    remaining(compositionDeadline)
     assert.equal(sha(await stable(serviceBinary, 16 * 1024 ** 2, true)), '8b2d203527225d12e67920484aca4a07be35c8675b477e6a6fe84f2b608b389f')
     remaining(compositionDeadline)
     await copyFile(join(diagnosticPackage, 'lib/index.js'), serviceJS)
     remaining(compositionDeadline)
     await copyFile(binary, serviceBinary)
+    remaining(compositionDeadline)
     const changedFiles = new Map([
       [relative(development, serviceJS).replaceAll('\\', '/'), approvedChanges['lib/index.js'][1]],
       [relative(development, serviceBinary).replaceAll('\\', '/'), result.native_sha256]
     ])
     replacementSizes.set(relative(development, serviceJS).replaceAll('\\', '/'), (await lstat(serviceJS)).size)
+    remaining(compositionDeadline)
     replacementSizes.set(relative(development, serviceBinary).replaceAll('\\', '/'), (await lstat(serviceBinary)).size)
-    const guardProduct = async () => {
-      assert.equal(sha(await stable(archive, 512 * 1024 ** 2, true)), retainedArchiveHash)
-      assert.deepEqual(await productTree(original), originalFiles)
-      const copied = await productTree(development, '', true)
+    remaining(compositionDeadline)
+    const guardArchive = async deadline => {
+      remaining(deadline)
+      const archiveBytes = await stable(archive, 512 * 1024 ** 2, true)
+      remaining(deadline)
+      assert.equal(sha(archiveBytes), retainedArchiveHash)
+      remaining(deadline)
+      const sidecarBytes = await stable(archive + '.sha256', 1024, true)
+      remaining(deadline)
+      assert.ok(sidecarBytes.equals(originalSidecar))
+      assert.equal(new TextDecoder('utf-8', { fatal: true }).decode(sidecarBytes).trim(), retainedArchiveHash + '  ' + base + '.zip')
+      remaining(deadline)
+    }
+    const guardReplacements = async deadline => {
+      for (const [name, hash] of changedFiles) {
+        remaining(deadline)
+        const bytes = await stable(join(development, name), 16 * 1024 ** 2, true)
+        remaining(deadline)
+        assert.equal(bytes.length, replacementSizes.get(name)); assert.equal(sha(bytes), hash)
+        remaining(deadline)
+      }
+    }
+    const guardProduct = async deadline => {
+      await guardArchive(deadline)
+      const copied = await productTree(development, deadline, '', true)
+      remaining(deadline)
       assert.equal(copied.length, originalFiles.length)
       for (let index = 0; index < copied.length; index++) {
+        remaining(deadline)
         assert.equal(copied[index].name, originalFiles[index].name)
         assert.equal(copied[index].sha256, changedFiles.get(copied[index].name) ?? originalFiles[index].sha256)
       }
@@ -444,18 +486,37 @@ async function main() {
     for (const name of consumerNames) {
       remaining(compositionDeadline)
       assert.equal((await git(['diff', '--name-only', productRevision, sourceRevision, '--', 'tests/swa-cli-headless/' + name])).toString().trim(), '')
+      remaining(compositionDeadline)
     }
     for (const name of observerNames) {
       remaining(compositionDeadline)
       await copyFile(join(checkout, 'tests/swa-cli-headless', name), join(source, 'tests/swa-cli-headless', name))
+      remaining(compositionDeadline)
     }
-    const consumerPins = await Promise.all(consumerNames.map(async name => ({ name, sha256: sha(await stable(join(source, 'tests/swa-cli-headless', name), 256 * 1024, true)) })))
+    const consumerPins = await Promise.all(consumerNames.map(async name => {
+      remaining(compositionDeadline)
+      const bytes = await stable(join(source, 'tests/swa-cli-headless', name), 256 * 1024, true)
+      remaining(compositionDeadline)
+      return { name, sha256: sha(bytes) }
+    }))
+    remaining(compositionDeadline)
     result.service_consumer_sources = consumerPins
-    const guardConsumers = async () => {
-      for (const pin of consumerPins) assert.equal(sha(await stable(join(source, 'tests/swa-cli-headless', pin.name), 256 * 1024, true)), pin.sha256)
-      for (const name of observerNames) assert.equal(sha(await stable(join(checkout, 'tests/swa-cli-headless', name), 256 * 1024)), consumerPins.find(pin => pin.name === name).sha256)
+    const guardConsumers = async deadline => {
+      for (const pin of consumerPins) {
+        remaining(deadline)
+        assert.equal(sha(await stable(join(source, 'tests/swa-cli-headless', pin.name), 256 * 1024, true)), pin.sha256)
+        remaining(deadline)
+      }
+      for (const name of observerNames) {
+        remaining(deadline)
+        assert.equal(sha(await stable(join(checkout, 'tests/swa-cli-headless', name), 256 * 1024)), consumerPins.find(pin => pin.name === name).sha256)
+        remaining(deadline)
+      }
     }
-    await guardProduct(); await guardConsumers(); await sourceGuard()
+    // 基线已完整核验；本轮只改两个叶文件，服务结束后再作完整比较。
+    await guardReplacements(compositionDeadline); await guardArchive(compositionDeadline)
+    await guardConsumers(compositionDeadline); remaining(compositionDeadline)
+    await sourceGuard(); remaining(compositionDeadline)
     const serviceEvidence = join(source, '.verification/swa-ci/windows'), smoke = join(serviceEvidence, 'smoke')
     remaining(compositionDeadline)
     await mkdir(serviceEvidence, { recursive: true }); await ordinary(serviceEvidence, true)
@@ -532,7 +593,10 @@ async function main() {
           summaryRow.stream_failure || summaryRow.spawn_error || !summaryRow.output_complete) serviceError ??= fail('COMMAND_FAILED')
     } catch (error) { serviceError ??= error }
     try {
-      await within(finalDeadline, async () => { await guardProduct(); await guardConsumers(); await sourceGuard() })
+      await within(finalDeadline, async () => {
+        await guardProduct(finalDeadline); await guardConsumers(finalDeadline); remaining(finalDeadline)
+        await sourceGuard(); remaining(finalDeadline)
+      })
       result.retained_product.extraction.product_inputs_unchanged = true
     } catch (error) { serviceError ??= error }
     if (serviceError) throw serviceError
