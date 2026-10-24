@@ -24,9 +24,9 @@ Windows C三份外部ignored验收入口已完成并获原Windows及跨入口rev
 
 C静态审查修正了真实close与日志落盘时点混同、CIM及保存等待超出原界、GUI丢弃失败原输出和首因、公开硬链接误套私有单链接条件及SID去重遗漏。Windows服务从真实close起共用35秒收尾界；GUI命令、关闭与证据保存消费原120秒剩余界，失败保留首因及副因。JSON保原路径和写前事实，单文件不能证明完成；迟到I/O不冒取消或成功，总体通过仍须界内保存、固定成功stdout和实际退出0。首次基线包装的错误尾部假设及全部旧原件保留，缺失旧stderr明确NOT_CAPTURED。局部只执行语法和源码核对，Windows目标/SDK/浏览器/服务/模型均NOT_RUN；不由源码接受推定实际成功。
 
-最终B464到当前tracked差分仅为验收工具及状态文档；产品、依赖、发行构建器、Go产品包和Web未变。B464未受影响的check/race结果按原来源保留，新增适用A/B局部结果如上。新的同S helper按已审 `.verification/cloud-setup/linux-helper-source-20261024-plan.md` 准备，其实际执行状态与GoBuildInfo入口为 `.verification/cloud-setup/linux-helper-source-20261024-result.md`。仅helper预算440MiB含编译临时估算和100MiB余量，不代表完整构建容量或已测峰值；新build/install/D12/service及真实模型仍必须执行。
+最终B464到当前tracked差分仅为验收工具及状态/决定文档；产品、依赖、发行构建器、Go产品包和Web未变。B464未受影响的check/race结果按原来源保留，新增适用A/B局部结果如上。准确55cd5c14569195ec440cdb32ca24ff55386ca567的Linux helper已按已审计划编译退出0并获独立结果接受，GoBuildInfo为该S、linux/amd64、modified=false；helper未执行。当前结果入口为 `.verification/cloud-setup/linux-helper-source-20261024-result.md`。实际首末可用空间533655552→410124288字节，峰值未测；后继文档提交不改写该二进制来源，也不因此重编译。新build/install/D12/service及真实模型仍必须执行。
 
-Windows模型凭据可用性尚未确认：当前集成查询仓库Secret名称返回403，不能据此认定未配置。A/B/C源码接入已接受，新的Windows原生运行及N4/N6仍未验；准确平台计划见 `.verification/cloud-setup/windows-n46-platform-adaptation-plan.md` 和 `windows-n46-owner-gui-plan.md`。Windows正式无模型检查不能代替真实Agent验收。新增四目录删除授权及Windows Secret名称仍待答；此前获批目录已删除，不再次执行。
+用户于2026-10-24（北京时间）明确确认Windows阶跃星辰GitHub Actions Secret“未配置”，原名称待答项已关闭；此前名称查询403保留为历史访问限制，未据403推断配置状态。Windows真实模型验收保持NOT_RUN，待实际受控来源齐备；A/B/C源码接入已接受，新的Windows原生运行及N4/N6仍未验。准确平台计划见 `.verification/cloud-setup/windows-n46-platform-adaptation-plan.md` 和 `windows-n46-owner-gui-plan.md`。已有Windows正式无模型检查不能代替真实Agent验收。Linux独立来源和原授权保持；新增四目录删除授权仍待答，此前获批目录已删除，不再次执行。
 
 只读执行可行性检查确认，现有Windows CI同步等待PowerShell结束后才上传artifact，没有向运行中helper stdin写入审阅的入口。原driver写出真实成果后只等待stdin JSON，期限600秒；owner另持stdin，GUI还须连接原服务。架构x64和Secret本身不能补足这一交互条件。已请求连接可交互Windows环境或现成可访问SSH别名，未获答；不启动必然无法完成审阅的模型窗口，不以重跑或离线artifact代替原进程。此限制不阻止A/B源码和无模型准备。
 

@@ -1,6 +1,6 @@
 # 接续说明
 
-最新执行接续（2026-10-24，北京时间）：正式安装仍为B464 `b464e70ba95967eb1ecc216f5f3d25407f1ecc66`；其Linux完整check/race/build/install/D12/service及Windows正式候选证据已获独审。原N4准备失败、三次依赖解析局部失败及历史业务FAIL/退出UNKNOWN均保留，修后的四profile公开准备已按准确工具来源通过，未执行模型。后继Windows A授权工具、B十个直接消费者已分别接受并提交推送208a0162与6e2290b4，C三个ignored owner/组包/GUI入口也已双审限定接受。下一步以最终干净S准备helper；实际结果入口见STATUS及 `.verification/cloud-setup/linux-helper-source-20261024-result.md`。完整构建仍待新增四目录删除授权和当时容量检查，Windows模型另缺可交互执行环境与受控来源。源码/局部接受不能写成后继安装或真实N4/N6通过。
+最新执行接续（2026-10-24，北京时间）：正式安装仍为B464 `b464e70ba95967eb1ecc216f5f3d25407f1ecc66`；其Linux完整check/race/build/install/D12/service及Windows正式候选证据已获独审。原N4准备失败、依赖解析局部失败及历史业务FAIL/退出UNKNOWN保留，修后的四profile公开准备已按准确工具来源通过，未执行模型。后继Windows A/B源码已分别接受并提交208a0162与6e2290b4，C三个ignored入口也已双审限定接受。准确55cd5c14的Linux helper编译及来源检查已通过并获独审，未执行helper；原件查STATUS及 `.verification/cloud-setup/linux-helper-source-20261024-result.md`，本轮文档提交不改写其来源。用户新答复已明确Windows Actions StepFun Secret未配置；交互Windows连接仍未答。Linux完整构建仍待新增四目录删除授权和当时容量检查，不能把源码/局部接受写成新安装或N4/N6通过。
 
 先读 [STATUS](STATUS.md)、[本轮任务](tasks/swa-evolution-20261023.md)和 [AGENTS](AGENTS.md)。当前工作目录 `/workspace/swarm-anything`，分支 `integration/swa-task-cards`；用户要求持续完成产品拆分、完整 Run 入口、能力状态、角色/交接与真实 N>3 测试。
 
@@ -10,7 +10,7 @@
 
 当前源码归属已收口：A/B准确源和局部结果查STATUS；C owner为fdc191af、组包24531b20、GUI9ac71337，完整SHA和接受范围见 `windows-n46-host-c-source-r2/report.md`，summary为dd52880f、full.diff为5adc5245。原Windows和跨入口reviewer均已接受准确末版，Root已独立核三源及报告。三项Node语法0，原业务保护通过；GUI共享失败收尾有必要改动。真正服务close起35秒，GUI沿原120秒；迟到JSON不单独证明总成功，须核原界内保存、固定stdout和真实退出。没有运行新Windows目标、SDK、浏览器、服务或模型。Root独占Git/PR/CI、状态及实际执行；B464正式证据不重复下载。
 
-资源与后继：四候选恢复调查和工具已审，Root唯一check-only结果5aeeadae实际0、未删除；新增四根仍待用户授权，当前I B464不可删除。此前获批目录及单个dist0177均已删除，不再次执行。准确Go cache已按原授权清理，净增293949440字节，保留modulecache及全部原产物。新的仅Linux helper包装eb8314bc/预算计划70858fce已获独立限定接受；Root从最终干净S执行，440MiB起点包含临时文件估算及余量，不冒峰值保证，实际原件按STATUS索引读取。新S build/install/D12/service和各模型入口仍必须实际完成，完整构建前重新核容量。Windows Secret名称查询403、现GHA无运行中业务审阅stdin；已请求可交互Windows连接或现成SSH别名，未答。不得复制Linux key或伪造审阅。下列历史按发生时保留；review-decision hook仍NOT_RUN，本线程没有实际Orca四个标识。
+资源与后继：四候选恢复调查和工具已审，Root唯一check-only结果5aeeadae实际0、未删除；新增四根仍待用户授权，当前I B464不可删除。此前获批目录及单个dist0177均已删除，不再次执行。准确Go cache先前按授权清理，净增293949440字节；后继55cd helper编译后cache112496640字节、可用410124288字节，原件按STATUS索引读取，峰值未测。新S build/install/D12/service和各模型入口仍必须实际完成，完整构建前重新核容量。Windows Secret当前据用户答复为未配置，原403仅是历史访问限制；现GHA无运行中业务审阅stdin，可交互Windows连接或现成SSH别名仍未答。Linux既有来源不受本次答复影响，不复制Linux key或伪造审阅。下列历史按发生时保留；review-decision hook仍NOT_RUN，本线程没有实际Orca四个标识。
 
 N4 driver 六源已完成独审并提交推送为 `aba8cbd007d30342a665eddac8edeef846be63f7`，最后 `run-installed.mjs` SHA 为 `02f6ecd8e0b19644865d7a3ed8016ff77f0ba281d3102189444c11e73994728d`。Root追加核查修正了completed回执清除效果未知的问题：只认原命令明确终态，query-only仍UNKNOWN；两组真实历史负例与原外层成功例离线验证通过。记录见STATUS和`resolver-r2-review.md`，不能复用第一版resolver接受或把局部结果写成新N4成功。四preamble源已获原N4 reviewer限定接受，disabled/upstream四真实任务逐字保持。问答r2修复了跨Worker待答误报未知、首次await前原ask缺scope、释放后历史lease误拒，整批源码与5局部/8Pi/strict0/4真实历史及16反例结果已独审接受，清单SHA667aaa53。Go分段仍仅静态接受，实际模型问答、GUI、安装和Windows未验。共享产品写域已结束本轮问答修改，后继OpenCode按原bb3c8573计划串行接续。
 
